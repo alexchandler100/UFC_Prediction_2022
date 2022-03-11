@@ -21,3 +21,5 @@ If you want to see the most up to date version of the predictor in action, follo
 
 ## Contributing
 If you find any feature sets for winner prediction that score higher that the current highest (.637 as of March 9 2022), or for method prediction which score higher than the current highest (.52 as of March 9 2022) let me know!
+
+## Creating a Pull Request
