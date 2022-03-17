@@ -4,7 +4,7 @@ In this project, we scrape data from ufcstats.com and apply machine learning tec
 
 ## Installation
 
-Make sure Python 3 is installed on your computer. Clone this repository. Open a terminal and cd to the location you saved it. Run the following command to open a jupyter notebook from the directory:
+Make sure Python 3 is installed on your computer. Clone this repository. Open a terminal and cd to the location you saved it. Run the following command to open a jupyter notebook from the buildingMLModel directory:
 
 ```bash
 jupyter notebook
