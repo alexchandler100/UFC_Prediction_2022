@@ -25,52 +25,65 @@
     </nav>
   </header>
   <section>
-    <strong>Choose your fighters.</strong>
+    <center>
+    <strong>
+      Select two fighters and choose a date.
+      This page uses deep learning algorithms to analyze all known fighter stats and predict the most likely outcome if they were to fight on the specified date.
+      Accuracy of predicting the correct winner is 64%.
+      Accuracy of predicting the correct method is 51%.
+      All photos are scraped from google image search.
+    </strong>
+  </center>
   </section>
 
   <section id="pageContent">
+    <datalist id="fighters"> </datalist>
     <main role="main">
-      <datalist id="fighters"> </datalist>
 
-      <article>
-        <h2>Select Red Corner Fighter</h2>
-        <p>
-          <input id=select1 list="fighters">
-        </p>
-        <p>
-          <span class="output1"></span>
-        </p>
-        <button onclick="getOption('select1','output1')"> Confirm </button>
-      </article>
-
-
-      <article>
-        <h2>Select Blue Corner Fighter</h2>
-        <p>
-          <input id=select2 list="fighters">
-        </p>
-        <p>
-          <span class="output2"></span>
-        </p>
-        <button onclick="getOption('select2','output2')"> Confirm </button>
-      </article>
-
+      <center>
+        <article>
+          <img id=fighter2pic src="buildingMLModel/images/3ColbyCovington.jpg" alt="" height="250" width="250">
+        </article>
+        <article>
+          <h2>Select Blue Corner Fighter</h2>
+          <p>
+            <input id=select2 list="fighters">
+          </p>
+          <p>
+            <span class="output2"></span>
+          </p>
+          <button onclick="getOption('select2','output2')"> Confirm </button>
+        </article>
+      </center>
     </main>
 
     <aside>
-      <div>
-        <img id=fighter1pic src="buildingMLModel/images/1ConorMcGregor.jpg" alt="" height="300" width="300">
-      </div>
-      <div>
-        <img id=fighter2pic src="buildingMLModel/images/1KhabibNurmagomedov.jpg" alt="" height="100" width="100">
-      </div>
+      <center>
+        <article>
+          <img id=fighter1pic src="buildingMLModel/images/3KhabibNurmagomedov.jpg" alt="" height="250" width="250">
+        </article>
+        <article>
+          <h2>Select Red Corner Fighter</h2>
+          <p>
+            <input id=select1 list="fighters">
+          </p>
+          <p>
+            <span class="output1"></span>
+          </p>
+          <button onclick="getOption('select1','output1')"> Confirm </button>
+        </article>
+      </center>
     </aside>
+
   </section>
+
   <footer>
+    <center>
     <p>&copy; We do not recommend you make financial decisions based on the outcomes of this program</p>
     <address>
       Contact: <a href="mailto:me@example.com">don't contact me</a>
     </address>
+  </center>
   </footer>
 
 
