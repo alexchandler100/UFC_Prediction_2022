@@ -62,7 +62,7 @@
         <article>
           <h2>Select Red Corner Fighter</h2>
           <p>
-            <input id=select1 list="fighters">
+            <input id=select1 list="fighters" value="Khabib Nurmagomedov">
           </p>
           <p>
             <span class="name1">Khabib Nurmagomedov</span>
@@ -77,7 +77,7 @@
         <article>
           <h2>Select Blue Corner Fighter</h2>
           <p>
-            <input id=select2 list="fighters">
+            <input id=select2 list="fighters" value="Colby Covington">
           </p>
           <p>
             <span class="name2">Colby Covington</span>
@@ -111,7 +111,7 @@
         <article>
           <h2>Date/Version of Blue Corner Fighter</h2>
           <p>
-            <input id=f1selectmonth list="months"> <input id=f1selectyear list="years">
+            <input id=f1selectmonth list="months" value = "March"> <input id=f1selectyear list="years" value = 2022>
           </p>
           <p>
             <span class="month1">March</span> <span class="year1">2022</span>
@@ -126,7 +126,7 @@
         <article>
           <h2>Date/Version of Red Corner Fighter</h2>
           <p>
-            <input id=f2selectmonth list="months"> <input id=f2selectyear list="years">
+            <input id=f2selectmonth list="months" value = "March"> <input id=f2selectyear list="years" value = 2022>
           </p>
           <p>
             <span class="month2">March</span> <span class="year2">2022</span>
@@ -139,8 +139,12 @@
 
   <section>
     <center>
-      <button onclick="predict('name1','name2','month1','month2','year1','year2')"> Calculate </button>
+      <button onclick="predict('select1','select2','f1selectmonth','f1selectyear','f2selectmonth','f2selectyear',)"> Calculate </button>
     </center>
+    <center>
+      <span class="fightoutcome"></span>
+    </center>
+
   </section>
 
 
