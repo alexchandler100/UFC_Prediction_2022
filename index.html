@@ -26,33 +26,22 @@
   </header>
   <section>
     <center>
-    <strong>
-      Select two fighters and choose a date.
-      This page uses deep learning algorithms to analyze all known fighter stats and predict the most likely outcome if they were to fight on the specified date.
-      Accuracy of predicting the correct winner is 64%.
-      Accuracy of predicting the correct method is 51%.
-      All photos are scraped from google image search.
-    </strong>
-  </center>
+      <strong>
+        Select two fighters and choose a date.
+        This page uses deep learning algorithms to analyze all known fighter stats and predict the most likely outcome if they were to fight on the specified date.
+        Accuracy of predicting the correct winner is 64%.
+        Accuracy of predicting the correct method is 51%.
+        All photos are scraped from google image search.
+      </strong>
+    </center>
   </section>
 
-  <section id="pageContent">
+  <section id="fighterPictures">
     <datalist id="fighters"> </datalist>
     <main role="main">
-
       <center>
         <article>
-          <img id=fighter2pic src="buildingMLModel/images/3ColbyCovington.jpg" alt="" height="250" width="250">
-        </article>
-        <article>
-          <h2>Select Blue Corner Fighter</h2>
-          <p>
-            <input id=select2 list="fighters">
-          </p>
-          <p>
-            <span class="output2"></span>
-          </p>
-          <button onclick="getOption('select2','output2')"> Confirm </button>
+          <img id=fighter1pic src="buildingMLModel/images/3KhabibNurmagomedov.jpg" alt="" height="250" width="250">
         </article>
       </center>
     </main>
@@ -60,30 +49,108 @@
     <aside>
       <center>
         <article>
-          <img id=fighter1pic src="buildingMLModel/images/3KhabibNurmagomedov.jpg" alt="" height="250" width="250">
+          <img id=fighter2pic src="buildingMLModel/images/3ColbyCovington.jpg" alt="" height="250" width="250">
         </article>
+      </center>
+    </aside>
+  </section>
+
+  <section id="selectFighters">
+    <datalist id="fighters"> </datalist>
+    <main role="main">
+      <center>
         <article>
           <h2>Select Red Corner Fighter</h2>
           <p>
             <input id=select1 list="fighters">
           </p>
           <p>
-            <span class="output1"></span>
+            <span class="name1">Khabib Nurmagomedov</span>
           </p>
-          <button onclick="getOption('select1','output1')"> Confirm </button>
+          <button onclick="selectFighter('select1','name1')"> Confirm </button>
+        </article>
+      </center>
+    </main>
+
+    <aside>
+      <center>
+        <article>
+          <h2>Select Blue Corner Fighter</h2>
+          <p>
+            <input id=select2 list="fighters">
+          </p>
+          <p>
+            <span class="name2">Colby Covington</span>
+          </p>
+          <button onclick="selectFighter('select2','name2')"> Confirm </button>
         </article>
       </center>
     </aside>
-
   </section>
+
+  <section id="chooseDate">
+    <datalist id="months">
+      <option value="January">
+      <option value="February">
+      <option value="March">
+      <option value="April">
+      <option value="May">
+      <option value="June">
+      <option value="July">
+      <option value="August">
+      <option value="September">
+      <option value="October">
+      <option value="November">
+      <option value="December">
+    </datalist>
+    <datalist id="years">
+      <option value="2022">
+        </datalist>
+    <main role="main2">
+      <center>
+        <article>
+          <h2>Date/Version of Blue Corner Fighter</h2>
+          <p>
+            <input id=f1selectmonth list="months"> <input id=f1selectyear list="years">
+          </p>
+          <p>
+            <span class="month1">March</span> <span class="year1">2022</span>
+          </p>
+          <button onclick="selectDate('f1selectmonth','month1','f1selectyear','year1')"> Confirm </button>
+        </article>
+      </center>
+    </main>
+
+    <aside>
+      <center>
+        <article>
+          <h2>Date/Version of Red Corner Fighter</h2>
+          <p>
+            <input id=f2selectmonth list="months"> <input id=f2selectyear list="years">
+          </p>
+          <p>
+            <span class="month2">March</span> <span class="year2">2022</span>
+          </p>
+          <button onclick="selectDate('f2selectmonth','month2','f2selectyear','year2')"> Confirm </button>
+        </article>
+      </center>
+    </aside>
+  </section>
+
+  <section>
+    <center>
+      <button onclick="predict('name1','name2','month1','month2','year1','year2')"> Calculate </button>
+    </center>
+  </section>
+
 
   <footer>
     <center>
-    <p>&copy; We do not recommend you make financial decisions based on the outcomes of this program</p>
-    <address>
-      Contact: <a href="mailto:me@example.com">don't contact me</a>
-    </address>
-  </center>
+      <p>&copy; We do not recommend you make financial decisions based on the outcomes of this program</p>
+      <address>
+        Contact: <a href="mailto:me@example.com">don't contact me</a>
+      </address>
+    </center>
   </footer>
 
 
