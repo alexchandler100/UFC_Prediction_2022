@@ -189,22 +189,6 @@ function predictionTuple(fighter1, fighter2, month1, year1, month2, year2) {
   let av_total_strikes_diff = avg_count('total_strikes_landed', guy1, 'abs', yr1) - avg_count('total_strikes_landed', guy2, 'abs', yr2)
   let av_tk_atmps_diff = avg_count('takedowns_attempts', guy1, 'inf', yr1) - avg_count('takedowns_attempts', guy2, 'inf', yr2)
   let av_gr_strikes = avg_count('ground_strikes_landed', guy1, 'abs', yr1) - avg_count('ground_strikes_landed', guy2, 'abs', yr2)
-
-  //day1 = `${month1} 1, ${year1}`
-  //day2 = `${month2} 1, ${year2}`
-  /*
-  return [fighter_age(fighter1,day1),
-            fighter_age(fighter2,day2),
-            fighter_reach(fighter1)-fighter_reach(fighter2),
-            L5Y_ko_losses(fighter1,day1)-L5Y_ko_losses(fighter2,day2),
-            L5Y_wins(fighter1,day1)-L5Y_wins(fighter2,day2),
-            L5Y_losses(fighter1,day1)-L5Y_losses(fighter2,day2),
-            avg_count('total_strikes_landed',fighter1,'abs',day1)-avg_count('total_strikes_landed',fighter2,'abs',day2),
-            avg_count('takedowns_attempts',fighter1,'inf',day1)-avg_count('takedowns_attempts',fighter2,'inf',day2),
-            avg_count('ground_strikes_landed',fighter1,'abs',day1)-avg_count('ground_strikes_landed',fighter2,'abs',day2)
-        ]
-        */
-  //return fighter_data[name1]
   return [age1, age2, reachdiff, l5y_ko_losses_diff, l5y_wins_diff, l5y_losses_diff, av_total_strikes_diff, av_tk_atmps_diff, av_gr_strikes]
 }
 
