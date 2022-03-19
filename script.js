@@ -2,6 +2,9 @@
 toggle between hiding and showing the dropdown content */
 //your script here.
 
+fighter_data = {}
+fight_history = {}
+
 $(function() {
   //var people = [];
   $.getJSON('buildingMLModel/fighter_stats.json', function(data) {
@@ -9,18 +12,17 @@ $(function() {
     $.each(data, function(i, f) {
       //create entry in local object
       const select = document.getElementById('fighters')
-      const value = i
-      const label = i
       select.insertAdjacentHTML('beforeend', `
-  <option value="${value}">${label}</option>
+  <option value="${i}">${i}</option>
 `)
+      fighter_data[i] = f
     });
   });
 });
 
 const years = document.getElementById('years')
-for (let i=0;i<30;i++){
-  year = 2022-i
+for (let i = 0; i < 30; i++) {
+  year = 2022 - i
   years.insertAdjacentHTML('beforeend', `
 <option value="${year}">${year}</option>
 `)
@@ -35,54 +37,59 @@ function pickRand(a, b) {
   }
 }
 
-function selectFighter(id,out) {
-  selectElement = document.querySelector('#'+id);
+function selectFighter(id, out) {
+  selectElement = document.querySelector('#' + id);
   output = selectElement.value;
-  document.querySelector('.'+out).textContent = output;
-  i=id[6]
-  console.log(i)
+  document.querySelector('.' + out).textContent = output;
+  i = id[6]
   name = selectElement.value;
-  name = name.replace(" ","")
-  console.log("buildingMLModel/images/"+i+name+".jpg")
+  console.log(fighter_data[name])
+  name = name.replace(" ", "")
   //sets the image to be the image of the fighter
-  document.getElementById("fighter"+i+"pic").src="buildingMLModel/images/"+i+name+".jpg"
+  document.getElementById("fighter" + i + "pic").src = "buildingMLModel/images/" + i + name + ".jpg"
 }
 
 // i='1' or '2' (1 for fighter1 2 for fighter2)
-function setFighterImage(i){
-  selectElement = document.querySelector('#'+i);
+function setFighterImage(i) {
+  selectElement = document.querySelector('#' + i);
   name = selectElement.value;
-  name = name.replace(" ","")
+  name = name.replace(" ", "")
   //sets the image to be the image of the fighter
-  document.getElementById("fighter"+i+"pic").src="buildingMLModel/images/"+i+name+".jpg"
+  document.getElementById("fighter" + i + "pic").src = "buildingMLModel/images/" + i + name + ".jpg"
 }
 
-function selectDate(monthid,monthout,yearid,yearout) {
+function selectDate(monthid, monthout, yearid, yearout) {
   //sets the image to be the image of the fighter
-  selectMonth = document.querySelector('#'+monthid);
+  selectMonth = document.querySelector('#' + monthid);
   output = selectMonth.value;
-  document.querySelector('.'+monthout).textContent = output;
-  selectYear = document.querySelector('#'+yearid);
+  document.querySelector('.' + monthout).textContent = output;
+  selectYear = document.querySelector('#' + yearid);
   output2 = selectYear.value;
-  document.querySelector('.'+yearout).textContent = output2;
+  document.querySelector('.' + yearout).textContent = output2;
 }
 
-function fighter_age(){
-  /*
-  def fighter_age(fighter,day=date.today(),form1='%B %d, %Y',form2='%B %d, %Y'):
-    a=0
-    for i in range(len(ufcfighterscrap['name'])):
-        if ufcfighterscrap['name'][i]==fighter:
-            dob=datetime.strptime(ufcfighterscrap['dob'][i], '%b %d, %Y').strftime('%B %d, %Y')
-            a=age(dob,day,form1,form2)
-            break
-    return a
-    */
+function fighter_age(fighter,yearSelected) {
+  let yearBorn = fighter_data[fighter]['dob'].slice(-4)
+  return parseInt(yearSelected)-parseInt(yearBorn)
 }
 
-function predictionTuple(fighter1,fighter2,month1,year1,month2,year2){
-  day1 = `${month1} 1, ${year1}`
-  day2 = `${month2} 1, ${year2}`
+function fighter_reach(fighter,yearSelected) {
+  let reach = fighter_data[fighter]['reach'].slice(0, -1) //this removes the last character "
+  return parseInt(reach)
+}
+
+function predictionTuple(fighter1, fighter2, month1, year1, month2, year2) {
+  guy1 = document.querySelector('#' + fighter1).value;
+  guy2 = document.querySelector('#' + fighter2).value;
+  mon1 = document.querySelector('#' + month1).value;
+  mon2 = document.querySelector('#' + month2).value;
+  yr1 = document.querySelector('#' + year1).value;
+  yr2 = document.querySelector('#' + year2).value;
+  let age1=fighter_age(guy1,yr1)
+  let age2=fighter_age(guy2,yr2)
+  let reachdiff = fighter_reach(guy1)-fighter_reach(guy2)
+  //day1 = `${month1} 1, ${year1}`
+  //day2 = `${month2} 1, ${year2}`
   /*
   return [fighter_age(fighter1,day1),
             fighter_age(fighter2,day2),
@@ -95,11 +102,12 @@ function predictionTuple(fighter1,fighter2,month1,year1,month2,year2){
             avg_count('ground_strikes_landed',fighter1,'abs',day1)-avg_count('ground_strikes_landed',fighter2,'abs',day2)
         ]
         */
-  return (day1,day2)
+  //return fighter_data[name1]
+  return [age1,age2,reachdiff]
 }
 
-function predict(fighter1,fighter2,month1,year1,month2,year2){
-  tup = predictionTuple(fighter1,fighter2,month1,year1,month2,year2)
+function predict(fighter1, fighter2, month1, year1, month2, year2) {
+  tup = predictionTuple(fighter1, fighter2, month1, year1, month2, year2)
   console.log(tup)
   return tup
 }
