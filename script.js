@@ -48,16 +48,22 @@ function pickRand(a, b) {
   }
 }
 
+function getRandomInt(max) {
+  return Math.floor(Math.random() * max)+1;
+}
+
 function selectFighter(id, out) {
   selectElement = document.querySelector('#' + id);
   output = selectElement.value;
   document.querySelector('.' + out).textContent = output;
-  i = id[6]
+  let i = id[6]
+  let j=getRandomInt(4).toString()
   name = selectElement.value;
   //console.log(fighter_data[name])
   name = name.replace(" ", "")
+  console.log("buildingMLModel/images/" + j + name + ".jpg")
   //sets the image to be the image of the fighter
-  document.getElementById("fighter" + i + "pic").src = "buildingMLModel/images/" + i + name + ".jpg"
+  document.getElementById("fighter" + i + "pic").src = "buildingMLModel/images/" + j + name + ".jpg"
 }
 
 // i='1' or '2' (1 for fighter1 2 for fighter2)
