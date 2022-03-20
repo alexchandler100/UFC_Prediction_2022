@@ -11,6 +11,7 @@
   <title>Deep Learning UFC Prediction</title>
   <meta name="description" content="A simple tool allowing the user to predict UFC fights using deep learning.">
   <link rel="stylesheet" href="/style.css">
+  <link href="minimal-table.css" rel="stylesheet" type="text/css">
 </head>
 
 <body>
@@ -41,7 +42,7 @@
     <main role="main">
       <center>
         <article>
-          <img style = 'border: 10px solid #555' id=fighter1pic src="buildingMLModel/images/3KhabibNurmagomedov.jpg" alt="" height="250" width="250">
+          <img style='border: 10px solid #555' id=fighter1pic src="buildingMLModel/images/3KhabibNurmagomedov.jpg" alt="" height="250" width="250">
         </article>
       </center>
     </main>
@@ -49,7 +50,7 @@
     <aside>
       <center>
         <article>
-          <img style = 'border: 10px solid #555' id=fighter2pic src="buildingMLModel/images/3ColbyCovington.jpg" alt="" height="250" width="250">
+          <img style='border: 10px solid #555' id=fighter2pic src="buildingMLModel/images/3ColbyCovington.jpg" alt="" height="250" width="250">
         </article>
       </center>
     </aside>
@@ -105,13 +106,13 @@
     </datalist>
     <datalist id="years">
       <option value="2022">
-        </datalist>
+    </datalist>
     <main role="main2">
       <center>
         <article>
           <h2>Date/Version of Red Corner Fighter</h2>
           <p>
-            <input id=f1selectmonth list="months" value = "March"> <input id=f1selectyear list="years" value = 2022>
+            <input id=f1selectmonth list="months" value="March"> <input id=f1selectyear list="years" value=2022>
           </p>
           <p>
             <span class="month1">March</span> <span class="year1">2022</span>
@@ -126,7 +127,7 @@
         <article>
           <h2>Date/Version of Blue Corner Fighter</h2>
           <p>
-            <input id=f2selectmonth list="months" value = "March"> <input id=f2selectyear list="years" value = 2022>
+            <input id=f2selectmonth list="months" value="March"> <input id=f2selectyear list="years" value=2022>
           </p>
           <p>
             <span class="month2">March</span> <span class="year2">2022</span>
@@ -137,16 +138,164 @@
     </aside>
   </section>
 
+  <section id="taleofthetape" style="margin-top; margin-bottom:1cm;">
+    <center>
+      <h2>
+      Tale of the Tape
+    </h2>
+    </center>
+    <main role="main3" style="margin-top:1cm;">
+      <center>
+        <table id="table1" style="margin-top:1cm;">
+          <tr id="first row">
+            <td>Height</td>
+            <td>Reach</td>
+            <td>Age</td>
+            <td>Stance</td>
+          </tr>
+          <tr>
+            <td>??</td>
+            <td>??</td>
+            <td>??</td>
+            <td>??</td>
+          </tr>
+        </table>
+      </center>
+    </main>
+
+    <aside style="margin-top:1cm;">
+      <center>
+        <table id="table2" style="margin-top:1cm;">
+          <tr id="first row">
+            <td>Height</td>
+            <td>Reach</td>
+            <td>Age</td>
+            <td>Stance</td>
+          </tr>
+          <tr>
+            <td>??</td>
+            <td>??</td>
+            <td>??</td>
+            <td>??</td>
+          </tr>
+        </table>
+      </center>
+    </aside>
+  </section>
+
+
+  <section id="last5fights">
+    <center>
+      <h2 >
+      Last 5 Fights
+    </h2>
+    </center>
+    <main role="main4">
+      <center>
+        <table id="l5ytable1" style="margin-top:1cm; width:80%;">
+          <thead>
+            <tr>
+              <th>Opponent</th>
+              <th>Result</th>
+              <th>Method</th>
+              <td>Date</td>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+            </tr>
+            <tr>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+            </tr>
+            <tr>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+            </tr>
+            <tr>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+            </tr>
+            <tr>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+            </tr>
+          </tbody>
+        </table>
+      </center>
+    </main>
+
+    <aside>
+      <center>
+        <table id="l5ytable2" style="margin-top:1cm; width:80%;">
+          <thead>
+            <tr>
+              <th>Opponent</th>
+              <th>Result</th>
+              <th>Method</th>
+              <td>Date</td>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+            </tr>
+            <tr>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+            </tr>
+            <tr>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+            </tr>
+            <tr>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+            </tr>
+            <tr>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+            </tr>
+          </tbody>
+        </table>
+      </center>
+    </aside>
+  </section>
+
+
   <section>
+    <div style="margin-top:1cm; margin-bottom:1cm;">
     <center>
       <button onclick="predict('select1','select2','f1selectmonth','f1selectyear','f2selectmonth','f2selectyear',)"> Calculate </button>
     </center>
+  </div>
     <center>
-      <span class="fightoutcome"></span>
+      <span style="font-size:30px" class="fightoutcome"></span>
     </center>
-
   </section>
-
 
   <footer>
     <center>

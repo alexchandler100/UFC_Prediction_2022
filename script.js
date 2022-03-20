@@ -49,7 +49,7 @@ function pickRand(a, b) {
 }
 
 function getRandomInt(max) {
-  return Math.floor(Math.random() * max)+1;
+  return Math.floor(Math.random() * max) + 1;
 }
 
 function selectFighter(id, out) {
@@ -57,13 +57,20 @@ function selectFighter(id, out) {
   output = selectElement.value;
   document.querySelector('.' + out).textContent = output;
   let i = id[6]
-  let j=getRandomInt(4).toString()
+  let j = getRandomInt(4).toString()
   name = selectElement.value;
   //console.log(fighter_data[name])
   name = name.replace(" ", "")
   console.log("buildingMLModel/images/" + j + name + ".jpg")
   //sets the image to be the image of the fighter
   document.getElementById("fighter" + i + "pic").src = "buildingMLModel/images/" + j + name + ".jpg"
+  if (i == '1') {
+    populateTaleOfTheTape(output, 'rc')
+    populateLast5Fights(output, 'rc')
+  } else {
+    populateTaleOfTheTape(output, 'bc')
+    populateLast5Fights(output, 'bc')
+  }
 }
 
 // i='1' or '2' (1 for fighter1 2 for fighter2)
@@ -241,6 +248,57 @@ function predict(fighter1, fighter2, month1, year1, month2, year2) {
   document.querySelector('.fightoutcome').textContent = resulting_text
 }
 
+function populateTaleOfTheTape(fighter, corner) {
+  console.log(fighter)
+  console.log(fighter_data[fighter])
+  var myTab;
+  if (corner == 'rc') {
+    yr = document.querySelector('#' + 'f1selectyear').value;
+    myTab = document.getElementById("table1");
+  } else if (corner == 'bc') {
+    yr = document.querySelector('#' + 'f2selectyear').value;
+    myTab = document.getElementById("table2");
+  }
+  // LOOP THROUGH EACH ROW OF THE TABLE AFTER HEADER.
+  myTab.rows.item(1).cells.item(0).innerHTML = fighter_data[fighter]['height'];
+  myTab.rows.item(1).cells.item(1).innerHTML = fighter_data[fighter]['reach'];
+  myTab.rows.item(1).cells.item(2).innerHTML = fighter_age(fighter, yr)
+  myTab.rows.item(1).cells.item(3).innerHTML = fighter_data[fighter]['stance'];
+  //document.querySelector('.tableEntry').textContent = fighter
+}
+
+function populateLast5Fights(fighter, corner) {
+  var myTab;
+  if (corner == 'rc') {
+    yr = document.querySelector('#' + 'f1selectyear').value;
+    myTab = document.getElementById("l5ytable1");
+  } else if (corner == 'bc') {
+    yr = document.querySelector('#' + 'f2selectyear').value;
+    myTab = document.getElementById("l5ytable2");
+  }
+  let fightNumber = 0
+    for (const fight in ufcfightscrap) {
+      let result;
+      let opponent;
+      let method;
+      let yearDiff = parseInt(yr) - ufcfightscrap[fight]['date'].slice(-4)
+      if (ufcfightscrap[fight]['fighter']==fighter && yearDiff >= 0) {
+        result = ufcfightscrap[fight]['result']
+        opponent = ufcfightscrap[fight]['opponent']
+        method = ufcfightscrap[fight]['method']
+        date = ufcfightscrap[fight]['date']
+        fightNumber += 1
+        myTab.rows.item(fightNumber).cells.item(0).innerHTML = opponent
+        myTab.rows.item(fightNumber).cells.item(1).innerHTML = result
+        myTab.rows.item(fightNumber).cells.item(2).innerHTML = method
+        myTab.rows.item(fightNumber).cells.item(3).innerHTML = date
+      }
+      if (fightNumber > 4){
+        break
+      }
+    }
+}
+
 
 function myFunction1() {
   document.getElementById("myDropdown1").classList.toggle("show");
@@ -285,3 +343,25 @@ function filterFunction2() {
     }
   }
 }
+
+//set initial table values
+setTimeout(() => {
+  populateTaleOfTheTape('Khabib Nurmagomedov', 'rc')
+  populateTaleOfTheTape('Colby Covington', 'bc')
+  populateLast5Fights('Khabib Nurmagomedov', 'rc')
+  populateLast5Fights('Colby Covington', 'bc')
+}, 200)
+/*
+myTab1 = document.getElementById("table1");
+console.log(fighter_data)
+myTab1.rows.item(1).cells.item(0).innerHTML = fighter_data['Khabib Nurmagomedov']['height'];
+myTab1.rows.item(1).cells.item(1).innerHTML = fighter_data['Khabib Nurmagomedov']['reach'];
+myTab1.rows.item(1).cells.item(2).innerHTML = fighter_age('Khabib Nurmagomedov',2022)
+myTab1.rows.item(1).cells.item(3).innerHTML = fighter_data['Khabib Nurmagomedov']['stance'];
+
+myTab2 = document.getElementById("table2");
+myTab2.rows.item(1).cells.item(0).innerHTML = fighter_data['Colby Covington']['height'];
+myTab2.rows.item(1).cells.item(1).innerHTML = fighter_data['Colby Covington']['reach'];
+myTab2.rows.item(1).cells.item(2).innerHTML = fighter_age('Colby Covington',2022)
+myTab2.rows.item(1).cells.item(3).innerHTML = fighter_data['Colby Covington']['stance'];
+*/
