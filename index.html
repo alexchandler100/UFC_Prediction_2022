@@ -65,9 +65,6 @@
           <p>
             <input id=select1 list="fighters" value="Khabib Nurmagomedov">
           </p>
-          <p>
-            <span class="name1">Khabib Nurmagomedov</span>
-          </p>
           <button onclick="selectFighter('select1','name1')"> Confirm </button>
         </article>
       </center>
@@ -79,9 +76,6 @@
           <h2>Select Blue Corner Fighter</h2>
           <p>
             <input id=select2 list="fighters" value="Colby Covington">
-          </p>
-          <p>
-            <span class="name2">Colby Covington</span>
           </p>
           <button onclick="selectFighter('select2','name2')"> Confirm </button>
         </article>
@@ -114,9 +108,7 @@
           <p>
             <input id=f1selectmonth list="months" value="March"> <input id=f1selectyear list="years" value=2022>
           </p>
-          <p>
-            <span class="month1">March</span> <span class="year1">2022</span>
-          </p>
+
           <button onclick="selectDate('f1selectmonth','month1','f1selectyear','year1')"> Confirm </button>
         </article>
       </center>
@@ -129,9 +121,7 @@
           <p>
             <input id=f2selectmonth list="months" value="March"> <input id=f2selectyear list="years" value=2022>
           </p>
-          <p>
-            <span class="month2">March</span> <span class="year2">2022</span>
-          </p>
+
           <button onclick="selectDate('f2selectmonth','month2','f2selectyear','year2')"> Confirm </button>
         </article>
       </center>
@@ -139,14 +129,40 @@
   </section>
 
   <section id="taleofthetape" style="margin-top; margin-bottom:1cm;">
+
     <center>
-      <h2>
-      Tale of the Tape
-    </h2>
+      <h2 style="margin-bottom:1cm; font-size: 60px;">
+        Tale of the Tape
+      </h2>
     </center>
-    <main role="main3" style="margin-top:1cm;">
+
+    <main role="main">
       <center>
-        <table id="table1" style="margin-top:1cm;">
+        <p style="margin-bottom:.1cm;">
+          <span class="name1" style="font-size: 30px">Khabib Nurmagomedov</span>
+        </p>
+        <p>
+          <span class="month1">March</span> <span class="year1">2022</span>
+        </p>
+      </center>
+    </main>
+
+    <aside>
+      <center>
+        <p style="margin-bottom:.1cm;">
+          <span class="name2" style="font-size: 30px">Colby Covington</span>
+        </p>
+        <p>
+          <span class="month2">March</span> <span class="year2">2022</span>
+        </p>
+      </center>
+    </aside>
+
+
+
+    <main role="main3" style="">
+      <center>
+        <table id="table1" style="">
           <tr id="first row">
             <td>Height</td>
             <td>Reach</td>
@@ -163,9 +179,9 @@
       </center>
     </main>
 
-    <aside style="margin-top:1cm;">
+    <aside style="">
       <center>
-        <table id="table2" style="margin-top:1cm;">
+        <table id="table2" style="">
           <tr id="first row">
             <td>Height</td>
             <td>Reach</td>
@@ -186,13 +202,13 @@
 
   <section id="last5fights">
     <center>
-      <h2 >
-      Last 5 Fights
-    </h2>
+      <h2 style="font-size: 40px; margin-top: 1cm">
+        Last 5 Fights
+      </h2>
     </center>
     <main role="main4">
       <center>
-        <table id="l5ytable1" style="margin-top:1cm; width:80%;">
+        <table id="l5ytable1" style="width:80%;">
           <thead>
             <tr>
               <th>Opponent</th>
@@ -239,7 +255,7 @@
 
     <aside>
       <center>
-        <table id="l5ytable2" style="margin-top:1cm; width:80%;">
+        <table id="l5ytable2" style="width:80%;">
           <thead>
             <tr>
               <th>Opponent</th>
@@ -287,11 +303,11 @@
 
 
   <section>
-    <div style="margin-top:1cm; margin-bottom:1cm;">
-    <center>
-      <button onclick="predict('select1','select2','f1selectmonth','f1selectyear','f2selectmonth','f2selectyear',)"> Calculate </button>
-    </center>
-  </div>
+    <div style="">
+      <center>
+        <button onclick="predict('select1','select2','f1selectmonth','f1selectyear','f2selectmonth','f2selectyear',)"> Calculate </button>
+      </center>
+    </div>
     <center>
       <span style="font-size:30px" class="fightoutcome"></span>
     </center>

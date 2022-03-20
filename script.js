@@ -39,15 +39,6 @@ for (let i = 0; i < 30; i++) {
 `)
 }
 
-function pickRand(a, b) {
-  let x = Math.random();
-  if (x < .5) {
-    return a
-  } else {
-    return b
-  }
-}
-
 function getRandomInt(max) {
   return Math.floor(Math.random() * max) + 1;
 }
@@ -59,11 +50,8 @@ function selectFighter(id, out) {
   let i = id[6]
   let j = getRandomInt(4).toString()
   name = selectElement.value;
-  //console.log(fighter_data[name])
   name = name.replace(" ", "")
-  console.log("buildingMLModel/images/" + j + name + ".jpg")
-  //sets the image to be the image of the fighter
-  document.getElementById("fighter" + i + "pic").src = "buildingMLModel/images/" + j + name + ".jpg"
+  document.getElementById("fighter" + i + "pic").src = "buildingMLModel/images/" + j + name + ".jpg" //sets the image
   if (i == '1') {
     populateTaleOfTheTape(output, 'rc')
     populateLast5Fights(output, 'rc')
@@ -71,15 +59,6 @@ function selectFighter(id, out) {
     populateTaleOfTheTape(output, 'bc')
     populateLast5Fights(output, 'bc')
   }
-}
-
-// i='1' or '2' (1 for fighter1 2 for fighter2)
-function setFighterImage(i) {
-  selectElement = document.querySelector('#' + i);
-  name = selectElement.value;
-  name = name.replace(" ", "")
-  //sets the image to be the image of the fighter
-  document.getElementById("fighter" + i + "pic").src = "buildingMLModel/images/" + i + name + ".jpg"
 }
 
 function selectDate(monthid, monthout, yearid, yearout) {
