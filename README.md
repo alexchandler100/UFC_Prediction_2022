@@ -4,20 +4,27 @@ In this project, we scrape data from ufcstats.com and apply machine learning tec
 
 ## Installation
 
-Make sure Python 3 is installed on your computer. Clone this repository. Open a terminal and cd to the location you saved it. Run the following command to open a jupyter notebook from the buildingMLModel directory:
-
-```bash
-jupyter notebook
-```
+Make sure Python 3 is installed on your computer. Clone this repository. Open a terminal and cd to the location you saved it.
 
 ## Usage
 
 If you want to see the most up to date version of the predictor in action, follow these instructions:
 
-1. Open the python notebook titled UFC_data_scraping.ipynb and run the first and third cells with shift+enter. This will bring the csv files 'fight_hist.csv' and 'fighter_stats.csv' up to date. You can now close this notebook.
-2. Open the python notebook titled Updating_ufc_fights.ipynb and run every cell top to bottom. This brings the file 'ufc_fights.csv' up to date. You can now close this notebook.
-3. If you want to see in more detail how the statistics are being calculated, and how the features for learning models are selected, you can look into the files Building_ufc_fighters.ipynb, Building_ufc_fights.ipynb, UFC_LR_Winner_Prediction_Feature_Selection.ipynb, and UFC_Optimizing_Method_Prediction.ipynb but this is not necessary.
-4. Open the python notebook titled UFC_Prediction_Model.ipynb and run every cell top to bottom (you don't need to run all of the  example predictions, but they should run quickly anyway. Try some of your own as well. Note: you can enter in any date for either fighter, so for example, you could compare 2012 GSP to 2020 Khabib.
+1. First we will scrape ufcstats.com and update the dataset. cd (change directory) to the buildingMLModel directory and type
+```console
+python3 update_data_csvs_and_jsons.py
+```
+and press enter (this will take awhile to run)
+2. Now type
+```console
+python3 update_and_rebuild_model.py
+```
+and press enter. This will run quickly. This rebuilds the machine learning model to incorporate the updated data. This will send the updated coefficients to the files theta.json and intercept.json.
+3. Now cd to the main directory UFC_Prediction_2022 and type
+```console
+python3 -m http.server 9089
+```
+and press enter to serve html via a local host. This should automatically open a browser with the website running.
 
 ## Contributing
 If you find any feature sets for winner prediction that score higher that the current highest (.637 as of March 9 2022), or for method prediction which score higher than the current highest (.52 as of March 9 2022) let me know!
