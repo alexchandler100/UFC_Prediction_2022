@@ -65,7 +65,7 @@
           <p>
             <input id=select1 list="fighters" value="Khabib Nurmagomedov">
           </p>
-          <button onclick="selectFighter('select1','name1')"> Confirm </button>
+          <button onclick="selectFighter('select1','name1')"> Set Red Corner Fighter </button>
         </article>
       </center>
     </main>
@@ -77,7 +77,7 @@
           <p>
             <input id=select2 list="fighters" value="Colby Covington">
           </p>
-          <button onclick="selectFighter('select2','name2')"> Confirm </button>
+          <button onclick="selectFighter('select2','name2')"> Set Blue Corner Fighter </button>
         </article>
       </center>
     </aside>
@@ -109,7 +109,7 @@
             <input id=f1selectmonth list="months" value="March"> <input id=f1selectyear list="years" value=2022>
           </p>
 
-          <button onclick="selectDate('f1selectmonth','month1','f1selectyear','year1')"> Confirm </button>
+          <button onclick="selectDate('f1selectmonth','month1','f1selectyear','year1')"> Set Red Corner Date </button>
         </article>
       </center>
     </main>
@@ -122,7 +122,7 @@
             <input id=f2selectmonth list="months" value="March"> <input id=f2selectyear list="years" value=2022>
           </p>
 
-          <button onclick="selectDate('f2selectmonth','month2','f2selectyear','year2')"> Confirm </button>
+          <button onclick="selectDate('f2selectmonth','month2','f2selectyear','year2')"> Set Blue Corner Date </button>
         </article>
       </center>
     </aside>
@@ -200,9 +200,9 @@
   </section>
 
 
-  <section id="last5fights">
+  <section id="last5fights" style="margin-bottom:1cm;">
     <center>
-      <h2 style="font-size: 40px; margin-top: 1cm">
+      <h2 style="font-size: 60px; margin-top: 1cm; margin-bottom: 1cm">
         Last 5 Fights
       </h2>
     </center>
@@ -302,14 +302,19 @@
   </section>
 
 
-  <section>
-    <div style="">
+  <section id="predict" style="margin-top:1cm; margin-bottom:1cm;">
+    <center>
+      <h2 style="font-size: 60px; margin-top: 1cm; margin-bottom: 1cm">
+        Predict Outcome
+      </h2>
+    </center>
+    <div style="margin-top: 1cm; margin-bottom: 1cm">
       <center>
         <button onclick="predict('select1','select2','f1selectmonth','f1selectyear','f2selectmonth','f2selectyear',)"> Calculate </button>
       </center>
     </div>
     <center>
-      <span style="font-size:30px" class="fightoutcome"></span>
+      <span style="font-size:30px; margin-top: 1cm" class="fightoutcome"></span>
     </center>
   </section>
 
