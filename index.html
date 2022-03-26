@@ -14,7 +14,7 @@
 
 <body>
   <header>
-    <div id="logo"><img src="logo.png">Deep&nbsp;Learning&nbsp;UFC&nbsp;Prediction</div>
+    <div id="logo"><img src="logo.png"/>Deep&nbsp;Learning&nbsp;UFC&nbsp;Prediction</div>
     <nav>
       <ul>
         <li><a href="/">Home</a>
@@ -61,9 +61,9 @@
         <article>
           <h2>Select Red Corner Fighter</h2>
           <p>
-            <input id=select1 list="fighters" value="Khabib Nurmagomedov">
+            <input id=select1 type="text" list="fighters" value="Khabib Nurmagomedov">
           </p>
-          <button onclick="selectFighter('select1','name1')"> Set Red Corner Fighter </button>
+          <button class="button button1" onclick="selectFighter('select1','name1')"> Set Red Corner Fighter </button>
         </article>
       </center>
     </main>
@@ -73,9 +73,9 @@
         <article>
           <h2>Select Blue Corner Fighter</h2>
           <p>
-            <input id=select2 list="fighters" value="Colby Covington">
+            <input type="text" id=select2 list="fighters" value="Colby Covington">
           </p>
-          <button onclick="selectFighter('select2','name2')"> Set Blue Corner Fighter </button>
+          <button class="button button1" onclick="selectFighter('select2','name2')"> Set Blue Corner Fighter </button>
         </article>
       </center>
     </aside>
@@ -99,15 +99,15 @@
     <datalist id="years">
       <option value="2022">
     </datalist>
-    <main role="main2">
+    <main role="main">
       <center>
         <article>
           <h2>Date/Version of Red Corner Fighter</h2>
           <p>
-            <input id=f1selectmonth list="months" value="March"> <input id=f1selectyear list="years" value=2022>
+            <input type="text2" id=f1selectmonth list="months" value="March"> <input type="text3" id=f1selectyear list="years" value=2022>
           </p>
 
-          <button onclick="selectDate('f1selectmonth','month1','f1selectyear','year1')"> Set Red Corner Date </button>
+          <button class="button button1" onclick="selectDate('f1selectmonth','month1','f1selectyear','year1')"> Set Red Corner Date </button>
         </article>
       </center>
     </main>
@@ -117,26 +117,26 @@
         <article>
           <h2>Date/Version of Blue Corner Fighter</h2>
           <p>
-            <input id=f2selectmonth list="months" value="March"> <input id=f2selectyear list="years" value=2022>
+            <input type="text2" id=f2selectmonth list="months" value="March"> <input type="text3" id=f2selectyear list="years" value=2022>
           </p>
 
-          <button onclick="selectDate('f2selectmonth','month2','f2selectyear','year2')"> Set Blue Corner Date </button>
+          <button class="button button1" onclick="selectDate('f2selectmonth','month2','f2selectyear','year2')"> Set Blue Corner Date </button>
         </article>
       </center>
     </aside>
   </section>
 
-  <section id="taleofthetape" style="margin-top; margin-bottom:1cm;">
+  <section id="taleofthetape">
 
-    <center>
-      <h2 style="margin-bottom:1cm; font-size: 60px;">
-        Tale of the Tape
-      </h2>
-    </center>
+      <div class="headers">
+        <h1>
+          Tale of the Tape
+        </h1>
+      </div>
 
     <main role="main">
       <center>
-        <p style="margin-bottom:.1cm;">
+        <p>
           <span class="name1" style="font-size: 30px">Khabib Nurmagomedov</span>
         </p>
         <p>
@@ -147,7 +147,7 @@
 
     <aside>
       <center>
-        <p style="margin-bottom:.1cm;">
+        <p >
           <span class="name2" style="font-size: 30px">Colby Covington</span>
         </p>
         <p>
@@ -156,11 +156,9 @@
       </center>
     </aside>
 
-
-
-    <main role="main3" style="">
+    <main role="main" >
       <center>
-        <table id="table1" style="">
+        <table id="table1" >
           <tr id="first row">
             <td>Height</td>
             <td>Reach</td>
@@ -177,9 +175,9 @@
       </center>
     </main>
 
-    <aside style="">
+    <aside >
       <center>
-        <table id="table2" style="">
+        <table id="table2">
           <tr id="first row">
             <td>Height</td>
             <td>Reach</td>
@@ -198,13 +196,13 @@
   </section>
 
 
-  <section id="last5fights" style="margin-bottom:1cm;">
-    <center>
-      <h2 style="font-size: 60px; margin-top: 1cm; margin-bottom: 1cm">
+  <section id="last5fights">
+    <div class="headers">
+      <h1>
         Last 5 Fights
-      </h2>
-    </center>
-    <main role="main4">
+      </h1>
+    </div>
+    <main role="main">
       <center>
         <table id="l5ytable1" style="width:80%;">
           <thead>
@@ -300,19 +298,19 @@
   </section>
 
 
-  <section id="predict" style="margin-top:1cm; margin-bottom:1cm;">
-    <center>
-      <h2 style="font-size: 60px; margin-top: 1cm; margin-bottom: 1cm">
+  <section id="predict" >
+    <div class="headers">
+      <h1>
         Predict Outcome
-      </h2>
-    </center>
-    <div style="margin-top: 1cm; margin-bottom: 1cm">
+      </h1>
+    </div>
+    <div >
       <center>
-        <button onclick="predict('select1','select2','f1selectmonth','f1selectyear','f2selectmonth','f2selectyear',)"> Calculate </button>
+        <button class="button button1" onclick="predict('select1','select2','f1selectmonth','f1selectyear','f2selectmonth','f2selectyear',)"> Calculate </button>
       </center>
     </div>
     <center>
-      <span style="font-size:30px; margin-top: 1cm" class="fightoutcome"></span>
+      <span style="font-size:30px;" class="fightoutcome"></span>
     </center>
   </section>
 
@@ -330,4 +328,5 @@
 <script src="script.js"></script>
 <link rel="stylesheet" href="style.css">
 <link href="minimal-table.css" rel="stylesheet" type="text/css">
+
 </html>
