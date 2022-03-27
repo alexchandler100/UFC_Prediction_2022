@@ -1,160 +1,286 @@
-html,body,div,span,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,abbr,address,cite,code,del,dfn,em,img,ins,kbd,q,samp,small,strong,sub,sup,var,b,i,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td,article,aside,canvas,details,figcaption,figure,footer,header,hgroup,menu,nav,section,summary,time,mark,audio,video{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}
-body{line-height:1; font-family: arial;}
-h1{font-size: 25px;}h2{font-size: 21px;}h3{font-size: 18px;}h4{font-size: 16px;}
-article,aside,details,figcaption,figure,footer,header,hgroup,menu,nav,section{display:block}
-nav ul{list-style:none}
-blockquote,q{quotes:none}
-blockquote:before,blockquote:after,q:before,q:after{content:none}
-a{margin:0;padding:0;font-size:100%;vertical-align:baseline;background:transparent}
-ins{background-color:#ff9;color:#000;text-decoration:none}
-mark{background-color:#ff9;color:#000;font-style:italic;font-weight:bold}
-del{text-decoration:line-through}
-abbr[title],dfn[title]{border-bottom:1px dotted;cursor:help}
-table{border-collapse:collapse;border-spacing:0}
-hr{display:block;height:1px;border:0;border-top:1px solid #ccc;margin:1em 0;padding:0}
-input,select{vertical-align:middle}
+html, body, div, span, object, iframe, h1, h2, h3, h4, h5, h6, p, blockquote, pre, abbr, address, cite, code, del, dfn, em, img, ins, kbd, q, samp, small, strong, sub, sup, var, b, i, dl, dt, dd, ol, ul, li, fieldset, form, label, legend, table, caption, tbody, tfoot, thead, tr, th, td, article, aside, canvas, details, figcaption, figure, footer, header, hgroup, menu, nav, section, summary, time, mark, audio, video {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  outline: 0;
+  font-size: 100%;
+  vertical-align: baseline;
+  background: transparent
+}
 
-body,html {
-	/*background-color: #e6e6e6;*/
-	/* The image used */
+body {
+  line-height: 1;
+  font-family: arial;
+}
+
+h1 {
+  font-size: 25px;
+}
+
+h2 {
+  font-size: 21px;
+}
+
+h3 {
+  font-size: 18px;
+}
+
+h4 {
+  font-size: 16px;
+}
+
+article, aside, details, figcaption, figure, footer, header, hgroup, menu, nav, section {
+  display: block
+}
+
+nav ul {
+  list-style: none
+}
+
+blockquote, q {
+  quotes: none
+}
+
+blockquote:before, blockquote:after, q:before, q:after {
+  content: none
+}
+
+a {
+  margin: 0;
+  padding: 0;
+  font-size: 100%;
+  vertical-align: baseline;
+  background: transparent
+}
+
+ins {
+  background-color: #ff9;
+  color: #000;
+  text-decoration: none
+}
+
+mark {
+  background-color: #ff9;
+  color: #000;
+  font-style: italic;
+  font-weight: bold
+}
+
+del {
+  text-decoration: line-through
+}
+
+abbr[title], dfn[title] {
+  border-bottom: 1px dotted;
+  cursor: help
+}
+
+table {
+  border-collapse: collapse;
+  border-spacing: 0
+}
+
+hr {
+  display: block;
+  height: 1px;
+  border: 0;
+  border-top: 1px solid #ccc;
+  margin: 1em 0;
+  padding: 0
+}
+
+input, select {
+  vertical-align: middle
+}
+
+body, html {
+  /*background-color: #e6e6e6;*/
+  /* The image used */
   background-image: url("background.png");
   /* Full height */
+  width: 100%;
   height: 100%;
+  margin: 0px;
+  padding: 0px;
+  overflow-x: hidden;
   /* Center and scale the image nicely */
   background-position: center;
-  background-repeat: repeat;
+  background-repeat: repeat-y;
   background-size: cover;
 }
+
 header {
-	text-align: center;
-	width:100%;
-    background: #8a0303;
-    padding: 20px 30px;
-    margin: auto;
+  width: 100%;
+  background: #8a0303;
+  padding: 20px 30px;
+  margin: auto;
 }
+
 nav {
-    display: inline-block;
+  display: inline-block;
 }
 nav ul li a {
-    background: #EEE;
-    padding: 2px 10px;
-    font-size: 20px;
-    text-decoration: none;
-    font-weight: bold;
-    color: #444;
-    border-radius: 10px;
+  background: #EEE;
+  padding: 2px 10px;
+  font-size: 20px;
+  text-decoration: none;
+  font-weight: bold;
+  color: #444;
+  border-radius: 10px;
 }
+
 nav ul li a:hover {
-	background: #FFF;
+  background: #FFF;
 }
+
 nav ul li {
-    display: inline-block;
-    margin: 10px;
+  display: inline-block;
+  margin: 10px;
 }
+
 nav ul {
-    list-style: none;
+  list-style: none;
 }
+
+div p a:link {
+  color: #b3b3b3;
+  background-color: transparent;
+  text-decoration: none;
+}
+div p a:visited {
+  color: #b3b3b3;
+  background-color: transparent;
+  text-decoration: none;
+}
+div p a:hover {
+  color: red;
+  background-color: transparent;
+  text-decoration: underline;
+}
+div p a:active {
+  color: #b3b3b3;
+  background-color: transparent;
+  text-decoration: underline;
+}
+
 #pageContent {
-    max-width: 1000px;
-    margin: auto;
-    border: none;
+  max-width: 1000px;
+  margin: auto;
+  border: none;
 }
+
 #fighterPictures {
-    max-width: 1000px;
-    margin: auto;
-    border: none;
+  max-width: 1000px;
+  margin: auto;
+  border: none;
 }
 
 #selectFighters {
-    max-width: 1000px;
-    margin: auto;
-    border: none;
+  max-width: 1000px;
+  margin: auto;
+  border: none;
 }
 
 #chooseDate {
-    max-width: 1000px;
-    margin: auto;
-    border: none;
+  max-width: 1000px;
+  margin: auto;
+  border: none;
 }
+
 input::-webkit-calendar-picker-indicator {
   display: none;
 }
+
 main {
-	float: left;
-	width: 50%;
+  float: left;
+  width: 50%;
 }
+
 aside {
-	float: right;
-	width: 50%;
+  float: right;
+  width: 50%;
 }
-article {
-}
+
+article {}
+
 article h2 {
-    font-weight: normal;
-    margin-bottom: 12px;
+  font-weight: normal;
+  margin-bottom: 12px;
 }
-article p {
-}
-main section {
-}
+
+article p {}
+
+main section {}
+
 footer {
-	background: #8a0303;
-	width: 100%;
-	margin: auto;
-	clear: both;
-	text-align: right;
+  background: #8a0303;
+  width: 100%;
+  margin: auto;
+  clear: both;
+  text-align: right;
 }
+
 footer p {
-	padding: 20px;
+  padding: 20px;
 }
+
 address {
-    padding: 10px 20px 30px 10px;
+  padding: 10px 20px 30px 10px;
 }
-aside > div {
-	margin: 10px auto;
-	background: #AEC6CF;
-	min-height: 100px;
+
+aside>div {
+  margin: 10px auto;
+  background: #AEC6CF;
+  min-height: 100px;
 }
+
 #logo {
-    display: inline-block;
-    vertical-align: middle;
-    font-size: 30px;
-    margin-right: 75px;
-    color: #FFF;
+  display: inline-block;
+  vertical-align: middle;
+  font-size: 30px;
+  margin-right: 75px;
+  color: #FFF;
 }
+
 #logo img {
-    width: 50px;
-    vertical-align: middle;
-    margin-right: 10px;
+  width: 50px;
+  vertical-align: middle;
+  margin-right: 10px;
 }
-.colorize {filter: contrast(200%) brightness(140%) sepia(20%) drop-shadow(4px 4px 5px #2e2e2e);}
-body > section {
-		clear: both;
-    max-width: 1000px;
-    margin: auto;
-    padding: 30px 0px;
-    color: #333;
+
+.colorize {
+  filter: contrast(200%) brightness(140%) sepia(20%) drop-shadow(4px 4px 5px #2e2e2e);
+}
+
+body>section {
+  clear: both;
+  max-width: 1000px;
+  margin: auto;
+  padding: 30px 0px;
+  color: #333;
 }
 
 @media screen and (max-width: 1000px) {
-	body > section {
-		padding: 30px 20px;
-	}
+  body>section {
+    padding: 30px 20px;
+  }
 }
-@media screen and (max-width: 600px) {
-	main {
-		float: none;
-		width: 100%;
-	}
-	aside {
-		float: none;
-		width: 100%;
-	}
 
+@media screen and (max-width: 600px) {
+  main {
+    float: none;
+    width: 100%;
+  }
+
+  aside {
+    float: none;
+    width: 100%;
+  }
 }
 
 .button {
-  background-color: #8a0303; /* blood red */
+  background-color: #8a0303;
+  /* blood red */
   border: 2px solid black;
   color: white;
   padding: 15px 32px;
@@ -166,9 +292,17 @@ body > section {
   cursor: pointer;
 }
 
-.button1 {width: 250px;}
-.button2 {width: 50%;}
-.button3 {width: 100%;}
+.button1 {
+  width: 250px;
+}
+
+.button2 {
+  width: 50%;
+}
+
+.button3 {
+  width: 100%;
+}
 
 /* Dropdown Button */
 .dropbtn {
@@ -197,35 +331,34 @@ body > section {
 }
 
 /* The search field when it gets focus/clicked on */
-#myInput:focus {outline: 3px solid #ddd;}
-
-input[type="text"]
-{
-    font-size:20px;
-		width:48%;
+#myInput:focus {
+  outline: 3px solid #ddd;
 }
 
-input[type="text2"]
-{
-    font-size:20px;
-		width:24%;
+input[type="text"] {
+  font-size: 20px;
+  width: 48%;
 }
 
-input[type="text3"]
-{
-    font-size:20px;
-		width:16%;
+input[type="text2"] {
+  font-size: 20px;
+  width: 24%;
+}
+
+input[type="text3"] {
+  font-size: 20px;
+  width: 16%;
 }
 
 .headers {
-	clear: both;
-	margin-bottom:.5cm;
-	padding-bottom:30px;
-	padding-top: 30px;
-	text-align: center;
-	color: white;
-	font-size: 30px;
-	background: #212121;
+  clear: both;
+  margin-bottom: .5cm;
+  padding-bottom: 30px;
+  padding-top: 30px;
+  text-align: center;
+  color: white;
+  font-size: 30px;
+  background: #212121;
 }
 
 /* The container <div> - needed to position the dropdown content */
@@ -253,7 +386,11 @@ input[type="text3"]
 }
 
 /* Change color of dropdown links on hover */
-.dropdown-content a:hover {background-color: #f1f1f1}
+.dropdown-content a:hover {
+  background-color: #f1f1f1
+}
 
 /* Show the dropdown menu (use JS to add this class to the .dropdown-content container when the user clicks on the dropdown button) */
-.show {display:block;}
+.show {
+  display: block;
+}
