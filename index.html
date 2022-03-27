@@ -13,8 +13,9 @@
 </head>
 
 <body>
+  <div class="bg"></div>
   <header>
-    <div id="logo"><img src="logo.png"/>Deep&nbsp;Learning&nbsp;UFC&nbsp;Prediction</div>
+    <div id="logo"><img src="logo.png" />Deep&nbsp;Learning&nbsp;UFC&nbsp;Prediction <img style = "transform: rotate(300deg);" src="logo.png"/></div>
     <nav>
       <ul>
         <li><a href="/">Home</a>
@@ -24,15 +25,18 @@
     </nav>
   </header>
   <section>
-    <center>
-      <strong>
-        Select two fighters and choose a date.
+    <div class="headers">
+      <p style="font-size:16pt">
+        Select two fighters and choose a date for each fighter.
         This page uses deep learning algorithms to analyze all known fighter stats and predict the most likely outcome if they were to fight on the specified date.
         Accuracy of predicting the correct winner is 64%.
         Accuracy of predicting the correct method is 51%.
         All photos are scraped from google image search.
-      </strong>
-    </center>
+      </p>
+    </div>
+
+
+
   </section>
 
   <section id="fighterPictures">
@@ -40,7 +44,7 @@
     <main role="main">
       <center>
         <article>
-          <img style='border: 10px solid #555' id=fighter1pic src="buildingMLModel/images/3KhabibNurmagomedov.jpg" alt="" height="250" width="250">
+          <img class="colorize" style='border: 10px solid #555' id=fighter1pic src="buildingMLModel/images/3KhabibNurmagomedov.jpg" alt="" height="350" width="350">
         </article>
       </center>
     </main>
@@ -48,7 +52,7 @@
     <aside>
       <center>
         <article>
-          <img style='border: 10px solid #555' id=fighter2pic src="buildingMLModel/images/3ColbyCovington.jpg" alt="" height="250" width="250">
+          <img class="colorize" style='border: 10px solid #555' id=fighter2pic src="buildingMLModel/images/3ColbyCovington.jpg" alt="" height="350" width="350">
         </article>
       </center>
     </aside>

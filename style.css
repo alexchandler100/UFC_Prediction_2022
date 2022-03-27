@@ -15,7 +15,15 @@ hr{display:block;height:1px;border:0;border-top:1px solid #ccc;margin:1em 0;padd
 input,select{vertical-align:middle}
 
 body,html {
-	background-color: #e6e6e6;
+	/*background-color: #e6e6e6;*/
+	/* The image used */
+  background-image: url("background.png");
+  /* Full height */
+  height: 100%;
+  /* Center and scale the image nicely */
+  background-position: center;
+  background-repeat: repeat;
+  background-size: cover;
 }
 header {
 	text-align: center;
@@ -116,6 +124,7 @@ aside > div {
     vertical-align: middle;
     margin-right: 10px;
 }
+.colorize {filter: contrast(200%) brightness(140%) sepia(20%) drop-shadow(4px 4px 5px #2e2e2e);}
 body > section {
 		clear: both;
     max-width: 1000px;

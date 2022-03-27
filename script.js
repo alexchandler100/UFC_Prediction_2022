@@ -339,6 +339,8 @@ function populateLast5Fights(fighter, corner) {
           myTab.rows.item(fightNumber).cells.item(1).style.backgroundColor = "#54ff6b";
         } else if (result=="L"){
           myTab.rows.item(fightNumber).cells.item(1).style.backgroundColor = "#ff5454";
+        } else {
+          myTab.rows.item(fightNumber).cells.item(1).style.backgroundColor = "#b3b3b3";
         }
 
       }
