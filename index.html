@@ -59,33 +59,6 @@
   </section>
 
   <section id="selectFighters">
-    <datalist id="fighters"> </datalist>
-    <main role="main">
-      <center>
-        <article>
-          <h2>Select Red Corner Fighter</h2>
-          <p>
-            <input id=select1 type="text" list="fighters" value="Khabib Nurmagomedov">
-          </p>
-          <button class="button button1" onclick="selectFighter('select1','name1')"> Set Red Corner Fighter </button>
-        </article>
-      </center>
-    </main>
-
-    <aside>
-      <center>
-        <article>
-          <h2>Select Blue Corner Fighter</h2>
-          <p>
-            <input type="text" id=select2 list="fighters" value="Colby Covington">
-          </p>
-          <button class="button button1" onclick="selectFighter('select2','name2')"> Set Blue Corner Fighter </button>
-        </article>
-      </center>
-    </aside>
-  </section>
-
-  <section id="chooseDate">
     <datalist id="months">
       <option value="January">
       <option value="February">
@@ -103,15 +76,15 @@
     <datalist id="years">
       <option value="2022">
     </datalist>
+    <datalist id="fighters"> </datalist>
     <main role="main">
       <center>
         <article>
-          <h2>Date/Version of Red Corner Fighter</h2>
           <p>
-            <input type="text2" id=f1selectmonth list="months" value="March"> <input type="text3" id=f1selectyear list="years" value=2022>
+            <input id=select1 type="text" list="fighters" value="Khabib Nurmagomedov"><br><br>
+            <input type="text2" id=f1selectmonth list="months" value="March"> <input type="text3" id=f1selectyear list="years" value=2022><br>
           </p>
-
-          <button class="button button1" onclick="selectDate('f1selectmonth','month1','f1selectyear','year1')"> Set Red Corner Date </button>
+          <button class="button button1" onclick="selectFighterAndDate('select1','name1','f1selectmonth','month1','f1selectyear','year1')"> Set Red Corner Fighter </button>
         </article>
       </center>
     </main>
@@ -119,12 +92,11 @@
     <aside>
       <center>
         <article>
-          <h2>Date/Version of Blue Corner Fighter</h2>
           <p>
-            <input type="text2" id=f2selectmonth list="months" value="March"> <input type="text3" id=f2selectyear list="years" value=2022>
+            <input type="text" id=select2 list="fighters" value="Colby Covington"><br><br>
+            <input type="text2" id=f2selectmonth list="months" value="March"> <input type="text3" id=f2selectyear list="years" value=2022><br>
           </p>
-
-          <button class="button button1" onclick="selectDate('f2selectmonth','month2','f2selectyear','year2')"> Set Blue Corner Date </button>
+          <button class="button button1" onclick="selectFighterAndDate('select2','name2','f2selectmonth','month2','f2selectyear','year2')"> Set Blue Corner Fighter </button>
         </article>
       </center>
     </aside>

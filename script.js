@@ -71,6 +71,11 @@ function selectDate(monthid, monthout, yearid, yearout) {
   document.querySelector('.' + yearout).textContent = output2;
 }
 
+function selectFighterAndDate(id, out,monthid, monthout, yearid, yearout){
+  selectFighter(id, out)
+  selectDate(monthid, monthout, yearid, yearout)
+}
+
 function fighter_age(fighter, yearSelected) {
   let yearBorn = fighter_data[fighter]['dob'].slice(-4)
   return parseInt(yearSelected) - parseInt(yearBorn)
