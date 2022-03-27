@@ -50,8 +50,11 @@ function selectFighter(id, out) {
   let i = id[6]
   let j = getRandomInt(4).toString()
   name = selectElement.value;
-  name = name.replace(" ", "")
-  document.getElementById("fighter" + i + "pic").src = "buildingMLModel/images/" + j + name + ".jpg" //sets the image
+  var name_encoded = encodeURIComponent(name)
+  var name_decoded = decodeURIComponent(name_encoded)
+  name_decoded = decodeURIComponent(name_decoded)
+  name_decoded = name_decoded.replace(new RegExp(' ', 'g'), '');
+  document.getElementById("fighter" + i + "pic").src = "buildingMLModel/images/" + j + name_decoded + ".jpg" //sets the image
   if (i == '1') {
     populateTaleOfTheTape(output, 'rc')
     populateLast5Fights(output, 'rc')

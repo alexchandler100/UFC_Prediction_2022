@@ -34,15 +34,16 @@
         All photos are scraped from google image search.
       </p>
     </div>
-
-
-
   </section>
 
   <section id="fighterPictures">
     <datalist id="fighters"> </datalist>
     <main role="main">
       <center>
+        <h1 style="font-size: 40px;font-variant: small-caps;">
+          In the Red Corner
+        </h1>
+
         <article>
           <img class="colorize" style='border: 10px solid #555' id=fighter1pic src="buildingMLModel/images/3KhabibNurmagomedov.jpg" alt="" height="350" width="350">
         </article>
@@ -51,6 +52,9 @@
 
     <aside>
       <center>
+        <h1 style="font-size: 40px; font-variant: small-caps;">
+          In the Blue Corner
+        </h1>
         <article>
           <img class="colorize" style='border: 10px solid #555' id=fighter2pic src="buildingMLModel/images/3ColbyCovington.jpg" alt="" height="350" width="350">
         </article>
@@ -81,10 +85,10 @@
       <center>
         <article>
           <p>
-            <input id=select1 type="text" list="fighters" value="Khabib Nurmagomedov"><br><br>
-            <input type="text2" id=f1selectmonth list="months" value="March"> <input type="text3" id=f1selectyear list="years" value=2022><br>
+            <input onfocus=this.value='' id=select1 type="text" list="fighters" value="Khabib Nurmagomedov"><br><br>
+            <input onfocus=this.value='' type="text2" id=f1selectmonth list="months" value="March"> <input onfocus=this.value='' type="text3" id=f1selectyear list="years" value=2022><br>
           </p>
-          <button class="button button1" onclick="selectFighterAndDate('select1','name1','f1selectmonth','month1','f1selectyear','year1')"> Set Red Corner Fighter </button>
+          <button style = "font-variant: small-caps; margin-top:.3cm" class="button button1" onclick="selectFighterAndDate('select1','name1','f1selectmonth','month1','f1selectyear','year1')"> Set Red Corner Fighter </button>
         </article>
       </center>
     </main>
@@ -93,10 +97,10 @@
       <center>
         <article>
           <p>
-            <input type="text" id=select2 list="fighters" value="Colby Covington"><br><br>
-            <input type="text2" id=f2selectmonth list="months" value="March"> <input type="text3" id=f2selectyear list="years" value=2022><br>
+            <input onfocus=this.value='' type="text" id=select2 list="fighters" value="Colby Covington"><br><br>
+            <input onfocus=this.value='' type="text2" id=f2selectmonth list="months" value="March"> <input onfocus=this.value='' type="text3" id=f2selectyear list="years" value=2022><br>
           </p>
-          <button class="button button1" onclick="selectFighterAndDate('select2','name2','f2selectmonth','month2','f2selectyear','year2')"> Set Blue Corner Fighter </button>
+          <button style = "font-variant: small-caps; margin-top:.3cm" class="button button1" onclick="selectFighterAndDate('select2','name2','f2selectmonth','month2','f2selectyear','year2')"> Set Blue Corner Fighter </button>
         </article>
       </center>
     </aside>
@@ -113,7 +117,7 @@
     <main role="main">
       <center>
         <p>
-          <span class="name1" style="font-size: 30px">Khabib Nurmagomedov</span>
+          <span class="name1" style="font-variant: small-caps; font-size: 40px">Khabib Nurmagomedov</span>
         </p>
         <p>
           <span class="month1">March</span> <span class="year1">2022</span>
@@ -124,7 +128,7 @@
     <aside>
       <center>
         <p >
-          <span class="name2" style="font-size: 30px">Colby Covington</span>
+          <span class="name2" style="font-variant: small-caps; font-size: 40px">Colby Covington</span>
         </p>
         <p>
           <span class="month2">March</span> <span class="year2">2022</span>

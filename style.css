@@ -76,6 +76,9 @@ nav ul {
     margin: auto;
     border: none;
 }
+input::-webkit-calendar-picker-indicator {
+  display: none;
+}
 main {
 	float: left;
 	width: 50%;
