@@ -50,8 +50,11 @@ function selectFighter(id, out) {
   let i = id[6]
   let j = getRandomInt(4).toString()
   name = selectElement.value;
-  name = name.replace(" ", "")
-  document.getElementById("fighter" + i + "pic").src = "buildingMLModel/images/" + j + name + ".jpg" //sets the image
+  var name_encoded = encodeURIComponent(name)
+  var name_decoded = decodeURIComponent(name_encoded)
+  name_decoded = decodeURIComponent(name_decoded)
+  name_decoded = name_decoded.replace(new RegExp(' ', 'g'), '');
+  document.getElementById("fighter" + i + "pic").src = "buildingMLModel/images/" + j + name_decoded + ".jpg" //sets the image
   if (i == '1') {
     populateTaleOfTheTape(output, 'rc')
     populateLast5Fights(output, 'rc')
@@ -69,6 +72,11 @@ function selectDate(monthid, monthout, yearid, yearout) {
   selectYear = document.querySelector('#' + yearid);
   output2 = selectYear.value;
   document.querySelector('.' + yearout).textContent = output2;
+}
+
+function selectFighterAndDate(id, out,monthid, monthout, yearid, yearout){
+  selectFighter(id, out)
+  selectDate(monthid, monthout, yearid, yearout)
 }
 
 function fighter_age(fighter, yearSelected) {
@@ -339,6 +347,8 @@ function populateLast5Fights(fighter, corner) {
           myTab.rows.item(fightNumber).cells.item(1).style.backgroundColor = "#54ff6b";
         } else if (result=="L"){
           myTab.rows.item(fightNumber).cells.item(1).style.backgroundColor = "#ff5454";
+        } else {
+          myTab.rows.item(fightNumber).cells.item(1).style.backgroundColor = "#b3b3b3";
         }
 
       }
