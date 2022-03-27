@@ -335,6 +335,12 @@ function populateLast5Fights(fighter, corner) {
         myTab.rows.item(fightNumber).cells.item(1).innerHTML = result
         myTab.rows.item(fightNumber).cells.item(2).innerHTML = method
         myTab.rows.item(fightNumber).cells.item(3).innerHTML = date
+        if (result=="W"){
+          myTab.rows.item(fightNumber).cells.item(1).style.backgroundColor = "#54ff6b";
+        } else if (result=="L"){
+          myTab.rows.item(fightNumber).cells.item(1).style.backgroundColor = "#ff5454";
+        }
+
       }
       if (fightNumber > 4){
         break
