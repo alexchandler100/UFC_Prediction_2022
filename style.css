@@ -18,9 +18,10 @@ body,html {
 	background-color: #e6e6e6;
 }
 header {
+	text-align: center;
+	width:100%;
     background: #8a0303;
     padding: 20px 30px;
-    max-width: 940px;
     margin: auto;
 }
 nav {
@@ -76,9 +77,6 @@ aside {
 	width: 50%;
 }
 article {
-    border-bottom: 2px dotted #999;
-    padding-bottom: 20px;
-    margin-bottom: 20px;
 }
 article h2 {
     font-weight: normal;
@@ -90,7 +88,7 @@ main section {
 }
 footer {
 	background: #8a0303;
-	max-width: 1000px;
+	width: 100%;
 	margin: auto;
 	clear: both;
 	text-align: right;
@@ -119,10 +117,10 @@ aside > div {
     margin-right: 10px;
 }
 body > section {
+		clear: both;
     max-width: 1000px;
     margin: auto;
     padding: 30px 0px;
-    border-bottom: 1px solid #999;
     color: #333;
 }
 
@@ -142,6 +140,23 @@ body > section {
 	}
 
 }
+
+.button {
+  background-color: #8a0303; /* blood red */
+  border: 2px solid black;
+  color: white;
+  padding: 15px 32px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  margin: 4px 2px;
+  cursor: pointer;
+}
+
+.button1 {width: 250px;}
+.button2 {width: 50%;}
+.button3 {width: 100%;}
 
 /* Dropdown Button */
 .dropbtn {
@@ -167,11 +182,39 @@ body > section {
   font-size: 16px;
   padding: 14px 20px 12px 45px;
   border: none;
-  border-bottom: 1px solid #ddd;
 }
 
 /* The search field when it gets focus/clicked on */
 #myInput:focus {outline: 3px solid #ddd;}
+
+input[type="text"]
+{
+    font-size:20px;
+		width:48%;
+}
+
+input[type="text2"]
+{
+    font-size:20px;
+		width:24%;
+}
+
+input[type="text3"]
+{
+    font-size:20px;
+		width:16%;
+}
+
+.headers {
+	clear: both;
+	margin-bottom:.5cm;
+	padding-bottom:30px;
+	padding-top: 30px;
+	text-align: center;
+	color: white;
+	font-size: 30px;
+	background: #212121;
+}
 
 /* The container <div> - needed to position the dropdown content */
 .dropdown {
