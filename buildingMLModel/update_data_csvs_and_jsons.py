@@ -76,7 +76,7 @@ def make_json(csvFilePath, jsonFilePath, column):
 
 
 update_time=time_diff(ufcfightscrap['date'][0],fight_hist['date'][0])
-print('time since last update: '+str(update_time))
+print('days since last update: '+str(update_time))
 #this gives the new rows in fight_hist which do not appear in ufcfightscrapd
 new_rows=fight_hist.loc[time_diff_vect(fight_hist['date'],fight_hist['date'][0])<update_time]
 #convert to numpy array
@@ -271,8 +271,19 @@ if update_time>0:
     test_new_rows['fighter_stance']=stance_vect(test_new_rows['fighter'])
     test_new_rows['opponent_stance']=stance_vect(test_new_rows['opponent'])
 
+    print('adding fight_math and fighter_score statistics')
+    test_new_rows['1-fight_math'] = fight_math_diff_vect(test_new_rows['fighter'], test_new_rows['opponent'], test_new_rows['date'],1)
+    test_new_rows['6-fight_math'] = fight_math_diff_vect(test_new_rows['fighter'], test_new_rows['opponent'], test_new_rows['date'],6)
+    test_new_rows['4-fighter_score_diff'] = fighter_score_diff_vect(test_new_rows['fighter'], test_new_rows['opponent'], test_new_rows['date'],4)
+    test_new_rows['9-fighter_score_diff'] = fighter_score_diff_vect(test_new_rows['fighter'], test_new_rows['opponent'], test_new_rows['date'],9)
+    test_new_rows['15-fighter_score_diff'] = fighter_score_diff_vect(test_new_rows['fighter'], test_new_rows['opponent'], test_new_rows['date'],15)
+
+    #making sure new columns coincide with old columns
+    crapcolumns = list(ufcfightscrap.columns)
+    test_new_rows = test_new_rows[crapcolumns]
+    print('New columns coincide with old columns: '+str(all(ufcfightscrap.columns==test_new_rows.columns)))
     print('joining new data to ufc_fights_crap.csv')
-    #joining test_new_rows to ufcfightscrap to get the most updated version
+
 else:
     print('nothing to update')
 frames = [test_new_rows, ufcfightscrap]
@@ -436,7 +447,12 @@ computed_statistics=[u'fighter_wins', u'fighter_losses', u'fighter_age',u'fighte
                     u'opponent_abs_ground_strikes_landed_avg',
                     u'opponent_abs_ground_strikes_attempts_avg',
                     u'fighter_stance',
-                    u'opponent_stance']
+                    u'opponent_stance',
+                    '1-fight_math',
+                    '6-fight_math',
+                    '4-fighter_score_diff',
+                    '9-fighter_score_diff',
+                    '15-fighter_score_diff',]
 
 #list containing all columns of any interest
 relevant_list=['date','division','fighter','opponent','result','method']
@@ -463,10 +479,10 @@ csvFilePath = r'fighter_stats.csv'
 jsonFilePath = r'fighter_stats.json'
 make_json(csvFilePath, jsonFilePath, 'name')
 
-ufcfightscrap['index'] = ufcfightscrap['fighter']
+updated_ufcfightscrap['index'] = updated_ufcfightscrap['fighter']
 
-for i in range(len(ufcfightscrap['date'])):
-    ufcfightscrap['index'][i]=i
+for i in range(len(updated_ufcfightscrap['date'])):
+    updated_ufcfightscrap['index'][i]=i
 
 json_columns = ['date',
 'result',
@@ -502,7 +518,7 @@ json_columns = ['date',
 'opponent_stance',
 'index',]
 
-ufcfightscrap_for_json = ufcfightscrap[json_columns]
+ufcfightscrap_for_json = updated_ufcfightscrap[json_columns]
 
 #make new csv just to send it to json
 #this is inefficient and wastes space... but its just because its the only way I know to make a json file

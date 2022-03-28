@@ -1,5 +1,5 @@
 import pandas as pd
-import numpy as npy
+import numpy as np
 from datetime import datetime
 from datetime import date
 
@@ -14,7 +14,7 @@ ufcfighters=pd.read_csv('fighter_stats.csv',sep=',',low_memory=False)
 #converts from '%B %d, %Y' (i.e. August 22, 2020) to date (i.e. 2020-08-22)
 def convert_to_datetime(day1):
     return datetime.strptime(day1, '%B %d, %Y').date()
-convert_to_datetime_vect = npy.vectorize(convert_to_datetime)
+convert_to_datetime_vect = np.vectorize(convert_to_datetime)
 
 #converts 'August 15,2019' to 'Aug 15,2019'
 def convert_date_to_abbrev(day):
@@ -46,7 +46,7 @@ def age(birthDate,day=date.today(),form1='%B %d, %Y',form2='%B %d, %Y'):
         aa = today.year - bd.year - ((today.month, today.day) < (bd.month, bd.day))
     return aa
 
-age_vect= npy.vectorize(age)
+age_vect= np.vectorize(age)
 
 def fighter_age(fighter,day=date.today(),form1='%B %d, %Y',form2='%B %d, %Y'):
     a=0
@@ -57,13 +57,13 @@ def fighter_age(fighter,day=date.today(),form1='%B %d, %Y',form2='%B %d, %Y'):
             break
     return a
 
-fighter_age_vect= npy.vectorize(fighter_age)
+fighter_age_vect= np.vectorize(fighter_age)
 
 #zero function (needed for reversals)
 def zero(x):
     return 0
 
-zero_vect= npy.vectorize(zero)
+zero_vect= np.vectorize(zero)
 
 
 def wins_before(guy,day1=date.today(),something='%B %d, %Y'):
@@ -123,10 +123,10 @@ def fighter_reach(fighter):
         b=int(a[0]+a[1])*2.54
     return b
 
-wins_before_vect= npy.vectorize(wins_before)
-losses_before_vect= npy.vectorize(losses_before)
-fighter_height_vect= npy.vectorize(fighter_height)
-fighter_reach_vect= npy.vectorize(fighter_reach)
+wins_before_vect= np.vectorize(wins_before)
+losses_before_vect= np.vectorize(losses_before)
+fighter_height_vect= np.vectorize(fighter_height)
+fighter_reach_vect= np.vectorize(fighter_reach)
 
 #day1 should be input in the form '%B %d, %Y' i.e. 'August 20, 1962'
 #conversions can be made via day=datetime.strptime(ufcfightsML_known_df['date'][i], '%B %d, %Y').strftime('%b %d, %Y')
@@ -138,7 +138,7 @@ def time_diff(day1,day2=date.today()):
     return answer
 
 #we now vectorize this to use in pandas/numpy
-time_diff_vect= npy.vectorize(time_diff)
+time_diff_vect= np.vectorize(time_diff)
 
 #can make a single function to do all of these... actually maybe the count function would even work as is
 
@@ -359,22 +359,22 @@ def L2Y_sub_losses(guy,day1=date.today()):
     return summ
 
 #vectorize all of these functions
-L5Y_wins_vect= npy.vectorize(L5Y_wins)
-L5Y_losses_vect= npy.vectorize(L5Y_losses)
-L2Y_wins_vect= npy.vectorize(L2Y_wins)
-L2Y_losses_vect= npy.vectorize(L2Y_losses)
-ko_wins_vect= npy.vectorize(ko_wins)
-ko_losses_vect= npy.vectorize(ko_losses)
-L5Y_ko_wins_vect= npy.vectorize(L5Y_ko_wins)
-L5Y_ko_losses_vect= npy.vectorize(L5Y_ko_losses)
-L2Y_ko_wins_vect= npy.vectorize(L2Y_ko_wins)
-L2Y_ko_losses_vect= npy.vectorize(L2Y_ko_losses)
-sub_wins_vect= npy.vectorize(sub_wins)
-sub_losses_vect= npy.vectorize(sub_losses)
-L5Y_sub_wins_vect= npy.vectorize(L5Y_sub_wins)
-L5Y_sub_losses_vect= npy.vectorize(L5Y_sub_losses)
-L2Y_sub_wins_vect= npy.vectorize(L2Y_sub_wins)
-L2Y_sub_losses_vect= npy.vectorize(L2Y_sub_losses)
+L5Y_wins_vect= np.vectorize(L5Y_wins)
+L5Y_losses_vect= np.vectorize(L5Y_losses)
+L2Y_wins_vect= np.vectorize(L2Y_wins)
+L2Y_losses_vect= np.vectorize(L2Y_losses)
+ko_wins_vect= np.vectorize(ko_wins)
+ko_losses_vect= np.vectorize(ko_losses)
+L5Y_ko_wins_vect= np.vectorize(L5Y_ko_wins)
+L5Y_ko_losses_vect= np.vectorize(L5Y_ko_losses)
+L2Y_ko_wins_vect= np.vectorize(L2Y_ko_wins)
+L2Y_ko_losses_vect= np.vectorize(L2Y_ko_losses)
+sub_wins_vect= np.vectorize(sub_wins)
+sub_losses_vect= np.vectorize(sub_losses)
+L5Y_sub_wins_vect= np.vectorize(L5Y_sub_wins)
+L5Y_sub_losses_vect= np.vectorize(L5Y_sub_losses)
+L2Y_sub_wins_vect= np.vectorize(L2Y_sub_wins)
+L2Y_sub_losses_vect= np.vectorize(L2Y_sub_losses)
 
 #for columns like fighter_rec which contains the information for the opponent as well, we use the following
 def opponent_column(stat):
@@ -444,8 +444,8 @@ def avg_count(stat, guy,inf_abs, day1=date.today().strftime('%B %d, %Y')):
     return summ
 
 #vectorize these functions
-count_vect= npy.vectorize(count)
-avg_count_vect= npy.vectorize(avg_count)
+count_vect= np.vectorize(count)
+avg_count_vect= np.vectorize(avg_count)
 
 ufc_fights = pd.read_csv('ufc_fights.csv',low_memory=False)
 ufcfighterscrap =pd.read_csv('fighter_stats.csv',sep=',',low_memory=False)
@@ -468,7 +468,7 @@ def stance(fighter):
     else:
         return 5
 
-stance_vect= npy.vectorize(stance)
+stance_vect= np.vectorize(stance)
 
 def clean_method(a):
     if (a=='KO/TKO'):
@@ -480,7 +480,7 @@ def clean_method(a):
     else:
         return 'bullshit'
 
-clean_method_vect= npy.vectorize(clean_method)
+clean_method_vect= np.vectorize(clean_method)
 
 def clean_method_for_winner_prediction(a):
     if (a=='KO/TKO'):
@@ -493,7 +493,7 @@ def clean_method_for_winner_prediction(a):
     else:
         return 'bullshit'
 
-clean_method_for_winner_vect= npy.vectorize(clean_method_for_winner_prediction)
+clean_method_for_winner_vect= np.vectorize(clean_method_for_winner_prediction)
 
 #!/usr/bin/env python
 # coding: utf-8
@@ -773,3 +773,54 @@ def update_fighter_details(fighter_urls, saved_fighters):
     updated_fighters = pd.concat([new_fighters, saved_fighters])
     updated_fighters = updated_fighters.reset_index(drop = True)
     return updated_fighters
+
+ufc_fights = pd.read_csv('ufc_fights.csv',low_memory=False)
+ufc_fights_graph = pd.read_csv('ufc_fights_crap.csv',low_memory=False)
+odd_indices = range(1,len(ufc_fights_graph.index),2)
+ufc_fights_graph = ufc_fights_graph.drop(odd_indices)
+ufc_fights_graph = ufc_fights_graph[['fighter', 'opponent', 'method', 'date', 'division']]
+ufc_fights_graph = ufc_fights_graph.reset_index(drop=True);
+ufc_wins_list=[]
+
+for i in ufc_fights_graph.index:
+    temp_list = []
+    temp_list.append(ufc_fights_graph['fighter'][i])
+    temp_list.append(ufc_fights_graph['opponent'][i])
+    temp_list.append(ufc_fights_graph['date'][i])
+    temp_list.append(ufc_fights_graph['division'][i])
+    ufc_wins_list.append(temp_list)
+
+def fight_math(fighter,opponent,date,years):
+    fighter_advantage = 0
+    ufc_wins_list_l5y = [fight for fight in ufc_wins_list if 0<time_diff(fight[2],date)<years*365]
+    fighter_wins = [fight[1] for fight in ufc_wins_list_l5y if fight[0]==fighter]
+    fighter_wins.append(fighter)
+    fighter_wins_wins = [fight[1] for fight in ufc_wins_list_l5y if fight[0] in fighter_wins]
+    relevant_wins = list(set(fighter_wins+fighter_wins_wins))
+    fight_math_wins = [fight for fight in ufc_wins_list_l5y if (fight[0] in relevant_wins and fight[1]==opponent)]
+    fighter_advantage+=len(fight_math_wins)
+    return fighter_advantage
+
+def fight_math_diff(fighter,opponent,date,years):
+    return fight_math(fighter,opponent,date,years)-fight_math(opponent,fighter,date,years)
+fight_math_diff_vect = np.vectorize(fight_math_diff)
+
+#need to define variable "years" before calling this function
+#perhaps a better score would weight more recent fights more strongly (weight drops by 1/3 every year?)
+def fighter_score(fighter, date, years):
+    fighter_score = 0
+    ufc_wins_list_l5y = [fight for fight in ufc_wins_list if 0<time_diff(fight[2],date)<years*365]
+    #calculating contribution from wins
+    fighter_wins = [fight[1] for fight in ufc_wins_list_l5y if fight[0]==fighter]
+    fighter_wins_wins = [fight[1] for fight in ufc_wins_list_l5y if fight[0] in fighter_wins]
+    relevant_wins = list(set(fighter_wins+fighter_wins_wins))
+    #calculating contribution from losses
+    fighter_losses = [fight[0] for fight in ufc_wins_list_l5y if fight[1]==fighter]
+    fighter_losses_losses = [fight[0] for fight in ufc_wins_list_l5y if fight[1] in fighter_wins]
+    relevant_losses = list(set(fighter_losses+fighter_losses_losses))
+    return len(relevant_wins)-len(relevant_losses)
+
+def fighter_score_diff(fighter,opponent,date, years):
+    return fighter_score(fighter,date,years)-fighter_score(opponent,date,years)
+
+fighter_score_diff_vect = np.vectorize(fighter_score_diff)

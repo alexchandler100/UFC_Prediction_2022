@@ -74,7 +74,7 @@ function selectDate(monthid, monthout, yearid, yearout) {
   document.querySelector('.' + yearout).textContent = output2;
 }
 
-function selectFighterAndDate(id, out,monthid, monthout, yearid, yearout){
+function selectFighterAndDate(id, out, monthid, monthout, yearid, yearout) {
   selectFighter(id, out)
   selectDate(monthid, monthout, yearid, yearout)
 }
@@ -194,20 +194,110 @@ function avg_count(stat, fighter, inf_abs, year) {
     let name = ufcfightscrap[fight][person]
     let yearDiff = parseInt(year) - ufcfightscrap[fight]['date'].slice(-4)
     if (name == fighter && yearDiff >= 0) {
-      //console.log(`adding: ${ufcfightscrap[fight][stat]}`)
       summ += parseInt(ufcfightscrap[fight][stat])
       let round = parseInt(ufcfightscrap[fight]['round'])
       let minutes = parseInt(ufcfightscrap[fight]['time'][0])
       let seconds = parseInt(ufcfightscrap[fight]['time'].slice(2))
       time_in_octagon += (round - 1) * 5 + minutes + seconds / 60
-      //console.log(t)
     }
   }
   //console.log(stat,fighter,inf_abs,year,summ,time_in_octagon)
   return summ / time_in_octagon
 }
 
+function onlyUnique(value, index, self) {
+  return self.indexOf(value) === index;
+}
 
+function wins_wins(fighter,year,years){
+  let relevant_fights = []
+  for (let i=0;i<ufc_wins_list.length;i++){
+    let yearDiff = parseInt(year) - ufc_wins_list[i][2].slice(-4)
+    if (yearDiff>years){
+      break
+    } else {
+      relevant_fights.push(ufc_wins_list[i])
+    }
+  }
+  let fighter_wins = []
+  for (let i=0;i<relevant_fights.length;i++){
+    if (relevant_fights[i][0]==fighter){
+      fighter_wins.push(relevant_fights[i][1])
+    }
+  }
+  let fighter_wins_wins=[]
+  for (let i=0;i<relevant_fights.length;i++){
+    if (fighter_wins.includes(fighter)){
+      fighter_wins_wins.push(relevant_fights[i][1])
+    }
+  }
+  let relevant_wins = fighter_wins.concat(fighter_wins_wins);
+  relevant_wins = relevant_wins.filter(onlyUnique);
+  return relevant_wins
+}
+
+function losses_losses(fighter,year,years){
+  let relevant_fights = []
+  for (let i=0;i<ufc_wins_list.length;i++){
+    let yearDiff = parseInt(year) - ufc_wins_list[i][2].slice(-4)
+    if (yearDiff>years){
+      break
+    } else {
+      relevant_fights.push(ufc_wins_list[i])
+    }
+  }
+  let fighter_losses = []
+  for (let i=0;i<relevant_fights.length;i++){
+    if (relevant_fights[i][1]==fighter){
+      fighter_losses.push(relevant_fights[i][0])
+    }
+  }
+  let fighter_losses_losses=[]
+  for (let i=0;i<relevant_fights.length;i++){
+    if (fighter_losses.includes(relevant_fights[i][1])){
+      fighter_losses_losses.push(relevant_fights[i][0])
+    }
+  }
+  let relevant_losses = fighter_losses.concat(fighter_losses_losses);
+  relevant_losses = relevant_losses.filter(onlyUnique);
+  return relevant_losses
+}
+
+//this does not incorporate year for both fighters correctly...
+function fight_math(fighter,opponent,year,years){
+  let relevant_fights = []
+  for (let i=0;i<ufc_wins_list.length;i++){
+    let yearDiff = parseInt(year) - ufc_wins_list[i][2].slice(-4)
+    if (yearDiff>years){
+      break
+    } else {
+      relevant_fights.push(ufc_wins_list[i])
+    }
+  }
+  let relevant_wins=wins_wins(fighter,year,years)
+  relevant_wins.push(fighter)
+  let fight_math_wins = []
+  for (let i=0;i<relevant_fights.length;i++){
+    if (relevant_wins.includes(relevant_fights[i][0]) && relevant_fights[i][1]==opponent){
+      fight_math_wins.push(relevant_fights[i])
+    }
+  }
+  return fight_math_wins.length
+}
+
+function fight_math_diff(fighter,opponent,year1, year2,years){
+  return fight_math(fighter,opponent,year1,years)-fight_math(opponent,fighter,year2,years)
+}
+
+function fighter_score(fighter, year, years){
+  let relevant_wins=wins_wins(fighter,year,years)
+  let relevant_losses=losses_losses(fighter,year,years)
+  return relevant_wins.length - relevant_losses.length
+}
+
+function fighter_score_diff(fighter,opponent,year1,year2,years){
+  return fighter_score(fighter, year1, years) - fighter_score(opponent, year2, years)
+}
 
 function predictionTuple(fighter1, fighter2, month1, year1, month2, year2) {
   let result;
@@ -217,36 +307,34 @@ function predictionTuple(fighter1, fighter2, month1, year1, month2, year2) {
   mon2 = document.querySelector('#' + month2).value;
   yr1 = document.querySelector('#' + year1).value;
   yr2 = document.querySelector('#' + year2).value;
-  let age_diff = fighter_age(guy1, yr1) - fighter_age(guy2, yr2)
-  let reachdiff = (fighter_reach(guy1) - fighter_reach(guy2)) * 2.54 //have to convert to cm
-  let l5y_ko_losses_diff = l5y_ko_losses(guy1, yr1) - l5y_ko_losses(guy2, yr2)
-  let l5y_losses_diff = l5y_losses(guy1, yr1) - l5y_losses(guy2, yr2)
-  let l2y_wins_diff = l2y_wins(guy1, yr1) - l2y_wins(guy2, yr2)
-  let l5y_wins_diff = l5y_wins(guy1, yr1) - l5y_wins(guy2, yr2)
+  let fighter_score_diff_4 = fighter_score_diff(guy1,guy2, yr1,yr2,4)
+  let fighter_score_diff_9 = fighter_score_diff(guy1,guy2, yr1,yr2,9)
+  let fighter_score_diff_15 = fighter_score_diff(guy1,guy2, yr1,yr2,15)
+  let fight_math_1 = fight_math_diff(guy1,guy2, yr1,yr2,1)
+  let fight_math_6 = fight_math_diff(guy1,guy2, yr1,yr2,6)
   let l5y_sub_wins_diff = l5y_sub_wins(guy1, yr1) - l5y_sub_wins(guy2, yr2)
+  let l5y_losses_diff = l5y_losses(guy1, yr1) - l5y_losses(guy2, yr2)
+  let l5y_ko_losses_diff = l5y_ko_losses(guy1, yr1) - l5y_ko_losses(guy2, yr2)
+  let age_diff = fighter_age(guy1, yr1) - fighter_age(guy2, yr2)
   let av_total_strikes_diff = avg_count('total_strikes_landed', guy1, 'abs', yr1) - avg_count('total_strikes_landed', guy2, 'abs', yr2)
-  let av_inf_head_strikes_diff = avg_count('head_strikes_landed', guy1, 'inf', yr1) - avg_count('head_strikes_landed', guy2, 'inf', yr2)
-  let av_inf_leg_strikes_diff = avg_count('leg_strikes_landed', guy1, 'inf', yr1) - avg_count('leg_strikes_landed', guy2, 'inf', yr2)
   let av_abs_head_strikes_diff = avg_count('head_strikes_landed', guy1, 'abs', yr1) - avg_count('head_strikes_landed', guy2, 'abs', yr2)
-  let av_inf_knockdowns_diff = avg_count('knockdowns', guy1, 'inf', yr1) - avg_count('knockdowns', guy2, 'inf', yr2)
-  let av_inf_clinch_strikes_diff = avg_count('clinch_strikes_attempts', guy1, 'inf', yr1) - avg_count('clinch_strikes_attempts', guy2, 'inf', yr2)
-  let av_tk_atmps_diff = avg_count('takedowns_attempts', guy1, 'inf', yr1) - avg_count('takedowns_attempts', guy2, 'inf', yr2)
   let av_inf_gr_strikes = avg_count('ground_strikes_landed', guy1, 'inf', yr1) - avg_count('ground_strikes_landed', guy2, 'inf', yr2)
-  let av_inf_sig_strikes_diff = avg_count('sig_strikes_landed', guy1, 'inf', yr1) - avg_count('sig_strikes_landed', guy2, 'inf', yr2)
-  result = [age_diff, reachdiff, l5y_ko_losses_diff, l5y_losses_diff, l2y_wins_diff,
-  l5y_wins_diff, l5y_sub_wins_diff, av_total_strikes_diff, av_inf_head_strikes_diff, av_inf_leg_strikes_diff,
-  av_abs_head_strikes_diff, av_inf_knockdowns_diff, av_inf_clinch_strikes_diff, av_tk_atmps_diff, av_inf_gr_strikes, av_inf_sig_strikes_diff]
+  let av_tk_atmps_diff = avg_count('takedowns_attempts', guy1, 'inf', yr1) - avg_count('takedowns_attempts', guy2, 'inf', yr2)
+  let av_inf_head_strikes_diff = avg_count('head_strikes_landed', guy1, 'inf', yr1) - avg_count('head_strikes_landed', guy2, 'inf', yr2)
+  result = [fighter_score_diff_4,fighter_score_diff_9,fighter_score_diff_15,fight_math_1,fight_math_6,
+    l5y_sub_wins_diff, l5y_losses_diff, l5y_ko_losses_diff, age_diff, av_total_strikes_diff, av_abs_head_strikes_diff,
+    av_inf_gr_strikes, av_tk_atmps_diff, av_inf_head_strikes_diff]
   console.log(result)
   return result;
 }
 
-theta={};
-intercept={};
+theta = {};
+intercept = {};
 
 $.getJSON('buildingMLModel/theta.json', function(data) {
   //for each input (i,f), i is the key (a fighter's name) and f is the value (all their data)
   $.each(data, function(i, f) {
-    theta[i]=f
+    theta[i] = f
     console.log(theta[i])
   });
 });
@@ -254,7 +342,7 @@ $.getJSON('buildingMLModel/theta.json', function(data) {
 $.getJSON('buildingMLModel/intercept.json', function(data) {
   //for each input (i,f), i is the key (a fighter's name) and f is the value (all their data)
   $.each(data, function(i, f) {
-    intercept[i]=f
+    intercept[i] = f
     console.log(intercept[i])
   });
 });
@@ -327,35 +415,41 @@ function populateLast5Fights(fighter, corner) {
     yr = document.querySelector('#' + 'f2selectyear').value;
     myTab = document.getElementById("l5ytable2");
   }
-  let fightNumber = 0
-    for (const fight in ufcfightscrap) {
-      let result;
-      let opponent;
-      let method;
-      let yearDiff = parseInt(yr) - ufcfightscrap[fight]['date'].slice(-4)
-      if (ufcfightscrap[fight]['fighter']==fighter && yearDiff >= 0) {
-        result = ufcfightscrap[fight]['result']
-        opponent = ufcfightscrap[fight]['opponent']
-        method = ufcfightscrap[fight]['method']
-        date = ufcfightscrap[fight]['date']
-        fightNumber += 1
-        myTab.rows.item(fightNumber).cells.item(0).innerHTML = opponent
-        myTab.rows.item(fightNumber).cells.item(1).innerHTML = result
-        myTab.rows.item(fightNumber).cells.item(2).innerHTML = method
-        myTab.rows.item(fightNumber).cells.item(3).innerHTML = date
-        if (result=="W"){
-          myTab.rows.item(fightNumber).cells.item(1).style.backgroundColor = "#54ff6b";
-        } else if (result=="L"){
-          myTab.rows.item(fightNumber).cells.item(1).style.backgroundColor = "#ff5454";
-        } else {
-          myTab.rows.item(fightNumber).cells.item(1).style.backgroundColor = "#b3b3b3";
-        }
-
+  for (numb=1;numb<6;numb++) {
+      myTab.rows.item(numb).cells.item(0).innerHTML = ''
+      myTab.rows.item(numb).cells.item(1).innerHTML = ''
+      myTab.rows.item(numb).cells.item(2).innerHTML = ''
+      myTab.rows.item(numb).cells.item(3).innerHTML = ''
+      myTab.rows.item(numb).cells.item(1).style.backgroundColor = "#ffffff";
       }
-      if (fightNumber > 4){
-        break
+  let fightNumber = 0
+  for (const fight in ufcfightscrap) {
+    let result;
+    let opponent;
+    let method;
+    let yearDiff = parseInt(yr) - ufcfightscrap[fight]['date'].slice(-4)
+    if (ufcfightscrap[fight]['fighter'] == fighter && yearDiff >= 0) {
+      result = ufcfightscrap[fight]['result']
+      opponent = ufcfightscrap[fight]['opponent']
+      method = ufcfightscrap[fight]['method']
+      date = ufcfightscrap[fight]['date']
+      fightNumber += 1
+      myTab.rows.item(fightNumber).cells.item(0).innerHTML = opponent
+      myTab.rows.item(fightNumber).cells.item(1).innerHTML = result
+      myTab.rows.item(fightNumber).cells.item(2).innerHTML = method
+      myTab.rows.item(fightNumber).cells.item(3).innerHTML = date
+      if (result == "W") {
+        myTab.rows.item(fightNumber).cells.item(1).style.backgroundColor = "#54ff6b";
+      } else if (result == "L") {
+        myTab.rows.item(fightNumber).cells.item(1).style.backgroundColor = "#ff5454";
+      } else {
+        myTab.rows.item(fightNumber).cells.item(1).style.backgroundColor = "#b3b3b3";
       }
     }
+    if (fightNumber > 4) {
+      break
+    }
+  }
 }
 
 
@@ -405,6 +499,17 @@ function filterFunction2() {
 
 //set initial table values
 setTimeout(() => {
+  ufc_wins_list=[]
+  for (const fight in ufcfightscrap) {
+    if (ufcfightscrap[fight]['result']=="W") {
+      let fighter = ufcfightscrap[fight]['fighter']
+      let opponent = ufcfightscrap[fight]['opponent']
+      let date = ufcfightscrap[fight]['date']
+      ufc_wins_list.push([fighter,opponent,date])
+    }
+  }
+  console.log('ufc_wins_list: ')
+  console.log(ufc_wins_list[0])
   console.log(theta)
   console.log(intercept)
   populateTaleOfTheTape('Khabib Nurmagomedov', 'rc')
@@ -412,6 +517,10 @@ setTimeout(() => {
   populateLast5Fights('Khabib Nurmagomedov', 'rc')
   populateLast5Fights('Colby Covington', 'bc')
 }, 200)
+
+setTimeout(()=>{
+  fight_math('Khabib Nurmagomedov','Conor McGregor','2022',7)
+},400)
 /*
 myTab1 = document.getElementById("table1");
 console.log(fighter_data)
