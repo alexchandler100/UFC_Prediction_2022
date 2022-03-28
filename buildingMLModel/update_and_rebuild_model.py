@@ -319,7 +319,6 @@ ufc_fights_winner['reach_diff']=ufc_fights_winner['fighter_reach'].apply(float)-
 ufc_fights_method['height_diff']=ufc_fights_method['fighter_height'].apply(float)-ufc_fights_method['opponent_height'].apply(float)
 ufc_fights_method['reach_diff']=ufc_fights_method['fighter_reach'].apply(float)-ufc_fights_method['opponent_reach'].apply(float)
 
-
 physical_stats_diff = ['fighter_age_diff', 'height_diff', 'reach_diff']
 
 #adding punch differences to ufc_fights
@@ -345,22 +344,40 @@ ufc_fights_winner['fighter_age_diff'] = ufc_fights_winner['fighter_age']-ufc_fig
 #clean_method function to count split decisions as 'bullshit'
 #This is the score to beat.
 
-best_smallest_set=          ['fighter_age_diff',
-                            'reach_diff',
-                            'fighter_L5Y_ko_losses_diff_2',
-                            'fighter_L5Y_losses_diff_2',
-                            'fighter_L2Y_wins_diff_2',
-                            'fighter_L5Y_wins_diff_2',
-                            'fighter_L5Y_sub_wins_diff_2',
-                            'fighter_abs_total_strikes_landed_avg_diff_2',
-                            'fighter_inf_head_strikes_landed_avg_diff_2',
-                            'fighter_inf_leg_strikes_landed_avg_diff_2',
-                            'fighter_abs_head_strikes_landed_avg_diff_2',
-                            'fighter_inf_knockdowns_avg_diff_2',
-                            'fighter_inf_clinch_strikes_attempts_avg_diff_2',
-                            'fighter_inf_takedowns_attempts_avg_diff_2',
-                            'fighter_inf_ground_strikes_landed_avg_diff_2',
-                            'fighter_inf_sig_strikes_landed_avg_diff_2']
+#previous best
+#best_smallest_set=          ['fighter_age_diff',
+                            #'reach_diff',
+                            #'fighter_L5Y_ko_losses_diff_2',
+                            #'fighter_L5Y_losses_diff_2',
+                            #'fighter_L2Y_wins_diff_2',
+                            #'fighter_L5Y_wins_diff_2',
+                            #'fighter_L5Y_sub_wins_diff_2',
+                            #'fighter_abs_total_strikes_landed_avg_diff_2',
+                            #'fighter_inf_head_strikes_landed_avg_diff_2',
+                            #'fighter_inf_leg_strikes_landed_avg_diff_2',
+                            #'fighter_abs_head_strikes_landed_avg_diff_2',
+                            #'fighter_inf_knockdowns_avg_diff_2',
+                            #'fighter_inf_clinch_strikes_attempts_avg_diff_2',
+                            #'fighter_inf_takedowns_attempts_avg_diff_2',
+                            #'fighter_inf_ground_strikes_landed_avg_diff_2',
+                            #'fighter_inf_sig_strikes_landed_avg_diff_2']
+
+best_smallest_set = ['4-fighter_score_diff',
+ '9-fighter_score_diff',
+ '15-fighter_score_diff',
+ #'17-fighter_score_diff',
+ '1-fight_math',
+ '6-fight_math',
+ 'fighter_L5Y_sub_wins_diff_2',
+ 'fighter_L5Y_losses_diff_2',
+ 'fighter_L5Y_ko_losses_diff_2',
+ 'fighter_age_diff',
+ 'fighter_abs_total_strikes_landed_avg_diff_2',
+ 'fighter_abs_head_strikes_landed_avg_diff_2',
+ 'fighter_inf_ground_strikes_landed_avg_diff_2',
+ 'fighter_inf_takedowns_attempts_avg_diff_2',
+ 'fighter_inf_head_strikes_landed_avg_diff_2',
+ ]
 
 ufc_fights_df = ufc_fights_winner[best_smallest_set]
 
@@ -369,51 +386,12 @@ X=ufc_fights_df.iloc[0:40*55].to_numpy()
 y=ufc_fights_winner['result'].iloc[0:40*55]
 print('Fitting Logistic Regression Model')
 winPredictionModel.fit(X,y)
-print('Accuracy of Logistic Regression win prediction: '+str(winPredictionModel.score(X,y)))
-
-#random forest does way better for picking the method!
-best_stats=['fighter_ko_losses_diff_2', 'fighter_L2Y_sub_losses_diff_2']
-rfc=RandomForestClassifier()
-Xr=ufc_fights_method[best_stats].iloc[0:2300]
-yr=ufc_fights_method['method'].iloc[0:2300]
-
-rfc.fit(Xr,yr)
-accuracy = cross_val_score(rfc,Xr,yr,cv=3).mean()
-precision = cross_val_score(rfc,Xr,yr,cv=3, scoring='precision_micro').mean()
-recall = cross_val_score(rfc, Xr, yr, cv=3, scoring='recall_macro').mean()
-print('Random Forest Method Classifier: Accuracy: '+str(accuracy),'F1 score: '+str(precision*recall/(precision+recall)))
-
-#I've defined this in such a way to predict what happens when fighter1 in their day1 version fights fighter2
-#in their day2 version. Meaning we could compare for example 2014 Tyron Woodley to 2019 Colby Covington
-def ufc_prediction_tuple(fighter1,fighter2,day1=date.today(),day2=date.today()):
-    return [fighter_age(fighter1,day1)-fighter_age(fighter2,day2),
-            fighter_reach(fighter1)-fighter_reach(fighter2),
-            L5Y_ko_losses(fighter1,day1)-L5Y_ko_losses(fighter2,day2),
-            L5Y_losses(fighter1,day1)-L5Y_losses(fighter2,day2),
-            L2Y_wins(fighter1,day1)-L2Y_wins(fighter2,day2),
-            L5Y_wins(fighter1,day1)-L5Y_wins(fighter2,day2),
-            L5Y_sub_wins(fighter1,day1)-L5Y_sub_wins(fighter2,day2),
-            avg_count('total_strikes_landed',fighter1,'abs',day1)-avg_count('total_strikes_landed',fighter2,'abs',day2),
-            avg_count('head_strikes_landed',fighter1,'inf',day1)-avg_count('head_strikes_landed',fighter2,'inf',day2),
-            avg_count('leg_strikes_landed',fighter1,'inf',day1)-avg_count('leg_strikes_landed',fighter2,'inf',day2),
-            avg_count('head_strikes_landed',fighter1,'abs',day1)-avg_count('head_strikes_landed',fighter2,'abs',day2),
-            avg_count('knockdowns',fighter1,'inf',day1)-avg_count('knockdowns',fighter2,'inf',day2),
-            avg_count('clinch_strikes_attempts',fighter1,'inf',day1)-avg_count('clinch_strikes_attempts',fighter2,'inf',day2),
-            avg_count('takedowns_attempts',fighter1,'inf',day1)-avg_count('takedowns_attempts',fighter2,'inf',day2),
-            avg_count('ground_strikes_landed',fighter1,'inf',day1)-avg_count('ground_strikes_landed',fighter2,'inf',day2),
-            avg_count('sig_strikes_landed',fighter1,'inf',day1)-avg_count('sig_strikes_landed',fighter2,'inf',day2)
-           ]
-
-def ufc_method_prediction_tuple(fighter1,fighter2,day1=date.today(),day2=date.today()):
-    return [ko_losses(fighter1,day1)-ko_losses(fighter2,day2),
-            sub_losses(fighter1,day1)-sub_losses(fighter2,day2)]
-
-winPredictionModel=LogisticRegression(solver='lbfgs', max_iter=2000)
-X=ufc_fights_df.iloc[0:40*55].to_numpy()
-y=ufc_fights_winner['result'].iloc[0:40*55]
-winPredictionModel.fit(X,y)
+print('Accuracy of Logistic Regression win prediction: '+str(cross_val_score(winPredictionModel,X,y,cv=3).mean()))
 print('coefficients'+str(winPredictionModel.coef_))
 print('intercept'+str(winPredictionModel.intercept_))
+theta = winPredictionModel.coef_
+b = winPredictionModel.intercept_[0]
+
 
 best_stats=['fighter_ko_losses_diff_2', 'fighter_sub_losses_diff_2']
 rfc=RandomForestClassifier()
@@ -421,11 +399,17 @@ Xr=ufc_fights_method[best_stats].iloc[0:2300].to_numpy()
 yr=ufc_fights_method['method'].iloc[0:2300]
 rfc.fit(Xr,yr)
 
+accuracy = cross_val_score(rfc,Xr,yr,cv=3).mean()
+precision = cross_val_score(rfc,Xr,yr,cv=3, scoring='precision_micro').mean()
+recall = cross_val_score(rfc, Xr, yr, cv=3, scoring='recall_macro').mean()
+print('Random Forest Method Classifier: Accuracy: '+str(accuracy),'F1 score: '+str(precision*recall/(precision+recall)))
+
+
+
+
 # We want to predict how many times out of 10 the winning fighter would win, so we look at the values
 # x*theta+b. If the value is >=0 its a win and <=0 its a loss. But how far from zero gives indication of
 # how likely the outcome is.
-theta = winPredictionModel.coef_
-b = winPredictionModel.intercept_[0]
 
 def presigmoid_value(fighter1,fighter2,date1,date2):
     value = 0
