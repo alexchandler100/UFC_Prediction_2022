@@ -508,30 +508,20 @@ setTimeout(() => {
       ufc_wins_list.push([fighter,opponent,date])
     }
   }
-  console.log('ufc_wins_list: ')
-  console.log(ufc_wins_list[0])
-  console.log(theta)
-  console.log(intercept)
-  populateTaleOfTheTape('Khabib Nurmagomedov', 'rc')
-  populateTaleOfTheTape('Colby Covington', 'bc')
-  populateLast5Fights('Khabib Nurmagomedov', 'rc')
-  populateLast5Fights('Colby Covington', 'bc')
+  //console.log('ufc_wins_list: ')
+  //console.log(ufc_wins_list[0])
+  //console.log(theta)
+  //console.log(intercept)
+  document.getElementById('select1').value = "Alexander Volkanovski"
+  document.getElementById('select2').value = "Chan Sung Jung"
+  document.getElementById('f1selectmonth').value = "March"
+  document.getElementById('f1selectyear').value = "2022"
+  document.getElementById('f2selectmonth').value = "March"
+  document.getElementById('f2selectyear').value = "2022"
+  selectFighterAndDate('select1','name1','f1selectmonth','month1','f1selectyear','year1')
+  selectFighterAndDate('select2','name2','f2selectmonth','month2','f2selectyear','year2')
+  //populateTaleOfTheTape('Khabib Nurmagomedov', 'rc')
+  //populateTaleOfTheTape('Colby Covington', 'bc')
+  //populateLast5Fights('Khabib Nurmagomedov', 'rc')
+  //populateLast5Fights('Colby Covington', 'bc')
 }, 200)
-
-setTimeout(()=>{
-  fight_math('Khabib Nurmagomedov','Conor McGregor','2022',7)
-},400)
-/*
-myTab1 = document.getElementById("table1");
-console.log(fighter_data)
-myTab1.rows.item(1).cells.item(0).innerHTML = fighter_data['Khabib Nurmagomedov']['height'];
-myTab1.rows.item(1).cells.item(1).innerHTML = fighter_data['Khabib Nurmagomedov']['reach'];
-myTab1.rows.item(1).cells.item(2).innerHTML = fighter_age('Khabib Nurmagomedov',2022)
-myTab1.rows.item(1).cells.item(3).innerHTML = fighter_data['Khabib Nurmagomedov']['stance'];
-
-myTab2 = document.getElementById("table2");
-myTab2.rows.item(1).cells.item(0).innerHTML = fighter_data['Colby Covington']['height'];
-myTab2.rows.item(1).cells.item(1).innerHTML = fighter_data['Colby Covington']['reach'];
-myTab2.rows.item(1).cells.item(2).innerHTML = fighter_age('Colby Covington',2022)
-myTab2.rows.item(1).cells.item(3).innerHTML = fighter_data['Colby Covington']['stance'];
-*/
