@@ -54,7 +54,16 @@ function selectFighter(id, out) {
   var name_decoded = decodeURIComponent(name_encoded)
   name_decoded = decodeURIComponent(name_decoded)
   name_decoded = name_decoded.replace(new RegExp(' ', 'g'), '');
+  try {
+    console.log(j+name_decoded)
+    document.getElementById("fighter" + i + "pic").src = "buildingMLModel/images2/" + j + name_decoded + ".jpg" //sets the image
+} catch (error) {
+  console.log(j+name_decoded)
   document.getElementById("fighter" + i + "pic").src = "buildingMLModel/images/" + j + name_decoded + ".jpg" //sets the image
+  console.error(error);
+  // expected output: ReferenceError: nonExistentFunction is not defined
+  // Note - error messages will vary depending on browser
+}
   if (i == '1') {
     populateTaleOfTheTape(output, 'rc')
     populateLast5Fights(output, 'rc')
@@ -512,8 +521,8 @@ setTimeout(() => {
   //console.log(ufc_wins_list[0])
   //console.log(theta)
   //console.log(intercept)
-  document.getElementById('select1').value = "Alexander Volkanovski"
-  document.getElementById('select2').value = "Chan Sung Jung"
+  document.getElementById('select1').value = "Sean O'Malley"
+  document.getElementById('select2').value = "Paddy Pimblett"
   document.getElementById('f1selectmonth').value = "March"
   document.getElementById('f1selectyear').value = "2022"
   document.getElementById('f2selectmonth').value = "March"
