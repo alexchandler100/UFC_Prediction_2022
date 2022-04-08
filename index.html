@@ -16,7 +16,7 @@
   <div class="bg"></div>
   <header >
     <center>
-    <div style = "font-family: Copperplate; font-size:20px" id="logo"><img src="logo.png" />Deep Learning UFC Fight Predictor <img style = "transform: rotate(290deg);" src="logo.png"/></div>
+    <div style = "font-family: Copperplate; font-size:50px" id="logo"><img src="logo.png" />Deep Learning UFC Fight Predictor <img style = "transform: rotate(290deg);" src="logo.png"/></div>
   </center>
   </header>
   <section>
@@ -26,7 +26,7 @@
         This will apply deep learning algorithms to analyze all known fighter stats (scraped from <a href="http://ufcstats.com/statistics/events/completed" target="_blank">ufcstats.com</a>) and predict the most likely outcome if they were to fight exactly as they were on the specified dates.
         Details on how these models were constructed can be found <a href="https://github.com/alexchandler100/UFC_Prediction_2022" target="_blank">here</a> on our Github.
         Accuracy of predicting the correct winner is 64%.
-        All photos are scraped from google image search.
+        All photos are scraped from Google image search acted on by a convolutional neural network (CNN) for artistic style transfer (8,964 photos total).
       </p>
     </div>
   </section>
@@ -35,23 +35,31 @@
     <datalist id="fighters"> </datalist>
     <main role="main">
       <center>
-        <h1 style="font-size: 40px;font-variant: small-caps;">
+        <h1 style="font-size: 40px;font-variant: small-caps; color: #212121;">
           In the Red Corner
         </h1>
 
         <article>
+          <!--
+          used to use colorize class but switched to CNN stylization
           <img class="colorize" style='border: 10px solid #555' id=fighter1pic src="" alt="" height="350" width="350">
+         -->
+          <img style='border: 10px solid #212121' id=fighter1pic src="" alt="" height="350" width="350">
         </article>
       </center>
     </main>
 
     <aside>
       <center>
-        <h1 style="font-size: 40px; font-variant: small-caps;">
+        <h1 style="font-size: 40px; font-variant: small-caps;  color: #212121;">
           In the Blue Corner
         </h1>
         <article>
+          <!--
+          used to use colorize class but switched to CNN stylization
           <img class="colorize" style='border: 10px solid #555' id=fighter2pic src="" alt="" height="350" width="350">
+         -->
+          <img style='border: 10px solid #212121' id=fighter2pic src="" alt="" height="350" width="350">
         </article>
       </center>
     </aside>
@@ -291,9 +299,9 @@
 
   <footer>
     <center>
-      <p>&copy; We do not recommend you make financial decisions based on the outcomes of this program</p>
+      <p>We do not recommend you make financial decisions based on the outcomes of this program</p>
       <address>
-        Contact: <a href="mailto:me@example.com">don't contact me</a>
+        Contact: <a href="mailto:alexchandler100@gmail.com">email me with any questions/comments</a>
       </address>
     </center>
   </footer>
