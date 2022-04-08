@@ -13,75 +13,51 @@
 </head>
 
 <body>
-  <header>
-    <div id="logo"><img src="logo.png">Deep&nbsp;Learning&nbsp;UFC&nbsp;Prediction</div>
-    <nav>
-      <ul>
-        <li><a href="/">Home</a>
-        <li><a href="http://ufcstats.com/statistics/events/completed">Stats</a>
-        <li><a href="https://ufc.com">UFC</a>
-      </ul>
-    </nav>
+  <div class="bg"></div>
+  <header >
+    <center>
+    <div style = "font-family: Copperplate; font-size:20px" id="logo"><img src="logo.png" />Deep Learning UFC Fight Predictor <img style = "transform: rotate(290deg);" src="logo.png"/></div>
+  </center>
   </header>
   <section>
-    <center>
-      <strong>
-        Select two fighters and choose a date.
-        This page uses deep learning algorithms to analyze all known fighter stats and predict the most likely outcome if they were to fight on the specified date.
+    <div class="headers">
+      <p style="font-size:16pt">
+        <strong>How to use this tool:</strong> Select two fighters and choose a date for each fighter. At the bottom of the page, press the "Calculate" button.
+        This will apply deep learning algorithms to analyze all known fighter stats (scraped from <a href="http://ufcstats.com/statistics/events/completed" target="_blank">ufcstats.com</a>) and predict the most likely outcome if they were to fight exactly as they were on the specified dates.
+        Details on how these models were constructed can be found <a href="https://github.com/alexchandler100/UFC_Prediction_2022" target="_blank">here</a> on our Github.
         Accuracy of predicting the correct winner is 64%.
-        Accuracy of predicting the correct method is 51%.
         All photos are scraped from google image search.
-      </strong>
-    </center>
+      </p>
+    </div>
   </section>
 
   <section id="fighterPictures">
     <datalist id="fighters"> </datalist>
     <main role="main">
       <center>
+        <h1 style="font-size: 40px;font-variant: small-caps;">
+          In the Red Corner
+        </h1>
+
         <article>
-          <img style='border: 10px solid #555' id=fighter1pic src="buildingMLModel/images/3KhabibNurmagomedov.jpg" alt="" height="250" width="250">
+          <img class="colorize" style='border: 10px solid #555' id=fighter1pic src="" alt="" height="350" width="350">
         </article>
       </center>
     </main>
 
     <aside>
       <center>
+        <h1 style="font-size: 40px; font-variant: small-caps;">
+          In the Blue Corner
+        </h1>
         <article>
-          <img style='border: 10px solid #555' id=fighter2pic src="buildingMLModel/images/3ColbyCovington.jpg" alt="" height="250" width="250">
+          <img class="colorize" style='border: 10px solid #555' id=fighter2pic src="" alt="" height="350" width="350">
         </article>
       </center>
     </aside>
   </section>
 
   <section id="selectFighters">
-    <datalist id="fighters"> </datalist>
-    <main role="main">
-      <center>
-        <article>
-          <h2>Select Red Corner Fighter</h2>
-          <p>
-            <input id=select1 list="fighters" value="Khabib Nurmagomedov">
-          </p>
-          <button onclick="selectFighter('select1','name1')"> Set Red Corner Fighter </button>
-        </article>
-      </center>
-    </main>
-
-    <aside>
-      <center>
-        <article>
-          <h2>Select Blue Corner Fighter</h2>
-          <p>
-            <input id=select2 list="fighters" value="Colby Covington">
-          </p>
-          <button onclick="selectFighter('select2','name2')"> Set Blue Corner Fighter </button>
-        </article>
-      </center>
-    </aside>
-  </section>
-
-  <section id="chooseDate">
     <datalist id="months">
       <option value="January">
       <option value="February">
@@ -99,15 +75,15 @@
     <datalist id="years">
       <option value="2022">
     </datalist>
-    <main role="main2">
+    <datalist id="fighters"> </datalist>
+    <main role="main">
       <center>
         <article>
-          <h2>Date/Version of Red Corner Fighter</h2>
           <p>
-            <input id=f1selectmonth list="months" value="March"> <input id=f1selectyear list="years" value=2022>
+            <input onfocus=this.value='' id=select1 type="text" list="fighters" value=""><br><br>
+            <input onfocus=this.value='' type="text2" id=f1selectmonth list="months" value="March"> <input onfocus=this.value='' type="text3" id=f1selectyear list="years" value=2022><br>
           </p>
-
-          <button onclick="selectDate('f1selectmonth','month1','f1selectyear','year1')"> Set Red Corner Date </button>
+          <button style = "font-variant: small-caps; margin-top:.3cm" class="button button1" onclick="selectFighterAndDate('select1','name1','f1selectmonth','month1','f1selectyear','year1')"> Set Red Corner Fighter </button>
         </article>
       </center>
     </main>
@@ -115,52 +91,49 @@
     <aside>
       <center>
         <article>
-          <h2>Date/Version of Blue Corner Fighter</h2>
           <p>
-            <input id=f2selectmonth list="months" value="March"> <input id=f2selectyear list="years" value=2022>
+            <input onfocus=this.value='' type="text" id=select2 list="fighters" value=""><br><br>
+            <input onfocus=this.value='' type="text2" id=f2selectmonth list="months" value="March"> <input onfocus=this.value='' type="text3" id=f2selectyear list="years" value=2022><br>
           </p>
-
-          <button onclick="selectDate('f2selectmonth','month2','f2selectyear','year2')"> Set Blue Corner Date </button>
+          <button style = "font-variant: small-caps; margin-top:.3cm" class="button button1" onclick="selectFighterAndDate('select2','name2','f2selectmonth','month2','f2selectyear','year2')"> Set Blue Corner Fighter </button>
         </article>
       </center>
     </aside>
   </section>
 
-  <section id="taleofthetape" style="margin-top; margin-bottom:1cm;">
+  <section id="taleofthetape">
 
-    <center>
-      <h2 style="margin-bottom:1cm; font-size: 60px;">
-        Tale of the Tape
-      </h2>
-    </center>
+      <div class="headers">
+        <h1>
+          Tale of the Tape
+        </h1>
+      </div>
 
     <main role="main">
       <center>
-        <p style="margin-bottom:.1cm;">
-          <span class="name1" style="font-size: 30px">Khabib Nurmagomedov</span>
+        <p>
+          <span class="name1" style="font-variant: small-caps; font-size: 40px"></span>
         </p>
         <p>
-          <span class="month1">March</span> <span class="year1">2022</span>
+          <span class="month1"></span> <span class="year1"></span>
         </p>
       </center>
     </main>
 
     <aside>
       <center>
-        <p style="margin-bottom:.1cm;">
-          <span class="name2" style="font-size: 30px">Colby Covington</span>
+        <p >
+          <span class="name2" style="font-variant: small-caps; font-size: 40px"></span>
         </p>
         <p>
-          <span class="month2">March</span> <span class="year2">2022</span>
+          <span class="month2"></span> <span class="year2"></span>
         </p>
       </center>
     </aside>
 
-
-
-    <main role="main3" style="">
+    <main role="main" >
       <center>
-        <table id="table1" style="">
+        <table id="table1" >
           <tr id="first row">
             <td>Height</td>
             <td>Reach</td>
@@ -177,9 +150,9 @@
       </center>
     </main>
 
-    <aside style="">
+    <aside >
       <center>
-        <table id="table2" style="">
+        <table id="table2">
           <tr id="first row">
             <td>Height</td>
             <td>Reach</td>
@@ -198,13 +171,13 @@
   </section>
 
 
-  <section id="last5fights" style="margin-bottom:1cm;">
-    <center>
-      <h2 style="font-size: 60px; margin-top: 1cm; margin-bottom: 1cm">
+  <section id="last5fights">
+    <div class="headers">
+      <h1>
         Last 5 Fights
-      </h2>
-    </center>
-    <main role="main4">
+      </h1>
+    </div>
+    <main role="main">
       <center>
         <table id="l5ytable1" style="width:80%;">
           <thead>
@@ -300,19 +273,19 @@
   </section>
 
 
-  <section id="predict" style="margin-top:1cm; margin-bottom:1cm;">
-    <center>
-      <h2 style="font-size: 60px; margin-top: 1cm; margin-bottom: 1cm">
+  <section id="predict" >
+    <div class="headers">
+      <h1>
         Predict Outcome
-      </h2>
-    </center>
-    <div style="margin-top: 1cm; margin-bottom: 1cm">
+      </h1>
+    </div>
+    <div >
       <center>
-        <button onclick="predict('select1','select2','f1selectmonth','f1selectyear','f2selectmonth','f2selectyear',)"> Calculate </button>
+        <button class="button button1" onclick="predict('select1','select2','f1selectmonth','f1selectyear','f2selectmonth','f2selectyear',)"> Calculate </button>
       </center>
     </div>
     <center>
-      <span style="font-size:30px; margin-top: 1cm" class="fightoutcome"></span>
+      <span style="font-size:30px;" class="fightoutcome"></span>
     </center>
   </section>
 
@@ -330,4 +303,5 @@
 <script src="script.js"></script>
 <link rel="stylesheet" href="style.css">
 <link href="minimal-table.css" rel="stylesheet" type="text/css">
+
 </html>
