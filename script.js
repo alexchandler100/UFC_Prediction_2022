@@ -43,6 +43,18 @@ function getRandomInt(max) {
   return Math.floor(Math.random() * max) + 1;
 }
 
+function checkFileExist(urlToFile) {
+    var xhr = new XMLHttpRequest();
+    xhr.open('HEAD', urlToFile, false);
+    xhr.send();
+
+    if (xhr.status == "404") {
+        return false;
+    } else {
+        return true;
+    }
+}
+
 function selectFighter(id, out) {
   selectElement = document.querySelector('#' + id);
   output = selectElement.value;
@@ -54,16 +66,28 @@ function selectFighter(id, out) {
   var name_decoded = decodeURIComponent(name_encoded)
   name_decoded = decodeURIComponent(name_decoded)
   name_decoded = name_decoded.replace(new RegExp(' ', 'g'), '');
+
+  // Calling function
+  // set the path to check
+  if (checkFileExist("buildingMLModel/images2/" + j + name_decoded + ".jpg")){
+    document.getElementById("fighter" + i + "pic").src = "buildingMLModel/images2/" + j + name_decoded + ".jpg" //sets the image
+    console.log(j+name_decoded)
+  } else {
+    document.getElementById("fighter" + i + "pic").src = "buildingMLModel/images/" + j + name_decoded + ".jpg" //sets the image
+    console.log(j+name_decoded)
+  }
+/*
   try {
     console.log(j+name_decoded)
     document.getElementById("fighter" + i + "pic").src = "buildingMLModel/images2/" + j + name_decoded + ".jpg" //sets the image
 } catch (error) {
+  console.error(error)
   console.log(j+name_decoded)
   document.getElementById("fighter" + i + "pic").src = "buildingMLModel/images/" + j + name_decoded + ".jpg" //sets the image
-  console.error(error);
   // expected output: ReferenceError: nonExistentFunction is not defined
   // Note - error messages will vary depending on browser
 }
+*/
   if (i == '1') {
     populateTaleOfTheTape(output, 'rc')
     populateLast5Fights(output, 'rc')
