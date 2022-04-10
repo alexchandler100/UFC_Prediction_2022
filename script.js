@@ -2,30 +2,12 @@
 toggle between hiding and showing the dropdown content */
 //your script here.
 
-/*
-window.onload = fadeIn;
-
-        function fadeIn() {
-            var fade = document.getElementById("body");
-            var opacity = 0;
-            var intervalID = setInterval(function() {
-
-                if (opacity < 1) {
-                    opacity = opacity + 0.1
-                    fade.style.opacity = opacity;
-                } else {
-                    clearInterval(intervalID);
-                }
-            }, 10);
-        }
-*/
-
 fighter_data = {}
 ufcfightscrap = {}
 
 $(function() {
   //var people = [];
-  $.getJSON('buildingMLModel/fighter_stats.json', function(data) {
+  $.getJSON('src/models/buildingMLModel/data/external/fighter_stats.json', function(data) {
     //for each input (i,f), i is the key (a fighter's name) and f is the value (all their data)
     $.each(data, function(i, f) {
       //create entry in local object
@@ -40,7 +22,7 @@ $(function() {
 
 $(function() {
   //var people = [];
-  $.getJSON('buildingMLModel/ufcfightscrap.json', function(data) {
+  $.getJSON('src/models/buildingMLModel/data/external/ufcfightscrap.json', function(data) {
     //for each input (i,f), i is the key (a fighter's name) and f is the value (all their data)
     $.each(data, function(i, f) {
       //create entry in local object
@@ -87,25 +69,13 @@ function selectFighter(id, out) {
 
   // Calling function
   // set the path to check
-  if (checkFileExist("buildingMLModel/images2/" + j + name_decoded + ".jpg")){
-    document.getElementById("fighter" + i + "pic").src = "buildingMLModel/images2/" + j + name_decoded + ".jpg" //sets the image
+  if (checkFileExist("src/models/buildingMLModel/images2/" + j + name_decoded + ".jpg")){
+    document.getElementById("fighter" + i + "pic").src = "src/models/buildingMLModel/images2/" + j + name_decoded + ".jpg" //sets the image
     console.log(j+name_decoded)
   } else {
-    document.getElementById("fighter" + i + "pic").src = "buildingMLModel/images/" + j + name_decoded + ".jpg" //sets the image
+    document.getElementById("fighter" + i + "pic").src = "src/models/buildingMLModel/images/" + j + name_decoded + ".jpg" //sets the image
     console.log(j+name_decoded)
   }
-/*
-  try {
-    console.log(j+name_decoded)
-    document.getElementById("fighter" + i + "pic").src = "buildingMLModel/images2/" + j + name_decoded + ".jpg" //sets the image
-} catch (error) {
-  console.error(error)
-  console.log(j+name_decoded)
-  document.getElementById("fighter" + i + "pic").src = "buildingMLModel/images/" + j + name_decoded + ".jpg" //sets the image
-  // expected output: ReferenceError: nonExistentFunction is not defined
-  // Note - error messages will vary depending on browser
-}
-*/
   if (i == '1') {
     populateTaleOfTheTape(output, 'rc')
     populateLast5Fights(output, 'rc')
@@ -395,7 +365,7 @@ function predictionTuple(fighter1, fighter2, month1, year1, month2, year2) {
 theta = {};
 intercept = {};
 
-$.getJSON('buildingMLModel/theta.json', function(data) {
+$.getJSON('src/models/buildingMLModel/data/external/theta.json', function(data) {
   //for each input (i,f), i is the key (a fighter's name) and f is the value (all their data)
   $.each(data, function(i, f) {
     theta[i] = f.toFixed(2)
@@ -403,7 +373,7 @@ $.getJSON('buildingMLModel/theta.json', function(data) {
   });
 });
 
-$.getJSON('buildingMLModel/intercept.json', function(data) {
+$.getJSON('src/models/buildingMLModel/data/external/intercept.json', function(data) {
   //for each input (i,f), i is the key (a fighter's name) and f is the value (all their data)
   $.each(data, function(i, f) {
     intercept[i] = f.toFixed(2)
