@@ -594,7 +594,7 @@ setTimeout(() => {
       ufc_wins_list.push([fighter,opponent,date])
     }
   }
-}, 300)
+}, 250)
 
 //set initial table values
 setTimeout(() => {
@@ -606,4 +606,4 @@ setTimeout(() => {
   document.getElementById('f2selectyear').value = "2022"
   selectFighterAndDate('select1','name1','f1selectmonth','month1','f1selectyear','year1')
   selectFighterAndDate('select2','name2','f2selectmonth','month2','f2selectyear','year2')
-}, 500)
+}, 550)
