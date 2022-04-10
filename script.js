@@ -2,6 +2,7 @@
 toggle between hiding and showing the dropdown content */
 //your script here.
 
+/*
 window.onload = fadeIn;
 
         function fadeIn() {
@@ -17,7 +18,7 @@ window.onload = fadeIn;
                 }
             }, 10);
         }
-
+*/
 
 fighter_data = {}
 ufcfightscrap = {}
@@ -75,7 +76,7 @@ function checkFileExist(urlToFile) {
 function selectFighter(id, out) {
   selectElement = document.querySelector('#' + id);
   output = selectElement.value;
-  document.querySelector('.' + out).textContent = output;
+  //document.querySelector('.' + out).textContent = output;
   let i = id[6]
   let j = getRandomInt(4).toString()
   name = selectElement.value;
@@ -472,10 +473,14 @@ function populateTaleOfTheTape(fighter, corner) {
     myTab = document.getElementById("table2");
   }
   // LOOP THROUGH EACH ROW OF THE TABLE AFTER HEADER.
-  myTab.rows.item(1).cells.item(0).innerHTML = fighter_data[fighter]['height'];
-  myTab.rows.item(1).cells.item(1).innerHTML = fighter_data[fighter]['reach'];
-  myTab.rows.item(1).cells.item(2).innerHTML = fighter_age(fighter, yr)
-  myTab.rows.item(1).cells.item(3).innerHTML = fighter_data[fighter]['stance'];
+  myTab.rows.item(0).cells.item(0).style.backgroundColor = "#212121";
+
+  myTab.rows.item(0).cells.item(0).innerHTML = fighter;
+
+  myTab.rows.item(2).cells.item(0).innerHTML = fighter_data[fighter]['height'];
+  myTab.rows.item(2).cells.item(1).innerHTML = fighter_data[fighter]['reach'];
+  myTab.rows.item(2).cells.item(2).innerHTML = fighter_age(fighter, yr)
+  myTab.rows.item(2).cells.item(3).innerHTML = fighter_data[fighter]['stance'];
   //document.querySelector('.tableEntry').textContent = fighter
 }
 
@@ -488,14 +493,14 @@ function populateLast5Fights(fighter, corner) {
     yr = document.querySelector('#' + 'f2selectyear').value;
     myTab = document.getElementById("l5ytable2");
   }
-  for (numb=1;numb<6;numb++) {
+  for (numb=2;numb<7;numb++) {
       myTab.rows.item(numb).cells.item(0).innerHTML = ''
       myTab.rows.item(numb).cells.item(1).innerHTML = ''
       myTab.rows.item(numb).cells.item(2).innerHTML = ''
       myTab.rows.item(numb).cells.item(3).innerHTML = ''
       myTab.rows.item(numb).cells.item(1).style.backgroundColor = "#ffffff";
       }
-  let fightNumber = 0
+  let fightNumber = 1
   for (const fight in ufcfightscrap) {
     let result;
     let opponent;
@@ -503,10 +508,14 @@ function populateLast5Fights(fighter, corner) {
     let yearDiff = parseInt(yr) - ufcfightscrap[fight]['date'].slice(-4)
     if (ufcfightscrap[fight]['fighter'] == fighter && yearDiff >= 0) {
       result = ufcfightscrap[fight]['result']
+      fighter = ufcfightscrap[fight]['fighter']
       opponent = ufcfightscrap[fight]['opponent']
       method = ufcfightscrap[fight]['method']
       date = ufcfightscrap[fight]['date']
       fightNumber += 1
+      myTab.rows.item(0).cells.item(0).innerHTML = fighter
+      console.log(myTab.rows.item(0).cells.item(0))
+      myTab.rows.item(0).cells.item(0).style.backgroundColor = "#212121";
       myTab.rows.item(fightNumber).cells.item(0).innerHTML = opponent
       myTab.rows.item(fightNumber).cells.item(1).innerHTML = result
       myTab.rows.item(fightNumber).cells.item(2).innerHTML = method
@@ -519,10 +528,18 @@ function populateLast5Fights(fighter, corner) {
         myTab.rows.item(fightNumber).cells.item(1).style.backgroundColor = "#b3b3b3";
       }
     }
-    if (fightNumber > 4) {
+    if (fightNumber > 5) {
       break
     }
   }
+  while (fightNumber<6){
+      fightNumber+=1
+      myTab.rows.item(fightNumber).cells.item(0).style.backgroundColor = "#dedede";
+      myTab.rows.item(fightNumber).cells.item(1).style.backgroundColor = "#dedede";
+      myTab.rows.item(fightNumber).cells.item(2).style.backgroundColor = "#dedede";
+      myTab.rows.item(fightNumber).cells.item(3).style.backgroundColor = "#dedede";
+  }
+
 }
 
 
@@ -577,6 +594,10 @@ setTimeout(() => {
       ufc_wins_list.push([fighter,opponent,date])
     }
   }
+}, 300)
+
+//set initial table values
+setTimeout(() => {
   document.getElementById('select1').value = "Khamzat Chimaev"
   document.getElementById('select2').value = "Gilbert Burns"
   document.getElementById('f1selectmonth').value = "April"
@@ -585,10 +606,4 @@ setTimeout(() => {
   document.getElementById('f2selectyear').value = "2022"
   selectFighterAndDate('select1','name1','f1selectmonth','month1','f1selectyear','year1')
   selectFighterAndDate('select2','name2','f2selectmonth','month2','f2selectyear','year2')
-  fighter_score('Petr Yan', '2022', 4)
-  fighter_score('Aljamain Sterling', '2022', 4)
-  //populateTaleOfTheTape('Khabib Nurmagomedov', 'rc')
-  //populateTaleOfTheTape('Colby Covington', 'bc')
-  //populateLast5Fights('Khabib Nurmagomedov', 'rc')
-  //populateLast5Fights('Colby Covington', 'bc')
-}, 300)
+}, 500)
