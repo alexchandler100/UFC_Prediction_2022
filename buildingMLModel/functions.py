@@ -816,11 +816,23 @@ def fighter_score(fighter, date, years):
     relevant_wins = list(set(fighter_wins+fighter_wins_wins))
     #calculating contribution from losses
     fighter_losses = [fight[0] for fight in ufc_wins_list_l5y if fight[1]==fighter]
-    fighter_losses_losses = [fight[0] for fight in ufc_wins_list_l5y if fight[1] in fighter_wins]
+    fighter_losses_losses = [fight[0] for fight in ufc_wins_list_l5y if fight[1] in fighter_losses]
     relevant_losses = list(set(fighter_losses+fighter_losses_losses))
+    #print(fighter+' wins '+str(relevant_wins))
+    #print(fighter+ ' losses '+str(relevant_losses))
     return len(relevant_wins)-len(relevant_losses)
 
 def fighter_score_diff(fighter,opponent,date, years):
     return fighter_score(fighter,date,years)-fighter_score(opponent,date,years)
 
 fighter_score_diff_vect = np.vectorize(fighter_score_diff)
+
+def fighter_age_diff(fighter,opponent):
+    age1=fighter_age(fighter)
+    age2=fighter_age(opponent)
+    try:
+        return age1-age2
+    except:
+        return 'unknown'
+
+fighter_age_diff_vect=np.vectorize(fighter_age_diff)

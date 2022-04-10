@@ -260,12 +260,13 @@ function wins_wins(fighter,year,years){
   }
   let fighter_wins_wins=[]
   for (let i=0;i<relevant_fights.length;i++){
-    if (fighter_wins.includes(fighter)){
+    if (fighter_wins.includes(relevant_fights[i][0])){
       fighter_wins_wins.push(relevant_fights[i][1])
     }
   }
   let relevant_wins = fighter_wins.concat(fighter_wins_wins);
   relevant_wins = relevant_wins.filter(onlyUnique);
+  //console.log(`${fighter} wins: ${relevant_wins}`)
   return relevant_wins
 }
 
@@ -293,6 +294,7 @@ function losses_losses(fighter,year,years){
   }
   let relevant_losses = fighter_losses.concat(fighter_losses_losses);
   relevant_losses = relevant_losses.filter(onlyUnique);
+  //console.log(`${fighter} losses: ${relevant_losses}`)
   return relevant_losses
 }
 
@@ -332,6 +334,13 @@ function fighter_score_diff(fighter,opponent,year1,year2,years){
   return fighter_score(fighter, year1, years) - fighter_score(opponent, year2, years)
 }
 
+function avg_count_diff(stat, fighter, opponent, inf_abs, year){
+  if (isNaN(avg_count(stat, fighter, inf_abs, year)) || isNaN(avg_count(stat, opponent, inf_abs, year)) ){
+    return 0
+  }
+  return avg_count(stat, fighter, inf_abs, year)-avg_count(stat, opponent, inf_abs, year)
+}
+
 function predictionTuple(fighter1, fighter2, month1, year1, month2, year2) {
   let result;
   guy1 = document.querySelector('#' + fighter1).value;
@@ -340,24 +349,28 @@ function predictionTuple(fighter1, fighter2, month1, year1, month2, year2) {
   mon2 = document.querySelector('#' + month2).value;
   yr1 = document.querySelector('#' + year1).value;
   yr2 = document.querySelector('#' + year2).value;
-  let fighter_score_diff_4 = fighter_score_diff(guy1,guy2, yr1,yr2,4)
-  let fighter_score_diff_9 = fighter_score_diff(guy1,guy2, yr1,yr2,9)
-  let fighter_score_diff_15 = fighter_score_diff(guy1,guy2, yr1,yr2,15)
-  let fight_math_1 = fight_math_diff(guy1,guy2, yr1,yr2,1)
-  let fight_math_6 = fight_math_diff(guy1,guy2, yr1,yr2,6)
-  let l5y_sub_wins_diff = l5y_sub_wins(guy1, yr1) - l5y_sub_wins(guy2, yr2)
-  let l5y_losses_diff = l5y_losses(guy1, yr1) - l5y_losses(guy2, yr2)
-  let l5y_ko_losses_diff = l5y_ko_losses(guy1, yr1) - l5y_ko_losses(guy2, yr2)
-  let age_diff = fighter_age(guy1, yr1) - fighter_age(guy2, yr2)
-  let av_total_strikes_diff = avg_count('total_strikes_landed', guy1, 'abs', yr1) - avg_count('total_strikes_landed', guy2, 'abs', yr2)
-  let av_abs_head_strikes_diff = avg_count('head_strikes_landed', guy1, 'abs', yr1) - avg_count('head_strikes_landed', guy2, 'abs', yr2)
-  let av_inf_gr_strikes = avg_count('ground_strikes_landed', guy1, 'inf', yr1) - avg_count('ground_strikes_landed', guy2, 'inf', yr2)
-  let av_tk_atmps_diff = avg_count('takedowns_attempts', guy1, 'inf', yr1) - avg_count('takedowns_attempts', guy2, 'inf', yr2)
-  let av_inf_head_strikes_diff = avg_count('head_strikes_landed', guy1, 'inf', yr1) - avg_count('head_strikes_landed', guy2, 'inf', yr2)
+  let fighter_score_diff_4 = fighter_score_diff(guy1,guy2, yr1,yr2,4).toFixed(2)
+  let fighter_score_diff_9 = fighter_score_diff(guy1,guy2, yr1,yr2,9).toFixed(2)
+  let fighter_score_diff_15 = fighter_score_diff(guy1,guy2, yr1,yr2,15).toFixed(2)
+  let fight_math_1 = fight_math_diff(guy1,guy2, yr1,yr2,1).toFixed(2)
+  let fight_math_6 = fight_math_diff(guy1,guy2, yr1,yr2,6).toFixed(2)
+  let l5y_sub_wins_diff = l5y_sub_wins(guy1, yr1).toFixed(2) - l5y_sub_wins(guy2, yr2).toFixed(2)
+  let l5y_losses_diff = l5y_losses(guy1, yr1).toFixed(2) - l5y_losses(guy2, yr2).toFixed(2)
+  let l5y_ko_losses_diff = l5y_ko_losses(guy1, yr1).toFixed(2) - l5y_ko_losses(guy2, yr2).toFixed(2)
+  let age_diff = fighter_age(guy1, yr1).toFixed(2) - fighter_age(guy2, yr2).toFixed(2)
+  let av_total_strikes_diff = avg_count_diff('total_strikes_landed', guy1,guy2, 'abs', yr1).toFixed(2)
+  let av_abs_head_strikes_diff = avg_count_diff('head_strikes_landed', guy1, guy2, 'abs', yr1).toFixed(2)
+  let av_inf_gr_strikes = avg_count_diff('ground_strikes_landed', guy1, guy2, 'inf', yr1).toFixed(2)
+  let av_tk_atmps_diff = avg_count_diff('takedowns_attempts', guy1, guy2, 'inf', yr1).toFixed(2)
+  let av_inf_head_strikes_diff = avg_count_diff('head_strikes_landed', guy1, guy2, 'inf', yr1).toFixed(2)
   result = [fighter_score_diff_4,fighter_score_diff_9,fighter_score_diff_15,fight_math_1,fight_math_6,
     l5y_sub_wins_diff, l5y_losses_diff, l5y_ko_losses_diff, age_diff, av_total_strikes_diff, av_abs_head_strikes_diff,
     av_inf_gr_strikes, av_tk_atmps_diff, av_inf_head_strikes_diff]
-  console.log(result)
+  console.log(`prediction tuple: ${result}`)
+  console.log(`coefficients: ${Object.values(theta)}`)
+  console.log(`intercept: ${Object.values(intercept)}`)
+
+
   return result;
 }
 
@@ -367,16 +380,16 @@ intercept = {};
 $.getJSON('buildingMLModel/theta.json', function(data) {
   //for each input (i,f), i is the key (a fighter's name) and f is the value (all their data)
   $.each(data, function(i, f) {
-    theta[i] = f
-    console.log(theta[i])
+    theta[i] = f.toFixed(2)
+    //console.log(theta[i])
   });
 });
 
 $.getJSON('buildingMLModel/intercept.json', function(data) {
   //for each input (i,f), i is the key (a fighter's name) and f is the value (all their data)
   $.each(data, function(i, f) {
-    intercept[i] = f
-    console.log(intercept[i])
+    intercept[i] = f.toFixed(2)
+    //console.log(intercept[i])
   });
 });
 
@@ -390,11 +403,19 @@ function presigmoid_value(fighter1, fighter2, month1, year1, month2, year2) {
   for (let i = 0; i < tup.length; i++) {
     value += tup[i] * theta[i]
   }
-  return value + intercept[0]
+  console.log(`value and intercept: ${value} ${intercept[0]}`)
+  console.log(`presigmoid_value: ${value + intercept[0]}`)
+  //return value + intercept[0]
+  return value
 }
 
 function predict(fighter1, fighter2, month1, year1, month2, year2) {
   let value = presigmoid_value(fighter1, fighter2, month1, year1, month2, year2)
+  if (value>0){
+    console.log('first guy wins')
+  } else {
+    console.log('second guy wins')
+  }
   let winner;
   guy1 = document.querySelector('#' + fighter1).value;
   guy2 = document.querySelector('#' + fighter2).value;
@@ -403,7 +424,11 @@ function predict(fighter1, fighter2, month1, year1, month2, year2) {
   } else {
     winner = guy2
   }
+  console.log(winner)
+  console.log(`value: ${value}`)
+  console.log(`before abs`)
   let abs_value = (Math.abs(value))
+  console.log(`the value is ${abs_value}`)
   let resulting_text;
   if (abs_value >= 0 && abs_value <= .2) {
     resulting_text = winner + " wins a little over 5 out of 10 times."
@@ -421,8 +446,6 @@ function predict(fighter1, fighter2, month1, year1, month2, year2) {
 }
 
 function populateTaleOfTheTape(fighter, corner) {
-  //console.log(fighter)
-  //console.log(fighter_data[fighter])
   var myTab;
   if (corner == 'rc') {
     yr = document.querySelector('#' + 'f1selectyear').value;
@@ -495,7 +518,6 @@ function myFunction2() {
 }
 
 function filterFunction1() {
-  //console.log('calling filter function')
   var input, filter, ul, li, a, i;
   input = document.getElementById("myInput1");
   filter = input.value.toUpperCase();
@@ -512,14 +534,11 @@ function filterFunction1() {
 }
 
 function filterFunction2() {
-  //console.log('calling filter function')
   var input, filter, ul, li, a, i;
   input = document.getElementById("myInput2");
   filter = input.value.toUpperCase();
   div = document.getElementById("myDropdown2");
-  //console.log(div)
   a = div.getElementsByTagName("a");
-  //console.log(a[i].textContent)
   for (i = 0; i < a.length; i++) {
     txtValue = a[i].textContent || a[i].innerText;
     if (txtValue.toUpperCase().indexOf(filter) > -1) {
@@ -541,18 +560,16 @@ setTimeout(() => {
       ufc_wins_list.push([fighter,opponent,date])
     }
   }
-  //console.log('ufc_wins_list: ')
-  //console.log(ufc_wins_list[0])
-  //console.log(theta)
-  //console.log(intercept)
-  document.getElementById('select1').value = "Sean O'Malley"
-  document.getElementById('select2').value = "Paddy Pimblett"
-  document.getElementById('f1selectmonth').value = "March"
+  document.getElementById('select1').value = "Petr Yan"
+  document.getElementById('select2').value = "Aljamain Sterling"
+  document.getElementById('f1selectmonth').value = "April"
   document.getElementById('f1selectyear').value = "2022"
-  document.getElementById('f2selectmonth').value = "March"
+  document.getElementById('f2selectmonth').value = "April"
   document.getElementById('f2selectyear').value = "2022"
   selectFighterAndDate('select1','name1','f1selectmonth','month1','f1selectyear','year1')
   selectFighterAndDate('select2','name2','f2selectmonth','month2','f2selectyear','year2')
+  fighter_score('Petr Yan', '2022', 4)
+  fighter_score('Aljamain Sterling', '2022', 4)
   //populateTaleOfTheTape('Khabib Nurmagomedov', 'rc')
   //populateTaleOfTheTape('Colby Covington', 'bc')
   //populateLast5Fights('Khabib Nurmagomedov', 'rc')
