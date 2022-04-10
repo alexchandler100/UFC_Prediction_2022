@@ -560,8 +560,8 @@ setTimeout(() => {
       ufc_wins_list.push([fighter,opponent,date])
     }
   }
-  document.getElementById('select1').value = "Petr Yan"
-  document.getElementById('select2').value = "Aljamain Sterling"
+  document.getElementById('select1').value = "Khamzat Chimaev"
+  document.getElementById('select2').value = "Gilbert Burns"
   document.getElementById('f1selectmonth').value = "April"
   document.getElementById('f1selectyear').value = "2022"
   document.getElementById('f2selectmonth').value = "April"
@@ -574,4 +574,4 @@ setTimeout(() => {
   //populateTaleOfTheTape('Colby Covington', 'bc')
   //populateLast5Fights('Khabib Nurmagomedov', 'rc')
   //populateLast5Fights('Colby Covington', 'bc')
-}, 200)
+}, 100)
