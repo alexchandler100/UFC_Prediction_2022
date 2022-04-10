@@ -16,7 +16,15 @@
   <div class="bg"></div>
   <header >
     <center>
-    <div style = "font-family: Copperplate; font-size:50px" id="logo"><img src="neural.png" />Deep Learning UFC Fight Predictor <img style = "transform: rotate(180deg);" src="neural2.png"/></div>
+    <div style = "font-family: Copperplate; font-size:50px" id="logo">
+      <!--
+    <img src="neural.png" />
+   -->
+      Deep Learning UFC Fight Predictor
+      <!--
+      <img style = "transform: rotate(180deg);" src="neural2.png"/>
+      -->
+    </div>
   </center>
   </header>
 
@@ -93,7 +101,7 @@
             <input onfocus=this.value='' type="text" id=select2 list="fighters" value=""><br><br>
             <input onfocus=this.value='' type="text2" id=f2selectmonth list="months" value="March"> <input onfocus=this.value='' type="text3" id=f2selectyear list="years" value=2022><br>
           </p>
-          <button style = "font-variant: small-caps; margin-top:.3cm" class="button button1" onclick="selectFighterAndDate('select2','name2','f2selectmonth','month2','f2selectyear','year2')"> Set Blue Corner Fighter </button>
+          <button style = "font-variant: small-caps; margin-top:.3cm" class="button button2" onclick="selectFighterAndDate('select2','name2','f2selectmonth','month2','f2selectyear','year2')"> Set Blue Corner Fighter </button>
         </article>
       </center>
     </aside>
@@ -285,7 +293,7 @@
     </div>
     <div >
       <center>
-        <button class="button button1" onclick="predict('select1','select2','f1selectmonth','f1selectyear','f2selectmonth','f2selectyear',)"> Calculate </button>
+        <button class="button button3" onclick="predict('select1','select2','f1selectmonth','f1selectyear','f2selectmonth','f2selectyear',)"> Calculate </button>
       </center>
     </div>
     <center>
