@@ -4,13 +4,9 @@ In this project, we scrape data from ufcstats.com and apply machine learning tec
 
 ## For the Developer
 
-Make sure Python 3 is installed on your computer. Clone this repository. Open a terminal and cd to the location you saved it.
+Make sure Python 3 is installed on your computer. Clone this repository. Open a terminal and cd to the location you saved it. 
 
-## Usage
-
-If you want to see the most up to date version of the predictor in action, follow these instructions.
-
-The base dataset is already included in the repository so there is no need to scrape the stats and build the dataframe from scratch. But you can do so from the jupyter notebooks in src/models/buildingMLModel/notebooks/. In particular, you can run all cells in UFC_data_scraping.ipynb, and Building_ufc_fights.ipynb. To scrape and stylize fighter pictures used on the website, you can run UFC_picture_scraping.ipynb and Pytorch Convolutional Neural Network Style Transfer.ipynb. The rest of the notebooks are dedicated to building and testing machine learning models for fight and method prediction.
+The dataset is already included in the repository (last updated April 9, 2022) so there is no need to scrape the stats and build the dataframe from scratch, but you can do so from the jupyter notebooks in src/models/buildingMLModel/notebooks/ if desired. In particular, you can run all cells in UFC_data_scraping.ipynb, and Building_ufc_fights.ipynb. To scrape and stylize fighter pictures used on the website, you can run UFC_picture_scraping.ipynb and Pytorch Convolutional Neural Network Style Transfer.ipynb. The rest of the notebooks are dedicated to building and testing machine learning models for fight and method prediction.
 
 After every UFC event, the dataset and model will need to be rebuilt. Follow these instructions to rebuild both:
 
