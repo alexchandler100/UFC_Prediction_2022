@@ -395,9 +395,9 @@ function presigmoid_value(fighter1, fighter2, month1, year1, month2, year2) {
     value += tup[i] * theta[i]
   }
   console.log(`value and intercept: ${value} ${intercept[0]}`)
-  console.log(`presigmoid_value: ${value + intercept[0]}`)
+  console.log(`presigmoid_value: ${parseFloat(value) + parseFloat(intercept[0])}`)
   //return value + intercept[0]
-  return value
+  return parseFloat(value) + parseFloat(intercept[0])
 }
 
 function predict(fighter1, fighter2, month1, year1, month2, year2) {
@@ -433,7 +433,7 @@ function predict(fighter1, fighter2, month1, year1, month2, year2) {
     resulting_text = (winner + " wins 10 out of 10 times.")
   }
   document.querySelector('.fightoutcome').textContent = resulting_text
-  console.log(resulting_text)
+  //console.log(resulting_text)
 }
 
 function populateTaleOfTheTape(fighter, corner) {
@@ -487,7 +487,7 @@ function populateLast5Fights(fighter, corner) {
       date = ufcfightscrap[fight]['date']
       fightNumber += 1
       myTab.rows.item(0).cells.item(0).innerHTML = fighter
-      console.log(myTab.rows.item(0).cells.item(0))
+      //console.log(myTab.rows.item(0).cells.item(0))
       myTab.rows.item(0).cells.item(0).style.backgroundColor = "#212121";
       myTab.rows.item(fightNumber).cells.item(0).innerHTML = opponent
       myTab.rows.item(fightNumber).cells.item(1).innerHTML = result
