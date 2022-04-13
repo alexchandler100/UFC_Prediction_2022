@@ -55,12 +55,15 @@ function checkFileExist(urlToFile) {
     }
 }
 
+let picIndex=0
+
 function selectFighter(id, out) {
   selectElement = document.querySelector('#' + id);
   output = selectElement.value;
   //document.querySelector('.' + out).textContent = output;
   let i = id[6]
-  let j = getRandomInt(4).toString()
+  picIndex+=1
+  let j = (picIndex)%4+1
   name = selectElement.value;
   var name_encoded = encodeURIComponent(name)
   var name_decoded = decodeURIComponent(name_encoded)
