@@ -510,7 +510,7 @@ from datetime import datetime, timedelta
 def get_fight_stats(url):
     page = requests.get(url)
     soup = BeautifulSoup(page.content, "html.parser")
-    fd_columns = {'fighter':[], 'knockdowns':[],'sig_strikes':[], 'total_strikes':[], 'takedowns':[], 'sub_attempts':[],'reversals':[],'control_time':[]}
+    fd_columns = {'fighter':[], 'knockdowns':[],'sig_strikes':[], 'total_strikes':[], 'takedowns':[], 'sub_attempts':[], 'reversals':[], 'control_time':[]}
 
     #gets overall fight details
     fight_details = soup.select_one('tbody.b-fight-details__table-body')
