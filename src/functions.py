@@ -507,13 +507,10 @@ import pandas as pd
 import re
 from datetime import datetime, timedelta
 
-#there is a problem for collecting reversals (fix needed) seems like it now collect riding time since sept 2020
-#function for getting individual fight stats
 def get_fight_stats(url):
     page = requests.get(url)
     soup = BeautifulSoup(page.content, "html.parser")
-    fd_columns = {'fighter':[], 'knockdowns':[],'sig_strikes':[], 'total_strikes':[], 'takedowns':[], 'sub_attempts':[], 'pass':[],
-                   'reversals':[]}
+    fd_columns = {'fighter':[], 'knockdowns':[],'sig_strikes':[], 'total_strikes':[], 'takedowns':[], 'sub_attempts':[],'reversals':[],'control_time':[]}
 
     #gets overall fight details
     fight_details = soup.select_one('tbody.b-fight-details__table-body')
@@ -542,10 +539,10 @@ def get_fight_stats(url):
                         fd_columns['takedowns'].append(data)
                     elif i == 7: # add to sub attempts
                         fd_columns['sub_attempts'].append(data)
-                    elif i == 8: # add to passes
-                        fd_columns['pass'].append(data)
-                    elif i == 9: # add to reversals
+                    elif i == 8: # add to reversals
                         fd_columns['reversals'].append(data)
+                    elif i == 9: # add to control time
+                        fd_columns['control_time'].append(data)
         ov_details = pd.DataFrame(fd_columns)
 
         #get sig strike details
