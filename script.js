@@ -72,7 +72,12 @@ function selectFighter(id, out) {
 
   // Calling function
   // set the path to check
-  if (checkFileExist("src/models/buildingMLModel/images2/" + j + name_decoded + ".jpg")){
+  if (checkFileExist("src/models/buildingMLModel/gifs/postCNNGIFs/" + name_decoded + ".gif")){
+    console.log("src/models/buildingMLModel/gifs/postCNNGIFs/" + name_decoded + ".gif")
+    document.getElementById("fighter" + i + "pic").src = "src/models/buildingMLModel/gifs/postCNNGIFs/" + name_decoded + ".gif" //sets the image
+    console.log(name_decoded)
+  }
+  else if (checkFileExist("src/models/buildingMLModel/images2/" + j + name_decoded + ".jpg")){
     document.getElementById("fighter" + i + "pic").src = "src/models/buildingMLModel/images2/" + j + name_decoded + ".jpg" //sets the image
     console.log(j+name_decoded)
   } else {
@@ -571,8 +576,8 @@ setTimeout(() => {
 
 //set initial table values
 setTimeout(() => {
-  document.getElementById('select1').value = "Khamzat Chimaev"
-  document.getElementById('select2').value = "Gilbert Burns"
+  document.getElementById('select1').value = "Vicente Luque"
+  document.getElementById('select2').value = "Belal Muhammad"
   document.getElementById('f1selectmonth').value = "April"
   document.getElementById('f1selectyear').value = "2022"
   document.getElementById('f2selectmonth').value = "April"
