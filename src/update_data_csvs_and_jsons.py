@@ -36,6 +36,9 @@ import requests
 import urllib3
 from bs4 import BeautifulSoup
 import re
+import urllib.request
+from PIL import Image
+
 
 #updated scraped fight data (after running fight_hist_updated function from UFC_data_scraping file)
 fight_hist=pd.read_csv('models/buildingMLModel/data/processed/fight_hist.csv',sep=',')
@@ -530,3 +533,32 @@ ufcfightscrap_for_json.to_csv('models/buildingMLModel/data/processed/ufcfightscr
 csvFilePath = r'models/buildingMLModel/data/processed/ufcfightscrap.csv'
 jsonFilePath = r'models/buildingMLModel/data/external/ufcfightscrap.json'
 make_json(csvFilePath, jsonFilePath, 'index')
+
+#updating the picture scrape
+names = list(ufcfighterscrap['name'])
+
+def scrape_pictures(name):
+    try:
+        URL = "https://www.google.com/search?q="+name+" ufc fighting"+"&sxsrf=ALeKk03xBalIZi7BAzyIRw8R4_KrIEYONg:1620885765119&source=lnms&tbm=isch&sa=X&ved=2ahUKEwjv44CC_sXwAhUZyjgGHSgdAQ8Q_AUoAXoECAEQAw&cshid=1620885828054361"
+        page = requests.get(URL)
+        soup = BeautifulSoup(page.content, 'html.parser')
+        image_tags = soup.find_all('img')    #... or ... image_tags = soup.find_all('img', class_='t0fcAb')
+        links = []
+        for image_tag in image_tags:
+            links.append(image_tag['src'])
+            name_reduced = name.replace(" ", "")
+        for i in range(1,5):
+            urllib.request.urlretrieve(links[i], "models/buildingMLModel/images/"+str(i)+name_reduced+".jpg")
+        print('scraped 5 random pictures of '+name+' from Google search')
+
+    except:
+        print('The scrape did not work for '+name)
+
+print('Beginning to scrape pictures of newly added fighters from Google image search')
+# run this to update the image scrape
+for name in names:
+    try:
+        name_reduced=name.replace(" ","")
+        k=Image.open("models/buildingMLModel/images/"+str(1)+name_reduced+".jpg")
+    except:
+        scrape_pictures(name)
