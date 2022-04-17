@@ -14,18 +14,18 @@
 
 <body>
   <div class="bg"></div>
-  <header >
+  <header>
     <center>
-    <div style = "font-family: Copperplate; font-size:50px" id="logo">
-      <!--
+      <div style="font-family: Copperplate; font-size:50px" id="logo">
+        <!--
     <img src="neural.png" />
    -->
-      Deep Learning UFC Fight Predictor
-      <!--
+        Deep Learning UFC Fight Predictor
+        <!--
       <img style = "transform: rotate(180deg);" src="neural2.png"/>
       -->
-    </div>
-  </center>
+      </div>
+    </center>
   </header>
 
   <section id="fighterPictures">
@@ -89,7 +89,7 @@
             <input onfocus=this.value='' id=select1 type="text" list="fighters" value=""><br><br>
             <input onfocus=this.value='' type="text2" id=f1selectmonth list="months" value="March"> <input onfocus=this.value='' type="text3" id=f1selectyear list="years" value=2022><br>
           </p>
-          <button style = "font-variant: small-caps; margin-top:.3cm" class="button button1" onclick="selectFighterAndDate('select1','name1','f1selectmonth','month1','f1selectyear','year1')"> Confirm Red Corner</button>
+          <button style="font-variant: small-caps; margin-top:.3cm" class="button button1" onclick="selectFighterAndDate('select1','name1','f1selectmonth','month1','f1selectyear','year1')"> Confirm Red Corner</button>
         </article>
       </center>
     </main>
@@ -101,7 +101,7 @@
             <input onfocus=this.value='' type="text" id=select2 list="fighters" value=""><br><br>
             <input onfocus=this.value='' type="text2" id=f2selectmonth list="months" value="March"> <input onfocus=this.value='' type="text3" id=f2selectyear list="years" value=2022><br>
           </p>
-          <button style = "font-variant: small-caps; margin-top:.3cm" class="button button2" onclick="selectFighterAndDate('select2','name2','f2selectmonth','month2','f2selectyear','year2')"> Confirm Blue Corner</button>
+          <button style="font-variant: small-caps; margin-top:.3cm" class="button button2" onclick="selectFighterAndDate('select2','name2','f2selectmonth','month2','f2selectyear','year2')"> Confirm Blue Corner</button>
         </article>
       </center>
     </aside>
@@ -109,11 +109,11 @@
 
   <section id="taleofthetape">
 
-      <div class="headers">
-        <h1>
-          Tale of the Tape
-        </h1>
-      </div>
+    <div class="headers">
+      <h1>
+        Tale of the Tape
+      </h1>
+    </div>
 
     <main role="main">
       <center>
@@ -131,9 +131,9 @@
       </center>
     </aside>
 
-    <main role="main" >
+    <main role="main">
       <center>
-        <table id="table1" >
+        <table id="table1">
           <tr style="color: #fff; font-size:30px;font-variant: small-caps;">
             <td colspan="4"></td>
           </tr>
@@ -153,7 +153,7 @@
       </center>
     </main>
 
-    <aside >
+    <aside>
       <center>
         <table id="table2">
           <tr style="color: #fff; font-size:30px;font-variant: small-caps;">
@@ -196,7 +196,7 @@
               <th>Opponent</th>
               <th>Result</th>
               <th>Method</th>
-              <td>Date</td>
+              <th>Date</th>
             </tr>
             <tr>
               <td></td>
@@ -246,7 +246,7 @@
               <th>Opponent</th>
               <th>Result</th>
               <th>Method</th>
-              <td>Date</td>
+              <th>Date</th>
             </tr>
             <tr>
               <td></td>
@@ -285,13 +285,13 @@
   </section>
 
 
-  <section id="predict" >
+  <section id="predict">
     <div class="headers">
       <h1>
-        Predict Outcome
+        Predict Outcome and Suggest Betting Odds
       </h1>
     </div>
-    <div >
+    <div>
       <center>
         <button class="button button3" onclick="predict('select1','select2','f1selectmonth','f1selectyear','f2selectmonth','f2selectyear',)"> Calculate </button>
       </center>
@@ -299,6 +299,20 @@
     <center>
       <span style="font-size:30px;" class="fightoutcome"></span>
     </center>
+
+    <center>
+      <table id="tableoutcome" style="margin-top:.5cm;">
+        <tr style="color: #fff; font-size:25px;font-variant: small-caps;">
+          <td colspan="2">Outcome</td>
+        </tr>
+        <tr id="odds">
+          <td style="color: #fff;font-size:15px;">Red Corner Odds</td>
+          <td style="color: #fff;font-size:15px;">Blue Corner Odds</td>
+        </tr>
+      </table>
+    </center>
+
+
   </section>
 
   <section>
