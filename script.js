@@ -405,13 +405,36 @@ function presigmoid_value(fighter1, fighter2, month1, year1, month2, year2) {
   return parseFloat(value) + parseFloat(intercept[0])
 }
 
+
+function sigmoid(x){
+  return 1 / (1 + Math.exp(-x))
+}
+
+function probability(fighter1, fighter2, month1, year1, month2, year2){
+  return sigmoid(presigmoid_value(fighter1, fighter2, month1, year1, month2, year2))
+}
+
+function betting_odds(fighter1, fighter2, month1, year1, month2, year2){
+  p = probability(fighter1, fighter2, month1, year1, month2, year2)
+  let fighterOdds;
+  let opponentOdds;
+  if (p<.5){
+    fighterOdds=Math.round(100/p-100)
+    opponentOdds=Math.round(1/(1/(1-p)-1)*100)
+    console.log(`Suggested odds: ${fighter1} +${fighterOdds}   ${fighter2} -${opponentOdds}`)
+    return [`+${fighterOdds}`, `-${opponentOdds}`]
+  } else if (p>.5){
+    fighterOdds=Math.round(1/(1/p-1)*100)
+    opponentOdds=Math.round(100/(1-p)-100)
+    console.log(`Suggested odds: ${fighter1} -${fighterOdds}   ${fighter2} +${opponentOdds}`)
+    return [`-${fighterOdds}`, `+${opponentOdds}`]
+  }
+}
+
+
 function predict(fighter1, fighter2, month1, year1, month2, year2) {
   let value = presigmoid_value(fighter1, fighter2, month1, year1, month2, year2)
-  if (value>0){
-    console.log('first guy wins')
-  } else {
-    console.log('second guy wins')
-  }
+  let prob = sigmoid(value)
   let winner;
   guy1 = document.querySelector('#' + fighter1).value;
   guy2 = document.querySelector('#' + fighter2).value;
@@ -420,25 +443,45 @@ function predict(fighter1, fighter2, month1, year1, month2, year2) {
   } else {
     winner = guy2
   }
-  console.log(winner)
+  console.log(`The winner is: ${winner}`)
   console.log(`value: ${value}`)
-  console.log(`before abs`)
-  let abs_value = (Math.abs(value))
+  console.log(`probability: ${prob}`)
+  let abs_value = (Math.abs(prob-.5))
   console.log(`the value is ${abs_value}`)
+
   let resulting_text;
-  if (abs_value >= 0 && abs_value <= .2) {
+  if (abs_value >= 0 && abs_value <= .04) {
     resulting_text = winner + " wins a little over 5 out of 10 times."
-  } else if (abs_value >= .2 && abs_value <= .4) {
+  } else if (abs_value >= .04 && abs_value <= .15) {
     resulting_text = (winner + " wins 6 out of 10 times.")
-  } else if (abs_value >= .4 && abs_value <= .6) {
+  } else if (abs_value >= .15 && abs_value <= .25) {
     resulting_text = (winner + " wins 7 out of 10 times.")
-  } else if (abs_value >= .6 && abs_value <= .8) {
+  } else if (abs_value >= .25 && abs_value <= .4) {
     resulting_text = (winner + " wins 9 out of 10 times.")
-  } else if (abs_value >= .8) {
+  } else if (abs_value >= .4) {
     resulting_text = (winner + " wins 10 out of 10 times.")
+  } else {
+    console.log(`something is wrong with the probability`)
   }
-  document.querySelector('.fightoutcome').textContent = resulting_text
-  //console.log(resulting_text)
+  console.log(resulting_text)
+  //document.querySelector('.fightoutcome').textContent = 'Suggested Betting Odds'
+  odds = betting_odds(fighter1, fighter2, month1, year1, month2, year2)
+
+
+  //populate odds
+  var myTab;
+  myTab = document.getElementById("tableoutcome");
+
+  // LOOP THROUGH EACH ROW OF THE TABLE AFTER HEADER.
+  myTab.rows.item(0).cells.item(0).style.backgroundColor = "#212121";
+  myTab.rows.item(1).cells.item(0).style.backgroundColor = "#323232";
+  myTab.rows.item(1).cells.item(1).style.backgroundColor = "#323232";
+
+  myTab.rows.item(0).cells.item(0).innerHTML = resulting_text;
+
+  myTab.rows.item(1).cells.item(0).innerHTML = `${guy1}: <span style="color:#00FF00";>${odds[0]}</span>`;
+  myTab.rows.item(1).cells.item(1).innerHTML = `${guy2}: <span style="color:#00FF00";>${odds[1]}</span>`;
+  //document.querySelector('.tableEntry').textContent = fighter
 }
 
 function populateTaleOfTheTape(fighter, corner) {
@@ -457,12 +500,21 @@ function populateTaleOfTheTape(fighter, corner) {
 
   myTab.rows.item(2).cells.item(0).innerHTML = fighter_data[fighter]['height'];
   myTab.rows.item(2).cells.item(1).innerHTML = fighter_data[fighter]['reach'];
-  myTab.rows.item(2).cells.item(2).innerHTML = fighter_age(fighter, yr)
+  myTab.rows.item(2).cells.item(2).innerHTML = fighter_age(fighter, yr);
   myTab.rows.item(2).cells.item(3).innerHTML = fighter_data[fighter]['stance'];
   //document.querySelector('.tableEntry').textContent = fighter
 }
 
+function eqSet(as, bs) {
+    if (as.size !== bs.size) return false;
+    for (var a of as) if (!bs.has(a)) return false;
+    return true;
+}
+
 function populateLast5Fights(fighter, corner) {
+  let fighterNameList = fighter.split(" ")
+  let fighterNameSet = new Set(fighterNameList)
+  console.log(`fighterNameSet: ${fighterNameSet}`)
   var myTab;
   if (corner == 'rc') {
     yr = document.querySelector('#' + 'f1selectyear').value;
@@ -480,11 +532,14 @@ function populateLast5Fights(fighter, corner) {
       }
   let fightNumber = 1
   for (const fight in ufcfightscrap) {
+    let fightNameList = ufcfightscrap[fight]['fighter'].split(" ")
+    let fightNameSet = new Set(fightNameList)
     let result;
     let opponent;
     let method;
     let yearDiff = parseInt(yr) - ufcfightscrap[fight]['date'].slice(-4)
-    if (ufcfightscrap[fight]['fighter'] == fighter && yearDiff >= 0) {
+    // note I changed to checking set equality of the set {firstName, middleName, lastName} because different orderings are used in different databases
+    if (eqSet(fightNameSet, fighterNameSet) && yearDiff >= 0) {
       result = ufcfightscrap[fight]['result']
       fighter = ufcfightscrap[fight]['fighter']
       opponent = ufcfightscrap[fight]['opponent']
@@ -492,7 +547,6 @@ function populateLast5Fights(fighter, corner) {
       date = ufcfightscrap[fight]['date']
       fightNumber += 1
       myTab.rows.item(0).cells.item(0).innerHTML = fighter
-      //console.log(myTab.rows.item(0).cells.item(0))
       myTab.rows.item(0).cells.item(0).style.backgroundColor = "#212121";
       myTab.rows.item(fightNumber).cells.item(0).innerHTML = opponent
       myTab.rows.item(fightNumber).cells.item(1).innerHTML = result
@@ -584,4 +638,11 @@ setTimeout(() => {
   document.getElementById('f2selectyear').value = "2022"
   selectFighterAndDate('select1','name1','f1selectmonth','month1','f1selectyear','year1')
   selectFighterAndDate('select2','name2','f2selectmonth','month2','f2selectyear','year2')
+
+  var myTab;
+  myTab = document.getElementById("tableoutcome");
+  // LOOP THROUGH EACH ROW OF THE TABLE AFTER HEADER.
+  myTab.rows.item(1).cells.item(0).style.backgroundColor = "#323232";
+  myTab.rows.item(1).cells.item(1).style.backgroundColor = "#323232";
+  myTab.rows.item(0).cells.item(0).style.backgroundColor = "#212121";
 }, 550)
