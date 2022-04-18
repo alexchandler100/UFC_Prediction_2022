@@ -288,7 +288,7 @@
   <section id="predict">
     <div class="headers">
       <h1>
-        Predict Outcome and Suggest Betting Odds
+        Predict Outcome
       </h1>
     </div>
     <div>
@@ -303,11 +303,70 @@
     <center>
       <table id="tableoutcome" style="margin-top:.5cm;">
         <tr style="color: #fff; font-size:25px;font-variant: small-caps;">
-          <td colspan="2">Outcome</td>
+          <td colspan="3">Calculated Odds (no vig)</td>
         </tr>
         <tr id="odds">
-          <td style="color: #fff;font-size:15px;">Red Corner Odds</td>
-          <td style="color: #fff;font-size:15px;">Blue Corner Odds</td>
+          <td style="color: #fff;font-size:15px;">Fair Odds</td>
+          <td style="color: #fff;font-size:15px;"></td>
+          <td style="color: #fff;font-size:15px;"></td>
+        </tr>
+        <tr style="color: #fff; font-size:25px;font-variant: small-caps;">
+          <td colspan="3">Bookie Odds</td>
+        </tr>
+        <tr>
+          <td style="color: #fff;font-size:15px;">Draftkings</td>
+          <td style="color: #fff;font-size:15px;"></td>
+          <td style="color: #fff;font-size:15px;"></td>
+        </tr>
+        <tr>
+          <td style="color: #fff;font-size:15px;">BetMGM</td>
+          <td style="color: #fff;font-size:15px;"></td>
+          <td style="color: #fff;font-size:15px;"></td>
+        </tr>
+        <tr>
+          <td style="color: #fff;font-size:15px;">Caesars</td>
+          <td style="color: #fff;font-size:15px;"></td>
+          <td style="color: #fff;font-size:15px;"></td>
+        </tr>
+        <tr>
+          <td style="color: #fff;font-size:15px;">BetRivers</td>
+          <td style="color: #fff;font-size:15px;"></td>
+          <td style="color: #fff;font-size:15px;"></td>
+        </tr>
+        <tr>
+          <td style="color: #fff;font-size:15px;">FanDuel</td>
+          <td style="color: #fff;font-size:15px;"></td>
+          <td style="color: #fff;font-size:15px;"></td>
+        </tr>
+        <tr>
+          <td style="color: #fff;font-size:15px;">PointsBet</td>
+          <td style="color: #fff;font-size:15px;"></td>
+          <td style="color: #fff;font-size:15px;"></td>
+        </tr>
+        <tr>
+          <td style="color: #fff;font-size:15px;">Unibet</td>
+          <td style="color: #fff;font-size:15px;"></td>
+          <td style="color: #fff;font-size:15px;"></td>
+        </tr>
+        <tr>
+          <td style="color: #fff;font-size:15px;">Bet365</td>
+          <td style="color: #fff;font-size:15px;"></td>
+          <td style="color: #fff;font-size:15px;"></td>
+        </tr>
+        <tr>
+          <td style="color: #fff;font-size:15px;">BetWay</td>
+          <td style="color: #fff;font-size:15px;"></td>
+          <td style="color: #fff;font-size:15px;"></td>
+        </tr>
+        <tr>
+          <td style="color: #fff;font-size:15px;">SD</td>
+          <td style="color: #fff;font-size:15px;"></td>
+          <td style="color: #fff;font-size:15px;"></td>
+        </tr>
+        <tr>
+          <td style="color: #fff;font-size:15px;">Ref</td>
+          <td style="color: #fff;font-size:15px;"></td>
+          <td style="color: #fff;font-size:15px;"></td>
         </tr>
       </table>
     </center>
@@ -318,12 +377,12 @@
   <section>
     <div class="headers">
       <p style="font-size:16pt">
-        <strong>Instructions:</strong> Select two fighters, choose a date for each fighter, and press the "Calculate" button.
         The machine learning model implemented on this page will analyze all known fighter stats (scraped from <a href="http://ufcstats.com/statistics/events/completed" target="_blank">ufcstats.com</a>)
         and predict the most likely outcome if they were to fight exactly as they were on the specified dates.
         Details on how these models were constructed can be found <a href="https://github.com/alexchandler100/UFC_Prediction_2022" target="_blank">here</a> on our Github.
         Accuracy of predicting the correct winner is 63%.
         All photos are scraped from Google image search acted on by a convolutional neural network (CNN) for artistic style transfer (8,964 photos total).
+        Bookie odds are scraped from <a href="https://www.bestfightodds.com/" target="_blank">here</a>.
       </p>
     </div>
   </section>

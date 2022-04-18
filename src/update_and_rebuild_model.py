@@ -381,7 +381,8 @@ best_smallest_set = ['4-fighter_score_diff',
 
 ufc_fights_df = ufc_fights_winner[best_smallest_set]
 
-winPredictionModel=LogisticRegression(solver='lbfgs', max_iter=2000)
+#decided to force intercept to be 0 due to symmetry of dataset (all stats are differences so if we switch fighters, we must get the negative of the result)
+winPredictionModel=LogisticRegression(solver='lbfgs', max_iter=2000, fit_intercept=False)
 X=ufc_fights_df.iloc[0:40*55].to_numpy()
 y=ufc_fights_winner['result'].iloc[0:40*55]
 print('Fitting Logistic Regression Model')

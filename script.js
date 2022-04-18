@@ -4,6 +4,7 @@ toggle between hiding and showing the dropdown content */
 
 fighter_data = {}
 ufcfightscrap = {}
+vegas_odds = {}
 
 $(function() {
   //var people = [];
@@ -31,6 +32,17 @@ $(function() {
   });
 });
 
+$(function() {
+  //var people = [];
+  $.getJSON('src/models/buildingMLModel/data/external/vegas_odds.json', function(data) {
+    //for each input (i,f), i is the key (a fighter's name) and f is the value (all their data)
+    $.each(data, function(i, f) {
+      //create entry in local object
+      vegas_odds[i] = f
+    });
+  });
+});
+
 const years = document.getElementById('years')
 for (let i = 0; i < 30; i++) {
   year = 2022 - i
@@ -44,26 +56,26 @@ function getRandomInt(max) {
 }
 
 function checkFileExist(urlToFile) {
-    var xhr = new XMLHttpRequest();
-    xhr.open('HEAD', urlToFile, false);
-    xhr.send();
+  var xhr = new XMLHttpRequest();
+  xhr.open('HEAD', urlToFile, false);
+  xhr.send();
 
-    if (xhr.status == "404") {
-        return false;
-    } else {
-        return true;
-    }
+  if (xhr.status == "404") {
+    return false;
+  } else {
+    return true;
+  }
 }
 
-let picIndex=0
+let picIndex = 0
 
 function selectFighter(id, out) {
   selectElement = document.querySelector('#' + id);
   output = selectElement.value;
   //document.querySelector('.' + out).textContent = output;
   let i = id[6]
-  picIndex+=1
-  let j = (picIndex)%4+1
+  picIndex += 1
+  let j = (picIndex) % 4 + 1
   name = selectElement.value;
   var name_encoded = encodeURIComponent(name)
   var name_decoded = decodeURIComponent(name_encoded)
@@ -72,17 +84,16 @@ function selectFighter(id, out) {
 
   // Calling function
   // set the path to check
-  if (checkFileExist("src/models/buildingMLModel/gifs/postCNNGIFs/" + name_decoded + ".gif")){
+  if (checkFileExist("src/models/buildingMLModel/gifs/postCNNGIFs/" + name_decoded + ".gif")) {
     console.log("src/models/buildingMLModel/gifs/postCNNGIFs/" + name_decoded + ".gif")
     document.getElementById("fighter" + i + "pic").src = "src/models/buildingMLModel/gifs/postCNNGIFs/" + name_decoded + ".gif" //sets the image
     console.log(name_decoded)
-  }
-  else if (checkFileExist("src/models/buildingMLModel/images2/" + j + name_decoded + ".jpg")){
+  } else if (checkFileExist("src/models/buildingMLModel/images2/" + j + name_decoded + ".jpg")) {
     document.getElementById("fighter" + i + "pic").src = "src/models/buildingMLModel/images2/" + j + name_decoded + ".jpg" //sets the image
-    console.log(j+name_decoded)
+    console.log(j + name_decoded)
   } else {
     document.getElementById("fighter" + i + "pic").src = "src/models/buildingMLModel/images/" + j + name_decoded + ".jpg" //sets the image
-    console.log(j+name_decoded)
+    console.log(j + name_decoded)
   }
   if (i == '1') {
     populateTaleOfTheTape(output, 'rc')
@@ -238,25 +249,25 @@ function onlyUnique(value, index, self) {
   return self.indexOf(value) === index;
 }
 
-function wins_wins(fighter,year,years){
+function wins_wins(fighter, year, years) {
   let relevant_fights = []
-  for (let i=0;i<ufc_wins_list.length;i++){
+  for (let i = 0; i < ufc_wins_list.length; i++) {
     let yearDiff = parseInt(year) - ufc_wins_list[i][2].slice(-4)
-    if (yearDiff>years){
+    if (yearDiff > years) {
       break
     } else {
       relevant_fights.push(ufc_wins_list[i])
     }
   }
   let fighter_wins = []
-  for (let i=0;i<relevant_fights.length;i++){
-    if (relevant_fights[i][0]==fighter){
+  for (let i = 0; i < relevant_fights.length; i++) {
+    if (relevant_fights[i][0] == fighter) {
       fighter_wins.push(relevant_fights[i][1])
     }
   }
-  let fighter_wins_wins=[]
-  for (let i=0;i<relevant_fights.length;i++){
-    if (fighter_wins.includes(relevant_fights[i][0])){
+  let fighter_wins_wins = []
+  for (let i = 0; i < relevant_fights.length; i++) {
+    if (fighter_wins.includes(relevant_fights[i][0])) {
       fighter_wins_wins.push(relevant_fights[i][1])
     }
   }
@@ -266,25 +277,25 @@ function wins_wins(fighter,year,years){
   return relevant_wins
 }
 
-function losses_losses(fighter,year,years){
+function losses_losses(fighter, year, years) {
   let relevant_fights = []
-  for (let i=0;i<ufc_wins_list.length;i++){
+  for (let i = 0; i < ufc_wins_list.length; i++) {
     let yearDiff = parseInt(year) - ufc_wins_list[i][2].slice(-4)
-    if (yearDiff>years){
+    if (yearDiff > years) {
       break
     } else {
       relevant_fights.push(ufc_wins_list[i])
     }
   }
   let fighter_losses = []
-  for (let i=0;i<relevant_fights.length;i++){
-    if (relevant_fights[i][1]==fighter){
+  for (let i = 0; i < relevant_fights.length; i++) {
+    if (relevant_fights[i][1] == fighter) {
       fighter_losses.push(relevant_fights[i][0])
     }
   }
-  let fighter_losses_losses=[]
-  for (let i=0;i<relevant_fights.length;i++){
-    if (fighter_losses.includes(relevant_fights[i][1])){
+  let fighter_losses_losses = []
+  for (let i = 0; i < relevant_fights.length; i++) {
+    if (fighter_losses.includes(relevant_fights[i][1])) {
       fighter_losses_losses.push(relevant_fights[i][0])
     }
   }
@@ -295,47 +306,49 @@ function losses_losses(fighter,year,years){
 }
 
 //this does not incorporate year for both fighters correctly...
-function fight_math(fighter,opponent,year,years){
+function fight_math(fighter, opponent, year, years) {
   let relevant_fights = []
-  for (let i=0;i<ufc_wins_list.length;i++){
+  for (let i = 0; i < ufc_wins_list.length; i++) {
     let yearDiff = parseInt(year) - ufc_wins_list[i][2].slice(-4)
-    if (yearDiff>years){
+    if (yearDiff > years) {
       break
     } else {
       relevant_fights.push(ufc_wins_list[i])
     }
   }
-  let relevant_wins=wins_wins(fighter,year,years)
+  let relevant_wins = wins_wins(fighter, year, years)
   relevant_wins.push(fighter)
   let fight_math_wins = []
-  for (let i=0;i<relevant_fights.length;i++){
-    if (relevant_wins.includes(relevant_fights[i][0]) && relevant_fights[i][1]==opponent){
+  for (let i = 0; i < relevant_fights.length; i++) {
+    if (relevant_wins.includes(relevant_fights[i][0]) && relevant_fights[i][1] == opponent) {
       fight_math_wins.push(relevant_fights[i])
     }
   }
   return fight_math_wins.length
 }
 
-function fight_math_diff(fighter,opponent,year1, year2,years){
-  return fight_math(fighter,opponent,year1,years)-fight_math(opponent,fighter,year2,years)
+function fight_math_diff(fighter, opponent, year1, year2, years) {
+  return fight_math(fighter, opponent, year1, years) - fight_math(opponent, fighter, year2, years)
 }
 
-function fighter_score(fighter, year, years){
-  let relevant_wins=wins_wins(fighter,year,years)
-  let relevant_losses=losses_losses(fighter,year,years)
+function fighter_score(fighter, year, years) {
+  let relevant_wins = wins_wins(fighter, year, years)
+  let relevant_losses = losses_losses(fighter, year, years)
   return relevant_wins.length - relevant_losses.length
 }
 
-function fighter_score_diff(fighter,opponent,year1,year2,years){
+function fighter_score_diff(fighter, opponent, year1, year2, years) {
   return fighter_score(fighter, year1, years) - fighter_score(opponent, year2, years)
 }
 
-function avg_count_diff(stat, fighter, opponent, inf_abs, year){
-  if (isNaN(avg_count(stat, fighter, inf_abs, year)) || isNaN(avg_count(stat, opponent, inf_abs, year)) ){
+function avg_count_diff(stat, fighter, opponent, inf_abs, year) {
+  if (isNaN(avg_count(stat, fighter, inf_abs, year)) || isNaN(avg_count(stat, opponent, inf_abs, year))) {
     return 0
   }
-  return avg_count(stat, fighter, inf_abs, year)-avg_count(stat, opponent, inf_abs, year)
+  return avg_count(stat, fighter, inf_abs, year) - avg_count(stat, opponent, inf_abs, year)
 }
+
+
 
 function predictionTuple(fighter1, fighter2, month1, year1, month2, year2) {
   let result;
@@ -345,23 +358,24 @@ function predictionTuple(fighter1, fighter2, month1, year1, month2, year2) {
   mon2 = document.querySelector('#' + month2).value;
   yr1 = document.querySelector('#' + year1).value;
   yr2 = document.querySelector('#' + year2).value;
-  let fighter_score_diff_4 = fighter_score_diff(guy1,guy2, yr1,yr2,4).toFixed(2)
-  let fighter_score_diff_9 = fighter_score_diff(guy1,guy2, yr1,yr2,9).toFixed(2)
-  let fighter_score_diff_15 = fighter_score_diff(guy1,guy2, yr1,yr2,15).toFixed(2)
-  let fight_math_1 = fight_math_diff(guy1,guy2, yr1,yr2,1).toFixed(2)
-  let fight_math_6 = fight_math_diff(guy1,guy2, yr1,yr2,6).toFixed(2)
+  let fighter_score_diff_4 = fighter_score_diff(guy1, guy2, yr1, yr2, 4).toFixed(2)
+  let fighter_score_diff_9 = fighter_score_diff(guy1, guy2, yr1, yr2, 9).toFixed(2)
+  let fighter_score_diff_15 = fighter_score_diff(guy1, guy2, yr1, yr2, 15).toFixed(2)
+  let fight_math_1 = fight_math_diff(guy1, guy2, yr1, yr2, 1).toFixed(2)
+  let fight_math_6 = fight_math_diff(guy1, guy2, yr1, yr2, 6).toFixed(2)
   let l5y_sub_wins_diff = l5y_sub_wins(guy1, yr1).toFixed(2) - l5y_sub_wins(guy2, yr2).toFixed(2)
   let l5y_losses_diff = l5y_losses(guy1, yr1).toFixed(2) - l5y_losses(guy2, yr2).toFixed(2)
   let l5y_ko_losses_diff = l5y_ko_losses(guy1, yr1).toFixed(2) - l5y_ko_losses(guy2, yr2).toFixed(2)
   let age_diff = fighter_age(guy1, yr1).toFixed(2) - fighter_age(guy2, yr2).toFixed(2)
-  let av_total_strikes_diff = avg_count_diff('total_strikes_landed', guy1,guy2, 'abs', yr1).toFixed(2)
+  let av_total_strikes_diff = avg_count_diff('total_strikes_landed', guy1, guy2, 'abs', yr1).toFixed(2)
   let av_abs_head_strikes_diff = avg_count_diff('head_strikes_landed', guy1, guy2, 'abs', yr1).toFixed(2)
   let av_inf_gr_strikes = avg_count_diff('ground_strikes_landed', guy1, guy2, 'inf', yr1).toFixed(2)
   let av_tk_atmps_diff = avg_count_diff('takedowns_attempts', guy1, guy2, 'inf', yr1).toFixed(2)
   let av_inf_head_strikes_diff = avg_count_diff('head_strikes_landed', guy1, guy2, 'inf', yr1).toFixed(2)
-  result = [fighter_score_diff_4,fighter_score_diff_9,fighter_score_diff_15,fight_math_1,fight_math_6,
+  result = [fighter_score_diff_4, fighter_score_diff_9, fighter_score_diff_15, fight_math_1, fight_math_6,
     l5y_sub_wins_diff, l5y_losses_diff, l5y_ko_losses_diff, age_diff, av_total_strikes_diff, av_abs_head_strikes_diff,
-    av_inf_gr_strikes, av_tk_atmps_diff, av_inf_head_strikes_diff]
+    av_inf_gr_strikes, av_tk_atmps_diff, av_inf_head_strikes_diff
+  ]
   console.log(`prediction tuple: ${result}`)
   console.log(`coefficients: ${Object.values(theta)}`)
   console.log(`intercept: ${Object.values(intercept)}`)
@@ -393,6 +407,7 @@ $.getJSON('src/models/buildingMLModel/data/external/intercept.json', function(da
 //console.log(theta[0])
 //console.log(intercept[0])
 
+//I am scaling the output by 1.5 to make stronger choices...
 function presigmoid_value(fighter1, fighter2, month1, year1, month2, year2) {
   let value = 0
   tup = predictionTuple(fighter1, fighter2, month1, year1, month2, year2);
@@ -402,37 +417,106 @@ function presigmoid_value(fighter1, fighter2, month1, year1, month2, year2) {
   console.log(`value and intercept: ${value} ${intercept[0]}`)
   console.log(`presigmoid_value: ${parseFloat(value) + parseFloat(intercept[0])}`)
   //return value + intercept[0]
-  return parseFloat(value) + parseFloat(intercept[0])
+  //return parseFloat(value) + parseFloat(intercept[0])
+  return 1.5*parseFloat(value)
 }
 
 
-function sigmoid(x){
+function sigmoid(x) {
   return 1 / (1 + Math.exp(-x))
 }
 
-function probability(fighter1, fighter2, month1, year1, month2, year2){
+function probability(fighter1, fighter2, month1, year1, month2, year2) {
   return sigmoid(presigmoid_value(fighter1, fighter2, month1, year1, month2, year2))
 }
 
-function betting_odds(fighter1, fighter2, month1, year1, month2, year2){
+function betting_odds(fighter1, fighter2, month1, year1, month2, year2) {
   p = probability(fighter1, fighter2, month1, year1, month2, year2)
   let fighterOdds;
   let opponentOdds;
-  if (p<.5){
-    fighterOdds=Math.round(100/p-100)
-    opponentOdds=Math.round(1/(1/(1-p)-1)*100)
+  if (p < .5) {
+    fighterOdds = Math.round(100 / p - 100)
+    opponentOdds = Math.round(1 / (1 / (1 - p) - 1) * 100)
     console.log(`Suggested odds: ${fighter1} +${fighterOdds}   ${fighter2} -${opponentOdds}`)
     return [`+${fighterOdds}`, `-${opponentOdds}`]
-  } else if (p>.5){
-    fighterOdds=Math.round(1/(1/p-1)*100)
-    opponentOdds=Math.round(100/(1-p)-100)
+  } else if (p >= .5) {
+    fighterOdds = Math.round(1 / (1 / p - 1) * 100)
+    opponentOdds = Math.round(100 / (1 - p) - 100)
     console.log(`Suggested odds: ${fighter1} -${fighterOdds}   ${fighter2} +${opponentOdds}`)
     return [`-${fighterOdds}`, `+${opponentOdds}`]
   }
 }
 
+const str1 = 'hitting';
+const str2 = 'kitten';
+const levenshteinDistance = (str1 = '', str2 = '') => {
+  const track = Array(str2.length + 1).fill(null).map(() =>
+    Array(str1.length + 1).fill(null));
+  for (let i = 0; i <= str1.length; i += 1) {
+    track[0][i] = i;
+  }
+  for (let j = 0; j <= str2.length; j += 1) {
+    track[j][0] = j;
+  }
+  for (let j = 1; j <= str2.length; j += 1) {
+    for (let i = 1; i <= str1.length; i += 1) {
+      const indicator = str1[i - 1] === str2[j - 1] ? 0 : 1;
+      track[j][i] = Math.min(
+        track[j][i - 1] + 1, // deletion
+        track[j - 1][i] + 1, // insertion
+        track[j - 1][i - 1] + indicator, // substitution
+      );
+    }
+  }
+  return track[str2.length][str1.length];
+};
+console.log(`levenshtein distance: ${levenshteinDistance(str1, str2)}`);
+
+function same_name(str1, str2) {
+  str1 = str1.toLowerCase().replace(".", '').replace("-", ' ')
+  str2 = str2.toLowerCase().replace(".", '').replace("-", ' ')
+  let str1List = str1.split(" ")
+  let str1Set = new Set(str1List)
+  let str2List = str2.split(" ")
+  let str2Set = new Set(str2List)
+  if (str1 === str2) {
+    return true
+  } else if (eqSet(str1Set, str2Set)) {
+    return true
+  } else if (levenshteinDistance(str1, str2) < 3) {
+    return true
+  } else {
+    return false
+  }
+}
+
+function get_vegas_odds(fighter1, fighter2, month1, year1, month2, year2) {
+  console.log('getting the vegas odds')
+  guy1 = document.querySelector('#' + fighter1).value;
+  guy2 = document.querySelector('#' + fighter2).value;
+  let f_names = Object.values(vegas_odds['fighter name'])
+  let o_names = Object.values(vegas_odds['opponent name'])
+  console.log(`f names : ${f_names.length}`)
+  let vegas_odds_dict = {}
+  for (let i = 0; i < f_names.length; i++) {
+    //if ((f_names[i].toLowerCase().replace(".",'')==guy1.toLowerCase() && o_names[i].toLowerCase().replace(".",'')==guy2.toLowerCase()) || (f_names[i].toLowerCase().replace(".",'')==guy2.toLowerCase() && o_names[i].toLowerCase().replace(".",'')==guy1.toLowerCase())){
+    if ((same_name(f_names[i], guy1) && same_name(o_names[i], guy2)) || (same_name(f_names[i], guy2) && same_name(o_names[i], guy1))) {
+      //[vegas_odds[stat][i] for stat in Object.keys(vegas_odds)]
+      for (let j = 0; j < Object.keys(vegas_odds).length; j++) {
+        let key = Object.keys(vegas_odds)[j]
+        let value = vegas_odds[key][i]
+        vegas_odds_dict[key] = value
+      }
+    }
+  }
+  console.log(vegas_odds_dict)
+  return vegas_odds_dict
+}
+
 
 function predict(fighter1, fighter2, month1, year1, month2, year2) {
+  vegas_odds_dict = get_vegas_odds(fighter1, fighter2, month1, year1, month2, year2)
+  let tup = predictionTuple(fighter1, fighter2, month1, year1, month2, year2);
   let value = presigmoid_value(fighter1, fighter2, month1, year1, month2, year2)
   let prob = sigmoid(value)
   let winner;
@@ -444,10 +528,10 @@ function predict(fighter1, fighter2, month1, year1, month2, year2) {
     winner = guy2
   }
   console.log(`The winner is: ${winner}`)
-  console.log(`value: ${value}`)
+  console.log(`balanced presigmoid: ${value}`)
   console.log(`probability: ${prob}`)
-  let abs_value = (Math.abs(prob-.5))
-  console.log(`the value is ${abs_value}`)
+  let abs_value = (Math.abs(prob - .5))
+  console.log(`distance from even fight ${abs_value}`)
 
   let resulting_text;
   if (abs_value >= 0 && abs_value <= .04) {
@@ -463,10 +547,12 @@ function predict(fighter1, fighter2, month1, year1, month2, year2) {
   } else {
     console.log(`something is wrong with the probability`)
   }
+  if (guy1!=guy2 && tup[0]==0.0 && tup[1]==0.0 && tup[2]==0.0 && tup[3]==0.0 && tup[4]==0.0){
+    resulting_text='Internal issue encountered. Please refresh page and try again.'
+  }
   console.log(resulting_text)
-  //document.querySelector('.fightoutcome').textContent = 'Suggested Betting Odds'
+  document.querySelector('.fightoutcome').textContent = resulting_text
   odds = betting_odds(fighter1, fighter2, month1, year1, month2, year2)
-
 
   //populate odds
   var myTab;
@@ -476,11 +562,31 @@ function predict(fighter1, fighter2, month1, year1, month2, year2) {
   myTab.rows.item(0).cells.item(0).style.backgroundColor = "#212121";
   myTab.rows.item(1).cells.item(0).style.backgroundColor = "#323232";
   myTab.rows.item(1).cells.item(1).style.backgroundColor = "#323232";
+  myTab.rows.item(1).cells.item(2).style.backgroundColor = "#323232";
 
-  myTab.rows.item(0).cells.item(0).innerHTML = resulting_text;
+  myTab.rows.item(1).cells.item(1).innerHTML = `${guy1}: <span style="color:#00FF00";>${odds[0]}</span>`;
+  myTab.rows.item(1).cells.item(2).innerHTML = `${guy2}: <span style="color:#00FF00";>${odds[1]}</span>`;
 
-  myTab.rows.item(1).cells.item(0).innerHTML = `${guy1}: <span style="color:#00FF00";>${odds[0]}</span>`;
-  myTab.rows.item(1).cells.item(1).innerHTML = `${guy2}: <span style="color:#00FF00";>${odds[1]}</span>`;
+  //have to put things in the correct ordering
+  let index1 = 0
+  let index2 = 12
+  //if (vegas_odds_dict['fighter name']==guy1){
+  if (vegas_odds_dict['fighter name']){
+    if (same_name(vegas_odds_dict['fighter name'], guy1)) {
+      index1 = 0
+      index2 = 12
+    } else {
+      index1 = 12
+      index2 = 0
+    }
+  }
+
+  for (let i = 3; i < 3 + 11; i++) {
+    keys = Object.keys(vegas_odds_dict)
+    myTab.rows.item(i).cells.item(1).innerHTML = `<span style="color:#FFFFFF";>${vegas_odds_dict[keys[i-2 + index1]]}</span>`;
+    myTab.rows.item(i).cells.item(2).innerHTML = `<span style="color:#FFFFFF";>${vegas_odds_dict[keys[i-2 + index2]]}</span>`;
+
+  }
   //document.querySelector('.tableEntry').textContent = fighter
 }
 
@@ -506,15 +612,15 @@ function populateTaleOfTheTape(fighter, corner) {
 }
 
 function eqSet(as, bs) {
-    if (as.size !== bs.size) return false;
-    for (var a of as) if (!bs.has(a)) return false;
-    return true;
+  if (as.size !== bs.size) return false;
+  for (var a of as)
+    if (!bs.has(a)) return false;
+  return true;
 }
 
 function populateLast5Fights(fighter, corner) {
   let fighterNameList = fighter.split(" ")
   let fighterNameSet = new Set(fighterNameList)
-  console.log(`fighterNameSet: ${fighterNameSet}`)
   var myTab;
   if (corner == 'rc') {
     yr = document.querySelector('#' + 'f1selectyear').value;
@@ -523,13 +629,12 @@ function populateLast5Fights(fighter, corner) {
     yr = document.querySelector('#' + 'f2selectyear').value;
     myTab = document.getElementById("l5ytable2");
   }
-  for (numb=2;numb<7;numb++) {
-      myTab.rows.item(numb).cells.item(0).innerHTML = ''
-      myTab.rows.item(numb).cells.item(1).innerHTML = ''
-      myTab.rows.item(numb).cells.item(2).innerHTML = ''
-      myTab.rows.item(numb).cells.item(3).innerHTML = ''
-      myTab.rows.item(numb).cells.item(1).style.backgroundColor = "#ffffff";
-      }
+  for (numb = 2; numb < 7; numb++) { //reset color of rows to white and empty text content
+    for (let j = 0; j < 4; j++) {
+      myTab.rows.item(numb).cells.item(j).innerHTML = ''
+      myTab.rows.item(numb).cells.item(j).style.backgroundColor = "#ffffff";
+    }
+  }
   let fightNumber = 1
   for (const fight in ufcfightscrap) {
     let fightNameList = ufcfightscrap[fight]['fighter'].split(" ")
@@ -564,12 +669,12 @@ function populateLast5Fights(fighter, corner) {
       break
     }
   }
-  while (fightNumber<6){
-      fightNumber+=1
-      myTab.rows.item(fightNumber).cells.item(0).style.backgroundColor = "#dedede";
-      myTab.rows.item(fightNumber).cells.item(1).style.backgroundColor = "#dedede";
-      myTab.rows.item(fightNumber).cells.item(2).style.backgroundColor = "#dedede";
-      myTab.rows.item(fightNumber).cells.item(3).style.backgroundColor = "#dedede";
+  while (fightNumber < 6) {
+    fightNumber += 1
+    myTab.rows.item(fightNumber).cells.item(0).style.backgroundColor = "#dedede";
+    myTab.rows.item(fightNumber).cells.item(1).style.backgroundColor = "#dedede";
+    myTab.rows.item(fightNumber).cells.item(2).style.backgroundColor = "#dedede";
+    myTab.rows.item(fightNumber).cells.item(3).style.backgroundColor = "#dedede";
   }
 
 }
@@ -617,32 +722,42 @@ function filterFunction2() {
 
 //set initial table values
 setTimeout(() => {
-  ufc_wins_list=[]
+  ufc_wins_list = []
   for (const fight in ufcfightscrap) {
-    if (ufcfightscrap[fight]['result']=="W") {
+    if (ufcfightscrap[fight]['result'] == "W") {
       let fighter = ufcfightscrap[fight]['fighter']
       let opponent = ufcfightscrap[fight]['opponent']
       let date = ufcfightscrap[fight]['date']
-      ufc_wins_list.push([fighter,opponent,date])
+      ufc_wins_list.push([fighter, opponent, date])
     }
   }
 }, 250)
 
 //set initial table values
 setTimeout(() => {
-  document.getElementById('select1').value = "Vicente Luque"
-  document.getElementById('select2').value = "Belal Muhammad"
+  document.getElementById('select1').value = "Amanda Lemos"
+  document.getElementById('select2').value = "Jessica Andrade"
   document.getElementById('f1selectmonth').value = "April"
   document.getElementById('f1selectyear').value = "2022"
   document.getElementById('f2selectmonth').value = "April"
   document.getElementById('f2selectyear').value = "2022"
-  selectFighterAndDate('select1','name1','f1selectmonth','month1','f1selectyear','year1')
-  selectFighterAndDate('select2','name2','f2selectmonth','month2','f2selectyear','year2')
-
+  selectFighterAndDate('select1', 'name1', 'f1selectmonth', 'month1', 'f1selectyear', 'year1')
+  selectFighterAndDate('select2', 'name2', 'f2selectmonth', 'month2', 'f2selectyear', 'year2')
+  console.log(vegas_odds)
   var myTab;
   myTab = document.getElementById("tableoutcome");
   // LOOP THROUGH EACH ROW OF THE TABLE AFTER HEADER.
+  myTab.rows.item(0).cells.item(0).style.backgroundColor = "#212121";
   myTab.rows.item(1).cells.item(0).style.backgroundColor = "#323232";
   myTab.rows.item(1).cells.item(1).style.backgroundColor = "#323232";
-  myTab.rows.item(0).cells.item(0).style.backgroundColor = "#212121";
+  myTab.rows.item(1).cells.item(2).style.backgroundColor = "#323232";
+  myTab.rows.item(2).cells.item(0).style.backgroundColor = "#212121";
+  console.log(`fighter score diff 4 jo,bill: ${fighter_score_diff('Joanderson Brito', 'Bill Algeo', '2022', '2022', 4)}`)
+  console.log(`fighter score diff 9 jo,bill: ${fighter_score_diff('Joanderson Brito', 'Bill Algeo', '2022', '2022', 9)}`)
+  console.log(`fighter score diff 15 jo,bill: ${fighter_score_diff('Joanderson Brito', 'Bill Algeo', '2022', '2022', 15)}`)
+  for (let i = 3; i < 3 + 11; i++) {
+    for (let j = 0; j < 3; j++) {
+      myTab.rows.item(i).cells.item(j).style.backgroundColor = "#323232";
+    }
+  }
 }, 550)
