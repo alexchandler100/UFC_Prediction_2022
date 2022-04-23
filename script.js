@@ -407,7 +407,7 @@ $.getJSON('src/models/buildingMLModel/data/external/intercept.json', function(da
 //console.log(theta[0])
 //console.log(intercept[0])
 
-//I am scaling the output by 1.5 to make stronger choices...
+//I am scaling the output by 1.3 to make stronger choices...
 function presigmoid_value(fighter1, fighter2, month1, year1, month2, year2) {
   let value = 0
   tup = predictionTuple(fighter1, fighter2, month1, year1, month2, year2);
@@ -418,7 +418,7 @@ function presigmoid_value(fighter1, fighter2, month1, year1, month2, year2) {
   console.log(`presigmoid_value: ${parseFloat(value) + parseFloat(intercept[0])}`)
   //return value + intercept[0]
   //return parseFloat(value) + parseFloat(intercept[0])
-  return 1.5*parseFloat(value)
+  return 1.3*parseFloat(value)
 }
 
 
