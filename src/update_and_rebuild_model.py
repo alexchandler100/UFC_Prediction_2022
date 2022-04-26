@@ -416,13 +416,37 @@ def presigmoid_value(fighter1,fighter2,date1,date2):
     value = 0
     tup = ufc_prediction_tuple(fighter1,fighter2,date1,date2)
     for i in range(len(tup)):
-        value += tup[i]*theta[0][i]
+        value += tup[i]*theta[i]
     return value + b
 
 def manual_prediction(fighter1,fighter2,date1,date2):
     value = presigmoid_value(fighter1,fighter2,date1,date2)
     value2 = presigmoid_value(fighter2,fighter1,date2,date1)
     return value-value2>=0
+
+import math
+
+def sigmoid(x):
+    sig = 1 / (1 + math.exp(-x))
+    return sig
+
+#returns the probability that fighter1 defeats fighter2 on date1,date2
+def probability(fighter1,fighter2,date1,date2):
+    presig=presigmoid_value(fighter1,fighter2,date1,date2)
+    return sigmoid(presig)
+
+def odds(fighter1,fighter2):
+    date1=date.today().strftime("%B %d, %Y")
+    date2=date.today().strftime("%B %d, %Y")
+    p=probability(fighter1,fighter2,date1,date2)
+    if p<.5:
+        fighterOdds=round(100/p - 100)
+        opponentOdds = round(1 / (1 / (1 - p) - 1) * 100)
+        return ['+'+str(fighterOdds),'-'+str(opponentOdds)]
+    elif p>=.5:
+        fighterOdds = round(1 / (1 / p - 1) * 100)
+        opponentOdds = round(100 / (1 - p) - 100)
+        return ['-'+str(fighterOdds),'+'+str(opponentOdds)]
 
 def give_odds(fighter1,fighter2,date1,date2):
     value = presigmoid_value(fighter1,fighter2,date1,date2)
@@ -459,3 +483,101 @@ intercept_dict = {0:b}
 
 with open('models/buildingMLModel/data/external/intercept.json', 'w') as outfile:
     json.dump(intercept_dict, outfile)
+
+#I've defined this in such a way to predict what happens when fighter1 in their day1 version fights fighter2
+#in their day2 version. Meaning we could compare for example 2014 Tyron Woodley to 2019 Colby Covington
+def ufc_prediction_tuple(fighter1,fighter2,day1=date.today(),day2=date.today()):
+    return [fighter_score_diff(fighter1,fighter2,day1, 4),
+            fighter_score_diff(fighter1,fighter2,day1, 9),
+            fighter_score_diff(fighter1,fighter2,day1, 15),
+            fight_math_diff(fighter1,fighter2,day1, 1),
+            fight_math_diff(fighter1,fighter2,day1, 6),
+            L5Y_sub_wins(fighter1,day1)-L5Y_sub_wins(fighter2,day2),
+            L5Y_losses(fighter1,day1)-L5Y_losses(fighter2,day2),
+            L5Y_ko_losses(fighter1,day1)-L5Y_ko_losses(fighter2,day2),
+            fighter_age(fighter1,day1)-fighter_age(fighter2,day2),
+            avg_count('total_strikes_landed',fighter1,'abs',day1)-avg_count('total_strikes_landed',fighter2,'abs',day2),
+            avg_count('head_strikes_landed',fighter1,'abs',day1)-avg_count('head_strikes_landed',fighter2,'abs',day2),
+            avg_count('ground_strikes_landed',fighter1,'inf',day1)-avg_count('ground_strikes_landed',fighter2,'inf',day2),
+            avg_count('takedowns_attempts',fighter1,'inf',day1)-avg_count('takedowns_attempts',fighter2,'inf',day2),
+            avg_count('head_strikes_landed',fighter1,'inf',day1)-avg_count('head_strikes_landed',fighter2,'inf',day2),
+           ]
+print('Making predictions for all fights on the books')
+
+#now we build prediction_history
+#first need to rebuild "same_name" function like we did in js (done)
+#next open existing prediction_history.json as a dataframe (done)
+#then add all fights on the books from vegas_odds
+#for each fight in prediction_history, if a prediction has not yet been made, make a prediction
+#then export to json
+
+#first call pip install python-Levenshtein
+from Levenshtein import distance as lev
+def same_name(str1,str2):
+    str1 = str1.lower().replace('.','').replace("-",' ')
+    str2 = str2.lower().replace('.','').replace("-",' ')
+    str1_list=str1.split()
+    str2_list=str2.split()
+    str1_set=set(str1_list)
+    str2_set=set(str2_list)
+    if str1==str2:
+        return True
+    elif str1_set==str2_set:
+        return True
+    elif lev(str1,str2)<3:
+        return True
+    else:
+        return False
+
+vegas_odds=pd.read_json('models/buildingMLModel/data/external/vegas_odds.json')
+
+prediction_history=pd.read_json('models/buildingMLModel/data/external/prediction_history.json')
+def count_null(row_number):
+    row = vegas_odds.iloc[row_number]
+    return len([i for i in range(len(row)) if row[i]==''])
+
+#get rid of fights with too few bookie odds made
+bookie_mask = []
+for i in range(len(vegas_odds['fighter name'])):
+    bookie_mask.append(count_null(i)<6)
+vegas_odds=vegas_odds[bookie_mask]
+vegas_odds_copy=vegas_odds.copy()
+for col in ['predicted fighter odds','predicted opponent odds','average bookie odds','correct?']:
+    vegas_odds_copy[col]=""
+
+#filling in predictions
+#need to make sure it only makes predictions for fights it hasn't yet predicted
+for i in vegas_odds_copy.index:
+    fighter=vegas_odds_copy['fighter name'][i]
+    opponent=vegas_odds_copy['opponent name'][i]
+    odds_calc = odds(fighter,opponent)
+    vegas_odds_copy['predicted fighter odds'][i]=odds_calc[0]
+    vegas_odds_copy['predicted opponent odds'][i]=odds_calc[1]
+    sum_av_f=0
+    tot_av_f=0
+    sum_av_o=0
+    tot_av_o=0
+    for bookie in ['DraftKings', 'BetMGM', 'Caesars', 'BetRivers', 'FanDuel', 'PointsBet', 'Unibet', 'Bet365', 'BetWay', '5D', 'Ref']:
+        if vegas_odds_copy['fighter '+bookie][i]!='':
+            sum_av_f+=int(vegas_odds_copy['fighter '+bookie][i])
+            tot_av_f+=1
+        if vegas_odds_copy['opponent '+bookie][i]!='':
+            sum_av_o+=int(vegas_odds_copy['opponent '+bookie][i])
+            tot_av_o+=1
+    vegas_odds_copy['average bookie odds'][i]=[str(round(sum_av_f/tot_av_f)),str(round(sum_av_o/tot_av_o))]
+
+prediction_history = pd.concat([vegas_odds_copy, prediction_history], axis = 0).reset_index(drop=True)
+
+#getting rid of multiple copies of the same fight... keeping the most recent
+prediction_history.drop_duplicates(subset =["fighter name", "opponent name"],
+                     keep = 'first', inplace = True)
+
+import json
+result = prediction_history.to_json()
+parsed = json.loads(result)
+jsonFilePath='models/buildingMLModel/data/external/prediction_history.json'
+with open(jsonFilePath, 'w', encoding='utf-8') as jsonf:
+    jsonf.write(json.dumps(parsed, indent=4))
+print('saved to '+jsonFilePath)
+
+#need to find a way to scrape outcomes of previous fights so we can automatically check if our predictions were correct

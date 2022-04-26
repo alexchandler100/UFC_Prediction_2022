@@ -507,6 +507,94 @@ import pandas as pd
 import re
 from datetime import datetime, timedelta
 
+def get_odds_two_rows_per_fight():
+    url = 'https://www.bestfightodds.com'
+    page = requests.get(url)
+    soup = BeautifulSoup(page.content, "html.parser")
+    mydivs = soup.find_all("tr", {"class": ""})
+    rows=[tr for tr in mydivs if 'bestbet' in str(tr)]
+    names=[]
+    oddsDicts=[]
+    books=['DraftKings','BetMGM','Caesars','BetRivers','FanDuel','PointsBet','Unibet','Bet365','BetWay','5D','Ref']
+    for row in rows:
+        #gets name of fighter in row
+        name = row.find_all("span", {"class": "t-b-fcc"})[0].text
+        oddsList=[name]
+        i=0
+        for stat in row.select('td'):
+            i+=1
+            if i>11:
+                break
+            try:
+                odds = stat.select('span')[0].text
+                oddsList.append(odds)
+            except:
+                oddsList.append('')
+        names.append(name)
+        oddsDicts.append(dict(zip(['name']+books,oddsList)))
+    oddsDict = dict(zip(names,oddsDicts))
+    names = list(oddsDict.keys())
+    row0=oddsDict[list(oddsDict.keys())[0]]
+    odds_df = pd.DataFrame(row0, index=[0])
+    for i in range(1,len(names)):
+        row=oddsDict[names[i]]
+        odds_df = pd.concat([odds_df, pd.DataFrame(row, index=[i])], axis = 0)
+    return odds_df
+
+
+#problem: the fights in the "future events" category do not get lined up properly
+def get_odds():
+    url = 'https://www.bestfightodds.com'
+    page = requests.get(url)
+    soup = BeautifulSoup(page.content, "html.parser")
+    mydivs = soup.find_all("tr", {"class": ""})
+    rows=[tr for tr in mydivs if 'bestbet' in str(tr)]
+    names=[]
+    oddsDicts=[]
+    books=['DraftKings','BetMGM','Caesars','BetRivers','FanDuel','PointsBet','Unibet','Bet365','BetWay','5D','Ref']
+    for row in rows:
+        #gets name of fighter in row
+        name = row.find_all("span", {"class": "t-b-fcc"})[0].text
+        oddsList=[name]
+        i=0
+        for stat in row.select('td'):
+            i+=1
+            if i>11:
+                break
+            try:
+                odds = stat.select('span')[0].text
+                oddsList.append(odds)
+            except:
+                oddsList.append('')
+        names.append(name)
+        oddsDicts.append(dict(zip(['name']+books,oddsList)))
+    oddsDict = dict(zip(names,oddsDicts))
+    names = list(oddsDict.keys())
+    row0=oddsDict[list(oddsDict.keys())[0]]
+    odds_df = pd.DataFrame(row0, index=[0])
+    for i in range(1,len(names)):
+        row=oddsDict[names[i]]
+        odds_df = pd.concat([odds_df, pd.DataFrame(row, index=[i])], axis = 0)
+    #making it so each fight has just a single row instead of two rows
+    #making dataframe just for even indexed columns
+    odds_df_evens = odds_df[odds_df.index%2==0]
+    newcolumns={}
+    for col in list(odds_df_evens.columns):
+        newcolumns[col]='fighter '+col
+    odds_df_evens=odds_df_evens.rename(columns=newcolumns)
+    odds_df_evens.reset_index(drop=True, inplace=True)
+    #making dataframe just for odd indexed columns
+    odds_df_odds = odds_df[odds_df.index%2==1]
+    newcolumns={}
+    for col in list(odds_df_odds.columns):
+        newcolumns[col]='opponent '+col
+    odds_df_odds=odds_df_odds.rename(columns=newcolumns)
+    odds_df_odds.reset_index(drop=True, inplace=True)
+    new_odds_df = pd.concat([odds_df_evens, odds_df_odds], axis = 1);new_odds_df
+
+    return new_odds_df
+
+
 #there is a problem for collecting reversals (fix needed) seems like it now collect riding time since sept 2020
 #function for getting individual fight stats
 def get_fight_stats(url):
