@@ -78,6 +78,7 @@ def make_json(csvFilePath, jsonFilePath, column):
         jsonf.write(json.dumps(data, indent=4))
 
 
+
 update_time=time_diff(ufcfightscrap['date'][0],fight_hist['date'][0])
 print('days since last update: '+str(update_time))
 #this gives the new rows in fight_hist which do not appear in ufcfightscrapd
@@ -562,3 +563,13 @@ for name in names:
         k=Image.open("models/buildingMLModel/images/"+str(1)+name_reduced+".jpg")
     except:
         scrape_pictures(name)
+
+print('scraping bookie odds from bestfightodds.com')
+odds_df = get_odds();odds_df
+print('saving odds to models/buildingMLModel/data/external/vegas_odds.json')
+result = odds_df.to_json()
+parsed = json.loads(result)
+jsonFilePath='models/buildingMLModel/data/external/vegas_odds.json'
+with open(jsonFilePath, 'w', encoding='utf-8') as jsonf:
+    jsonf.write(json.dumps(parsed, indent=4))
+print('saved to '+jsonFilePath)
