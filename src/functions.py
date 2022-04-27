@@ -10,6 +10,23 @@ ufcfightscrap=pd.read_csv('models/buildingMLModel/data/processed/ufc_fights_crap
 #updated scraped fighter data (after running fight_hist_updated function from UFC_data_scraping file)
 ufcfighters=pd.read_csv('models/buildingMLModel/data/processed/fighter_stats.csv',sep=',',low_memory=False)
 
+#first call pip install python-Levenshtein
+from Levenshtein import distance as lev
+def same_name(str1,str2):
+    str1 = str1.lower().replace('.','').replace("-",' ')
+    str2 = str2.lower().replace('.','').replace("-",' ')
+    str1_list=str1.split()
+    str2_list=str2.split()
+    str1_set=set(str1_list)
+    str2_set=set(str2_list)
+    if str1==str2:
+        return True
+    elif str1_set==str2_set:
+        return True
+    elif lev(str1,str2)<3:
+        return True
+    else:
+        return False
 #this cell contains all functions defined for building columns in ufcfightscrap
 #converts from '%B %d, %Y' (i.e. August 22, 2020) to date (i.e. 2020-08-22)
 def convert_to_datetime(day1):
@@ -51,7 +68,8 @@ age_vect= np.vectorize(age)
 def fighter_age(fighter,day=date.today(),form1='%B %d, %Y',form2='%B %d, %Y'):
     a=0
     for i in range(len(ufcfighterscrap['name'])):
-        if ufcfighterscrap['name'][i]==fighter:
+        #if ufcfighterscrap['name'][i]==fighter: #replaced for better accuracy
+        if same_name(ufcfighterscrap['name'][i],fighter):
             dob=datetime.strptime(ufcfighterscrap['dob'][i], '%b %d, %Y').strftime('%B %d, %Y')
             a=age(dob,day,form1,form2)
             break
@@ -70,7 +88,7 @@ def wins_before(guy,day1=date.today(),something='%B %d, %Y'):
     if day1==date.today():
         day1=date.today().strftime('%B %d, %Y')
     summ=0
-    good_indices=[i for i in ufcfightscrap.index.values if ufcfightscrap['fighter'][i]==guy]
+    good_indices=[i for i in ufcfightscrap.index.values if same_name(ufcfightscrap['fighter'][i],guy)]
     for i in good_indices:
         if time_diff(ufcfightscrap['date'][i],day1)>0 and ufcfightscrap['result'][i]=='W':
             summ+=1
@@ -82,7 +100,7 @@ def losses_before(guy,day1=date.today(),something='%B %d, %Y'):
     if day1==date.today():
         day1=date.today().strftime('%B %d, %Y')
     summ=0
-    good_indices=[i for i in ufcfightscrap.index.values if ufcfightscrap['fighter'][i]==guy]
+    good_indices=[i for i in ufcfightscrap.index.values if same_name(ufcfightscrap['fighter'][i],guy)]
     for i in good_indices:
         if time_diff(ufcfightscrap['date'][i],day1)>0 and ufcfightscrap['result'][i]=='L':
             summ+=1
@@ -100,7 +118,8 @@ def ties_before(guy,something,day1=date.today()):
 def fighter_height(fighter):
     a=0
     for i in range(len(ufcfighterscrap['name'])):
-        if ufcfighterscrap['name'][i]==fighter:
+        #if ufcfighterscrap['name'][i]==fighter:
+        if same_name(ufcfighterscrap['name'][i],fighter):
             a=ufcfighterscrap['height'][i]
             break
     if a=='--' or a==0:
@@ -114,7 +133,8 @@ def fighter_height(fighter):
 def fighter_reach(fighter):
     a=0
     for i in range(len(ufcfighterscrap['name'])):
-        if ufcfighterscrap['name'][i]==fighter:
+        #if ufcfighterscrap['name'][i]==fighter:
+        if same_name(ufcfighterscrap['name'][i],fighter):
             a=ufcfighterscrap['reach'][i]
             break
     if a=='--' or a==0:
@@ -146,7 +166,7 @@ def L5Y_wins(guy,day1=date.today()):
     if day1==date.today():
         day1=date.today().strftime('%B %d, %Y')
     summ=0
-    good_indices=[i for i in ufcfightscrap.index.values if ufcfightscrap['fighter'][i]==guy]
+    good_indices=[i for i in ufcfightscrap.index.values if same_name(ufcfightscrap['fighter'][i],guy)]
     for i in good_indices:
         if 0<time_diff(ufcfightscrap['date'][i],day1)<1825 and ufcfightscrap['result'][i]=='W':
             summ+=1
@@ -160,7 +180,7 @@ def L5Y_losses(guy,day1=date.today()):
     if day1==date.today():
         day1=date.today().strftime('%B %d, %Y')
     summ=0
-    good_indices=[i for i in ufcfightscrap.index.values if ufcfightscrap['fighter'][i]==guy]
+    good_indices=[i for i in ufcfightscrap.index.values if same_name(ufcfightscrap['fighter'][i],guy)]
     for i in good_indices:
         if 0<time_diff(ufcfightscrap['date'][i],day1)<1825 and ufcfightscrap['result'][i]=='L':
             summ+=1
@@ -174,7 +194,7 @@ def L2Y_wins(guy,day1=date.today()):
     if day1==date.today():
         day1=date.today().strftime('%B %d, %Y')
     summ=0
-    good_indices=[i for i in ufcfightscrap.index.values if ufcfightscrap['fighter'][i]==guy]
+    good_indices=[i for i in ufcfightscrap.index.values if same_name(ufcfightscrap['fighter'][i],guy)]
     for i in good_indices:
         if 0<time_diff(ufcfightscrap['date'][i],day1)<730 and ufcfightscrap['result'][i]=='W':
             summ+=1
@@ -188,7 +208,7 @@ def L2Y_losses(guy,day1=date.today()):
     if day1==date.today():
         day1=date.today().strftime('%B %d, %Y')
     summ=0
-    good_indices=[i for i in ufcfightscrap.index.values if ufcfightscrap['fighter'][i]==guy]
+    good_indices=[i for i in ufcfightscrap.index.values if same_name(ufcfightscrap['fighter'][i],guy)]
     for i in good_indices:
         if 0<time_diff(ufcfightscrap['date'][i],day1)<730 and ufcfightscrap['result'][i]=='L':
             summ+=1
@@ -202,7 +222,7 @@ def ko_wins(guy,day1=date.today()):
     if day1==date.today():
         day1=date.today().strftime('%B %d, %Y')
     summ=0
-    good_indices=[i for i in ufcfightscrap.index.values if ufcfightscrap['fighter'][i]==guy]
+    good_indices=[i for i in ufcfightscrap.index.values if same_name(ufcfightscrap['fighter'][i],guy)]
     for i in good_indices:
         if ufcfightscrap['result'][i]=='W' and ufcfightscrap['method'][i]=='KO/TKO':
             summ+=1
@@ -214,7 +234,7 @@ def ko_losses(guy,day1=date.today()):
     if day1==date.today():
         day1=date.today().strftime('%B %d, %Y')
     summ=0
-    good_indices=[i for i in ufcfightscrap.index.values if ufcfightscrap['fighter'][i]==guy]
+    good_indices=[i for i in ufcfightscrap.index.values if same_name(ufcfightscrap['fighter'][i],guy)]
     for i in good_indices:
         if ufcfightscrap['result'][i]=='L' and ufcfightscrap['method'][i]=='KO/TKO':
             summ+=1
@@ -226,7 +246,7 @@ def L5Y_ko_wins(guy,day1=date.today()):
     if day1==date.today():
         day1=date.today().strftime('%B %d, %Y')
     summ=0
-    good_indices=[i for i in ufcfightscrap.index.values if ufcfightscrap['fighter'][i]==guy]
+    good_indices=[i for i in ufcfightscrap.index.values if same_name(ufcfightscrap['fighter'][i],guy)]
     for i in good_indices:
         if 0<time_diff(ufcfightscrap['date'][i],day1)<1825 and ufcfightscrap['result'][i]=='W' and ufcfightscrap['method'][i]=='KO/TKO':
             summ+=1
@@ -240,7 +260,7 @@ def L5Y_ko_losses(guy,day1=date.today()):
     if day1==date.today():
         day1=date.today().strftime('%B %d, %Y')
     summ=0
-    good_indices=[i for i in ufcfightscrap.index.values if ufcfightscrap['fighter'][i]==guy]
+    good_indices=[i for i in ufcfightscrap.index.values if same_name(ufcfightscrap['fighter'][i],guy)]
     for i in good_indices:
         if 0<time_diff(ufcfightscrap['date'][i],day1)<1825 and ufcfightscrap['result'][i]=='L' and ufcfightscrap['method'][i]=='KO/TKO':
             summ+=1
@@ -254,7 +274,7 @@ def L2Y_ko_wins(guy,day1=date.today()):
     if day1==date.today():
         day1=date.today().strftime('%B %d, %Y')
     summ=0
-    good_indices=[i for i in ufcfightscrap.index.values if ufcfightscrap['fighter'][i]==guy]
+    good_indices=[i for i in ufcfightscrap.index.values if same_name(ufcfightscrap['fighter'][i],guy)]
     for i in good_indices:
         if 0<time_diff(ufcfightscrap['date'][i],day1)<730 and ufcfightscrap['result'][i]=='W' and ufcfightscrap['method'][i]=='KO/TKO':
             summ+=1
@@ -268,7 +288,7 @@ def L2Y_ko_losses(guy,day1=date.today()):
     if day1==date.today():
         day1=date.today().strftime('%B %d, %Y')
     summ=0
-    good_indices=[i for i in ufcfightscrap.index.values if ufcfightscrap['fighter'][i]==guy]
+    good_indices=[i for i in ufcfightscrap.index.values if same_name(ufcfightscrap['fighter'][i],guy)]
     for i in good_indices:
         if 0<time_diff(ufcfightscrap['date'][i],day1)<730 and ufcfightscrap['result'][i]=='L' and ufcfightscrap['method'][i]=='KO/TKO':
             summ+=1
@@ -282,7 +302,7 @@ def sub_wins(guy,day1=date.today()):
     if day1==date.today():
         day1=date.today().strftime('%B %d, %Y')
     summ=0
-    good_indices=[i for i in ufcfightscrap.index.values if ufcfightscrap['fighter'][i]==guy]
+    good_indices=[i for i in ufcfightscrap.index.values if same_name(ufcfightscrap['fighter'][i],guy)]
     for i in good_indices:
         if ufcfightscrap['result'][i]=='W' and ufcfightscrap['method'][i]=='SUB':
             summ+=1
@@ -294,7 +314,7 @@ def sub_losses(guy,day1=date.today()):
     if day1==date.today():
         day1=date.today().strftime('%B %d, %Y')
     summ=0
-    good_indices=[i for i in ufcfightscrap.index.values if ufcfightscrap['fighter'][i]==guy]
+    good_indices=[i for i in ufcfightscrap.index.values if same_name(ufcfightscrap['fighter'][i],guy)]
     for i in good_indices:
         if ufcfightscrap['result'][i]=='L' and ufcfightscrap['method'][i]=='SUB':
             summ+=1
@@ -306,7 +326,7 @@ def L5Y_sub_wins(guy,day1=date.today()):
     if day1==date.today():
         day1=date.today().strftime('%B %d, %Y')
     summ=0
-    good_indices=[i for i in ufcfightscrap.index.values if ufcfightscrap['fighter'][i]==guy]
+    good_indices=[i for i in ufcfightscrap.index.values if same_name(ufcfightscrap['fighter'][i],guy)]
     for i in good_indices:
         if 0<time_diff(ufcfightscrap['date'][i],day1)<1825 and ufcfightscrap['result'][i]=='W' and ufcfightscrap['method'][i]=='SUB':
             summ+=1
@@ -320,7 +340,7 @@ def L5Y_sub_losses(guy,day1=date.today()):
     if day1==date.today():
         day1=date.today().strftime('%B %d, %Y')
     summ=0
-    good_indices=[i for i in ufcfightscrap.index.values if ufcfightscrap['fighter'][i]==guy]
+    good_indices=[i for i in ufcfightscrap.index.values if same_name(ufcfightscrap['fighter'][i],guy)]
     for i in good_indices:
         if 0<time_diff(ufcfightscrap['date'][i],day1)<1825 and ufcfightscrap['result'][i]=='L' and ufcfightscrap['method'][i]=='SUB':
             summ+=1
@@ -334,7 +354,7 @@ def L2Y_sub_wins(guy,day1=date.today()):
     if day1==date.today():
         day1=date.today().strftime('%B %d, %Y')
     summ=0
-    good_indices=[i for i in ufcfightscrap.index.values if ufcfightscrap['fighter'][i]==guy]
+    good_indices=[i for i in ufcfightscrap.index.values if same_name(ufcfightscrap['fighter'][i],guy)]
     for i in good_indices:
         if 0<time_diff(ufcfightscrap['date'][i],day1)<730 and ufcfightscrap['result'][i]=='W' and ufcfightscrap['method'][i]=='SUB':
             summ+=1
@@ -348,7 +368,7 @@ def L2Y_sub_losses(guy,day1=date.today()):
     if day1==date.today():
         day1=date.today().strftime('%B %d, %Y')
     summ=0
-    good_indices=[i for i in ufcfightscrap.index.values if ufcfightscrap['fighter'][i]==guy]
+    good_indices=[i for i in ufcfightscrap.index.values if same_name(ufcfightscrap['fighter'][i],guy)]
     for i in good_indices:
         if 0<time_diff(ufcfightscrap['date'][i],day1)<730 and ufcfightscrap['result'][i]=='L' and ufcfightscrap['method'][i]=='SUB':
             summ+=1
@@ -398,9 +418,9 @@ def count(stat, guy,inf_abs, total_L5Y_L2Y_avg, day1=date.today().strftime('%B %
     else:
         good_indices_1=[i for i in ufcfightscrap.index.values if 0<time_diff(ufcfightscrap['date'][i],day1)<1825]
     if inf_abs=='inf':
-        good_indices_2=[i for i in ufcfightscrap.index.values if ufcfightscrap['fighter'][i]==guy]
+        good_indices_2=[i for i in ufcfightscrap.index.values if same_name(ufcfightscrap['fighter'][i],guy)]
     else:
-        good_indices_2=[i for i in ufcfightscrap.index.values if ufcfightscrap['opponent'][i]==guy]
+        good_indices_2=[i for i in ufcfightscrap.index.values if same_name(ufcfightscrap['opponent'][i],guy)]
     good_indices=[i for i in good_indices_1 if i in good_indices_2]
     if total_L5Y_L2Y_avg!='avg':
         for i in good_indices:
@@ -418,7 +438,7 @@ def count(stat, guy,inf_abs, total_L5Y_L2Y_avg, day1=date.today().strftime('%B %
 #enter time in the form 'August 24, 2018'
 def time_in_octagon(guy,day1=date.today().strftime('%B %d, %Y')):
     summ=0
-    good_indices=[i for i in ufcfightscrap.index.values if time_diff(ufcfightscrap['date'][i],day1)>0 and ufcfightscrap['fighter'][i]==guy]
+    good_indices=[i for i in ufcfightscrap.index.values if time_diff(ufcfightscrap['date'][i],day1)>0 and same_name(ufcfightscrap['fighter'][i],guy)]
     for i in good_indices:
         if ufcfightscrap['time'][i][2]==':':
             summ=int(ufcfightscrap['time'][i][0:2])+int(ufcfightscrap['time'][i][3:])/60.0
@@ -431,9 +451,9 @@ def time_in_octagon(guy,day1=date.today().strftime('%B %d, %Y')):
 def avg_count(stat, guy,inf_abs, day1=date.today().strftime('%B %d, %Y')):
     summ=0
     if inf_abs=='inf':
-        good_indices=[i for i in ufcfightscrap.index.values if ufcfightscrap['fighter'][i]==guy and time_diff(ufcfightscrap['date'][i],day1)>0]
+        good_indices=[i for i in ufcfightscrap.index.values if same_name(ufcfightscrap['fighter'][i],guy) and time_diff(ufcfightscrap['date'][i],day1)>0]
     else:
-        good_indices=[i for i in ufcfightscrap.index.values if ufcfightscrap['opponent'][i]==guy and time_diff(ufcfightscrap['date'][i],day1)>0]
+        good_indices=[i for i in ufcfightscrap.index.values if same_name(ufcfightscrap['opponent'][i],guy) and time_diff(ufcfightscrap['date'][i],day1)>0]
     for i in good_indices:
         summ+=ufcfightscrap[stat][i]
     t= time_in_octagon(guy,day1)
@@ -451,16 +471,12 @@ ufc_fights = pd.read_csv('models/buildingMLModel/data/processed/ufc_fights.csv',
 ufcfighterscrap =pd.read_csv('models/buildingMLModel/data/processed/fighter_stats.csv',sep=',',low_memory=False)
 
 def stance(fighter):
-    find_fighter=[i for i in range(len(ufcfighterscrap['name'])) if ufcfighterscrap['name'][i]==fighter]
+    find_fighter=[i for i in range(len(ufcfighterscrap['name'])) if same_name(ufcfighterscrap['name'][i],fighter)]
     b=next(iter(find_fighter),'unknown')
     if b=='unknown':
         a='unknown'
     else:
         a = ufcfighterscrap['stance'][b]
-    #for i in range(len(ufcfighterscrap['name'])):
-        #if ufcfighterscrap['name'][i]==fighter:
-            #a=ufcfighterscrap['stance'][i]
-            #break
     if a=='Orthodox':
         return 0
     elif a=='Switch' or a=='Southpaw' or a=='Open Stance' or a=='Sideways':

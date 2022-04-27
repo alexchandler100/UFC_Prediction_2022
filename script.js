@@ -7,8 +7,6 @@ ufcfightscrap = {}
 vegas_odds = {}
 prediction_history = {}
 
-const str1 = 'hitting';
-const str2 = 'kitten';
 const levenshteinDistance = (str1 = '', str2 = '') => {
   const track = Array(str2.length + 1).fill(null).map(() =>
     Array(str1.length + 1).fill(null));
@@ -30,7 +28,6 @@ const levenshteinDistance = (str1 = '', str2 = '') => {
   }
   return track[str2.length][str1.length];
 };
-console.log(`levenshtein distance: ${levenshteinDistance(str1, str2)}`);
 
 function same_name(str1, str2) {
   //console.log(`checking if ${str1} and ${str2} are the same`)
@@ -133,15 +130,11 @@ function selectFighter(id, out) {
   // Calling function
   // set the path to check
   if (checkFileExist("src/models/buildingMLModel/gifs/postCNNGIFs/" + name_decoded + ".gif")) {
-    console.log("src/models/buildingMLModel/gifs/postCNNGIFs/" + name_decoded + ".gif")
     document.getElementById("fighter" + i + "pic").src = "src/models/buildingMLModel/gifs/postCNNGIFs/" + name_decoded + ".gif" //sets the image
-    console.log(name_decoded)
   } else if (checkFileExist("src/models/buildingMLModel/images2/" + j + name_decoded + ".jpg")) {
     document.getElementById("fighter" + i + "pic").src = "src/models/buildingMLModel/images2/" + j + name_decoded + ".jpg" //sets the image
-    console.log(j + name_decoded)
   } else {
     document.getElementById("fighter" + i + "pic").src = "src/models/buildingMLModel/images/" + j + name_decoded + ".jpg" //sets the image
-    console.log(j + name_decoded)
   }
   if (i == '1') {
     populateTaleOfTheTape(output, 'rc')
@@ -170,9 +163,9 @@ function selectFighterAndDate(id, out, monthid, monthout, yearid, yearout) {
 function fighter_age(fighter, yearSelected) {
   //finding the correct name (could be entered differently in the fighter_data dataset)
   let fighterName = ''
-  for (const name in fighter_data){
-    if (same_name(fighter,name)){
-      fighterName=name;
+  for (const name in fighter_data) {
+    if (same_name(fighter, name)) {
+      fighterName = name;
       break;
     }
   }
@@ -195,7 +188,7 @@ function l5y_wins(fighter, year) {
       return wins
       break;
     }
-    if (name == fighter && yearDiff < 6 && yearDiff >= 0 && result == 'W') {
+    if (same_name(name, fighter) && yearDiff < 6 && yearDiff >= 0 && result == 'W') {
       wins += 1
     }
   }
@@ -213,7 +206,7 @@ function l2y_wins(fighter, year) {
       return wins
       break;
     }
-    if (name == fighter && yearDiff < 3 && yearDiff >= 0 && result == 'W') {
+    if (same_name(name, fighter) && yearDiff < 3 && yearDiff >= 0 && result == 'W') {
       wins += 1
     }
   }
@@ -231,7 +224,7 @@ function l5y_ko_losses(fighter, year) {
       return ko_losses
       break;
     }
-    if (name == fighter && yearDiff < 6 && yearDiff >= 0 && result == 'L' && method == "KO/TKO") {
+    if (same_name(name, fighter) && yearDiff < 6 && yearDiff >= 0 && result == 'L' && method == "KO/TKO") {
       ko_losses += 1
       //console.log(ufcfightscrap[fight]['fighter'],ufcfightscrap[fight]['opponent'], ufcfightscrap[fight]['date'], result, method)
     }
@@ -250,7 +243,7 @@ function l5y_sub_wins(fighter, year) {
       return sub_wins
       break;
     }
-    if (name == fighter && yearDiff < 6 && yearDiff >= 0 && result == 'W' && method == "SUB") {
+    if (same_name(name, fighter) && yearDiff < 6 && yearDiff >= 0 && result == 'W' && method == "SUB") {
       sub_wins += 1
       //console.log(ufcfightscrap[fight]['fighter'],ufcfightscrap[fight]['opponent'], ufcfightscrap[fight]['date'], result, method)
     }
@@ -268,7 +261,7 @@ function l5y_losses(fighter, year) {
       return losses;
       break;
     }
-    if (name == fighter && yearDiff < 6 && yearDiff >= 0 && result == 'L') {
+    if (same_name(name, fighter) && yearDiff < 6 && yearDiff >= 0 && result == 'L') {
       losses += 1
       //console.log(ufcfightscrap[fight]['fighter'], ufcfightscrap[fight]['opponent'], ufcfightscrap[fight]['date'], result)
     }
@@ -289,7 +282,7 @@ function avg_count(stat, fighter, inf_abs, year) {
   for (const fight in ufcfightscrap) {
     let name = ufcfightscrap[fight][person]
     let yearDiff = parseInt(year) - ufcfightscrap[fight]['date'].slice(-4)
-    if (name == fighter && yearDiff >= 0) {
+    if (same_name(name, fighter) && yearDiff >= 0) {
       summ += parseInt(ufcfightscrap[fight][stat])
       let round = parseInt(ufcfightscrap[fight]['round'])
       let minutes = parseInt(ufcfightscrap[fight]['time'][0])
@@ -317,12 +310,13 @@ function wins_wins(fighter, year, years) {
   }
   let fighter_wins = []
   for (let i = 0; i < relevant_fights.length; i++) {
-    if (relevant_fights[i][0] == fighter) {
+    if (same_name(relevant_fights[i][0], fighter)) {
       fighter_wins.push(relevant_fights[i][1])
     }
   }
   let fighter_wins_wins = []
   for (let i = 0; i < relevant_fights.length; i++) {
+    //the same_name function should be used here but that requires refactoring
     if (fighter_wins.includes(relevant_fights[i][0])) {
       fighter_wins_wins.push(relevant_fights[i][1])
     }
@@ -345,12 +339,13 @@ function losses_losses(fighter, year, years) {
   }
   let fighter_losses = []
   for (let i = 0; i < relevant_fights.length; i++) {
-    if (relevant_fights[i][1] == fighter) {
+    if (same_name(relevant_fights[i][1], fighter)) {
       fighter_losses.push(relevant_fights[i][0])
     }
   }
   let fighter_losses_losses = []
   for (let i = 0; i < relevant_fights.length; i++) {
+    //same_name function should be used here but that requires refactoring (i.e. make a custom function to check if name is in list up to small changes)
     if (fighter_losses.includes(relevant_fights[i][1])) {
       fighter_losses_losses.push(relevant_fights[i][0])
     }
@@ -632,7 +627,6 @@ function predict(fighter1, fighter2, month1, year1, month2, year2) {
   if (guy1 != guy2 && tup[0] == 0.0 && tup[1] == 0.0 && tup[2] == 0.0 && tup[3] == 0.0 && tup[4] == 0.0) {
     resulting_text = 'Internal issue encountered. Please refresh page and try again.'
   }
-  console.log(resulting_text)
   document.querySelector('.fightoutcome').textContent = resulting_text
   odds = betting_odds(fighter1, fighter2, month1, year1, month2, year2)
 
@@ -700,9 +694,8 @@ function eqSet(as, bs) {
   return true;
 }
 
+//same_name function should be used here instead of eqSet (because same_name is stronger)
 function populateLast5Fights(fighter, corner) {
-  let fighterNameList = fighter.split(" ")
-  let fighterNameSet = new Set(fighterNameList)
   var myTab;
   if (corner == 'rc') {
     yr = document.querySelector('#' + 'f1selectyear').value;
@@ -719,14 +712,12 @@ function populateLast5Fights(fighter, corner) {
   }
   let fightNumber = 1
   for (const fight in ufcfightscrap) {
-    let fightNameList = ufcfightscrap[fight]['fighter'].split(" ")
-    let fightNameSet = new Set(fightNameList)
     let result;
     let opponent;
     let method;
     let yearDiff = parseInt(yr) - ufcfightscrap[fight]['date'].slice(-4)
     // note I changed to checking set equality of the set {firstName, middleName, lastName} because different orderings are used in different databases
-    if (eqSet(fightNameSet, fighterNameSet) && yearDiff >= 0) {
+    if (same_name(ufcfightscrap[fight]['fighter'], fighter) && yearDiff >= 0) {
       result = ufcfightscrap[fight]['result']
       fighter = ufcfightscrap[fight]['fighter']
       opponent = ufcfightscrap[fight]['opponent']
@@ -817,10 +808,10 @@ setTimeout(() => {
   //giving prediction_history correct keys
   for (let j = 0; j < Object.keys(vegas_odds).length; j++) {
     prediction_history[Object.keys(vegas_odds)[j]] = {}
-    prediction_history['predicted fighter odds']={}
-    prediction_history['predicted opponent odds']={}
-    prediction_history['winner']={}
-    prediction_history['correct']={}
+    prediction_history['predicted fighter odds'] = {}
+    prediction_history['predicted opponent odds'] = {}
+    prediction_history['winner'] = {}
+    prediction_history['correct'] = {}
   }
   //filling in any previous data into prediction_history
   $(function() {
@@ -868,8 +859,8 @@ setTimeout(() => {
 
 //set initial table values and display fight
 setTimeout(() => {
-  document.getElementById('select1').value = "Amanda Lemos"
-  document.getElementById('select2').value = "Jessica Andrade"
+  document.getElementById('select1').value = "Rob Font"
+  document.getElementById('select2').value = "Marlon Vera"
   document.getElementById('f1selectmonth').value = "April"
   document.getElementById('f1selectyear').value = "2022"
   document.getElementById('f2selectmonth').value = "April"
@@ -891,7 +882,7 @@ setTimeout(() => {
     }
   }
 
-}, 650)
+}, 300)
 
 //the following is now done in the file update_and_rebuild_model.py but we'll keep this here if needed
 /*
@@ -916,16 +907,22 @@ setTimeout(()=>{
 }, 750)
 */
 
-setTimeout(()=>{
-  for (const i in prediction_history['fighter name']){ //iterating over rows of prediction_history
-      fighter = prediction_history['fighter name'][i]
-      opponent = prediction_history['opponent name'][i]
-      fighterOdds=prediction_history['predicted fighter odds'][i]
-      opponentOdds=prediction_history['predicted opponent odds'][i]
-      avBookieOdds=prediction_history['average bookie odds'][i]
-
-      var myTable = document.getElementById('tablehistory')
-      console.log(myTable.tBodies)
+//Building upcoming predictions table
+setTimeout(() => {
+  for (const i in prediction_history['fighter name']) {
+    fighter = prediction_history['fighter name'][i]
+    opponent = prediction_history['opponent name'][i]
+    fighterOdds = prediction_history['predicted fighter odds'][i]
+    opponentOdds = prediction_history['predicted opponent odds'][i]
+    avBookieOdds = prediction_history['average bookie odds'][i]
+    counter=0
+    for (const j in ufcfightscrap) {
+      counter+=1
+      if (same_name(ufcfightscrap[j]['fighter'], fighter) && same_name(ufcfightscrap[j]['opponent'], opponent)) {
+         break;
+    } else if (counter>=100){ //just searches through the last 100 fights to see if the fight has happened recently
+      var myTable = document.getElementById('upcoming')
+      myTable.rows.item(0).cells.item(0).style.backgroundColor = "#212121";
       var tbody = myTable.tBodies[0]
       var tr = tbody.insertRow(-1);
       var td1 = document.createElement('td');
@@ -933,34 +930,107 @@ setTimeout(()=>{
       var td3 = document.createElement('td');
       var td4 = document.createElement('td');
       var td5 = document.createElement('td');
-      var td6 = document.createElement('td');
       tr.appendChild(td1);
       tr.appendChild(td2);
       tr.appendChild(td3);
       tr.appendChild(td4);
       tr.appendChild(td5);
-      tr.appendChild(td6);
-      console.log(tr)
       tr.cells.item(0).innerHTML = fighter;
       tr.cells.item(1).innerHTML = opponent;
       tr.cells.item(2).innerHTML = fighterOdds;
       tr.cells.item(3).innerHTML = opponentOdds;
-      tr.cells.item(5).innerHTML = avBookieOdds;
-      for (const i in ufcfightscrap){
-        if (same_name(ufcfightscrap[i]['fighter'],fighter) && same_name(ufcfightscrap[i]['opponent'],opponent)){
-          if (fighterOdds[0]=='-'){
-            tr.cells.item(4).innerHTML = 'yes'
+      tr.cells.item(4).innerHTML = avBookieOdds;
+      tr.cells.item(0).style.backgroundColor = "#323232";
+      tr.cells.item(1).style.backgroundColor = "#323232";
+      tr.cells.item(2).style.backgroundColor = "#323232";
+      tr.cells.item(3).style.backgroundColor = "#323232";
+      tr.cells.item(4).style.backgroundColor = "#323232";
+      tr.cells.item(0).style.color = "#ffffff";
+      tr.cells.item(1).style.color = "#ffffff";
+      tr.cells.item(2).style.color = "#ffffff";
+      tr.cells.item(3).style.color = "#ffffff";
+      tr.cells.item(4).style.color = "#ffffff";
+      break;
+    }
+  }
+  }
+}, 350)
+
+
+setTimeout(() => { //this builds a table for the history of predictions which is built in python in the jupyter notebook UFC_Prediction_Model
+  for (const i in prediction_history['fighter name']) { //iterating over rows of prediction_history
+    fighter = prediction_history['fighter name'][i]
+    opponent = prediction_history['opponent name'][i]
+    fighterOdds = prediction_history['predicted fighter odds'][i]
+    opponentOdds = prediction_history['predicted opponent odds'][i]
+    avBookieOdds = prediction_history['average bookie odds'][i]
+    counter=0
+    for (const j in ufcfightscrap) {
+      counter+=1
+      if (counter>=100){
+        break;
+      }
+      if (same_name(ufcfightscrap[j]['fighter'], fighter) && same_name(ufcfightscrap[j]['opponent'], opponent)) {
+        var myTable = document.getElementById('tablehistory')
+        myTable.rows.item(0).cells.item(0).style.backgroundColor = "#212121";
+        var tbody = myTable.tBodies[0]
+        var tr = tbody.insertRow(-1);
+        var td1 = document.createElement('td');
+        var td2 = document.createElement('td');
+        var td3 = document.createElement('td');
+        var td4 = document.createElement('td');
+        var td5 = document.createElement('td');
+        var td6 = document.createElement('td');
+        tr.appendChild(td1);
+        tr.appendChild(td2);
+        tr.appendChild(td3);
+        tr.appendChild(td4);
+        tr.appendChild(td5);
+        tr.appendChild(td6);
+        tr.cells.item(0).innerHTML = fighter;
+        tr.cells.item(1).innerHTML = opponent;
+        tr.cells.item(2).innerHTML = fighterOdds;
+        tr.cells.item(3).innerHTML = opponentOdds;
+        tr.cells.item(5).innerHTML = avBookieOdds;
+        tr.cells.item(0).style.backgroundColor = "#323232";
+        tr.cells.item(1).style.backgroundColor = "#323232";
+        tr.cells.item(2).style.backgroundColor = "#323232";
+        tr.cells.item(3).style.backgroundColor = "#323232";
+        tr.cells.item(4).style.backgroundColor = "#323232";
+        tr.cells.item(5).style.backgroundColor = "#323232";
+        tr.cells.item(0).style.color = "#ffffff";
+        tr.cells.item(1).style.color = "#ffffff";
+        tr.cells.item(2).style.color = "#ffffff";
+        tr.cells.item(3).style.color = "#ffffff";
+        tr.cells.item(5).style.color = "#ffffff";
+        console.log(ufcfightscrap[j])
+        if ((parseInt(fighterOdds) < 0 && ufcfightscrap[j]['result'] == 'W') || (parseInt(fighterOdds) > 0 && ufcfightscrap[j]['result'] == 'L')) {
+          tr.cells.item(4).innerHTML = 'yes'
+          tr.cells.item(4).style.backgroundColor = "#00ff00";
+          if (parseInt(fighterOdds) < 0 && ufcfightscrap[j]['result'] == 'W') {
+            tr.cells.item(0).style.fontWeight = "bold";
+            tr.cells.item(0).style.fontSize = "15px";
+            tr.cells.item(0).style.color = "#ffd700";
           } else {
-            tr.cells.item(4).innerHTML = 'no'
+            tr.cells.item(1).style.fontWeight = "bold";
+            tr.cells.item(1).style.fontSize = "15px";
+            tr.cells.item(1).style.color = "#ffd700";
           }
-        } else if (same_name(ufcfightscrap[i]['fighter'],opponent) && same_name(ufcfightscrap[i]['opponent'],fighter)){
-          if (fighterOdds[0]=='-'){
-            tr.cells.item(4).innerHTML = 'no'
+        } else {
+          tr.cells.item(4).innerHTML = 'no'
+          tr.cells.item(4).style.backgroundColor = "#ff0000";
+          if (parseInt(fighterOdds) < 0 && ufcfightscrap[j]['result'] == 'L') {
+            tr.cells.item(1).style.fontWeight = "bold";
+            tr.cells.item(1).style.fontSize = "15px";
+            tr.cells.item(1).style.color = "#ffd700";
           } else {
-            tr.cells.item(4).innerHTML = 'yes'
+            tr.cells.item(0).style.fontWeight = "bold";
+            tr.cells.item(0).style.fontSize = "15px";
+            tr.cells.item(0).style.color = "#ffd700";
           }
         }
+        break
       }
+    }
   }
-
-}, 850)
+}, 450)

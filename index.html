@@ -291,6 +291,9 @@
         Predict Outcome
       </h1>
     </div>
+    <center>
+      This should take about 5 seconds of computing.
+    </center>
     <div>
       <center>
         <button class="button button3" onclick="predict('select1','select2','f1selectmonth','f1selectyear','f2selectmonth','f2selectyear',)"> Calculate </button>
@@ -302,8 +305,8 @@
 
     <center>
       <table id="tableoutcome" style="margin-top:.5cm;">
-        <tr style="color: #fff; font-size:25px;font-variant: small-caps;">
-          <td colspan="3">Calculated Odds (no vig)</td>
+        <tr style="color: #ffffff; font-size:25px;font-variant: small-caps;">
+          <td colspan="3">Predicted Odds (no vig)</td>
         </tr>
         <tr id="odds">
           <td style="color: #fff;font-size:15px;">Fair Odds</td>
@@ -370,24 +373,68 @@
         </tr>
       </table>
     </center>
-
-
   </section>
 
   <section>
+    <div class="headers">
+      <h1>
+        Future Fights
+      </h1>
+    </div>
+    <center>
+      Here we show the model's predictions for upcoming fights which are on the vegas books.
+      Results may differ slightly from live predictions in the predictor above due to the fact that the predictions in the table are made in our python model
+      and the predictions made live on the website are made with our javascript model which may slightly differ from time to time.
+    </center>
+    <center>
+      <table id="upcoming" style="margin-top:.5cm;">
+        <thead>
+        <tr style="color: #fff; font-size:25px;font-variant: small-caps;">
+          <th colspan="6">Upcoming Fights</th>
+        </tr>
+        <tr>
+          <th style="color: #ffffff;background-color: #323232; font-size:15px;">Fighter</th>
+          <th style="color: #ffffff;background-color: #323232;font-size:15px;">Opponent</th>
+          <th style="color: #ffffff;background-color: #323232;font-size:15px;">Predicted<br>Fighter<br>Odds</th>
+          <th style="color: #ffffff;background-color: #323232;font-size:15px;">Predicted<br>Opponent<br>Odds</th>
+          <th style="color: #ffffff;background-color: #323232;font-size:15px;">Average<br>Bookie<br>Odds</th>
+        </tr>
+        </thead>
+        <tbody>
+        </tbody>
+      </table>
+    </center>
+  </section>
+
+
+  <section>
+    <div class="headers">
+      <h1>
+        Past Fights
+      </h1>
+    </div>
+
+    <center>
+      We started running this program to predict fights on April 23, 2022. Below we show the history of predictions made before each event.
+      For reference, the average bookie odds are also shown (this average is formed from the betting odds on Draftkings, BetMGM, Caesars, BetRivers, FanDuel, PointsBet, Unibet, Bet365, BetWay, SD, Ref).
+      After each event, the table is automatically updated to indicate the winners in <span style="color:gold">gold</span> and keep a running total of the prediction accuracy.
+      Correctly predicted fights are indicated in <span style="color:green">green</span> and incorrectly predicted fights are shown in <span style="color:red">red</span>.
+      After a large number of fights, the accuracy is expected for theoretical reasons to converge to about 64%.
+    </center>
+
     <center>
       <table id="tablehistory" style="margin-top:.5cm;">
         <thead>
-        <tr style="color: #000000; font-size:25px;font-variant: small-caps;">
+        <tr style="color: #fff; font-size:25px;font-variant: small-caps;">
           <th colspan="6">Fight Prediction History</th>
         </tr>
         <tr id="history">
-          <th style="color: #000000;font-size:15px;">Fighter</th>
-          <th style="color: #000000;font-size:15px;">Opponent</th>
-          <th style="color: #000000;font-size:15px;">Fighter <br>Odds</th>
-          <th style="color: #000000;font-size:15px;">Opponent <br>Odds</th>
-          <th style="color: #000000;font-size:15px;">Correctly <br> Predicted?</th>
-          <th style="color: #000000;font-size:15px;">Average <br>Bookie <br>Odds</th>
+          <th style="color: #ffffff;background-color: #323232; font-size:15px;">Fighter</th>
+          <th style="color: #ffffff;background-color: #323232;font-size:15px;">Opponent</th>
+          <th style="color: #ffffff;background-color: #323232;font-size:15px;">Predicted<br>Fighter<br>Odds</th>
+          <th style="color: #ffffff;background-color: #323232;font-size:15px;">Predicted<br>Opponent<br>Odds</th>
+          <th style="color: #ffffff;background-color: #323232;font-size:15px;">Correctly<br>Predicted?</th>
+          <th style="color: #ffffff;background-color: #323232;font-size:15px;">Average <br>Bookie<br>Odds</th>
         </tr>
         </thead>
         <tbody>

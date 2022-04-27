@@ -435,9 +435,10 @@ def probability(fighter1,fighter2,date1,date2):
     presig=presigmoid_value(fighter1,fighter2,date1,date2)
     return sigmoid(presig)
 
+from dateutil.relativedelta import relativedelta
 def odds(fighter1,fighter2):
-    date1=date.today().strftime("%B %d, %Y")
-    date2=date.today().strftime("%B %d, %Y")
+    date1=(date.today()- relativedelta(months=1)).strftime("%B %d, %Y")
+    date2=(date.today()- relativedelta(months=1)).strftime("%B %d, %Y")
     p=probability(fighter1,fighter2,date1,date2)
     if p<.5:
         fighterOdds=round(100/p - 100)
@@ -502,6 +503,8 @@ def ufc_prediction_tuple(fighter1,fighter2,day1=date.today(),day2=date.today()):
             avg_count('takedowns_attempts',fighter1,'inf',day1)-avg_count('takedowns_attempts',fighter2,'inf',day2),
             avg_count('head_strikes_landed',fighter1,'inf',day1)-avg_count('head_strikes_landed',fighter2,'inf',day2),
            ]
+
+
 print('Making predictions for all fights on the books')
 
 #now we build prediction_history
@@ -511,27 +514,10 @@ print('Making predictions for all fights on the books')
 #for each fight in prediction_history, if a prediction has not yet been made, make a prediction
 #then export to json
 
-#first call pip install python-Levenshtein
-from Levenshtein import distance as lev
-def same_name(str1,str2):
-    str1 = str1.lower().replace('.','').replace("-",' ')
-    str2 = str2.lower().replace('.','').replace("-",' ')
-    str1_list=str1.split()
-    str2_list=str2.split()
-    str1_set=set(str1_list)
-    str2_set=set(str2_list)
-    if str1==str2:
-        return True
-    elif str1_set==str2_set:
-        return True
-    elif lev(str1,str2)<3:
-        return True
-    else:
-        return False
-
 vegas_odds=pd.read_json('models/buildingMLModel/data/external/vegas_odds.json')
-
 prediction_history=pd.read_json('models/buildingMLModel/data/external/prediction_history.json')
+
+#this counts the number of columns in row number row_number of vegas_odds which are null (if there are too many, we dont put this fight in the dataset)
 def count_null(row_number):
     row = vegas_odds.iloc[row_number]
     return len([i for i in range(len(row)) if row[i]==''])
@@ -546,7 +532,6 @@ for col in ['predicted fighter odds','predicted opponent odds','average bookie o
     vegas_odds_copy[col]=""
 
 #filling in predictions
-#need to make sure it only makes predictions for fights it hasn't yet predicted
 for i in vegas_odds_copy.index:
     fighter=vegas_odds_copy['fighter name'][i]
     opponent=vegas_odds_copy['opponent name'][i]
