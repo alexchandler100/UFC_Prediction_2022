@@ -19,6 +19,17 @@ from sklearn.feature_selection import VarianceThreshold
 import itertools
 #this imports all of the functions from the file functions.py
 from functions import *
+import json
+
+print('scraping bookie odds from bestfightodds.com')
+odds_df = get_odds();odds_df
+print('saving odds to models/buildingMLModel/data/external/vegas_odds.json')
+result = odds_df.to_json()
+parsed = json.loads(result)
+jsonFilePath='models/buildingMLModel/data/external/vegas_odds.json'
+with open(jsonFilePath, 'w', encoding='utf-8') as jsonf:
+    jsonf.write(json.dumps(parsed, indent=4))
+print('saved to '+jsonFilePath)
 
 print('importing dataframe from ufc_fights.csv')
 #importing csv fight data and saving as dataframes
@@ -58,7 +69,7 @@ draw_mask=ufc_fights_winner['result'] != 'D'
 method_mask_winner=(ufc_fights_winner['method']!='bullshit')
 method_mask_method=(ufc_fights_method['method']!='bullshit')
 #fights where age is known
-age_mask=(ufc_fights_winner['fighter_age']!='unknown')&(ufc_fights_winner['opponent_age']!='unknown')
+age_mask=(ufc_fights_winner['fighter_age']!='unknown')&(ufc_fights_winner['opponent_age']!='unknown')&(ufc_fights_winner['fighter_age']!=0)&(ufc_fights_winner['opponent_age']!=0)
 #fights where height reach is known
 height_mask=(ufc_fights_winner['fighter_height']!='unknown')&(ufc_fights_winner['opponent_height']!='unknown')
 reach_mask=(ufc_fights_winner['fighter_reach']!='unknown')&(ufc_fights_winner['opponent_reach']!='unknown')
@@ -508,11 +519,8 @@ def ufc_prediction_tuple(fighter1,fighter2,day1=date.today(),day2=date.today()):
 print('Making predictions for all fights on the books')
 
 #now we build prediction_history
-#first need to rebuild "same_name" function like we did in js (done)
-#next open existing prediction_history.json as a dataframe (done)
-#then add all fights on the books from vegas_odds
-#for each fight in prediction_history, if a prediction has not yet been made, make a prediction
-#then export to json
+#next open existing prediction_history.json as a dataframe (done)... then add all fights on the books from vegas_odds
+#for each fight in prediction_history, if a prediction has not yet been made, make a prediction... then export to json
 
 vegas_odds=pd.read_json('models/buildingMLModel/data/external/vegas_odds.json')
 prediction_history=pd.read_json('models/buildingMLModel/data/external/prediction_history.json')
@@ -553,7 +561,7 @@ for i in vegas_odds_copy.index:
 
 prediction_history = pd.concat([vegas_odds_copy, prediction_history], axis = 0).reset_index(drop=True)
 
-#getting rid of multiple copies of the same fight... keeping the most recent
+#getting rid of multiple copies of the same fight... keeping the most recent (is this correct? could cause issues when the same fight is scraped two weeks in advance and then one week in advance...)
 prediction_history.drop_duplicates(subset =["fighter name", "opponent name"],
                      keep = 'first', inplace = True)
 
@@ -564,5 +572,3 @@ jsonFilePath='models/buildingMLModel/data/external/prediction_history.json'
 with open(jsonFilePath, 'w', encoding='utf-8') as jsonf:
     jsonf.write(json.dumps(parsed, indent=4))
 print('saved to '+jsonFilePath)
-
-#need to find a way to scrape outcomes of previous fights so we can automatically check if our predictions were correct

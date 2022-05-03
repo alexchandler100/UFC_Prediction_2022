@@ -23,10 +23,14 @@ def same_name(str1,str2):
         return True
     elif str1_set==str2_set:
         return True
+        print(str1+' ... (same name as) ... '+str2+' ... (different ordering)')
     elif lev(str1,str2)<3:
         return True
+        print(str1+' ... (same name as) ... '+str2+' ... (small Levenshtein distance apart)')
     else:
         return False
+
+
 #this cell contains all functions defined for building columns in ufcfightscrap
 #converts from '%B %d, %Y' (i.e. August 22, 2020) to date (i.e. 2020-08-22)
 def convert_to_datetime(day1):
@@ -41,22 +45,26 @@ def convert_date_to_abbrev(day):
 def convert_date_to_unabbrev(day):
     return datetime.strptime(day, '%b %d, %Y').strftime('%B %d, %Y')
 
-#this age function is written in such a stupid way
+#this age function needs to be rewritten.
 def age(birthDate,day=date.today(),form1='%B %d, %Y',form2='%B %d, %Y'):
     if birthDate=='--':
-        aa='unknown'
+        aa=0
     elif type(birthDate)==str and not type(day)==str:
+        birthDate=convert_date_to_unabbrev(birthDate)
         bd=datetime.strptime(birthDate, form1)
         today = day
         aa = today.year - bd.year - ((today.month, today.day) < (bd.month, bd.day))
+
     elif type(birthDate)==str and type(day)==str:
         bd=datetime.strptime(birthDate, form1)
         today = datetime.strptime(day, form2)
         aa = today.year - bd.year - ((today.month, today.day) < (bd.month, bd.day))
+
     elif not type(birthDate)==str and type(day)==str:
         bd=birthDate
         today = datetime.strptime(day, form2)
         aa = today.year - bd.year - ((today.month, today.day) < (bd.month, bd.day))
+
     else:
         bd=birthDate
         today = day
