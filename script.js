@@ -859,11 +859,11 @@ setTimeout(() => {
 
 //set initial table values and display fight
 setTimeout(() => {
-  document.getElementById('select1').value = "Rob Font"
-  document.getElementById('select2').value = "Marlon Vera"
-  document.getElementById('f1selectmonth').value = "April"
+  document.getElementById('select1').value = "Carla Esparza"
+  document.getElementById('select2').value = "Rose Namajunas"
+  document.getElementById('f1selectmonth').value = "May"
   document.getElementById('f1selectyear').value = "2022"
-  document.getElementById('f2selectmonth').value = "April"
+  document.getElementById('f2selectmonth').value = "May"
   document.getElementById('f2selectyear').value = "2022"
   selectFighterAndDate('select1', 'name1', 'f1selectmonth', 'month1', 'f1selectyear', 'year1')
   selectFighterAndDate('select2', 'name2', 'f2selectmonth', 'month2', 'f2selectyear', 'year2')
@@ -908,7 +908,7 @@ setTimeout(()=>{
 */
 
 //Building upcoming predictions table
-setTimeout(() => {
+setTimeout(() => { //timeout because other data needs to load first (probably better to do with async)
   for (const i in prediction_history['fighter name']) {
     fighter = prediction_history['fighter name'][i]
     opponent = prediction_history['opponent name'][i]
@@ -916,11 +916,14 @@ setTimeout(() => {
     opponentOdds = prediction_history['predicted opponent odds'][i]
     avBookieOdds = prediction_history['average bookie odds'][i]
     counter=0
-    for (const j in ufcfightscrap) {
+    console.log(fighter+' vs '+opponent)
+    for (const j in ufcfightscrap) {//for each fight prediction, check whether the fight has happened recently (last 100 fights)
       counter+=1
       if (same_name(ufcfightscrap[j]['fighter'], fighter) && same_name(ufcfightscrap[j]['opponent'], opponent)) {
+        console.log('fought on '+String(ufcfightscrap[j]['date']))
          break;
-    } else if (counter>=100){ //just searches through the last 100 fights to see if the fight has happened recently
+    } else if (counter>=100){ //if it has not happened recently, that means it is upcoming, so we add it to the upcoming list
+      console.log('didnt fight yet... adding to upcoming')
       var myTable = document.getElementById('upcoming')
       myTable.rows.item(0).cells.item(0).style.backgroundColor = "#212121";
       var tbody = myTable.tBodies[0]
@@ -1003,7 +1006,7 @@ setTimeout(() => { //this builds a table for the history of predictions which is
         tr.cells.item(2).style.color = "#ffffff";
         tr.cells.item(3).style.color = "#ffffff";
         tr.cells.item(5).style.color = "#ffffff";
-        console.log(ufcfightscrap[j])
+        //console.log(ufcfightscrap[j])
         if ((parseInt(fighterOdds) < 0 && ufcfightscrap[j]['result'] == 'W') || (parseInt(fighterOdds) > 0 && ufcfightscrap[j]['result'] == 'L')) {
           tr.cells.item(4).innerHTML = 'yes'
           tr.cells.item(4).style.backgroundColor = "#00ff00";

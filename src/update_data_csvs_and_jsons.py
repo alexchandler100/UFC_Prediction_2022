@@ -563,13 +563,3 @@ for name in names:
         k=Image.open("models/buildingMLModel/images/"+str(1)+name_reduced+".jpg")
     except:
         scrape_pictures(name)
-
-print('scraping bookie odds from bestfightodds.com')
-odds_df = get_odds();odds_df
-print('saving odds to models/buildingMLModel/data/external/vegas_odds.json')
-result = odds_df.to_json()
-parsed = json.loads(result)
-jsonFilePath='models/buildingMLModel/data/external/vegas_odds.json'
-with open(jsonFilePath, 'w', encoding='utf-8') as jsonf:
-    jsonf.write(json.dumps(parsed, indent=4))
-print('saved to '+jsonFilePath)
