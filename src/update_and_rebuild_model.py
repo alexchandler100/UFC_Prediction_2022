@@ -2,7 +2,7 @@
 import pandas as pd
 pd.options.mode.chained_assignment = None  # default='warn' (disables SettingWithCopyWarning)
 
-import numpy as npy
+import numpy as np
 from datetime import datetime
 from datetime import date
 import matplotlib.pyplot as plt
@@ -24,6 +24,10 @@ import json
 print('scraping bookie odds from bestfightodds.com')
 odds_df = get_odds();odds_df
 print('saving odds to models/buildingMLModel/data/external/vegas_odds.json')
+#get rid of all rows where bookies have no odds
+odds_df.replace('', np.nan, inplace=True)
+odds_df=odds_df.dropna();
+#save to json
 result = odds_df.to_json()
 parsed = json.loads(result)
 jsonFilePath='models/buildingMLModel/data/external/vegas_odds.json'
@@ -480,8 +484,6 @@ def give_odds(fighter1,fighter2,date1,date2):
     elif abs_value >=.8:
         print(winner+" wins 10 out of 10 times.")
 
-import json
-
 theta = list(theta[0])
 
 theta_dict = {}
@@ -526,15 +528,17 @@ vegas_odds=pd.read_json('models/buildingMLModel/data/external/vegas_odds.json')
 prediction_history=pd.read_json('models/buildingMLModel/data/external/prediction_history.json')
 
 #this counts the number of columns in row number row_number of vegas_odds which are null (if there are too many, we dont put this fight in the dataset)
-def count_null(row_number):
-    row = vegas_odds.iloc[row_number]
-    return len([i for i in range(len(row)) if row[i]==''])
+#def count_null(row_number):
+#    row = vegas_odds.iloc[row_number]
+#    return len([i for i in range(len(row)) if row[i]==''])
 
 #get rid of fights with too few bookie odds made
-bookie_mask = []
-for i in range(len(vegas_odds['fighter name'])):
-    bookie_mask.append(count_null(i)<6)
-vegas_odds=vegas_odds[bookie_mask]
+#bookie_mask = []
+#for i in range(len(vegas_odds['fighter name'])):
+#    bookie_mask.append(count_null(i)<6)
+#vegas_odds=vegas_odds[bookie_mask]
+
+#making a copy of vegas_odds
 vegas_odds_copy=vegas_odds.copy()
 for col in ['predicted fighter odds','predicted opponent odds','average bookie odds','correct?']:
     vegas_odds_copy[col]=""
@@ -543,29 +547,32 @@ for col in ['predicted fighter odds','predicted opponent odds','average bookie o
 for i in vegas_odds_copy.index:
     fighter=vegas_odds_copy['fighter name'][i]
     opponent=vegas_odds_copy['opponent name'][i]
-    odds_calc = odds(fighter,opponent)
-    vegas_odds_copy['predicted fighter odds'][i]=odds_calc[0]
-    vegas_odds_copy['predicted opponent odds'][i]=odds_calc[1]
-    sum_av_f=0
-    tot_av_f=0
-    sum_av_o=0
-    tot_av_o=0
-    for bookie in ['DraftKings', 'BetMGM', 'Caesars', 'BetRivers', 'FanDuel', 'PointsBet', 'Unibet', 'Bet365', 'BetWay', '5D', 'Ref']:
-        if vegas_odds_copy['fighter '+bookie][i]!='':
-            sum_av_f+=int(vegas_odds_copy['fighter '+bookie][i])
-            tot_av_f+=1
-        if vegas_odds_copy['opponent '+bookie][i]!='':
-            sum_av_o+=int(vegas_odds_copy['opponent '+bookie][i])
-            tot_av_o+=1
-    vegas_odds_copy['average bookie odds'][i]=[str(round(sum_av_f/tot_av_f)),str(round(sum_av_o/tot_av_o))]
+    if in_ufc(fighter) and in_ufc(opponent):
+        odds_calc = odds(fighter,opponent)
+        print('predicting: '+fighter,'versus '+opponent,'.... '+str(odds_calc))
+        vegas_odds_copy['predicted fighter odds'][i]=odds_calc[0]
+        vegas_odds_copy['predicted opponent odds'][i]=odds_calc[1]
+        sum_av_f=0
+        tot_av_f=0
+        sum_av_o=0
+        tot_av_o=0
+        for bookie in ['DraftKings', 'BetMGM', 'Caesars', 'BetRivers', 'FanDuel', 'PointsBet', 'Unibet', 'Bet365', 'BetWay', '5D', 'Ref']:
+            if vegas_odds_copy['fighter '+bookie][i]!='':
+                sum_av_f+=int(vegas_odds_copy['fighter '+bookie][i])
+                tot_av_f+=1
+            if vegas_odds_copy['opponent '+bookie][i]!='':
+                sum_av_o+=int(vegas_odds_copy['opponent '+bookie][i])
+                tot_av_o+=1
+        vegas_odds_copy['average bookie odds'][i]=[str(round(sum_av_f/tot_av_f)),str(round(sum_av_o/tot_av_o))]
 
+#add the newly scraped fights and predicted fights to the history of prediction list (idea: might be better to wait to join until after the fights happen)
 prediction_history = pd.concat([vegas_odds_copy, prediction_history], axis = 0).reset_index(drop=True)
 
 #getting rid of multiple copies of the same fight... keeping the most recent (is this correct? could cause issues when the same fight is scraped two weeks in advance and then one week in advance...)
 prediction_history.drop_duplicates(subset =["fighter name", "opponent name"],
                      keep = 'first', inplace = True)
 
-import json
+#saving the new prediction_history dataframe to json
 result = prediction_history.to_json()
 parsed = json.loads(result)
 jsonFilePath='models/buildingMLModel/data/external/prediction_history.json'
