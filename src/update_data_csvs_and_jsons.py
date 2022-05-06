@@ -307,46 +307,46 @@ names_list2.sort()
 #for name in names_list2:
     #print(name)
 
-print('cleaning names in case they are in the wrong order i.e. Weili Zhang or Zhang Weili')
+#print('cleaning names in case they are in the wrong order i.e. Weili Zhang or Zhang Weili')
 
 
 #assumes first and last name
-def swap_name(name):
-    first_name=''
-    last_name=''
-    for i in range(len(name)):
-        if name[i]==' ':
-            first_name += name[0:i]
-            last_name += name[i+1:]
-            break
-    return last_name+' '+first_name
+#def swap_name(name):
+#    first_name=''
+#    last_name=''
+#    for i in range(len(name)):
+#        if name[i]==' ':
+#            first_name += name[0:i]
+#            last_name += name[i+1:]
+#            break
+#    return last_name+' '+first_name
 
 #this finds all names in updated_ufcfightscrap which are sometimes written in the wrong order
 #e.g. ('Weili Zhang', 'Zhang Weili')
-names = [name for name in updated_ufcfightscrap['fighter']]
-opponent_names = [name for name in updated_ufcfightscrap['opponent']]
-names.extend(opponent_names)
-names_swapped = [swap_name(name) for name in names]
-errors=[name for name in names if name in names_swapped]
-names_to_fix = list(set(errors))
-pairs = [[name,swap_name(name)] for name in names_to_fix]
-sorted_pairs = []
-for pair in pairs:
-    pair.sort()
-    sorted_pairs.append(tuple(pair))
-error_pairs = list(set(sorted_pairs))
-error_pairs
+#names = [name for name in updated_ufcfightscrap['fighter']]
+#opponent_names = [name for name in updated_ufcfightscrap['opponent']]
+#names.extend(opponent_names)
+#names_swapped = [swap_name(name) for name in names]
+#errors=[name for name in names if name in names_swapped]
+#names_to_fix = list(set(errors))
+#pairs = [[name,swap_name(name)] for name in names_to_fix]
+#sorted_pairs = []
+#for pair in pairs:
+#    pair.sort()
+#    sorted_pairs.append(tuple(pair))
+#error_pairs = list(set(sorted_pairs))
+#error_pairs
 
 #fixing all swapped names
 #setting name so that first name is before last name in lex order
-for i in range(len(updated_ufcfightscrap['fighter'])):
-    for pair in error_pairs:
-        if updated_ufcfightscrap['fighter'][i]==pair[0] or updated_ufcfightscrap['fighter'][i]==pair[1]:
-            updated_ufcfightscrap['fighter'][i]=pair[0]
-            print('correcting: '+str(updated_ufcfightscrap['fighter'][i]))
-        if updated_ufcfightscrap['opponent'][i]==pair[0] or updated_ufcfightscrap['opponent'][i]==pair[1]:
-            updated_ufcfightscrap['opponent'][i]=pair[0]
-            print('correcting: '+str(updated_ufcfightscrap['opponent'][i]))
+#for i in range(len(updated_ufcfightscrap['fighter'])):
+#    for pair in error_pairs:
+#        if updated_ufcfightscrap['fighter'][i]==pair[0] or updated_ufcfightscrap['fighter'][i]==pair[1]:
+#            updated_ufcfightscrap['fighter'][i]=pair[0]
+#            print('correcting: '+str(updated_ufcfightscrap['fighter'][i]))
+#        if updated_ufcfightscrap['opponent'][i]==pair[0] or updated_ufcfightscrap['opponent'][i]==pair[1]:
+#            updated_ufcfightscrap['opponent'][i]=pair[0]
+#            print('correcting: '+str(updated_ufcfightscrap['opponent'][i]))
 
 #saving the updated ufcfightscrap file
 updated_ufcfightscrap.to_csv('models/buildingMLModel/data/processed/ufc_fights_crap.csv', index = False)
@@ -555,7 +555,7 @@ def scrape_pictures(name):
     except:
         print('The scrape did not work for '+name)
 
-print('Beginning to scrape pictures of newly added fighters from Google image search')
+print('Scraping pictures of newly added fighters from Google image search')
 # run this to update the image scrape
 for name in names:
     try:

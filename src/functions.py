@@ -13,8 +13,8 @@ ufcfighters=pd.read_csv('models/buildingMLModel/data/processed/fighter_stats.csv
 #first call pip install python-Levenshtein
 from Levenshtein import distance as lev
 def same_name(str1,str2):
-    str1 = str1.lower().replace('.','').replace("-",' ')
-    str2 = str2.lower().replace('.','').replace("-",' ')
+    str1 = str1.lower().replace("st.",'saint').replace(" st ",' saint ').replace('.','').replace("-",' ')
+    str2 = str2.lower().replace("st.",'saint').replace(" st ",' saint ').replace('.','').replace("-",' ')
     str1_list=str1.split()
     str2_list=str2.split()
     str1_set=set(str1_list)
@@ -30,6 +30,12 @@ def same_name(str1,str2):
     else:
         return False
 
+#checks if a fighter is in the ufc
+def in_ufc(fighter):
+    for name in ufcfighters['name']:
+        if same_name(fighter,name):
+            return True
+    return False
 
 #this cell contains all functions defined for building columns in ufcfightscrap
 #converts from '%B %d, %Y' (i.e. August 22, 2020) to date (i.e. 2020-08-22)
@@ -590,7 +596,10 @@ def get_odds():
                 oddsList.append(odds)
             except:
                 oddsList.append('')
-        names.append(name)
+        if name in names:
+            names.append(name+'.')
+        else:
+            names.append(name)
         oddsDicts.append(dict(zip(['name']+books,oddsList)))
     oddsDict = dict(zip(names,oddsDicts))
     names = list(oddsDict.keys())
@@ -602,21 +611,21 @@ def get_odds():
     #making it so each fight has just a single row instead of two rows
     #making dataframe just for even indexed columns
     odds_df_evens = odds_df[odds_df.index%2==0]
-    newcolumns={}
+    newcolumns1={}
     for col in list(odds_df_evens.columns):
-        newcolumns[col]='fighter '+col
-    odds_df_evens=odds_df_evens.rename(columns=newcolumns)
+        newcolumns1[col]='fighter '+col
+    odds_df_evens=odds_df_evens.rename(columns=newcolumns1)
     odds_df_evens.reset_index(drop=True, inplace=True)
     #making dataframe just for odd indexed columns
     odds_df_odds = odds_df[odds_df.index%2==1]
-    newcolumns={}
+    newcolumns2={}
     for col in list(odds_df_odds.columns):
-        newcolumns[col]='opponent '+col
-    odds_df_odds=odds_df_odds.rename(columns=newcolumns)
+        newcolumns2[col]='opponent '+col
+    odds_df_odds=odds_df_odds.rename(columns=newcolumns2)
     odds_df_odds.reset_index(drop=True, inplace=True)
-    new_odds_df = pd.concat([odds_df_evens, odds_df_odds], axis = 1);new_odds_df
-
+    new_odds_df = pd.concat([odds_df_evens, odds_df_odds], axis = 1)
     return new_odds_df
+
 
 
 #there is a problem for collecting reversals (fix needed) seems like it now collect riding time since sept 2020

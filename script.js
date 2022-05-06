@@ -859,8 +859,8 @@ setTimeout(() => {
 
 //set initial table values and display fight
 setTimeout(() => {
-  document.getElementById('select1').value = "Carla Esparza"
-  document.getElementById('select2').value = "Rose Namajunas"
+  document.getElementById('select1').value = "Charles Oliveira"
+  document.getElementById('select2').value = "Justin Gaethje"
   document.getElementById('f1selectmonth').value = "May"
   document.getElementById('f1selectyear').value = "2022"
   document.getElementById('f2selectmonth').value = "May"
@@ -938,8 +938,13 @@ setTimeout(() => { //timeout because other data needs to load first (probably be
       tr.appendChild(td3);
       tr.appendChild(td4);
       tr.appendChild(td5);
-      tr.cells.item(0).innerHTML = fighter;
-      tr.cells.item(1).innerHTML = opponent;
+      if (fighterOdds[0]=='-'){
+        tr.cells.item(0).innerHTML = `<a href=https://en.wikipedia.org/wiki/${fighter.replace(" ", '_')}#Mixed_martial_arts_record target="_blank" style = "color: gold">${fighter}</a>`
+        tr.cells.item(1).innerHTML = `<a href=https://en.wikipedia.org/wiki/${opponent.replace(" ", '_')}#Mixed_martial_arts_record target="_blank" style = "color: white">${opponent}</a>`
+      } else {
+        tr.cells.item(0).innerHTML = `<a href=https://en.wikipedia.org/wiki/${fighter.replace(" ", '_')}#Mixed_martial_arts_record target="_blank" style = "color: white">${fighter}</a>`
+        tr.cells.item(1).innerHTML = `<a href=https://en.wikipedia.org/wiki/${opponent.replace(" ", '_')}#Mixed_martial_arts_record target="_blank" style = "color: gold">${opponent}</a>`
+      }
       tr.cells.item(2).innerHTML = fighterOdds;
       tr.cells.item(3).innerHTML = opponentOdds;
       tr.cells.item(4).innerHTML = avBookieOdds;
