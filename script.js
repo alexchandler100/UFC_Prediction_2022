@@ -31,8 +31,8 @@ const levenshteinDistance = (str1 = '', str2 = '') => {
 
 function same_name(str1, str2) {
   //console.log(`checking if ${str1} and ${str2} are the same`)
-  str1 = str1.toLowerCase().replace(".", '').replace("-", ' ')
-  str2 = str2.toLowerCase().replace(".", '').replace("-", ' ')
+  str1 = str1.toLowerCase().replace("st.", 'saint').replace(" st ", ' saint ').replace(".", '').replace("-", ' ')
+  str2 = str2.toLowerCase().replace("st.", 'saint').replace(" st ", ' saint ').replace(".", '').replace("-", ' ')
   let str1List = str1.split(" ")
   let str1Set = new Set(str1List)
   let str2List = str2.split(" ")
@@ -969,8 +969,8 @@ setTimeout(() => { //this builds a table for the history of predictions which is
   for (const i in prediction_history['fighter name']) { //iterating over rows of prediction_history
     fighter = prediction_history['fighter name'][i]
     opponent = prediction_history['opponent name'][i]
-    fighterOdds = prediction_history['predicted fighter odds'][i]
-    opponentOdds = prediction_history['predicted opponent odds'][i]
+    fighterOdds = String(prediction_history['predicted fighter odds'][i])
+    opponentOdds = String(prediction_history['predicted opponent odds'][i])
     avBookieOdds = prediction_history['average bookie odds'][i]
     counter=0
     for (const j in ufcfightscrap) {
@@ -978,7 +978,11 @@ setTimeout(() => { //this builds a table for the history of predictions which is
       if (counter>=100){
         break;
       }
-      if (same_name(ufcfightscrap[j]['fighter'], fighter) && same_name(ufcfightscrap[j]['opponent'], opponent)) {
+      if (same_name(ufcfightscrap[j]['fighter'], fighter) && same_name(ufcfightscrap[j]['opponent'], opponent) && fighterOdds.length>0) {
+        console.log(fighter)
+        console.log(opponent)
+        console.log(fighterOdds.length)
+        console.log(opponentOdds.length)
         var myTable = document.getElementById('tablehistory')
         myTable.rows.item(0).cells.item(0).style.backgroundColor = "#212121";
         var tbody = myTable.tBodies[0]
