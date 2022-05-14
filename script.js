@@ -859,8 +859,8 @@ setTimeout(() => {
 
 //set initial table values and display fight
 setTimeout(() => {
-  document.getElementById('select1').value = "Jiri Prochazka"
-  document.getElementById('select2').value = "Glover Teixeira"
+  document.getElementById('select1').value = "Jan Blachowicz"
+  document.getElementById('select2').value = "Aleksandar Rakic"
   document.getElementById('f1selectmonth').value = "May"
   document.getElementById('f1selectyear').value = "2022"
   document.getElementById('f2selectmonth').value = "May"
