@@ -85,9 +85,6 @@ $(function() {
   });
 });
 
-
-
-
 const years = document.getElementById('years')
 for (let i = 0; i < 30; i++) {
   year = 2022 - i
@@ -856,34 +853,6 @@ setTimeout(() => {
 }, 350)
 */
 
-
-//set initial table values and display fight
-setTimeout(() => {
-  document.getElementById('select1').value = "Jan Blachowicz"
-  document.getElementById('select2').value = "Aleksandar Rakic"
-  document.getElementById('f1selectmonth').value = "May"
-  document.getElementById('f1selectyear').value = "2022"
-  document.getElementById('f2selectmonth').value = "May"
-  document.getElementById('f2selectyear').value = "2022"
-  selectFighterAndDate('select1', 'name1', 'f1selectmonth', 'month1', 'f1selectyear', 'year1')
-  selectFighterAndDate('select2', 'name2', 'f2selectmonth', 'month2', 'f2selectyear', 'year2')
-  console.log(vegas_odds)
-  var myTab;
-  myTab = document.getElementById("tableoutcome");
-  // LOOP THROUGH EACH ROW OF THE TABLE AFTER HEADER.
-  myTab.rows.item(0).cells.item(0).style.backgroundColor = "#212121";
-  myTab.rows.item(1).cells.item(0).style.backgroundColor = "#323232";
-  myTab.rows.item(1).cells.item(1).style.backgroundColor = "#323232";
-  myTab.rows.item(1).cells.item(2).style.backgroundColor = "#323232";
-  myTab.rows.item(2).cells.item(0).style.backgroundColor = "#212121";
-  for (let i = 3; i < 3 + 11; i++) {
-    for (let j = 0; j < 3; j++) {
-      myTab.rows.item(i).cells.item(j).style.backgroundColor = "#323232";
-    }
-  }
-
-}, 300)
-
 //the following is now done in the file update_and_rebuild_model.py but we'll keep this here if needed
 /*
 setTimeout(()=>{
@@ -966,6 +935,9 @@ setTimeout(() => { //timeout because other data needs to load first (probably be
 
 
 setTimeout(() => { //this builds a table for the history of predictions which is built in python in the jupyter notebook UFC_Prediction_Model
+  var numberModelCorrect = 0
+  var numberVegasCorrect = 0
+  var numberTotal = 0
   for (const i in prediction_history['fighter name']) { //iterating over rows of prediction_history
     fighter = prediction_history['fighter name'][i]
     opponent = prediction_history['opponent name'][i]
@@ -975,10 +947,11 @@ setTimeout(() => { //this builds a table for the history of predictions which is
     counter=0
     for (const j in ufcfightscrap) {
       counter+=1
-      if (counter>=100){
+      if (counter>=200){ //makes it so we only show the last 200 fights
         break;
       }
       if (same_name(ufcfightscrap[j]['fighter'], fighter) && same_name(ufcfightscrap[j]['opponent'], opponent) && fighterOdds.length>0) {
+        numberTotal+=1;
         console.log(fighter)
         console.log(opponent)
         console.log(fighterOdds.length)
@@ -1019,6 +992,7 @@ setTimeout(() => { //this builds a table for the history of predictions which is
         if ((parseInt(fighterOdds) < 0 && ufcfightscrap[j]['result'] == 'W') || (parseInt(fighterOdds) > 0 && ufcfightscrap[j]['result'] == 'L')) {
           tr.cells.item(4).innerHTML = 'yes'
           tr.cells.item(4).style.backgroundColor = "#00ff00";
+          numberModelCorrect+=1
           if (parseInt(fighterOdds) < 0 && ufcfightscrap[j]['result'] == 'W') {
             tr.cells.item(0).style.fontWeight = "bold";
             tr.cells.item(0).style.fontSize = "15px";
@@ -1045,4 +1019,46 @@ setTimeout(() => { //this builds a table for the history of predictions which is
       }
     }
   }
+  var acc = numberModelCorrect/numberTotal;
+  var accuracy = document.getElementById("myaccuracy")
+  console.log(accuracy)
+  console.log(numberModelCorrect)
+  console.log(numberTotal)
+  accuracy.innerText = `Accuracy: ${acc}`;
 }, 450)
+
+//set initial table values and display fight
+setTimeout(() => {
+  var myTable = document.getElementById('upcoming')
+  console.log(myTable)
+  console.log(myTable.rows[2].cells[0].textContent)
+  const d = new Date();
+  let month = d.getMonth();
+  let year = d.getFullYear();
+  var months = ["January", "February", 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', "November", 'December']
+  console.log(months[month])
+  console.log(year)
+  document.getElementById('select1').value = myTable.rows[2].cells[0].textContent
+  document.getElementById('select2').value = myTable.rows[2].cells[1].textContent
+  document.getElementById('f1selectmonth').value = months[month]
+  document.getElementById('f1selectyear').value = year
+  document.getElementById('f2selectmonth').value = months[month]
+  document.getElementById('f2selectyear').value = year
+  selectFighterAndDate('select1', 'name1', 'f1selectmonth', 'month1', 'f1selectyear', 'year1')
+  selectFighterAndDate('select2', 'name2', 'f2selectmonth', 'month2', 'f2selectyear', 'year2')
+  console.log(vegas_odds)
+  var myTab;
+  myTab = document.getElementById("tableoutcome");
+  // LOOP THROUGH EACH ROW OF THE TABLE AFTER HEADER.
+  myTab.rows.item(0).cells.item(0).style.backgroundColor = "#212121";
+  myTab.rows.item(1).cells.item(0).style.backgroundColor = "#323232";
+  myTab.rows.item(1).cells.item(1).style.backgroundColor = "#323232";
+  myTab.rows.item(1).cells.item(2).style.backgroundColor = "#323232";
+  myTab.rows.item(2).cells.item(0).style.backgroundColor = "#212121";
+  for (let i = 3; i < 3 + 11; i++) {
+    for (let j = 0; j < 3; j++) {
+      myTab.rows.item(i).cells.item(j).style.backgroundColor = "#323232";
+    }
+  }
+
+}, 500)
