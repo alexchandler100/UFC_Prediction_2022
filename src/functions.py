@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 from datetime import datetime
 from datetime import date
+import csv,json
 
 #updated scraped fight data (after running fight_hist_updated function from UFC_data_scraping file)
 fight_hist=pd.read_csv('models/buildingMLModel/data/processed/fight_hist.csv',sep=',',low_memory=False)
@@ -626,6 +627,20 @@ def get_odds():
     new_odds_df = pd.concat([odds_df_evens, odds_df_odds], axis = 1)
     return new_odds_df
 
+#thresh is the number of bookies we allow to not have odds on the books
+def drop_irrelevant_fights(df,thresh):
+    irr=[]
+    for i in df.index:
+        count=0
+        row=list(df.loc[i])
+        for j in row:
+            if j=='':
+                count+=1
+        if count>2*thresh:
+            irr.append(i)
+    df=df.drop(irr)
+    return df
+
 
 
 #there is a problem for collecting reversals (fix needed) seems like it now collect riding time since sept 2020
@@ -957,3 +972,64 @@ def fighter_age_diff(fighter,opponent):
         return 'unknown'
 
 fighter_age_diff_vect=np.vectorize(fighter_age_diff)
+
+# Function to convert a CSV to JSON
+# Takes the file paths as arguments
+def make_json(csvFilePath, jsonFilePath, column):
+
+    # create a dictionary
+    data = {}
+
+    # Open a csv reader called DictReader
+    with open(csvFilePath, encoding='utf-8') as csvf:
+        csvReader = csv.DictReader(csvf)
+
+        # Convert each row into a dictionary
+        # and add it to data
+        for rows in csvReader:
+
+            # primary key given by column variable
+            key = rows[column]
+            data[key] = rows
+
+    # Open a json writer, and use the json.dumps()
+    # function to dump data
+    with open(jsonFilePath, 'w', encoding='utf-8') as jsonf:
+        jsonf.write(json.dumps(data, indent=4))
+
+#thresh is the number of bookies we allow to not have odds on the books
+def drop_irrelevant_fights(df,thresh):
+    irr=[]
+    for i in df.index:
+        count=0
+        row=list(df.loc[i])
+        for j in row:
+            if j=='':
+                count+=1
+        if count>2*thresh:
+            irr.append(i)
+    df=df.drop(irr)
+    return df
+
+#thresh is the number of bookies we allow to not have odds on the books
+def drop_non_ufc_fights(df):
+    irr=[]
+    for i in df.index:
+        if (not in_ufc(df['fighter name'][i])) or (not in_ufc(df['opponent name'][i])):
+            irr.append(i)
+    df=df.drop(irr)
+    return df
+
+#thresh is the number of bookies we allow to not have odds on the books
+def drop_repeats(df):
+    irr=[]
+    for i in df.index:
+        fname=df['fighter name'][i]
+        oname=df['opponent name'][i]
+        for j in range(200):
+            fname_old=ufc_fights['fighter'][j]
+            oname_old=ufc_fights['opponent'][j]
+            if (same_name(fname, fname_old) and same_name(oname, oname_old)) or (same_name(oname, fname_old) and same_name(fname, oname_old)):
+                irr.append(i)
+    df=df.drop(irr)
+    return df

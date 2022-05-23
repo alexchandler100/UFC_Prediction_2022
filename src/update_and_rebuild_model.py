@@ -1,32 +1,22 @@
 #getting dependencies
 import pandas as pd
-pd.options.mode.chained_assignment = None  # default='warn' (disables SettingWithCopyWarning)
-
 import numpy as np
-from datetime import datetime
-from datetime import date
-import matplotlib.pyplot as plt
-import random
-import sklearn
-import scipy
+from datetime import datetime, date
+from dateutil.relativedelta import relativedelta
+import random, sklearn, scipy, json, itertools
 from sklearn.linear_model import LogisticRegression
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.neural_network import MLPClassifier
 from sklearn.model_selection import train_test_split, KFold, cross_val_score
-from sklearn import preprocessing
-from sklearn.preprocessing import PolynomialFeatures
-from sklearn.feature_selection import VarianceThreshold
-import itertools
 #this imports all of the functions from the file functions.py
 from functions import *
-import json
+
+pd.options.mode.chained_assignment = None  # default='warn' (disables SettingWithCopyWarning)
 
 print('scraping bookie odds from bestfightodds.com')
-odds_df = get_odds();odds_df
+odds_df = get_odds()
+odds_df=drop_irrelevant_fights(odds_df,1) #allows 1 bookie to have missing odds. can increase this to 2 or 3 as needed
+odds_df=drop_non_ufc_fights(odds_df)
+odds_df=drop_repeats(odds_df)
 print('saving odds to models/buildingMLModel/data/external/vegas_odds.json')
-#get rid of all rows where bookies have no odds
-odds_df.replace('', np.nan, inplace=True)
-odds_df=odds_df.dropna();
 #save to json
 result = odds_df.to_json()
 parsed = json.loads(result)
@@ -87,238 +77,21 @@ ufc_fights_method=ufc_fights_method[draw_mask&method_mask_method&age_mask&height
 ufc_fights=ufc_fights[draw_mask&method_mask_winner&age_mask&height_mask&reach_mask&wins_mask&strikes_mask]
 
 #listing all stats and making some new stats from them (differences often score higher in the learning models)
-record_statistics=[u'fighter_wins',
-                   u'fighter_losses',
-                   u'fighter_L5Y_wins',
-                   u'fighter_L5Y_losses',
-                   u'fighter_L2Y_wins',
-                   u'fighter_L2Y_losses',
-                    u'fighter_ko_wins',
-                   u'fighter_ko_losses',
-                   u'fighter_L5Y_ko_wins',
-                   u'fighter_L5Y_ko_losses',
-                   u'fighter_L2Y_ko_wins',
-                    u'fighter_L2Y_ko_losses',
-                   u'fighter_sub_wins',
-                   u'fighter_sub_losses',
-                   u'fighter_L5Y_sub_wins',
-                    u'fighter_L5Y_sub_losses',
-                   u'fighter_L2Y_sub_wins',
-                   u'fighter_L2Y_sub_losses',
-                   u'opponent_wins',
-                   u'opponent_losses',
-                   u'opponent_L5Y_wins',
-                   u'opponent_L5Y_losses',
-                   u'opponent_L2Y_wins',
-                   u'opponent_L2Y_losses',
-                    u'opponent_ko_wins',
-                   u'opponent_ko_losses',
-                   u'opponent_L5Y_ko_wins',
-                   u'opponent_L5Y_ko_losses',
-                   u'opponent_L2Y_ko_wins',
-                    u'opponent_L2Y_ko_losses',
-                   u'opponent_sub_wins',
-                   u'opponent_sub_losses',
-                   u'opponent_L5Y_sub_wins',
-                    u'opponent_L5Y_sub_losses',
-                   u'opponent_L2Y_sub_wins',
-                   u'opponent_L2Y_sub_losses']
+record_statistics=[u'fighter_wins',u'fighter_losses',u'fighter_L5Y_wins',u'fighter_L5Y_losses',u'fighter_L2Y_wins',u'fighter_L2Y_losses',u'fighter_ko_wins',u'fighter_ko_losses',u'fighter_L5Y_ko_wins',u'fighter_L5Y_ko_losses',u'fighter_L2Y_ko_wins',u'fighter_L2Y_ko_losses',u'fighter_sub_wins',u'fighter_sub_losses',u'fighter_L5Y_sub_wins',u'fighter_L5Y_sub_losses',u'fighter_L2Y_sub_wins',u'fighter_L2Y_sub_losses',u'opponent_wins',u'opponent_losses',u'opponent_L5Y_wins',u'opponent_L5Y_losses',u'opponent_L2Y_wins',u'opponent_L2Y_losses',u'opponent_ko_wins',u'opponent_ko_losses',u'opponent_L5Y_ko_wins',u'opponent_L5Y_ko_losses',u'opponent_L2Y_ko_wins',u'opponent_L2Y_ko_losses',u'opponent_sub_wins',u'opponent_sub_losses',u'opponent_L5Y_sub_wins',u'opponent_L5Y_sub_losses',u'opponent_L2Y_sub_wins',u'opponent_L2Y_sub_losses']
 
-physical_stats=[ u'fighter_age',
-                u'fighter_height',
-                    u'fighter_reach',
-                u'opponent_age',
-                u'opponent_height',
-                    u'opponent_reach']
+physical_stats=[ u'fighter_age',u'fighter_height',u'fighter_reach',u'opponent_age',u'opponent_height',u'opponent_reach']
 
 #THERE MAY BE A PROBLEM IN AGE HEIGHT REACH TO DO WITH STRING VS FLOAT. MAKE SURE THESE ARE ALL THE CORRECT TYPE
 #MAYBE WE ARE LOSING PREDICTABILITY HERE
 
 #here is the list of all stats available (besides stance), does not include names or result
-punch_statistics=[    u'fighter_inf_knockdowns_avg',
-                    u'fighter_inf_pass_avg',
-                    u'fighter_inf_reversals_avg',
-                    u'fighter_inf_sub_attempts_avg',
-                    u'fighter_inf_takedowns_landed_avg',
-                    u'fighter_inf_takedowns_attempts_avg',
-                    u'fighter_inf_sig_strikes_landed_avg',
-                    u'fighter_inf_sig_strikes_attempts_avg',
-                    u'fighter_inf_total_strikes_landed_avg',
-                    u'fighter_inf_total_strikes_attempts_avg',
-                    u'fighter_inf_head_strikes_landed_avg',
-                    u'fighter_inf_head_strikes_attempts_avg',
-                    u'fighter_inf_body_strikes_landed_avg',
-                    u'fighter_inf_body_strikes_attempts_avg',
-                    u'fighter_inf_leg_strikes_landed_avg',
-                    u'fighter_inf_leg_strikes_attempts_avg',
-                    u'fighter_inf_distance_strikes_landed_avg',
-                    u'fighter_inf_distance_strikes_attempts_avg',
-                    u'fighter_inf_clinch_strikes_landed_avg',
-                    u'fighter_inf_clinch_strikes_attempts_avg',
-                    u'fighter_inf_ground_strikes_landed_avg',
-                    u'fighter_inf_ground_strikes_attempts_avg',
-
-                    u'fighter_abs_knockdowns_avg',
-                    u'fighter_abs_pass_avg',
-                    u'fighter_abs_reversals_avg',
-                    u'fighter_abs_sub_attempts_avg',
-                    u'fighter_abs_takedowns_landed_avg',
-                    u'fighter_abs_takedowns_attempts_avg',
-                    u'fighter_abs_sig_strikes_landed_avg',
-                    u'fighter_abs_sig_strikes_attempts_avg',
-                    u'fighter_abs_total_strikes_landed_avg',
-                    u'fighter_abs_total_strikes_attempts_avg',
-                    u'fighter_abs_head_strikes_landed_avg',
-                    u'fighter_abs_head_strikes_attempts_avg',
-                    u'fighter_abs_body_strikes_landed_avg',
-                    u'fighter_abs_body_strikes_attempts_avg',
-                    u'fighter_abs_leg_strikes_landed_avg',
-                    u'fighter_abs_leg_strikes_attempts_avg',
-                    u'fighter_abs_distance_strikes_landed_avg',
-                    u'fighter_abs_distance_strikes_attempts_avg',
-                    u'fighter_abs_clinch_strikes_landed_avg',
-                    u'fighter_abs_clinch_strikes_attempts_avg',
-                    u'fighter_abs_ground_strikes_landed_avg',
-                    u'fighter_abs_ground_strikes_attempts_avg',
-
-                    u'opponent_inf_knockdowns_avg',
-                    u'opponent_inf_pass_avg',
-                    u'opponent_inf_reversals_avg',
-                    u'opponent_inf_sub_attempts_avg',
-                    u'opponent_inf_takedowns_landed_avg',
-                    u'opponent_inf_takedowns_attempts_avg',
-                    u'opponent_inf_sig_strikes_landed_avg',
-                    u'opponent_inf_sig_strikes_attempts_avg',
-                    u'opponent_inf_total_strikes_landed_avg',
-                    u'opponent_inf_total_strikes_attempts_avg',
-                    u'opponent_inf_head_strikes_landed_avg',
-                    u'opponent_inf_head_strikes_attempts_avg',
-                    u'opponent_inf_body_strikes_landed_avg',
-                    u'opponent_inf_body_strikes_attempts_avg',
-                    u'opponent_inf_leg_strikes_landed_avg',
-                    u'opponent_inf_leg_strikes_attempts_avg',
-                    u'opponent_inf_distance_strikes_landed_avg',
-                    u'opponent_inf_distance_strikes_attempts_avg',
-                    u'opponent_inf_clinch_strikes_landed_avg',
-                    u'opponent_inf_clinch_strikes_attempts_avg',
-                    u'opponent_inf_ground_strikes_landed_avg',
-                    u'opponent_inf_ground_strikes_attempts_avg',
-
-                    u'opponent_abs_knockdowns_avg',
-                    u'opponent_abs_pass_avg',
-                    u'opponent_abs_reversals_avg',
-                    u'opponent_abs_sub_attempts_avg',
-                    u'opponent_abs_takedowns_landed_avg',
-                    u'opponent_abs_takedowns_attempts_avg',
-                    u'opponent_abs_sig_strikes_landed_avg',
-                    u'opponent_abs_sig_strikes_attempts_avg',
-                    u'opponent_abs_total_strikes_landed_avg',
-                    u'opponent_abs_total_strikes_attempts_avg',
-                    u'opponent_abs_head_strikes_landed_avg',
-                    u'opponent_abs_head_strikes_attempts_avg',
-                    u'opponent_abs_body_strikes_landed_avg',
-                    u'opponent_abs_body_strikes_attempts_avg',
-                    u'opponent_abs_leg_strikes_landed_avg',
-                    u'opponent_abs_leg_strikes_attempts_avg',
-                    u'opponent_abs_distance_strikes_landed_avg',
-                    u'opponent_abs_distance_strikes_attempts_avg',
-                    u'opponent_abs_clinch_strikes_landed_avg',
-                    u'opponent_abs_clinch_strikes_attempts_avg',
-                    u'opponent_abs_ground_strikes_landed_avg',
-                    u'opponent_abs_ground_strikes_attempts_avg']
+punch_statistics=[  u'fighter_inf_knockdowns_avg',u'fighter_inf_pass_avg',u'fighter_inf_reversals_avg',u'fighter_inf_sub_attempts_avg',u'fighter_inf_takedowns_landed_avg',u'fighter_inf_takedowns_attempts_avg',u'fighter_inf_sig_strikes_landed_avg',u'fighter_inf_sig_strikes_attempts_avg',u'fighter_inf_total_strikes_landed_avg',u'fighter_inf_total_strikes_attempts_avg',u'fighter_inf_head_strikes_landed_avg',u'fighter_inf_head_strikes_attempts_avg',u'fighter_inf_body_strikes_landed_avg',u'fighter_inf_body_strikes_attempts_avg',u'fighter_inf_leg_strikes_landed_avg',u'fighter_inf_leg_strikes_attempts_avg',u'fighter_inf_distance_strikes_landed_avg',u'fighter_inf_distance_strikes_attempts_avg',u'fighter_inf_clinch_strikes_landed_avg',u'fighter_inf_clinch_strikes_attempts_avg',u'fighter_inf_ground_strikes_landed_avg',u'fighter_inf_ground_strikes_attempts_avg',u'fighter_abs_knockdowns_avg',u'fighter_abs_pass_avg',u'fighter_abs_reversals_avg',u'fighter_abs_sub_attempts_avg',u'fighter_abs_takedowns_landed_avg',u'fighter_abs_takedowns_attempts_avg',u'fighter_abs_sig_strikes_landed_avg',u'fighter_abs_sig_strikes_attempts_avg',u'fighter_abs_total_strikes_landed_avg',u'fighter_abs_total_strikes_attempts_avg',u'fighter_abs_head_strikes_landed_avg',u'fighter_abs_head_strikes_attempts_avg',u'fighter_abs_body_strikes_landed_avg',u'fighter_abs_body_strikes_attempts_avg',u'fighter_abs_leg_strikes_landed_avg',u'fighter_abs_leg_strikes_attempts_avg',u'fighter_abs_distance_strikes_landed_avg',u'fighter_abs_distance_strikes_attempts_avg',u'fighter_abs_clinch_strikes_landed_avg',u'fighter_abs_clinch_strikes_attempts_avg',u'fighter_abs_ground_strikes_landed_avg',u'fighter_abs_ground_strikes_attempts_avg',u'opponent_inf_knockdowns_avg',u'opponent_inf_pass_avg',u'opponent_inf_reversals_avg',u'opponent_inf_sub_attempts_avg',u'opponent_inf_takedowns_landed_avg',u'opponent_inf_takedowns_attempts_avg',u'opponent_inf_sig_strikes_landed_avg',u'opponent_inf_sig_strikes_attempts_avg',u'opponent_inf_total_strikes_landed_avg',u'opponent_inf_total_strikes_attempts_avg',u'opponent_inf_head_strikes_landed_avg',u'opponent_inf_head_strikes_attempts_avg',u'opponent_inf_body_strikes_landed_avg',u'opponent_inf_body_strikes_attempts_avg',u'opponent_inf_leg_strikes_landed_avg',u'opponent_inf_leg_strikes_attempts_avg',u'opponent_inf_distance_strikes_landed_avg',u'opponent_inf_distance_strikes_attempts_avg',u'opponent_inf_clinch_strikes_landed_avg',u'opponent_inf_clinch_strikes_attempts_avg',u'opponent_inf_ground_strikes_landed_avg',u'opponent_inf_ground_strikes_attempts_avg',u'opponent_abs_knockdowns_avg',u'opponent_abs_pass_avg',u'opponent_abs_reversals_avg',u'opponent_abs_sub_attempts_avg',u'opponent_abs_takedowns_landed_avg',u'opponent_abs_takedowns_attempts_avg',u'opponent_abs_sig_strikes_landed_avg',u'opponent_abs_sig_strikes_attempts_avg',u'opponent_abs_total_strikes_landed_avg',u'opponent_abs_total_strikes_attempts_avg',u'opponent_abs_head_strikes_landed_avg',u'opponent_abs_head_strikes_attempts_avg',u'opponent_abs_body_strikes_landed_avg',u'opponent_abs_body_strikes_attempts_avg',u'opponent_abs_leg_strikes_landed_avg',u'opponent_abs_leg_strikes_attempts_avg',u'opponent_abs_distance_strikes_landed_avg',u'opponent_abs_distance_strikes_attempts_avg',u'opponent_abs_clinch_strikes_landed_avg',u'opponent_abs_clinch_strikes_attempts_avg',u'opponent_abs_ground_strikes_landed_avg',u'opponent_abs_ground_strikes_attempts_avg']
 
 #here is the version of punch stats geared for comparing fighter_inf to opponent_abs
-punch_statistics_alt=[    u'fighter_inf_knockdowns_avg',
-                    u'fighter_inf_pass_avg',
-                    u'fighter_inf_reversals_avg',
-                    u'fighter_inf_sub_attempts_avg',
-                    u'fighter_inf_takedowns_landed_avg',
-                    u'fighter_inf_takedowns_attempts_avg',
-                    u'fighter_inf_sig_strikes_landed_avg',
-                    u'fighter_inf_sig_strikes_attempts_avg',
-                    u'fighter_inf_total_strikes_landed_avg',
-                    u'fighter_inf_total_strikes_attempts_avg',
-                    u'fighter_inf_head_strikes_landed_avg',
-                    u'fighter_inf_head_strikes_attempts_avg',
-                    u'fighter_inf_body_strikes_landed_avg',
-                    u'fighter_inf_body_strikes_attempts_avg',
-                    u'fighter_inf_leg_strikes_landed_avg',
-                    u'fighter_inf_leg_strikes_attempts_avg',
-                    u'fighter_inf_distance_strikes_landed_avg',
-                    u'fighter_inf_distance_strikes_attempts_avg',
-                    u'fighter_inf_clinch_strikes_landed_avg',
-                    u'fighter_inf_clinch_strikes_attempts_avg',
-                    u'fighter_inf_ground_strikes_landed_avg',
-                    u'fighter_inf_ground_strikes_attempts_avg',
-
-                    u'fighter_abs_knockdowns_avg',
-                    u'fighter_abs_pass_avg',
-                    u'fighter_abs_reversals_avg',
-                    u'fighter_abs_sub_attempts_avg',
-                    u'fighter_abs_takedowns_landed_avg',
-                    u'fighter_abs_takedowns_attempts_avg',
-                    u'fighter_abs_sig_strikes_landed_avg',
-                    u'fighter_abs_sig_strikes_attempts_avg',
-                    u'fighter_abs_total_strikes_landed_avg',
-                    u'fighter_abs_total_strikes_attempts_avg',
-                    u'fighter_abs_head_strikes_landed_avg',
-                    u'fighter_abs_head_strikes_attempts_avg',
-                    u'fighter_abs_body_strikes_landed_avg',
-                    u'fighter_abs_body_strikes_attempts_avg',
-                    u'fighter_abs_leg_strikes_landed_avg',
-                    u'fighter_abs_leg_strikes_attempts_avg',
-                    u'fighter_abs_distance_strikes_landed_avg',
-                    u'fighter_abs_distance_strikes_attempts_avg',
-                    u'fighter_abs_clinch_strikes_landed_avg',
-                    u'fighter_abs_clinch_strikes_attempts_avg',
-                    u'fighter_abs_ground_strikes_landed_avg',
-                    u'fighter_abs_ground_strikes_attempts_avg',
-
-                    u'opponent_abs_knockdowns_avg',
-                    u'opponent_abs_pass_avg',
-                    u'opponent_abs_reversals_avg',
-                    u'opponent_abs_sub_attempts_avg',
-                    u'opponent_abs_takedowns_landed_avg',
-                    u'opponent_abs_takedowns_attempts_avg',
-                    u'opponent_abs_sig_strikes_landed_avg',
-                    u'opponent_abs_sig_strikes_attempts_avg',
-                    u'opponent_abs_total_strikes_landed_avg',
-                    u'opponent_abs_total_strikes_attempts_avg',
-                    u'opponent_abs_head_strikes_landed_avg',
-                    u'opponent_abs_head_strikes_attempts_avg',
-                    u'opponent_abs_body_strikes_landed_avg',
-                    u'opponent_abs_body_strikes_attempts_avg',
-                    u'opponent_abs_leg_strikes_landed_avg',
-                    u'opponent_abs_leg_strikes_attempts_avg',
-                    u'opponent_abs_distance_strikes_landed_avg',
-                    u'opponent_abs_distance_strikes_attempts_avg',
-                    u'opponent_abs_clinch_strikes_landed_avg',
-                    u'opponent_abs_clinch_strikes_attempts_avg',
-                    u'opponent_abs_ground_strikes_landed_avg',
-                    u'opponent_abs_ground_strikes_attempts_avg',
-
-                     u'opponent_inf_knockdowns_avg',
-                    u'opponent_inf_pass_avg',
-                    u'opponent_inf_reversals_avg',
-                    u'opponent_inf_sub_attempts_avg',
-                    u'opponent_inf_takedowns_landed_avg',
-                    u'opponent_inf_takedowns_attempts_avg',
-                    u'opponent_inf_sig_strikes_landed_avg',
-                    u'opponent_inf_sig_strikes_attempts_avg',
-                    u'opponent_inf_total_strikes_landed_avg',
-                    u'opponent_inf_total_strikes_attempts_avg',
-                    u'opponent_inf_head_strikes_landed_avg',
-                    u'opponent_inf_head_strikes_attempts_avg',
-                    u'opponent_inf_body_strikes_landed_avg',
-                    u'opponent_inf_body_strikes_attempts_avg',
-                    u'opponent_inf_leg_strikes_landed_avg',
-                    u'opponent_inf_leg_strikes_attempts_avg',
-                    u'opponent_inf_distance_strikes_landed_avg',
-                    u'opponent_inf_distance_strikes_attempts_avg',
-                    u'opponent_inf_clinch_strikes_landed_avg',
-                    u'opponent_inf_clinch_strikes_attempts_avg',
-                    u'opponent_inf_ground_strikes_landed_avg',
-                    u'opponent_inf_ground_strikes_attempts_avg']
+punch_statistics_alt=[    u'fighter_inf_knockdowns_avg',u'fighter_inf_pass_avg',u'fighter_inf_reversals_avg',u'fighter_inf_sub_attempts_avg',u'fighter_inf_takedowns_landed_avg',u'fighter_inf_takedowns_attempts_avg',u'fighter_inf_sig_strikes_landed_avg',u'fighter_inf_sig_strikes_attempts_avg',u'fighter_inf_total_strikes_landed_avg',u'fighter_inf_total_strikes_attempts_avg',u'fighter_inf_head_strikes_landed_avg',u'fighter_inf_head_strikes_attempts_avg',u'fighter_inf_body_strikes_landed_avg',u'fighter_inf_body_strikes_attempts_avg',u'fighter_inf_leg_strikes_landed_avg',u'fighter_inf_leg_strikes_attempts_avg',u'fighter_inf_distance_strikes_landed_avg',u'fighter_inf_distance_strikes_attempts_avg',u'fighter_inf_clinch_strikes_landed_avg',u'fighter_inf_clinch_strikes_attempts_avg',u'fighter_inf_ground_strikes_landed_avg',u'fighter_inf_ground_strikes_attempts_avg',
+u'fighter_abs_knockdowns_avg',u'fighter_abs_pass_avg',u'fighter_abs_reversals_avg',u'fighter_abs_sub_attempts_avg',u'fighter_abs_takedowns_landed_avg',u'fighter_abs_takedowns_attempts_avg',u'fighter_abs_sig_strikes_landed_avg',u'fighter_abs_sig_strikes_attempts_avg',u'fighter_abs_total_strikes_landed_avg',u'fighter_abs_total_strikes_attempts_avg',u'fighter_abs_head_strikes_landed_avg',u'fighter_abs_head_strikes_attempts_avg',u'fighter_abs_body_strikes_landed_avg',u'fighter_abs_body_strikes_attempts_avg',u'fighter_abs_leg_strikes_landed_avg',u'fighter_abs_leg_strikes_attempts_avg',u'fighter_abs_distance_strikes_landed_avg',u'fighter_abs_distance_strikes_attempts_avg',u'fighter_abs_clinch_strikes_landed_avg',u'fighter_abs_clinch_strikes_attempts_avg',u'fighter_abs_ground_strikes_landed_avg',u'fighter_abs_ground_strikes_attempts_avg',
+u'opponent_abs_knockdowns_avg',u'opponent_abs_pass_avg',u'opponent_abs_reversals_avg',u'opponent_abs_sub_attempts_avg',u'opponent_abs_takedowns_landed_avg',u'opponent_abs_takedowns_attempts_avg',u'opponent_abs_sig_strikes_landed_avg',u'opponent_abs_sig_strikes_attempts_avg',u'opponent_abs_total_strikes_landed_avg',u'opponent_abs_total_strikes_attempts_avg',u'opponent_abs_head_strikes_landed_avg',u'opponent_abs_head_strikes_attempts_avg',u'opponent_abs_body_strikes_landed_avg',u'opponent_abs_body_strikes_attempts_avg',u'opponent_abs_leg_strikes_landed_avg',u'opponent_abs_leg_strikes_attempts_avg',u'opponent_abs_distance_strikes_landed_avg',u'opponent_abs_distance_strikes_attempts_avg',u'opponent_abs_clinch_strikes_landed_avg',u'opponent_abs_clinch_strikes_attempts_avg',u'opponent_abs_ground_strikes_landed_avg',u'opponent_abs_ground_strikes_attempts_avg',
+u'opponent_inf_knockdowns_avg',u'opponent_inf_pass_avg',u'opponent_inf_reversals_avg',u'opponent_inf_sub_attempts_avg',u'opponent_inf_takedowns_landed_avg',u'opponent_inf_takedowns_attempts_avg',u'opponent_inf_sig_strikes_landed_avg',u'opponent_inf_sig_strikes_attempts_avg',u'opponent_inf_total_strikes_landed_avg',u'opponent_inf_total_strikes_attempts_avg',u'opponent_inf_head_strikes_landed_avg',u'opponent_inf_head_strikes_attempts_avg',u'opponent_inf_body_strikes_landed_avg',u'opponent_inf_body_strikes_attempts_avg',u'opponent_inf_leg_strikes_landed_avg',u'opponent_inf_leg_strikes_attempts_avg',u'opponent_inf_distance_strikes_landed_avg',u'opponent_inf_distance_strikes_attempts_avg',u'opponent_inf_clinch_strikes_landed_avg',u'opponent_inf_clinch_strikes_attempts_avg',u'opponent_inf_ground_strikes_landed_avg',u'opponent_inf_ground_strikes_attempts_avg']
 
 #adding record differences to ufc_fights
 record_statistics_diff = []
@@ -351,36 +124,9 @@ ufc_fights_winner['fighter_age'] = ufc_fights_winner['fighter_age'].apply(float)
 ufc_fights_winner['opponent_age'] = ufc_fights_winner['opponent_age'].apply(float)
 ufc_fights_winner['fighter_age_diff'] = ufc_fights_winner['fighter_age']-ufc_fights_winner['opponent_age']
 
-#this is currently the highest scoring subset of stats to choose. It scores around .637.
-#dropped to ,.617 after I changed the age columns to be floats instead of strings... this is VERY strange...
-#actually, after I changed method mask to coincide with the method prediction notebook, it dropped a whole percentage
-#to .626... Why would this be?
-#FIGURED IT OUT. Including split decisions in the example set drops predictions by a whole percentage. I changed the
-#clean_method function to count split decisions as 'bullshit'
-#This is the score to beat.
-
-#previous best
-#best_smallest_set=          ['fighter_age_diff',
-                            #'reach_diff',
-                            #'fighter_L5Y_ko_losses_diff_2',
-                            #'fighter_L5Y_losses_diff_2',
-                            #'fighter_L2Y_wins_diff_2',
-                            #'fighter_L5Y_wins_diff_2',
-                            #'fighter_L5Y_sub_wins_diff_2',
-                            #'fighter_abs_total_strikes_landed_avg_diff_2',
-                            #'fighter_inf_head_strikes_landed_avg_diff_2',
-                            #'fighter_inf_leg_strikes_landed_avg_diff_2',
-                            #'fighter_abs_head_strikes_landed_avg_diff_2',
-                            #'fighter_inf_knockdowns_avg_diff_2',
-                            #'fighter_inf_clinch_strikes_attempts_avg_diff_2',
-                            #'fighter_inf_takedowns_attempts_avg_diff_2',
-                            #'fighter_inf_ground_strikes_landed_avg_diff_2',
-                            #'fighter_inf_sig_strikes_landed_avg_diff_2']
-
 best_smallest_set = ['4-fighter_score_diff',
  '9-fighter_score_diff',
  '15-fighter_score_diff',
- #'17-fighter_score_diff',
  '1-fight_math',
  '6-fight_math',
  'fighter_L5Y_sub_wins_diff_2',
@@ -407,20 +153,6 @@ print('coefficients'+str(winPredictionModel.coef_))
 print('intercept'+str(winPredictionModel.intercept_))
 theta = winPredictionModel.coef_
 b = winPredictionModel.intercept_[0]
-
-
-best_stats=['fighter_ko_losses_diff_2', 'fighter_sub_losses_diff_2']
-rfc=RandomForestClassifier()
-Xr=ufc_fights_method[best_stats].iloc[0:2300].to_numpy()
-yr=ufc_fights_method['method'].iloc[0:2300]
-rfc.fit(Xr,yr)
-
-accuracy = cross_val_score(rfc,Xr,yr,cv=3).mean()
-precision = cross_val_score(rfc,Xr,yr,cv=3, scoring='precision_micro').mean()
-recall = cross_val_score(rfc, Xr, yr, cv=3, scoring='recall_macro').mean()
-print('Random Forest Method Classifier: Accuracy: '+str(accuracy),'F1 score: '+str(precision*recall/(precision+recall)))
-
-
 
 
 # We want to predict how many times out of 10 the winning fighter would win, so we look at the values
@@ -450,7 +182,6 @@ def probability(fighter1,fighter2,date1,date2):
     presig=presigmoid_value(fighter1,fighter2,date1,date2)
     return sigmoid(presig)
 
-from dateutil.relativedelta import relativedelta
 def odds(fighter1,fighter2):
     date1=(date.today()- relativedelta(months=1)).strftime("%B %d, %Y")
     date2=(date.today()- relativedelta(months=1)).strftime("%B %d, %Y")
@@ -569,8 +300,8 @@ for i in vegas_odds_copy.index:
 prediction_history = pd.concat([vegas_odds_copy, prediction_history], axis = 0).reset_index(drop=True)
 
 #getting rid of multiple copies of the same fight... keeping the most recent (is this correct? could cause issues when the same fight is scraped two weeks in advance and then one week in advance...)
-prediction_history.drop_duplicates(subset =["fighter name", "opponent name"],
-                     keep = 'first', inplace = True)
+#prediction_history.drop_duplicates(subset =["fighter name", "opponent name"],
+                     #keep = 'first', inplace = True)
 
 #saving the new prediction_history dataframe to json
 result = prediction_history.to_json()
