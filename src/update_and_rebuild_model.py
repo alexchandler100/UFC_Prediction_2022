@@ -13,7 +13,7 @@ pd.options.mode.chained_assignment = None  # default='warn' (disables SettingWit
 
 print('scraping bookie odds from bestfightodds.com')
 odds_df = get_odds()
-odds_df=drop_irrelevant_fights(odds_df,1) #allows 1 bookie to have missing odds. can increase this to 2 or 3 as needed
+odds_df=drop_irrelevant_fights(odds_df,2) #allows 1 bookie to have missing odds. can increase this to 2 or 3 as needed
 odds_df=drop_non_ufc_fights(odds_df)
 odds_df=drop_repeats(odds_df)
 print('saving odds to models/buildingMLModel/data/external/vegas_odds.json')
