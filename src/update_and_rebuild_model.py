@@ -303,6 +303,9 @@ prediction_history = pd.concat([vegas_odds_copy, prediction_history], axis = 0).
 #prediction_history.drop_duplicates(subset =["fighter name", "opponent name"],
                      #keep = 'first', inplace = True)
 
+prediction_history.drop_duplicates(subset =["fighter name", "opponent name"],
+                     keep = 'first', inplace = True)
+
 #saving the new prediction_history dataframe to json
 result = prediction_history.to_json()
 parsed = json.loads(result)

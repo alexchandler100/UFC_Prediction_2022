@@ -48,7 +48,8 @@ function same_name(str1, str2) {
   }
 }
 
-$(function() {
+// note $ is shorthand for jQuery
+$(function() { // building object fighter_data from fighter_data.json file
   //var people = [];
   $.getJSON('src/models/buildingMLModel/data/external/fighter_stats.json', function(data) {
     //for each input (i,f), i is the key (a fighter's name) and f is the value (all their data)
@@ -63,7 +64,7 @@ $(function() {
   });
 });
 
-$(function() {
+$(function() { // building object ufcfightscrap from ufcfightscrap.json file
   //var people = [];
   $.getJSON('src/models/buildingMLModel/data/external/ufcfightscrap.json', function(data) {
     //for each input (i,f), i is the key (a number) and f is the value (all the data of the fight)
@@ -74,7 +75,7 @@ $(function() {
   });
 });
 
-$(function() {
+$(function() { // building object vegas_odds from vegas_odds.json file
   //var people = [];
   $.getJSON('src/models/buildingMLModel/data/external/vegas_odds.json', function(data) {
     //for each input (i,f), i is the key a column name like fighter name and f is the value (an object with keys being integers and values being strings (odds or names))
@@ -124,8 +125,7 @@ function selectFighter(id, out) {
   name_decoded = decodeURIComponent(name_decoded)
   name_decoded = name_decoded.replace(new RegExp(' ', 'g'), '');
 
-  // Calling function
-  // set the path to check
+  // set the path to check if gif file exists (otherwise use pictures)
   if (checkFileExist("src/models/buildingMLModel/gifs/postCNNGIFs/" + name_decoded + ".gif")) {
     document.getElementById("fighter" + i + "pic").src = "src/models/buildingMLModel/gifs/postCNNGIFs/" + name_decoded + ".gif" //sets the image
   } else if (checkFileExist("src/models/buildingMLModel/images2/" + j + name_decoded + ".jpg")) {
@@ -266,8 +266,7 @@ function l5y_losses(fighter, year) {
   return losses
 }
 
-//avg_count('total_strikes_landed',fighter1,'abs',day1)
-function avg_count(stat, fighter, inf_abs, year) {
+function avg_count(stat, fighter, inf_abs, year) { // e.g. avg_count('total_strikes_landed',fighter1,'abs',day1)
   let summ = 0
   let time_in_octagon = 0
   let person;
@@ -461,12 +460,7 @@ function betting_oddsAbsolute(fighter1, fighter2, month1, year1, month2, year2) 
   }
 }
 
-
-
-
-
-
-//this takes as input certain html locations
+//this takes as input certain html locations holding this data... not strings
 function predictionTuple(fighter1, fighter2, month1, year1, month2, year2) {
   let result;
   guy1 = document.querySelector('#' + fighter1).value;
@@ -517,12 +511,10 @@ $.getJSON('src/models/buildingMLModel/data/external/intercept.json', function(da
     //console.log(intercept[i])
   });
 });
-
-
 //console.log(theta[0])
 //console.log(intercept[0])
 
-//It might make sense to scale the output by something between 1 and 2
+//It might make sense to scale the output by something between 1 and 2 to adjust probabilities
 function presigmoid_value(fighter1, fighter2, month1, year1, month2, year2) {
   let value = 0
   tup = predictionTuple(fighter1, fighter2, month1, year1, month2, year2);
@@ -562,8 +554,6 @@ function betting_odds(fighter1, fighter2, month1, year1, month2, year2) {
   }
 }
 
-
-
 function get_vegas_odds(fighter1, fighter2, month1, year1, month2, year2) {
   console.log('getting the vegas odds')
   guy1 = document.querySelector('#' + fighter1).value;
@@ -573,9 +563,7 @@ function get_vegas_odds(fighter1, fighter2, month1, year1, month2, year2) {
   console.log(`f names : ${f_names.length}`)
   let vegas_odds_dict = {}
   for (let i = 0; i < f_names.length; i++) {
-    //if ((f_names[i].toLowerCase().replace(".",'')==guy1.toLowerCase() && o_names[i].toLowerCase().replace(".",'')==guy2.toLowerCase()) || (f_names[i].toLowerCase().replace(".",'')==guy2.toLowerCase() && o_names[i].toLowerCase().replace(".",'')==guy1.toLowerCase())){
     if ((same_name(f_names[i], guy1) && same_name(o_names[i], guy2)) || (same_name(f_names[i], guy2) && same_name(o_names[i], guy1))) {
-      //[vegas_odds[stat][i] for stat in Object.keys(vegas_odds)]
       for (let j = 0; j < Object.keys(vegas_odds).length; j++) {
         let key = Object.keys(vegas_odds)[j]
         let value = vegas_odds[key][i]
@@ -586,7 +574,6 @@ function get_vegas_odds(fighter1, fighter2, month1, year1, month2, year2) {
   console.log(vegas_odds_dict)
   return vegas_odds_dict
 }
-
 
 function predict(fighter1, fighter2, month1, year1, month2, year2) {
   vegas_odds_dict = get_vegas_odds(fighter1, fighter2, month1, year1, month2, year2)
@@ -907,6 +894,7 @@ setTimeout(() => { //timeout because other data needs to load first (probably be
       tr.appendChild(td3);
       tr.appendChild(td4);
       tr.appendChild(td5);
+      console.log(`fighter odds: ${fighterOdds}`)
       if (fighterOdds[0]=='-'){
         tr.cells.item(0).innerHTML = `<a href=https://en.wikipedia.org/wiki/${fighter.replace(" ", '_')}#Mixed_martial_arts_record target="_blank" style = "color: gold">${fighter}</a>`
         tr.cells.item(1).innerHTML = `<a href=https://en.wikipedia.org/wiki/${opponent.replace(" ", '_')}#Mixed_martial_arts_record target="_blank" style = "color: white">${opponent}</a>`
