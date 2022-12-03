@@ -36,4 +36,4 @@ and press enter. This will run more quickly. This rebuilds the machine learning 
 python3 -m http.server 8000
 ```
 
-Now go to chrome and type localhost:8000 into the address bar. This opens the updated version of the website.
+Now go to chrome and type `localhost:8000` into the address bar. This opens the updated version of the website.
