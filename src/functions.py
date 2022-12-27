@@ -597,10 +597,9 @@ def get_odds():
                 oddsList.append(odds)
             except:
                 oddsList.append('')
-        if name in names:
-            names.append(name+'.')
-        else:
-            names.append(name)
+        while name in names:
+            name += '.'
+        names.append(name)
         oddsDicts.append(dict(zip(['name']+books,oddsList)))
     oddsDict = dict(zip(names,oddsDicts))
     names = list(oddsDict.keys())
@@ -855,20 +854,20 @@ def update_fight_stats(old_stats): #takes dataframe of fight stats as input
     url = 'http://ufcstats.com/statistics/events/completed?page=all'
     page = requests.get(url)
     soup = BeautifulSoup(page.content, "html.parser")
-
     events_table = soup.select_one('tbody')
-    events = [event['href'] for event in events_table.select('a')[1:]] #omit first event, future event
-
-    saved_events = set(old_stats.event_url.unique())
     new_stats = pd.DataFrame()
-    for event in events:
-        if event in saved_events:
-            break
-        else:
-            print(event)
-            stats = get_fight_card(event)
-            new_stats = pd.concat([new_stats, stats], axis = 0)
-
+    try:
+        events = [event['href'] for event in events_table.select('a')[1:]] #omit first event, future event
+        saved_events = set(old_stats.event_url.unique())
+        for event in events:
+            if event in saved_events:
+                break
+            else:
+                print(event)
+                stats = get_fight_card(event)
+                new_stats = pd.concat([new_stats, stats], axis = 0)
+    except:
+        print('that didnt work... if there is an event going on right now, this will not run correctly')
     updated_stats = pd.concat([new_stats, old_stats], axis = 0)
     updated_stats = updated_stats.reset_index(drop = True)
     return(updated_stats)

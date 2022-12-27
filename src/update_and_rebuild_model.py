@@ -13,7 +13,7 @@ pd.options.mode.chained_assignment = None  # default='warn' (disables SettingWit
 
 print('scraping bookie odds from bestfightodds.com')
 odds_df = get_odds()
-odds_df=drop_irrelevant_fights(odds_df,1) #allows 1 bookie to have missing odds. can increase this to 2 or 3 as needed
+odds_df=drop_irrelevant_fights(odds_df,3) #allows 1 bookie to have missing odds. can increase this to 2 or 3 as needed
 odds_df=drop_non_ufc_fights(odds_df)
 odds_df=drop_repeats(odds_df)
 print('saving odds to models/buildingMLModel/data/external/vegas_odds.json')
@@ -302,6 +302,9 @@ prediction_history = pd.concat([vegas_odds_copy, prediction_history], axis = 0).
 #getting rid of multiple copies of the same fight... keeping the most recent (is this correct? could cause issues when the same fight is scraped two weeks in advance and then one week in advance...)
 #prediction_history.drop_duplicates(subset =["fighter name", "opponent name"],
                      #keep = 'first', inplace = True)
+
+prediction_history.drop_duplicates(subset =["fighter name", "opponent name"],
+                     keep = 'first', inplace = True)
 
 #saving the new prediction_history dataframe to json
 result = prediction_history.to_json()
