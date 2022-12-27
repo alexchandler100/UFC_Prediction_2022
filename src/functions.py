@@ -597,10 +597,9 @@ def get_odds():
                 oddsList.append(odds)
             except:
                 oddsList.append('')
-        if name in names:
-            names.append(name+'.')
-        else:
-            names.append(name)
+        while name in names:
+            name += '.'
+        names.append(name)
         oddsDicts.append(dict(zip(['name']+books,oddsList)))
     oddsDict = dict(zip(names,oddsDicts))
     names = list(oddsDict.keys())

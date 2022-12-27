@@ -49,11 +49,11 @@ function same_name(str1, str2) {
 }
 
 // note $ is shorthand for jQuery
-$(function() { // building object fighter_data from fighter_data.json file
+$(function () { // building object fighter_data from fighter_data.json file
   //var people = [];
-  $.getJSON('src/models/buildingMLModel/data/external/fighter_stats.json', function(data) {
+  $.getJSON('src/models/buildingMLModel/data/external/fighter_stats.json', function (data) {
     //for each input (i,f), i is the key (a fighter's name) and f is the value (all their data)
-    $.each(data, function(i, f) {
+    $.each(data, function (i, f) {
       //create entry in local object
       const select = document.getElementById('fighters')
       select.insertAdjacentHTML('beforeend', `
@@ -64,22 +64,22 @@ $(function() { // building object fighter_data from fighter_data.json file
   });
 });
 
-$(function() { // building object ufcfightscrap from ufcfightscrap.json file
+$(function () { // building object ufcfightscrap from ufcfightscrap.json file
   //var people = [];
-  $.getJSON('src/models/buildingMLModel/data/external/ufcfightscrap.json', function(data) {
+  $.getJSON('src/models/buildingMLModel/data/external/ufcfightscrap.json', function (data) {
     //for each input (i,f), i is the key (a number) and f is the value (all the data of the fight)
-    $.each(data, function(i, f) {
+    $.each(data, function (i, f) {
       //create entry in local object
       ufcfightscrap[i] = f
     });
   });
 });
 
-$(function() { // building object vegas_odds from vegas_odds.json file
+$(function () { // building object vegas_odds from vegas_odds.json file
   //var people = [];
-  $.getJSON('src/models/buildingMLModel/data/external/vegas_odds.json', function(data) {
+  $.getJSON('src/models/buildingMLModel/data/external/vegas_odds.json', function (data) {
     //for each input (i,f), i is the key a column name like fighter name and f is the value (an object with keys being integers and values being strings (odds or names))
-    $.each(data, function(i, f) {
+    $.each(data, function (i, f) {
       //create entry in local object
       vegas_odds[i] = f
     });
@@ -496,17 +496,17 @@ function predictionTuple(fighter1, fighter2, month1, year1, month2, year2) {
 theta = {};
 intercept = {};
 
-$.getJSON('src/models/buildingMLModel/data/external/theta.json', function(data) {
+$.getJSON('src/models/buildingMLModel/data/external/theta.json', function (data) {
   //for each input (i,f), i is the key (a fighter's name) and f is the value (all their data)
-  $.each(data, function(i, f) {
+  $.each(data, function (i, f) {
     theta[i] = f.toFixed(2)
     //console.log(theta[i])
   });
 });
 
-$.getJSON('src/models/buildingMLModel/data/external/intercept.json', function(data) {
+$.getJSON('src/models/buildingMLModel/data/external/intercept.json', function (data) {
   //for each input (i,f), i is the key (a fighter's name) and f is the value (all their data)
-  $.each(data, function(i, f) {
+  $.each(data, function (i, f) {
     intercept[i] = f.toFixed(2)
     //console.log(intercept[i])
   });
@@ -627,6 +627,7 @@ function predict(fighter1, fighter2, month1, year1, month2, year2) {
   myTab.rows.item(1).cells.item(1).innerHTML = `${guy1}: <span style="color:#00FF00";>${odds[0]}</span>`;
   myTab.rows.item(1).cells.item(2).innerHTML = `${guy2}: <span style="color:#00FF00";>${odds[1]}</span>`;
 
+  /*
   //have to put things in the correct ordering
   let index1 = 0
   let index2 = 12
@@ -647,6 +648,7 @@ function predict(fighter1, fighter2, month1, year1, month2, year2) {
     myTab.rows.item(i).cells.item(2).innerHTML = `<span style="color:#FFFFFF";>${vegas_odds_dict[keys[i-2 + index2]]}</span>`;
 
   }
+  */
   //document.querySelector('.tableEntry').textContent = fighter
 }
 
@@ -798,11 +800,11 @@ setTimeout(() => {
     prediction_history['correct'] = {}
   }
   //filling in any previous data into prediction_history
-  $(function() {
+  $(function () {
     //var people = [];
-    $.getJSON('src/models/buildingMLModel/data/external/prediction_history.json', function(data) {
+    $.getJSON('src/models/buildingMLModel/data/external/prediction_history.json', function (data) {
       //for each input (i,f), i is the key a column name like fighter name and f is the value (an object with keys being integers and values being strings (odds or names))
-      $.each(data, function(i, f) {
+      $.each(data, function (i, f) {
         //create entry in local object
         prediction_history[i] = f
       });
@@ -864,6 +866,7 @@ setTimeout(()=>{
 */
 
 //Building upcoming predictions table
+
 setTimeout(() => { //timeout because other data needs to load first (probably better to do with async)
   for (const i in prediction_history['fighter name']) {
     fighter = prediction_history['fighter name'][i]
@@ -871,55 +874,56 @@ setTimeout(() => { //timeout because other data needs to load first (probably be
     fighterOdds = prediction_history['predicted fighter odds'][i]
     opponentOdds = prediction_history['predicted opponent odds'][i]
     avBookieOdds = prediction_history['average bookie odds'][i]
-    counter=0
-    console.log(fighter+' vs '+opponent)
-    for (const j in ufcfightscrap) {//for each fight prediction, check whether the fight has happened recently (last 100 fights)
-      counter+=1
+    counter = 0
+    console.log(fighter + ' vs ' + opponent)
+    for (const j in ufcfightscrap) {//for each fight prediction, check whether the fight has happened recently (last 1000 fights)
+      counter += 1
       if (same_name(ufcfightscrap[j]['fighter'], fighter) && same_name(ufcfightscrap[j]['opponent'], opponent)) {
-        console.log('fought on '+String(ufcfightscrap[j]['date']))
-         break;
-    } else if (counter>=100){ //if it has not happened recently, that means it is upcoming, so we add it to the upcoming list
-      console.log('didnt fight yet... adding to upcoming')
-      var myTable = document.getElementById('upcoming')
-      myTable.rows.item(0).cells.item(0).style.backgroundColor = "#212121";
-      var tbody = myTable.tBodies[0]
-      var tr = tbody.insertRow(-1);
-      var td1 = document.createElement('td');
-      var td2 = document.createElement('td');
-      var td3 = document.createElement('td');
-      var td4 = document.createElement('td');
-      var td5 = document.createElement('td');
-      tr.appendChild(td1);
-      tr.appendChild(td2);
-      tr.appendChild(td3);
-      tr.appendChild(td4);
-      tr.appendChild(td5);
-      console.log(`fighter odds: ${fighterOdds}`)
-      if (fighterOdds[0]=='-'){
-        tr.cells.item(0).innerHTML = `<a href=https://en.wikipedia.org/wiki/${fighter.replace(" ", '_')}#Mixed_martial_arts_record target="_blank" style = "color: gold">${fighter}</a>`
-        tr.cells.item(1).innerHTML = `<a href=https://en.wikipedia.org/wiki/${opponent.replace(" ", '_')}#Mixed_martial_arts_record target="_blank" style = "color: white">${opponent}</a>`
-      } else {
-        tr.cells.item(0).innerHTML = `<a href=https://en.wikipedia.org/wiki/${fighter.replace(" ", '_')}#Mixed_martial_arts_record target="_blank" style = "color: white">${fighter}</a>`
-        tr.cells.item(1).innerHTML = `<a href=https://en.wikipedia.org/wiki/${opponent.replace(" ", '_')}#Mixed_martial_arts_record target="_blank" style = "color: gold">${opponent}</a>`
+        console.log('fought on ' + String(ufcfightscrap[j]['date']))
+        break;
+      } else if (counter >= 1000) { //if it has not happened recently, that means it is upcoming, so we add it to the upcoming list
+        console.log('didnt fight yet... adding to upcoming')
+        var myTable = document.getElementById('upcoming')
+        myTable.rows.item(0).cells.item(0).style.backgroundColor = "#212121";
+        var tbody = myTable.tBodies[0]
+        var tr = tbody.insertRow(-1);
+        var td1 = document.createElement('td');
+        var td2 = document.createElement('td');
+        var td3 = document.createElement('td');
+        var td4 = document.createElement('td');
+        var td5 = document.createElement('td');
+        tr.appendChild(td1);
+        tr.appendChild(td2);
+        tr.appendChild(td3);
+        tr.appendChild(td4);
+        tr.appendChild(td5);
+        console.log(`fighter odds: ${fighterOdds}`)
+        if (fighterOdds[0] == '-') {
+          tr.cells.item(0).innerHTML = `<a href=https://en.wikipedia.org/wiki/${fighter.replace(" ", '_')}#Mixed_martial_arts_record target="_blank" style = "color: gold">${fighter}</a>`
+          tr.cells.item(1).innerHTML = `<a href=https://en.wikipedia.org/wiki/${opponent.replace(" ", '_')}#Mixed_martial_arts_record target="_blank" style = "color: white">${opponent}</a>`
+        } else {
+          tr.cells.item(0).innerHTML = `<a href=https://en.wikipedia.org/wiki/${fighter.replace(" ", '_')}#Mixed_martial_arts_record target="_blank" style = "color: white">${fighter}</a>`
+          tr.cells.item(1).innerHTML = `<a href=https://en.wikipedia.org/wiki/${opponent.replace(" ", '_')}#Mixed_martial_arts_record target="_blank" style = "color: gold">${opponent}</a>`
+        }
+        tr.cells.item(2).innerHTML = fighterOdds;
+        tr.cells.item(3).innerHTML = opponentOdds;
+        tr.cells.item(4).innerHTML = avBookieOdds;
+        tr.cells.item(0).style.backgroundColor = "#323232";
+        tr.cells.item(1).style.backgroundColor = "#323232";
+        tr.cells.item(2).style.backgroundColor = "#323232";
+        tr.cells.item(3).style.backgroundColor = "#323232";
+        tr.cells.item(4).style.backgroundColor = "#323232";
+        tr.cells.item(0).style.color = "#ffffff";
+        tr.cells.item(1).style.color = "#ffffff";
+        tr.cells.item(2).style.color = "#ffffff";
+        tr.cells.item(3).style.color = "#ffffff";
+        tr.cells.item(4).style.color = "#ffffff";
+        break;
       }
-      tr.cells.item(2).innerHTML = fighterOdds;
-      tr.cells.item(3).innerHTML = opponentOdds;
-      tr.cells.item(4).innerHTML = avBookieOdds;
-      tr.cells.item(0).style.backgroundColor = "#323232";
-      tr.cells.item(1).style.backgroundColor = "#323232";
-      tr.cells.item(2).style.backgroundColor = "#323232";
-      tr.cells.item(3).style.backgroundColor = "#323232";
-      tr.cells.item(4).style.backgroundColor = "#323232";
-      tr.cells.item(0).style.color = "#ffffff";
-      tr.cells.item(1).style.color = "#ffffff";
-      tr.cells.item(2).style.color = "#ffffff";
-      tr.cells.item(3).style.color = "#ffffff";
-      tr.cells.item(4).style.color = "#ffffff";
-      break;
     }
   }
-  }
 }, 350)
+
 
 
 setTimeout(() => { //this builds a table for the history of predictions which is built in python in the jupyter notebook UFC_Prediction_Model
@@ -932,14 +936,14 @@ setTimeout(() => { //this builds a table for the history of predictions which is
     fighterOdds = String(prediction_history['predicted fighter odds'][i])
     opponentOdds = String(prediction_history['predicted opponent odds'][i])
     avBookieOdds = prediction_history['average bookie odds'][i]
-    counter=0
+    counter = 0
     for (const j in ufcfightscrap) {
-      counter+=1
-      if (counter>=200){ //makes it so we only show the last 200 fights
+      counter += 1
+      if (counter >= 200) { //makes it so we only show the last 200 fights
         break;
       }
-      if (same_name(ufcfightscrap[j]['fighter'], fighter) && same_name(ufcfightscrap[j]['opponent'], opponent) && fighterOdds.length>0) {
-        numberTotal+=1;
+      if (same_name(ufcfightscrap[j]['fighter'], fighter) && same_name(ufcfightscrap[j]['opponent'], opponent) && fighterOdds.length > 0) {
+        numberTotal += 1;
         console.log(fighter)
         console.log(opponent)
         console.log(fighterOdds.length)
@@ -980,7 +984,7 @@ setTimeout(() => { //this builds a table for the history of predictions which is
         if ((parseInt(fighterOdds) < 0 && ufcfightscrap[j]['result'] == 'W') || (parseInt(fighterOdds) > 0 && ufcfightscrap[j]['result'] == 'L')) {
           tr.cells.item(4).innerHTML = 'yes'
           tr.cells.item(4).style.backgroundColor = "#00ff00";
-          numberModelCorrect+=1
+          numberModelCorrect += 1
           if (parseInt(fighterOdds) < 0 && ufcfightscrap[j]['result'] == 'W') {
             tr.cells.item(0).style.fontWeight = "bold";
             tr.cells.item(0).style.fontSize = "15px";
@@ -1007,7 +1011,7 @@ setTimeout(() => { //this builds a table for the history of predictions which is
       }
     }
   }
-  var acc = numberModelCorrect/numberTotal;
+  var acc = numberModelCorrect / numberTotal;
   var accuracy = document.getElementById("myaccuracy")
   console.log(accuracy)
   console.log(numberModelCorrect)
@@ -1043,10 +1047,12 @@ setTimeout(() => {
   myTab.rows.item(1).cells.item(1).style.backgroundColor = "#323232";
   myTab.rows.item(1).cells.item(2).style.backgroundColor = "#323232";
   myTab.rows.item(2).cells.item(0).style.backgroundColor = "#212121";
+  /*
   for (let i = 3; i < 3 + 11; i++) {
     for (let j = 0; j < 3; j++) {
       myTab.rows.item(i).cells.item(j).style.backgroundColor = "#323232";
     }
   }
+  */
 
 }, 500)
