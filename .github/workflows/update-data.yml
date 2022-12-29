@@ -18,8 +18,9 @@ jobs:
           pip install -r requirements.txt
       - name: Update Data
         run: |
-          python src/update_data_csvs_and_jsons.py
-          python src/update_and_rebuild_model.py
+          cd src
+          python3 update_data_csvs_and_jsons.py
+          python3 update_and_rebuild_model.py
 # commit files
       - name: Commit files
         run: |
