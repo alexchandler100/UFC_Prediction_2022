@@ -1,8 +1,9 @@
 # for github actions, run update_data_csvs_and_jsons.py and once it is done, run update_and_rebuild_model.py every tuesday at 4:30pm PST
 name: Update Data
-on: 
+# make it run every thursday at 4am UCT (that is 8pm PST)
+on:
   schedule:
-    - cron: '40 19 * * 3'
+    - cron: '0 4 * * 4'
 jobs:
   update_data:
     runs-on: ubuntu-latest
