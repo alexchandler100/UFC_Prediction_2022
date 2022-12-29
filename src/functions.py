@@ -13,6 +13,8 @@ import json
 
 # change directory to the current directory
 import os
+print(
+    f'changing directory to current directory {os.path.dirname(os.path.abspath(__file__))}')
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
 
