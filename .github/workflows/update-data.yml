@@ -17,8 +17,8 @@ jobs:
           python -m pip install --upgrade pip
       - name: Update Data
         run: |
-          python update_data_csvs_and_jsons.py
-          python update_and_rebuild_model.py
+          python src/update_data_csvs_and_jsons.py
+          python src/update_and_rebuild_model.py
 # commit files
       - name: Commit files
         run: |
