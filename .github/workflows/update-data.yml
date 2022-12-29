@@ -1,8 +1,8 @@
 # for github actions, run update_data_csvs_and_jsons.py and once it is done, run update_and_rebuild_model.py every tuesday at 4:30pm PST
 name: Update Data
-on:
-  schedule:
-    - cron: '30 4 * * 2'
+on: workflow_dispatch
+  #schedule:
+  #  - cron: '30 4 * * 2'
 jobs:
   update_data:
     runs-on: ubuntu-latest
