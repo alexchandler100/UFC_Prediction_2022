@@ -15,7 +15,7 @@ import json
 import os
 path = os.path.dirname(os.path.abspath(__file__))
 print(
-    f'changing directory to current directory {path}')
+    f'changing directory to current directory {path} in functions.py file')
 os.chdir(path)
 
 

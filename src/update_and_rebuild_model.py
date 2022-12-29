@@ -13,7 +13,7 @@ from functions import *
 import os
 path = os.path.dirname(os.path.abspath(__file__))
 print(
-    f'changing directory to current directory {path}')
+    f'changing directory to current directory {path} in update_and_rebuild_model.py')
 os.chdir(path)
 
 pd.options.mode.chained_assignment = None  # default='warn' (disables SettingWithCopyWarning)

@@ -14,7 +14,7 @@ from PIL import Image
 import os
 path = os.path.dirname(os.path.abspath(__file__))
 print(
-    f'changing directory to current directory {path}')
+    f'changing directory to current directory {path} in update_data_csvs_and_jsons.py')
 os.chdir(path)
 
 # default='warn' (disables SettingWithCopyWarning)
