@@ -12,10 +12,8 @@ from PIL import Image
 
 # change directory to the current directory
 import os
-path = os.path.dirname(os.path.abspath(__file__))
-print(
-    f'changing directory to current directory {path} in update_data_csvs_and_jsons.py')
-os.chdir(path)
+path = os.getcwd()
+print(f'current directory: {path}')
 
 # default='warn' (disables SettingWithCopyWarning)
 pd.options.mode.chained_assignment = None
