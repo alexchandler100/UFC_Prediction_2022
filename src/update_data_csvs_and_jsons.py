@@ -13,7 +13,7 @@ from PIL import Image
 # change directory to the current directory
 import os
 path = os.getcwd()
-print(f'current directory: {path}')
+print(f'current directory (update_data): {path}')
 
 # default='warn' (disables SettingWithCopyWarning)
 pd.options.mode.chained_assignment = None

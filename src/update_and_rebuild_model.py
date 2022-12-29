@@ -12,7 +12,7 @@ from functions import *
 # change directory to the current directory
 import os
 path = os.getcwd()
-print(f'current directory: {path}')
+print(f'current directory (update_and_rebuild): {path}')
 
 pd.options.mode.chained_assignment = None  # default='warn' (disables SettingWithCopyWarning)
 
