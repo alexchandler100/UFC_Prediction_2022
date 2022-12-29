@@ -9,6 +9,10 @@ from sklearn.model_selection import train_test_split, KFold, cross_val_score
 #this imports all of the functions from the file functions.py
 from functions import *
 
+# change directory to the current directory
+import os
+os.chdir(os.path.dirname(os.path.abspath(__file__)))
+
 pd.options.mode.chained_assignment = None  # default='warn' (disables SettingWithCopyWarning)
 
 print('scraping bookie odds from bestfightodds.com')

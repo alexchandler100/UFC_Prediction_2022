@@ -11,6 +11,10 @@ from functions import *
 from bs4 import BeautifulSoup
 from PIL import Image
 
+# change directory to the current directory
+import os
+os.chdir(os.path.dirname(os.path.abspath(__file__)))
+
 pd.options.mode.chained_assignment = None  # default='warn' (disables SettingWithCopyWarning)
 
 print('scraping new statistics from ufcstats.com')
