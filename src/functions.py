@@ -13,9 +13,10 @@ import json
 
 # change directory to the current directory
 import os
+path = os.path.dirname(os.path.abspath(__file__))
 print(
-    f'changing directory to current directory {os.path.dirname(os.path.abspath(__file__))}')
-os.chdir(os.path.dirname(os.path.abspath(__file__)))
+    f'changing directory to current directory {path}')
+os.chdir(path)
 
 
 # updated scraped fight data (after running fight_hist_updated function from UFC_data_scraping file)

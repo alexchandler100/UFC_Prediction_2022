@@ -11,7 +11,10 @@ from functions import *
 
 # change directory to the current directory
 import os
-os.chdir(os.path.dirname(os.path.abspath(__file__)))
+path = os.path.dirname(os.path.abspath(__file__))
+print(
+    f'changing directory to current directory {path}')
+os.chdir(path)
 
 pd.options.mode.chained_assignment = None  # default='warn' (disables SettingWithCopyWarning)
 
