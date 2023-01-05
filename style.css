@@ -1,4 +1,72 @@
-html, body, div, span, object, iframe, h1, h2, h3, h4, h5, h6, p, blockquote, pre, abbr, address, cite, code, del, dfn, em, img, ins, kbd, q, samp, small, strong, sub, sup, var, b, i, dl, dt, dd, ol, ul, li, fieldset, form, label, legend, table, caption, tbody, tfoot, thead, tr, th, td, article, aside, canvas, details, figcaption, figure, footer, header, hgroup, menu, nav, section, summary, time, mark, audio, video {
+html,
+body,
+div,
+span,
+object,
+iframe,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p,
+blockquote,
+pre,
+abbr,
+address,
+cite,
+code,
+del,
+dfn,
+em,
+img,
+ins,
+kbd,
+q,
+samp,
+small,
+strong,
+sub,
+sup,
+var,
+b,
+i,
+dl,
+dt,
+dd,
+ol,
+ul,
+li,
+fieldset,
+form,
+label,
+legend,
+table,
+caption,
+tbody,
+tfoot,
+thead,
+tr,
+th,
+td,
+article,
+aside,
+canvas,
+details,
+figcaption,
+figure,
+footer,
+header,
+hgroup,
+menu,
+nav,
+section,
+summary,
+time,
+mark,
+audio,
+video {
   margin: 0;
   padding: 0;
   border: 0;
@@ -29,7 +97,17 @@ h4 {
   font-size: 16px;
 }
 
-article, aside, details, figcaption, figure, footer, header, hgroup, menu, nav, section {
+article,
+aside,
+details,
+figcaption,
+figure,
+footer,
+header,
+hgroup,
+menu,
+nav,
+section {
   display: block
 }
 
@@ -37,11 +115,15 @@ nav ul {
   list-style: none
 }
 
-blockquote, q {
+blockquote,
+q {
   quotes: none
 }
 
-blockquote:before, blockquote:after, q:before, q:after {
+blockquote:before,
+blockquote:after,
+q:before,
+q:after {
   content: none
 }
 
@@ -70,7 +152,8 @@ del {
   text-decoration: line-through
 }
 
-abbr[title], dfn[title] {
+abbr[title],
+dfn[title] {
   border-bottom: 1px dotted;
   cursor: help
 }
@@ -89,7 +172,8 @@ hr {
   padding: 0
 }
 
-input, select {
+input,
+select {
   vertical-align: middle
 }
 
@@ -98,7 +182,8 @@ input {
   border-radius: 4px;
 }
 
-body, html {
+body,
+html {
   /*background-color: #e6e6e6;*/
   /* The image used */
   background-image: url("background.png");
@@ -125,6 +210,7 @@ header {
 nav {
   display: inline-block;
 }
+
 nav ul li a {
   background: #EEE;
   padding: 2px 10px;
@@ -153,16 +239,19 @@ div p a:link {
   background-color: transparent;
   text-decoration: none;
 }
+
 div p a:visited {
   color: #b3b3b3;
   background-color: transparent;
   text-decoration: none;
 }
+
 div p a:hover {
   color: red;
   background-color: transparent;
   text-decoration: underline;
 }
+
 div p a:active {
   color: #b3b3b3;
   background-color: transparent;
@@ -323,7 +412,8 @@ body>section {
 }
 
 /* Dropdown button on hover & focus */
-.dropbtn:hover, .dropbtn:focus {
+.dropbtn:hover,
+.dropbtn:focus {
   background-color: #3e8e41;
 }
 
@@ -418,5 +508,5 @@ input[type="text3"] {
 }
 
 td {
-    height: 24px;
+  height: 24px;
 }

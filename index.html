@@ -10,10 +10,88 @@
   <link rel="canonical" href="https://html5-templates.com/" />
   <title>Deep Learning UFC Prediction</title>
   <meta name="description" content="A simple tool allowing the user to predict UFC fights using deep learning.">
+
+  <style>
+    /* Center the loader */
+    #loader {
+      position: absolute;
+      left: 51.7%;
+      top: 50%;
+      z-index: 1;
+      width: 60px;
+      height: 60px;
+      margin: -76px 0 0 -76px;
+      border: 16px solid #770f0f;
+      border-radius: 50%;
+      border-top: 16px solid #160f84;
+      -webkit-animation: spin 2s linear infinite;
+      animation: spin 2s linear infinite;
+    }
+
+    @-webkit-keyframes spin {
+      0% {
+        -webkit-transform: rotate(0deg);
+      }
+
+      100% {
+        -webkit-transform: rotate(360deg);
+      }
+    }
+
+    @keyframes spin {
+      0% {
+        transform: rotate(0deg);
+      }
+
+      100% {
+        transform: rotate(360deg);
+      }
+    }
+
+    /* Add animation to "page content" */
+    .animate-bottom {
+      position: relative;
+      -webkit-animation-name: animatebottom;
+      -webkit-animation-duration: 1s;
+      animation-name: animatebottom;
+      animation-duration: 1s
+    }
+
+    @-webkit-keyframes animatebottom {
+      from {
+        bottom: -100px;
+        opacity: 0
+      }
+
+      to {
+        bottom: 0px;
+        opacity: 1
+      }
+    }
+
+    @keyframes animatebottom {
+      from {
+        bottom: -100px;
+        opacity: 0
+      }
+
+      to {
+        bottom: 0;
+        opacity: 1
+      }
+    }
+
+    #myDiv {
+      display: none;
+      text-align: center;
+    }
+  </style>
 </head>
 
-<body>
+<body onload="myLoader()">
   <div class="bg"></div>
+  <div id="loader"></div>
+
   <header>
     <center>
       <div style="font-family: Copperplate; font-size:50px" id="logo">
@@ -32,7 +110,7 @@
     <datalist id="fighters"> </datalist>
     <main role="main">
       <center>
-        <h1 style="font-size: 40px;font-variant: small-caps; color: #212121;">
+        <h1 id="rc" style="display:none;font-size: 40px;font-variant: small-caps; color: #212121;">
           In the Red Corner
         </h1>
 
@@ -41,7 +119,7 @@
           used to use colorize class but switched to CNN stylization
           <img class="colorize" style='border: 10px solid #555' id=fighter2pic src="" alt="" height="350" width="350">
          -->
-          <img style='border: 10px solid #212121' id=fighter1pic src="" alt="" height="350" width="350">
+          <img style='display:none; border: 10px solid #212121' id=fighter1pic src="" alt="" height="350" width="350">
         </article>
 
       </center>
@@ -49,7 +127,7 @@
 
     <aside>
       <center>
-        <h1 style="font-size: 40px; font-variant: small-caps;  color: #212121;">
+        <h1 id="bc" style="display:none;font-size: 40px; font-variant: small-caps;  color: #212121;">
           In the Blue Corner
         </h1>
         <article>
@@ -57,7 +135,7 @@
           used to use colorize class but switched to CNN stylization
           <img class="colorize" style='border: 10px solid #555' id=fighter2pic src="" alt="" height="350" width="350">
          -->
-          <img style='border: 10px solid #212121' id=fighter2pic src="" alt="" height="350" width="350">
+          <img style='display:none; border: 10px solid #212121' id=fighter2pic src="" alt="" height="350" width="350">
         </article>
       </center>
     </aside>
@@ -82,7 +160,7 @@
       <option value="2022">
     </datalist>
     <datalist id="fighters"> </datalist>
-    <main role="main">
+    <main style="display:none" id="mainpart" role="main">
       <center>
         <article>
           <p>
@@ -97,7 +175,7 @@
       </center>
     </main>
 
-    <aside>
+    <aside style="display:none" id="asidepart">
       <center>
         <article>
           <p>
@@ -115,13 +193,13 @@
 
   <section id="taleofthetape">
 
-    <div class="headers">
+    <div style="display:none" id="taletape" class="headers">
       <h1>
         Tale of the Tape
       </h1>
     </div>
 
-    <main role="main">
+    <main id="month1selecter" style="display:none" role="main">
       <center>
         <p>
           <span class="month1"></span> <span class="year1"></span>
@@ -129,7 +207,7 @@
       </center>
     </main>
 
-    <aside>
+    <aside style="display:none" id="month2selecter">
       <center>
         <p>
           <span class="month2"></span> <span class="year2"></span>
@@ -137,7 +215,7 @@
       </center>
     </aside>
 
-    <main role="main">
+    <main style="display:none" id="table1display" role="main">
       <center>
         <table id="table1">
           <tr style="color: #fff; font-size:30px;font-variant: small-caps;">
@@ -159,7 +237,7 @@
       </center>
     </main>
 
-    <aside>
+    <aside style="display:none" id="table2display">
       <center>
         <table id="table2">
           <tr style="color: #fff; font-size:30px;font-variant: small-caps;">
@@ -183,13 +261,13 @@
   </section>
 
 
-  <section id="last5fights">
+  <section id="last5fights" style="display:none">
     <div class="headers">
       <h1>
         Last 5 Fights
       </h1>
     </div>
-    <main role="main">
+    <main style="display:none" id="fighterl5y" role="main">
       <center>
         <table id="l5ytable1" style="width:80%;">
           <thead>
@@ -239,7 +317,7 @@
       </center>
     </main>
 
-    <aside>
+    <aside style="display:none" id="opponentl5y">
       <center>
         <table id="l5ytable2" style="width:80%;">
           <thead>
@@ -291,7 +369,7 @@
   </section>
 
 
-  <section id="predict">
+  <section id="predict" style="display:none">
     <div class="headers">
       <h1>
         Predict Outcome
@@ -386,7 +464,7 @@
     </center>
   </section>
 
-  <section>
+  <section id="futurefights" style="display:none">
     <div class="headers">
       <h1>
         Future Fights
@@ -402,7 +480,7 @@
       Clicking on any of the names will take you to their wikipedia pages.
     </center>
     <center>
-      <table id="upcoming" style="margin-top:.5cm;">
+      <table id="upcoming" style="margin-top:.5cm; display: none">
         <thead>
           <tr style="color: #fff; font-size:25px;font-variant: small-caps;">
             <th colspan="6">Upcoming Fights</th>
@@ -423,17 +501,19 @@
 
 
 
-  <section>
+  <section id="pastfights" style="display:none">
     <div class="headers">
       <h1>
-        Past Fights (recent)
+        Past Fights (Recent)
       </h1>
     </div>
 
     <center>
-      We started running this program to predict fights on April 23, 2022. Below we show the history of predictions made
+      We started running this program to predict fights on April 23, 2022. Below we show the history of predictions
+      made
       before each event.
-      For reference, the average bookie odds are also shown (this average is formed from the betting odds on Draftkings,
+      For reference, the average bookie odds are also shown (this average is formed from the betting odds on
+      Draftkings,
       BetMGM, Caesars, BetRivers, FanDuel, PointsBet, Unibet, Bet365, BetWay, SD, Ref).
       After each event, the table is automatically updated to indicate the winners in <span
         style="color:gold">gold</span> and keep a running total of the prediction accuracy.
@@ -443,7 +523,7 @@
     </center>
 
     <center>
-      <table id="tablehistory" style="margin-top:.5cm;">
+      <table id="tablehistory" style="margin-top:.5cm;display:none">
         <thead>
           <tr style="color: #fff; font-size:25px;font-variant: small-caps;">
             <th colspan="6">Fight Prediction History</th>
@@ -473,7 +553,7 @@
       -->
   </section>
 
-  <section>
+  <section style="display:none;" id="headers">
     <div class="headers">
       <p style="font-size:16pt">
         The machine learning model implemented on this page will analyze all known fighter stats (scraped from <a
@@ -489,7 +569,7 @@
     </div>
   </section>
 
-  <footer>
+  <footer style="display:none" id="foot">
     <center>
       <p>We do not recommend you make financial decisions based on the outcomes of this program</p>
       <address>
@@ -498,9 +578,41 @@
     </center>
   </footer>
 
+  <script src="script.js"></script>
 
+  <script>
+    var myVar;
+
+    function myLoader() {
+      myVar = setTimeout(showPage, 2001);
+    }
+
+    function showPage() {
+      document.getElementById("loader").style.display = "none";
+      document.getElementById("headers").style.display = "block";
+      document.getElementById("tablehistory").style.display = "inline-block";
+      document.getElementById("upcoming").style.display = "inline-block";
+      document.getElementById("predict").style.display = "block";
+      document.getElementById("bc").style.display = "inline-block";
+      document.getElementById("rc").style.display = "inline-block";
+      document.getElementById("mainpart").style.display = "inline-block";
+      document.getElementById("asidepart").style.display = "inline-block";
+      document.getElementById("month1selecter").style.display = "block";
+      document.getElementById("month2selecter").style.display = "block";
+      document.getElementById("table1display").style.display = "inline-block";
+      document.getElementById("table2display").style.display = "inline-block";
+      document.getElementById("fighterl5y").style.display = "inline-block";
+      document.getElementById("opponentl5y").style.display = "inline-block";
+      document.getElementById("fighter1pic").style.display = "inline";
+      document.getElementById("fighter2pic").style.display = "inline";
+      document.getElementById("taletape").style.display = "block";
+      document.getElementById("last5fights").style.display = "block";
+      document.getElementById("futurefights").style.display = "block";
+      document.getElementById("pastfights").style.display = "block";
+      document.getElementById("foot").style.display = "block";
+    }
+  </script>
 </body>
-<script src="script.js"></script>
 <link rel="stylesheet" href="style.css">
 <link href="minimal-table.css" rel="stylesheet" type="text/css">
 

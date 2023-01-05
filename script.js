@@ -810,7 +810,7 @@ setTimeout(() => {
       });
     });
   });
-}, 250)
+}, 500) // originally 250
 
 /* #here we were copying new fights from vegas odds to prediction history... now we do this in the file update_and_rebuild_model.py
 setTimeout(() => {
@@ -922,7 +922,7 @@ setTimeout(() => { //timeout because other data needs to load first (probably be
       }
     }
   }
-}, 350)
+}, 1000) //originally 350
 
 
 
@@ -1017,7 +1017,7 @@ setTimeout(() => { //this builds a table for the history of predictions which is
   console.log(numberModelCorrect)
   console.log(numberTotal)
   accuracy.innerText = `Accuracy: ${acc}`;
-}, 450)
+}, 1500) //originally 450
 
 //set initial table values and display fight
 setTimeout(() => {
@@ -1055,4 +1055,11 @@ setTimeout(() => {
   }
   */
 
-}, 500)
+}, 2000) //originally 500
+
+//make a loading screen
+setTimeout(() => {
+  document.getElementById("loading").
+    style.display = "none";
+}, 2500) //originally 600
+
