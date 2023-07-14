@@ -11,7 +11,6 @@ from datetime import date
 import csv
 import json
 
-
 # updated scraped fight data (after running fight_hist_updated function from UFC_data_scraping file)
 fight_hist = pd.read_csv(
     'models/buildingMLModel/data/processed/fight_hist.csv', sep=',', low_memory=False)
@@ -25,25 +24,29 @@ ufcfighters = pd.read_csv(
 # first call pip install python-Levenshtein
 
 
-def same_name(str1, str2):
-    str1 = str1.lower().replace("st.", 'saint').replace(
-        " st ", ' saint ').replace('.', '').replace("-", ' ')
-    str2 = str2.lower().replace("st.", 'saint').replace(
-        " st ", ' saint ').replace('.', '').replace("-", ' ')
-    str1_list = str1.split()
-    str2_list = str2.split()
-    str1_set = set(str1_list)
-    str2_set = set(str2_list)
-    if str1 == str2:
-        return True
-    elif str1_set == str2_set:
-        return True
-        print(str1+' ... (same name as) ... '+str2+' ... (different ordering)')
-    elif lev(str1, str2) < 3:
-        return True
-        print(str1+' ... (same name as) ... '+str2 +
-              ' ... (small Levenshtein distance apart)')
-    else:
+def same_name(str1, str2, verbose = False):
+    try:
+        str1 = str1.lower().replace("st.", 'saint').replace(
+            " st ", ' saint ').replace('.', '').replace("-", ' ')
+        str2 = str2.lower().replace("st.", 'saint').replace(
+            " st ", ' saint ').replace('.', '').replace("-", ' ')
+        str1_list = str1.split()
+        str2_list = str2.split()
+        str1_set = set(str1_list)
+        str2_set = set(str2_list)
+        if str1 == str2:
+            return True
+        elif str1_set == str2_set:
+            if verbose:
+                print(str1+' ... (same name as) ... '+str2+' ... (different ordering)')
+            return True
+        elif lev(str1, str2) < 3:
+            if verbose:
+                print(str1+' ... (same name as) ... '+str2 + ' ... (small Levenshtein distance apart)')
+            return True
+        else:
+            return False
+    except:
         return False
 
 # checks if a fighter is in the ufc
