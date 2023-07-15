@@ -6,6 +6,92 @@ fighter_data = {}
 ufcfightscrap = {}
 vegas_odds = {}
 prediction_history = {}
+theta = {};
+intercept = {};
+
+$.getJSON('src/models/buildingMLModel/data/external/theta.json', function (data) {
+  //for each input (i,f), i is the key (a fighter's name) and f is the value (all their data)
+  $.each(data, function (i, f) {
+    theta[i] = f.toFixed(2)
+  });
+});
+
+$.getJSON('src/models/buildingMLModel/data/external/intercept.json', function (data) {
+  //for each input (i,f), i is the key (a fighter's name) and f is the value (all their data)
+  $.each(data, function (i, f) {
+    intercept[i] = f.toFixed(2)
+  });
+});
+
+// note $ is shorthand for jQuery
+$(function () { // building object fighter_data from fighter_data.json file
+  $.getJSON('src/models/buildingMLModel/data/external/fighter_stats.json', function (data) {//for each input (i,f), i is the key (a fighter's name) and f is the value (all their data)
+    $.each(data, function (i, f) {//create entry in local object
+      const select = document.getElementById('fighters')
+      select.insertAdjacentHTML('beforeend', `
+  <option value="${i}">${i}</option>
+`)
+      fighter_data[i] = f
+    });
+  });
+});
+
+$(function () { // building object ufcfightscrap from ufcfightscrap.json file
+  $.getJSON('src/models/buildingMLModel/data/external/ufcfightscrap.json', function (data) {//for each input (i,f), i is the key (a number) and f is the value (all the data of the fight)
+    $.each(data, function (i, f) {
+      ufcfightscrap[i] = f
+    });
+  });
+});
+
+$(function () { // building object vegas_odds from vegas_odds.json file
+  $.getJSON('src/models/buildingMLModel/data/external/vegas_odds.json', function (data) {//for each input (i,f), i is the key a column name like fighter name and f is the value (an object with keys being integers and values being strings (odds or names))
+    $.each(data, function (i, f) {
+      vegas_odds[i] = f
+    });
+  });
+});
+
+const years = document.getElementById('years')
+for (let i = 0; i < 30; i++) {
+  year = 2022 - i
+  years.insertAdjacentHTML('beforeend', `
+<option value="${year}">${year}</option>
+`)
+}
+
+//set initial table values
+setTimeout(() => {
+  ufc_wins_list = []
+  for (const fight in ufcfightscrap) {
+    if (ufcfightscrap[fight]['result'] == "W") {
+      let fighter = ufcfightscrap[fight]['fighter']
+      let opponent = ufcfightscrap[fight]['opponent']
+      let date = ufcfightscrap[fight]['date']
+      ufc_wins_list.push([fighter, opponent, date])
+    }
+  }
+
+  //giving prediction_history correct keys
+  for (let j = 0; j < Object.keys(vegas_odds).length; j++) {
+    prediction_history[Object.keys(vegas_odds)[j]] = {}
+    prediction_history['predicted fighter odds'] = {}
+    prediction_history['predicted opponent odds'] = {}
+    prediction_history['winner'] = {}
+    prediction_history['correct'] = {}
+  }
+  //filling in any previous data into prediction_history
+  $(function () {
+    //var people = [];
+    $.getJSON('src/models/buildingMLModel/data/external/prediction_history.json', function (data) {
+      //for each input (i,f), i is the key a column name like fighter name and f is the value (an object with keys being integers and values being strings (odds or names))
+      $.each(data, function (i, f) {
+        //create entry in local object
+        prediction_history[i] = f
+      });
+    });
+  });
+}, 500) // originally 250
 
 const levenshteinDistance = (str1 = '', str2 = '') => {
   const track = Array(str2.length + 1).fill(null).map(() =>
@@ -45,52 +131,6 @@ function same_name(str1, str2) {
   } else {
     return false
   }
-}
-
-// note $ is shorthand for jQuery
-$(function () { // building object fighter_data from fighter_data.json file
-  //var people = [];
-  $.getJSON('src/models/buildingMLModel/data/external/fighter_stats.json', function (data) {
-    //for each input (i,f), i is the key (a fighter's name) and f is the value (all their data)
-    $.each(data, function (i, f) {
-      //create entry in local object
-      const select = document.getElementById('fighters')
-      select.insertAdjacentHTML('beforeend', `
-  <option value="${i}">${i}</option>
-`)
-      fighter_data[i] = f
-    });
-  });
-});
-
-$(function () { // building object ufcfightscrap from ufcfightscrap.json file
-  //var people = [];
-  $.getJSON('src/models/buildingMLModel/data/external/ufcfightscrap.json', function (data) {
-    //for each input (i,f), i is the key (a number) and f is the value (all the data of the fight)
-    $.each(data, function (i, f) {
-      //create entry in local object
-      ufcfightscrap[i] = f
-    });
-  });
-});
-
-$(function () { // building object vegas_odds from vegas_odds.json file
-  //var people = [];
-  $.getJSON('src/models/buildingMLModel/data/external/vegas_odds.json', function (data) {
-    //for each input (i,f), i is the key a column name like fighter name and f is the value (an object with keys being integers and values being strings (odds or names))
-    $.each(data, function (i, f) {
-      //create entry in local object
-      vegas_odds[i] = f
-    });
-  });
-});
-
-const years = document.getElementById('years')
-for (let i = 0; i < 30; i++) {
-  year = 2022 - i
-  years.insertAdjacentHTML('beforeend', `
-<option value="${year}">${year}</option>
-`)
 }
 
 function getRandomInt(max) {
@@ -479,23 +519,6 @@ function predictionTuple(fighter1, fighter2, month1, year1, month2, year2) {
   return result;
 }
 
-theta = {};
-intercept = {};
-
-$.getJSON('src/models/buildingMLModel/data/external/theta.json', function (data) {
-  //for each input (i,f), i is the key (a fighter's name) and f is the value (all their data)
-  $.each(data, function (i, f) {
-    theta[i] = f.toFixed(2)
-  });
-});
-
-$.getJSON('src/models/buildingMLModel/data/external/intercept.json', function (data) {
-  //for each input (i,f), i is the key (a fighter's name) and f is the value (all their data)
-  $.each(data, function (i, f) {
-    intercept[i] = f.toFixed(2)
-  });
-});
-
 //It might make sense to scale the output by something between 1 and 2 to adjust probabilities
 function presigmoid_value(fighter1, fighter2, month1, year1, month2, year2) {
   let value = 0
@@ -597,30 +620,6 @@ function predict(fighter1, fighter2, month1, year1, month2, year2) {
 
   myTab.rows.item(1).cells.item(1).innerHTML = `${guy1}: <span style="color:#00FF00";>${odds[0]}</span>`;
   myTab.rows.item(1).cells.item(2).innerHTML = `${guy2}: <span style="color:#00FF00";>${odds[1]}</span>`;
-
-  /*
-  //have to put things in the correct ordering
-  let index1 = 0
-  let index2 = 12
-  //if (vegas_odds_dict['fighter name']==guy1){
-  if (vegas_odds_dict['fighter name']) {
-    if (same_name(vegas_odds_dict['fighter name'], guy1)) {
-      index1 = 0
-      index2 = 12
-    } else {
-      index1 = 12
-      index2 = 0
-    }
-  }
-
-  for (let i = 3; i < 3 + 11; i++) {
-    keys = Object.keys(vegas_odds_dict)
-    myTab.rows.item(i).cells.item(1).innerHTML = `<span style="color:#FFFFFF";>${vegas_odds_dict[keys[i-2 + index1]]}</span>`;
-    myTab.rows.item(i).cells.item(2).innerHTML = `<span style="color:#FFFFFF";>${vegas_odds_dict[keys[i-2 + index2]]}</span>`;
-
-  }
-  */
-  //document.querySelector('.tableEntry').textContent = fighter
 }
 
 function populateTaleOfTheTape(fighter, corner) {
@@ -749,39 +748,6 @@ function filterFunction2() {
     }
   }
 }
-
-//set initial table values
-setTimeout(() => {
-  ufc_wins_list = []
-  for (const fight in ufcfightscrap) {
-    if (ufcfightscrap[fight]['result'] == "W") {
-      let fighter = ufcfightscrap[fight]['fighter']
-      let opponent = ufcfightscrap[fight]['opponent']
-      let date = ufcfightscrap[fight]['date']
-      ufc_wins_list.push([fighter, opponent, date])
-    }
-  }
-
-  //giving prediction_history correct keys
-  for (let j = 0; j < Object.keys(vegas_odds).length; j++) {
-    prediction_history[Object.keys(vegas_odds)[j]] = {}
-    prediction_history['predicted fighter odds'] = {}
-    prediction_history['predicted opponent odds'] = {}
-    prediction_history['winner'] = {}
-    prediction_history['correct'] = {}
-  }
-  //filling in any previous data into prediction_history
-  $(function () {
-    //var people = [];
-    $.getJSON('src/models/buildingMLModel/data/external/prediction_history.json', function (data) {
-      //for each input (i,f), i is the key a column name like fighter name and f is the value (an object with keys being integers and values being strings (odds or names))
-      $.each(data, function (i, f) {
-        //create entry in local object
-        prediction_history[i] = f
-      });
-    });
-  });
-}, 500) // originally 250
 
 /* #here we were copying new fights from vegas odds to prediction history... now we do this in the file update_and_rebuild_model.py
 setTimeout(() => {
