@@ -1,13 +1,9 @@
-/* When the user clicks on the button,
-toggle between hiding and showing the dropdown content */
-//your script here.
-
+theta = {};
+intercept = {};
 fighter_data = {}
 ufcfightscrap = {}
 vegas_odds = {}
 prediction_history = {}
-theta = {};
-intercept = {};
 
 $.getJSON('src/models/buildingMLModel/data/external/theta.json', function (data) {
   //for each input (i,f), i is the key (a fighter's name) and f is the value (all their data)
@@ -23,14 +19,11 @@ $.getJSON('src/models/buildingMLModel/data/external/intercept.json', function (d
   });
 });
 
-// note $ is shorthand for jQuery
 $(function () { // building object fighter_data from fighter_data.json file
   $.getJSON('src/models/buildingMLModel/data/external/fighter_stats.json', function (data) {//for each input (i,f), i is the key (a fighter's name) and f is the value (all their data)
     $.each(data, function (i, f) {//create entry in local object
       const select = document.getElementById('fighters')
-      select.insertAdjacentHTML('beforeend', `
-  <option value="${i}">${i}</option>
-`)
+      select.insertAdjacentHTML('beforeend', `<option value="${i}">${i}</option>`)
       fighter_data[i] = f
     });
   });
@@ -63,6 +56,7 @@ for (let i = 0; i < 30; i++) {
 //set initial table values
 setTimeout(() => {
   ufc_wins_list = []
+  console.log(vegas_odds)
   for (const fight in ufcfightscrap) {
     if (ufcfightscrap[fight]['result'] == "W") {
       let fighter = ufcfightscrap[fight]['fighter']
@@ -802,57 +796,49 @@ setTimeout(()=>{
 //Building upcoming predictions table
 
 setTimeout(() => { //timeout because other data needs to load first (probably better to do with async)
-  for (const i in prediction_history['fighter name']) {
-    fighter = prediction_history['fighter name'][i]
-    opponent = prediction_history['opponent name'][i]
-    fighterOdds = prediction_history['predicted fighter odds'][i]
-    opponentOdds = prediction_history['predicted opponent odds'][i]
-    avBookieOdds = prediction_history['average bookie odds'][i]
-    counter = 0
-    for (const j in ufcfightscrap) {//for each fight prediction, check whether the fight has happened recently (last 1000 fights)
-      counter += 1
-      if (same_name(ufcfightscrap[j]['fighter'], fighter) && same_name(ufcfightscrap[j]['opponent'], opponent)) {
-        console.log(fighter + 'fought ' + opponent + ' on ' + String(ufcfightscrap[j]['date']))
-        break;
-      } else if (counter >= 1000) { //if it has not happened recently, that means it is upcoming, so we add it to the upcoming list
-        console.log(fighter + ' and ' + opponent + 'didnt fight yet... adding to upcoming')
-        var upcomingFightsTable = document.getElementById('upcoming')
-        upcomingFightsTable.rows.item(0).cells.item(0).style.backgroundColor = "#212121";
-        var tbody = upcomingFightsTable.tBodies[0]
-        var tr = tbody.insertRow(-1);
-        var td1 = document.createElement('td');
-        var td2 = document.createElement('td');
-        var td3 = document.createElement('td');
-        var td4 = document.createElement('td');
-        var td5 = document.createElement('td');
-        tr.appendChild(td1);
-        tr.appendChild(td2);
-        tr.appendChild(td3);
-        tr.appendChild(td4);
-        tr.appendChild(td5);
-        if (fighterOdds[0] == '-') {
-          tr.cells.item(0).innerHTML = `<a href=https://en.wikipedia.org/wiki/${fighter.replace(" ", '_')}#Mixed_martial_arts_record target="_blank" style = "color: gold">${fighter}</a>`
-          tr.cells.item(1).innerHTML = `<a href=https://en.wikipedia.org/wiki/${opponent.replace(" ", '_')}#Mixed_martial_arts_record target="_blank" style = "color: white">${opponent}</a>`
-        } else {
-          tr.cells.item(0).innerHTML = `<a href=https://en.wikipedia.org/wiki/${fighter.replace(" ", '_')}#Mixed_martial_arts_record target="_blank" style = "color: white">${fighter}</a>`
-          tr.cells.item(1).innerHTML = `<a href=https://en.wikipedia.org/wiki/${opponent.replace(" ", '_')}#Mixed_martial_arts_record target="_blank" style = "color: gold">${opponent}</a>`
-        }
-        tr.cells.item(2).innerHTML = fighterOdds;
-        tr.cells.item(3).innerHTML = opponentOdds;
-        tr.cells.item(4).innerHTML = avBookieOdds;
-        tr.cells.item(0).style.backgroundColor = "#323232";
-        tr.cells.item(1).style.backgroundColor = "#323232";
-        tr.cells.item(2).style.backgroundColor = "#323232";
-        tr.cells.item(3).style.backgroundColor = "#323232";
-        tr.cells.item(4).style.backgroundColor = "#323232";
-        tr.cells.item(0).style.color = "#ffffff";
-        tr.cells.item(1).style.color = "#ffffff";
-        tr.cells.item(2).style.color = "#ffffff";
-        tr.cells.item(3).style.color = "#ffffff";
-        tr.cells.item(4).style.color = "#ffffff";
-        break;
-      }
+  var upcomingFightsTable = document.getElementById('upcoming')
+  for (const i in vegas_odds['fighter name']) {
+    fighter = vegas_odds['fighter name'][i]
+    opponent = vegas_odds['opponent name'][i]
+    fighterOdds = vegas_odds['predicted fighter odds'][i]
+    opponentOdds = vegas_odds['predicted opponent odds'][i]
+    avBookieOdds = vegas_odds['average bookie odds'][i]
+
+    console.log(fighter + ' and ' + opponent + 'didnt fight yet... adding to upcoming')
+
+    upcomingFightsTable.rows.item(0).cells.item(0).style.backgroundColor = "#212121";
+    var tbody = upcomingFightsTable.tBodies[0]
+    var tr = tbody.insertRow(-1);
+    var td1 = document.createElement('td');
+    var td2 = document.createElement('td');
+    var td3 = document.createElement('td');
+    var td4 = document.createElement('td');
+    var td5 = document.createElement('td');
+    tr.appendChild(td1);
+    tr.appendChild(td2);
+    tr.appendChild(td3);
+    tr.appendChild(td4);
+    tr.appendChild(td5);
+    if (fighterOdds[0] == '-') {
+      tr.cells.item(0).innerHTML = `<a href=https://en.wikipedia.org/wiki/${fighter.replace(" ", '_')}#Mixed_martial_arts_record target="_blank" style = "color: gold">${fighter}</a>`
+      tr.cells.item(1).innerHTML = `<a href=https://en.wikipedia.org/wiki/${opponent.replace(" ", '_')}#Mixed_martial_arts_record target="_blank" style = "color: white">${opponent}</a>`
+    } else {
+      tr.cells.item(0).innerHTML = `<a href=https://en.wikipedia.org/wiki/${fighter.replace(" ", '_')}#Mixed_martial_arts_record target="_blank" style = "color: white">${fighter}</a>`
+      tr.cells.item(1).innerHTML = `<a href=https://en.wikipedia.org/wiki/${opponent.replace(" ", '_')}#Mixed_martial_arts_record target="_blank" style = "color: gold">${opponent}</a>`
     }
+    tr.cells.item(2).innerHTML = fighterOdds;
+    tr.cells.item(3).innerHTML = opponentOdds;
+    tr.cells.item(4).innerHTML = avBookieOdds;
+    tr.cells.item(0).style.backgroundColor = "#323232";
+    tr.cells.item(1).style.backgroundColor = "#323232";
+    tr.cells.item(2).style.backgroundColor = "#323232";
+    tr.cells.item(3).style.backgroundColor = "#323232";
+    tr.cells.item(4).style.backgroundColor = "#323232";
+    tr.cells.item(0).style.color = "#ffffff";
+    tr.cells.item(1).style.color = "#ffffff";
+    tr.cells.item(2).style.color = "#ffffff";
+    tr.cells.item(3).style.color = "#ffffff";
+    tr.cells.item(4).style.color = "#ffffff";
   }
 }, 1000) //originally 350
 
@@ -868,80 +854,70 @@ setTimeout(() => { //this builds a table for the history of predictions which is
     fighterOdds = String(prediction_history['predicted fighter odds'][i])
     opponentOdds = String(prediction_history['predicted opponent odds'][i])
     avBookieOdds = prediction_history['average bookie odds'][i]
-    counter = 0
-    for (const j in ufcfightscrap) {
-      counter += 1
-      if (counter >= 200) { //makes it so we only show the last 200 fights
-        break;
+    numberTotal += 1;
+    console.log('found fight ' + fighter + ' vs ' + opponent)
+    var upcomingFightsTable = document.getElementById('tablehistory')
+    upcomingFightsTable.rows.item(0).cells.item(0).style.backgroundColor = "#212121";
+    var tbody = upcomingFightsTable.tBodies[0]
+    var tr = tbody.insertRow(-1);
+    var td1 = document.createElement('td');
+    var td2 = document.createElement('td');
+    var td3 = document.createElement('td');
+    var td4 = document.createElement('td');
+    var td5 = document.createElement('td');
+    var td6 = document.createElement('td');
+    tr.appendChild(td1);
+    tr.appendChild(td2);
+    tr.appendChild(td3);
+    tr.appendChild(td4);
+    tr.appendChild(td5);
+    tr.appendChild(td6);
+    tr.cells.item(0).innerHTML = fighter;
+    tr.cells.item(1).innerHTML = opponent;
+    tr.cells.item(2).innerHTML = fighterOdds;
+    tr.cells.item(3).innerHTML = opponentOdds;
+    tr.cells.item(5).innerHTML = avBookieOdds;
+    tr.cells.item(0).style.backgroundColor = "#323232";
+    tr.cells.item(1).style.backgroundColor = "#323232";
+    tr.cells.item(2).style.backgroundColor = "#323232";
+    tr.cells.item(3).style.backgroundColor = "#323232";
+    tr.cells.item(4).style.backgroundColor = "#323232";
+    tr.cells.item(5).style.backgroundColor = "#323232";
+    tr.cells.item(0).style.color = "#ffffff";
+    tr.cells.item(1).style.color = "#ffffff";
+    tr.cells.item(2).style.color = "#ffffff";
+    tr.cells.item(3).style.color = "#ffffff";
+    tr.cells.item(5).style.color = "#ffffff";
+    if (prediction_history['correct?'][i] == 1) {
+      tr.cells.item(4).innerHTML = 'yes'
+      tr.cells.item(4).style.backgroundColor = "#00ff00";
+      numberModelCorrect += 1
+      if (parseInt(fighterOdds) < 0) {
+        tr.cells.item(0).style.fontWeight = "bold";
+        tr.cells.item(0).style.fontSize = "15px";
+        tr.cells.item(0).style.color = "#ffd700";
+      } else {
+        tr.cells.item(1).style.fontWeight = "bold";
+        tr.cells.item(1).style.fontSize = "15px";
+        tr.cells.item(1).style.color = "#ffd700";
       }
-      if (same_name(ufcfightscrap[j]['fighter'], fighter) && same_name(ufcfightscrap[j]['opponent'], opponent) && fighterOdds.length > 0) {
-        numberTotal += 1;
-        console.log('found fight ' + fighter + ' vs ' + opponent)
-        var upcomingFightsTable = document.getElementById('tablehistory')
-        upcomingFightsTable.rows.item(0).cells.item(0).style.backgroundColor = "#212121";
-        var tbody = upcomingFightsTable.tBodies[0]
-        var tr = tbody.insertRow(-1);
-        var td1 = document.createElement('td');
-        var td2 = document.createElement('td');
-        var td3 = document.createElement('td');
-        var td4 = document.createElement('td');
-        var td5 = document.createElement('td');
-        var td6 = document.createElement('td');
-        tr.appendChild(td1);
-        tr.appendChild(td2);
-        tr.appendChild(td3);
-        tr.appendChild(td4);
-        tr.appendChild(td5);
-        tr.appendChild(td6);
-        tr.cells.item(0).innerHTML = fighter;
-        tr.cells.item(1).innerHTML = opponent;
-        tr.cells.item(2).innerHTML = fighterOdds;
-        tr.cells.item(3).innerHTML = opponentOdds;
-        tr.cells.item(5).innerHTML = avBookieOdds;
-        tr.cells.item(0).style.backgroundColor = "#323232";
-        tr.cells.item(1).style.backgroundColor = "#323232";
-        tr.cells.item(2).style.backgroundColor = "#323232";
-        tr.cells.item(3).style.backgroundColor = "#323232";
-        tr.cells.item(4).style.backgroundColor = "#323232";
-        tr.cells.item(5).style.backgroundColor = "#323232";
-        tr.cells.item(0).style.color = "#ffffff";
-        tr.cells.item(1).style.color = "#ffffff";
-        tr.cells.item(2).style.color = "#ffffff";
-        tr.cells.item(3).style.color = "#ffffff";
-        tr.cells.item(5).style.color = "#ffffff";
-        if ((parseInt(fighterOdds) < 0 && ufcfightscrap[j]['result'] == 'W') || (parseInt(fighterOdds) > 0 && ufcfightscrap[j]['result'] == 'L')) {
-          tr.cells.item(4).innerHTML = 'yes'
-          tr.cells.item(4).style.backgroundColor = "#00ff00";
-          numberModelCorrect += 1
-          if (parseInt(fighterOdds) < 0 && ufcfightscrap[j]['result'] == 'W') {
-            tr.cells.item(0).style.fontWeight = "bold";
-            tr.cells.item(0).style.fontSize = "15px";
-            tr.cells.item(0).style.color = "#ffd700";
-          } else {
-            tr.cells.item(1).style.fontWeight = "bold";
-            tr.cells.item(1).style.fontSize = "15px";
-            tr.cells.item(1).style.color = "#ffd700";
-          }
-        } else {
-          tr.cells.item(4).innerHTML = 'no'
-          tr.cells.item(4).style.backgroundColor = "#ff0000";
-          if (parseInt(fighterOdds) < 0 && ufcfightscrap[j]['result'] == 'L') {
-            tr.cells.item(1).style.fontWeight = "bold";
-            tr.cells.item(1).style.fontSize = "15px";
-            tr.cells.item(1).style.color = "#ffd700";
-          } else {
-            tr.cells.item(0).style.fontWeight = "bold";
-            tr.cells.item(0).style.fontSize = "15px";
-            tr.cells.item(0).style.color = "#ffd700";
-          }
-        }
-        break
+    } else {
+      tr.cells.item(4).innerHTML = 'no'
+      tr.cells.item(4).style.backgroundColor = "#ff0000";
+      if (parseInt(fighterOdds) < 0) {
+        tr.cells.item(1).style.fontWeight = "bold";
+        tr.cells.item(1).style.fontSize = "15px";
+        tr.cells.item(1).style.color = "#ffd700";
+      } else {
+        tr.cells.item(0).style.fontWeight = "bold";
+        tr.cells.item(0).style.fontSize = "15px";
+        tr.cells.item(0).style.color = "#ffd700";
       }
     }
   }
   var acc = numberModelCorrect / numberTotal;
   var accuracy = document.getElementById("myaccuracy")
-  //accuracy.innerText = `Accuracy: ${acc}`;
+  accuracy.innerText = `Accuracy: ${acc}`;
 }, 1500) //originally 450
 
 //set initial table values and display fight
