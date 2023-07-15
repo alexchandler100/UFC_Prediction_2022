@@ -10,6 +10,14 @@ from datetime import datetime
 from datetime import date
 import csv
 import json
+import git
+import os
+
+#from https://stackoverflow.com/questions/22081209/find-the-root-of-the-git-repository-where-the-file-lives 
+def get_root():
+    git_repo = git.Repo(os.getcwd(), search_parent_directories=True)
+    git_root = git_repo.git.rev_parse("--show-toplevel")
+    return git_root
 
 
 # updated scraped fight data (after running fight_hist_updated function from UFC_data_scraping file)
@@ -25,25 +33,29 @@ ufcfighters = pd.read_csv(
 # first call pip install python-Levenshtein
 
 
-def same_name(str1, str2):
-    str1 = str1.lower().replace("st.", 'saint').replace(
-        " st ", ' saint ').replace('.', '').replace("-", ' ')
-    str2 = str2.lower().replace("st.", 'saint').replace(
-        " st ", ' saint ').replace('.', '').replace("-", ' ')
-    str1_list = str1.split()
-    str2_list = str2.split()
-    str1_set = set(str1_list)
-    str2_set = set(str2_list)
-    if str1 == str2:
-        return True
-    elif str1_set == str2_set:
-        return True
-        print(str1+' ... (same name as) ... '+str2+' ... (different ordering)')
-    elif lev(str1, str2) < 3:
-        return True
-        print(str1+' ... (same name as) ... '+str2 +
-              ' ... (small Levenshtein distance apart)')
-    else:
+def same_name(str1, str2, verbose = False):
+    try:
+        str1 = str1.lower().replace("st.", 'saint').replace(
+            " st ", ' saint ').replace('.', '').replace("-", ' ')
+        str2 = str2.lower().replace("st.", 'saint').replace(
+            " st ", ' saint ').replace('.', '').replace("-", ' ')
+        str1_list = str1.split()
+        str2_list = str2.split()
+        str1_set = set(str1_list)
+        str2_set = set(str2_list)
+        if str1 == str2:
+            return True
+        elif str1_set == str2_set:
+            if verbose:
+                print(str1+' ... (same name as) ... '+str2+' ... (different ordering)')
+            return True
+        elif lev(str1, str2) < 3:
+            if verbose:
+                print(str1+' ... (same name as) ... '+str2 + ' ... (small Levenshtein distance apart)')
+            return True
+        else:
+            return False
+    except:
         return False
 
 # checks if a fighter is in the ufc
@@ -638,12 +650,6 @@ def clean_method_for_winner_prediction(a):
 
 clean_method_for_winner_vect = np.vectorize(clean_method_for_winner_prediction)
 
-#!/usr/bin/env python
-# coding: utf-8
-
-# In[ ]:
-
-
 def get_odds_two_rows_per_fight():
     url = 'https://www.bestfightodds.com'
     page = requests.get(url)
@@ -733,6 +739,41 @@ def get_odds():
     odds_df_odds.reset_index(drop=True, inplace=True)
     new_odds_df = pd.concat([odds_df_evens, odds_df_odds], axis=1)
     return new_odds_df
+
+# input looks like 'July 15th'. Need to add year to it
+def convert_scraped_date_to_standard_date(input_date):
+    year = date.today().strftime('%B %d, %Y')[-4:]
+    month = input_date.split(' ')[0]
+    day = input_date.split(' ')[1]
+    i = 0
+    while day[i].isdigit():
+        i+=1
+    day = day[:i]
+    return f'{month} {day}, {year}'
+
+def get_next_fight_card():
+    url = 'https://www.bestfightodds.com'
+    page = requests.get(url)
+    soup = BeautifulSoup(page.content, "html.parser") 
+    mycards = soup.find_all("div", {"class": "table-div"})
+    ufc_cards = [card for card in mycards if 'ufc' in card.find("a",href=lambda x: x and x.startswith('/events')).get_text().lower()]
+    card = ufc_cards[0]
+    card_date = card.find("span",{"class":"table-header-date"}).get_text()
+    card_title = card.find("a",href=lambda x: x and x.startswith('/events')).get_text()
+    #bookies = [bookie.get_text() for bookie in card.find_all("a",href=lambda x: x and x.startswith('/out'))]
+    fighter_divs = card.find_all('span',{"class":"t-b-fcc"})
+    fighters_list = [fighter.get_text() for fighter in fighter_divs]
+    if len(fighters_list)%2 == 0 and all(fighters_list[i] == fighters_list[i+26] for i in range(len(fighters_list)//2)):
+        print('Usual Scraping Structure Detected')
+    else:
+        print('Scraping Structure Has Changed... Check HTML at BestFightOdds.com')
+    fights_list = [fighters_list[i:i+2] for i in range(0,len(fighters_list),2)]
+    fights_list = fights_list[:len(fights_list)//2]
+    print(f'Upcoming card {card_title} on {card_date} has {len(fights_list)} fights')
+    for fight in fights_list:
+        print(fight)
+    return card_date, card_title, fights_list
+
 
 # thresh is the number of bookies we allow to not have odds on the books
 
