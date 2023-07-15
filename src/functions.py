@@ -768,6 +768,7 @@ def get_next_fight_card():
     else:
         print('Scraping Structure Has Changed... Check HTML at BestFightOdds.com')
     fights_list = [fighters_list[i:i+2] for i in range(0,len(fighters_list),2)]
+    fights_list = fights_list[:len(fights_list)//2]
     print(f'Upcoming card {card_title} on {card_date} has {len(fights_list)} fights')
     for fight in fights_list:
         print(fight)

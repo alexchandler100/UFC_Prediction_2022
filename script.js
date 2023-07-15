@@ -803,9 +803,6 @@ setTimeout(() => { //timeout because other data needs to load first (probably be
     fighterOdds = vegas_odds['predicted fighter odds'][i]
     opponentOdds = vegas_odds['predicted opponent odds'][i]
     avBookieOdds = vegas_odds['average bookie odds'][i]
-
-    console.log(fighter + ' and ' + opponent + 'didnt fight yet... adding to upcoming')
-
     upcomingFightsTable.rows.item(0).cells.item(0).style.backgroundColor = "#212121";
     var tbody = upcomingFightsTable.tBodies[0]
     var tr = tbody.insertRow(-1);
@@ -819,10 +816,15 @@ setTimeout(() => { //timeout because other data needs to load first (probably be
     tr.appendChild(td3);
     tr.appendChild(td4);
     tr.appendChild(td5);
-    if (fighterOdds[0] == '-') {
+    if (fighterOdds == '') { //if no prediction was made
+      tr.cells.item(0).innerHTML = `<a href=https://en.wikipedia.org/wiki/${fighter.replace(" ", '_')}#Mixed_martial_arts_record target="_blank" style = "color: white">${fighter}</a>`
+      tr.cells.item(1).innerHTML = `<a href=https://en.wikipedia.org/wiki/${opponent.replace(" ", '_')}#Mixed_martial_arts_record target="_blank" style = "color: white">${opponent}</a>`
+    }
+    else if (fighterOdds[0] == '-') { // if fighter is predicted to win
+      //TODO check if they have a wikipedia page and if not, link to their UFC profile https://www.ufc.com/athlete/${fighter.replace(" ", '_')#athlete-record
       tr.cells.item(0).innerHTML = `<a href=https://en.wikipedia.org/wiki/${fighter.replace(" ", '_')}#Mixed_martial_arts_record target="_blank" style = "color: gold">${fighter}</a>`
       tr.cells.item(1).innerHTML = `<a href=https://en.wikipedia.org/wiki/${opponent.replace(" ", '_')}#Mixed_martial_arts_record target="_blank" style = "color: white">${opponent}</a>`
-    } else {
+    } else { // if opponent is predicted to win
       tr.cells.item(0).innerHTML = `<a href=https://en.wikipedia.org/wiki/${fighter.replace(" ", '_')}#Mixed_martial_arts_record target="_blank" style = "color: white">${fighter}</a>`
       tr.cells.item(1).innerHTML = `<a href=https://en.wikipedia.org/wiki/${opponent.replace(" ", '_')}#Mixed_martial_arts_record target="_blank" style = "color: gold">${opponent}</a>`
     }
@@ -855,7 +857,6 @@ setTimeout(() => { //this builds a table for the history of predictions which is
     opponentOdds = String(prediction_history['predicted opponent odds'][i])
     avBookieOdds = prediction_history['average bookie odds'][i]
     numberTotal += 1;
-    console.log('found fight ' + fighter + ' vs ' + opponent)
     var upcomingFightsTable = document.getElementById('tablehistory')
     upcomingFightsTable.rows.item(0).cells.item(0).style.backgroundColor = "#212121";
     var tbody = upcomingFightsTable.tBodies[0]
