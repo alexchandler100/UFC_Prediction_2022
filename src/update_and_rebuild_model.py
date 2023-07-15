@@ -11,20 +11,6 @@ from functions import *
 
 pd.options.mode.chained_assignment = None  # default='warn' (disables SettingWithCopyWarning)
 
-print('scraping bookie odds from bestfightodds.com')
-odds_df = get_odds()
-odds_df=drop_irrelevant_fights(odds_df,3) #allows 1 bookie to have missing odds. can increase this to 2 or 3 as needed
-odds_df=drop_non_ufc_fights(odds_df)
-odds_df=drop_repeats(odds_df)
-print('saving odds to models/buildingMLModel/data/external/vegas_odds.json')
-#save to json
-result = odds_df.to_json()
-parsed = json.loads(result)
-jsonFilePath='models/buildingMLModel/data/external/vegas_odds.json'
-with open(jsonFilePath, 'w', encoding='utf-8') as jsonf:
-    jsonf.write(json.dumps(parsed, indent=4))
-print('saved to '+jsonFilePath)
-
 print('importing dataframe from ufc_fights.csv')
 #importing csv fight data and saving as dataframes
 ufc_fights_winner = pd.read_csv('models/buildingMLModel/data/processed/ufc_fights.csv',low_memory=False)
@@ -228,6 +214,8 @@ intercept_dict = {0:b}
 
 with open('models/buildingMLModel/data/external/intercept.json', 'w') as outfile:
     json.dump(intercept_dict, outfile)
+    
+print("Saved new theta and intercept to json files to run model in website")
 
 #I've defined this in such a way to predict what happens when fighter1 in their day1 version fights fighter2
 #in their day2 version. Meaning we could compare for example 2014 Tyron Woodley to 2019 Colby Covington
@@ -248,15 +236,58 @@ def ufc_prediction_tuple(fighter1,fighter2,day1=date.today(),day2=date.today()):
             avg_count('head_strikes_landed',fighter1,'inf',day1)-avg_count('head_strikes_landed',fighter2,'inf',day2),
            ]
 
+#print('scraping bookie odds from bestfightodds.com')
+#odds_df = get_odds()
+#odds_df=drop_irrelevant_fights(odds_df,3) #allows 3 bookies to have missing odds. can increase this to 2 or 3 as needed
+#odds_df=drop_non_ufc_fights(odds_df)
+#odds_df=drop_repeats(odds_df)
+#print('saving odds to models/buildingMLModel/data/external/vegas_odds.json')
+#save to json
+#result = odds_df.to_json()
+#parsed = json.loads(result)
+#jsonFilePath='models/buildingMLModel/data/external/vegas_odds.json'
+#with open(jsonFilePath, 'w', encoding='utf-8') as jsonf:
+#    jsonf.write(json.dumps(parsed, indent=4))
+#print('saved to '+jsonFilePath)
 
-print('Making predictions for all fights on the books')
+print('Scraping next ufc fight card from bestfightodds.com')
+print("###############################################################################################################")
+card_date, card_title, fights_list = get_next_fight_card()
+card_date = convert_scraped_date_to_standard_date(card_date)
+
+card_info_dict = {"date":card_date, "title":card_title}
+
+print('Writing upcoming card info to models/buildingMLModel/data/external/card_info.json')
+with open('models/buildingMLModel/data/external/card_info.json', 'w') as outfile:
+    json.dump(card_info_dict, outfile)
+print("###############################################################################################################")
+
 
 #now we build prediction_history
 #next open existing prediction_history.json as a dataframe (done)... then add all fights on the books from vegas_odds
 #for each fight in prediction_history, if a prediction has not yet been made, make a prediction... then export to json
 
-vegas_odds=pd.read_json('models/buildingMLModel/data/external/vegas_odds.json')
 prediction_history=pd.read_json('models/buildingMLModel/data/external/prediction_history.json')
+
+vegas_odds_col_names = list(prediction_history.columns)
+vegas_odds_col_values = [['' for _ in range(len(fights_list))] for _ in range(len(vegas_odds_col_names))]
+vegas_odds_d = dict(zip(vegas_odds_col_names, vegas_odds_col_values))
+vegas_odds = pd.DataFrame(data=vegas_odds_d)
+
+vegas_odds['fighter name'].loc[:] = [fight[0] for fight in fights_list]
+vegas_odds['opponent name'].loc[:] = [fight[1] for fight in fights_list]
+vegas_odds['date'] = card_date
+print('saving scraped fights to models/buildingMLModel/data/external/vegas_odds.json')
+print('TODO: scrape odds too. Currently only scraping names, date, and card title')
+#save to json
+result = vegas_odds.to_json()
+parsed = json.loads(result)
+jsonFilePath='models/buildingMLModel/data/external/vegas_odds.json'
+with open(jsonFilePath, 'w', encoding='utf-8') as jsonf:
+    jsonf.write(json.dumps(parsed, indent=4))
+print('saved to '+jsonFilePath)
+
+vegas_odds=pd.read_json('models/buildingMLModel/data/external/vegas_odds.json')
 
 #this counts the number of columns in row number row_number of vegas_odds which are null (if there are too many, we dont put this fight in the dataset)
 #def count_null(row_number):
@@ -274,6 +305,7 @@ vegas_odds_copy=vegas_odds.copy()
 for col in ['predicted fighter odds','predicted opponent odds','average bookie odds','correct?']:
     vegas_odds_copy[col]=""
 
+print('Making predictions for all fights on the books')
 #filling in predictions
 for i in vegas_odds_copy.index:
     fighter=vegas_odds_copy['fighter name'][i]
@@ -294,7 +326,8 @@ for i in vegas_odds_copy.index:
             if vegas_odds_copy['opponent '+bookie][i]!='':
                 sum_av_o+=int(vegas_odds_copy['opponent '+bookie][i])
                 tot_av_o+=1
-        vegas_odds_copy['average bookie odds'][i]=[str(round(sum_av_f/tot_av_f)),str(round(sum_av_o/tot_av_o))]
+        if tot_av_f>0 and tot_av_o>0:
+            vegas_odds_copy['average bookie odds'][i]=[str(round(sum_av_f/tot_av_f)),str(round(sum_av_o/tot_av_o))]
 
 #add the newly scraped fights and predicted fights to the history of prediction list (idea: might be better to wait to join until after the fights happen)
 prediction_history = pd.concat([vegas_odds_copy, prediction_history], axis = 0).reset_index(drop=True)
@@ -303,8 +336,8 @@ prediction_history = pd.concat([vegas_odds_copy, prediction_history], axis = 0).
 #prediction_history.drop_duplicates(subset =["fighter name", "opponent name"],
                      #keep = 'first', inplace = True)
 
-prediction_history.drop_duplicates(subset =["fighter name", "opponent name"],
-                     keep = 'first', inplace = True)
+#prediction_history.drop_duplicates(subset =["fighter name", "opponent name"],
+#                     keep = 'first', inplace = True)
 
 #saving the new prediction_history dataframe to json
 result = prediction_history.to_json()
