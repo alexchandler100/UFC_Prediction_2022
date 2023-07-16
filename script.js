@@ -4,6 +4,14 @@ fighter_data = {}
 ufcfightscrap = {}
 vegas_odds = {}
 prediction_history = {}
+card_info = {}
+
+$.getJSON('src/models/buildingMLModel/data/external/card_info.json', function (data) {
+  //for each input (i,f), i is the key (a fighter's name) and f is the value (all their data)
+  $.each(data, function (i, f) {
+    card_info[i] = f
+  });
+});
 
 $.getJSON('src/models/buildingMLModel/data/external/theta.json', function (data) {
   //for each input (i,f), i is the key (a fighter's name) and f is the value (all their data)
@@ -143,7 +151,9 @@ function checkFileExist(urlToFile) {
   }
 }
 
-let picIndex = 0
+let picIndex = 0;
+//set picIndex to be a random number between 0 and 4
+picIndex = getRandomInt(4);
 
 function selectFighter(id, out) {
   selectElement = document.querySelector('#' + id);
@@ -958,6 +968,34 @@ console.log(document.getElementById("loader"))
 
 //make a loading screen
 setTimeout(() => {
+  //set text of futurefights to "loading..."
+  var card_info_text = card_info['title'] + "     " + card_info['date'];
+  //for debugging purposes
+  //card_info_text = "UFC FIGHT NIGHT: SANDHAGEN VS. NURMAGOMEDOV      December 15, 2023"; // example of very long title
+  //card_info_text = "UFC 292: ALJAMAIN STERLING VS O'MALLEY      August 19th"; // example of long title
+  //card_info_text = "BELLATOR VS RIZIN LETS GO MANWO      October 31st"; // example of medium title
+  //card_info_text = "UFC 294 Conor vs Khabib    May 23, 2023"; // example of very short title
+  card_info_text = "UFC 294      August 23, 2023"; // example of very short title
+  // find the length of the string card_info_text
+  var card_info_text_length = card_info_text.length;
+  console.log(`card info text length ${card_info_text_length}`)
+  if (card_info_text_length > 58) {
+    document.getElementById("card-title-style").style.fontSize = "15px";
+    console.log('card title and date is very long. Case A.')
+  } else if (card_info_text_length > 50) {
+    document.getElementById("card-title-style").style.fontSize = "20px";
+    console.log('card title and date is long. Case B.')
+  } else if (card_info_text_length > 40) {
+    document.getElementById("card-title-style").style.fontSize = "25px";
+    console.log('card title and date is medium. Case C.')
+  } else if (card_info_text_length > 30) {
+    document.getElementById("card-title-style").style.fontSize = "30px";
+    console.log('card title and date is short. Case D.')
+  } else {
+    document.getElementById("card-title-style").style.fontSize = "40px";
+    console.log('card title and date is very short. Case E.')
+  }
+  document.getElementById("card title and date").textContent = card_info_text;
   document.getElementById("loader").
     style.display = "none";
 }, 2500) //originally 600

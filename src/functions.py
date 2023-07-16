@@ -508,8 +508,6 @@ L2Y_sub_wins_vect = np.vectorize(L2Y_sub_wins)
 L2Y_sub_losses_vect = np.vectorize(L2Y_sub_losses)
 
 # for columns like fighter_rec which contains the information for the opponent as well, we use the following
-
-
 def opponent_column(stat):
     col = dict()
     for i in range(len(ufcfightscrap['fighter'])):
