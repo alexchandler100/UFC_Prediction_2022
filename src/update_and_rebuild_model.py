@@ -260,12 +260,13 @@ bad_indices = []
 for index1, row1 in vegas_odds_old.iterrows():
     card_date = row1['date']
     relevant_fights = ufc_fights_crap[pd.to_datetime(ufc_fights_crap['date']) == card_date]
-    print(f'checking {vegas_odds_old.shape[0]} fights for matches against {relevant_fights.shape[0]} fights from ufc_fights_crap.csv on {str(card_date)}')
+    print(f'searching through {relevant_fights.shape[0]//2} confirmed fights on {str(card_date).split(" ")[0]} for {row1["fighter name"]} vs {row1["opponent name"]}')
     fighter_odds = row1['predicted fighter odds']
     match_found = False
     # if no prediction was made, throw it away
     if fighter_odds == '':
         bad_indices.append(index1)
+        print('no prediction made for fight from '+card_date+' between '+row1['fighter name']+' and '+row1['opponent name'])
     else: # if a prediction was made, check if the fight actually happened and then check if the prediction was correct
         for index2, row2 in relevant_fights.iterrows():
             if same_name(row1['fighter name'], row2['fighter']) and same_name(row1['opponent name'], row2['opponent']):
