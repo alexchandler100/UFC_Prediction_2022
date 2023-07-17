@@ -975,7 +975,7 @@ setTimeout(() => {
   //card_info_text = "UFC 292: ALJAMAIN STERLING VS O'MALLEY      August 19th"; // example of long title
   //card_info_text = "BELLATOR VS RIZIN LETS GO MANWO      October 31st"; // example of medium title
   //card_info_text = "UFC 294 Conor vs Khabib    May 23, 2023"; // example of very short title
-  card_info_text = "UFC 294      August 23, 2023"; // example of very short title
+  //card_info_text = "UFC 294      August 23, 2023"; // example of very short title
   // find the length of the string card_info_text
   var card_info_text_length = card_info_text.length;
   console.log(`card info text length ${card_info_text_length}`)
