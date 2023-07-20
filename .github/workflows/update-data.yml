@@ -3,7 +3,7 @@ name: Update Data
 # make it run every thursday at 4am UTC (that is 8pm PST)
 on:
   schedule:
-    - cron: '0 4 * * 4'
+    - cron: "20 5 * * 4"
 jobs:
   update_data:
     runs-on: ubuntu-latest
@@ -22,7 +22,7 @@ jobs:
           cd src
           python3 update_data_csvs_and_jsons.py
           python3 update_and_rebuild_model.py
-# commit files
+      # commit files
       - name: Commit files
         run: |
           git config --local user.email "action@github.com"
@@ -30,5 +30,3 @@ jobs:
           git add .
           git commit -m "Update Data"
           git push
-          
-
