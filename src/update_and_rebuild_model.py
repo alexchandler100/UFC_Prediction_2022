@@ -266,7 +266,7 @@ for index1, row1 in vegas_odds_old.iterrows():
     # if no prediction was made, throw it away
     if fighter_odds == '':
         bad_indices.append(index1)
-        print('no prediction made for fight from '+card_date+' between '+row1['fighter name']+' and '+row1['opponent name'])
+        print('no prediction made for fight from '+str(card_date)+' between '+row1['fighter name']+' and '+row1['opponent name'])
     else: # if a prediction was made, check if the fight actually happened and then check if the prediction was correct
         for index2, row2 in relevant_fights.iterrows():
             if same_name(row1['fighter name'], row2['fighter']) and same_name(row1['opponent name'], row2['opponent']):
@@ -280,7 +280,7 @@ for index1, row1 in vegas_odds_old.iterrows():
                 break
         if not match_found: # if the fight didn't happen, throw it away
             bad_indices.append(index1)
-            print('fight from '+card_date+' between '+row1['fighter name']+' and '+row1['opponent name'] + ' not found in ufc_fights_crap.csv')
+            print('fight from '+str(card_date)+' between '+row1['fighter name']+' and '+row1['opponent name'] + ' not found in ufc_fights_crap.csv')
 # drop bad indices
 vegas_odds_old = vegas_odds_old.drop(bad_indices)
 
