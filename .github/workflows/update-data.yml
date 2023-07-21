@@ -3,7 +3,7 @@ name: Update Data
 # make it run every thursday at 4am UTC (that is 8pm PST)
 on:
   schedule:
-    - cron: "25 6 * * 4"
+    - cron: "11 5 * * 5"
 jobs:
   update_data:
     runs-on: ubuntu-latest
