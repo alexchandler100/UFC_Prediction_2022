@@ -39,3 +39,11 @@ python3 -m http.server 8000
 ```
 
 Now go to chrome and type `localhost:8000` into the address bar. This opens the updated version of the website.
+
+4. To look into the exploratory analysis of the notebooks enter
+
+```
+python -m notebook
+```
+
+and copy the http path for the local host into your browser. Then navigate to src/models/notebooks/Exploratory and examine the different notebooks.
