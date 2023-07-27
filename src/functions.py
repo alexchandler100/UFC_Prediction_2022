@@ -755,13 +755,15 @@ def get_next_fight_card():
     soup = BeautifulSoup(page.content, "html.parser") 
     mycards = soup.find_all("div", {"class": "table-div"})
     ufc_cards = [card for card in mycards if 'ufc' in card.find("a",href=lambda x: x and x.startswith('/events')).get_text().lower()]
-    card = ufc_cards[0]
+    card = ufc_cards[0] # 0 should get the first card on the list. Sometimes it messes up and must be manually changed to 1 for example. should really find a more reliable website to get data from. (stick to http://ufcstats.com/statistics/events/upcoming)
     card_date = card.find("span",{"class":"table-header-date"}).get_text()
     card_title = card.find("a",href=lambda x: x and x.startswith('/events')).get_text()
     #bookies = [bookie.get_text() for bookie in card.find_all("a",href=lambda x: x and x.startswith('/out'))]
     fighter_divs = card.find_all('span',{"class":"t-b-fcc"})
     fighters_list = [fighter.get_text() for fighter in fighter_divs]
-    if len(fighters_list)%2 == 0 and all(fighters_list[i] == fighters_list[i+26] for i in range(len(fighters_list)//2)):
+    print(f'card_title: {card_title} card_date {card_date} len(fighters_list) {len(fighters_list)}')
+    print(f'fighters_list: {fighters_list}')
+    if len(fighters_list)%2 == 0 and all(fighters_list[i] == fighters_list[i+len(fighters_list)//2] for i in range(len(fighters_list)//2)): 
         print('Usual Scraping Structure Detected')
     else:
         print('Scraping Structure Has Changed... Check HTML at BestFightOdds.com')
