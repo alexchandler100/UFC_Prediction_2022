@@ -750,28 +750,23 @@ def convert_scraped_date_to_standard_date(input_date):
     return f'{month} {day}, {year}'
 
 def get_next_fight_card():
-    url = 'https://www.bestfightodds.com'
+    url = 'http://ufcstats.com/statistics/events/upcoming'
     page = requests.get(url)
     soup = BeautifulSoup(page.content, "html.parser") 
-    mycards = soup.find_all("div", {"class": "table-div"})
-    ufc_cards = [card for card in mycards if 'ufc' in card.find("a",href=lambda x: x and x.startswith('/events')).get_text().lower()]
-    card = ufc_cards[0] # 0 should get the first card on the list. Sometimes it messes up and must be manually changed to 1 for example. should really find a more reliable website to get data from. (stick to http://ufcstats.com/statistics/events/upcoming)
-    card_date = card.find("span",{"class":"table-header-date"}).get_text()
-    card_title = card.find("a",href=lambda x: x and x.startswith('/events')).get_text()
-    #bookies = [bookie.get_text() for bookie in card.find_all("a",href=lambda x: x and x.startswith('/out'))]
-    fighter_divs = card.find_all('span',{"class":"t-b-fcc"})
-    fighters_list = [fighter.get_text() for fighter in fighter_divs]
-    print(f'card_title: {card_title} card_date {card_date} len(fighters_list) {len(fighters_list)}')
-    print(f'fighters_list: {fighters_list}')
-    if len(fighters_list)%2 == 0 and all(fighters_list[i] == fighters_list[i+len(fighters_list)//2] for i in range(len(fighters_list)//2)): 
-        print('Usual Scraping Structure Detected')
-    else:
-        print('Scraping Structure Has Changed... Check HTML at BestFightOdds.com')
-    fights_list = [fighters_list[i:i+2] for i in range(0,len(fighters_list),2)]
-    fights_list = fights_list[:len(fights_list)//2]
-    print(f'Upcoming card {card_title} on {card_date} has {len(fights_list)} fights')
-    for fight in fights_list:
-        print(fight)
+    mycards = soup.find_all("a", {"class": "b-link b-link_style_black"})
+    mydates = soup.find_all("span", {"class":"b-statistics__date"})
+    date = mydates[0]
+    card = mycards[0] 
+    card_date = date.get_text().strip()
+    card_title = card.get_text().strip()
+    fights_list = []
+    card_link = card.attrs['href']
+    page = requests.get(card_link)
+    soup = BeautifulSoup(page.content, "html.parser")
+    fights = soup.find_all("tr",{"class": "b-fight-details__table-row b-fight-details__table-row__hover js-fight-details-click"})
+    for fight in fights:
+        fighter, opponent, _, weight_class = [entry.get_text().strip() for entry in fight.find_all('p') if entry.get_text().strip()!= '']
+        fights_list.append([fighter,opponent,weight_class])
     return card_date, card_title, fights_list
 
 

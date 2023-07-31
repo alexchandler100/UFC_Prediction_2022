@@ -327,6 +327,7 @@ vegas_odds = pd.DataFrame(data=vegas_odds_d)
 
 vegas_odds['fighter name'].loc[:] = [fight[0] for fight in fights_list]
 vegas_odds['opponent name'].loc[:] = [fight[1] for fight in fights_list]
+# TODO add weight_class into vegas_odds and prediction history
 vegas_odds['date'] = card_date
 
 print('Making predictions for all fights on the books')
