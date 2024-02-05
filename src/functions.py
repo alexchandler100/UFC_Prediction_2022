@@ -130,10 +130,13 @@ def fighter_age(fighter, day=date.today(), form1='%B %d, %Y', form2='%B %d, %Y')
     for i in range(len(ufcfighterscrap['name'])):
         # if ufcfighterscrap['name'][i]==fighter: #replaced for better accuracy
         if same_name(ufcfighterscrap['name'][i], fighter):
-            dob = datetime.strptime(
-                ufcfighterscrap['dob'][i], '%b %d, %Y').strftime('%B %d, %Y')
-            a = age(dob, day, form1, form2)
-            break
+            try:
+                dob = datetime.strptime(
+                    ufcfighterscrap['dob'][i], '%b %d, %Y').strftime('%B %d, %Y')
+                a = age(dob, day, form1, form2)
+                break
+            except:
+                a = 0 
     return a
 
 
