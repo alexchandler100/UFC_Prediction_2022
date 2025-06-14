@@ -10,6 +10,8 @@ from PIL import Image
 
 pd.options.mode.chained_assignment = None # default='warn' (disables SettingWithCopyWarning)
 
+# import ipdb;ipdb.set_trace(context=10) # uncomment to debug
+
 # grab current data stored in csv files
 fight_hist_old = pd.read_csv('models/buildingMLModel/data/processed/fight_hist.csv')
 fighter_stats_old = pd.read_csv('models/buildingMLModel/data/processed/fighter_stats.csv')
@@ -25,14 +27,14 @@ fighter_stats_updated.to_csv('models/buildingMLModel/data/processed/fighter_stat
 # updated scraped fight data (after running fight_hist_updated function from UFC_data_scraping file)
 fight_hist = pd.read_csv('models/buildingMLModel/data/processed/fight_hist.csv', sep=',')
 # all stats fight history file which is one update behind fight_hist
-ufcfightscrap = pd.read_csv('models/buildingMLModel/data/processed/ufc_fights_crap.csv', sep=',', low_memory=False)
+ufc_fights_crap = pd.read_csv('models/buildingMLModel/data/processed/ufc_fights_crap.csv', sep=',', low_memory=False)
 # updated scraped fighter data (after running fight_hist_updated function from UFC_data_scraping file)
 ufcfighterscrap = pd.read_csv('models/buildingMLModel/data/processed/fighter_stats.csv', sep=',')
-# most recent fight in fight_hist versus most recent fight in ufcfightscrap
+# most recent fight in fight_hist versus most recent fight in ufc_fights_crap
 
-update_time = time_diff(ufcfightscrap['date'][0], fight_hist['date'][0])
+update_time = time_diff(ufc_fights_crap['date'][0], fight_hist['date'][0])
 print('days since last update: '+str(update_time))
-# this gives the new rows in fight_hist which do not appear in ufcfightscrapd
+# this gives the new rows in fight_hist which do not appear in ufc_fights_crapd
 new_rows = fight_hist.loc[time_diff_vect(fight_hist['date'], fight_hist['date'][0]) < update_time]
 # convert to numpy array
 numpy_new_rows = new_rows.values
@@ -42,18 +44,18 @@ test_new_rows = pd.DataFrame(data = numpy_new_rows, columns = new_rows.columns)
 if update_time > 0:
     populate_new_fights_with_statistics(test_new_rows)
     # making sure new columns coincide with old columns
-    crapcolumns = list(ufcfightscrap.columns)
+    crapcolumns = list(ufc_fights_crap.columns)
     test_new_rows = test_new_rows[crapcolumns]
-    print('New columns coincide with old columns: ' + str(all(ufcfightscrap.columns == test_new_rows.columns)))
+    print('New columns coincide with old columns: ' + str(all(ufc_fights_crap.columns == test_new_rows.columns)))
     print('joining new data to ufc_fights_crap.csv')
 
 else:
     print('nothing to update')
-frames = [test_new_rows, ufcfightscrap]
-updated_ufcfightscrap = pd.concat(frames, ignore_index=True)
+frames = [test_new_rows, ufc_fights_crap]
+updated_ufc_fights_crap = pd.concat(frames, ignore_index=True)
 
-# saving the updated ufcfightscrap file
-updated_ufcfightscrap.to_csv('models/buildingMLModel/data/processed/ufc_fights_crap.csv', index=False)
+# saving the updated ufc_fights_crap file
+updated_ufc_fights_crap.to_csv('models/buildingMLModel/data/processed/ufc_fights_crap.csv', index=False)
 
 # here is the list of all stats available (besides stance), does not include names or result
 computed_statistics = [u'fighter_wins', u'fighter_losses', u'fighter_age', u'fighter_height', u'fighter_reach', u'fighter_L5Y_wins', u'fighter_L5Y_losses', 
@@ -97,7 +99,7 @@ relevant_list = ['date', 'division', 'fighter', 'opponent', 'result', 'method']
 relevant_list.extend(computed_statistics)
 
 # creates a clean file with only columns which are relevant to predicting
-updated_ufc_fights = updated_ufcfightscrap[relevant_list]
+updated_ufc_fights = updated_ufc_fights_crap[relevant_list]
 
 # lets randomly remove one of every two copied fights
 random_indices = []
@@ -118,9 +120,9 @@ csvFilePath = r'models/buildingMLModel/data/processed/fighter_stats.csv'
 jsonFilePath = r'models/buildingMLModel/data/external/fighter_stats.json'
 make_json(csvFilePath, jsonFilePath, 'name')
 
-updated_ufcfightscrap['index'] = updated_ufcfightscrap['fighter']
-for i in range(len(updated_ufcfightscrap['date'])):
-    updated_ufcfightscrap['index'][i] = i
+updated_ufc_fights_crap['index'] = updated_ufc_fights_crap['fighter']
+for i in range(len(updated_ufc_fights_crap['date'])):
+    updated_ufc_fights_crap['index'][i] = i
 
 json_columns = ['date', 'result', 'fighter', 'opponent', 'division', 'method', 'round', 'time', 'knockdowns', 'sub_attempts', 'pass', 'reversals', 'takedowns_landed', 
                 'takedowns_attempts', 'sig_strikes_landed', 'sig_strikes_attempts', 'total_strikes_landed', 'total_strikes_attempts', 'head_strikes_landed',
@@ -128,17 +130,17 @@ json_columns = ['date', 'result', 'fighter', 'opponent', 'division', 'method', '
                 'distance_strikes_attempts', 'clinch_strikes_landed', 'clinch_strikes_attempts', 'ground_strikes_landed', 'ground_strikes_attempts', 'fighter_stance', 
                 'opponent_stance', 'index',]
 
-ufcfightscrap_for_json = updated_ufcfightscrap[json_columns]
+ufc_fight_data_for_website = updated_ufc_fights_crap[json_columns]
 
 # make new csv just to send it to json
 # this is inefficient and wastes space... but its just because its the only way I know to make a json file
 # of the correct format (fix needed but not super important)
-print('exporting updated ufcfightscrap.json for use in javascript portion of website')
-ufcfightscrap_for_json.to_csv('models/buildingMLModel/data/processed/ufcfightscrap.csv', index=False)
+print('exporting updated ufc_fights_crap.json for use in javascript portion of website')
+ufc_fight_data_for_website.to_csv('models/buildingMLModel/data/processed/ufc_fight_data_for_website.csv', index=False)
 
-# convert fighter_stats.csv to json files to read via javascript in website
-csvFilePath = r'models/buildingMLModel/data/processed/ufcfightscrap.csv'
-jsonFilePath = r'models/buildingMLModel/data/external/ufcfightscrap.json'
+# convert ufc_fights_crap.csv to json files to read via javascript in website
+csvFilePath = r'models/buildingMLModel/data/processed/ufc_fight_data_for_website.csv'
+jsonFilePath = r'models/buildingMLModel/data/external/ufc_fight_data_for_website.json'
 make_json(csvFilePath, jsonFilePath, 'index')
 
 # updating the picture scrape
