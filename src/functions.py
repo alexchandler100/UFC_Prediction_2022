@@ -1041,20 +1041,19 @@ def update_fight_stats(old_stats):  # takes dataframe of fight stats as input
     try:
         events = [event['href'] for event in events_table.select( 'a')[1:]] # omit first event (future event) # TODO WE MAY AS WELL USE THIS TO POPULATE THE FUTURE EVENT INSTEAD OF GETTING IT FROM ANOTHER WEBSITE LATER...
         saved_events = set(old_stats.event_url.unique())
-        for event in events: # skip events that are already in the old_stats
-            if not event in saved_events:
-                print(event)
-                stats = get_fight_card(event)
-                new_stats = pd.concat([new_stats, stats], axis=0)
+        new_events = [event for event in events if event not in saved_events]  # get only new events
+        for event in new_events: # skip events that are already in the old_stats
+            print(event)
+            stats = get_fight_card(event)
+            new_stats = pd.concat([new_stats, stats], axis=0)
     except:
-        print('that didnt work... if there is an event going on right now, this will not run correctly')
+        print('update_fight_stats failed... if there is an event going on right now, this will not run correctly')
     updated_stats = pd.concat([new_stats, old_stats], axis=0)
     updated_stats = updated_stats.reset_index(drop=True)
-    return (updated_stats)
+    return updated_stats
+
 
 # updates fighter attributes with new fighters not yet saved yet
-
-
 def update_fighter_details(fighter_urls, saved_fighters):
     fighter_details = {'name': [], 'height': [],
                        'reach': [], 'stance': [], 'dob': [], 'url': []}

@@ -10,48 +10,41 @@ from PIL import Image
 
 pd.options.mode.chained_assignment = None # default='warn' (disables SettingWithCopyWarning)
 
-# import ipdb;ipdb.set_trace(context=10) # uncomment to debug
+import ipdb;ipdb.set_trace(context=10) # uncomment to debug
 
 # grab current data stored in csv files
 fight_hist_old = pd.read_csv('models/buildingMLModel/data/processed/fight_hist.csv')
 fighter_stats_old = pd.read_csv('models/buildingMLModel/data/processed/fighter_stats.csv')
 
-# bring csv files up to date
+# bring csv files up to date and overwrite the old ones
 print('scraping new statistics from ufcstats.com')
 fight_hist_updated = update_fight_stats(fight_hist_old)
 fighter_stats_updated = update_fighter_details(fight_hist_updated.fighter_url.unique(), fighter_stats_old)
 fight_hist_updated.to_csv('models/buildingMLModel/data/processed/fight_hist.csv', index=False)
 fighter_stats_updated.to_csv('models/buildingMLModel/data/processed/fighter_stats.csv', index=False)
 
-# At the end, we have files fight_hist.csv and fighter_stats.csv which we can use to construct a dataframe in building_ufc_fights and building_ufc_fighters
-# updated scraped fight data (after running fight_hist_updated function from UFC_data_scraping file)
-fight_hist = pd.read_csv('models/buildingMLModel/data/processed/fight_hist.csv', sep=',')
-# all stats fight history file which is one update behind fight_hist
+# all stats fight history file which is one update behind fight_hist_updated
 ufc_fights_crap = pd.read_csv('models/buildingMLModel/data/processed/ufc_fights_crap.csv', sep=',', low_memory=False)
-# updated scraped fighter data (after running fight_hist_updated function from UFC_data_scraping file)
-ufcfighterscrap = pd.read_csv('models/buildingMLModel/data/processed/fighter_stats.csv', sep=',')
-# most recent fight in fight_hist versus most recent fight in ufc_fights_crap
 
-update_time = time_diff(ufc_fights_crap['date'][0], fight_hist['date'][0])
+# most recent fight in fight_hist_updated versus most recent fight in ufc_fights_crap
+update_time = time_diff(ufc_fights_crap['date'][0], fight_hist_updated['date'][0])
 print('days since last update: '+str(update_time))
-# this gives the new rows in fight_hist which do not appear in ufc_fights_crapd
-new_rows = fight_hist.loc[time_diff_vect(fight_hist['date'], fight_hist['date'][0]) < update_time]
-# convert to numpy array
-numpy_new_rows = new_rows.values
-# gives new_rows as a dataframe instead of a clone
-test_new_rows = pd.DataFrame(data = numpy_new_rows, columns = new_rows.columns)
 
-if update_time > 0:
-    populate_new_fights_with_statistics(test_new_rows)
+# this gives the new rows in fight_hist_updated which do not appear in ufc_fights_crapd
+new_rows = fight_hist_updated.loc[time_diff_vect(fight_hist_updated['date'], fight_hist_updated['date'][0]) < update_time].copy()
+
+if update_time > 0: # should just stop the script here. Can do this later once we do everything inside a function call
+    populate_new_fights_with_statistics(new_rows)
     # making sure new columns coincide with old columns
     crapcolumns = list(ufc_fights_crap.columns)
-    test_new_rows = test_new_rows[crapcolumns]
-    print('New columns coincide with old columns: ' + str(all(ufc_fights_crap.columns == test_new_rows.columns)))
+    new_rows = new_rows[crapcolumns]
+    print('New columns coincide with old columns: ' + str(all(ufc_fights_crap.columns == new_rows.columns)))
     print('joining new data to ufc_fights_crap.csv')
 
 else:
     print('nothing to update')
-frames = [test_new_rows, ufc_fights_crap]
+    
+frames = [new_rows, ufc_fights_crap]
 updated_ufc_fights_crap = pd.concat(frames, ignore_index=True)
 
 # saving the updated ufc_fights_crap file
@@ -144,8 +137,9 @@ jsonFilePath = r'models/buildingMLModel/data/external/ufc_fight_data_for_website
 make_json(csvFilePath, jsonFilePath, 'index')
 
 # updating the picture scrape
-names = list(ufcfighterscrap['name'])
-
+# updated scraped fighter data (after running fight_hist_updated function from UFC_data_scraping file)
+fighter_stats = pd.read_csv('models/buildingMLModel/data/processed/fighter_stats.csv', sep=',')
+names = list(fighter_stats['name'])
 
 def scrape_pictures(name):
     try:
