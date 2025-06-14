@@ -10,7 +10,7 @@ from PIL import Image
 
 pd.options.mode.chained_assignment = None # default='warn' (disables SettingWithCopyWarning)
 
-import ipdb;ipdb.set_trace(context=10) # uncomment to debug
+# import ipdb;ipdb.set_trace(context=10) # uncomment to debug
 
 # grab current data stored in csv files
 fight_hist_old = pd.read_csv('models/buildingMLModel/data/processed/fight_hist.csv')
