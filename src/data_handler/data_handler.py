@@ -6,10 +6,12 @@ import urllib.request
 import requests
 import csv
 import json
-import date
+from datetime import datetime
+from datetime import date
+import random
 
 # local imports
-from functions import (in_ufc, 
+from fight_stat_helpers import (in_ufc, 
                        same_name, 
                        wins_before_vect, 
                        losses_before_vect, 
@@ -34,73 +36,125 @@ from functions import (in_ufc,
                        avg_count_vect, 
                        zero_vect, 
                        opponent_column,
-                       stance_vect
+                       stance_vect,
+                       time_diff,
+                       time_diff_vect
             )
 
 git_repo = git.Repo(os.getcwd(), search_parent_directories=True)
 git_root = git_repo.git.rev_parse("--show-toplevel")
 
+pd.options.mode.chained_assignment = None # default='warn' (disables SettingWithCopyWarning)
+
 class DataHandler:
     def __init__(self):
         # updated scraped fight data (after running fight_hist_updated function from UFC_data_scraping file)
-        self.filepaths = {
+        self.csv_filepaths = {
             'fight_hist': f'{git_root}/src/content/data/processed/fight_hist.csv',
-            'ufc_fights_crap': f'{git_root}/src/content/data/processed/ufc_fights_crap.csv',
             'fighter_stats': f'{git_root}/src/content/data/processed/fighter_stats.csv',
-            'ufc_fights': f'{git_root}/src/content/data/processed/ufc_fights.csv'
+            'prediction_history': f'{git_root}/src/content/data/processed/prediction_history.csv',
+            'ufc_fight_data_for_website': f'{git_root}/src/content/data/processed/ufc_fight_data_for_website.csv',
+            'ufc_fights_crap': f'{git_root}/src/content/data/processed/ufc_fights_crap.csv',
+            'ufc_fights': f'{git_root}/src/content/data/processed/ufc_fights.csv',
         }
-        self.data = {key : pd.read_csv(self.filepaths[key], sep=',', low_memory=False) for key in self.filepaths.keys()}
+        self.json_filepaths = {
+            'card_info': f'{git_root}/src/content/data/external/card_info.json',
+            'fighter_stats': f'{git_root}/src/content/data/external/fighter_stats.json',
+            'intercept': f'{git_root}/src/content/data/external/intercept.json',
+            'interesting_stats': f'{git_root}/src/content/data/external/interesting_stats.json',
+            'prediction_history': f'{git_root}/src/content/data/external/prediction_history.json',
+            'theta': f'{git_root}/src/content/data/external/theta.json',
+            'ufc_fight_data_for_website': f'{git_root}/src/content/data/external/ufc_fight_data_for_website.json',
+            'vegas_odds': f'{git_root}/src/content/data/external/vegas_odds.json',
+        }
+        self.csv_data = {key : pd.read_csv(self.filepaths[key], sep=',', low_memory=False) for key in self.csv_filepaths.keys()}
+        self.json_data = {key : pd.read_json(self.json_filepaths[key], orient='index') for key in self.json_filepaths.keys()}
+        # TODO DO WE USE orient='index' always ??
 
-    def get(self, key):
-        assert key in list(self.data.keys()), "Invalid key provided"
-        return self.data[key]
+    def get(self, key, filetype='csv'):
+        if filetype == 'json':
+            assert key in list(self.json_data.keys()), "Invalid key provided"
+            return self.json_data[key].copy()
+        assert key in list(self.csv_data.keys()), "Invalid key provided"
+        return self.csv_data[key].copy()
     
     def set(self, key, value):
-        assert key in list(self.data.keys()), "Invalid key provided"
-        self.data[key] = value
+        assert key in list(self.csv_data.keys()), "Invalid key provided"
+        self.csv_data[key] = value
     
-    def save(self, key):
-        assert key in list(self.data.keys()), "Invalid key provided"
-        self.data[key].to_csv(self.filepaths[key], index=False)
+    def save_csv(self, key):
+        assert key in list(self.csv_filepaths.keys()), "Invalid key provided"
+        self.csv_data[key].to_csv(self.filepaths[key], index=False)
+            
+    def save_json(self, key, column):
+        assert key in list(self.json_filepaths.keys()), "Invalid key provided"
+        print(f'sending updated {key}.csv to {key}.json')
+        self.make_json(self.csv_filepaths[key], self.json_filepaths[key], column)
         
-    def update(self, key):
-        assert key in list(self.data.keys()), "Invalid key provided"
+    def set_regression_coeffs_and_intercept(self, theta, b):
+        # TODO this is a bit clunky, should be able to just set the theta and b directly using the set method
+        # these need to be dictionaries to use json.dump
+        self.theta_dict = {i:theta[i] for i in range(len(theta))}
+        self.intercept_dict = {0:b}
+        
+        with open(self.json_filepaths['theta'], 'w') as outfile:
+            json.dump(theta, outfile)
+
+        with open(self.json_filepaths['intercept'], 'w') as outfile:
+            json.dump(b, outfile)
+        
+    def update_data_csvs_and_jsons(self, key='all'):
+        assert key in list(self.csv_data.keys()) + ['all'], "Invalid key provided"
         if key == 'fight_hist':
             self.update_fight_hist()
         elif key == 'fighter_stats':
-            # TODO implement fighter stats update
+            self.update_fighter_stats()
             pass
         elif key == 'ufc_fights_crap':
-            # TODO implement ufc fights crap update
+            self.update_ufc_fights_crap()
             pass
         elif key == 'ufc_fights':
-            # TODO implement ufc fights update
-            pass
+            self.update_ufc_fights()
+        elif key == 'prediction_history':
+            self.update_prediction_history()
+        elif key == 'all':
+            self.update_fight_hist()
+            self.update_fighter_stats()
+            self.update_ufc_fights_crap()
+            self.update_ufc_fights()
+            self.update_ufc_fight_data_for_website()
+            self.update_pictures()
         else:
             raise ValueError("No update function implemented for this key")
+
+        
+    def get_most_recent_fight_date(self, key):
+        # find the most recent fight date in the specified key's dataframe
+        assert key in ['fight_hist', 'ufc_fights_crap', 'ufc_fights'], "Invalid key provided"
+        return self.csv_data[key]['date'][0]
                 
     def update_fight_hist(self):  # takes dataframe of fight stats as input
-        old_stats = self.get('fight_hist')
+        old_fight_hist = self.get('fight_hist')
         url = 'http://ufcstats.com/statistics/events/completed?page=all'
         page = requests.get(url)
         soup = BeautifulSoup(page.content, "html.parser")
         events_table = soup.select_one('tbody')
-        new_stats = pd.DataFrame()
+        fight_hist_new_rows = pd.DataFrame()
         try:
             events = [event['href'] for event in events_table.select( 'a')[1:]] # omit first event (future event) # TODO WE MAY AS WELL USE THIS TO POPULATE THE FUTURE EVENT INSTEAD OF GETTING IT FROM ANOTHER WEBSITE LATER...
-            saved_events = set(old_stats.event_url.unique())
+            saved_events = set(old_fight_hist.event_url.unique())
             new_events = [event for event in events if event not in saved_events]  # get only new events
-            for event in new_events: # skip events that are already in the old_stats
+            for event in new_events: # skip events that are already in the old_fight_hist
                 print(event)
                 stats = self.get_fight_card(event)
-                new_stats = pd.concat([new_stats, stats], axis=0)
+                fight_hist_new_rows = pd.concat([fight_hist_new_rows, stats], axis=0)
         except:
             print('update_fight_hist failed... if there is an event going on right now, this will not run correctly')
-        updated_stats = pd.concat([new_stats, old_stats], axis=0)
+        updated_stats = pd.concat([fight_hist_new_rows, old_fight_hist], axis=0)
         updated_stats = updated_stats.reset_index(drop=True)
         # set fight_hist and save it to csv
         self.set('fight_hist', updated_stats)
-        self.save('fight_hist')
+        self.save_csv('fight_hist')
     
 
     def get_fight_card(self, url):
@@ -270,45 +324,219 @@ class DataHandler:
     def update_fighter_stats(self, saved_fighters):
         # TODO find a way to avoid using the old version of fighter_stats.csv ... this is clunky
         fight_hist = self.get('fight_hist')
-        fighter_urls = fight_hist.fighter_url.unique()
+        fighter_stats = self.get('fighter_stats')
+        fighter_stats_urls = fighter_stats.fighter_url.unique()
+        fight_hist_urls = fight_hist.fighter_url.unique()
+        
         fighter_details = {'name': [], 'height': [],
                         'reach': [], 'stance': [], 'dob': [], 'url': []}
         fighter_urls = set(fighter_urls)
-        saved_fighter_urls = set(saved_fighters.url.unique())
+        known_fighter_urls = set(fighter_stats_urls)
 
-        for f_url in fighter_urls:
-            if f_url in saved_fighter_urls:
-                pass
-            else:
-                print('adding new fighter:', f_url)
-                page = requests.get(f_url)
-                soup = BeautifulSoup(page.content, "html.parser")
+        for f_url in fight_hist_urls:
+            if f_url in known_fighter_urls:
+                continue # if we already have the fighter in our stats, skip it
+            
+            print('adding new fighter:', f_url)
+            page = requests.get(f_url)
+            soup = BeautifulSoup(page.content, "html.parser")
 
-                fighter_name = soup.find(
-                    'span', class_='b-content__title-highlight').text.strip()
-                fighter_details['name'].append(fighter_name)
+            fighter_name = soup.find(
+                'span', class_='b-content__title-highlight').text.strip()
+            fighter_details['name'].append(fighter_name)
 
-                fighter_details['url'].append(f_url)
+            fighter_details['url'].append(f_url)
 
-                fighter_attr = soup.find(
-                    'div', class_='b-list__info-box b-list__info-box_style_small-width js-guide').select('li')
-                for i in range(len(fighter_attr)):
-                    attr = fighter_attr[i].text.split(':')[-1].strip()
-                    if i == 0:
-                        fighter_details['height'].append(attr)
-                    elif i == 1:
-                        pass  # weight is always just whatever weightclass they were fighting at
-                    elif i == 2:
-                        fighter_details['reach'].append(attr)
-                    elif i == 3:
-                        fighter_details['stance'].append(attr)
-                    else:
-                        fighter_details['dob'].append(attr)
+            fighter_attr = soup.find(
+                'div', class_='b-list__info-box b-list__info-box_style_small-width js-guide').select('li')
+            for i in range(len(fighter_attr)):
+                attr = fighter_attr[i].text.split(':')[-1].strip()
+                if i == 0:
+                    fighter_details['height'].append(attr)
+                elif i == 1:
+                    pass  # weight is always just whatever weightclass they were fighting at
+                elif i == 2:
+                    fighter_details['reach'].append(attr)
+                elif i == 3:
+                    fighter_details['stance'].append(attr)
+                else:
+                    fighter_details['dob'].append(attr)
         new_fighters = pd.DataFrame(fighter_details)
         updated_fighters = pd.concat([new_fighters, saved_fighters])
         updated_fighters = updated_fighters.reset_index(drop=True)
-        return updated_fighters
+        self.set('fighter_stats', updated_fighters)
+        self.save_csv('fighter_stats')
+        self.save_json('fighter_stats', 'name')
     
+    def update_ufc_fights_crap(self):
+        # most recent fight in fight_hist_updated versus most recent fight in ufc_fights_crap
+        most_recent_date_in_updated_fight_hist = self.get_most_recent_fight_date('fight_hist')
+        most_recent_date_in_old_ufc_fights_crap = self.get_most_recent_fight_date('ufc_fights_crap')
+        update_time = time_diff(most_recent_date_in_old_ufc_fights_crap, most_recent_date_in_updated_fight_hist)
+        print('days since last update: '+str(update_time))
+
+        # this gives the new rows in fight_hist_updated which do not appear in ufc_fights_crap
+        fight_hist_updated = self.get('fight_hist')
+        new_rows = fight_hist_updated.loc[time_diff_vect(fight_hist_updated['date'], most_recent_date_in_updated_fight_hist) < update_time].copy()
+
+        ufc_fights_crap = self.get('ufc_fights_crap')
+        if update_time > 0: # should just stop the script here. Can do this later once we do everything inside a function call
+            self.populate_new_fights_with_statistics(new_rows)
+            # making sure new columns coincide with old columns
+            crapcolumns = list(ufc_fights_crap.columns)
+            new_rows = new_rows[crapcolumns]
+            print('New columns coincide with old columns: ' + str(all(ufc_fights_crap.columns == new_rows.columns)))
+            print('joining new data to ufc_fights_crap.csv')
+
+        else:
+            print('nothing to update')
+            
+        frames = [new_rows, ufc_fights_crap]
+        updated_ufc_fights_crap = pd.concat(frames, ignore_index=True)
+
+        # saving the updated ufc_fights_crap file
+        self.set('ufc_fights_crap', updated_ufc_fights_crap)
+        self.save_csv('ufc_fights_crap')
+        
+    def update_ufc_fights(self):
+        # here is the list of all stats available (besides stance), does not include names or result
+        computed_statistics = [u'fighter_wins', u'fighter_losses', u'fighter_age', u'fighter_height', u'fighter_reach', u'fighter_L5Y_wins', u'fighter_L5Y_losses', 
+                            u'fighter_L2Y_wins', u'fighter_L2Y_losses', u'fighter_ko_wins', u'fighter_ko_losses', u'fighter_L5Y_ko_wins', u'fighter_L5Y_ko_losses', 
+                            u'fighter_L2Y_ko_wins', u'fighter_L2Y_ko_losses', u'fighter_sub_wins', u'fighter_sub_losses', u'fighter_L5Y_sub_wins', u'fighter_L5Y_sub_losses', 
+                            u'fighter_L2Y_sub_wins', u'fighter_L2Y_sub_losses', u'fighter_inf_knockdowns_avg', u'fighter_inf_pass_avg', u'fighter_inf_reversals_avg', 
+                            u'fighter_inf_sub_attempts_avg', u'fighter_inf_takedowns_landed_avg', u'fighter_inf_takedowns_attempts_avg', u'fighter_inf_sig_strikes_landed_avg', 
+                            u'fighter_inf_sig_strikes_attempts_avg', u'fighter_inf_total_strikes_landed_avg', u'fighter_inf_total_strikes_attempts_avg', 
+                            u'fighter_inf_head_strikes_landed_avg', u'fighter_inf_head_strikes_attempts_avg', u'fighter_inf_body_strikes_landed_avg', 
+                            u'fighter_inf_body_strikes_attempts_avg', u'fighter_inf_leg_strikes_landed_avg', u'fighter_inf_leg_strikes_attempts_avg', 
+                            u'fighter_inf_distance_strikes_landed_avg', u'fighter_inf_distance_strikes_attempts_avg', u'fighter_inf_clinch_strikes_landed_avg', 
+                            u'fighter_inf_clinch_strikes_attempts_avg', u'fighter_inf_ground_strikes_landed_avg', u'fighter_inf_ground_strikes_attempts_avg', 
+                            u'fighter_abs_knockdowns_avg', u'fighter_abs_pass_avg', u'fighter_abs_reversals_avg', u'fighter_abs_sub_attempts_avg', 
+                            u'fighter_abs_takedowns_landed_avg', u'fighter_abs_takedowns_attempts_avg', u'fighter_abs_sig_strikes_landed_avg', 
+                            u'fighter_abs_sig_strikes_attempts_avg', u'fighter_abs_total_strikes_landed_avg', u'fighter_abs_total_strikes_attempts_avg', 
+                            u'fighter_abs_head_strikes_landed_avg', u'fighter_abs_head_strikes_attempts_avg', u'fighter_abs_body_strikes_landed_avg', 
+                            u'fighter_abs_body_strikes_attempts_avg', u'fighter_abs_leg_strikes_landed_avg', u'fighter_abs_leg_strikes_attempts_avg', 
+                            u'fighter_abs_distance_strikes_landed_avg', u'fighter_abs_distance_strikes_attempts_avg', u'fighter_abs_clinch_strikes_landed_avg', 
+                            u'fighter_abs_clinch_strikes_attempts_avg', u'fighter_abs_ground_strikes_landed_avg', u'fighter_abs_ground_strikes_attempts_avg', u'opponent_wins', 
+                            u'opponent_losses', u'opponent_age',  u'opponent_height', u'opponent_reach', u'opponent_L5Y_wins', u'opponent_L5Y_losses', u'opponent_L2Y_wins', 
+                            u'opponent_L2Y_losses', u'opponent_ko_wins', u'opponent_ko_losses', u'opponent_L5Y_ko_wins', u'opponent_L5Y_ko_losses', u'opponent_L2Y_ko_wins',
+                            u'opponent_L2Y_ko_losses', u'opponent_sub_wins', u'opponent_sub_losses', u'opponent_L5Y_sub_wins', u'opponent_L5Y_sub_losses', 
+                            u'opponent_L2Y_sub_wins', u'opponent_L2Y_sub_losses', u'opponent_inf_knockdowns_avg', u'opponent_inf_pass_avg', u'opponent_inf_reversals_avg', 
+                            u'opponent_inf_sub_attempts_avg', u'opponent_inf_takedowns_landed_avg', u'opponent_inf_takedowns_attempts_avg', u'opponent_inf_sig_strikes_landed_avg',
+                            u'opponent_inf_sig_strikes_attempts_avg', u'opponent_inf_total_strikes_landed_avg', u'opponent_inf_total_strikes_attempts_avg', 
+                            u'opponent_inf_head_strikes_landed_avg', u'opponent_inf_head_strikes_attempts_avg', u'opponent_inf_body_strikes_landed_avg',
+                            u'opponent_inf_body_strikes_attempts_avg', u'opponent_inf_leg_strikes_landed_avg', u'opponent_inf_leg_strikes_attempts_avg', 
+                            u'opponent_inf_distance_strikes_landed_avg', u'opponent_inf_distance_strikes_attempts_avg', u'opponent_inf_clinch_strikes_landed_avg', 
+                            u'opponent_inf_clinch_strikes_attempts_avg', u'opponent_inf_ground_strikes_landed_avg', u'opponent_inf_ground_strikes_attempts_avg', 
+                            u'opponent_abs_knockdowns_avg', u'opponent_abs_pass_avg', u'opponent_abs_reversals_avg', u'opponent_abs_sub_attempts_avg', 
+                            u'opponent_abs_takedowns_landed_avg', u'opponent_abs_takedowns_attempts_avg', u'opponent_abs_sig_strikes_landed_avg', 
+                            u'opponent_abs_sig_strikes_attempts_avg', u'opponent_abs_total_strikes_landed_avg', u'opponent_abs_total_strikes_attempts_avg', 
+                            u'opponent_abs_head_strikes_landed_avg', u'opponent_abs_head_strikes_attempts_avg', u'opponent_abs_body_strikes_landed_avg', 
+                            u'opponent_abs_body_strikes_attempts_avg', u'opponent_abs_leg_strikes_landed_avg', u'opponent_abs_leg_strikes_attempts_avg', 
+                            u'opponent_abs_distance_strikes_landed_avg', u'opponent_abs_distance_strikes_attempts_avg', u'opponent_abs_clinch_strikes_landed_avg', 
+                            u'opponent_abs_clinch_strikes_attempts_avg', u'opponent_abs_ground_strikes_landed_avg', u'opponent_abs_ground_strikes_attempts_avg', 
+                            u'fighter_stance', u'opponent_stance', '1-fight_math', '6-fight_math', '4-fighter_score_diff', '9-fighter_score_diff', '15-fighter_score_diff',]
+
+        # list containing all columns of any interest
+        relevant_list = ['date', 'division', 'fighter', 'opponent', 'result', 'method']
+        relevant_list.extend(computed_statistics)
+
+        # creates a clean file with only columns which are relevant to predicting
+        updated_ufc_fights_crap = self.get('ufc_fights_crap')
+        # TODO would be better to grab existing ufc_fights, and add columns corresponding to new fights 
+        updated_ufc_fights = updated_ufc_fights_crap[relevant_list]
+
+        # lets randomly remove one of every two copied fights
+        random_indices = [random.choice([i, i+1]) for i in range(0, len(updated_ufc_fights['fighter']), 2)]
+        updated_ufc_fights = updated_ufc_fights.drop(random_indices)
+
+        print('cleaning data and adding new cleaned columns to ufc_fights.csv')
+        self.set('ufc_fights', updated_ufc_fights)
+        self.save_csv('ufc_fights')
+        
+    def update_ufc_fight_data_for_website(self):
+        updated_ufc_fights_crap = self.get('ufc_fights_crap')
+        updated_ufc_fights_crap['index'] = updated_ufc_fights_crap['fighter']
+        for i in range(len(updated_ufc_fights_crap['date'])):
+            updated_ufc_fights_crap['index'][i] = i
+
+        json_columns = ['date', 'result', 'fighter', 'opponent', 'division', 'method', 'round', 'time', 'knockdowns', 'sub_attempts', 'pass', 'reversals', 'takedowns_landed', 
+                        'takedowns_attempts', 'sig_strikes_landed', 'sig_strikes_attempts', 'total_strikes_landed', 'total_strikes_attempts', 'head_strikes_landed',
+                        'head_strikes_attempts', 'body_strikes_landed', 'body_strikes_attempts', 'leg_strikes_landed', 'leg_strikes_attempts', 'distance_strikes_landed', 
+                        'distance_strikes_attempts', 'clinch_strikes_landed', 'clinch_strikes_attempts', 'ground_strikes_landed', 'ground_strikes_attempts', 'fighter_stance', 
+                        'opponent_stance', 'index',]
+
+        ufc_fight_data_for_website = updated_ufc_fights_crap[json_columns]
+
+        # make new csv just to send it to json
+        # this is inefficient and wastes space... but its just because its the only way I know to make a json file
+        # of the correct format (fix needed but not super important)
+        print('exporting updated ufc_fights_crap.json for use in javascript portion of website')
+        ufc_fight_data_for_website.to_csv('content/data/processed/ufc_fight_data_for_website.csv', index=False)
+
+        # convert ufc_fights_crap.csv to json files to read via javascript in website
+        csvFilePath = r'content/data/processed/ufc_fight_data_for_website.csv'
+        jsonFilePath = r'content/data/external/ufc_fight_data_for_website.json'
+        self.make_json(csvFilePath, jsonFilePath, 'index')
+        
+    def update_pictures(self):
+        # updating the picture scrape
+        # updated scraped fighter data (after running fight_hist_updated function from UFC_data_scraping file)
+        fighter_stats = self.get('fighter_stats')
+        names = list(fighter_stats['name'])
+
+        print('Scraping pictures of newly added fighters from Google image search')
+        # run this to update the image scrape
+        for name in names:
+            name_reduced = name.replace(" ", "")
+            image_file_path = "content/images/" + str(1) + name_reduced + ".jpg"
+            if os.path.isfile(image_file_path): # skip names that already have images
+                continue
+            self.scrape_pictures(name)
+    
+    def update_prediction_history(self):
+        vegas_odds_old=self.get('vegas_odds')
+        ufc_fights_crap = self.get('ufc_fights_crap') # THIS SHOULD HAVE BEEN UPDATED AT THIS POINT! WE SHOULD ADD A CHECK TO CHECK THIS
+
+        # getting rid of fights that didn't actually happen and adding correctness results of those that did
+        bad_indices = self.get_bad_indices(vegas_odds_old, ufc_fights_crap)
+        vegas_odds_old = vegas_odds_old.drop(bad_indices)
+
+        #making a copy of vegas_odds
+        vegas_odds_copy=vegas_odds_old.copy()
+        prediction_history=self.get('prediction_history', filetype='json')
+
+        #add the newly scraped fights and predicted fights to the history of prediction list (idea: might be better to wait to join until after the fights happen)
+        prediction_history = pd.concat([vegas_odds_copy, prediction_history], axis = 0).reset_index(drop=True)
+
+        #saving the new prediction_history dataframe to json
+        result = prediction_history.to_json()
+        parsed = json.loads(result)
+        prediction_history_filtpath = self.json_filepaths['prediction_history']
+        
+        # TODO USE THE SAVE FUNCTION OF THE DATA HANDLER
+        with open(prediction_history_filtpath, 'w', encoding='utf-8') as jsonf:
+            jsonf.write(json.dumps(parsed, indent=4))
+            
+        print(f'saved to {prediction_history_filtpath}')
+        
+    def update_card_info(self):
+        card_date, card_title, fights_list = self.get_next_fight_card()
+        card_date = self.convert_scraped_date_to_standard_date(card_date)
+
+        card_info_dict = {"date":card_date, "title":card_title}
+
+        print('Writing upcoming card info to content/data/external/card_info.json')
+        with open('content/data/external/card_info.json', 'w') as outfile:
+            json.dump(card_info_dict, outfile)            
+            
+    def update_prediction_history(self, vegas_odds):
+        #save to json
+        result = vegas_odds.to_json()
+        parsed = json.loads(result)
+        jsonFilePath='content/data/external/vegas_odds.json'
+        with open(jsonFilePath, 'w', encoding='utf-8') as jsonf:
+            jsonf.write(json.dumps(parsed, indent=4))
+        print('saved to '+jsonFilePath)
         
     def scrape_pictures(name):
         try:
@@ -715,11 +943,11 @@ class DataHandler:
         card = mycards[0] 
         card_date = date.get_text().strip()
         card_title = card.get_text().strip()
-        fights_list = []
         card_link = card.attrs['href']
         page = requests.get(card_link)
         soup = BeautifulSoup(page.content, "html.parser")
         fights = soup.find_all("tr",{"class": "b-fight-details__table-row b-fight-details__table-row__hover js-fight-details-click"})
+        fights_list = []
         for fight in fights:
             fighter, opponent, _, weight_class = [entry.get_text().strip() for entry in fight.find_all('p') if entry.get_text().strip()!= '']
             fights_list.append([fighter,opponent,weight_class])
