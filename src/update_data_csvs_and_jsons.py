@@ -1,30 +1,29 @@
+import ipdb;ipdb.set_trace(context=10) # uncomment to debug
 # getting dependencies
 import pandas as pd
 import random
-import requests
-import urllib.request
 # this imports all of the functions from the file functions.py
 from functions import *
-from bs4 import BeautifulSoup
-from PIL import Image
+import os
 
 pd.options.mode.chained_assignment = None # default='warn' (disables SettingWithCopyWarning)
 
-# import ipdb;ipdb.set_trace(context=10) # uncomment to debug
+
+from data_handler import DataHandler
+
+# create a data handler object to access the data
+dh = DataHandler()
 
 # grab current data stored in csv files
-fight_hist_old = pd.read_csv('models/buildingMLModel/data/processed/fight_hist.csv')
-fighter_stats_old = pd.read_csv('models/buildingMLModel/data/processed/fighter_stats.csv')
+fighter_stats_old = dh.get('fighter_stats').copy()
 
 # bring csv files up to date and overwrite the old ones
 print('scraping new statistics from ufcstats.com')
-fight_hist_updated = update_fight_stats(fight_hist_old)
-fighter_stats_updated = update_fighter_details(fight_hist_updated.fighter_url.unique(), fighter_stats_old)
-fight_hist_updated.to_csv('models/buildingMLModel/data/processed/fight_hist.csv', index=False)
-fighter_stats_updated.to_csv('models/buildingMLModel/data/processed/fighter_stats.csv', index=False)
+dh.update('fight_hist') # maybe return a bool
+dh.update('fighter_stats') # figure out how to not have to pass in fighter_stats old
 
 # all stats fight history file which is one update behind fight_hist_updated
-ufc_fights_crap = pd.read_csv('models/buildingMLModel/data/processed/ufc_fights_crap.csv', sep=',', low_memory=False)
+ufc_fights_crap = pd.read_csv('content/data/processed/ufc_fights_crap.csv', sep=',', low_memory=False)
 
 # most recent fight in fight_hist_updated versus most recent fight in ufc_fights_crap
 update_time = time_diff(ufc_fights_crap['date'][0], fight_hist_updated['date'][0])
@@ -48,7 +47,7 @@ frames = [new_rows, ufc_fights_crap]
 updated_ufc_fights_crap = pd.concat(frames, ignore_index=True)
 
 # saving the updated ufc_fights_crap file
-updated_ufc_fights_crap.to_csv('models/buildingMLModel/data/processed/ufc_fights_crap.csv', index=False)
+updated_ufc_fights_crap.to_csv('content/data/processed/ufc_fights_crap.csv', index=False)
 
 # here is the list of all stats available (besides stance), does not include names or result
 computed_statistics = [u'fighter_wins', u'fighter_losses', u'fighter_age', u'fighter_height', u'fighter_reach', u'fighter_L5Y_wins', u'fighter_L5Y_losses', 
@@ -105,12 +104,12 @@ print('cleaning data and adding new cleaned columns to ufc_fights.csv')
 
 # we worked hard to build this, lets save it (only run this once we're sure that the new file is correct)
 updated_ufc_fights.to_csv(
-    'models/buildingMLModel/data/processed/ufc_fights.csv', index=False)
+    'content/data/processed/ufc_fights.csv', index=False)
 
 print('sending updated fighter_stats.csv to fighter_stats.json')
 # convert fighter_stats.csv to json files to read via javascript in website
-csvFilePath = r'models/buildingMLModel/data/processed/fighter_stats.csv'
-jsonFilePath = r'models/buildingMLModel/data/external/fighter_stats.json'
+csvFilePath = r'content/data/processed/fighter_stats.csv'
+jsonFilePath = r'content/data/external/fighter_stats.json'
 make_json(csvFilePath, jsonFilePath, 'name')
 
 updated_ufc_fights_crap['index'] = updated_ufc_fights_crap['fighter']
@@ -129,45 +128,23 @@ ufc_fight_data_for_website = updated_ufc_fights_crap[json_columns]
 # this is inefficient and wastes space... but its just because its the only way I know to make a json file
 # of the correct format (fix needed but not super important)
 print('exporting updated ufc_fights_crap.json for use in javascript portion of website')
-ufc_fight_data_for_website.to_csv('models/buildingMLModel/data/processed/ufc_fight_data_for_website.csv', index=False)
+ufc_fight_data_for_website.to_csv('content/data/processed/ufc_fight_data_for_website.csv', index=False)
 
 # convert ufc_fights_crap.csv to json files to read via javascript in website
-csvFilePath = r'models/buildingMLModel/data/processed/ufc_fight_data_for_website.csv'
-jsonFilePath = r'models/buildingMLModel/data/external/ufc_fight_data_for_website.json'
+csvFilePath = r'content/data/processed/ufc_fight_data_for_website.csv'
+jsonFilePath = r'content/data/external/ufc_fight_data_for_website.json'
 make_json(csvFilePath, jsonFilePath, 'index')
 
 # updating the picture scrape
 # updated scraped fighter data (after running fight_hist_updated function from UFC_data_scraping file)
-fighter_stats = pd.read_csv('models/buildingMLModel/data/processed/fighter_stats.csv', sep=',')
+fighter_stats = pd.read_csv('content/data/processed/fighter_stats.csv', sep=',')
 names = list(fighter_stats['name'])
-
-def scrape_pictures(name):
-    try:
-        URL = "https://www.google.com/search?q="+name+" ufc fighting" + \
-            "&sxsrf=ALeKk03xBalIZi7BAzyIRw8R4_KrIEYONg:1620885765119&source=lnms&tbm=isch&sa=X&ved=2ahUKEwjv44CC_sXwAhUZyjgGHSgdAQ8Q_AUoAXoECAEQAw&cshid=1620885828054361"
-        page = requests.get(URL)
-        soup = BeautifulSoup(page.content, 'html.parser')
-        # ... or ... image_tags = soup.find_all('img', class_='t0fcAb')
-        image_tags = soup.find_all('img')
-        links = []
-        for image_tag in image_tags:
-            links.append(image_tag['src'])
-            name_reduced = name.replace(" ", "")
-        for i in range(1, 5):
-            urllib.request.urlretrieve(
-                links[i], "models/buildingMLModel/images/"+str(i)+name_reduced+".jpg")
-        print('scraped 5 random pictures of '+name+' from Google search')
-
-    except:
-        print('The scrape did not work for '+name)
-
 
 print('Scraping pictures of newly added fighters from Google image search')
 # run this to update the image scrape
 for name in names:
-    try:
-        name_reduced = name.replace(" ", "")
-        k = Image.open("models/buildingMLModel/images/" +
-                       str(1)+name_reduced+".jpg")
-    except:
-        scrape_pictures(name)
+    name_reduced = name.replace(" ", "")
+    image_file_path = "content/images/" + str(1) + name_reduced + ".jpg"
+    if os.path.isfile(image_file_path): # skip names that already have images
+        continue
+    scrape_pictures(name)

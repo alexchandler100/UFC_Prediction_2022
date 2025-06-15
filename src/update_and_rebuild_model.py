@@ -9,9 +9,9 @@ pd.options.mode.chained_assignment = None  # default='warn' (disables SettingWit
 
 print('importing dataframe from ufc_fights.csv')
 #importing csv fight data and saving as dataframes
-ufc_fights_winner = pd.read_csv('models/buildingMLModel/data/processed/ufc_fights.csv',low_memory=False)
-ufc_fights_method = pd.read_csv('models/buildingMLModel/data/processed/ufc_fights.csv',low_memory=False) # NOTE NOT YET USED BUT KEEPING IT FOR FUTURE USE
-ufcfighterscrap =pd.read_csv('models/buildingMLModel/data/processed/fighter_stats.csv',sep=',',low_memory=False)
+ufc_fights_winner = pd.read_csv('content/data/processed/ufc_fights.csv',low_memory=False)
+ufc_fights_method = pd.read_csv('content/data/processed/ufc_fights.csv',low_memory=False) # NOTE NOT YET USED BUT KEEPING IT FOR FUTURE USE
+ufcfighterscrap =pd.read_csv('content/data/processed/fighter_stats.csv',sep=',',low_memory=False)
 
 #there are some issues with how names are saved
 #it gets saved as Joanne Wood for some reason
@@ -138,12 +138,12 @@ theta_dict = {}
 for i in range(len(theta)):
     theta_dict[i]=theta[i]
 
-with open('models/buildingMLModel/data/external/theta.json', 'w') as outfile:
+with open('content/data/external/theta.json', 'w') as outfile:
     json.dump(theta_dict, outfile)
 
 intercept_dict = {0:b}
 
-with open('models/buildingMLModel/data/external/intercept.json', 'w') as outfile:
+with open('content/data/external/intercept.json', 'w') as outfile:
     json.dump(intercept_dict, outfile)
     
 print("Saved new theta and intercept to json files to run model in website")
@@ -153,19 +153,19 @@ print("Saved new theta and intercept to json files to run model in website")
 #odds_df=drop_irrelevant_fights(odds_df,3) #allows 3 bookies to have missing odds. can increase this to 2 or 3 as needed
 #odds_df=drop_non_ufc_fights(odds_df)
 #odds_df=drop_repeats(odds_df)
-#print('saving odds to models/buildingMLModel/data/external/vegas_odds.json')
+#print('saving odds to content/data/external/vegas_odds.json')
 #save to json
 #result = odds_df.to_json()
 #parsed = json.loads(result)
-#jsonFilePath='models/buildingMLModel/data/external/vegas_odds.json'
+#jsonFilePath='content/data/external/vegas_odds.json'
 #with open(jsonFilePath, 'w', encoding='utf-8') as jsonf:
 #    jsonf.write(json.dumps(parsed, indent=4))
 #print('saved to '+jsonFilePath)
 
 print('Saving results of previous card to prediction_history.json')
 
-vegas_odds_old=pd.read_json('models/buildingMLModel/data/external/vegas_odds.json')
-ufc_fights_crap = pd.read_csv('models/buildingMLModel/data/processed/ufc_fights_crap.csv',low_memory=False)
+vegas_odds_old=pd.read_json('content/data/external/vegas_odds.json')
+ufc_fights_crap = pd.read_csv('content/data/processed/ufc_fights_crap.csv',low_memory=False)
 
 # getting rid of fights that didn't actually happen and adding correctness results of those that did
 bad_indices = get_bad_indices(vegas_odds_old, ufc_fights_crap)
@@ -173,7 +173,7 @@ vegas_odds_old = vegas_odds_old.drop(bad_indices)
 
 #making a copy of vegas_odds
 vegas_odds_copy=vegas_odds_old.copy()
-prediction_history=pd.read_json('models/buildingMLModel/data/external/prediction_history.json')
+prediction_history=pd.read_json('content/data/external/prediction_history.json')
 
 #add the newly scraped fights and predicted fights to the history of prediction list (idea: might be better to wait to join until after the fights happen)
 prediction_history = pd.concat([vegas_odds_copy, prediction_history], axis = 0).reset_index(drop=True)
@@ -181,7 +181,7 @@ prediction_history = pd.concat([vegas_odds_copy, prediction_history], axis = 0).
 #saving the new prediction_history dataframe to json
 result = prediction_history.to_json()
 parsed = json.loads(result)
-jsonFilePath='models/buildingMLModel/data/external/prediction_history.json'
+jsonFilePath='content/data/external/prediction_history.json'
 with open(jsonFilePath, 'w', encoding='utf-8') as jsonf:
     jsonf.write(json.dumps(parsed, indent=4))
 print('saved to '+jsonFilePath)
@@ -193,18 +193,18 @@ card_date = convert_scraped_date_to_standard_date(card_date)
 
 card_info_dict = {"date":card_date, "title":card_title}
 
-print('Writing upcoming card info to models/buildingMLModel/data/external/card_info.json')
-with open('models/buildingMLModel/data/external/card_info.json', 'w') as outfile:
+print('Writing upcoming card info to content/data/external/card_info.json')
+with open('content/data/external/card_info.json', 'w') as outfile:
     json.dump(card_info_dict, outfile)
 print("###############################################################################################################")
             
-print('saving scraped fights and predictions to models/buildingMLModel/data/external/vegas_odds.json')
+print('saving scraped fights and predictions to content/data/external/vegas_odds.json')
 print('TODO: scrape odds too. Currently only scraping names, date, and card title')
 vegas_odds = predict_upcoming_fights(prediction_history, fights_list, card_date, theta, b)
 #save to json
 result = vegas_odds.to_json()
 parsed = json.loads(result)
-jsonFilePath='models/buildingMLModel/data/external/vegas_odds.json'
+jsonFilePath='content/data/external/vegas_odds.json'
 with open(jsonFilePath, 'w', encoding='utf-8') as jsonf:
     jsonf.write(json.dumps(parsed, indent=4))
 print('saved to '+jsonFilePath)
