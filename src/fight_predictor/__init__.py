@@ -1,0 +1,1 @@
+from . fight_predictor import FightPredictor

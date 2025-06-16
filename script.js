@@ -6,21 +6,21 @@ vegas_odds = {}
 prediction_history = {}
 card_info = {}
 
-$.getJSON('src/models/buildingMLModel/data/external/card_info.json', function (data) {
+$.getJSON('src/content/data/external/card_info.json', function (data) {
   //for each input (i,f), i is the key (a fighter's name) and f is the value (all their data)
   $.each(data, function (i, f) {
     card_info[i] = f
   });
 });
 
-$.getJSON('src/models/buildingMLModel/data/external/theta.json', function (data) {
+$.getJSON('src/content/data/external/theta.json', function (data) {
   //for each input (i,f), i is the key (a fighter's name) and f is the value (all their data)
   $.each(data, function (i, f) {
     theta[i] = f.toFixed(2)
   });
 });
 
-$.getJSON('src/models/buildingMLModel/data/external/intercept.json', function (data) {
+$.getJSON('src/content/data/external/intercept.json', function (data) {
   //for each input (i,f), i is the key (a fighter's name) and f is the value (all their data)
   $.each(data, function (i, f) {
     intercept[i] = f.toFixed(2)
@@ -28,7 +28,7 @@ $.getJSON('src/models/buildingMLModel/data/external/intercept.json', function (d
 });
 
 $(function () { // building object fighter_data from fighter_data.json file
-  $.getJSON('src/models/buildingMLModel/data/external/fighter_stats.json', function (data) {//for each input (i,f), i is the key (a fighter's name) and f is the value (all their data)
+  $.getJSON('src/content/data/external/fighter_stats.json', function (data) {//for each input (i,f), i is the key (a fighter's name) and f is the value (all their data)
     $.each(data, function (i, f) {//create entry in local object
       const select = document.getElementById('fighters')
       select.insertAdjacentHTML('beforeend', `<option value="${i}">${i}</option>`)
@@ -38,7 +38,7 @@ $(function () { // building object fighter_data from fighter_data.json file
 });
 
 $(function () { // building object ufcfightscrap from ufcfightscrap.json file
-  $.getJSON('src/models/buildingMLModel/data/external/ufcfightscrap.json', function (data) {//for each input (i,f), i is the key (a number) and f is the value (all the data of the fight)
+  $.getJSON('src/content/data/external/ufcfightscrap.json', function (data) {//for each input (i,f), i is the key (a number) and f is the value (all the data of the fight)
     $.each(data, function (i, f) {
       ufcfightscrap[i] = f
     });
@@ -46,7 +46,7 @@ $(function () { // building object ufcfightscrap from ufcfightscrap.json file
 });
 
 $(function () { // building object vegas_odds from vegas_odds.json file
-  $.getJSON('src/models/buildingMLModel/data/external/vegas_odds.json', function (data) {//for each input (i,f), i is the key a column name like fighter name and f is the value (an object with keys being integers and values being strings (odds or names))
+  $.getJSON('src/content/data/external/vegas_odds.json', function (data) {//for each input (i,f), i is the key a column name like fighter name and f is the value (an object with keys being integers and values being strings (odds or names))
     $.each(data, function (i, f) {
       vegas_odds[i] = f
     });
@@ -85,7 +85,7 @@ setTimeout(() => {
   //filling in any previous data into prediction_history
   $(function () {
     //var people = [];
-    $.getJSON('src/models/buildingMLModel/data/external/prediction_history.json', function (data) {
+    $.getJSON('src/content/data/external/prediction_history.json', function (data) {
       //for each input (i,f), i is the key a column name like fighter name and f is the value (an object with keys being integers and values being strings (odds or names))
       $.each(data, function (i, f) {
         //create entry in local object
@@ -169,12 +169,12 @@ function selectFighter(id, out) {
   name_decoded = name_decoded.replace(new RegExp(' ', 'g'), '');
 
   // set the path to check if gif file exists (otherwise use pictures)
-  if (checkFileExist("src/models/buildingMLModel/gifs/postCNNGIFs/" + name_decoded + ".gif")) {
-    document.getElementById("fighter" + i + "pic").src = "src/models/buildingMLModel/gifs/postCNNGIFs/" + name_decoded + ".gif" //sets the image
-  } else if (checkFileExist("src/models/buildingMLModel/images2/" + j + name_decoded + ".jpg")) {
-    document.getElementById("fighter" + i + "pic").src = "src/models/buildingMLModel/images2/" + j + name_decoded + ".jpg" //sets the image
+  if (checkFileExist("src/content/gifs/postCNNGIFs/" + name_decoded + ".gif")) {
+    document.getElementById("fighter" + i + "pic").src = "src/content/gifs/postCNNGIFs/" + name_decoded + ".gif" //sets the image
+  } else if (checkFileExist("src/content/images2/" + j + name_decoded + ".jpg")) {
+    document.getElementById("fighter" + i + "pic").src = "src/content/images2/" + j + name_decoded + ".jpg" //sets the image
   } else {
-    document.getElementById("fighter" + i + "pic").src = "src/models/buildingMLModel/images/" + j + name_decoded + ".jpg" //sets the image
+    document.getElementById("fighter" + i + "pic").src = "src/content/images/" + j + name_decoded + ".jpg" //sets the image
   }
   if (i == '1') {
     populateTaleOfTheTape(output, 'rc')
