@@ -6,7 +6,18 @@ from datetime import date
 import math
 from dateutil.relativedelta import relativedelta
 
-from fight_stat_helpers import fighter_score_diff, fight_math_diff, L5Y_sub_wins, L5Y_losses, L5Y_ko_losses, fighter_age, avg_count, in_ufc
+from fight_stat_helpers import (
+    fighter_score_diff, 
+    fight_math_diff, 
+    L5Y_sub_wins, 
+    L5Y_losses, 
+    L5Y_ko_losses, 
+    fighter_age, 
+    avg_count, 
+    in_ufc, 
+    clean_method_for_winner_predictions, 
+    clean_method_for_method_predictions
+    )
 
 class FightPredictor:
     def __init__(self, ufc_fights):
@@ -37,12 +48,12 @@ class FightPredictor:
         #cleaning the methods column for winner prediction
         #changing anything other than 'U-DEC','M-DEC', 'KO/TKO', 'SUB', to 'bullshit'
         #changing 'U-DEC','M-DEC', to 'DEC'
-        ufc_fights_winner['method'] = self.clean_method_for_winner_predictions(ufc_fights_winner['method'])
+        ufc_fights_winner['method'] = clean_method_for_winner_predictions(ufc_fights_winner['method'])
 
         #cleaning the methods column for method prediction
         #changing anything other than 'U-DEC','M-DEC', 'S-DEC', 'KO/TKO', 'SUB', to 'bullshit'
         #changing 'U-DEC','M-DEC', 'S-DEC', to 'DEC'
-        ufc_fights_method['method'] = self.clean_method_for_method_predictions(ufc_fights_method['method'])
+        ufc_fights_method['method'] = clean_method_for_method_predictions(ufc_fights_method['method'])
 
         #getting rid of rows with incomplete or useless data
         #fights with outcome "Win" or "Loss" (no "Draw")
@@ -68,7 +79,7 @@ class FightPredictor:
         #includes only the fights satisfying these conditions
         ufc_fights_winner=ufc_fights_winner[draw_mask&method_mask_winner&age_mask&height_mask&reach_mask&wins_mask&strikes_mask]
         ufc_fights_method=ufc_fights_method[draw_mask&method_mask_method&age_mask&height_mask&reach_mask&wins_mask&strikes_mask]
-        ufc_fights=ufc_fights[draw_mask&method_mask_winner&age_mask&height_mask&reach_mask&wins_mask&strikes_mask]
+        # ufc_fights=ufc_fights[draw_mask&method_mask_winner&age_mask&height_mask&reach_mask&wins_mask&strikes_mask]
 
         #listing all stats and making some new stats from them (differences often score higher in the learning models)
         record_statistics=[u'fighter_wins',u'fighter_losses',u'fighter_L5Y_wins',u'fighter_L5Y_losses',u'fighter_L2Y_wins',u'fighter_L2Y_losses',u'fighter_ko_wins',u'fighter_ko_losses',u'fighter_L5Y_ko_wins',u'fighter_L5Y_ko_losses',u'fighter_L2Y_ko_wins',u'fighter_L2Y_ko_losses',u'fighter_sub_wins',u'fighter_sub_losses',u'fighter_L5Y_sub_wins',u'fighter_L5Y_sub_losses',u'fighter_L2Y_sub_wins',u'fighter_L2Y_sub_losses',u'opponent_wins',u'opponent_losses',u'opponent_L5Y_wins',u'opponent_L5Y_losses',u'opponent_L2Y_wins',u'opponent_L2Y_losses',u'opponent_ko_wins',u'opponent_ko_losses',u'opponent_L5Y_ko_wins',u'opponent_L5Y_ko_losses',u'opponent_L2Y_ko_wins',u'opponent_L2Y_ko_losses',u'opponent_sub_wins',u'opponent_sub_losses',u'opponent_L5Y_sub_wins',u'opponent_L5Y_sub_losses',u'opponent_L2Y_sub_wins',u'opponent_L2Y_sub_losses']
@@ -151,30 +162,6 @@ class FightPredictor:
 
     def get_regression_coeffs_and_intercept(self):
         return self.theta, self.b
-    
-    # Methods for cleaning columns in the dataframe
-    @np.vectorize
-    def clean_method_for_method_predictions(self, a):
-        if (a == 'KO/TKO'):
-            return 'KO/TKO'
-        elif (a == 'SUB'):
-            return 'SUB'
-        elif ((a == 'U-DEC') or (a == 'M-DEC') or (a == 'S-DEC')):
-            return 'DEC'
-        else:
-            return 'bullshit'
-
-    @np.vectorize
-    def clean_method_for_winner_predictions(self, a):
-        if (a == 'KO/TKO'):
-            return 'KO/TKO'
-        elif (a == 'SUB'):
-            return 'SUB'
-        elif ((a == 'U-DEC') or (a == 'M-DEC')):
-            return 'DEC'
-        # counting S-DEC as bullshit!
-        else:
-            return 'bullshit'
         
     #there are some issues with how names are saved in the case when a fighter changes their name or uses a nickname
     # TODO this should be done on incoming data in DataHandler, not here. But to do this we must also do a global change to existing data by running this function offline and re-saving csvs and jsons

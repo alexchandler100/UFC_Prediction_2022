@@ -9,6 +9,7 @@ import json
 from datetime import datetime
 from datetime import date
 import random
+import re
 
 # local imports
 from fight_stat_helpers import (in_ufc, 
@@ -38,7 +39,9 @@ from fight_stat_helpers import (in_ufc,
                        opponent_column,
                        stance_vect,
                        time_diff,
-                       time_diff_vect
+                       time_diff_vect,
+                       fight_math_diff_vect,
+                       fighter_score_diff_vect
             )
 
 git_repo = git.Repo(os.getcwd(), search_parent_directories=True)
@@ -57,6 +60,12 @@ class DataHandler:
             'ufc_fights_crap': f'{git_root}/src/content/data/processed/ufc_fights_crap.csv',
             'ufc_fights': f'{git_root}/src/content/data/processed/ufc_fights.csv',
         }
+        # NOTES ON fight_hist.csv:
+        # - Columns (8,73) have mixed types.
+        
+        # NOTES ON ufc_fights.csv:
+        # - column 15 (reversals) is clearly wrong. It contains a time like 1:23 and if you go back it used to be an integer (number of reversals)
+        # Columns (15,37,38,102,103) have mixed types.
         self.json_filepaths = {
             'card_info': f'{git_root}/src/content/data/external/card_info.json',
             'fighter_stats': f'{git_root}/src/content/data/external/fighter_stats.json',
@@ -67,7 +76,7 @@ class DataHandler:
             'ufc_fight_data_for_website': f'{git_root}/src/content/data/external/ufc_fight_data_for_website.json',
             'vegas_odds': f'{git_root}/src/content/data/external/vegas_odds.json',
         }
-        self.csv_data = {key : pd.read_csv(self.filepaths[key], sep=',', low_memory=False) for key in self.csv_filepaths.keys()}
+        self.csv_data = {key : pd.read_csv(self.csv_filepaths[key], sep=',') for key in self.csv_filepaths.keys()}
         self.json_data = {key : pd.read_json(self.json_filepaths[key], orient='index') for key in self.json_filepaths.keys()}
         # TODO DO WE USE orient='index' always ??
 
@@ -84,7 +93,7 @@ class DataHandler:
     
     def save_csv(self, key):
         assert key in list(self.csv_filepaths.keys()), "Invalid key provided"
-        self.csv_data[key].to_csv(self.filepaths[key], index=False)
+        self.csv_data[key].to_csv(self.csv_filepaths[key], index=False)
             
     def save_json(self, key, column):
         assert key in list(self.json_filepaths.keys()), "Invalid key provided"
@@ -140,16 +149,15 @@ class DataHandler:
         soup = BeautifulSoup(page.content, "html.parser")
         events_table = soup.select_one('tbody')
         fight_hist_new_rows = pd.DataFrame()
-        try:
-            events = [event['href'] for event in events_table.select( 'a')[1:]] # omit first event (future event) # TODO WE MAY AS WELL USE THIS TO POPULATE THE FUTURE EVENT INSTEAD OF GETTING IT FROM ANOTHER WEBSITE LATER...
-            saved_events = set(old_fight_hist.event_url.unique())
-            new_events = [event for event in events if event not in saved_events]  # get only new events
-            for event in new_events: # skip events that are already in the old_fight_hist
-                print(event)
-                stats = self.get_fight_card(event)
-                fight_hist_new_rows = pd.concat([fight_hist_new_rows, stats], axis=0)
-        except:
-            print('update_fight_hist failed... if there is an event going on right now, this will not run correctly')
+        
+        events = [event['href'] for event in events_table.select( 'a')[1:]] # omit first event (future event) # TODO WE MAY AS WELL USE THIS TO POPULATE THE FUTURE EVENT INSTEAD OF GETTING IT FROM ANOTHER WEBSITE LATER...
+        saved_events = set(old_fight_hist.event_url.unique())
+        new_events = [event for event in events if event not in saved_events]  # get only new events
+        for event in new_events: # skip events that are already in the old_fight_hist
+            print(event)
+            stats = self.get_fight_card(event)
+            fight_hist_new_rows = pd.concat([fight_hist_new_rows, stats], axis=0)
+
         updated_stats = pd.concat([fight_hist_new_rows, old_fight_hist], axis=0)
         updated_stats = updated_stats.reset_index(drop=True)
         # set fight_hist and save it to csv
@@ -321,16 +329,15 @@ class DataHandler:
             return (cfd)
         
     # updates fighter attributes with new fighters not yet saved yet
-    def update_fighter_stats(self, saved_fighters):
+    def update_fighter_stats(self):
         # TODO find a way to avoid using the old version of fighter_stats.csv ... this is clunky
         fight_hist = self.get('fight_hist')
         fighter_stats = self.get('fighter_stats')
-        fighter_stats_urls = fighter_stats.fighter_url.unique()
+        fighter_stats_urls = fighter_stats.url.unique()
         fight_hist_urls = fight_hist.fighter_url.unique()
         
         fighter_details = {'name': [], 'height': [],
                         'reach': [], 'stance': [], 'dob': [], 'url': []}
-        fighter_urls = set(fighter_urls)
         known_fighter_urls = set(fighter_stats_urls)
 
         for f_url in fight_hist_urls:
@@ -362,7 +369,7 @@ class DataHandler:
                 else:
                     fighter_details['dob'].append(attr)
         new_fighters = pd.DataFrame(fighter_details)
-        updated_fighters = pd.concat([new_fighters, saved_fighters])
+        updated_fighters = pd.concat([new_fighters, fighter_stats])
         updated_fighters = updated_fighters.reset_index(drop=True)
         self.set('fighter_stats', updated_fighters)
         self.save_csv('fighter_stats')
@@ -381,7 +388,9 @@ class DataHandler:
 
         ufc_fights_crap = self.get('ufc_fights_crap')
         if update_time > 0: # should just stop the script here. Can do this later once we do everything inside a function call
-            self.populate_new_fights_with_statistics(new_rows)
+            new_rows = self.populate_new_fights_with_statistics(new_rows)
+            
+            # import ipdb;ipdb.set_trace(context=10) # uncomment to debug
             # making sure new columns coincide with old columns
             crapcolumns = list(ufc_fights_crap.columns)
             new_rows = new_rows[crapcolumns]
@@ -494,10 +503,11 @@ class DataHandler:
             self.scrape_pictures(name)
     
     def update_prediction_history(self):
-        vegas_odds_old=self.get('vegas_odds')
+        vegas_odds_old=self.get('vegas_odds', filetype='json') # this is the old vegas odds dataframe
         ufc_fights_crap = self.get('ufc_fights_crap') # THIS SHOULD HAVE BEEN UPDATED AT THIS POINT! WE SHOULD ADD A CHECK TO CHECK THIS
 
         # getting rid of fights that didn't actually happen and adding correctness results of those that did
+        import ipdb;ipdb.set_trace(context=10) # debug KeyError: 'date'
         bad_indices = self.get_bad_indices(vegas_odds_old, ufc_fights_crap)
         vegas_odds_old = vegas_odds_old.drop(bad_indices)
 
@@ -529,7 +539,7 @@ class DataHandler:
         with open('content/data/external/card_info.json', 'w') as outfile:
             json.dump(card_info_dict, outfile)            
             
-    def update_prediction_history(self, vegas_odds):
+    def update_vegas_odds(self, vegas_odds):
         #save to json
         result = vegas_odds.to_json()
         parsed = json.loads(result)
@@ -657,182 +667,207 @@ class DataHandler:
                 
                 
     def populate_new_fights_with_statistics(self, new_rows):
+        # Note, getting this warning a lot
+        # C:\Users\Alex\OneDrive\Documents\GitHub\UFC_Prediction_2022\src\data_handler\data_handler.py:821: PerformanceWarning: DataFrame is highly fragmented.  This is usually the result of calling `frame.insert` many times, which has poor performance.  Consider joining all columns at once using pd.concat(axis=1) 
+        # instead. To get a de-fragmented frame, use `newframe = frame.copy()`
+        # new_rows['opponent_abs_distance_strikes_landed_avg'] = avg_count_vect('distance_strikes_landed', new_rows['opponent'], 'abs', new_rows['date'])        
         print('adding physical statistics for fighter')
-        new_rows['fighter_wins'] = wins_before_vect(new_rows['fighter'], new_rows['date'])
-        new_rows['fighter_losses'] = losses_before_vect(new_rows['fighter'], new_rows['date'])
-        new_rows['fighter_age'] = fighter_age_vect(new_rows['fighter'], new_rows['date'])
-        new_rows['fighter_height'] = new_rows['fighter'].apply(fighter_height)
-        new_rows['fighter_reach'] = new_rows['fighter'].apply(fighter_height)
+        new_rows_dict = {}
+        new_rows_dict['fighter_wins'] = wins_before_vect(new_rows['fighter'], new_rows['date'])
+        new_rows_dict['fighter_losses'] = losses_before_vect(new_rows['fighter'], new_rows['date'])
+        new_rows_dict['fighter_age'] = fighter_age_vect(new_rows['fighter'], new_rows['date'])
+        new_rows_dict['fighter_height'] = new_rows['fighter'].apply(fighter_height)
+        new_rows_dict['fighter_reach'] = new_rows['fighter'].apply(fighter_height)
 
         print('adding record statistics for fighter')
-        new_rows['fighter_L5Y_wins'] = L5Y_wins_vect(new_rows['fighter'], new_rows['date'])
-        new_rows['fighter_L5Y_losses'] = L5Y_losses_vect(new_rows['fighter'], new_rows['date'])
-        new_rows['fighter_L2Y_wins'] = L2Y_wins_vect(new_rows['fighter'], new_rows['date'])
-        new_rows['fighter_L2Y_losses'] = L2Y_losses_vect(new_rows['fighter'], new_rows['date'])
-        new_rows['fighter_ko_wins'] = ko_wins_vect(new_rows['fighter'], new_rows['date'])
-        new_rows['fighter_ko_losses'] = ko_losses_vect(new_rows['fighter'], new_rows['date'])
-        new_rows['fighter_L5Y_ko_wins'] = L5Y_ko_wins_vect(new_rows['fighter'], new_rows['date'])
-        new_rows['fighter_L5Y_ko_losses'] = L5Y_ko_losses_vect(new_rows['fighter'], new_rows['date'])
-        new_rows['fighter_L2Y_ko_wins'] = L2Y_ko_wins_vect(new_rows['fighter'], new_rows['date'])
-        new_rows['fighter_L2Y_ko_losses'] = L2Y_ko_losses_vect(new_rows['fighter'], new_rows['date'])
-        new_rows['fighter_sub_wins'] = sub_wins_vect(new_rows['fighter'], new_rows['date'])
-        new_rows['fighter_sub_losses'] = sub_losses_vect(new_rows['fighter'], new_rows['date'])
-        new_rows['fighter_L5Y_sub_wins'] = L5Y_sub_wins_vect(new_rows['fighter'], new_rows['date'])
-        new_rows['fighter_L5Y_sub_losses'] = L5Y_sub_losses_vect(new_rows['fighter'], new_rows['date'])
-        new_rows['fighter_L2Y_sub_wins'] = L2Y_sub_wins_vect(new_rows['fighter'], new_rows['date'])
-        new_rows['fighter_L2Y_sub_losses'] = L2Y_sub_losses_vect(new_rows['fighter'], new_rows['date'])
+        new_rows_dict['fighter_L5Y_wins'] = L5Y_wins_vect(new_rows['fighter'], new_rows['date'])
+        new_rows_dict['fighter_L5Y_losses'] = L5Y_losses_vect(new_rows['fighter'], new_rows['date'])
+        new_rows_dict['fighter_L2Y_wins'] = L2Y_wins_vect(new_rows['fighter'], new_rows['date'])
+        new_rows_dict['fighter_L2Y_losses'] = L2Y_losses_vect(new_rows['fighter'], new_rows['date'])
+        new_rows_dict['fighter_ko_wins'] = ko_wins_vect(new_rows['fighter'], new_rows['date'])
+        new_rows_dict['fighter_ko_losses'] = ko_losses_vect(new_rows['fighter'], new_rows['date'])
+        new_rows_dict['fighter_L5Y_ko_wins'] = L5Y_ko_wins_vect(new_rows['fighter'], new_rows['date'])
+        new_rows_dict['fighter_L5Y_ko_losses'] = L5Y_ko_losses_vect(new_rows['fighter'], new_rows['date'])
+        new_rows_dict['fighter_L2Y_ko_wins'] = L2Y_ko_wins_vect(new_rows['fighter'], new_rows['date'])
+        new_rows_dict['fighter_L2Y_ko_losses'] = L2Y_ko_losses_vect(new_rows['fighter'], new_rows['date'])
+        new_rows_dict['fighter_sub_wins'] = sub_wins_vect(new_rows['fighter'], new_rows['date'])
+        new_rows_dict['fighter_sub_losses'] = sub_losses_vect(new_rows['fighter'], new_rows['date'])
+        new_rows_dict['fighter_L5Y_sub_wins'] = L5Y_sub_wins_vect(new_rows['fighter'], new_rows['date'])
+        new_rows_dict['fighter_L5Y_sub_losses'] = L5Y_sub_losses_vect(new_rows['fighter'], new_rows['date'])
+        new_rows_dict['fighter_L2Y_sub_wins'] = L2Y_sub_wins_vect(new_rows['fighter'], new_rows['date'])
+        new_rows_dict['fighter_L2Y_sub_losses'] = L2Y_sub_losses_vect(new_rows['fighter'], new_rows['date'])
 
         print('adding inflicted punch, kick, grappling statistics for fighter... this will take a few minutes')
 
-        new_rows['fighter_inf_knockdowns_avg'] = avg_count_vect('knockdowns', new_rows['fighter'], 'inf', new_rows['date'])
-        new_rows['fighter_inf_pass_avg'] = avg_count_vect('pass', new_rows['fighter'], 'inf', new_rows['date'])
-        new_rows['fighter_inf_reversals_avg'] = zero_vect(new_rows['fighter'])
-        new_rows['fighter_inf_sub_attempts_avg'] = avg_count_vect('sub_attempts', new_rows['fighter'], 'inf', new_rows['date'])
-        new_rows['fighter_inf_takedowns_landed_avg'] = avg_count_vect('takedowns_landed', new_rows['fighter'], 'inf', new_rows['date'])
-        new_rows['fighter_inf_takedowns_attempts_avg'] = avg_count_vect('takedowns_attempts', new_rows['fighter'], 'inf', new_rows['date'])
+        new_rows_dict['fighter_inf_knockdowns_avg'] = avg_count_vect('knockdowns', new_rows['fighter'], 'inf', new_rows['date'])
+        new_rows_dict['fighter_inf_pass_avg'] = avg_count_vect('pass', new_rows['fighter'], 'inf', new_rows['date'])
+        new_rows_dict['fighter_inf_reversals_avg'] = zero_vect(new_rows['fighter'])
+        new_rows_dict['fighter_inf_sub_attempts_avg'] = avg_count_vect('sub_attempts', new_rows['fighter'], 'inf', new_rows['date'])
+        new_rows_dict['fighter_inf_takedowns_landed_avg'] = avg_count_vect('takedowns_landed', new_rows['fighter'], 'inf', new_rows['date'])
+        new_rows_dict['fighter_inf_takedowns_attempts_avg'] = avg_count_vect('takedowns_attempts', new_rows['fighter'], 'inf', new_rows['date'])
         print('quarter done')
-        new_rows['fighter_inf_sig_strikes_landed_avg'] = avg_count_vect('sig_strikes_landed', new_rows['fighter'], 'inf', new_rows['date'])
-        new_rows['fighter_inf_sig_strikes_attempts_avg'] = avg_count_vect('sig_strikes_attempts', new_rows['fighter'], 'inf', new_rows['date'])
-        new_rows['fighter_inf_total_strikes_landed_avg'] = avg_count_vect('total_strikes_landed', new_rows['fighter'], 'inf', new_rows['date'])
-        new_rows['fighter_inf_total_strikes_attempts_avg'] = avg_count_vect('total_strikes_attempts', new_rows['fighter'], 'inf', new_rows['date'])
-        new_rows['fighter_inf_head_strikes_landed_avg'] = avg_count_vect('head_strikes_landed', new_rows['fighter'], 'inf', new_rows['date'])
-        new_rows['fighter_inf_head_strikes_attempts_avg'] = avg_count_vect('head_strikes_attempts', new_rows['fighter'], 'inf', new_rows['date'])
+        new_rows_dict['fighter_inf_sig_strikes_landed_avg'] = avg_count_vect('sig_strikes_landed', new_rows['fighter'], 'inf', new_rows['date'])
+        new_rows_dict['fighter_inf_sig_strikes_attempts_avg'] = avg_count_vect('sig_strikes_attempts', new_rows['fighter'], 'inf', new_rows['date'])
+        new_rows_dict['fighter_inf_total_strikes_landed_avg'] = avg_count_vect('total_strikes_landed', new_rows['fighter'], 'inf', new_rows['date'])
+        new_rows_dict['fighter_inf_total_strikes_attempts_avg'] = avg_count_vect('total_strikes_attempts', new_rows['fighter'], 'inf', new_rows['date'])
+        new_rows_dict['fighter_inf_head_strikes_landed_avg'] = avg_count_vect('head_strikes_landed', new_rows['fighter'], 'inf', new_rows['date'])
+        new_rows_dict['fighter_inf_head_strikes_attempts_avg'] = avg_count_vect('head_strikes_attempts', new_rows['fighter'], 'inf', new_rows['date'])
         print('half done')
-        new_rows['fighter_inf_body_strikes_landed_avg'] = avg_count_vect('body_strikes_landed', new_rows['fighter'], 'inf', new_rows['date'])
-        new_rows['fighter_inf_body_strikes_attempts_avg'] = avg_count_vect('body_strikes_attempts', new_rows['fighter'], 'inf', new_rows['date'])
-        new_rows['fighter_inf_leg_strikes_landed_avg'] = avg_count_vect('leg_strikes_landed', new_rows['fighter'], 'inf', new_rows['date'])
-        new_rows['fighter_inf_leg_strikes_attempts_avg'] = avg_count_vect('leg_strikes_attempts', new_rows['fighter'], 'inf', new_rows['date'])
-        new_rows['fighter_inf_distance_strikes_landed_avg'] = avg_count_vect('distance_strikes_landed', new_rows['fighter'], 'inf', new_rows['date'])
+        new_rows_dict['fighter_inf_body_strikes_landed_avg'] = avg_count_vect('body_strikes_landed', new_rows['fighter'], 'inf', new_rows['date'])
+        new_rows_dict['fighter_inf_body_strikes_attempts_avg'] = avg_count_vect('body_strikes_attempts', new_rows['fighter'], 'inf', new_rows['date'])
+        new_rows_dict['fighter_inf_leg_strikes_landed_avg'] = avg_count_vect('leg_strikes_landed', new_rows['fighter'], 'inf', new_rows['date'])
+        new_rows_dict['fighter_inf_leg_strikes_attempts_avg'] = avg_count_vect('leg_strikes_attempts', new_rows['fighter'], 'inf', new_rows['date'])
+        new_rows_dict['fighter_inf_distance_strikes_landed_avg'] = avg_count_vect('distance_strikes_landed', new_rows['fighter'], 'inf', new_rows['date'])
         print('almost done')
-        new_rows['fighter_inf_distance_strikes_attempts_avg'] = avg_count_vect('distance_strikes_attempts', new_rows['fighter'], 'inf', new_rows['date'])
-        new_rows['fighter_inf_clinch_strikes_landed_avg'] = avg_count_vect('clinch_strikes_landed', new_rows['fighter'], 'inf', new_rows['date'])
-        new_rows['fighter_inf_clinch_strikes_attempts_avg'] = avg_count_vect('clinch_strikes_attempts', new_rows['fighter'], 'inf', new_rows['date'])
-        new_rows['fighter_inf_ground_strikes_landed_avg'] = avg_count_vect('ground_strikes_landed', new_rows['fighter'], 'inf', new_rows['date'])
-        new_rows['fighter_inf_ground_strikes_attempts_avg'] = avg_count_vect('ground_strikes_attempts', new_rows['fighter'], 'inf', new_rows['date'])
+        new_rows_dict['fighter_inf_distance_strikes_attempts_avg'] = avg_count_vect('distance_strikes_attempts', new_rows['fighter'], 'inf', new_rows['date'])
+        new_rows_dict['fighter_inf_clinch_strikes_landed_avg'] = avg_count_vect('clinch_strikes_landed', new_rows['fighter'], 'inf', new_rows['date'])
+        new_rows_dict['fighter_inf_clinch_strikes_attempts_avg'] = avg_count_vect('clinch_strikes_attempts', new_rows['fighter'], 'inf', new_rows['date'])
+        new_rows_dict['fighter_inf_ground_strikes_landed_avg'] = avg_count_vect('ground_strikes_landed', new_rows['fighter'], 'inf', new_rows['date'])
+        new_rows_dict['fighter_inf_ground_strikes_attempts_avg'] = avg_count_vect('ground_strikes_attempts', new_rows['fighter'], 'inf', new_rows['date'])
 
         print('adding absorbed punch, kick, grappling statistics for fighter... this will take a few minutes')
 
-        new_rows['fighter_abs_knockdowns_avg'] = avg_count_vect('knockdowns', new_rows['fighter'], 'abs', new_rows['date'])
-        new_rows['fighter_abs_pass_avg'] = avg_count_vect('pass', new_rows['fighter'], 'abs', new_rows['date'])
-        new_rows['fighter_abs_reversals_avg'] = zero_vect(new_rows['fighter'])
-        new_rows['fighter_abs_sub_attempts_avg'] = avg_count_vect('sub_attempts', new_rows['fighter'], 'abs', new_rows['date'])
-        new_rows['fighter_abs_takedowns_landed_avg'] = avg_count_vect('takedowns_landed', new_rows['fighter'], 'abs', new_rows['date'])
-        new_rows['fighter_abs_takedowns_attempts_avg'] = avg_count_vect('takedowns_attempts', new_rows['fighter'], 'abs', new_rows['date'])
+        new_rows_dict['fighter_abs_knockdowns_avg'] = avg_count_vect('knockdowns', new_rows['fighter'], 'abs', new_rows['date'])
+        new_rows_dict['fighter_abs_pass_avg'] = avg_count_vect('pass', new_rows['fighter'], 'abs', new_rows['date'])
+        new_rows_dict['fighter_abs_reversals_avg'] = zero_vect(new_rows['fighter'])
+        new_rows_dict['fighter_abs_sub_attempts_avg'] = avg_count_vect('sub_attempts', new_rows['fighter'], 'abs', new_rows['date'])
+        new_rows_dict['fighter_abs_takedowns_landed_avg'] = avg_count_vect('takedowns_landed', new_rows['fighter'], 'abs', new_rows['date'])
+        new_rows_dict['fighter_abs_takedowns_attempts_avg'] = avg_count_vect('takedowns_attempts', new_rows['fighter'], 'abs', new_rows['date'])
         print('quarter done')
-        new_rows['fighter_abs_sig_strikes_landed_avg'] = avg_count_vect('sig_strikes_landed', new_rows['fighter'], 'abs', new_rows['date'])
-        new_rows['fighter_abs_sig_strikes_attempts_avg'] = avg_count_vect('sig_strikes_attempts', new_rows['fighter'], 'abs', new_rows['date'])
-        new_rows['fighter_abs_total_strikes_landed_avg'] = avg_count_vect('total_strikes_landed', new_rows['fighter'], 'abs', new_rows['date'])
-        new_rows['fighter_abs_total_strikes_attempts_avg'] = avg_count_vect('total_strikes_attempts', new_rows['fighter'], 'abs', new_rows['date'])
-        new_rows['fighter_abs_head_strikes_landed_avg'] = avg_count_vect('head_strikes_landed', new_rows['fighter'], 'abs', new_rows['date'])
-        new_rows['fighter_abs_head_strikes_attempts_avg'] = avg_count_vect('head_strikes_attempts', new_rows['fighter'], 'abs', new_rows['date'])
+        new_rows_dict['fighter_abs_sig_strikes_landed_avg'] = avg_count_vect('sig_strikes_landed', new_rows['fighter'], 'abs', new_rows['date'])
+        new_rows_dict['fighter_abs_sig_strikes_attempts_avg'] = avg_count_vect('sig_strikes_attempts', new_rows['fighter'], 'abs', new_rows['date'])
+        new_rows_dict['fighter_abs_total_strikes_landed_avg'] = avg_count_vect('total_strikes_landed', new_rows['fighter'], 'abs', new_rows['date'])
+        new_rows_dict['fighter_abs_total_strikes_attempts_avg'] = avg_count_vect('total_strikes_attempts', new_rows['fighter'], 'abs', new_rows['date'])
+        new_rows_dict['fighter_abs_head_strikes_landed_avg'] = avg_count_vect('head_strikes_landed', new_rows['fighter'], 'abs', new_rows['date'])
+        new_rows_dict['fighter_abs_head_strikes_attempts_avg'] = avg_count_vect('head_strikes_attempts', new_rows['fighter'], 'abs', new_rows['date'])
         print('half done')
-        new_rows['fighter_abs_body_strikes_landed_avg'] = avg_count_vect('body_strikes_landed', new_rows['fighter'], 'abs', new_rows['date'])
-        new_rows['fighter_abs_body_strikes_attempts_avg'] = avg_count_vect('body_strikes_attempts', new_rows['fighter'], 'abs', new_rows['date'])
-        new_rows['fighter_abs_leg_strikes_landed_avg'] = avg_count_vect('leg_strikes_landed', new_rows['fighter'], 'abs', new_rows['date'])
-        new_rows['fighter_abs_leg_strikes_attempts_avg'] = avg_count_vect('leg_strikes_attempts', new_rows['fighter'], 'abs', new_rows['date'])
-        new_rows['fighter_abs_distance_strikes_landed_avg'] = avg_count_vect('distance_strikes_landed', new_rows['fighter'], 'abs', new_rows['date'])
+        new_rows_dict['fighter_abs_body_strikes_landed_avg'] = avg_count_vect('body_strikes_landed', new_rows['fighter'], 'abs', new_rows['date'])
+        new_rows_dict['fighter_abs_body_strikes_attempts_avg'] = avg_count_vect('body_strikes_attempts', new_rows['fighter'], 'abs', new_rows['date'])
+        new_rows_dict['fighter_abs_leg_strikes_landed_avg'] = avg_count_vect('leg_strikes_landed', new_rows['fighter'], 'abs', new_rows['date'])
+        new_rows_dict['fighter_abs_leg_strikes_attempts_avg'] = avg_count_vect('leg_strikes_attempts', new_rows['fighter'], 'abs', new_rows['date'])
+        new_rows_dict['fighter_abs_distance_strikes_landed_avg'] = avg_count_vect('distance_strikes_landed', new_rows['fighter'], 'abs', new_rows['date'])
         print('almost done')
-        new_rows['fighter_abs_distance_strikes_attempts_avg'] = avg_count_vect('distance_strikes_attempts', new_rows['fighter'], 'abs', new_rows['date'])
-        new_rows['fighter_abs_clinch_strikes_landed_avg'] = avg_count_vect('clinch_strikes_landed', new_rows['fighter'], 'abs', new_rows['date'])
-        new_rows['fighter_abs_clinch_strikes_attempts_avg'] = avg_count_vect('clinch_strikes_attempts', new_rows['fighter'], 'abs', new_rows['date'])
-        new_rows['fighter_abs_ground_strikes_landed_avg'] = avg_count_vect('ground_strikes_landed', new_rows['fighter'], 'abs', new_rows['date'])
-        new_rows['fighter_abs_ground_strikes_attempts_avg'] = avg_count_vect('ground_strikes_attempts', new_rows['fighter'], 'abs', new_rows['date'])
+        new_rows_dict['fighter_abs_distance_strikes_attempts_avg'] = avg_count_vect('distance_strikes_attempts', new_rows['fighter'], 'abs', new_rows['date'])
+        new_rows_dict['fighter_abs_clinch_strikes_landed_avg'] = avg_count_vect('clinch_strikes_landed', new_rows['fighter'], 'abs', new_rows['date'])
+        new_rows_dict['fighter_abs_clinch_strikes_attempts_avg'] = avg_count_vect('clinch_strikes_attempts', new_rows['fighter'], 'abs', new_rows['date'])
+        new_rows_dict['fighter_abs_ground_strikes_landed_avg'] = avg_count_vect('ground_strikes_landed', new_rows['fighter'], 'abs', new_rows['date'])
+        new_rows_dict['fighter_abs_ground_strikes_attempts_avg'] = avg_count_vect('ground_strikes_attempts', new_rows['fighter'], 'abs', new_rows['date'])
 
+
+        # JUST A TEST TO GET HERE QUICKLY> DELETE THIS SOON
+        # import ipdb;ipdb.set_trace(context=10) # uncomment to debug
+        
+        
+        # add these columns so we can call opponent_column on them
+        new_rows_df1 = pd.DataFrame(new_rows_dict)
+        new_rows = pd.concat([new_rows_df1, new_rows], axis=1)
+        # empty new_rows_dict to add opponent statistics
+        new_rows_dict = {}
+        
         print('adding physical statistics for opponent')
-
-        new_rows['opponent_wins'] = opponent_column('fighter_wins')
-        new_rows['opponent_losses'] = opponent_column('fighter_losses')
-        new_rows['opponent_age'] = opponent_column('fighter_age')
-        new_rows['opponent_height'] = opponent_column('fighter_height')
-        new_rows['opponent_reach'] = opponent_column('fighter_reach')
+        # TODO THESE ARE OF SHAPE (16378, 1) while new_rows is of shape (26,) leading to a ValueError when trying to create a DataFrame
+        new_rows_dict['opponent_wins'] = opponent_column(new_rows['fighter_wins'])
+        new_rows_dict['opponent_losses'] = opponent_column(new_rows['fighter_losses'])
+        new_rows_dict['opponent_age'] = opponent_column(new_rows['fighter_age'])
+        new_rows_dict['opponent_height'] = opponent_column(new_rows['fighter_height'])
+        new_rows_dict['opponent_reach'] = opponent_column(new_rows['fighter_reach'])
 
         print('adding record statistics for opponent')
 
-        new_rows['opponent_L5Y_wins'] = opponent_column('fighter_L5Y_wins')
-        new_rows['opponent_L5Y_losses'] = opponent_column('fighter_L5Y_losses')
-        new_rows['opponent_L2Y_wins'] = opponent_column('fighter_L2Y_wins')
-        new_rows['opponent_L2Y_losses'] = opponent_column('fighter_L2Y_losses')
-        new_rows['opponent_ko_wins'] = opponent_column('fighter_ko_wins')
-        new_rows['opponent_ko_losses'] = opponent_column('fighter_ko_losses')
-        new_rows['opponent_L5Y_ko_wins'] = opponent_column('fighter_L5Y_ko_wins')
-        new_rows['opponent_L5Y_ko_losses'] = opponent_column('fighter_L5Y_ko_losses')
-        new_rows['opponent_L2Y_ko_wins'] = opponent_column('fighter_L2Y_ko_wins')
-        new_rows['opponent_L2Y_ko_losses'] = opponent_column('fighter_L2Y_ko_losses')
-        new_rows['opponent_sub_wins'] = opponent_column('fighter_sub_wins')
-        new_rows['opponent_sub_losses'] = opponent_column('fighter_sub_losses')
-        new_rows['opponent_L5Y_sub_wins'] = opponent_column('fighter_L5Y_sub_wins')
-        new_rows['opponent_L5Y_sub_losses'] = opponent_column('fighter_L5Y_sub_losses')
-        new_rows['opponent_L2Y_sub_wins'] = opponent_column('fighter_L2Y_sub_wins')
-        new_rows['opponent_L2Y_sub_losses'] = opponent_column('fighter_L2Y_sub_losses')
+        new_rows_dict['opponent_L5Y_wins'] = opponent_column(new_rows['fighter_L5Y_wins'])
+        new_rows_dict['opponent_L5Y_losses'] = opponent_column(new_rows['fighter_L5Y_losses'])
+        new_rows_dict['opponent_L2Y_wins'] = opponent_column(new_rows['fighter_L2Y_wins'])
+        new_rows_dict['opponent_L2Y_losses'] = opponent_column(new_rows['fighter_L2Y_losses'])
+        new_rows_dict['opponent_ko_wins'] = opponent_column(new_rows['fighter_ko_wins'])
+        new_rows_dict['opponent_ko_losses'] = opponent_column(new_rows['fighter_ko_losses'])
+        new_rows_dict['opponent_L5Y_ko_wins'] = opponent_column(new_rows['fighter_L5Y_ko_wins'])
+        new_rows_dict['opponent_L5Y_ko_losses'] = opponent_column(new_rows['fighter_L5Y_ko_losses'])
+        new_rows_dict['opponent_L2Y_ko_wins'] = opponent_column(new_rows['fighter_L2Y_ko_wins'])
+        new_rows_dict['opponent_L2Y_ko_losses'] = opponent_column(new_rows['fighter_L2Y_ko_losses'])
+        new_rows_dict['opponent_sub_wins'] = opponent_column(new_rows['fighter_sub_wins'])
+        new_rows_dict['opponent_sub_losses'] = opponent_column(new_rows['fighter_sub_losses'])
+        new_rows_dict['opponent_L5Y_sub_wins'] = opponent_column(new_rows['fighter_L5Y_sub_wins'])
+        new_rows_dict['opponent_L5Y_sub_losses'] = opponent_column(new_rows['fighter_L5Y_sub_losses'])
+        new_rows_dict['opponent_L2Y_sub_wins'] = opponent_column(new_rows['fighter_L2Y_sub_wins'])
+        new_rows_dict['opponent_L2Y_sub_losses'] = opponent_column(new_rows['fighter_L2Y_sub_losses'])
 
         print('adding inflicted punch, kick, grappling statistics for opponent... this will take a few minutes')
 
-        new_rows['opponent_inf_knockdowns_avg'] = avg_count_vect('knockdowns', new_rows['opponent'], 'inf', new_rows['date'])
-        new_rows['opponent_inf_pass_avg'] = avg_count_vect('pass', new_rows['opponent'], 'inf', new_rows['date'])
-        new_rows['opponent_inf_reversals_avg'] = zero_vect(new_rows['opponent'])
-        new_rows['opponent_inf_sub_attempts_avg'] = avg_count_vect('sub_attempts', new_rows['opponent'], 'inf', new_rows['date'])
-        new_rows['opponent_inf_takedowns_landed_avg'] = avg_count_vect('takedowns_landed', new_rows['opponent'], 'inf', new_rows['date'])
-        new_rows['opponent_inf_takedowns_attempts_avg'] = avg_count_vect('takedowns_attempts', new_rows['opponent'], 'inf', new_rows['date'])
+        new_rows_dict['opponent_inf_knockdowns_avg'] = avg_count_vect('knockdowns', new_rows['opponent'], 'inf', new_rows['date'])
+        new_rows_dict['opponent_inf_pass_avg'] = avg_count_vect('pass', new_rows['opponent'], 'inf', new_rows['date'])
+        new_rows_dict['opponent_inf_reversals_avg'] = zero_vect(new_rows['opponent'])
+        new_rows_dict['opponent_inf_sub_attempts_avg'] = avg_count_vect('sub_attempts', new_rows['opponent'], 'inf', new_rows['date'])
+        new_rows_dict['opponent_inf_takedowns_landed_avg'] = avg_count_vect('takedowns_landed', new_rows['opponent'], 'inf', new_rows['date'])
+        new_rows_dict['opponent_inf_takedowns_attempts_avg'] = avg_count_vect('takedowns_attempts', new_rows['opponent'], 'inf', new_rows['date'])
         print('quarter done')
-        new_rows['opponent_inf_sig_strikes_landed_avg'] = avg_count_vect('sig_strikes_landed', new_rows['opponent'], 'inf', new_rows['date'])
-        new_rows['opponent_inf_sig_strikes_attempts_avg'] = avg_count_vect('sig_strikes_attempts', new_rows['opponent'], 'inf', new_rows['date'])
-        new_rows['opponent_inf_total_strikes_landed_avg'] = avg_count_vect('total_strikes_landed', new_rows['opponent'], 'inf', new_rows['date'])
-        new_rows['opponent_inf_total_strikes_attempts_avg'] = avg_count_vect('total_strikes_attempts', new_rows['opponent'], 'inf', new_rows['date'])
-        new_rows['opponent_inf_head_strikes_landed_avg'] = avg_count_vect('head_strikes_landed', new_rows['opponent'], 'inf', new_rows['date'])
+        
+        
+        new_rows_dict['opponent_inf_sig_strikes_landed_avg'] = avg_count_vect('sig_strikes_landed', new_rows['opponent'], 'inf', new_rows['date'])
+        new_rows_dict['opponent_inf_sig_strikes_attempts_avg'] = avg_count_vect('sig_strikes_attempts', new_rows['opponent'], 'inf', new_rows['date'])
+        new_rows_dict['opponent_inf_total_strikes_landed_avg'] = avg_count_vect('total_strikes_landed', new_rows['opponent'], 'inf', new_rows['date'])
+        new_rows_dict['opponent_inf_total_strikes_attempts_avg'] = avg_count_vect('total_strikes_attempts', new_rows['opponent'], 'inf', new_rows['date'])
+        new_rows_dict['opponent_inf_head_strikes_landed_avg'] = avg_count_vect('head_strikes_landed', new_rows['opponent'], 'inf', new_rows['date'])
         print('half done')
-        new_rows['opponent_inf_head_strikes_attempts_avg'] = avg_count_vect('head_strikes_attempts', new_rows['opponent'], 'inf', new_rows['date'])
-        new_rows['opponent_inf_body_strikes_landed_avg'] = avg_count_vect('body_strikes_landed', new_rows['opponent'], 'inf', new_rows['date'])
-        new_rows['opponent_inf_body_strikes_attempts_avg'] = avg_count_vect('body_strikes_attempts', new_rows['opponent'], 'inf', new_rows['date'])
-        new_rows['opponent_inf_leg_strikes_landed_avg'] = avg_count_vect('leg_strikes_landed', new_rows['opponent'], 'inf', new_rows['date'])
-        new_rows['opponent_inf_leg_strikes_attempts_avg'] = avg_count_vect('leg_strikes_attempts', new_rows['opponent'], 'inf', new_rows['date'])
-        new_rows['opponent_inf_distance_strikes_landed_avg'] = avg_count_vect('distance_strikes_landed', new_rows['opponent'], 'inf', new_rows['date'])
+        new_rows_dict['opponent_inf_head_strikes_attempts_avg'] = avg_count_vect('head_strikes_attempts', new_rows['opponent'], 'inf', new_rows['date'])
+        new_rows_dict['opponent_inf_body_strikes_landed_avg'] = avg_count_vect('body_strikes_landed', new_rows['opponent'], 'inf', new_rows['date'])
+        new_rows_dict['opponent_inf_body_strikes_attempts_avg'] = avg_count_vect('body_strikes_attempts', new_rows['opponent'], 'inf', new_rows['date'])
+        new_rows_dict['opponent_inf_leg_strikes_landed_avg'] = avg_count_vect('leg_strikes_landed', new_rows['opponent'], 'inf', new_rows['date'])
+        new_rows_dict['opponent_inf_leg_strikes_attempts_avg'] = avg_count_vect('leg_strikes_attempts', new_rows['opponent'], 'inf', new_rows['date'])
+        new_rows_dict['opponent_inf_distance_strikes_landed_avg'] = avg_count_vect('distance_strikes_landed', new_rows['opponent'], 'inf', new_rows['date'])
         print('almost done')
-        new_rows['opponent_inf_distance_strikes_attempts_avg'] = avg_count_vect('distance_strikes_attempts', new_rows['opponent'], 'inf', new_rows['date'])
-        new_rows['opponent_inf_clinch_strikes_landed_avg'] = avg_count_vect('clinch_strikes_landed', new_rows['opponent'], 'inf', new_rows['date'])
-        new_rows['opponent_inf_clinch_strikes_attempts_avg'] = avg_count_vect('clinch_strikes_attempts', new_rows['opponent'], 'inf', new_rows['date'])
-        new_rows['opponent_inf_ground_strikes_landed_avg'] = avg_count_vect('ground_strikes_landed', new_rows['opponent'], 'inf', new_rows['date'])
-        new_rows['opponent_inf_ground_strikes_attempts_avg'] = avg_count_vect('ground_strikes_attempts', new_rows['opponent'], 'inf', new_rows['date'])
+        new_rows_dict['opponent_inf_distance_strikes_attempts_avg'] = avg_count_vect('distance_strikes_attempts', new_rows['opponent'], 'inf', new_rows['date'])
+        new_rows_dict['opponent_inf_clinch_strikes_landed_avg'] = avg_count_vect('clinch_strikes_landed', new_rows['opponent'], 'inf', new_rows['date'])
+        new_rows_dict['opponent_inf_clinch_strikes_attempts_avg'] = avg_count_vect('clinch_strikes_attempts', new_rows['opponent'], 'inf', new_rows['date'])
+        new_rows_dict['opponent_inf_ground_strikes_landed_avg'] = avg_count_vect('ground_strikes_landed', new_rows['opponent'], 'inf', new_rows['date'])
+        new_rows_dict['opponent_inf_ground_strikes_attempts_avg'] = avg_count_vect('ground_strikes_attempts', new_rows['opponent'], 'inf', new_rows['date'])
 
         print('adding absorbed punch, kick, grappling statistics for opponent... this will take a few minutes')
 
-        new_rows['opponent_abs_knockdowns_avg'] = avg_count_vect('knockdowns', new_rows['opponent'], 'abs', new_rows['date'])
-        new_rows['opponent_abs_pass_avg'] = avg_count_vect('pass', new_rows['opponent'], 'abs', new_rows['date'])
-        new_rows['opponent_abs_reversals_avg'] = zero_vect(new_rows['opponent'])
-        new_rows['opponent_abs_sub_attempts_avg'] = avg_count_vect('sub_attempts', new_rows['opponent'], 'abs', new_rows['date'])
-        new_rows['opponent_abs_takedowns_landed_avg'] = avg_count_vect('takedowns_landed', new_rows['opponent'], 'abs', new_rows['date'])
-        new_rows['opponent_abs_takedowns_attempts_avg'] = avg_count_vect('takedowns_attempts', new_rows['opponent'], 'abs', new_rows['date'])
-        new_rows['opponent_abs_sig_strikes_landed_avg'] = avg_count_vect('sig_strikes_landed', new_rows['opponent'], 'abs', new_rows['date'])
+        new_rows_dict['opponent_abs_knockdowns_avg'] = avg_count_vect('knockdowns', new_rows['opponent'], 'abs', new_rows['date'])
+        new_rows_dict['opponent_abs_pass_avg'] = avg_count_vect('pass', new_rows['opponent'], 'abs', new_rows['date'])
+        new_rows_dict['opponent_abs_reversals_avg'] = zero_vect(new_rows['opponent'])
+        new_rows_dict['opponent_abs_sub_attempts_avg'] = avg_count_vect('sub_attempts', new_rows['opponent'], 'abs', new_rows['date'])
+        new_rows_dict['opponent_abs_takedowns_landed_avg'] = avg_count_vect('takedowns_landed', new_rows['opponent'], 'abs', new_rows['date'])
+        new_rows_dict['opponent_abs_takedowns_attempts_avg'] = avg_count_vect('takedowns_attempts', new_rows['opponent'], 'abs', new_rows['date'])
+        new_rows_dict['opponent_abs_sig_strikes_landed_avg'] = avg_count_vect('sig_strikes_landed', new_rows['opponent'], 'abs', new_rows['date'])
         print('quarter done')
-        new_rows['opponent_abs_sig_strikes_attempts_avg'] = avg_count_vect('sig_strikes_attempts', new_rows['opponent'], 'abs', new_rows['date'])
-        new_rows['opponent_abs_total_strikes_landed_avg'] = avg_count_vect('total_strikes_landed', new_rows['opponent'], 'abs', new_rows['date'])
-        new_rows['opponent_abs_total_strikes_attempts_avg'] = avg_count_vect('total_strikes_attempts', new_rows['opponent'], 'abs', new_rows['date'])
-        new_rows['opponent_abs_head_strikes_landed_avg'] = avg_count_vect('head_strikes_landed', new_rows['opponent'], 'abs', new_rows['date'])
-        new_rows['opponent_abs_head_strikes_attempts_avg'] = avg_count_vect('head_strikes_attempts', new_rows['opponent'], 'abs', new_rows['date'])
-        new_rows['opponent_abs_body_strikes_landed_avg'] = avg_count_vect('body_strikes_landed', new_rows['opponent'], 'abs', new_rows['date'])
+        new_rows_dict['opponent_abs_sig_strikes_attempts_avg'] = avg_count_vect('sig_strikes_attempts', new_rows['opponent'], 'abs', new_rows['date'])
+        new_rows_dict['opponent_abs_total_strikes_landed_avg'] = avg_count_vect('total_strikes_landed', new_rows['opponent'], 'abs', new_rows['date'])
+        new_rows_dict['opponent_abs_total_strikes_attempts_avg'] = avg_count_vect('total_strikes_attempts', new_rows['opponent'], 'abs', new_rows['date'])
+        new_rows_dict['opponent_abs_head_strikes_landed_avg'] = avg_count_vect('head_strikes_landed', new_rows['opponent'], 'abs', new_rows['date'])
+        new_rows_dict['opponent_abs_head_strikes_attempts_avg'] = avg_count_vect('head_strikes_attempts', new_rows['opponent'], 'abs', new_rows['date'])
+        new_rows_dict['opponent_abs_body_strikes_landed_avg'] = avg_count_vect('body_strikes_landed', new_rows['opponent'], 'abs', new_rows['date'])
         print('half done')
-        new_rows['opponent_abs_body_strikes_attempts_avg'] = avg_count_vect('body_strikes_attempts', new_rows['opponent'], 'abs', new_rows['date'])
-        new_rows['opponent_abs_leg_strikes_landed_avg'] = avg_count_vect('leg_strikes_landed', new_rows['opponent'], 'abs', new_rows['date'])
-        new_rows['opponent_abs_leg_strikes_attempts_avg'] = avg_count_vect('leg_strikes_attempts', new_rows['opponent'], 'abs', new_rows['date'])
-        new_rows['opponent_abs_distance_strikes_landed_avg'] = avg_count_vect('distance_strikes_landed', new_rows['opponent'], 'abs', new_rows['date'])
+        new_rows_dict['opponent_abs_body_strikes_attempts_avg'] = avg_count_vect('body_strikes_attempts', new_rows['opponent'], 'abs', new_rows['date'])
+        new_rows_dict['opponent_abs_leg_strikes_landed_avg'] = avg_count_vect('leg_strikes_landed', new_rows['opponent'], 'abs', new_rows['date'])
+        new_rows_dict['opponent_abs_leg_strikes_attempts_avg'] = avg_count_vect('leg_strikes_attempts', new_rows['opponent'], 'abs', new_rows['date'])
+        new_rows_dict['opponent_abs_distance_strikes_landed_avg'] = avg_count_vect('distance_strikes_landed', new_rows['opponent'], 'abs', new_rows['date'])
         print('almost done')
-        new_rows['opponent_abs_distance_strikes_attempts_avg'] = avg_count_vect('distance_strikes_attempts', new_rows['opponent'], 'abs', new_rows['date'])
-        new_rows['opponent_abs_clinch_strikes_landed_avg'] = avg_count_vect('clinch_strikes_landed', new_rows['opponent'], 'abs', new_rows['date'])
-        new_rows['opponent_abs_clinch_strikes_attempts_avg'] = avg_count_vect('clinch_strikes_attempts', new_rows['opponent'], 'abs', new_rows['date'])
-        new_rows['opponent_abs_ground_strikes_landed_avg'] = avg_count_vect('ground_strikes_landed', new_rows['opponent'], 'abs', new_rows['date'])
-        new_rows['opponent_abs_ground_strikes_attempts_avg'] = avg_count_vect('ground_strikes_attempts', new_rows['opponent'], 'abs', new_rows['date'])
+        new_rows_dict['opponent_abs_distance_strikes_attempts_avg'] = avg_count_vect('distance_strikes_attempts', new_rows['opponent'], 'abs', new_rows['date'])
+        new_rows_dict['opponent_abs_clinch_strikes_landed_avg'] = avg_count_vect('clinch_strikes_landed', new_rows['opponent'], 'abs', new_rows['date'])
+        new_rows_dict['opponent_abs_clinch_strikes_attempts_avg'] = avg_count_vect('clinch_strikes_attempts', new_rows['opponent'], 'abs', new_rows['date'])
+        new_rows_dict['opponent_abs_ground_strikes_landed_avg'] = avg_count_vect('ground_strikes_landed', new_rows['opponent'], 'abs', new_rows['date'])
+        new_rows_dict['opponent_abs_ground_strikes_attempts_avg'] = avg_count_vect('ground_strikes_attempts', new_rows['opponent'], 'abs', new_rows['date'])
 
-        new_rows['fighter_stance'] = stance_vect(new_rows['fighter'])
-        new_rows['opponent_stance'] = stance_vect(new_rows['opponent'])
+        new_rows_dict['fighter_stance'] = stance_vect(new_rows['fighter'])
+        new_rows_dict['opponent_stance'] = stance_vect(new_rows['opponent'])
 
         print('adding fight_math and fighter_score statistics')
-        new_rows['1-fight_math'] = fight_math_diff_vect(new_rows['fighter'], new_rows['opponent'], new_rows['date'], 1)
-        new_rows['6-fight_math'] = fight_math_diff_vect(new_rows['fighter'], new_rows['opponent'], new_rows['date'], 6)
-        new_rows['4-fighter_score_diff'] = fighter_score_diff_vect(new_rows['fighter'], new_rows['opponent'], new_rows['date'], 4)
-        new_rows['9-fighter_score_diff'] = fighter_score_diff_vect(new_rows['fighter'], new_rows['opponent'], new_rows['date'], 9)
-        new_rows['15-fighter_score_diff'] = fighter_score_diff_vect(new_rows['fighter'], new_rows['opponent'], new_rows['date'], 15)
+        new_rows_dict['1-fight_math'] = fight_math_diff_vect(new_rows['fighter'], new_rows['opponent'], new_rows['date'], 1)
+        new_rows_dict['6-fight_math'] = fight_math_diff_vect(new_rows['fighter'], new_rows['opponent'], new_rows['date'], 6)
+        new_rows_dict['4-fighter_score_diff'] = fighter_score_diff_vect(new_rows['fighter'], new_rows['opponent'], new_rows['date'], 4)
+        new_rows_dict['9-fighter_score_diff'] = fighter_score_diff_vect(new_rows['fighter'], new_rows['opponent'], new_rows['date'], 9)
+        new_rows_dict['15-fighter_score_diff'] = fighter_score_diff_vect(new_rows['fighter'], new_rows['opponent'], new_rows['date'], 15)
+        
+        # import ipdb;ipdb.set_trace(context=10) # uncomment to debug
+        
+        new_rows_df2 = pd.DataFrame(new_rows_dict)
+        new_rows = pd.concat([new_rows_df2, new_rows], axis=1)
+        return new_rows
     
     ########### FUNCTIONS USED IN update_data_csvs_and_jsons.py ###########
     def get_odds_two_rows_per_fight(self):
+        # TODO use https://fightodds.io/ instead. bestfightodds.com is not working anymore
         url = 'https://www.bestfightodds.com'
         page = requests.get(url)
         soup = BeautifulSoup(page.content, "html.parser")

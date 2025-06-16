@@ -4,17 +4,19 @@ import pandas as pd
 import numpy as np
 from datetime import datetime
 from datetime import date
+import git 
+import os
 
-from data_handler import DataHandler
-
-dh = DataHandler()
-
+# TODO this should all be done with the DataHandler class but this leads to circular imports. Maybe make a DataContainer class
+# that both can import
+git_repo = git.Repo(os.getcwd(), search_parent_directories=True)
+git_root = git_repo.git.rev_parse("--show-toplevel")
 # updated scraped fight data (after running fight_hist_updated function from UFC_data_scraping file)
-fight_hist = dh.get('ufc_fights', filetype='csv')
+fight_hist = pd.read_csv('content/data/processed/ufc_fights.csv')
 # all stats fight history file which is one update behind fight_hist
-ufc_fights_crap = dh.get('ufc_fights_crap', filetype='csv')
+ufc_fights_crap = pd.read_csv('content/data/processed/ufc_fights_crap.csv')
 # updated scraped fighter data (after running fight_hist_updated function from UFC_data_scraping file)
-fighter_stats = dh.get('fighter_stats', filetype='csv')
+fighter_stats = pd.read_csv('content/data/processed/fighter_stats.csv')
 
 # first call pip install python-Levenshtein
 def same_name(str1, str2, verbose = False):
@@ -493,15 +495,14 @@ L2Y_sub_wins_vect = np.vectorize(L2Y_sub_wins)
 L2Y_sub_losses_vect = np.vectorize(L2Y_sub_losses)
 
 # for columns like fighter_rec which contains the information for the opponent as well, we use the following
-def opponent_column(stat):
-    col = dict()
-    for i in range(len(ufc_fights_crap['fighter'])):
+def opponent_column(fighter_col):
+    col = np.array(fighter_col)
+    for i in range(len(fighter_col)):
         if i % 2 == 0:
-            col[i] = ufc_fights_crap[stat][i+1]
+            col[i] = fighter_col[i+1]
         else:
-            col[i] = ufc_fights_crap[stat][i-1]
-    statdict = {'stat': col}
-    return pd.DataFrame(statdict, columns=['stat'])
+            col[i] = fighter_col[i-1]
+    return pd.Series(col)
 
 # enter date unabbreviated 'July 4, 2019'
 # here the average gives avg per fight. Later in avg_count we change to average per time spent in octagon
@@ -678,4 +679,28 @@ def fighter_age_diff(fighter, opponent):
 
 
 fighter_age_diff_vect = np.vectorize(fighter_age_diff)
+
+# Methods for cleaning columns in the dataframe
+@np.vectorize
+def clean_method_for_method_predictions(a):
+    if (a == 'KO/TKO'):
+        return 'KO/TKO'
+    elif (a == 'SUB'):
+        return 'SUB'
+    elif ((a == 'U-DEC') or (a == 'M-DEC') or (a == 'S-DEC')):
+        return 'DEC'
+    else:
+        return 'bullshit'
+
+@np.vectorize
+def clean_method_for_winner_predictions(a):
+    if (a == 'KO/TKO'):
+        return 'KO/TKO'
+    elif (a == 'SUB'):
+        return 'SUB'
+    elif ((a == 'U-DEC') or (a == 'M-DEC')):
+        return 'DEC'
+    # counting S-DEC as bullshit!
+    else:
+        return 'bullshit'
 
