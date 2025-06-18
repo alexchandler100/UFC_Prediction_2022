@@ -522,6 +522,22 @@ class DataHandler:
             self.scrape_pictures(name)
     
     def update_prediction_history(self):
+        
+        # TODO HAVE THE DATA HANDLER DO THIS (make this its own function and add to update_and_rebuild_model.py)
+        #print('scraping bookie odds from bestfightodds.com')
+        #odds_df = get_odds()
+        #odds_df=drop_irrelevant_fights(odds_df,3) #allows 3 bookies to have missing odds. can increase this to 2 or 3 as needed
+        #odds_df=drop_non_ufc_fights(odds_df)
+        #odds_df=drop_repeats(odds_df)
+        #print('saving odds to content/data/external/vegas_odds.json')
+        #save to json
+        #result = odds_df.to_json()
+        #parsed = json.loads(result)
+        #jsonFilePath='content/data/external/vegas_odds.json'
+        #with open(jsonFilePath, 'w', encoding='utf-8') as jsonf:
+        #    jsonf.write(json.dumps(parsed, indent=4))
+        #print('saved to '+jsonFilePath)
+
         vegas_odds_old=self.get('vegas_odds', filetype='json') # this is the old vegas odds dataframe
         ufc_fights_crap = self.get('ufc_fights_crap') # THIS SHOULD HAVE BEEN UPDATED AT THIS POINT! WE SHOULD ADD A CHECK TO CHECK THIS
 

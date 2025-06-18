@@ -1,9 +1,4 @@
-#getting dependencies
-import pandas as pd
-from fight_stat_helpers import *
-
-pd.options.mode.chained_assignment = None  # default='warn' (disables SettingWithCopyWarning)
-
+# local imports
 from data_handler import DataHandler
 from fight_predictor import FightPredictor
 
@@ -18,27 +13,11 @@ dh.update_data_csvs_and_jsons()
 
 fight_predictor = FightPredictor(dh.get('ufc_fights'))
 fight_predictor.train_logistic_regression_model()
-
 theta, b = fight_predictor.get_regression_coeffs_and_intercept()
 
 # use the data handler to update the model coefficients in the json files
 dh.set_regression_coeffs_and_intercept(theta, b)
 print("Saved new regression coefficients and intercept to json files to run model in website")
-
-# TODO HAVE THE DATA HANDLER DO THIS
-#print('scraping bookie odds from bestfightodds.com')
-#odds_df = get_odds()
-#odds_df=drop_irrelevant_fights(odds_df,3) #allows 3 bookies to have missing odds. can increase this to 2 or 3 as needed
-#odds_df=drop_non_ufc_fights(odds_df)
-#odds_df=drop_repeats(odds_df)
-#print('saving odds to content/data/external/vegas_odds.json')
-#save to json
-#result = odds_df.to_json()
-#parsed = json.loads(result)
-#jsonFilePath='content/data/external/vegas_odds.json'
-#with open(jsonFilePath, 'w', encoding='utf-8') as jsonf:
-#    jsonf.write(json.dumps(parsed, indent=4))
-#print('saved to '+jsonFilePath)
 
 print('Saving results of previous card to prediction_history.json')
 # now that the previous card which we made predictions for has happened, we can add the results to the prediction history
@@ -55,5 +34,3 @@ dh.update_vegas_odds(vegas_odds)
 print('saving scraped fights and predictions to content/data/external/vegas_odds.json')
 print('TODO: scrape odds too. Currently only scraping names, date, and card title')
 print("###############################################################################################################")
-            
-
