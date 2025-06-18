@@ -1,5 +1,3 @@
-import ipdb;ipdb.set_trace(context=10) # uncomment to debug
-
 #getting dependencies
 import pandas as pd
 from fight_stat_helpers import *
