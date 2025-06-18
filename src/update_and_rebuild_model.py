@@ -1,3 +1,5 @@
+# import ipdb;ipdb.set_trace(context=10) # uncomment to debug
+
 # local imports
 from data_handler import DataHandler
 from fight_predictor import FightPredictor

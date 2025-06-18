@@ -409,7 +409,6 @@ class DataHandler:
         if update_time > 0: # should just stop the script here. Can do this later once we do everything inside a function call
             new_rows = self.populate_new_fights_with_statistics(new_rows)
             
-            # import ipdb;ipdb.set_trace(context=10) # uncomment to debug
             # making sure new columns coincide with old columns
             crapcolumns = list(ufc_fights_crap.columns)
             new_rows = new_rows[crapcolumns]
@@ -543,7 +542,6 @@ class DataHandler:
 
         # getting rid of fights that didn't actually happen and adding correctness results of those that did
         bad_indices = self.get_bad_indices(vegas_odds_old, ufc_fights_crap)
-        import ipdb;ipdb.set_trace(context=10) # ValueError: Need to specify at least one of 'labels', 'index' or 'columns'
         vegas_odds_old = vegas_odds_old.drop(bad_indices)
 
         #making a copy of vegas_odds
@@ -787,11 +785,6 @@ class DataHandler:
         new_rows_dict['fighter_abs_clinch_strikes_attempts_avg'] = avg_count_vect('clinch_strikes_attempts', new_rows['fighter'], 'abs', new_rows['date'])
         new_rows_dict['fighter_abs_ground_strikes_landed_avg'] = avg_count_vect('ground_strikes_landed', new_rows['fighter'], 'abs', new_rows['date'])
         new_rows_dict['fighter_abs_ground_strikes_attempts_avg'] = avg_count_vect('ground_strikes_attempts', new_rows['fighter'], 'abs', new_rows['date'])
-
-
-        # JUST A TEST TO GET HERE QUICKLY> DELETE THIS SOON
-        # import ipdb;ipdb.set_trace(context=10) # uncomment to debug
-        
         
         # add these columns so we can call opponent_column on them
         new_rows_df1 = pd.DataFrame(new_rows_dict)
@@ -893,9 +886,7 @@ class DataHandler:
         new_rows_dict['4-fighter_score_diff'] = fighter_score_diff_vect(new_rows['fighter'], new_rows['opponent'], new_rows['date'], 4)
         new_rows_dict['9-fighter_score_diff'] = fighter_score_diff_vect(new_rows['fighter'], new_rows['opponent'], new_rows['date'], 9)
         new_rows_dict['15-fighter_score_diff'] = fighter_score_diff_vect(new_rows['fighter'], new_rows['opponent'], new_rows['date'], 15)
-        
-        # import ipdb;ipdb.set_trace(context=10) # uncomment to debug
-        
+                
         new_rows_df2 = pd.DataFrame(new_rows_dict)
         new_rows = pd.concat([new_rows_df2, new_rows], axis=1)
         return new_rows

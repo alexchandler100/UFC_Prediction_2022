@@ -6,9 +6,16 @@ In this project, we scrape data from ufcstats.com and apply machine learning tec
 
 ## For the Developer
 
-Make sure Python 3 is installed on your computer. Clone this repository. Open a terminal and cd to the location you saved it.
+Clone this repository. Open a terminal and cd to repo.
 
-The dataset is already included in the repository (last updated April 9, 2022) so there is no need to scrape the stats and build the dataframe from scratch, but you can do so from the jupyter notebooks in src/content/notebooks/ if desired. In particular, you can run all cells in UFC_data_scraping.ipynb to scrape the entire dataset from the source ufcstats.com, and run cells in Building_ufc_fights.ipynb to compile the dataframe we use to build our ML model (though this would take weeks on a laptop). To scrape and stylize fighter pictures used on the website, you can run UFC_picture_scraping.ipynb and Pytorch Convolutional Neural Network Style Transfer.ipynb. The rest of the notebooks are dedicated to building and testing machine learning models for fight and method prediction.
+Make sure Python3.9 is installed on your computer. To install all requirements you can do:
+
+```console
+python -m pip install --upgrade pip
+pip install -r requirements.txt
+```
+
+The dataset is already included in the repository so there is no need to scrape the stats and build the dataframe from scratch, but you can do so from the jupyter notebooks in src/content/notebooks/ if desired. In particular, you can run all cells in UFC_data_scraping.ipynb to scrape the entire dataset from the source ufcstats.com, and run cells in Building_ufc_fights.ipynb to compile the dataframe we use to build our ML model (though this would take weeks on a laptop). To scrape and stylize fighter pictures used on the website, you can run UFC_picture_scraping.ipynb and Pytorch Convolutional Neural Network Style Transfer.ipynb. The rest of the notebooks are dedicated to building and testing machine learning models for fight and method prediction.
 
 After every UFC event, the dataset and model will need to be rebuilt. Follow these instructions to rebuild both:
 
