@@ -52,7 +52,7 @@ print("#########################################################################
 dh.update_card_info()
 card_date, card_title, fights_list = dh.get_next_fight_card()
 prediction_history = dh.get('prediction_history', filetype='json')
-vegas_odds = fight_predictor.predict_upcoming_fights(prediction_history, fights_list, card_date)
+vegas_odds = fight_predictor.predict_upcoming_fights(prediction_history, fights_list, card_date, theta, b)
 dh.update_vegas_odds(vegas_odds)
 print('saving scraped fights and predictions to content/data/external/vegas_odds.json')
 print('TODO: scrape odds too. Currently only scraping names, date, and card title')

@@ -69,16 +69,35 @@ class DataHandler:
         self.json_filepaths = {
             'card_info': f'{git_root}/src/content/data/external/card_info.json',
             'fighter_stats': f'{git_root}/src/content/data/external/fighter_stats.json',
-            'intercept': f'{git_root}/src/content/data/external/intercept.json',
             'interesting_stats': f'{git_root}/src/content/data/external/interesting_stats.json',
             'prediction_history': f'{git_root}/src/content/data/external/prediction_history.json',
             'theta': f'{git_root}/src/content/data/external/theta.json',
+            'intercept': f'{git_root}/src/content/data/external/intercept.json',
             'ufc_fight_data_for_website': f'{git_root}/src/content/data/external/ufc_fight_data_for_website.json',
             'vegas_odds': f'{git_root}/src/content/data/external/vegas_odds.json',
         }
         self.csv_data = {key : pd.read_csv(self.csv_filepaths[key], sep=',') for key in self.csv_filepaths.keys()}
-        self.json_data = {key : pd.read_json(self.json_filepaths[key], orient='index') for key in self.json_filepaths.keys()}
-        # TODO DO WE USE orient='index' always ??
+        
+        # card_info = pd.read_json(self.json_filepaths['card_info'])
+        # fighter_stats = pd.read_json(self.json_filepaths['fighter_stats'])
+        # interesting_stats = pd.read_json(self.json_filepaths['interesting_stats'])
+        prediction_history = pd.read_json(self.json_filepaths['prediction_history'])
+        # theta = pd.read_json(self.json_filepaths['theta'])
+        # intercept = pd.read_json(self.json_filepaths['intercept'])
+        # ufc_fight_data_for_website = pd.read_json(self.json_filepaths['ufc_fight_data_for_website'])
+        vegas_odds = pd.read_json(self.json_filepaths['vegas_odds'])
+
+        self.json_data = {
+            # 'card_info': card_info,
+            # 'fighter_stats': fighter_stats,
+            # 'interesting_stats': interesting_stats,
+            'prediction_history': prediction_history,
+            # 'theta': theta,
+            # 'intercept': intercept,
+            # 'ufc_fight_data_for_website': ufc_fight_data_for_website,
+            'vegas_odds': vegas_odds,
+        }
+        # {key : pd.read_json(self.json_filepaths[key]) for key in self.json_filepaths.keys()}
 
     def get(self, key, filetype='csv'):
         if filetype == 'json':
@@ -507,8 +526,8 @@ class DataHandler:
         ufc_fights_crap = self.get('ufc_fights_crap') # THIS SHOULD HAVE BEEN UPDATED AT THIS POINT! WE SHOULD ADD A CHECK TO CHECK THIS
 
         # getting rid of fights that didn't actually happen and adding correctness results of those that did
-        import ipdb;ipdb.set_trace(context=10) # debug KeyError: 'date'
         bad_indices = self.get_bad_indices(vegas_odds_old, ufc_fights_crap)
+        import ipdb;ipdb.set_trace(context=10) # ValueError: Need to specify at least one of 'labels', 'index' or 'columns'
         vegas_odds_old = vegas_odds_old.drop(bad_indices)
 
         #making a copy of vegas_odds
@@ -664,7 +683,7 @@ class DataHandler:
                 if not match_found: # if the fight didn't happen, throw it away
                     bad_indices.append(index1)
                     print('fight from '+str(card_date)+' between '+row1['fighter name']+' and '+row1['opponent name'] + ' not found in ufc_fights_crap.csv')
-                
+        return bad_indices
                 
     def populate_new_fights_with_statistics(self, new_rows):
         # Note, getting this warning a lot
