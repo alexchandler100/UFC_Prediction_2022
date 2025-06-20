@@ -38,7 +38,7 @@ $(function () { // building object fighter_data from fighter_data.json file
 });
 
 $(function () { // building object ufcfightscrap from ufcfightscrap.json file
-  $.getJSON('src/content/data/external/ufcfightscrap.json', function (data) {//for each input (i,f), i is the key (a number) and f is the value (all the data of the fight)
+  $.getJSON('src/content/data/external/ufc_fight_data_for_website.json', function (data) {//for each input (i,f), i is the key (a number) and f is the value (all the data of the fight)
     $.each(data, function (i, f) {
       ufcfightscrap[i] = f
     });
