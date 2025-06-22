@@ -44,6 +44,8 @@ from fight_stat_helpers import (in_ufc,
                        fighter_score_diff_vect
             )
 
+from odds_getter import OddsGetter
+
 git_repo = git.Repo(os.getcwd(), search_parent_directories=True)
 git_root = git_repo.git.rev_parse("--show-toplevel")
 
@@ -98,6 +100,8 @@ class DataHandler:
             'vegas_odds': vegas_odds,
         }
         # {key : pd.read_json(self.json_filepaths[key]) for key in self.json_filepaths.keys()}
+        
+        self.odds_getter = OddsGetter()
 
     def get(self, key, filetype='csv'):
         if filetype == 'json':
@@ -524,7 +528,7 @@ class DataHandler:
         
         # TODO HAVE THE DATA HANDLER DO THIS (make this its own function and add to update_and_rebuild_model.py)
         #print('scraping bookie odds from bestfightodds.com')
-        #odds_df = get_odds()
+        odds_df = self.odds_getter.make_odds_df()
         #odds_df=drop_irrelevant_fights(odds_df,3) #allows 3 bookies to have missing odds. can increase this to 2 or 3 as needed
         #odds_df=drop_non_ufc_fights(odds_df)
         #odds_df=drop_repeats(odds_df)
