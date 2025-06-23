@@ -18,6 +18,9 @@ class OddsGetter:
         options.add_argument("--headless")  # Run in headless mode (no window)
         options.add_argument("--disable-gpu")  # Optional: disables GPU (for stability)
         options.add_argument("--window-size=1920,1080")
+        options.add_argument("--no-sandbox")
+        options.add_argument("--disable-dev-shm-usage")
+
 
         # Create WebDriver
         driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
@@ -37,10 +40,17 @@ class OddsGetter:
         # Now parse with BeautifulSoup
         soup = BeautifulSoup(html, "html.parser")
         
+        # do we need the date?
+        # date = soup.find_all("span", class_="jss2286")[0].get_text()
+        # # Looks like "June 27" with no year, so we need to add the current year
+        # current_year = pd.Timestamp.now().year
+        # date = np.datetime.datetime.strptime(f"{current_year} {date}", "%Y %B %d").strftime("%Y-%m-%d")
+        
         odds_sections = soup.find_all("thead", class_="MuiTableHead-root")[0]
         odds_data = soup.find_all("tbody", class_="MuiTableBody-root")[0]
 
         self.df = self.get_fighter_odds_for_card(odds_data, odds_sections)
+        # self.df["date"] = date
         return self.df
     
     def get_name(self, row):
@@ -63,37 +73,50 @@ class OddsGetter:
                 text = odds_results[0].get_text()
                 odds_list.append(text)
             else:
-                print("No odds found in this td")
-                print(td.prettify())
+                # for debugging purposes
+                # print("No odds found in this td")
+                # print(td.prettify())
                 odds_list.append("")
         return odds_list
 
     def get_fighter_odds_for_card(self, odds_data, odds_sections):
         print(f"Found {len(odds_data)} odds containers")
         section_rows = odds_sections.find_all("tr")
-        # td0 = row0.find_all("td")[0]
-        # print(td0.prettify())
-        # print(rows[0].prettify())
         bookies = section_rows[0].find_all("th")
         bookies_list = [bookie.get_text() for bookie in bookies[1:-1]] # empty first and last bookies
-
-
         rows = odds_data.find_all("tr")
-        
-        # odds_dict = {}
         data = []
 
         print(f'bookies_list: {bookies_list}')
-        for row in rows:
-            name = self.get_name(row)
-            odds_list = self.get_odds(row, bookies_list) 
-            # odds_dict[name] = dict(zip(bookies_list, odds_list))
-            df_row = {"Fighter": name}
-            for bookie, odds in zip(bookies_list, odds_list):
-                df_row[bookie] = odds
+        for half_row_idx in range(len(rows) // 2):
+            fighter_row_idx = half_row_idx * 2
+            opponent_row_idx = fighter_row_idx + 1
+            fighter_row = rows[fighter_row_idx]
+            opponent_row = rows[opponent_row_idx]
+            
+            fighter_name = self.get_name(fighter_row)
+            opponent_name = self.get_name(opponent_row)
+            fighter_odds_list = self.get_odds(fighter_row, bookies_list)
+            opponent_odds_list = self.get_odds(opponent_row, bookies_list)
+            
+            # add fighter name and odds to dataframe row
+            df_row = {"fighter name": fighter_name}
+            for bookie, fighter_odds in zip(bookies_list, fighter_odds_list):
+                df_row[f"fighter {bookie}"] = fighter_odds
+                
+            # add opponent name and odds to dataframe row
+            df_row["opponent name"] = opponent_name
+            for bookie, opponent_odds in zip(bookies_list, opponent_odds_list):
+                df_row[f"opponent {bookie}"] = opponent_odds
+                
             data.append(df_row)
+            
         # Convert the list of dictionaries to a DataFrame
         df = pd.DataFrame(data)
-        # Optional: set Fighter as index
-        df.set_index("Fighter", inplace=True)
+        df["predicted fighter odds"] = np.nan
+        df["predicted opponent odds"] = np.nan
+        average_bookie_fighter_odds = np.mean(df[[f"fighter {bookie}" for bookie in bookies_list]].replace("", np.nan).astype(float), axis=1)
+        average_bookie_opponent_odds = np.mean(df[[f"opponent {bookie}" for bookie in bookies_list]].replace("", np.nan).astype(float), axis=1)
+        # make a column with values of the form [str(avg_fighter_odds), str(avg_opponent_odds)]
+        df['average bookie odds'] = [[str(round(av_fighter_odds)), str(round(av_opponent_odds))] for av_fighter_odds, av_opponent_odds in zip(average_bookie_fighter_odds, average_bookie_opponent_odds)]
         return df

@@ -399,67 +399,6 @@
           <td style="color: #fff;font-size:15px;"></td>
           <td style="color: #fff;font-size:15px;"></td>
         </tr>
-        <!-- 
-
-          <tr style="color: #fff; font-size:25px;font-variant: small-caps;">
-            <td colspan="3">Bookie Odds</td>
-          </tr>
-          <tr>
-            <td style="color: #fff;font-size:15px;">Draftkings</td>
-            <td style="color: #fff;font-size:15px;"></td>
-            <td style="color: #fff;font-size:15px;"></td>
-          </tr>
-          <tr>
-            <td style="color: #fff;font-size:15px;">BetMGM</td>
-            <td style="color: #fff;font-size:15px;"></td>
-            <td style="color: #fff;font-size:15px;"></td>
-          </tr>
-          <tr>
-            <td style="color: #fff;font-size:15px;">Caesars</td>
-            <td style="color: #fff;font-size:15px;"></td>
-            <td style="color: #fff;font-size:15px;"></td>
-          </tr>
-          <tr>
-            <td style="color: #fff;font-size:15px;">BetRivers</td>
-            <td style="color: #fff;font-size:15px;"></td>
-            <td style="color: #fff;font-size:15px;"></td>
-          </tr>
-          <tr>
-            <td style="color: #fff;font-size:15px;">FanDuel</td>
-            <td style="color: #fff;font-size:15px;"></td>
-            <td style="color: #fff;font-size:15px;"></td>
-          </tr>
-          <tr>
-            <td style="color: #fff;font-size:15px;">PointsBet</td>
-            <td style="color: #fff;font-size:15px;"></td>
-            <td style="color: #fff;font-size:15px;"></td>
-          </tr>
-          <tr>
-            <td style="color: #fff;font-size:15px;">Unibet</td>
-            <td style="color: #fff;font-size:15px;"></td>
-            <td style="color: #fff;font-size:15px;"></td>
-          </tr>
-          <tr>
-            <td style="color: #fff;font-size:15px;">Bet365</td>
-            <td style="color: #fff;font-size:15px;"></td>
-            <td style="color: #fff;font-size:15px;"></td>
-          </tr>
-          <tr>
-            <td style="color: #fff;font-size:15px;">BetWay</td>
-            <td style="color: #fff;font-size:15px;"></td>
-            <td style="color: #fff;font-size:15px;"></td>
-          </tr>
-          <tr>
-            <td style="color: #fff;font-size:15px;">SD</td>
-            <td style="color: #fff;font-size:15px;"></td>
-            <td style="color: #fff;font-size:15px;"></td>
-          </tr>
-          <tr>
-            <td style="color: #fff;font-size:15px;">Ref</td>
-            <td style="color: #fff;font-size:15px;"></td>
-            <td style="color: #fff;font-size:15px;"></td>
-          </tr>
-        -->
       </table>
     </center>
   </section>
@@ -473,11 +412,12 @@
     <center>
       Here we show the model's predictions for upcoming fights which are on the vegas books (only those for which both
       fighters have fought previously in the UFC).
-      Results may differ slightly from live predictions in the predictor above due to the fact that the predictions in
-      the table are made in our python model
-      and the predictions made live on the website are made with our javascript model which may slightly differ from
-      time to time. The predicted winner is shown in <span style="color:gold">gold</span>.
-      Clicking on any of the names will take you to their wikipedia pages.
+      The predicted winner is shown in <span style="color:gold">gold</span>.
+      <br>
+      In the final column we show the expected value of betting on the fighter or opponent based on the predicted
+      odds and the DraftKings odds. The number shown is the expected profit multiplier. E.g. if the expected value shows -.2, .3 then betting $100 on the fighter
+      would yield an expected profit of -$20 and betting $100 on the opponent would yield an expected profit of $30. 
+      In <span style="color:rgb(133, 187, 101)">green</span> we show the positive expectation values indicating a likely profitable bet.
     </center>
     <center>
       <table id="upcoming" style="margin-top:.5cm; display: none">
@@ -490,7 +430,8 @@
             <th style="color: #ffffff;background-color: #323232;font-size:15px;">Opponent</th>
             <th style="color: #ffffff;background-color: #323232;font-size:15px;">Predicted<br>Fighter<br>Odds</th>
             <th style="color: #ffffff;background-color: #323232;font-size:15px;">Predicted<br>Opponent<br>Odds</th>
-            <th style="color: #ffffff;background-color: #323232;font-size:15px;">Average<br>Bookie<br>Odds</th>
+            <th style="color: #ffffff;background-color: #323232;font-size:15px;">DraftKings<br>Odds</th>
+            <th style="color: #ffffff;background-color: #323232;font-size:15px;">DraftKings<br>Expected<br>Value</th>
           </tr>
         </thead>
         <tbody>
@@ -526,7 +467,7 @@
       <table id="tablehistory" style="margin-top:.5cm;display:none">
         <thead>
           <tr style="color: #fff; font-size:15px;font-variant: small-caps;">
-            <th colspan="6">Fight Prediction History</th>
+            <th colspan="7">Fight Prediction History</th>
           </tr>
           <tr id="history">
             <th style="color: #ffffff;background-color: #323232; font-size:15px;">Fighter</th>
@@ -534,7 +475,8 @@
             <th style="color: #ffffff;background-color: #323232;font-size:15px;">Predicted<br>Fighter<br>Odds</th>
             <th style="color: #ffffff;background-color: #323232;font-size:15px;">Predicted<br>Opponent<br>Odds</th>
             <th style="color: #ffffff;background-color: #323232;font-size:15px;">Correctly<br>Predicted?</th>
-            <th style="color: #ffffff;background-color: #323232;font-size:15px;">Average <br>Bookie<br>Odds</th>
+            <th style="color: #ffffff;background-color: #323232;font-size:15px;">DraftKings<br>Odds</th>
+            <th style="color: #ffffff;background-color: #323232;font-size:15px;">DraftKings<br>Profit<br>Per $100</th>
           </tr>
         </thead>
         <tbody>

@@ -147,18 +147,58 @@ class FightPredictor:
 
         ufc_fights_df = ufc_fights_winner[best_smallest_set]
 
-        #decided to force intercept to be 0 due to symmetry of dataset (all stats are differences so if we switch fighters, we must get the negative of the result)
-        winPredictionModel=LogisticRegression(solver='lbfgs', max_iter=2000, fit_intercept=False)
+        self.theta, self.b = self.find_best_regression_coeffs(ufc_fights_df, ufc_fights_winner)
+        
+    def find_best_regression_coeffs(self, ufc_fights_df, ufc_fights_winner):
         # say there is an average of 10 fights per week, then 2200 fights is about 55 months of data
-        X=ufc_fights_df.iloc[0:2200].to_numpy() # only taking most recent 2200 fights to avoid fitting to old fight trends (maybe play with this number later)
-        y=ufc_fights_winner['result'].iloc[0:2200]
-        print('Fitting Logistic Regression Model')
-        winPredictionModel.fit(X,y)
-        print('Accuracy of Logistic Regression win prediction: '+str(cross_val_score(winPredictionModel,X,y,cv=3).mean()))
-        print('coefficients'+str(winPredictionModel.coef_))
-        print('intercept'+str(winPredictionModel.intercept_))
-        self.theta = list(winPredictionModel.coef_[0])
-        self.b = winPredictionModel.intercept_[0]
+        #decided to force intercept to be 0 due to symmetry of dataset (all stats are differences so if we switch fighters, we must get the negative of the result)
+        # make some hyperparams
+        max_iters = [1800, 2000, 2200, 2500, 3500]
+        solvers = ['lbfgs']
+        num_fights_in_history = [1600, 1800, 2000, 2200]
+        theta_list = []
+        b_list = []
+        cross_val_scores = []
+        max_iter_history = []
+        solver_history = []
+        num_fights_history = []
+        num_reps = 10
+        for solver in solvers:
+            for max_iter in max_iters:
+                for num_fights in num_fights_in_history:
+                    for rep in range(num_reps): # try with different random seeds
+                        # print(f'Training Logistic Regression with solver={solver} and max_iter={max_iter}')
+                        # create a logistic regression model
+                        winPredictionModel = LogisticRegression(solver=solver, max_iter=max_iter, fit_intercept=False)
+                        X = ufc_fights_df.iloc[0:num_fights].to_numpy()
+                        y = ufc_fights_winner['result'].iloc[0:num_fights]
+                        winPredictionModel.fit(X,y)
+                        cross_val_score_mean = cross_val_score(winPredictionModel, X, y, cv=3).mean()
+                        theta = list(winPredictionModel.coef_[0])
+                        b = winPredictionModel.intercept_[0]
+                        theta_list.append(theta)
+                        b_list.append(b)
+                        cross_val_scores.append(cross_val_score_mean)
+                        max_iter_history.append(max_iter)
+                        solver_history.append(solver)
+                        num_fights_history.append(num_fights)
+        best_cross_val_score = max(cross_val_scores)
+        best_index = cross_val_scores.index(best_cross_val_score)
+        best_theta = theta_list[best_index]
+        best_b = b_list[best_index]
+        print(f'Using best hyperparameters: solver={solver_history[best_index]}, max_iter={max_iter_history[best_index]}, num_fights={num_fights_history[best_index]}')
+        print(f'Best cross-validation score: {best_cross_val_score})')
+        # winPredictionModel=LogisticRegression(solver='lbfgs', max_iter=2000, fit_intercept=False)
+        # X=ufc_fights_df.iloc[0:2200].to_numpy() # only taking most recent 2200 fights to avoid fitting to old fight trends (maybe play with this number later)
+        # y=ufc_fights_winner['result'].iloc[0:2200]
+        # print('Fitting Logistic Regression Model')
+        # winPredictionModel.fit(X,y)
+        # print('Accuracy of Logistic Regression win prediction: '+str(cross_val_score(winPredictionModel,X,y,cv=3).mean()))
+        # print('coefficients'+str(winPredictionModel.coef_))
+        # print('intercept'+str(winPredictionModel.intercept_))
+        # self.theta = list(winPredictionModel.coef_[0])
+        # self.b = winPredictionModel.intercept_[0]
+        return best_theta, best_b
 
     def get_regression_coeffs_and_intercept(self):
         return self.theta, self.b
@@ -185,8 +225,8 @@ class FightPredictor:
         vegas_odds_d = dict(zip(vegas_odds_col_names, vegas_odds_col_values))
         vegas_odds = pd.DataFrame(data=vegas_odds_d)
 
-        vegas_odds['fighter name'].loc[:] = [fight[0] for fight in fights_list]
-        vegas_odds['opponent name'].loc[:] = [fight[1] for fight in fights_list]
+        vegas_odds['fighter name'] = [fight[0] for fight in fights_list]
+        vegas_odds['opponent name'] = [fight[1] for fight in fights_list]
         # TODO add weight_class into vegas_odds and prediction history
         vegas_odds['date'] = card_date
 
@@ -198,21 +238,8 @@ class FightPredictor:
             if in_ufc(fighter) and in_ufc(opponent):
                 odds_calc = self.odds(fighter,opponent,theta,b)
                 print('predicting: '+fighter,'versus '+opponent,'.... '+str(odds_calc))
-                vegas_odds['predicted fighter odds'][i]=odds_calc[0]
-                vegas_odds['predicted opponent odds'][i]=odds_calc[1]
-                sum_av_f=0
-                tot_av_f=0
-                sum_av_o=0
-                tot_av_o=0
-                for bookie in ['DraftKings', 'BetMGM', 'Caesars', 'BetRivers', 'FanDuel', 'PointsBet', 'Unibet', 'Bet365', 'BetWay', '5D', 'Ref']:
-                    if vegas_odds['fighter '+bookie][i]!='':
-                        sum_av_f+=int(vegas_odds['fighter '+bookie][i])
-                        tot_av_f+=1
-                    if vegas_odds['opponent '+bookie][i]!='':
-                        sum_av_o+=int(vegas_odds['opponent '+bookie][i])
-                        tot_av_o+=1
-                if tot_av_f>0 and tot_av_o>0:
-                    vegas_odds['average bookie odds'][i]=[str(round(sum_av_f/tot_av_f)),str(round(sum_av_o/tot_av_o))]
+                vegas_odds.loc[i, 'predicted fighter odds']=odds_calc[0]
+                vegas_odds.loc[i, 'predicted opponent odds']=odds_calc[1]
         return vegas_odds
             
     #I've defined this in such a way to predict what happens when fighter1 in their day1 version fights fighter2

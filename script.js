@@ -75,14 +75,6 @@ setTimeout(() => {
   }
 
   //giving prediction_history correct keys
-  for (let j = 0; j < Object.keys(vegas_odds).length; j++) {
-    prediction_history[Object.keys(vegas_odds)[j]] = {}
-    prediction_history['predicted fighter odds'] = {}
-    prediction_history['predicted opponent odds'] = {}
-    prediction_history['winner'] = {}
-    prediction_history['correct'] = {}
-  }
-  //filling in any previous data into prediction_history
   $(function () {
     //var people = [];
     $.getJSON('src/content/data/external/prediction_history.json', function (data) {
@@ -753,56 +745,6 @@ function filterFunction2() {
   }
 }
 
-/* #here we were copying new fights from vegas odds to prediction history... now we do this in the file update_and_rebuild_model.py
-setTimeout(() => {
-  //iterates over rows of vegas_odds (each row is a collection of bookie odds data for a specific fight)
-  for (let i = 0; i < Object.values(vegas_odds['fighter name']).length; i++) {
-    //checks if both fighters are in the ufc
-    let fighter_in_ufc = Object.keys(fighter_data).some(function(name) {
-      return same_name(name, vegas_odds['fighter name'][i])
-    });
-    let opponent_in_ufc = Object.keys(fighter_data).some(function(name) {
-      return same_name(name, vegas_odds['opponent name'][i])
-    });
-    if (fighter_in_ufc && opponent_in_ufc) {
-      let bookie_scores = []
-      for (let j = 0; j < Object.keys(vegas_odds).length; j++) {
-        bookie_scores.push(vegas_odds[Object.keys(vegas_odds)[j]][i])
-      }
-      let all_bookie_scores = bookie_scores.every(function(value) {
-        return value.length > 0
-      });
-      if (all_bookie_scores) { //makes sure that all bookies have scores in the books (to avoid fights in smaller organizations or fantasy fights)
-        //copies row i of vegas_odds to prediction_history
-        for (let j = 0; j < Object.keys(vegas_odds).length; j++) {
-          prediction_history[Object.keys(vegas_odds)[j]][i] = vegas_odds[Object.keys(vegas_odds)[j]][i]
-        }
-      }
-    }
-  }
-}, 350)
-*/
-
-//the following is now done in the file update_and_rebuild_model.py but we'll keep this here if needed
-/*
-setTimeout(()=>{
-  //making predictions for fights on the books
-  for (const i in prediction_history['fighter name']){ //iterating over rows of prediction_history
-    if (!prediction_history['predicted fighter odds'][i]){
-      fighter = prediction_history['fighter name'][i]
-      opponent = prediction_history['opponent name'][i]
-      month1=document.getElementById('f1selectmonth').value
-      month2=document.getElementById('f1selectmonth').value
-      year1=document.getElementById('f1selectyear').value
-      year2=document.getElementById('f1selectyear').value
-      odds=betting_oddsAbsolute(fighter, opponent, month1, year1, month2, year2)
-      prediction_history['predicted fighter odds'][i]=odds[0]
-      prediction_history['predicted opponent odds'][i]=odds[1]
-    }
-  }
-}, 750)
-*/
-
 //Building upcoming predictions table
 
 setTimeout(() => { //timeout because other data needs to load first (probably better to do with async)
@@ -812,62 +754,17 @@ setTimeout(() => { //timeout because other data needs to load first (probably be
     opponent = vegas_odds['opponent name'][i]
     fighterOdds = vegas_odds['predicted fighter odds'][i]
     opponentOdds = vegas_odds['predicted opponent odds'][i]
-    avBookieOdds = vegas_odds['average bookie odds'][i]
-    upcomingFightsTable.rows.item(0).cells.item(0).style.backgroundColor = "#212121";
-    var tbody = upcomingFightsTable.tBodies[0]
-    var tr = tbody.insertRow(-1);
-    var td1 = document.createElement('td');
-    var td2 = document.createElement('td');
-    var td3 = document.createElement('td');
-    var td4 = document.createElement('td');
-    var td5 = document.createElement('td');
-    tr.appendChild(td1);
-    tr.appendChild(td2);
-    tr.appendChild(td3);
-    tr.appendChild(td4);
-    tr.appendChild(td5);
-    if (fighterOdds == '') { //if no prediction was made
-      tr.cells.item(0).innerHTML = `<a href=https://en.wikipedia.org/wiki/${fighter.replace(" ", '_')}#Mixed_martial_arts_record target="_blank" style = "color: white">${fighter}</a>`
-      tr.cells.item(1).innerHTML = `<a href=https://en.wikipedia.org/wiki/${opponent.replace(" ", '_')}#Mixed_martial_arts_record target="_blank" style = "color: white">${opponent}</a>`
+    fighterDraftKingsOdds = vegas_odds['fighter DraftKings'][i]
+    opponentDraftKingsOdds = vegas_odds['opponent DraftKings'][i]
+    fighterExpectedValue = vegas_odds['fighter dk expected value'][i] || null; // default to null if not present
+    opponentExpectedValue = vegas_odds['opponent dk expected value'][i] || null; // default to null if not present
+    if (fighterExpectedValue != null) {
+      fighterExpectedValue = parseFloat(fighterExpectedValue).toFixed(2);
+    } 
+    if (opponentExpectedValue != null) {
+      opponentExpectedValue = parseFloat(opponentExpectedValue).toFixed(2);
     }
-    else if (fighterOdds[0] == '-') { // if fighter is predicted to win
-      //TODO check if they have a wikipedia page and if not, link to their UFC profile https://www.ufc.com/athlete/${fighter.replace(" ", '_')#athlete-record
-      tr.cells.item(0).innerHTML = `<a href=https://en.wikipedia.org/wiki/${fighter.replace(" ", '_')}#Mixed_martial_arts_record target="_blank" style = "color: gold">${fighter}</a>`
-      tr.cells.item(1).innerHTML = `<a href=https://en.wikipedia.org/wiki/${opponent.replace(" ", '_')}#Mixed_martial_arts_record target="_blank" style = "color: white">${opponent}</a>`
-    } else { // if opponent is predicted to win
-      tr.cells.item(0).innerHTML = `<a href=https://en.wikipedia.org/wiki/${fighter.replace(" ", '_')}#Mixed_martial_arts_record target="_blank" style = "color: white">${fighter}</a>`
-      tr.cells.item(1).innerHTML = `<a href=https://en.wikipedia.org/wiki/${opponent.replace(" ", '_')}#Mixed_martial_arts_record target="_blank" style = "color: gold">${opponent}</a>`
-    }
-    tr.cells.item(2).innerHTML = fighterOdds;
-    tr.cells.item(3).innerHTML = opponentOdds;
-    tr.cells.item(4).innerHTML = avBookieOdds;
-    tr.cells.item(0).style.backgroundColor = "#323232";
-    tr.cells.item(1).style.backgroundColor = "#323232";
-    tr.cells.item(2).style.backgroundColor = "#323232";
-    tr.cells.item(3).style.backgroundColor = "#323232";
-    tr.cells.item(4).style.backgroundColor = "#323232";
-    tr.cells.item(0).style.color = "#ffffff";
-    tr.cells.item(1).style.color = "#ffffff";
-    tr.cells.item(2).style.color = "#ffffff";
-    tr.cells.item(3).style.color = "#ffffff";
-    tr.cells.item(4).style.color = "#ffffff";
-  }
-}, 1000) //originally 350
 
-
-
-setTimeout(() => { //this builds a table for the history of predictions which is built in python in the jupyter notebook UFC_Prediction_Model
-  var numberModelCorrect = 0
-  var numberVegasCorrect = 0
-  var numberTotal = 0
-  for (const i in prediction_history['fighter name']) { //iterating over rows of prediction_history
-    fighter = prediction_history['fighter name'][i]
-    opponent = prediction_history['opponent name'][i]
-    fighterOdds = String(prediction_history['predicted fighter odds'][i])
-    opponentOdds = String(prediction_history['predicted opponent odds'][i])
-    avBookieOdds = prediction_history['average bookie odds'][i]
-    numberTotal += 1;
-    var upcomingFightsTable = document.getElementById('tablehistory')
     upcomingFightsTable.rows.item(0).cells.item(0).style.backgroundColor = "#212121";
     var tbody = upcomingFightsTable.tBodies[0]
     var tr = tbody.insertRow(-1);
@@ -883,11 +780,39 @@ setTimeout(() => { //this builds a table for the history of predictions which is
     tr.appendChild(td4);
     tr.appendChild(td5);
     tr.appendChild(td6);
-    tr.cells.item(0).innerHTML = fighter;
-    tr.cells.item(1).innerHTML = opponent;
+    if (fighterOdds == '') { //if no prediction was made
+      tr.cells.item(0).innerHTML = `<a href=https://en.wikipedia.org/wiki/${fighter.replace(" ", '_')}#Mixed_martial_arts_record target="_blank" style = "color: white">${fighter}</a>`
+      tr.cells.item(1).innerHTML = `<a href=https://en.wikipedia.org/wiki/${opponent.replace(" ", '_')}#Mixed_martial_arts_record target="_blank" style = "color: white">${opponent}</a>`
+    }
+    else if (fighterOdds[0] == '-') { // if fighter is predicted to win
+      //TODO check if they have a wikipedia page and if not, link to their UFC profile https://www.ufc.com/athlete/${fighter.replace(" ", '_')#athlete-record
+      tr.cells.item(0).innerHTML = `<a href=https://en.wikipedia.org/wiki/${fighter.replace(" ", '_')}#Mixed_martial_arts_record target="_blank" style = "color: gold">${fighter}</a>`
+      tr.cells.item(1).innerHTML = `<a href=https://en.wikipedia.org/wiki/${opponent.replace(" ", '_')}#Mixed_martial_arts_record target="_blank" style = "color: white">${opponent}</a>`
+    } else { // if opponent is predicted to win
+      tr.cells.item(0).innerHTML = `<a href=https://en.wikipedia.org/wiki/${fighter.replace(" ", '_')}#Mixed_martial_arts_record target="_blank" style = "color: white">${fighter}</a>`
+      tr.cells.item(1).innerHTML = `<a href=https://en.wikipedia.org/wiki/${opponent.replace(" ", '_')}#Mixed_martial_arts_record target="_blank" style = "color: gold">${opponent}</a>`
+    }
+
     tr.cells.item(2).innerHTML = fighterOdds;
     tr.cells.item(3).innerHTML = opponentOdds;
-    tr.cells.item(5).innerHTML = avBookieOdds;
+    tr.cells.item(4).innerHTML = `${fighterDraftKingsOdds}, ${opponentDraftKingsOdds}`;
+
+    // make the fighter and opponent names bold and gold if they have higher expected value
+    // than the opponent and fighter respectively
+    let evPickColor = '#85BB65'; // default color for expected value text (money green)
+    let coloredEvText = '';
+    if (fighterExpectedValue > opponentExpectedValue && fighterExpectedValue > 0) { //if fighter has higher expected value
+      coloredEvText = `<span style="color:${evPickColor}">${fighterExpectedValue}</span>, <span>${opponentExpectedValue}</span>`;
+    } else if (opponentExpectedValue > fighterExpectedValue && opponentExpectedValue > 0) { //if opponent has higher expected value
+      coloredEvText = `<span>${fighterExpectedValue}</span>, <span style="color:${evPickColor}">${opponentExpectedValue}</span>`;
+    } else if (fighterExpectedValue == opponentExpectedValue && fighterExpectedValue > 0) { //if both have same expected value
+      coloredEvText = `<span style="color:${evPickColor}">${fighterExpectedValue}</span>, <span style="color:${evPickColor}">${opponentExpectedValue}</span>`;
+    } else { //if both have negative expected value
+      coloredEvText = `<span>${fighterExpectedValue}</span>, <span>${opponentExpectedValue}</span>`;
+    }
+
+    tr.cells.item(5).innerHTML = coloredEvText;
+
     tr.cells.item(0).style.backgroundColor = "#323232";
     tr.cells.item(1).style.backgroundColor = "#323232";
     tr.cells.item(2).style.backgroundColor = "#323232";
@@ -898,7 +823,70 @@ setTimeout(() => { //this builds a table for the history of predictions which is
     tr.cells.item(1).style.color = "#ffffff";
     tr.cells.item(2).style.color = "#ffffff";
     tr.cells.item(3).style.color = "#ffffff";
+    tr.cells.item(4).style.color = "#ffffff";
     tr.cells.item(5).style.color = "#ffffff";
+  }
+}, 1000) //originally 350
+
+
+
+setTimeout(() => { //this builds a table for the history of predictions which is built in python in the jupyter notebook UFC_Prediction_Model
+  var numberModelCorrect = 0
+  var numberTotal = 0
+  for (const i in prediction_history['fighter name']) { //iterating over rows of prediction_history
+    fighter = prediction_history['fighter name'][i]
+    opponent = prediction_history['opponent name'][i]
+    fighterOdds = String(prediction_history['predicted fighter odds'][i])
+    opponentOdds = String(prediction_history['predicted opponent odds'][i])
+    dkOdds = 'unknown'; // default value if DraftKings odds are not present
+    if (prediction_history['fighter DraftKings'][i] && prediction_history['opponent DraftKings'][i]) {
+      dkOdds = `${prediction_history['fighter DraftKings'][i]}, ${prediction_history['opponent DraftKings'][i]}`
+    }
+    profitPer100Col = prediction_history['dk profit per 100'] || null; // default to null if not present
+    if (profitPer100Col != null && dkOdds != 'unknown') {
+      profitPer100 = profitPer100Col[i]
+    } else {
+      profitPer100 = 'N/A'; // or some default value
+    }
+
+    numberTotal += 1;
+    var upcomingFightsTable = document.getElementById('tablehistory')
+    upcomingFightsTable.rows.item(0).cells.item(0).style.backgroundColor = "#212121";
+    var tbody = upcomingFightsTable.tBodies[0]
+    var tr = tbody.insertRow(-1);
+    var td1 = document.createElement('td');
+    var td2 = document.createElement('td');
+    var td3 = document.createElement('td');
+    var td4 = document.createElement('td');
+    var td5 = document.createElement('td');
+    var td6 = document.createElement('td');
+    var td7 = document.createElement('td');
+    tr.appendChild(td1);
+    tr.appendChild(td2);
+    tr.appendChild(td3);
+    tr.appendChild(td4);
+    tr.appendChild(td5);
+    tr.appendChild(td6);
+    tr.appendChild(td7);
+    tr.cells.item(0).innerHTML = fighter;
+    tr.cells.item(1).innerHTML = opponent;
+    tr.cells.item(2).innerHTML = fighterOdds;
+    tr.cells.item(3).innerHTML = opponentOdds;
+    tr.cells.item(5).innerHTML = dkOdds;
+    tr.cells.item(6).innerHTML = profitPer100;
+    tr.cells.item(0).style.backgroundColor = "#323232";
+    tr.cells.item(1).style.backgroundColor = "#323232";
+    tr.cells.item(2).style.backgroundColor = "#323232";
+    tr.cells.item(3).style.backgroundColor = "#323232";
+    tr.cells.item(4).style.backgroundColor = "#323232";
+    tr.cells.item(5).style.backgroundColor = "#323232";
+    tr.cells.item(6).style.backgroundColor = "#323232";
+    tr.cells.item(0).style.color = "#ffffff";
+    tr.cells.item(1).style.color = "#ffffff";
+    tr.cells.item(2).style.color = "#ffffff";
+    tr.cells.item(3).style.color = "#ffffff";
+    tr.cells.item(5).style.color = "#ffffff";
+    tr.cells.item(6).style.color = "#ffffff";
     if (prediction_history['correct?'][i] == 1) {
       tr.cells.item(4).innerHTML = 'yes'
       tr.cells.item(4).style.backgroundColor = "#00ff00";

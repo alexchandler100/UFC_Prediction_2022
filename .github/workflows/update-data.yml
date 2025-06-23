@@ -1,6 +1,6 @@
 # for github actions, run update_data_csvs_and_jsons.py and once it is done, run update_and_rebuild_model.py every tuesday at 4:30pm PST
 name: Update Data
-# make it run every thursday at 2:33am UTC (that is 7:33pm in Tucsons)
+# make it run every thursday at 2:33am UTC (that is 7:33pm in Tucson)
 on:
   schedule:
     - cron: "33 2 * * 4"
@@ -9,10 +9,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - name: Set up Python 3.9
+      - name: Set up Python 3.11
         uses: actions/setup-python@v1
         with:
-          python-version: 3.9.22
+          python-version: 3.11
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
