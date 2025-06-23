@@ -760,8 +760,9 @@ def get_profit_from_ev_and_dk_odds(fighter_ev, opponent_ev, fighter_dk_odds, opp
     # TODO ensure ev and odds values exist and are valid
     betting_on = ''
     potential_profit = 0
+    if not fighter_ev or not opponent_ev or not fighter_dk_odds or not opponent_dk_odds:
+        return betting_on, potential_profit
     if fighter_ev > 0 and fighter_ev >= opponent_ev:
-        # TODO MAKE THIS A FUNCTION CALL TO GET PROFIT FROM ODDS
         if fighter_dk_odds > 0:
             potential_profit = int(fighter_dk_odds)
         else:

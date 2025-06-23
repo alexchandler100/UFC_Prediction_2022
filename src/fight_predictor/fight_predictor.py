@@ -187,17 +187,7 @@ class FightPredictor:
         best_theta = theta_list[best_index]
         best_b = b_list[best_index]
         print(f'Using best hyperparameters: solver={solver_history[best_index]}, max_iter={max_iter_history[best_index]}, num_fights={num_fights_history[best_index]}')
-        print(f'Best cross-validation score: {best_cross_val_score})')
-        # winPredictionModel=LogisticRegression(solver='lbfgs', max_iter=2000, fit_intercept=False)
-        # X=ufc_fights_df.iloc[0:2200].to_numpy() # only taking most recent 2200 fights to avoid fitting to old fight trends (maybe play with this number later)
-        # y=ufc_fights_winner['result'].iloc[0:2200]
-        # print('Fitting Logistic Regression Model')
-        # winPredictionModel.fit(X,y)
-        # print('Accuracy of Logistic Regression win prediction: '+str(cross_val_score(winPredictionModel,X,y,cv=3).mean()))
-        # print('coefficients'+str(winPredictionModel.coef_))
-        # print('intercept'+str(winPredictionModel.intercept_))
-        # self.theta = list(winPredictionModel.coef_[0])
-        # self.b = winPredictionModel.intercept_[0]
+        print(f'Best cross-validation score: {best_cross_val_score:.3f})')
         return best_theta, best_b
 
     def get_regression_coeffs_and_intercept(self):
