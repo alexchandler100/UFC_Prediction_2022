@@ -187,7 +187,7 @@ class FightPredictor:
         best_theta = theta_list[best_index]
         best_b = b_list[best_index]
         print(f'Using best hyperparameters: solver={solver_history[best_index]}, max_iter={max_iter_history[best_index]}, num_fights={num_fights_history[best_index]}')
-        print(f'Best cross-validation score: {best_cross_val_score:.3f})')
+        print(f'Best cross-validation score: {best_cross_val_score:.3f}')
         return best_theta, best_b
 
     def get_regression_coeffs_and_intercept(self):

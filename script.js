@@ -756,13 +756,17 @@ setTimeout(() => { //timeout because other data needs to load first (probably be
     opponentOdds = vegas_odds['predicted opponent odds'][i]
     fighterDraftKingsOdds = vegas_odds['fighter DraftKings'][i]
     opponentDraftKingsOdds = vegas_odds['opponent DraftKings'][i]
-    fighterExpectedValue = vegas_odds['fighter dk expected value'][i] || null; // default to null if not present
-    opponentExpectedValue = vegas_odds['opponent dk expected value'][i] || null; // default to null if not present
-    if (fighterExpectedValue != null) {
-      fighterExpectedValue = parseFloat(fighterExpectedValue).toFixed(2);
-    } 
-    if (opponentExpectedValue != null) {
-      opponentExpectedValue = parseFloat(opponentExpectedValue).toFixed(2);
+    fighterExpectedValueCol = vegas_odds['fighter dk expected value'] || null; // default to null if not present
+    opponentExpectedValueCol = vegas_odds['opponent dk expected value'] || null; // default to null if not present
+    if (fighterExpectedValueCol != null) {
+      fighterExpectedValue = parseFloat(fighterExpectedValueCol[i]).toFixed(2);
+    } else {
+      fighterExpectedValue = null; // default to null if not present
+    }
+    if (opponentExpectedValueCol != null) {
+      opponentExpectedValue = parseFloat(opponentExpectedValueCol[i]).toFixed(2);
+    } else {
+      opponentExpectedValue = null; // default to null if not present
     }
 
     upcomingFightsTable.rows.item(0).cells.item(0).style.backgroundColor = "#212121";
@@ -801,14 +805,16 @@ setTimeout(() => { //timeout because other data needs to load first (probably be
     // than the opponent and fighter respectively
     let evPickColor = '#85BB65'; // default color for expected value text (money green)
     let coloredEvText = '';
-    if (fighterExpectedValue > opponentExpectedValue && fighterExpectedValue > 0) { //if fighter has higher expected value
-      coloredEvText = `<span style="color:${evPickColor}">${fighterExpectedValue}</span>, <span>${opponentExpectedValue}</span>`;
-    } else if (opponentExpectedValue > fighterExpectedValue && opponentExpectedValue > 0) { //if opponent has higher expected value
-      coloredEvText = `<span>${fighterExpectedValue}</span>, <span style="color:${evPickColor}">${opponentExpectedValue}</span>`;
-    } else if (fighterExpectedValue == opponentExpectedValue && fighterExpectedValue > 0) { //if both have same expected value
-      coloredEvText = `<span style="color:${evPickColor}">${fighterExpectedValue}</span>, <span style="color:${evPickColor}">${opponentExpectedValue}</span>`;
-    } else { //if both have negative expected value
-      coloredEvText = `<span>${fighterExpectedValue}</span>, <span>${opponentExpectedValue}</span>`;
+    if (fighterExpectedValue && opponentExpectedValue) { // check if both expected values are defined
+      if (fighterExpectedValue > opponentExpectedValue && fighterExpectedValue > 0) { //if fighter has higher expected value
+        coloredEvText = `<span style="color:${evPickColor}">${fighterExpectedValue}</span>, <span>${opponentExpectedValue}</span>`;
+      } else if (opponentExpectedValue > fighterExpectedValue && opponentExpectedValue > 0) { //if opponent has higher expected value
+        coloredEvText = `<span>${fighterExpectedValue}</span>, <span style="color:${evPickColor}">${opponentExpectedValue}</span>`;
+      } else if (fighterExpectedValue == opponentExpectedValue && fighterExpectedValue > 0) { //if both have same expected value
+        coloredEvText = `<span style="color:${evPickColor}">${fighterExpectedValue}</span>, <span style="color:${evPickColor}">${opponentExpectedValue}</span>`;
+      } else { //if both have negative expected value
+        coloredEvText = `<span>${fighterExpectedValue}</span>, <span>${opponentExpectedValue}</span>`;
+      }
     }
 
     tr.cells.item(5).innerHTML = coloredEvText;
@@ -838,6 +844,18 @@ setTimeout(() => { //this builds a table for the history of predictions which is
     opponent = prediction_history['opponent name'][i]
     fighterOdds = String(prediction_history['predicted fighter odds'][i])
     opponentOdds = String(prediction_history['predicted opponent odds'][i])
+    fighterExpectedValueCol = prediction_history['fighter dk expected value'] || null; // default to null if not present
+    opponentExpectedValueCol = prediction_history['opponent dk expected value'] || null; // default to null if not present
+    if (fighterExpectedValueCol != null) {
+      fighterExpectedValue = parseFloat(fighterExpectedValueCol[i]).toFixed(2);
+    } else {
+      fighterExpectedValue = 'N/A'; // or some default value
+    }
+    if (opponentExpectedValueCol != null) {
+      opponentExpectedValue = parseFloat(opponentExpectedValueCol[i]).toFixed(2);
+    } else {
+      opponentExpectedValue = 'N/A'; // or some default value
+    }
     dkOdds = 'unknown'; // default value if DraftKings odds are not present
     if (prediction_history['fighter DraftKings'][i] && prediction_history['opponent DraftKings'][i]) {
       dkOdds = `${prediction_history['fighter DraftKings'][i]}, ${prediction_history['opponent DraftKings'][i]}`
@@ -850,17 +868,17 @@ setTimeout(() => { //this builds a table for the history of predictions which is
     }
 
     numberTotal += 1;
-    var upcomingFightsTable = document.getElementById('tablehistory')
-    upcomingFightsTable.rows.item(0).cells.item(0).style.backgroundColor = "#212121";
-    var tbody = upcomingFightsTable.tBodies[0]
+    var fightHistoryTable = document.getElementById('tablehistory')
+    fightHistoryTable.rows.item(0).cells.item(0).style.backgroundColor = "#212121";
+    var tbody = fightHistoryTable.tBodies[0]
     var tr = tbody.insertRow(-1);
     var td1 = document.createElement('td');
     var td2 = document.createElement('td');
-    var td3 = document.createElement('td');
-    var td4 = document.createElement('td');
-    var td5 = document.createElement('td');
-    var td6 = document.createElement('td');
-    var td7 = document.createElement('td');
+    var td3 = document.createElement('td'); // predicted odds
+    var td4 = document.createElement('td'); // expected values
+    var td5 = document.createElement('td'); // bet won?
+    var td6 = document.createElement('td'); // dk odds
+    var td7 = document.createElement('td'); // profit per 100
     tr.appendChild(td1);
     tr.appendChild(td2);
     tr.appendChild(td3);
@@ -870,8 +888,8 @@ setTimeout(() => { //this builds a table for the history of predictions which is
     tr.appendChild(td7);
     tr.cells.item(0).innerHTML = fighter;
     tr.cells.item(1).innerHTML = opponent;
-    tr.cells.item(2).innerHTML = fighterOdds;
-    tr.cells.item(3).innerHTML = opponentOdds;
+    tr.cells.item(2).innerHTML = `${fighterOdds}, ${opponentOdds}`;
+    tr.cells.item(3).innerHTML = `${fighterExpectedValue}, ${opponentExpectedValue}`;
     tr.cells.item(5).innerHTML = dkOdds;
     tr.cells.item(6).innerHTML = profitPer100;
     tr.cells.item(0).style.backgroundColor = "#323232";
@@ -887,6 +905,7 @@ setTimeout(() => { //this builds a table for the history of predictions which is
     tr.cells.item(3).style.color = "#ffffff";
     tr.cells.item(5).style.color = "#ffffff";
     tr.cells.item(6).style.color = "#ffffff";
+    // TODO UPDATE THIS TO DECIDE IF WE WON THE BET, NOT JUST GOT THE FAVORITE RIGHT
     if (prediction_history['correct?'][i] == 1) {
       tr.cells.item(4).innerHTML = 'yes'
       tr.cells.item(4).style.backgroundColor = "#00ff00";
