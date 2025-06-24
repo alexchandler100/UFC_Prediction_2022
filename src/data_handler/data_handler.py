@@ -10,10 +10,12 @@ from datetime import datetime
 from datetime import date
 import random
 import re
+import numpy as np
 
 # local imports
 from fight_stat_helpers import (in_ufc, 
                        same_name, 
+                       same_name_vect,
                        wins_before_vect, 
                        losses_before_vect, 
                        fighter_age_vect, 
@@ -41,8 +43,12 @@ from fight_stat_helpers import (in_ufc,
                        time_diff,
                        time_diff_vect,
                        fight_math_diff_vect,
-                       fighter_score_diff_vect
+                       fighter_score_diff_vect,
+                       expected_value,
+                       get_profit_from_ev_and_dk_odds
             )
+
+from odds_getter import OddsGetter
 
 git_repo = git.Repo(os.getcwd(), search_parent_directories=True)
 git_root = git_repo.git.rev_parse("--show-toplevel")
@@ -55,7 +61,6 @@ class DataHandler:
         self.csv_filepaths = {
             'fight_hist': f'{git_root}/src/content/data/processed/fight_hist.csv',
             'fighter_stats': f'{git_root}/src/content/data/processed/fighter_stats.csv',
-            'prediction_history': f'{git_root}/src/content/data/processed/prediction_history.csv',
             'ufc_fight_data_for_website': f'{git_root}/src/content/data/processed/ufc_fight_data_for_website.csv',
             'ufc_fights_crap': f'{git_root}/src/content/data/processed/ufc_fights_crap.csv',
             'ufc_fights': f'{git_root}/src/content/data/processed/ufc_fights.csv',
@@ -98,6 +103,8 @@ class DataHandler:
             'vegas_odds': vegas_odds,
         }
         # {key : pd.read_json(self.json_filepaths[key]) for key in self.json_filepaths.keys()}
+        
+        self.odds_getter = OddsGetter()
 
     def get(self, key, filetype='csv'):
         if filetype == 'json':
@@ -482,9 +489,7 @@ class DataHandler:
         
     def update_ufc_fight_data_for_website(self):
         updated_ufc_fights_crap = self.get('ufc_fights_crap')
-        updated_ufc_fights_crap['index'] = updated_ufc_fights_crap['fighter']
-        for i in range(len(updated_ufc_fights_crap['date'])):
-            updated_ufc_fights_crap['index'][i] = i
+        updated_ufc_fights_crap['index'] = list(range(updated_ufc_fights_crap.shape[0])) # add index column to dataframe
 
         json_columns = ['date', 'result', 'fighter', 'opponent', 'division', 'method', 'round', 'time', 'knockdowns', 'sub_attempts', 'pass', 'reversals', 'takedowns_landed', 
                         'takedowns_attempts', 'sig_strikes_landed', 'sig_strikes_attempts', 'total_strikes_landed', 'total_strikes_attempts', 'head_strikes_landed',
@@ -519,30 +524,76 @@ class DataHandler:
             if os.path.isfile(image_file_path): # skip names that already have images
                 continue
             self.scrape_pictures(name)
+            
+    def save_fightoddsio_to_vegas_odds_json_and_merge_with_predictions_df(self, predictions_df):
+        print('getting bookie odds from fightodds.io')
+        odds_df = self.odds_getter.make_odds_df()
+        odds_df['fighter dk expected value'] = np.nan
+        odds_df['opponent dk expected value'] = np.nan
+        
+        # cannot ipdb before oddsgetter makes the selenium request
+        # import ipdb; ipdb.set_trace(context=10)  # uncomment to debug
+        
+        # merge into predictions_df 
+        # TODO IF WE COME TO TRUST THIS fightodds.io website we can use this as our source of upcoming fights instead of ufcstats.com and avoid the merge 
+        for i in range(len(predictions_df)):
+            fighter = predictions_df['fighter name'][i]
+            opponent = predictions_df['opponent name'][i]
+            # find row in odds_df where fighter and opponent match (could be in either order in the other df)
+            odds_row = odds_df[same_name_vect(odds_df['fighter name'], fighter) & same_name_vect(odds_df['opponent name'], opponent)]
+            fighter_a = 'fighter'
+            fighter_b = 'opponent'
+            if odds_row.empty:
+                opponent = predictions_df['fighter name'][i]
+                fighter = predictions_df['opponent name'][i]
+                fighter_a = 'opponent'
+                fighter_b = 'fighter'
+                odds_row = odds_df[same_name_vect(odds_df['fighter name'], fighter) & same_name_vect(odds_df['opponent name'], opponent)]
+            if odds_row.empty:
+                print(f'No odds found for {fighter} vs {opponent} on fightodds.io, skipping...')
+                continue
+            for bookie in ['DraftKings', 'BetMGM', 'Caesars', 'BetRivers', 'FanDuel', 'PointsBet', 'Unibet', 'Bet365', 'BetWay', '5D', 'Ref']:
+                if f'fighter {bookie}' in odds_row.columns:
+                    predictions_df.at[i, f'fighter {bookie}'] = odds_row[f'{fighter_a} {bookie}'].values[0]
+                    predictions_df.at[i, f'opponent {bookie}'] = odds_row[f'{fighter_b} {bookie}'].values[0]
+            # add average odds for fighter and opponent
+            predictions_df.at[i, f'average bookie odds'] = odds_row['average bookie odds'].values[0]
+            
+            # add expected values for fighter and opponent
+            fighter_predicted_odds = predictions_df.at[i, 'predicted fighter odds']
+            dk_fighter_vegas_odds = predictions_df.at[i, f'fighter DraftKings']
+            dk_opponent_vegas_odds = predictions_df.at[i, f'opponent DraftKings']
+            if not fighter_predicted_odds or not dk_fighter_vegas_odds or not dk_opponent_vegas_odds:
+                continue  # skip if any of these values are missing
+            fighter_predicted_odds = int(fighter_predicted_odds)
+            dk_fighter_vegas_odds = int(dk_fighter_vegas_odds)
+            dk_opponent_vegas_odds = int(dk_opponent_vegas_odds)
+            expected_value_dict = expected_value(fighter_predicted_odds, dk_fighter_vegas_odds, dk_opponent_vegas_odds)
+            fighter_ev = expected_value_dict['fighter_ev']
+            opponent_ev = expected_value_dict['opponent_ev']
+            predictions_df.at[i, f'fighter dk expected value'] = fighter_ev
+            predictions_df.at[i, f'opponent dk expected value'] = opponent_ev
+            
+        # save to vegas_oddsjson
+        # odds_df= self.drop_irrelevant_fights(odds_df,3) #allows 3 bookies to have missing odds. can increase this to 2 or 3 as needed
+        # odds_df = self.drop_non_ufc_fights(odds_df)
+        #odds_df=drop_repeats(odds_df)
+        print('saving odds to content/data/external/vegas_odds.json')
+        result = odds_df.to_json()
+        parsed = json.loads(result)
+        jsonFilePath='content/data/external/vegas_odds.json'
+        with open(jsonFilePath, 'w', encoding='utf-8') as jsonf:
+           jsonf.write(json.dumps(parsed, indent=4))
+        print('saved to '+jsonFilePath)
+        return predictions_df
     
     def update_prediction_history(self):
-        
-        # TODO HAVE THE DATA HANDLER DO THIS (make this its own function and add to update_and_rebuild_model.py)
-        #print('scraping bookie odds from bestfightodds.com')
-        #odds_df = get_odds()
-        #odds_df=drop_irrelevant_fights(odds_df,3) #allows 3 bookies to have missing odds. can increase this to 2 or 3 as needed
-        #odds_df=drop_non_ufc_fights(odds_df)
-        #odds_df=drop_repeats(odds_df)
-        #print('saving odds to content/data/external/vegas_odds.json')
-        #save to json
-        #result = odds_df.to_json()
-        #parsed = json.loads(result)
-        #jsonFilePath='content/data/external/vegas_odds.json'
-        #with open(jsonFilePath, 'w', encoding='utf-8') as jsonf:
-        #    jsonf.write(json.dumps(parsed, indent=4))
-        #print('saved to '+jsonFilePath)
 
-        vegas_odds_old=self.get('vegas_odds', filetype='json') # this is the old vegas odds dataframe
+        vegas_odds_old=self.get('vegas_odds', filetype='json') # this is the old vegas odds dataframe (from last week)
         ufc_fights_crap = self.get('ufc_fights_crap') # THIS SHOULD HAVE BEEN UPDATED AT THIS POINT! WE SHOULD ADD A CHECK TO CHECK THIS
 
         # getting rid of fights that didn't actually happen and adding correctness results of those that did
-        bad_indices = self.get_bad_indices(vegas_odds_old, ufc_fights_crap)
-        vegas_odds_old = vegas_odds_old.drop(bad_indices)
+        vegas_odds_old = self.update_prediction_correctness(vegas_odds_old, ufc_fights_crap)
 
         #making a copy of vegas_odds
         vegas_odds_copy=vegas_odds_old.copy()
@@ -572,6 +623,7 @@ class DataHandler:
         with open('content/data/external/card_info.json', 'w') as outfile:
             json.dump(card_info_dict, outfile)            
             
+    # TODO vegas_odds is really not the right name for this data as it contains predictions, not just vegas odds
     def update_vegas_odds(self, vegas_odds):
         #save to json
         result = vegas_odds.to_json()
@@ -581,7 +633,7 @@ class DataHandler:
             jsonf.write(json.dumps(parsed, indent=4))
         print('saved to '+jsonFilePath)
         
-    def scrape_pictures(name):
+    def scrape_pictures(self, name):
         try:
             URL = "https://www.google.com/search?q="+name+" ufc fighting" + \
                 "&sxsrf=ALeKk03xBalIZi7BAzyIRw8R4_KrIEYONg:1620885765119&source=lnms&tbm=isch&sa=X&ved=2ahUKEwjv44CC_sXwAhUZyjgGHSgdAQ8Q_AUoAXoECAEQAw&cshid=1620885828054361"
@@ -665,7 +717,7 @@ class DataHandler:
         return df
     
     # TODO name should better indicate the context
-    def get_bad_indices(self, vegas_odds_old, ufc_fights_crap):
+    def update_prediction_correctness(self, vegas_odds_old, ufc_fights_crap):
         r"""
         This function checks the vegas odds dataframe against the ufc fights dataframe to find fights that didn't happen
         and to add correctness results for those that did happen. It returns a list of indices of fights that didn't happen.
@@ -673,11 +725,18 @@ class DataHandler:
         """
         # getting rid of fights that didn't actually happen and adding correctness results of those that did
         bad_indices = []
+        vegas_odds_old['dk profit per 100'] = 0
         for index1, row1 in vegas_odds_old.iterrows():
             card_date = row1['date']
             relevant_fights = ufc_fights_crap[pd.to_datetime(ufc_fights_crap['date']) == card_date]
             print(f'searching through {relevant_fights.shape[0]//2} confirmed fights on {str(card_date).split(" ")[0]} for {row1["fighter name"]} vs {row1["opponent name"]}')
             fighter_odds = row1['predicted fighter odds']
+            fighter_ev = row1.get('fighter dk expected value')
+            opponent_ev = row1.get('opponent dk expected value')
+            fighter_dk_odds = row1.get('fighter DraftKings')
+            opponent_dk_odds = row1.get('opponent DraftKings')
+            betting_on, potential_profit = get_profit_from_ev_and_dk_odds(fighter_ev, opponent_ev, fighter_dk_odds, opponent_dk_odds)
+            
             match_found = False
             # if no prediction was made, throw it away
             if fighter_odds == '':
@@ -686,18 +745,28 @@ class DataHandler:
             else: # if a prediction was made, check if the fight actually happened and then check if the prediction was correct
                 for index2, row2 in relevant_fights.iterrows():
                     if same_name(row1['fighter name'], row2['fighter']) and same_name(row1['opponent name'], row2['opponent']):
+                        
                         match_found = True
                         print('adding fight from '+str(card_date)+' between '+row1['fighter name']+' and '+row1['opponent name'])
                         if (int(fighter_odds) < 0 and row2['result'] == 'W') or (int(fighter_odds) > 0 and row2['result'] == 'L'):
                             vegas_odds_old.at[index1,'correct?'] = 1
                         else:
                             vegas_odds_old.at[index1,'correct?'] = 0
+                        # fill in the profit per 100 bet based on the expected value of the fighter from DraftKings and our prediction
+                        if potential_profit > 0: # check if we even made a bet
+                            if betting_on == 'fighter' and row2['result'] == 'W':
+                                vegas_odds_old.at[index1, 'dk profit per 100'] = potential_profit
+                            elif betting_on == 'opponent' and row2['result'] == 'L':
+                                vegas_odds_old.at[index1, 'dk profit per 100'] = potential_profit
+                            else:
+                                vegas_odds_old.at[index1, 'dk profit per 100'] = -100
                         # TODO add case for draw
                         break
                 if not match_found: # if the fight didn't happen, throw it away
                     bad_indices.append(index1)
                     print('fight from '+str(card_date)+' between '+row1['fighter name']+' and '+row1['opponent name'] + ' not found in ufc_fights_crap.csv')
-        return bad_indices
+        vegas_odds_old = vegas_odds_old.drop(bad_indices)
+        return vegas_odds_old
                 
     def populate_new_fights_with_statistics(self, new_rows):
         # Note, getting this warning a lot
@@ -892,96 +961,6 @@ class DataHandler:
         return new_rows
     
     ########### FUNCTIONS USED IN update_data_csvs_and_jsons.py ###########
-    def get_odds_two_rows_per_fight(self):
-        # TODO use https://fightodds.io/ instead. bestfightodds.com is not working anymore
-        url = 'https://www.bestfightodds.com'
-        page = requests.get(url)
-        soup = BeautifulSoup(page.content, "html.parser")
-        mydivs = soup.find_all("tr", {"class": ""})
-        rows = [tr for tr in mydivs if 'bestbet' in str(tr)]
-        names = []
-        oddsDicts = []
-        books = ['DraftKings', 'BetMGM', 'Caesars', 'BetRivers', 'FanDuel',
-                'PointsBet', 'Unibet', 'Bet365', 'BetWay', '5D', 'Ref']
-        for row in rows:
-            # gets name of fighter in row
-            name = row.find_all("span", {"class": "t-b-fcc"})[0].text
-            oddsList = [name]
-            i = 0
-            for stat in row.select('td'):
-                i += 1
-                if i > 11:
-                    break
-                try:
-                    odds = stat.select('span')[0].text
-                    oddsList.append(odds)
-                except:
-                    oddsList.append('')
-            names.append(name)
-            oddsDicts.append(dict(zip(['name']+books, oddsList)))
-        oddsDict = dict(zip(names, oddsDicts))
-        names = list(oddsDict.keys())
-        row0 = oddsDict[list(oddsDict.keys())[0]]
-        odds_df = pd.DataFrame(row0, index=[0])
-        for i in range(1, len(names)):
-            row = oddsDict[names[i]]
-            odds_df = pd.concat([odds_df, pd.DataFrame(row, index=[i])], axis=0)
-        return odds_df
-
-
-    # problem: the fights in the "future events" category do not get lined up properly
-    def get_odds(self):
-        url = 'https://www.bestfightodds.com'
-        page = requests.get(url)
-        soup = BeautifulSoup(page.content, "html.parser")
-        mydivs = soup.find_all("tr", {"class": ""})
-        rows = [tr for tr in mydivs if 'bestbet' in str(tr)]
-        names = []
-        oddsDicts = []
-        books = ['DraftKings', 'BetMGM', 'Caesars', 'BetRivers', 'FanDuel',
-                'PointsBet', 'Unibet', 'Bet365', 'BetWay', '5D', 'Ref']
-        for row in rows:
-            # gets name of fighter in row
-            name = row.find_all("span", {"class": "t-b-fcc"})[0].text
-            oddsList = [name]
-            i = 0
-            for stat in row.select('td'):
-                i += 1
-                if i > 11:
-                    break
-                try:
-                    odds = stat.select('span')[0].text
-                    oddsList.append(odds)
-                except:
-                    oddsList.append('')
-            while name in names:
-                name += '.'
-            names.append(name)
-            oddsDicts.append(dict(zip(['name']+books, oddsList)))
-        oddsDict = dict(zip(names, oddsDicts))
-        names = list(oddsDict.keys())
-        row0 = oddsDict[list(oddsDict.keys())[0]]
-        odds_df = pd.DataFrame(row0, index=[0])
-        for i in range(1, len(names)):
-            row = oddsDict[names[i]]
-            odds_df = pd.concat([odds_df, pd.DataFrame(row, index=[i])], axis=0)
-        # making it so each fight has just a single row instead of two rows
-        # making dataframe just for even indexed columns
-        odds_df_evens = odds_df[odds_df.index % 2 == 0]
-        newcolumns1 = {}
-        for col in list(odds_df_evens.columns):
-            newcolumns1[col] = 'fighter '+col
-        odds_df_evens = odds_df_evens.rename(columns=newcolumns1)
-        odds_df_evens.reset_index(drop=True, inplace=True)
-        # making dataframe just for odd indexed columns
-        odds_df_odds = odds_df[odds_df.index % 2 == 1]
-        newcolumns2 = {}
-        for col in list(odds_df_odds.columns):
-            newcolumns2[col] = 'opponent '+col
-        odds_df_odds = odds_df_odds.rename(columns=newcolumns2)
-        odds_df_odds.reset_index(drop=True, inplace=True)
-        new_odds_df = pd.concat([odds_df_evens, odds_df_odds], axis=1)
-        return new_odds_df
 
     # input looks like 'July 15th'. Need to add year to it
     def convert_scraped_date_to_standard_date(self, input_date) -> str:

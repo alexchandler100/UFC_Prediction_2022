@@ -43,6 +43,8 @@ def same_name(str1, str2, verbose = False):
             return False
     except:
         return False
+    
+same_name_vect = np.vectorize(same_name)
 
 # checks if a fighter is in the ufc
 
@@ -560,6 +562,7 @@ def time_in_octagon(guy, day1=date.today().strftime('%B %d, %Y')):
 
 
 def avg_count(stat, guy, inf_abs, day1=date.today().strftime('%B %d, %Y')):
+    # TODO make this faster by using vectorized operations like masking, same_name_vect, time_diff_vect, etc.
     summ = 0
     if inf_abs == 'inf':
         good_indices = [i for i in ufc_fights_crap.index.values if same_name(
@@ -704,3 +707,71 @@ def clean_method_for_winner_predictions(a):
     else:
         return 'bullshit'
 
+# for computing expectation values
+# maybe has overlap with functions in the fight predictor
+def odds_to_prob(odds):
+    """Convert American odds to implied probability."""
+    if odds > 0:
+        return 100 / (odds + 100)
+    else:
+        return abs(odds) / (abs(odds) + 100)
+
+def odds_to_return(odds):
+    """Convert American odds to return per $1 bet."""
+    if odds > 0:
+        return odds / 100
+    else:
+        return 100 / abs(odds)
+
+def expected_value(fair_odds_a, vegas_odds_a, vegas_odds_b):
+    # dont need fair_odds_b since fair odds are equal
+    # Convert fair odds to probabilities
+    p_a = odds_to_prob(fair_odds_a)
+    p_b = 1 - p_a  # assume binary outcome
+
+    # Convert Vegas odds to returns
+    r_a = odds_to_return(vegas_odds_a)
+    r_b = odds_to_return(vegas_odds_b)
+
+    # Expected value per $1 bet
+    ev_a = p_a * r_a - p_b  # betting on Team A
+    ev_b = p_b * r_b - p_a  # betting on Team B
+
+    return {
+        "fighter_ev": round(ev_a, 4),
+        "opponent_ev": round(ev_b, 4),
+        "best_bet": "fighter" if ev_a > ev_b and ev_a > 0 else ("opponent" if ev_b > ev_a and ev_b > 0 else "No +EV bet")
+    }
+
+def get_profit_from_ev_and_dk_odds(fighter_ev, opponent_ev, fighter_dk_odds, opponent_dk_odds):
+    """
+    Calculate the profit from expected value and DraftKings odds.
+    
+    Parameters:
+    - fighter_ev: Expected value for the fighter.
+    - opponent_ev: Expected value for the opponent.
+    - dk_odds_fighter: DraftKings odds for the fighter.
+    - dk_odds_opponent: DraftKings odds for the opponent.
+    
+    Returns:
+    - betting_on: Which fighter to bet on ('fighter' or 'opponent').
+    - potential_profit: Potential profit from the bet.
+    """
+    # TODO ensure ev and odds values exist and are valid
+    betting_on = ''
+    potential_profit = 0
+    if not fighter_ev or not opponent_ev or not fighter_dk_odds or not opponent_dk_odds:
+        return betting_on, potential_profit
+    if fighter_ev > 0 and fighter_ev >= opponent_ev:
+        if fighter_dk_odds > 0:
+            potential_profit = int(fighter_dk_odds)
+        else:
+            potential_profit = (100 / abs(int(fighter_dk_odds))) * 100
+        betting_on = 'fighter'
+    elif opponent_ev > 0 and opponent_ev > fighter_ev:
+        if opponent_dk_odds > 0:
+            potential_profit = int(opponent_dk_odds)
+        else:
+            potential_profit = (100 / abs(int(opponent_dk_odds))) * 100
+        betting_on = 'opponent'
+    return betting_on, potential_profit

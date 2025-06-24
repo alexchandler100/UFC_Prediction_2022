@@ -26,13 +26,14 @@ print('Saving results of previous card to prediction_history.json')
 # vegas odds is always a week ahead of the prediction history, so we can use it to update the prediction history by comparing vegas_odds and ufc_fights_crap which contains the results from last week
 dh.update_prediction_history()
 
-print('Scraping next ufc fight card from bestfightodds.com')
+print('Scraping next ufc fight card from fightodds.io')
 print("###############################################################################################################")    
 dh.update_card_info()
 card_date, card_title, fights_list = dh.get_next_fight_card()
 prediction_history = dh.get('prediction_history', filetype='json')
-vegas_odds = fight_predictor.predict_upcoming_fights(prediction_history, fights_list, card_date, theta, b)
-dh.update_vegas_odds(vegas_odds)
+predicted_odds_df = fight_predictor.predict_upcoming_fights(prediction_history, fights_list, card_date, theta, b)
+# fill in vegas odds from ufcfights.io
+predicted_odds_df_with_vegas_odds = dh.save_fightoddsio_to_vegas_odds_json_and_merge_with_predictions_df(predicted_odds_df)
+dh.update_vegas_odds(predicted_odds_df_with_vegas_odds)
 print('saving scraped fights and predictions to content/data/external/vegas_odds.json')
-print('TODO: scrape odds too. Currently only scraping names, date, and card title')
 print("###############################################################################################################")
