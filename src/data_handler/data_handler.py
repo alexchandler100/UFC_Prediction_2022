@@ -44,8 +44,8 @@ from fight_stat_helpers import (in_ufc,
                        time_diff_vect,
                        fight_math_diff_vect,
                        fighter_score_diff_vect,
-                       expected_value,
-                       get_profit_from_ev_and_dk_odds
+                       get_kelly_bet_from_ev_and_dk_odds,
+                       bet_payout
             )
 
 from odds_getter import OddsGetter
@@ -528,8 +528,8 @@ class DataHandler:
     def save_fightoddsio_to_vegas_odds_json_and_merge_with_predictions_df(self, predictions_df):
         print('getting bookie odds from fightodds.io')
         odds_df = self.odds_getter.make_odds_df()
-        odds_df['fighter dk expected value'] = np.nan
-        odds_df['opponent dk expected value'] = np.nan
+        odds_df['fighter bet bankroll percentage'] = np.nan
+        odds_df['opponent bet bankroll percentage'] = np.nan
         
         # cannot ipdb before oddsgetter makes the selenium request
         # import ipdb; ipdb.set_trace(context=10)  # uncomment to debug
@@ -568,11 +568,10 @@ class DataHandler:
             fighter_predicted_odds = int(fighter_predicted_odds)
             dk_fighter_vegas_odds = int(dk_fighter_vegas_odds)
             dk_opponent_vegas_odds = int(dk_opponent_vegas_odds)
-            expected_value_dict = expected_value(fighter_predicted_odds, dk_fighter_vegas_odds, dk_opponent_vegas_odds)
-            fighter_ev = expected_value_dict['fighter_ev']
-            opponent_ev = expected_value_dict['opponent_ev']
-            predictions_df.at[i, f'fighter dk expected value'] = fighter_ev
-            predictions_df.at[i, f'opponent dk expected value'] = opponent_ev
+            fighter_bankroll_percentage, opponent_bankroll_percentage = get_kelly_bet_from_ev_and_dk_odds(fighter_predicted_odds, dk_fighter_vegas_odds, dk_opponent_vegas_odds)
+            predictions_df.at[i, 'fighter bet bankroll percentage'] = fighter_bankroll_percentage
+            predictions_df.at[i, 'opponent bet bankroll percentage'] = opponent_bankroll_percentage
+
             
         # save to vegas_oddsjson
         # odds_df= self.drop_irrelevant_fights(odds_df,3) #allows 3 bookies to have missing odds. can increase this to 2 or 3 as needed
@@ -591,13 +590,15 @@ class DataHandler:
 
         vegas_odds_old=self.get('vegas_odds', filetype='json') # this is the old vegas odds dataframe (from last week)
         ufc_fights_crap = self.get('ufc_fights_crap') # THIS SHOULD HAVE BEEN UPDATED AT THIS POINT! WE SHOULD ADD A CHECK TO CHECK THIS
+        prediction_history=self.get('prediction_history', filetype='json')
+        
+        currentBankroll = prediction_history['current bankroll after'].iloc[0] if 'current bankroll after' in prediction_history.columns else 300; # default bankroll if not present in prediction history
 
         # getting rid of fights that didn't actually happen and adding correctness results of those that did
-        vegas_odds_old = self.update_prediction_correctness(vegas_odds_old, ufc_fights_crap)
+        vegas_odds_old = self.update_prediction_correctness(vegas_odds_old, ufc_fights_crap, currentBankroll)
 
         #making a copy of vegas_odds
         vegas_odds_copy=vegas_odds_old.copy()
-        prediction_history=self.get('prediction_history', filetype='json')
 
         #add the newly scraped fights and predicted fights to the history of prediction list (idea: might be better to wait to join until after the fights happen)
         prediction_history = pd.concat([vegas_odds_copy, prediction_history], axis = 0).reset_index(drop=True)
@@ -717,7 +718,7 @@ class DataHandler:
         return df
     
     # TODO name should better indicate the context
-    def update_prediction_correctness(self, vegas_odds_old, ufc_fights_crap):
+    def update_prediction_correctness(self, vegas_odds_old, ufc_fights_crap, currentBankroll):
         r"""
         This function checks the vegas odds dataframe against the ufc fights dataframe to find fights that didn't happen
         and to add correctness results for those that did happen. It returns a list of indices of fights that didn't happen.
@@ -725,17 +726,19 @@ class DataHandler:
         """
         # getting rid of fights that didn't actually happen and adding correctness results of those that did
         bad_indices = []
-        vegas_odds_old['dk profit per 100'] = 0
-        for index1, row1 in vegas_odds_old.iterrows():
+        vegas_odds_old['fighter bet'] = 0
+        vegas_odds_old['opponent bet'] = 0
+        vegas_odds_old['current bankroll after'] = 0
+        for index1, row1 in vegas_odds_old.iloc[::-1].iterrows(): # iterate backwards in the order the fights actually happened
             card_date = row1['date']
+            # TODO this is slow but sort of necessary if we need to add multiple cards at the same time
             relevant_fights = ufc_fights_crap[pd.to_datetime(ufc_fights_crap['date']) == card_date]
             print(f'searching through {relevant_fights.shape[0]//2} confirmed fights on {str(card_date).split(" ")[0]} for {row1["fighter name"]} vs {row1["opponent name"]}')
             fighter_odds = row1['predicted fighter odds']
-            fighter_ev = row1.get('fighter dk expected value')
-            opponent_ev = row1.get('opponent dk expected value')
             fighter_dk_odds = row1.get('fighter DraftKings')
             opponent_dk_odds = row1.get('opponent DraftKings')
-            betting_on, potential_profit = get_profit_from_ev_and_dk_odds(fighter_ev, opponent_ev, fighter_dk_odds, opponent_dk_odds)
+            fighter_bankroll_percentage = row1.get('fighter bet bankroll percentage', 0)
+            opponent_bankroll_percentage = row1.get('opponent bet bankroll percentage', 0)
             
             match_found = False
             # if no prediction was made, throw it away
@@ -752,14 +755,21 @@ class DataHandler:
                             vegas_odds_old.at[index1,'correct?'] = 1
                         else:
                             vegas_odds_old.at[index1,'correct?'] = 0
-                        # fill in the profit per 100 bet based on the expected value of the fighter from DraftKings and our prediction
-                        if potential_profit > 0: # check if we even made a bet
-                            if betting_on == 'fighter' and row2['result'] == 'W':
-                                vegas_odds_old.at[index1, 'dk profit per 100'] = potential_profit
-                            elif betting_on == 'opponent' and row2['result'] == 'L':
-                                vegas_odds_old.at[index1, 'dk profit per 100'] = potential_profit
-                            else:
-                                vegas_odds_old.at[index1, 'dk profit per 100'] = -100
+                        # update the bankroll based on the bet made
+                        fighter_bet = 0
+                        opponent_bet = 0
+                        fighter_payout = 0
+                        opponent_payout = 0
+                        if fighter_bankroll_percentage > 0: # check if we even made a bet on the fighter
+                            fighter_bet = fighter_bankroll_percentage / 100 * currentBankroll
+                            vegas_odds_old.at[index1, 'fighter bet'] = fighter_bet
+                            fighter_payout = bet_payout(fighter_dk_odds, fighter_bet, row2['result'])
+                        if opponent_bankroll_percentage > 0: # check if we even made a bet on the opponent
+                            opponent_bet = opponent_bankroll_percentage / 100 * currentBankroll
+                            vegas_odds_old.at[index1, 'opponent bet'] = opponent_bet
+                            opponent_payout = bet_payout(opponent_dk_odds, opponent_bet, row2['result'])
+                        currentBankroll = currentBankroll + fighter_payout + opponent_payout - fighter_bet - opponent_bet
+                        vegas_odds_old.at[index1, 'current bankroll after'] = currentBankroll
                         # TODO add case for draw
                         break
                 if not match_found: # if the fight didn't happen, throw it away

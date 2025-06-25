@@ -742,36 +742,60 @@ def expected_value(fair_odds_a, vegas_odds_a, vegas_odds_b):
         "opponent_ev": round(ev_b, 4),
         "best_bet": "fighter" if ev_a > ev_b and ev_a > 0 else ("opponent" if ev_b > ev_a and ev_b > 0 else "No +EV bet")
     }
+    
+def odds_to_profit(odds):
+    """Convert American odds to profit per $1 bet."""
+    if odds > 0:
+        return odds / 100
+    else:
+        return 100 / abs(odds)  # profit + initial bet
 
-def get_profit_from_ev_and_dk_odds(fighter_ev, opponent_ev, fighter_dk_odds, opponent_dk_odds):
+def get_kelly_bet_from_ev_and_dk_odds(predicted_fighter_odds, fighter_dk_odds, opponent_dk_odds):
     """
     Calculate the profit from expected value and DraftKings odds.
     
     Parameters:
-    - fighter_ev: Expected value for the fighter.
-    - opponent_ev: Expected value for the opponent.
+    - predicted_fighter_odds: Predicted odds for the fighter.
     - dk_odds_fighter: DraftKings odds for the fighter.
     - dk_odds_opponent: DraftKings odds for the opponent.
     
     Returns:
-    - betting_on: Which fighter to bet on ('fighter' or 'opponent').
-    - potential_profit: Potential profit from the bet.
+    - fighter_bankroll_percentage: Percentage of bankroll to bet based on Kelly Criterion.
+    - opponent_bankroll_percentage: Percentage of bankroll to bet based on Kelly Criterion.
     """
     # TODO ensure ev and odds values exist and are valid
-    betting_on = ''
-    potential_profit = 0
-    if not fighter_ev or not opponent_ev or not fighter_dk_odds or not opponent_dk_odds:
-        return betting_on, potential_profit
-    if fighter_ev > 0 and fighter_ev >= opponent_ev:
-        if fighter_dk_odds > 0:
-            potential_profit = int(fighter_dk_odds)
+    # first convert predicted odds from American format to a probability 
+    predicted_fighter_probability = odds_to_prob(predicted_fighter_odds)
+
+    fighter_b = odds_to_profit(fighter_dk_odds)
+    fighter_bankroll_percentage = (predicted_fighter_probability - (1 - predicted_fighter_probability) / fighter_b) * 100
+
+    opponent_b = odds_to_profit(opponent_dk_odds)
+    predicted_opponent_probability = 1 - predicted_fighter_probability
+    opponent_bankroll_percentage = (predicted_opponent_probability - (1 - predicted_opponent_probability) / opponent_b) * 100
+
+    return fighter_bankroll_percentage, opponent_bankroll_percentage
+
+def bet_payout(american_odds, bet_amount, result):
+    """
+    Calculate the payout from a bet based on American odds.
+    
+    Parameters:
+    - american_odds: The American odds for the bet.
+    - bet_amount: The amount of money bet.
+    - result: The result of the bet ('W' or 'L').
+    
+    Returns:
+    - payout: The total payout from the bet.
+    """
+    if result == 'W':
+        if american_odds > 0:
+            payout = bet_amount + (bet_amount * american_odds / 100)
         else:
-            potential_profit = (100 / abs(int(fighter_dk_odds))) * 100
-        betting_on = 'fighter'
-    elif opponent_ev > 0 and opponent_ev > fighter_ev:
-        if opponent_dk_odds > 0:
-            potential_profit = int(opponent_dk_odds)
-        else:
-            potential_profit = (100 / abs(int(opponent_dk_odds))) * 100
-        betting_on = 'opponent'
-    return betting_on, potential_profit
+            payout = bet_amount + (bet_amount * 100 / abs(american_odds))
+    elif result == 'L':
+        payout = 0
+    else:
+        raise ValueError("Result must be 'W' or 'L'.")
+    
+    return payout

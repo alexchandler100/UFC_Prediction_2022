@@ -414,10 +414,9 @@
       fighters have fought previously in the UFC).
       The predicted winner is shown in <span style="color:gold">gold</span>.
       <br>
-      In the final column we show the expected value of betting on the fighter or opponent based on the predicted
-      odds and the DraftKings odds. The number shown is the expected profit multiplier. E.g. if the expected value shows -.2, .3 then betting $100 on the fighter
-      would yield an expected profit of -$20 and betting $100 on the opponent would yield an expected profit of $30. 
-      In <span style="color:rgb(133, 187, 101)">green</span> we show the positive expectation values indicating a likely profitable bet.
+      In the final column we show the Kelly bankroll percentages of betting on the fighter or opponent based on the predicted
+      odds and the DraftKings odds. The number shown is bankroll percentage recommended by the Kelly criterion which maximizes long term profit for binary outcome bets.
+      In <span style="color:rgb(133, 187, 101)">green</span> we show the positive bankroll percentages indicating a likely profitable bet.
     </center>
     <center>
       <table id="upcoming" style="margin-top:.5cm; display: none">
@@ -431,7 +430,7 @@
             <th style="color: #ffffff;background-color: #323232;font-size:15px;">Predicted<br>Fighter<br>Odds</th>
             <th style="color: #ffffff;background-color: #323232;font-size:15px;">Predicted<br>Opponent<br>Odds</th>
             <th style="color: #ffffff;background-color: #323232;font-size:15px;">DraftKings<br>Odds</th>
-            <th style="color: #ffffff;background-color: #323232;font-size:15px;">DraftKings<br>Expected<br>Value</th>
+            <th style="color: #ffffff;background-color: #323232;font-size:15px;">Kelly<br>bankroll%</th>
           </tr>
         </thead>
         <tbody>
@@ -470,13 +469,12 @@
             <th colspan="7">Fight Prediction History</th>
           </tr>
           <tr id="history">
-            <th style="color: #ffffff;background-color: #323232; font-size:15px;">Fighter</th>
-            <th style="color: #ffffff;background-color: #323232;font-size:15px;">Opponent</th>
+            <th style="color: #ffffff;background-color: #323232;font-size:15px;">Fighter vs Opponent</th>
             <th style="color: #ffffff;background-color: #323232;font-size:15px;">Predicted<br>Odds</th>
-            <th style="color: #ffffff;background-color: #323232;font-size:15px;">Expected<br>Values</th>
-            <th style="color: #ffffff;background-color: #323232;font-size:15px;">Correct?</th>
             <th style="color: #ffffff;background-color: #323232;font-size:15px;">DraftKings<br>Odds</th>
-            <th style="color: #ffffff;background-color: #323232;font-size:15px;">DraftKings<br>Profit<br>Per $100</th>
+            <th style="color: #ffffff;background-color: #323232;font-size:15px;">Kelly<br>Derived<br>bankroll%s</th>
+            <th style="color: #ffffff;background-color: #323232;font-size:15px;">Kelly<br>Derived<br>bets</th>
+            <th style="color: #ffffff;background-color: #323232;font-size:15px;">Current<br>Bankroll</th>
             <!-- TODO add column for who the EV bet is on. DO THIS INSTEAD OF CORRECTLY PREDICTED COLUMN? OR HAVE BOTH? -->
           </tr>
         </thead>

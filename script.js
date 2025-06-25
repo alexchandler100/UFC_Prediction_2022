@@ -756,17 +756,17 @@ setTimeout(() => { //timeout because other data needs to load first (probably be
     opponentOdds = vegas_odds['predicted opponent odds'][i]
     fighterDraftKingsOdds = vegas_odds['fighter DraftKings'][i]
     opponentDraftKingsOdds = vegas_odds['opponent DraftKings'][i]
-    fighterExpectedValueCol = vegas_odds['fighter dk expected value'] || null; // default to null if not present
-    opponentExpectedValueCol = vegas_odds['opponent dk expected value'] || null; // default to null if not present
-    if (fighterExpectedValueCol != null) {
-      fighterExpectedValue = parseFloat(fighterExpectedValueCol[i]).toFixed(2);
+    fighterBankrollPercentageCol = vegas_odds['fighter bet bankroll percentage'] || null; // default to null if not present
+    opponentBankrollPercentageCol = vegas_odds['opponent bet bankroll percentage'] || null; // default to null if not present
+    if (fighterBankrollPercentageCol != null) {
+      fighterBankrollPercentage = parseFloat(fighterBankrollPercentageCol[i]).toFixed(2);
     } else {
-      fighterExpectedValue = null; // default to null if not present
+      fighterBankrollPercentage = null; // default to null if not present
     }
-    if (opponentExpectedValueCol != null) {
-      opponentExpectedValue = parseFloat(opponentExpectedValueCol[i]).toFixed(2);
+    if (opponentBankrollPercentageCol != null) {
+      opponentBankrollPercentage = parseFloat(opponentBankrollPercentageCol[i]).toFixed(2);
     } else {
-      opponentExpectedValue = null; // default to null if not present
+      opponentBankrollPercentage = null; // default to null if not present
     }
 
     upcomingFightsTable.rows.item(0).cells.item(0).style.backgroundColor = "#212121";
@@ -804,20 +804,20 @@ setTimeout(() => { //timeout because other data needs to load first (probably be
     // make the fighter and opponent names bold and gold if they have higher expected value
     // than the opponent and fighter respectively
     let evPickColor = '#85BB65'; // default color for expected value text (money green)
-    let coloredEvText = '';
-    if (fighterExpectedValue && opponentExpectedValue) { // check if both expected values are defined
-      if (fighterExpectedValue > opponentExpectedValue && fighterExpectedValue > 0) { //if fighter has higher expected value
-        coloredEvText = `<span style="color:${evPickColor}">${fighterExpectedValue}</span>, <span>${opponentExpectedValue}</span>`;
-      } else if (opponentExpectedValue > fighterExpectedValue && opponentExpectedValue > 0) { //if opponent has higher expected value
-        coloredEvText = `<span>${fighterExpectedValue}</span>, <span style="color:${evPickColor}">${opponentExpectedValue}</span>`;
-      } else if (fighterExpectedValue == opponentExpectedValue && fighterExpectedValue > 0) { //if both have same expected value
-        coloredEvText = `<span style="color:${evPickColor}">${fighterExpectedValue}</span>, <span style="color:${evPickColor}">${opponentExpectedValue}</span>`;
+    let coloredBrText = '';
+    if (fighterBankrollPercentage && opponentBankrollPercentage) { // check if both expected values are defined
+      if (fighterBankrollPercentage > opponentBankrollPercentage && fighterBankrollPercentage > 0) { //if fighter has higher expected value
+        coloredBrText = `<span style="color:${evPickColor}">${fighterBankrollPercentage}</span>, <span>${opponentBankrollPercentage}</span>`;
+      } else if (opponentBankrollPercentage > fighterBankrollPercentage && opponentBankrollPercentage > 0) { //if opponent has higher expected value
+        coloredBrText = `<span>${fighterBankrollPercentage}</span>, <span style="color:${evPickColor}">${opponentBankrollPercentage}</span>`;
+      } else if (fighterBankrollPercentage == opponentBankrollPercentage && fighterBankrollPercentage > 0) { //if both have same expected value
+        coloredBrText = `<span style="color:${evPickColor}">${fighterBankrollPercentage}</span>, <span style="color:${evPickColor}">${opponentBankrollPercentage}</span>`;
       } else { //if both have negative expected value
-        coloredEvText = `<span>${fighterExpectedValue}</span>, <span>${opponentExpectedValue}</span>`;
+        coloredBrText = `<span>${fighterBankrollPercentage}</span>, <span>${opponentBankrollPercentage}</span>`;
       }
     }
 
-    tr.cells.item(5).innerHTML = coloredEvText;
+    tr.cells.item(5).innerHTML = coloredBrText;
 
     tr.cells.item(0).style.backgroundColor = "#323232";
     tr.cells.item(1).style.backgroundColor = "#323232";
@@ -844,27 +844,46 @@ setTimeout(() => { //this builds a table for the history of predictions which is
     opponent = prediction_history['opponent name'][i]
     fighterOdds = String(prediction_history['predicted fighter odds'][i])
     opponentOdds = String(prediction_history['predicted opponent odds'][i])
-    fighterExpectedValueCol = prediction_history['fighter dk expected value'] || null; // default to null if not present
-    opponentExpectedValueCol = prediction_history['opponent dk expected value'] || null; // default to null if not present
-    if (fighterExpectedValueCol != null) {
-      fighterExpectedValue = parseFloat(fighterExpectedValueCol[i]).toFixed(2);
-    } else {
-      fighterExpectedValue = 'N/A'; // or some default value
-    }
-    if (opponentExpectedValueCol != null) {
-      opponentExpectedValue = parseFloat(opponentExpectedValueCol[i]).toFixed(2);
-    } else {
-      opponentExpectedValue = 'N/A'; // or some default value
-    }
+
     dkOdds = 'unknown'; // default value if DraftKings odds are not present
     if (prediction_history['fighter DraftKings'][i] && prediction_history['opponent DraftKings'][i]) {
       dkOdds = `${prediction_history['fighter DraftKings'][i]}, ${prediction_history['opponent DraftKings'][i]}`
     }
-    profitPer100Col = prediction_history['dk profit per 100'] || null; // default to null if not present
-    if (profitPer100Col != null && dkOdds != 'unknown') {
-      profitPer100 = profitPer100Col[i]
+
+    fighterBankrollPercentageCol = prediction_history['fighter bet bankroll percentage'] || null; // default to null if not present
+    if (fighterBankrollPercentageCol != null) {
+      fighterBankrollPercentage = parseFloat(fighterBankrollPercentageCol[i]).toFixed(2);
     } else {
-      profitPer100 = 'N/A'; // or some default value
+      fighterBankrollPercentage = 'N/A'; // or some default value
+    }
+
+    fighterBetCol = prediction_history['fighter bet'] || null; // default to null if not present
+    if (fighterBetCol != null) {
+      fighterBet = parseFloat(fighterBetCol[i]).toFixed(2);
+    } else {
+      fighterBet = 'N/A'; // or some default value
+    }
+
+    opponentBankrollPercentageCol = prediction_history['opponent bet bankroll percentage'] || null; // default to null if not present
+    if (opponentBankrollPercentageCol != null) {
+      opponentBankrollPercentage = parseFloat(opponentBankrollPercentageCol[i]).toFixed(2);
+    } else {
+      opponentBankrollPercentage = 'N/A'; // or some default value
+    }
+
+    opponentBetCol = prediction_history['opponent bet'] || null; // default to null if not present
+    if (opponentBetCol != null) {
+      opponentBet = parseFloat(opponentBetCol[i]).toFixed(2);
+    } else {  
+      opponentBet = 'N/A'; // or some default value
+    }
+
+
+    bankrollCol = prediction_history['current bankroll after'] || null; // default to null if not present
+    if (bankrollCol != null) {    
+      currentBankroll = parseFloat(bankrollCol[i]).toFixed(2);
+    } else {
+      currentBankroll = 'N/A'; // or some default value
     }
 
     numberTotal += 1;
@@ -872,66 +891,55 @@ setTimeout(() => { //this builds a table for the history of predictions which is
     fightHistoryTable.rows.item(0).cells.item(0).style.backgroundColor = "#212121";
     var tbody = fightHistoryTable.tBodies[0]
     var tr = tbody.insertRow(-1);
-    var td1 = document.createElement('td');
-    var td2 = document.createElement('td');
-    var td3 = document.createElement('td'); // predicted odds
-    var td4 = document.createElement('td'); // expected values
-    var td5 = document.createElement('td'); // bet won?
-    var td6 = document.createElement('td'); // dk odds
-    var td7 = document.createElement('td'); // profit per 100
+    var td1 = document.createElement('td'); // Fighter vs Opponent
+    var td2 = document.createElement('td'); // Predicted Odds
+    var td3 = document.createElement('td'); // DraftKings Odds
+    var td4 = document.createElement('td'); // fighter / opponent bankroll percentage
+    var td5 = document.createElement('td'); // fighter bet / opponent bet
+    var td6 = document.createElement('td'); // current bankroll after
     tr.appendChild(td1);
     tr.appendChild(td2);
     tr.appendChild(td3);
     tr.appendChild(td4);
     tr.appendChild(td5);
     tr.appendChild(td6);
-    tr.appendChild(td7);
-    tr.cells.item(0).innerHTML = fighter;
-    tr.cells.item(1).innerHTML = opponent;
-    tr.cells.item(2).innerHTML = `${fighterOdds}, ${opponentOdds}`;
-    tr.cells.item(3).innerHTML = `${fighterExpectedValue}, ${opponentExpectedValue}`;
-    tr.cells.item(5).innerHTML = dkOdds;
-    tr.cells.item(6).innerHTML = profitPer100;
+
+    tr.cells.item(0).innerHTML = `${fighter} vs ${opponent}`;
+    tr.cells.item(1).innerHTML = `${fighterOdds}, ${opponentOdds}`;
+    tr.cells.item(2).innerHTML = dkOdds;
+    tr.cells.item(3).innerHTML = `${fighterBankrollPercentage}, ${opponentBankrollPercentage}`;
+    tr.cells.item(4).innerHTML = `${fighterBet} / ${opponentBet}`;
+    tr.cells.item(5).innerHTML = currentBankroll;
     tr.cells.item(0).style.backgroundColor = "#323232";
     tr.cells.item(1).style.backgroundColor = "#323232";
     tr.cells.item(2).style.backgroundColor = "#323232";
     tr.cells.item(3).style.backgroundColor = "#323232";
     tr.cells.item(4).style.backgroundColor = "#323232";
     tr.cells.item(5).style.backgroundColor = "#323232";
-    tr.cells.item(6).style.backgroundColor = "#323232";
     tr.cells.item(0).style.color = "#ffffff";
     tr.cells.item(1).style.color = "#ffffff";
     tr.cells.item(2).style.color = "#ffffff";
     tr.cells.item(3).style.color = "#ffffff";
     tr.cells.item(5).style.color = "#ffffff";
-    tr.cells.item(6).style.color = "#ffffff";
     // TODO UPDATE THIS TO DECIDE IF WE WON THE BET, NOT JUST GOT THE FAVORITE RIGHT
     if (prediction_history['correct?'][i] == 1) {
-      tr.cells.item(4).innerHTML = 'yes'
-      tr.cells.item(4).style.backgroundColor = "#00ff00";
+      tr.cells.item(1).style.backgroundColor = "#00ff00";
       numberModelCorrect += 1
+      color = 'gold'; //winner color
       if (parseInt(fighterOdds) < 0) {
-        tr.cells.item(0).style.fontWeight = "bold";
-        tr.cells.item(0).style.fontSize = "15px";
-        tr.cells.item(0).style.color = "#ffd700";
+        coloredFightText = `<span style="color:${color}">${fighter}</span> | vs | <span>${opponent}</span>`;
       } else {
-        tr.cells.item(1).style.fontWeight = "bold";
-        tr.cells.item(1).style.fontSize = "15px";
-        tr.cells.item(1).style.color = "#ffd700";
+        coloredFightText = `<span>${fighter}</span> | vs | <span style="color:${color}">${opponent}</span>`;
       }
     } else {
-      tr.cells.item(4).innerHTML = 'no'
-      tr.cells.item(4).style.backgroundColor = "#ff0000";
+      tr.cells.item(1).style.backgroundColor = "#ff0000";
       if (parseInt(fighterOdds) < 0) {
-        tr.cells.item(1).style.fontWeight = "bold";
-        tr.cells.item(1).style.fontSize = "15px";
-        tr.cells.item(1).style.color = "#ffd700";
+        coloredFightText = `<span>${fighter}</span> | vs | <span style="color:${color}">${opponent}</span>`;
       } else {
-        tr.cells.item(0).style.fontWeight = "bold";
-        tr.cells.item(0).style.fontSize = "15px";
-        tr.cells.item(0).style.color = "#ffd700";
+        coloredFightText = `<span style="color:${color}">${fighter}</span> | vs | <span>${opponent}</span>`;
       }
     }
+    tr.cells.item(0).innerHTML = coloredFightText;
   }
   var acc = numberModelCorrect / numberTotal;
   var accuracy = document.getElementById("myaccuracy")
@@ -960,7 +968,6 @@ setTimeout(() => {
   myTab.rows.item(1).cells.item(0).style.backgroundColor = "#323232";
   myTab.rows.item(1).cells.item(1).style.backgroundColor = "#323232";
   myTab.rows.item(1).cells.item(2).style.backgroundColor = "#323232";
-  myTab.rows.item(2).cells.item(0).style.backgroundColor = "#212121";
   /*
   for (let i = 3; i < 3 + 11; i++) {
     for (let j = 0; j < 3; j++) {
