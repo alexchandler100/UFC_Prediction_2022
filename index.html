@@ -425,7 +425,7 @@
             <th id="card title and date" style="white-space: pre" colspan="6">Upcoming Fights</th>
           </tr>
           <tr>
-            <th style="color: #ffffff;background-color: #323232; font-size:15px;">Fighter</th>
+            <th style="color: #ffffff;background-color: #323232;font-size:15px;">Fighter</th>
             <th style="color: #ffffff;background-color: #323232;font-size:15px;">Opponent</th>
             <th style="color: #ffffff;background-color: #323232;font-size:15px;">Predicted<br>Fighter<br>Odds</th>
             <th style="color: #ffffff;background-color: #323232;font-size:15px;">Predicted<br>Opponent<br>Odds</th>
@@ -439,7 +439,57 @@
     </center>
   </section>
 
+  <section>
+    <center>
+    <h2>Kelly Criterion Calculator</h2>
+        Here we give the user the capability to input live odds from any bookie (the above odds were grabbed on Wednesday 8pm MST from DraftKings and they have likely changed).
+        Live odds can be found at  <a href="https://fightodds.io/" target="_blank" rel="noopener noreferrer">fightodds.io</a>
+        <style>
+          #kelly-table {
+            border-collapse: collapse;
+            width: auto; /* prevents table from stretching */
+          }
+          
+          /* #kelly-table col.col-1 { width: 100px; }
+          #kelly-table col.col-2 { width: 200px; }
+          #kelly-table col.col-3 { width: 150px; } */
+          
+          #kelly-table th, #kelly-table td {
+            border: 1px solid #ccc;
+            padding: 8px;
+          }
+        </style>
 
+
+  <table id="kelly-table" style="margin-top:.5cm;">
+    <thead>
+      <tr>
+        <th style="color: #ffffff;background-color: #323232;font-size:15px;">Fighter<br>Predicted<br>Odds</th>
+        <th style="color: #ffffff;background-color: #323232;font-size:15px;">Opponent<br>Predicted<br>Odds</th>
+        <th style="color: #ffffff;background-color: #323232;font-size:15px;">Fighter<br>Vegas<br>Odds</th>
+        <th style="color: #ffffff;background-color: #323232;font-size:15px;">Opponent<br>Vegas<br>Odds</th>
+        <th style="color: #ffffff;background-color: #323232;font-size:15px;">Fighter<br>Kelly<br>Bankroll %</th>
+        <th style="color: #ffffff;background-color: #323232;font-size:15px;">Opponent<br>Kelly<br>Bankroll %</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td style="color: #ffffff;background-color: #323232;font-size:15px;"><input type="number" id="fighterPred"></td>
+        <td style="color: #ffffff;background-color: #323232;font-size:15px;"><input type="number" id="opponentPred"></td>
+        <td style="color: #ffffff;background-color: #323232;font-size:15px;"><input type="number" id="fighterVegas"></td>
+        <td style="color: #ffffff;background-color: #323232;font-size:15px;"><input type="number" id="opponentVegas"></td>
+        <td style="color: #ffffff;background-color: #323232;font-size:15px;" id="fighter kelly %">-</td>
+        <td style="color: #ffffff;background-color: #323232;font-size:15px;" id="opponent kelly %">-</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <br>
+  <button onclick="computeKelly()">Compute</button>
+
+
+    </center>
+  </section>
 
   <section id="pastfights" style="display:none">
     <div class="headers">

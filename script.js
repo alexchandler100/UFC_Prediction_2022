@@ -87,6 +87,55 @@ setTimeout(() => {
   });
 }, 500) // originally 250
 
+function americanToImpliedProb(odds) {
+  if (odds > 0) {
+    return 100 / (odds + 100);
+  } else {
+    return -odds / (-odds + 100);
+  }
+}
+
+function computeKelly() {
+  const fighterPred = parseFloat(document.getElementById('fighterPred').value);
+  const opponentPred = parseFloat(document.getElementById('opponentPred').value);
+  const fighterVegas = parseFloat(document.getElementById('fighterVegas').value);
+  const opponentVegas = parseFloat(document.getElementById('opponentVegas').value);
+
+  if (
+    isNaN(fighterPred) || isNaN(opponentPred) ||
+    isNaN(fighterVegas) || isNaN(opponentVegas)
+  ) {
+    alert("Please enter all values correctly.");
+    return;
+  }
+
+  const pFighter = americanToImpliedProb(fighterPred);
+  const pOpponent = americanToImpliedProb(opponentPred);
+
+  const qFighter = 1 - pFighter;
+  const qOpponent = 1 - pOpponent;
+
+  if (fighterVegas > 0){
+    bFighter = fighterVegas / 100;
+  } else {
+    bFighter = -100 / fighterVegas;
+  }
+  if (opponentVegas > 0){
+    bOpponent = opponentVegas / 100;
+  } else {
+    bOpponent = -100 / opponentVegas;
+  }
+
+  const kellyFighter = (bFighter * pFighter - qFighter) / bFighter;
+  const kellyOpponent = (bOpponent * pOpponent - qOpponent) / bOpponent;
+
+  document.getElementById("fighter kelly %").textContent =
+    kellyFighter > 0 ? (kellyFighter * 100).toFixed(2) + '%' : '0%';
+
+  document.getElementById("opponent kelly %").textContent =
+    kellyOpponent > 0 ? (kellyOpponent * 100).toFixed(2) + '%' : '0%';
+}
+
 const levenshteinDistance = (str1 = '', str2 = '') => {
   const track = Array(str2.length + 1).fill(null).map(() =>
     Array(str1.length + 1).fill(null));
@@ -922,10 +971,10 @@ setTimeout(() => { //this builds a table for the history of predictions which is
     tr.cells.item(3).style.color = "#ffffff";
     tr.cells.item(5).style.color = "#ffffff";
     // TODO UPDATE THIS TO DECIDE IF WE WON THE BET, NOT JUST GOT THE FAVORITE RIGHT
+    color = 'gold'; //winner color
     if (prediction_history['correct?'][i] == 1) {
       tr.cells.item(1).style.backgroundColor = "#00ff00";
       numberModelCorrect += 1
-      color = 'gold'; //winner color
       if (parseInt(fighterOdds) < 0) {
         coloredFightText = `<span style="color:${color}">${fighter}</span> | vs | <span>${opponent}</span>`;
       } else {
