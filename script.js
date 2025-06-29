@@ -936,13 +936,18 @@ setTimeout(() => { //this builds a table for the history of predictions which is
     }
 
     // TODO does not take into account if we bet on both the fighter and the opponent (maybe TODO)
-    betResult = prediction_history['bet result'][i]
-    if (betResult == 'W') {
-      bankrollColor = 'green'; // color based on bankroll difference
-    } else if (betResult == 'L') {
-      bankrollColor = 'red'; // color based on bankroll difference
+    betResultCol = prediction_history['bet result'] | null; // default to null if not present
+    if (betResultCol == null) {
+      bankrollColor = 'white'; // default color if bet result is not present
     } else {
-      bankrollColor = 'white'; // color based on bankroll difference
+      betResult = betResultCol[i]; // default to null if not present
+      if (betResult == 'W') {
+        bankrollColor = 'green'; // color based on bankroll difference
+      } else if (betResult == 'L') {
+        bankrollColor = 'red'; // color based on bankroll difference
+      } else {
+        bankrollColor = 'white'; // color based on bankroll difference
+      }
     }
 
     numberTotal += 1;
