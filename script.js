@@ -903,28 +903,28 @@ setTimeout(() => { //this builds a table for the history of predictions which is
     if (fighterBankrollPercentageCol != null) {
       fighterBankrollPercentage = parseFloat(fighterBankrollPercentageCol[i]).toFixed(2);
     } else {
-      fighterBankrollPercentage = 'N/A'; // or some default value
+      fighterBankrollPercentage = 0; // or some default value
     }
 
     fighterBetCol = prediction_history['fighter bet'] || null; // default to null if not present
     if (fighterBetCol != null) {
       fighterBet = parseFloat(fighterBetCol[i]).toFixed(2);
     } else {
-      fighterBet = 'N/A'; // or some default value
+      fighterBet = 0; // or some default value
     }
 
     opponentBankrollPercentageCol = prediction_history['opponent bet bankroll percentage'] || null; // default to null if not present
     if (opponentBankrollPercentageCol != null) {
       opponentBankrollPercentage = parseFloat(opponentBankrollPercentageCol[i]).toFixed(2);
     } else {
-      opponentBankrollPercentage = 'N/A'; // or some default value
+      opponentBankrollPercentage = 0; // or some default value
     }
 
     opponentBetCol = prediction_history['opponent bet'] || null; // default to null if not present
     if (opponentBetCol != null) {
       opponentBet = parseFloat(opponentBetCol[i]).toFixed(2);
     } else {  
-      opponentBet = 'N/A'; // or some default value
+      opponentBet = 0; // or some default value
     }
 
 
@@ -932,7 +932,17 @@ setTimeout(() => { //this builds a table for the history of predictions which is
     if (bankrollCol != null) {    
       currentBankroll = parseFloat(bankrollCol[i]).toFixed(2);
     } else {
-      currentBankroll = 'N/A'; // or some default value
+      currentBankroll = 0; // or some default value
+    }
+
+    // TODO does not take into account if we bet on both the fighter and the opponent (maybe TODO)
+    betResult = prediction_history['bet result'][i]
+    if (betResult == 'W') {
+      bankrollColor = 'green'; // color based on bankroll difference
+    } else if (betResult == 'L') {
+      bankrollColor = 'red'; // color based on bankroll difference
+    } else {
+      bankrollColor = 'white'; // color based on bankroll difference
     }
 
     numberTotal += 1;
@@ -958,7 +968,11 @@ setTimeout(() => { //this builds a table for the history of predictions which is
     tr.cells.item(2).innerHTML = dkOdds;
     tr.cells.item(3).innerHTML = `${fighterBankrollPercentage}, ${opponentBankrollPercentage}`;
     tr.cells.item(4).innerHTML = `${fighterBet} / ${opponentBet}`;
-    tr.cells.item(5).innerHTML = currentBankroll;
+
+    // color the current bankroll based on the result of the bet (green = won, red = lost)
+    currentBankrollText = `<span style="color:${bankrollColor}">${currentBankroll}</span>`;
+    tr.cells.item(5).innerHTML = currentBankrollText;
+
     tr.cells.item(0).style.backgroundColor = "#323232";
     tr.cells.item(1).style.backgroundColor = "#323232";
     tr.cells.item(2).style.backgroundColor = "#323232";
@@ -969,8 +983,8 @@ setTimeout(() => { //this builds a table for the history of predictions which is
     tr.cells.item(1).style.color = "#ffffff";
     tr.cells.item(2).style.color = "#ffffff";
     tr.cells.item(3).style.color = "#ffffff";
+    tr.cells.item(4).style.color = "#ffffff";
     tr.cells.item(5).style.color = "#ffffff";
-    // TODO UPDATE THIS TO DECIDE IF WE WON THE BET, NOT JUST GOT THE FAVORITE RIGHT
     color = 'gold'; //winner color
     if (prediction_history['correct?'][i] == 1) {
       tr.cells.item(1).style.backgroundColor = "#00ff00";

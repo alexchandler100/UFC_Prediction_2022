@@ -788,6 +788,9 @@ def bet_payout(american_odds, bet_amount, result):
     Returns:
     - payout: The total payout from the bet.
     """
+    american_odds = int(american_odds)
+    bet_amount = float(bet_amount)
+    assert result in ['W', 'L'], "Result must be 'W' or 'L'."
     if result == 'W':
         if american_odds > 0:
             payout = bet_amount + (bet_amount * american_odds / 100)

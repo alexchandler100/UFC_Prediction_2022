@@ -729,52 +729,60 @@ class DataHandler:
         vegas_odds_old['fighter bet'] = 0
         vegas_odds_old['opponent bet'] = 0
         vegas_odds_old['current bankroll after'] = 0
+        vegas_odds_old['bet result'] = 'N/A'
         for index1, row1 in vegas_odds_old.iloc[::-1].iterrows(): # iterate backwards in the order the fights actually happened
             card_date = row1['date']
+            
+            # if no prediction was made, throw it away
+            if row1['predicted fighter odds'] == '':
+                bad_indices.append(index1)
+                print('no prediction made for fight from '+str(card_date)+' between '+row1['fighter name']+' and '+row1['opponent name'])
+                continue
+            
+            # if a prediction was made, check if the fight actually happened and then check if the prediction / bet was correct / won
             # TODO this is slow but sort of necessary if we need to add multiple cards at the same time
             relevant_fights = ufc_fights_crap[pd.to_datetime(ufc_fights_crap['date']) == card_date]
             print(f'searching through {relevant_fights.shape[0]//2} confirmed fights on {str(card_date).split(" ")[0]} for {row1["fighter name"]} vs {row1["opponent name"]}')
-            fighter_odds = row1['predicted fighter odds']
-            fighter_dk_odds = row1.get('fighter DraftKings')
-            opponent_dk_odds = row1.get('opponent DraftKings')
-            fighter_bankroll_percentage = row1.get('fighter bet bankroll percentage', 0)
-            opponent_bankroll_percentage = row1.get('opponent bet bankroll percentage', 0)
+            fighter_odds = int(row1['predicted fighter odds'])
+            fighter_dk_odds = int(row1.get('fighter DraftKings'))
+            opponent_dk_odds = int(row1.get('opponent DraftKings'))
+            fighter_bankroll_percentage = float(row1.get('fighter bet bankroll percentage', 0))
+            opponent_bankroll_percentage = float(row1.get('opponent bet bankroll percentage', 0))
             
             match_found = False
-            # if no prediction was made, throw it away
-            if fighter_odds == '':
+            for index2, row2 in relevant_fights.iterrows():
+                if same_name(row1['fighter name'], row2['fighter']) and same_name(row1['opponent name'], row2['opponent']):
+                    match_found = True
+                    print('adding fight from '+str(card_date)+' between '+row1['fighter name']+' and '+row1['opponent name'])
+                    if (int(fighter_odds) < 0 and row2['result'] == 'W') or (int(fighter_odds) > 0 and row2['result'] == 'L'):
+                        vegas_odds_old.at[index1,'correct?'] = 1
+                    else:
+                        vegas_odds_old.at[index1,'correct?'] = 0
+                    # update the bankroll based on the bet made
+                    fighter_bet = 0
+                    opponent_bet = 0
+                    fighter_payout = 0
+                    opponent_payout = 0
+                    bet_result = 'N/A'
+                    if fighter_bankroll_percentage > 0: # check if we even made a bet on the fighter
+                        fighter_bet = fighter_bankroll_percentage / 100 * currentBankroll
+                        vegas_odds_old.at[index1, 'fighter bet'] = fighter_bet
+                        bet_result = row2['result']
+                        fighter_payout = bet_payout(fighter_dk_odds, fighter_bet, bet_result)
+                    if opponent_bankroll_percentage > 0: # check if we even made a bet on the opponent
+                        opponent_bet = opponent_bankroll_percentage / 100 * currentBankroll
+                        vegas_odds_old.at[index1, 'opponent bet'] = opponent_bet
+                        # win the bet if the opponent wins (the result column is the result of the fighter, so if the fighter wins, the opponent loses)
+                        bet_result = 'L' if row2['result'] == 'W' else 'W'
+                        opponent_payout = bet_payout(opponent_dk_odds, opponent_bet, bet_result)
+                    currentBankroll = currentBankroll + fighter_payout + opponent_payout - fighter_bet - opponent_bet
+                    vegas_odds_old.at[index1, 'current bankroll after'] = currentBankroll
+                    vegas_odds_old.at[index1, 'bet result'] = bet_result
+                    # TODO add case for draw
+                    break
+            if not match_found: # if the fight didn't happen, throw it away
                 bad_indices.append(index1)
-                print('no prediction made for fight from '+str(card_date)+' between '+row1['fighter name']+' and '+row1['opponent name'])
-            else: # if a prediction was made, check if the fight actually happened and then check if the prediction was correct
-                for index2, row2 in relevant_fights.iterrows():
-                    if same_name(row1['fighter name'], row2['fighter']) and same_name(row1['opponent name'], row2['opponent']):
-                        
-                        match_found = True
-                        print('adding fight from '+str(card_date)+' between '+row1['fighter name']+' and '+row1['opponent name'])
-                        if (int(fighter_odds) < 0 and row2['result'] == 'W') or (int(fighter_odds) > 0 and row2['result'] == 'L'):
-                            vegas_odds_old.at[index1,'correct?'] = 1
-                        else:
-                            vegas_odds_old.at[index1,'correct?'] = 0
-                        # update the bankroll based on the bet made
-                        fighter_bet = 0
-                        opponent_bet = 0
-                        fighter_payout = 0
-                        opponent_payout = 0
-                        if fighter_bankroll_percentage > 0: # check if we even made a bet on the fighter
-                            fighter_bet = fighter_bankroll_percentage / 100 * currentBankroll
-                            vegas_odds_old.at[index1, 'fighter bet'] = fighter_bet
-                            fighter_payout = bet_payout(fighter_dk_odds, fighter_bet, row2['result'])
-                        if opponent_bankroll_percentage > 0: # check if we even made a bet on the opponent
-                            opponent_bet = opponent_bankroll_percentage / 100 * currentBankroll
-                            vegas_odds_old.at[index1, 'opponent bet'] = opponent_bet
-                            opponent_payout = bet_payout(opponent_dk_odds, opponent_bet, row2['result'])
-                        currentBankroll = currentBankroll + fighter_payout + opponent_payout - fighter_bet - opponent_bet
-                        vegas_odds_old.at[index1, 'current bankroll after'] = currentBankroll
-                        # TODO add case for draw
-                        break
-                if not match_found: # if the fight didn't happen, throw it away
-                    bad_indices.append(index1)
-                    print('fight from '+str(card_date)+' between '+row1['fighter name']+' and '+row1['opponent name'] + ' not found in ufc_fights_crap.csv')
+                print('fight from '+str(card_date)+' between '+row1['fighter name']+' and '+row1['opponent name'] + ' not found in ufc_fights_crap.csv')
         vegas_odds_old = vegas_odds_old.drop(bad_indices)
         return vegas_odds_old
                 
