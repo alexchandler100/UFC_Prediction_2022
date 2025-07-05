@@ -105,6 +105,9 @@ class DataHandler:
         # {key : pd.read_json(self.json_filepaths[key]) for key in self.json_filepaths.keys()}
         
         self.odds_getter = OddsGetter()
+        
+        # TODO update this with the actual bookies we are getting odds from (or just those I can actually use)
+        self.bookies = ['DraftKings', 'BetMGM', 'Caesars', 'BetRivers', 'FanDuel', 'PointsBet', 'Unibet', 'Bet365', 'BetWay', '5D', 'Ref']
 
     def get(self, key, filetype='csv'):
         if filetype == 'json':
@@ -530,6 +533,10 @@ class DataHandler:
         odds_df = self.odds_getter.make_odds_df()
         odds_df['fighter bet bankroll percentage'] = np.nan
         odds_df['opponent bet bankroll percentage'] = np.nan
+        odds_df['best fighter bookie'] = ''
+        odds_df['best opponent bookie'] = ''
+        
+        import ipdb; ipdb.set_trace(context=10)  # uncomment to debug
         
         # cannot ipdb before oddsgetter makes the selenium request
         # import ipdb; ipdb.set_trace(context=10)  # uncomment to debug
@@ -552,7 +559,8 @@ class DataHandler:
             if odds_row.empty:
                 print(f'No odds found for {fighter} vs {opponent} on fightodds.io, skipping...')
                 continue
-            for bookie in ['DraftKings', 'BetMGM', 'Caesars', 'BetRivers', 'FanDuel', 'PointsBet', 'Unibet', 'Bet365', 'BetWay', '5D', 'Ref']:
+            # TODO update these with the actual bookies we are getting odds from (or just those I can actually use)
+            for bookie in self.bookies:
                 if f'fighter {bookie}' in odds_row.columns:
                     predictions_df.at[i, f'fighter {bookie}'] = odds_row[f'{fighter_a} {bookie}'].values[0]
                     predictions_df.at[i, f'opponent {bookie}'] = odds_row[f'{fighter_b} {bookie}'].values[0]
@@ -561,30 +569,68 @@ class DataHandler:
             
             # add expected values for fighter and opponent
             fighter_predicted_odds = predictions_df.at[i, 'predicted fighter odds']
-            dk_fighter_vegas_odds = predictions_df.at[i, f'fighter DraftKings']
-            dk_opponent_vegas_odds = predictions_df.at[i, f'opponent DraftKings']
-            if not fighter_predicted_odds or not dk_fighter_vegas_odds or not dk_opponent_vegas_odds:
-                continue  # skip if any of these values are missing
-            fighter_predicted_odds = int(fighter_predicted_odds)
-            dk_fighter_vegas_odds = int(dk_fighter_vegas_odds)
-            dk_opponent_vegas_odds = int(dk_opponent_vegas_odds)
-            fighter_bankroll_percentage, opponent_bankroll_percentage = get_kelly_bet_from_ev_and_dk_odds(fighter_predicted_odds, dk_fighter_vegas_odds, dk_opponent_vegas_odds)
-            predictions_df.at[i, 'fighter bet bankroll percentage'] = fighter_bankroll_percentage
-            predictions_df.at[i, 'opponent bet bankroll percentage'] = opponent_bankroll_percentage
+            if not fighter_predicted_odds:
+                continue
+            # search over all bookies for the best odds
+            fighter_bookie_odds_dict = {}
+            opponent_bookie_odds_dict = {}
+            fighter_bookie_kelly_dict = {}
+            opponent_bookie_kelly_dict = {}
+            for bookie in self.bookies:
+                bookie_fighter_odds = predictions_df.at[i, f'fighter {bookie}']
+                bookie_opponent_odds = predictions_df.at[i, f'opponent {bookie}']
+                # check if these have integer values or empty values (default is an empty string)
+                if bookie_fighter_odds and bookie_opponent_odds:
+                    fighter_bookie_odds_dict[bookie] = int(bookie_fighter_odds)
+                    opponent_bookie_odds_dict[bookie] = int(bookie_opponent_odds)
+                    fighter_kelly, opponent_kelly = get_kelly_bet_from_ev_and_dk_odds(int(fighter_predicted_odds), int(bookie_fighter_odds), int(bookie_opponent_odds))
+                    fighter_bookie_kelly_dict[bookie] = fighter_kelly
+                    opponent_bookie_kelly_dict[bookie] = opponent_kelly
+            # fight highest kelly percentage for fighter and opponent
+            if fighter_bookie_kelly_dict:
+                best_fighter_bookie = max(fighter_bookie_kelly_dict, key=fighter_bookie_kelly_dict.get)
+                best_opponent_bookie = max(opponent_bookie_kelly_dict, key=opponent_bookie_kelly_dict.get)
+                predictions_df.at[i, 'best fighter bookie'] = best_fighter_bookie
+                predictions_df.at[i, 'best opponent bookie'] = best_opponent_bookie
+                predictions_df.at[i, 'fighter bet bankroll percentage'] = fighter_bookie_kelly_dict[best_fighter_bookie]
+                predictions_df.at[i, 'opponent bet bankroll percentage'] = opponent_bookie_kelly_dict[best_opponent_bookie]
+                    
+            # dk_fighter_vegas_odds = predictions_df.at[i, f'fighter DraftKings']
+            # dk_opponent_vegas_odds = predictions_df.at[i, f'opponent DraftKings']
+            # if not fighter_predicted_odds or not dk_fighter_vegas_odds or not dk_opponent_vegas_odds:
+            #     continue  # skip if any of these values are missing
+            # fighter_predicted_odds = int(fighter_predicted_odds)
+            # dk_fighter_vegas_odds = int(dk_fighter_vegas_odds)
+            # dk_opponent_vegas_odds = int(dk_opponent_vegas_odds)
+            # fighter_bankroll_percentage, opponent_bankroll_percentage = get_kelly_bet_from_ev_and_dk_odds(fighter_predicted_odds, dk_fighter_vegas_odds, dk_opponent_vegas_odds)
+            # predictions_df.at[i, 'fighter bet bankroll percentage'] = fighter_bankroll_percentage
+            # predictions_df.at[i, 'opponent bet bankroll percentage'] = opponent_bankroll_percentage
 
             
         # save to vegas_oddsjson
         # odds_df= self.drop_irrelevant_fights(odds_df,3) #allows 3 bookies to have missing odds. can increase this to 2 or 3 as needed
         # odds_df = self.drop_non_ufc_fights(odds_df)
         #odds_df=drop_repeats(odds_df)
-        print('saving odds to content/data/external/vegas_odds.json')
-        result = odds_df.to_json()
+        
+        # NOTE COMMENTED THIS OUT BECAUSE WE ARE OVERWRITING IT JUST AFTER WE CALL THIS FUNCTION. SHOULD BE FINE...
+        # print('saving odds to content/data/external/vegas_odds.json')
+        # result = odds_df.to_json()
+        # parsed = json.loads(result)
+        # jsonFilePath='content/data/external/vegas_odds.json'
+        # with open(jsonFilePath, 'w', encoding='utf-8') as jsonf:
+        #    jsonf.write(json.dumps(parsed, indent=4))
+        # print('saved to '+jsonFilePath)
+        return predictions_df
+    
+    # TODO vegas_odds is really not the right name for this data as it contains predictions, not just vegas odds
+    def update_vegas_odds(self, vegas_odds):
+        #save to json
+        result = vegas_odds.to_json()
         parsed = json.loads(result)
         jsonFilePath='content/data/external/vegas_odds.json'
         with open(jsonFilePath, 'w', encoding='utf-8') as jsonf:
-           jsonf.write(json.dumps(parsed, indent=4))
+            jsonf.write(json.dumps(parsed, indent=4))
         print('saved to '+jsonFilePath)
-        return predictions_df
     
     def update_prediction_history(self):
 
@@ -623,16 +669,6 @@ class DataHandler:
         print('Writing upcoming card info to content/data/external/card_info.json')
         with open('content/data/external/card_info.json', 'w') as outfile:
             json.dump(card_info_dict, outfile)            
-            
-    # TODO vegas_odds is really not the right name for this data as it contains predictions, not just vegas odds
-    def update_vegas_odds(self, vegas_odds):
-        #save to json
-        result = vegas_odds.to_json()
-        parsed = json.loads(result)
-        jsonFilePath='content/data/external/vegas_odds.json'
-        with open(jsonFilePath, 'w', encoding='utf-8') as jsonf:
-            jsonf.write(json.dumps(parsed, indent=4))
-        print('saved to '+jsonFilePath)
         
     def scrape_pictures(self, name):
         try:
@@ -739,22 +775,39 @@ class DataHandler:
                 print('no prediction made for fight from '+str(card_date)+' between '+row1['fighter name']+' and '+row1['opponent name'])
                 continue
             
+            fighter_odds = int(row1['predicted fighter odds'])
+            best_fighter_bookie = row1['best fighter bookie']
+            best_opponent_bookie = row1['best opponent bookie']
+            
+            # check if we ever found odds for the fighter and opponent
+            best_fighter_bookie_odds = row1.get(f'fighter {best_fighter_bookie}')
+            if not best_fighter_bookie_odds:
+                print(f'No odds found for fighter {row1["fighter name"]} from bookie {best_fighter_bookie}, skipping...')
+            best_opponent_bookie_odds = row1.get(f'opponent {best_opponent_bookie}')
+            if not best_opponent_bookie_odds:
+                print(f'No odds found for opponent {row1["opponent name"]} from bookie {best_opponent_bookie}, skipping...')
+            
+            if best_fighter_bookie_odds:
+                best_fighter_bookie_odds = int(row1.get(f'fighter {best_fighter_bookie}'))
+            if best_opponent_bookie_odds:
+                best_opponent_bookie_odds = int(row1.get(f'opponent {best_opponent_bookie}'))
+                
+            fighter_bankroll_percentage = float(row1.get('fighter bet bankroll percentage', 0))
+            opponent_bankroll_percentage = float(row1.get('opponent bet bankroll percentage', 0))
+            
             # if a prediction was made, check if the fight actually happened and then check if the prediction / bet was correct / won
             # TODO this is slow but sort of necessary if we need to add multiple cards at the same time
             relevant_fights = ufc_fights_crap[pd.to_datetime(ufc_fights_crap['date']) == card_date]
             print(f'searching through {relevant_fights.shape[0]//2} confirmed fights on {str(card_date).split(" ")[0]} for {row1["fighter name"]} vs {row1["opponent name"]}')
-            fighter_odds = int(row1['predicted fighter odds'])
-            fighter_dk_odds = int(row1.get('fighter DraftKings'))
-            opponent_dk_odds = int(row1.get('opponent DraftKings'))
-            fighter_bankroll_percentage = float(row1.get('fighter bet bankroll percentage', 0))
-            opponent_bankroll_percentage = float(row1.get('opponent bet bankroll percentage', 0))
             
             match_found = False
             for index2, row2 in relevant_fights.iterrows():
                 if same_name(row1['fighter name'], row2['fighter']) and same_name(row1['opponent name'], row2['opponent']):
                     match_found = True
                     print('adding fight from '+str(card_date)+' between '+row1['fighter name']+' and '+row1['opponent name'])
-                    if (int(fighter_odds) < 0 and row2['result'] == 'W') or (int(fighter_odds) > 0 and row2['result'] == 'L'):
+                    if abs(int(fighter_odds)) == 100:
+                        vegas_odds_old.at[index1,'correct?'] = 'N/A' # model did not predict a winner, called it dead even
+                    elif (int(fighter_odds) < 0 and row2['result'] == 'W') or (int(fighter_odds) > 0 and row2['result'] == 'L'):
                         vegas_odds_old.at[index1,'correct?'] = 1
                     else:
                         vegas_odds_old.at[index1,'correct?'] = 0
@@ -768,13 +821,13 @@ class DataHandler:
                         fighter_bet = fighter_bankroll_percentage / 100 * currentBankroll
                         vegas_odds_old.at[index1, 'fighter bet'] = fighter_bet
                         bet_result = row2['result']
-                        fighter_payout = bet_payout(fighter_dk_odds, fighter_bet, bet_result)
+                        fighter_payout = bet_payout(best_fighter_bookie_odds, fighter_bet, bet_result)
                     if opponent_bankroll_percentage > 0: # check if we even made a bet on the opponent
                         opponent_bet = opponent_bankroll_percentage / 100 * currentBankroll
                         vegas_odds_old.at[index1, 'opponent bet'] = opponent_bet
                         # win the bet if the opponent wins (the result column is the result of the fighter, so if the fighter wins, the opponent loses)
                         bet_result = 'L' if row2['result'] == 'W' else 'W'
-                        opponent_payout = bet_payout(opponent_dk_odds, opponent_bet, bet_result)
+                        opponent_payout = bet_payout(best_opponent_bookie_odds, opponent_bet, bet_result)
                     currentBankroll = currentBankroll + fighter_payout + opponent_payout - fighter_bet - opponent_bet
                     vegas_odds_old.at[index1, 'current bankroll after'] = currentBankroll
                     vegas_odds_old.at[index1, 'bet result'] = bet_result
