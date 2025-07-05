@@ -803,10 +803,39 @@ setTimeout(() => { //timeout because other data needs to load first (probably be
     opponent = vegas_odds['opponent name'][i]
     fighterOdds = vegas_odds['predicted fighter odds'][i]
     opponentOdds = vegas_odds['predicted opponent odds'][i]
-    fighterDraftKingsOdds = vegas_odds['fighter DraftKings'][i]
-    opponentDraftKingsOdds = vegas_odds['opponent DraftKings'][i]
+    // grab columns which may or may not be present
+    bestFighterBookieCol = vegas_odds['best fighter bookie'] || null; // default to null if not present
+    bestOpponentBookieCol = vegas_odds['best opponent bookie'] || null;
     fighterBankrollPercentageCol = vegas_odds['fighter bet bankroll percentage'] || null; // default to null if not present
     opponentBankrollPercentageCol = vegas_odds['opponent bet bankroll percentage'] || null; // default to null if not present
+
+    if (bestFighterBookieCol != null) {
+      bestFighterBookie = bestFighterBookieCol[i];
+    } else {
+      bestFighterBookie = null; // default to null if not present
+    }
+    // get info on best bookie odds for fighter and opponent
+    if (bestOpponentBookieCol != null) {
+      bestOpponentBookie = bestOpponentBookieCol[i];
+    } else {
+      bestOpponentBookie = null; // default to null if not present
+    }
+    if (bestFighterBookie) {
+      bestFighterBookieOddsOnFighter = vegas_odds[`fighter ${bestFighterBookie}`][i];
+      bestFighterBookieOddsOnOpponent = vegas_odds[`opponent ${bestFighterBookie}`][i];
+    } else {
+      bestFighterBookieOddsOnFighter = null; // default to null if not present
+      bestFighterBookieOddsOnOpponent = null; // default to null if not present
+    }
+    if (bestOpponentBookie) {
+      bestOpponentBookieOddsOnFighter = vegas_odds[`fighter ${bestOpponentBookie}`][i];
+      bestOpponentBookieOddsOnOpponent = vegas_odds[`opponent ${bestOpponentBookie}`][i];
+    } else {
+      bestOpponentBookieOddsOnFighter = null; // default to null if not present
+      bestOpponentBookieOddsOnOpponent = null; // default to null if not present
+    }
+
+    // get info on kelly criterion bankroll percentages
     if (fighterBankrollPercentageCol != null) {
       fighterBankrollPercentage = parseFloat(fighterBankrollPercentageCol[i]).toFixed(2);
     } else {
@@ -818,15 +847,16 @@ setTimeout(() => { //timeout because other data needs to load first (probably be
       opponentBankrollPercentage = null; // default to null if not present
     }
 
+    // populate table with the data
     upcomingFightsTable.rows.item(0).cells.item(0).style.backgroundColor = "#212121";
     var tbody = upcomingFightsTable.tBodies[0]
     var tr = tbody.insertRow(-1);
-    var td1 = document.createElement('td');
-    var td2 = document.createElement('td');
-    var td3 = document.createElement('td');
-    var td4 = document.createElement('td');
-    var td5 = document.createElement('td');
-    var td6 = document.createElement('td');
+    var td1 = document.createElement('td'); // Fighter</th>
+    var td2 = document.createElement('td'); // Opponent</th>
+    var td3 = document.createElement('td'); // Predicted<br>Fighter<br>Odds</th>
+    var td4 = document.createElement('td'); // Predicted<br>Opponent<br>Odds</th>
+    var td5 = document.createElement('td'); // Best Bookie<br>For Fighter<br>Bet</th>
+    var td6 = document.createElement('td'); // Kelly<br>bankroll%</th> 
     tr.appendChild(td1);
     tr.appendChild(td2);
     tr.appendChild(td3);
@@ -848,21 +878,23 @@ setTimeout(() => { //timeout because other data needs to load first (probably be
 
     tr.cells.item(2).innerHTML = fighterOdds;
     tr.cells.item(3).innerHTML = opponentOdds;
-    tr.cells.item(4).innerHTML = `${fighterDraftKingsOdds}, ${opponentDraftKingsOdds}`;
-
+    
     // make the fighter and opponent names bold and gold if they have higher expected value
     // than the opponent and fighter respectively
     let evPickColor = '#85BB65'; // default color for expected value text (money green)
     let coloredBrText = '';
     if (fighterBankrollPercentage && opponentBankrollPercentage) { // check if both expected values are defined
       if (fighterBankrollPercentage > opponentBankrollPercentage && fighterBankrollPercentage > 0) { //if fighter has higher expected value
-        coloredBrText = `<span style="color:${evPickColor}">${fighterBankrollPercentage}</span>, <span>${opponentBankrollPercentage}</span>`;
+        tr.cells.item(4).innerHTML = `${bestFighterBookie}<br>${bestFighterBookieOddsOnFighter}, ${bestFighterBookieOddsOnOpponent}`;
+        coloredBrText = `<span style="color:${evPickColor}">${fighterBankrollPercentage}</span><br>${fighter}`;
       } else if (opponentBankrollPercentage > fighterBankrollPercentage && opponentBankrollPercentage > 0) { //if opponent has higher expected value
-        coloredBrText = `<span>${fighterBankrollPercentage}</span>, <span style="color:${evPickColor}">${opponentBankrollPercentage}</span>`;
+        tr.cells.item(4).innerHTML = `${bestOpponentBookie}<br>${bestOpponentBookieOddsOnFighter}, ${bestOpponentBookieOddsOnOpponent}`;
+        coloredBrText = `<span style="color:${evPickColor}">${opponentBankrollPercentage}</span><br>${opponent}`;
       } else if (fighterBankrollPercentage == opponentBankrollPercentage && fighterBankrollPercentage > 0) { //if both have same expected value
-        coloredBrText = `<span style="color:${evPickColor}">${fighterBankrollPercentage}</span>, <span style="color:${evPickColor}">${opponentBankrollPercentage}</span>`;
+        tr.cells.item(4).innerHTML = `${bestFighterBookie}<br>${bestFighterBookieOddsOnFighter}, ${bestFighterBookieOddsOnOpponent}`;
+        coloredBrText = `<span style="color:${evPickColor}">${fighterBankrollPercentage}</span><br>${fighter}`;
       } else { //if both have negative expected value
-        coloredBrText = `<span>${fighterBankrollPercentage}</span>, <span>${opponentBankrollPercentage}</span>`;
+        coloredBrText = `0.00`;
       }
     }
 
@@ -888,15 +920,43 @@ setTimeout(() => { //timeout because other data needs to load first (probably be
 setTimeout(() => { //this builds a table for the history of predictions which is built in python in the jupyter notebook UFC_Prediction_Model
   var numberModelCorrect = 0
   var numberTotal = 0
+  var numTotalWithBookieOdds = 0
+  var numBookieCorrect = 0
   for (const i in prediction_history['fighter name']) { //iterating over rows of prediction_history
     fighter = prediction_history['fighter name'][i]
     opponent = prediction_history['opponent name'][i]
     fighterOdds = String(prediction_history['predicted fighter odds'][i])
     opponentOdds = String(prediction_history['predicted opponent odds'][i])
 
-    dkOdds = 'unknown'; // default value if DraftKings odds are not present
-    if (prediction_history['fighter DraftKings'][i] && prediction_history['opponent DraftKings'][i]) {
-      dkOdds = `${prediction_history['fighter DraftKings'][i]}, ${prediction_history['opponent DraftKings'][i]}`
+    bestFighterBookieCol = prediction_history['best fighter bookie'] || null; // default to null if not present
+    if (bestFighterBookieCol != null) {
+      bestFighterBookie = bestFighterBookieCol[i];
+    } else {
+      bestFighterBookie = null; // default to null if not present
+    }
+    // get info on best bookie odds for fighter and opponent
+    bestOpponentBookieCol = prediction_history['best opponent bookie'] || null;
+    if (bestOpponentBookieCol != null) {
+      bestOpponentBookie = bestOpponentBookieCol[i];
+    } else {
+      bestOpponentBookie = null; // default to null if not present
+    }
+    if (bestFighterBookie != null) {
+      bestFighterBookieOddsOnFighter = prediction_history[`fighter ${bestFighterBookie}`][i];
+      bestFighterBookieOddsOnOpponent = prediction_history[`opponent ${bestFighterBookie}`][i];
+      if (bestFighterBookie){
+        numTotalWithBookieOdds += 1; // count only if we have bookie odds
+      }
+    } else {
+      bestFighterBookieOddsOnFighter = null; // default to null if not
+      bestFighterBookieOddsOnOpponent = null; // default to null if not present
+    }
+    if (bestOpponentBookie != null) {
+      bestOpponentBookieOddsOnFighter = prediction_history[`fighter ${bestOpponentBookie}`][i];
+      bestOpponentBookieOddsOnOpponent = prediction_history[`opponent ${bestOpponentBookie}`][i];
+    } else {  
+      bestOpponentBookieOddsOnFighter = null; // default to null if not present
+      bestOpponentBookieOddsOnOpponent = null; // default to null if not present
     }
 
     fighterBankrollPercentageCol = prediction_history['fighter bet bankroll percentage'] || null; // default to null if not present
@@ -936,16 +996,19 @@ setTimeout(() => { //this builds a table for the history of predictions which is
     }
 
     // TODO does not take into account if we bet on both the fighter and the opponent (maybe TODO)
-    betResultCol = prediction_history['bet result'] | null; // default to null if not present
+    betResultCol = prediction_history['bet result'] || null; // default to null if not present
     if (betResultCol == null) {
       bankrollColor = 'white'; // default color if bet result is not present
     } else {
       betResult = betResultCol[i]; // default to null if not present
       if (betResult == 'W') {
+        console.log(`1 bet result is W for ${fighter} vs ${opponent}`);
         bankrollColor = 'green'; // color based on bankroll difference
       } else if (betResult == 'L') {
+        console.log(`2 bet result is L for ${fighter} vs ${opponent}`);
         bankrollColor = 'red'; // color based on bankroll difference
       } else {
+        console.log(`3 bet result is not W or L for ${fighter} vs ${opponent}`);
         bankrollColor = 'white'; // color based on bankroll difference
       }
     }
@@ -957,61 +1020,120 @@ setTimeout(() => { //this builds a table for the history of predictions which is
     var tr = tbody.insertRow(-1);
     var td1 = document.createElement('td'); // Fighter vs Opponent
     var td2 = document.createElement('td'); // Predicted Odds
-    var td3 = document.createElement('td'); // DraftKings Odds
-    var td4 = document.createElement('td'); // fighter / opponent bankroll percentage
-    var td5 = document.createElement('td'); // fighter bet / opponent bet
-    var td6 = document.createElement('td'); // current bankroll after
+    var td3 = document.createElement('td'); // best fighter bookie odds
+    var td4 = document.createElement('td'); // bankroll percentage
+    var td5 = document.createElement('td'); // current bankroll after
     tr.appendChild(td1);
     tr.appendChild(td2);
     tr.appendChild(td3);
     tr.appendChild(td4);
     tr.appendChild(td5);
-    tr.appendChild(td6);
-
-    tr.cells.item(0).innerHTML = `${fighter} vs ${opponent}`;
-    tr.cells.item(1).innerHTML = `${fighterOdds}, ${opponentOdds}`;
-    tr.cells.item(2).innerHTML = dkOdds;
-    tr.cells.item(3).innerHTML = `${fighterBankrollPercentage}, ${opponentBankrollPercentage}`;
-    tr.cells.item(4).innerHTML = `${fighterBet} / ${opponentBet}`;
-
-    // color the current bankroll based on the result of the bet (green = won, red = lost)
-    currentBankrollText = `<span style="color:${bankrollColor}">${currentBankroll}</span>`;
-    tr.cells.item(5).innerHTML = currentBankrollText;
 
     tr.cells.item(0).style.backgroundColor = "#323232";
     tr.cells.item(1).style.backgroundColor = "#323232";
     tr.cells.item(2).style.backgroundColor = "#323232";
     tr.cells.item(3).style.backgroundColor = "#323232";
     tr.cells.item(4).style.backgroundColor = "#323232";
-    tr.cells.item(5).style.backgroundColor = "#323232";
     tr.cells.item(0).style.color = "#ffffff";
     tr.cells.item(1).style.color = "#ffffff";
     tr.cells.item(2).style.color = "#ffffff";
     tr.cells.item(3).style.color = "#ffffff";
     tr.cells.item(4).style.color = "#ffffff";
-    tr.cells.item(5).style.color = "#ffffff";
+
+    tr.cells.item(0).innerHTML = `${fighter} vs ${opponent}`;
+    tr.cells.item(1).innerHTML = `${fighterOdds}, ${opponentOdds}`;
+
+    bestBookie = '';
+    bestBookieOddsOnFighter = 0;
+    bestBookieOddsOnOpponent = 0;
+    bankrollPercentage = 0;
+    bet = 0;
+    bettingOn = '';
+    if (fighterBankrollPercentage > 0){
+      bestBookieOddsOnFighter = bestFighterBookieOddsOnFighter;
+      bestBookieOddsOnOpponent = bestFighterBookieOddsOnOpponent;
+      bestBookie = bestFighterBookie;
+      bankrollPercentage = fighterBankrollPercentage;
+      bet = fighterBet;
+      bettingOn = fighter;
+    }
+    if (opponentBankrollPercentage > fighterBankrollPercentage){
+      bestBookieOddsOnFighter = bestOpponentBookieOddsOnFighter;
+      bestBookieOddsOnOpponent = bestOpponentBookieOddsOnOpponent;
+      bestBookie = bestOpponentBookie;
+      bankrollPercentage = opponentBankrollPercentage;
+      bet = opponentBet;
+      bettingOn = opponent;
+    }
+    tr.cells.item(2).innerHTML = `${bestBookie}<br>${bestBookieOddsOnFighter}, ${bestBookieOddsOnOpponent}`;
+    tr.cells.item(3).innerHTML = `${bankrollPercentage}% = ${bet}$<br>${bettingOn}`;
+
+    // color the current bankroll based on the result of the bet (green = won, red = lost)
+    currentBankrollText = `<span style="color:${bankrollColor}">${currentBankroll}</span>`;
+    tr.cells.item(4).innerHTML = currentBankrollText;
+
     color = 'gold'; //winner color
+    fighterWon = false;
+    opponentWon = false;
     if (prediction_history['correct?'][i] == 1) {
       tr.cells.item(1).style.backgroundColor = "#00ff00";
       numberModelCorrect += 1
-      if (parseInt(fighterOdds) < 0) {
+      if (parseInt(fighterOdds) < parseInt(opponentOdds)) { //if fighter is predicted to win
         coloredFightText = `<span style="color:${color}">${fighter}</span> | vs | <span>${opponent}</span>`;
+        fighterWon = true;
       } else {
         coloredFightText = `<span>${fighter}</span> | vs | <span style="color:${color}">${opponent}</span>`;
+        opponentWon = true;
       }
-    } else {
+    } else if (prediction_history['correct?'][i] == 0) {
       tr.cells.item(1).style.backgroundColor = "#ff0000";
       if (parseInt(fighterOdds) < 0) {
         coloredFightText = `<span>${fighter}</span> | vs | <span style="color:${color}">${opponent}</span>`;
+        opponentWon = true;
       } else {
         coloredFightText = `<span style="color:${color}">${fighter}</span> | vs | <span>${opponent}</span>`;
+        fighterWon = true;
+      }
+    } else if (prediction_history['correct?'][i] == 'N/A') {
+      tr.cells.item(1).style.backgroundColor = "#b3b3b3";
+      coloredFightText = `<span>${fighter}</span> | vs | <span>${opponent}</span>`;
+    } else {
+      console.log(`something is wrong with the prediction history data for ${fighter} vs ${opponent}`);
+      coloredFightText = `<span>${fighter}</span> | vs | <span>${opponent}</span>`;
+    }
+
+    tr.cells.item(0).innerHTML = coloredFightText;
+
+    // color bookie bet columns to indicate if they picked correctly
+    if (bestFighterBookie != null) {
+      if (fighterWon){
+        if (parseInt(bestBookieOddsOnFighter) < parseInt(bestBookieOddsOnOpponent)) {
+          numBookieCorrect += 1;
+          tr.cells.item(2).style.backgroundColor = "#00ff00";
+        } else {
+          tr.cells.item(2).style.backgroundColor = "#ff0000";
+        }
+      } else if (opponentWon) {
+        if (parseInt(bestBookieOddsOnOpponent) < parseInt(bestBookieOddsOnFighter)) {
+          numBookieCorrect += 1;
+          tr.cells.item(2).style.backgroundColor = "#00ff00";
+        } else {
+          tr.cells.item(2).style.backgroundColor = "#ff0000";
+        }
       }
     }
-    tr.cells.item(0).innerHTML = coloredFightText;
   }
   var acc = numberModelCorrect / numberTotal;
+  var bookieAcc = numBookieCorrect / numTotalWithBookieOdds;
   var accuracy = document.getElementById("myaccuracy")
-  accuracy.innerText = `Accuracy: ${acc}`;
+  // round accuracy to 2 decimal places
+  acc = (Math.round(acc * 10000) / 100).toFixed(2);
+  bookieAcc = (Math.round(bookieAcc * 10000) / 100).toFixed(2);
+  console.log(`Bookie accuracy: ${bookieAcc}`)
+  // set accuracy text
+  accuracy.innerText = `Accuracy: ${acc}%`;
+  var bookieAccuracy = document.getElementById("bookieaccuracy")
+  bookieAccuracy.innerText = `Bookie Accuracy: ${bookieAcc}%`;
 }, 1500) //originally 450
 
 //set initial table values and display fight
