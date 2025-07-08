@@ -45,7 +45,9 @@ from fight_stat_helpers import (in_ufc,
                        fight_math_diff_vect,
                        fighter_score_diff_vect,
                        get_kelly_bet_from_ev_and_dk_odds,
-                       bet_payout
+                       bet_payout,
+                       clean_method_for_winner_predictions,
+                       clean_method_for_method_predictions,
             )
 
 from odds_getter import OddsGetter
@@ -403,6 +405,138 @@ class DataHandler:
         self.set('fighter_stats', updated_fighters)
         self.save_csv('fighter_stats')
         self.save_json('fighter_stats', 'name')
+        
+    #there are some issues with how names are saved in the case when a fighter changes their name or uses a nickname
+    # TODO this should be done on incoming data in DataHandler, not here. But to do this we must also do a global change to existing data by running this function offline and re-saving csvs and jsons
+    def clean_names(self, df:pd.DataFrame, column_names:list):
+        alias_dict = {
+            'Joanne Calderwood': ['Joanne Wood'],
+            'Bobby Green': ['King Green', 'Bobby King Green'],
+        }
+        
+        for column_name in column_names:
+            for i, name in enumerate(df[column_name]):
+                for default_name, alias_list in alias_dict.items():
+                    if name in alias_list:
+                        df.at[i, 'fighter'] = default_name
+                        
+        
+    def clean_ufc_fights_for_winner_prediction(self, ufc_fights):
+        #importing csv fight data and saving as dataframes
+        ufc_fights_winner = ufc_fights.copy()
+        #there are some issues with how names are saved in the case when a fighter changes their name or uses a nickname
+        # TODO this should be done on incoming data, not here. But to do this we must also do a global change to existing data by running this function offline and re-saving csvs and jsons
+        self.clean_names(ufc_fights_winner, ['fighter', 'opponent'])
+        #cleaning the methods column for winner prediction
+        #changing anything other than 'U-DEC','M-DEC', 'KO/TKO', 'SUB', to 'bullshit'
+        #changing 'U-DEC','M-DEC', to 'DEC'
+        ufc_fights_winner['method'] = clean_method_for_winner_predictions(ufc_fights_winner['method'])
+        #getting rid of rows with incomplete or useless data
+        #fights with outcome "Win" or "Loss" (no "Draw")
+        draw_mask=ufc_fights_winner['result'] != 'D'
+        #fights where the method of victory is TKO/SUB/DEC (no split decision or DQ or Overturned or anything else like that)
+        method_mask_winner=(ufc_fights_winner['method']!='bullshit')
+        #fights where age is known
+        age_mask=(ufc_fights_winner['fighter_age']!='unknown')&(ufc_fights_winner['opponent_age']!='unknown')&(ufc_fights_winner['fighter_age']!=0)&(ufc_fights_winner['opponent_age']!=0)
+        #fights where height/reach is known
+        height_mask=(ufc_fights_winner['fighter_height']!='unknown')&(ufc_fights_winner['opponent_height']!='unknown')
+        reach_mask=(ufc_fights_winner['fighter_reach']!='unknown')&(ufc_fights_winner['opponent_reach']!='unknown')
+        #fights where number of wins is known
+        wins_mask=(ufc_fights_winner['fighter_wins'] != 'unknown' )&(ufc_fights_winner['opponent_wins'] != 'unknown')
+        #fights where both fighters have strike statistics (gets rid of UFC debuts)
+        strikes_mask=(ufc_fights_winner['fighter_inf_sig_strikes_attempts_avg'] != 0)&(ufc_fights_winner['opponent_inf_sig_strikes_attempts_avg'] != 0)
+        #includes only the fights satisfying these conditions
+        ufc_fights_winner=ufc_fights_winner[draw_mask&method_mask_winner&age_mask&height_mask&reach_mask&wins_mask&strikes_mask]
+        #listing all stats and making some new stats from them (differences often score higher in the learning models)
+        record_statistics=[u'fighter_wins',u'fighter_losses',u'fighter_L5Y_wins',u'fighter_L5Y_losses',u'fighter_L2Y_wins',u'fighter_L2Y_losses',u'fighter_ko_wins',u'fighter_ko_losses',u'fighter_L5Y_ko_wins',u'fighter_L5Y_ko_losses',u'fighter_L2Y_ko_wins',u'fighter_L2Y_ko_losses',u'fighter_sub_wins',u'fighter_sub_losses',u'fighter_L5Y_sub_wins',u'fighter_L5Y_sub_losses',u'fighter_L2Y_sub_wins',u'fighter_L2Y_sub_losses',u'opponent_wins',u'opponent_losses',u'opponent_L5Y_wins',u'opponent_L5Y_losses',u'opponent_L2Y_wins',u'opponent_L2Y_losses',u'opponent_ko_wins',u'opponent_ko_losses',u'opponent_L5Y_ko_wins',u'opponent_L5Y_ko_losses',u'opponent_L2Y_ko_wins',u'opponent_L2Y_ko_losses',u'opponent_sub_wins',u'opponent_sub_losses',u'opponent_L5Y_sub_wins',u'opponent_L5Y_sub_losses',u'opponent_L2Y_sub_wins',u'opponent_L2Y_sub_losses']
+        physical_stats=[ u'fighter_age',u'fighter_height',u'fighter_reach',u'opponent_age',u'opponent_height',u'opponent_reach']
+        #THERE MAY BE A PROBLEM IN AGE HEIGHT REACH TO DO WITH STRING VS FLOAT. MAKE SURE THESE ARE ALL THE CORRECT TYPE
+        #MAYBE WE ARE LOSING PREDICTABILITY HERE (but we apply float later so may it is ok)
+        #here is the list of all stats available (besides stance), does not include names or result
+        punch_statistics=[  u'fighter_inf_knockdowns_avg',u'fighter_inf_pass_avg',u'fighter_inf_reversals_avg',u'fighter_inf_sub_attempts_avg',u'fighter_inf_takedowns_landed_avg',u'fighter_inf_takedowns_attempts_avg',u'fighter_inf_sig_strikes_landed_avg',u'fighter_inf_sig_strikes_attempts_avg',u'fighter_inf_total_strikes_landed_avg',u'fighter_inf_total_strikes_attempts_avg',u'fighter_inf_head_strikes_landed_avg',u'fighter_inf_head_strikes_attempts_avg',u'fighter_inf_body_strikes_landed_avg',u'fighter_inf_body_strikes_attempts_avg',u'fighter_inf_leg_strikes_landed_avg',u'fighter_inf_leg_strikes_attempts_avg',u'fighter_inf_distance_strikes_landed_avg',u'fighter_inf_distance_strikes_attempts_avg',u'fighter_inf_clinch_strikes_landed_avg',u'fighter_inf_clinch_strikes_attempts_avg',u'fighter_inf_ground_strikes_landed_avg',u'fighter_inf_ground_strikes_attempts_avg',u'fighter_abs_knockdowns_avg',u'fighter_abs_pass_avg',u'fighter_abs_reversals_avg',u'fighter_abs_sub_attempts_avg',u'fighter_abs_takedowns_landed_avg',u'fighter_abs_takedowns_attempts_avg',u'fighter_abs_sig_strikes_landed_avg',u'fighter_abs_sig_strikes_attempts_avg',u'fighter_abs_total_strikes_landed_avg',u'fighter_abs_total_strikes_attempts_avg',u'fighter_abs_head_strikes_landed_avg',u'fighter_abs_head_strikes_attempts_avg',u'fighter_abs_body_strikes_landed_avg',u'fighter_abs_body_strikes_attempts_avg',u'fighter_abs_leg_strikes_landed_avg',u'fighter_abs_leg_strikes_attempts_avg',u'fighter_abs_distance_strikes_landed_avg',u'fighter_abs_distance_strikes_attempts_avg',u'fighter_abs_clinch_strikes_landed_avg',u'fighter_abs_clinch_strikes_attempts_avg',u'fighter_abs_ground_strikes_landed_avg',u'fighter_abs_ground_strikes_attempts_avg',u'opponent_inf_knockdowns_avg',u'opponent_inf_pass_avg',u'opponent_inf_reversals_avg',u'opponent_inf_sub_attempts_avg',u'opponent_inf_takedowns_landed_avg',u'opponent_inf_takedowns_attempts_avg',u'opponent_inf_sig_strikes_landed_avg',u'opponent_inf_sig_strikes_attempts_avg',u'opponent_inf_total_strikes_landed_avg',u'opponent_inf_total_strikes_attempts_avg',u'opponent_inf_head_strikes_landed_avg',u'opponent_inf_head_strikes_attempts_avg',u'opponent_inf_body_strikes_landed_avg',u'opponent_inf_body_strikes_attempts_avg',u'opponent_inf_leg_strikes_landed_avg',u'opponent_inf_leg_strikes_attempts_avg',u'opponent_inf_distance_strikes_landed_avg',u'opponent_inf_distance_strikes_attempts_avg',u'opponent_inf_clinch_strikes_landed_avg',u'opponent_inf_clinch_strikes_attempts_avg',u'opponent_inf_ground_strikes_landed_avg',u'opponent_inf_ground_strikes_attempts_avg',u'opponent_abs_knockdowns_avg',u'opponent_abs_pass_avg',u'opponent_abs_reversals_avg',u'opponent_abs_sub_attempts_avg',u'opponent_abs_takedowns_landed_avg',u'opponent_abs_takedowns_attempts_avg',u'opponent_abs_sig_strikes_landed_avg',u'opponent_abs_sig_strikes_attempts_avg',u'opponent_abs_total_strikes_landed_avg',u'opponent_abs_total_strikes_attempts_avg',u'opponent_abs_head_strikes_landed_avg',u'opponent_abs_head_strikes_attempts_avg',u'opponent_abs_body_strikes_landed_avg',u'opponent_abs_body_strikes_attempts_avg',u'opponent_abs_leg_strikes_landed_avg',u'opponent_abs_leg_strikes_attempts_avg',u'opponent_abs_distance_strikes_landed_avg',u'opponent_abs_distance_strikes_attempts_avg',u'opponent_abs_clinch_strikes_landed_avg',u'opponent_abs_clinch_strikes_attempts_avg',u'opponent_abs_ground_strikes_landed_avg',u'opponent_abs_ground_strikes_attempts_avg']
+        #adding record differences to ufc_fights
+        record_statistics_diff = []
+        half_length=int(len(record_statistics)/2)
+        for i in range(half_length):
+            ufc_fights_winner[record_statistics[i]+'_diff_2']=ufc_fights_winner[record_statistics[i]]-ufc_fights_winner[record_statistics[i+half_length]]
+            record_statistics_diff.append(record_statistics[i]+'_diff_2')
+        #lets try and improve the greedy algorithm by considering differences. Lets start by replacing height and reach by their differences
+        ufc_fights_winner['height_diff']=ufc_fights_winner['fighter_height'].apply(float)-ufc_fights_winner['opponent_height'].apply(float)
+        ufc_fights_winner['reach_diff']=ufc_fights_winner['fighter_reach'].apply(float)-ufc_fights_winner['opponent_reach'].apply(float)
+        
+        physical_stats_diff = ['fighter_age_diff', 'height_diff', 'reach_diff']
+        #adding punch differences to ufc_fights
+        punch_statistics_diff = []
+        half_length=int(len(punch_statistics)/2)
+        for i in range(half_length):
+            ufc_fights_winner[punch_statistics[i]+'_diff_2']=ufc_fights_winner[punch_statistics[i]]-ufc_fights_winner[punch_statistics[i+half_length]]
+            punch_statistics_diff.append(punch_statistics[i]+'_diff_2')
+        possible_stats = record_statistics_diff + physical_stats_diff + punch_statistics_diff
+        #setting
+        ufc_fights_winner['fighter_age'] = ufc_fights_winner['fighter_age'].apply(float)
+        ufc_fights_winner['opponent_age'] = ufc_fights_winner['opponent_age'].apply(float)
+        ufc_fights_winner['fighter_age_diff'] = ufc_fights_winner['fighter_age']-ufc_fights_winner['opponent_age']
+        
+        return ufc_fights_winner 
+    
+    def clean_ufc_fights_for_method_prediction(self, ufc_fights):
+        ufc_fights_method = ufc_fights.copy()
+        #there are some issues with how names are saved in the case when a fighter changes their name or uses a nickname
+        # TODO this should be done on incoming data, not here. But to do this we must also do a global change to existing data by running this function offline and re-saving csvs and jsons
+        self.clean_names(ufc_fights_method, ['fighter', 'opponent'])
+        #cleaning the methods column for method prediction
+        #changing anything other than 'U-DEC','M-DEC', 'S-DEC', 'KO/TKO', 'SUB', to 'bullshit'
+        #changing 'U-DEC','M-DEC', 'S-DEC', to 'DEC'
+        ufc_fights_method['method'] = clean_method_for_method_predictions(ufc_fights_method['method'])
+        #fights with outcome "Win" or "Loss" (no "Draw")
+        draw_mask=ufc_fights_method['result'] != 'D'
+        #fights where the method of victory is TKO/SUB/DEC (no split decision or DQ or Overturned or anything else like that)
+        method_mask_method=(ufc_fights_method['method']!='bullshit')
+        #fights where age is known
+        age_mask=(ufc_fights_method['fighter_age']!='unknown')&(ufc_fights_method['opponent_age']!='unknown')&(ufc_fights_method['fighter_age']!=0)&(ufc_fights_method['opponent_age']!=0)
+        #fights where height/reach is known
+        height_mask=(ufc_fights_method['fighter_height']!='unknown')&(ufc_fights_method['opponent_height']!='unknown')
+        reach_mask=(ufc_fights_method['fighter_reach']!='unknown')&(ufc_fights_method['opponent_reach']!='unknown')
+        #fights where number of wins is known
+        wins_mask=(ufc_fights_method['fighter_wins'] != 'unknown' )&(ufc_fights_method['opponent_wins'] != 'unknown')
+        #fights where both fighters have strike statistics (gets rid of UFC debuts)
+        strikes_mask=(ufc_fights_method['fighter_inf_sig_strikes_attempts_avg'] != 0)&(ufc_fights_method['opponent_inf_sig_strikes_attempts_avg'] != 0)
+        #includes only the fights satisfying these conditions
+        ufc_fights_method=ufc_fights_method[draw_mask&method_mask_method&age_mask&height_mask&reach_mask&wins_mask&strikes_mask]
+        # ufc_fights=ufc_fights[draw_mask&method_mask_winner&age_mask&height_mask&reach_mask&wins_mask&strikes_mask]
+
+        #listing all stats and making some new stats from them (differences often score higher in the learning models)
+        record_statistics=[u'fighter_wins',u'fighter_losses',u'fighter_L5Y_wins',u'fighter_L5Y_losses',u'fighter_L2Y_wins',u'fighter_L2Y_losses',u'fighter_ko_wins',u'fighter_ko_losses',u'fighter_L5Y_ko_wins',u'fighter_L5Y_ko_losses',u'fighter_L2Y_ko_wins',u'fighter_L2Y_ko_losses',u'fighter_sub_wins',u'fighter_sub_losses',u'fighter_L5Y_sub_wins',u'fighter_L5Y_sub_losses',u'fighter_L2Y_sub_wins',u'fighter_L2Y_sub_losses',u'opponent_wins',u'opponent_losses',u'opponent_L5Y_wins',u'opponent_L5Y_losses',u'opponent_L2Y_wins',u'opponent_L2Y_losses',u'opponent_ko_wins',u'opponent_ko_losses',u'opponent_L5Y_ko_wins',u'opponent_L5Y_ko_losses',u'opponent_L2Y_ko_wins',u'opponent_L2Y_ko_losses',u'opponent_sub_wins',u'opponent_sub_losses',u'opponent_L5Y_sub_wins',u'opponent_L5Y_sub_losses',u'opponent_L2Y_sub_wins',u'opponent_L2Y_sub_losses']
+        physical_stats=[ u'fighter_age',u'fighter_height',u'fighter_reach',u'opponent_age',u'opponent_height',u'opponent_reach']
+        #THERE MAY BE A PROBLEM IN AGE HEIGHT REACH TO DO WITH STRING VS FLOAT. MAKE SURE THESE ARE ALL THE CORRECT TYPE
+        #MAYBE WE ARE LOSING PREDICTABILITY HERE (but we apply float later so may it is ok)
+        #here is the list of all stats available (besides stance), does not include names or result
+        punch_statistics=[  u'fighter_inf_knockdowns_avg',u'fighter_inf_pass_avg',u'fighter_inf_reversals_avg',u'fighter_inf_sub_attempts_avg',u'fighter_inf_takedowns_landed_avg',u'fighter_inf_takedowns_attempts_avg',u'fighter_inf_sig_strikes_landed_avg',u'fighter_inf_sig_strikes_attempts_avg',u'fighter_inf_total_strikes_landed_avg',u'fighter_inf_total_strikes_attempts_avg',u'fighter_inf_head_strikes_landed_avg',u'fighter_inf_head_strikes_attempts_avg',u'fighter_inf_body_strikes_landed_avg',u'fighter_inf_body_strikes_attempts_avg',u'fighter_inf_leg_strikes_landed_avg',u'fighter_inf_leg_strikes_attempts_avg',u'fighter_inf_distance_strikes_landed_avg',u'fighter_inf_distance_strikes_attempts_avg',u'fighter_inf_clinch_strikes_landed_avg',u'fighter_inf_clinch_strikes_attempts_avg',u'fighter_inf_ground_strikes_landed_avg',u'fighter_inf_ground_strikes_attempts_avg',u'fighter_abs_knockdowns_avg',u'fighter_abs_pass_avg',u'fighter_abs_reversals_avg',u'fighter_abs_sub_attempts_avg',u'fighter_abs_takedowns_landed_avg',u'fighter_abs_takedowns_attempts_avg',u'fighter_abs_sig_strikes_landed_avg',u'fighter_abs_sig_strikes_attempts_avg',u'fighter_abs_total_strikes_landed_avg',u'fighter_abs_total_strikes_attempts_avg',u'fighter_abs_head_strikes_landed_avg',u'fighter_abs_head_strikes_attempts_avg',u'fighter_abs_body_strikes_landed_avg',u'fighter_abs_body_strikes_attempts_avg',u'fighter_abs_leg_strikes_landed_avg',u'fighter_abs_leg_strikes_attempts_avg',u'fighter_abs_distance_strikes_landed_avg',u'fighter_abs_distance_strikes_attempts_avg',u'fighter_abs_clinch_strikes_landed_avg',u'fighter_abs_clinch_strikes_attempts_avg',u'fighter_abs_ground_strikes_landed_avg',u'fighter_abs_ground_strikes_attempts_avg',u'opponent_inf_knockdowns_avg',u'opponent_inf_pass_avg',u'opponent_inf_reversals_avg',u'opponent_inf_sub_attempts_avg',u'opponent_inf_takedowns_landed_avg',u'opponent_inf_takedowns_attempts_avg',u'opponent_inf_sig_strikes_landed_avg',u'opponent_inf_sig_strikes_attempts_avg',u'opponent_inf_total_strikes_landed_avg',u'opponent_inf_total_strikes_attempts_avg',u'opponent_inf_head_strikes_landed_avg',u'opponent_inf_head_strikes_attempts_avg',u'opponent_inf_body_strikes_landed_avg',u'opponent_inf_body_strikes_attempts_avg',u'opponent_inf_leg_strikes_landed_avg',u'opponent_inf_leg_strikes_attempts_avg',u'opponent_inf_distance_strikes_landed_avg',u'opponent_inf_distance_strikes_attempts_avg',u'opponent_inf_clinch_strikes_landed_avg',u'opponent_inf_clinch_strikes_attempts_avg',u'opponent_inf_ground_strikes_landed_avg',u'opponent_inf_ground_strikes_attempts_avg',u'opponent_abs_knockdowns_avg',u'opponent_abs_pass_avg',u'opponent_abs_reversals_avg',u'opponent_abs_sub_attempts_avg',u'opponent_abs_takedowns_landed_avg',u'opponent_abs_takedowns_attempts_avg',u'opponent_abs_sig_strikes_landed_avg',u'opponent_abs_sig_strikes_attempts_avg',u'opponent_abs_total_strikes_landed_avg',u'opponent_abs_total_strikes_attempts_avg',u'opponent_abs_head_strikes_landed_avg',u'opponent_abs_head_strikes_attempts_avg',u'opponent_abs_body_strikes_landed_avg',u'opponent_abs_body_strikes_attempts_avg',u'opponent_abs_leg_strikes_landed_avg',u'opponent_abs_leg_strikes_attempts_avg',u'opponent_abs_distance_strikes_landed_avg',u'opponent_abs_distance_strikes_attempts_avg',u'opponent_abs_clinch_strikes_landed_avg',u'opponent_abs_clinch_strikes_attempts_avg',u'opponent_abs_ground_strikes_landed_avg',u'opponent_abs_ground_strikes_attempts_avg']
+        #adding record differences to ufc_fights
+        record_statistics_diff = []
+        half_length=int(len(record_statistics)/2)
+        for i in range(half_length):
+            ufc_fights_method[record_statistics[i]+'_diff_2']=ufc_fights_method[record_statistics[i]]-ufc_fights_method[record_statistics[i+half_length]]
+            record_statistics_diff.append(record_statistics[i]+'_diff_2')
+        #lets try and improve the greedy algorithm by considering differences. Lets start by replacing height and reach by their differences
+        ufc_fights_method['height_diff']=ufc_fights_method['fighter_height'].apply(float)-ufc_fights_method['opponent_height'].apply(float)
+        ufc_fights_method['reach_diff']=ufc_fights_method['fighter_reach'].apply(float)-ufc_fights_method['opponent_reach'].apply(float)
+
+        physical_stats_diff = ['fighter_age_diff', 'height_diff', 'reach_diff']
+
+        #adding punch differences to ufc_fights
+        punch_statistics_diff = []
+        half_length=int(len(punch_statistics)/2)
+        for i in range(half_length):
+            ufc_fights_method[punch_statistics[i]+'_diff_2']=ufc_fights_method[punch_statistics[i]]-ufc_fights_method[punch_statistics[i+half_length]]
+            punch_statistics_diff.append(punch_statistics[i]+'_diff_2')
+
+        possible_stats = record_statistics_diff + physical_stats_diff + punch_statistics_diff
+
+        #setting
+        ufc_fights_method['fighter_age'] = ufc_fights_method['fighter_age'].apply(float)
+        ufc_fights_method['opponent_age'] = ufc_fights_method['opponent_age'].apply(float)
+        ufc_fights_method['fighter_age_diff'] = ufc_fights_method['fighter_age']-ufc_fights_method['opponent_age']
     
     def update_ufc_fights_crap(self):
         # most recent fight in fight_hist_updated versus most recent fight in ufc_fights_crap
@@ -536,7 +670,7 @@ class DataHandler:
         odds_df['best fighter bookie'] = ''
         odds_df['best opponent bookie'] = ''
         
-        import ipdb; ipdb.set_trace(context=10)  # uncomment to debug
+        # import ipdb; ipdb.set_trace(context=10)  # uncomment to debug
         
         # cannot ipdb before oddsgetter makes the selenium request
         # import ipdb; ipdb.set_trace(context=10)  # uncomment to debug
@@ -792,8 +926,18 @@ class DataHandler:
             if best_opponent_bookie_odds:
                 best_opponent_bookie_odds = int(row1.get(f'opponent {best_opponent_bookie}'))
                 
-            fighter_bankroll_percentage = float(row1.get('fighter bet bankroll percentage', 0))
-            opponent_bankroll_percentage = float(row1.get('opponent bet bankroll percentage', 0))
+            fighter_bankroll_percentage = row1.get('fighter bet bankroll percentage', 0)
+            if not fighter_bankroll_percentage:
+                print(f'No bankroll percentage found for fighter {row1["fighter name"]}, skipping...')
+                fighter_bankroll_percentage = 0
+                
+            opponent_bankroll_percentage = row1.get('opponent bet bankroll percentage', 0)
+            if not opponent_bankroll_percentage:
+                print(f'No bankroll percentage found for opponent {row1["opponent name"]}, skipping...')
+                opponent_bankroll_percentage = 0
+                
+            fighter_bankroll_percentage = float(fighter_bankroll_percentage)
+            opponent_bankroll_percentage = float(opponent_bankroll_percentage)
             
             # if a prediction was made, check if the fight actually happened and then check if the prediction / bet was correct / won
             # TODO this is slow but sort of necessary if we need to add multiple cards at the same time

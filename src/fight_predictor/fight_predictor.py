@@ -5,26 +5,36 @@ from sklearn.model_selection import cross_val_score
 from datetime import date
 import math
 from dateutil.relativedelta import relativedelta
+from sklearn.preprocessing import StandardScaler
+from sklearn import preprocessing
+
 
 from fight_stat_helpers import (
     fighter_score_diff, 
     fight_math_diff, 
     L5Y_sub_wins, 
+    sub_wins,
     L5Y_losses, 
+    L5Y_ko_wins,
+    L2Y_ko_losses,
     L5Y_ko_losses, 
     fighter_age, 
     avg_count, 
     in_ufc, 
-    clean_method_for_winner_predictions, 
-    clean_method_for_method_predictions
+    fighter_height,
+    fighter_reach,
+    L5Y_wins,
+    ko_losses,
+    L2Y_sub_losses
     )
 
 class FightPredictor:
-    def __init__(self, ufc_fights):
-        self.ufc_fights = ufc_fights
-        fighter_names = [name for name in ufc_fights['fighter'].unique()]
-        opponent_names = [name for name in ufc_fights['opponent'].unique()]
+    def __init__(self, ufc_fights_winner):
+        self.ufc_fights_winner = ufc_fights_winner.copy()
+        fighter_names = [name for name in ufc_fights_winner['fighter'].unique()]
+        opponent_names = [name for name in ufc_fights_winner['opponent'].unique()]
         self.ufc_fighter_names = set(fighter_names + opponent_names)
+        self.scaler = None
         
     def train_logistic_regression_model(self):
         r"""
@@ -37,132 +47,88 @@ class FightPredictor:
         This docstring was written by ChatGPT, an AI language model, and is intended to provide a clear understanding of the method's purpose and functionality.
         """
         #importing csv fight data and saving as dataframes
-        ufc_fights_method = self.ufc_fights
-        ufc_fights_winner = self.ufc_fights
-
-        #there are some issues with how names are saved in the case when a fighter changes their name or uses a nickname
-        # TODO this should be done on incoming data, not here. But to do this we must also do a global change to existing data by running this function offline and re-saving csvs and jsons
-        self.clean_names(ufc_fights_winner, ['fighter', 'opponent'])
-        self.clean_names(ufc_fights_method, ['fighter', 'opponent'])
-        
-        #cleaning the methods column for winner prediction
-        #changing anything other than 'U-DEC','M-DEC', 'KO/TKO', 'SUB', to 'bullshit'
-        #changing 'U-DEC','M-DEC', to 'DEC'
-        ufc_fights_winner['method'] = clean_method_for_winner_predictions(ufc_fights_winner['method'])
-
-        #cleaning the methods column for method prediction
-        #changing anything other than 'U-DEC','M-DEC', 'S-DEC', 'KO/TKO', 'SUB', to 'bullshit'
-        #changing 'U-DEC','M-DEC', 'S-DEC', to 'DEC'
-        ufc_fights_method['method'] = clean_method_for_method_predictions(ufc_fights_method['method'])
-
-        #getting rid of rows with incomplete or useless data
-        #fights with outcome "Win" or "Loss" (no "Draw")
-        draw_mask=ufc_fights_winner['result'] != 'D'
-
-        #fights where the method of victory is TKO/SUB/DEC (no split decision or DQ or Overturned or anything else like that)
-        method_mask_winner=(ufc_fights_winner['method']!='bullshit')
-        method_mask_method=(ufc_fights_method['method']!='bullshit')
-
-        #fights where age is known
-        age_mask=(ufc_fights_winner['fighter_age']!='unknown')&(ufc_fights_winner['opponent_age']!='unknown')&(ufc_fights_winner['fighter_age']!=0)&(ufc_fights_winner['opponent_age']!=0)
-
-        #fights where height/reach is known
-        height_mask=(ufc_fights_winner['fighter_height']!='unknown')&(ufc_fights_winner['opponent_height']!='unknown')
-        reach_mask=(ufc_fights_winner['fighter_reach']!='unknown')&(ufc_fights_winner['opponent_reach']!='unknown')
-
-        #fights where number of wins is known
-        wins_mask=(ufc_fights_winner['fighter_wins'] != 'unknown' )&(ufc_fights_winner['opponent_wins'] != 'unknown')
-
-        #fights where both fighters have strike statistics (gets rid of UFC debuts)
-        strikes_mask=(ufc_fights_winner['fighter_inf_sig_strikes_attempts_avg'] != 0)&(ufc_fights_winner['opponent_inf_sig_strikes_attempts_avg'] != 0)
-
-        #includes only the fights satisfying these conditions
-        ufc_fights_winner=ufc_fights_winner[draw_mask&method_mask_winner&age_mask&height_mask&reach_mask&wins_mask&strikes_mask]
-        ufc_fights_method=ufc_fights_method[draw_mask&method_mask_method&age_mask&height_mask&reach_mask&wins_mask&strikes_mask]
-        # ufc_fights=ufc_fights[draw_mask&method_mask_winner&age_mask&height_mask&reach_mask&wins_mask&strikes_mask]
-
-        #listing all stats and making some new stats from them (differences often score higher in the learning models)
-        record_statistics=[u'fighter_wins',u'fighter_losses',u'fighter_L5Y_wins',u'fighter_L5Y_losses',u'fighter_L2Y_wins',u'fighter_L2Y_losses',u'fighter_ko_wins',u'fighter_ko_losses',u'fighter_L5Y_ko_wins',u'fighter_L5Y_ko_losses',u'fighter_L2Y_ko_wins',u'fighter_L2Y_ko_losses',u'fighter_sub_wins',u'fighter_sub_losses',u'fighter_L5Y_sub_wins',u'fighter_L5Y_sub_losses',u'fighter_L2Y_sub_wins',u'fighter_L2Y_sub_losses',u'opponent_wins',u'opponent_losses',u'opponent_L5Y_wins',u'opponent_L5Y_losses',u'opponent_L2Y_wins',u'opponent_L2Y_losses',u'opponent_ko_wins',u'opponent_ko_losses',u'opponent_L5Y_ko_wins',u'opponent_L5Y_ko_losses',u'opponent_L2Y_ko_wins',u'opponent_L2Y_ko_losses',u'opponent_sub_wins',u'opponent_sub_losses',u'opponent_L5Y_sub_wins',u'opponent_L5Y_sub_losses',u'opponent_L2Y_sub_wins',u'opponent_L2Y_sub_losses']
-
-        physical_stats=[ u'fighter_age',u'fighter_height',u'fighter_reach',u'opponent_age',u'opponent_height',u'opponent_reach']
-
-        #THERE MAY BE A PROBLEM IN AGE HEIGHT REACH TO DO WITH STRING VS FLOAT. MAKE SURE THESE ARE ALL THE CORRECT TYPE
-        #MAYBE WE ARE LOSING PREDICTABILITY HERE (but we apply float later so may it is ok)
-
-        #here is the list of all stats available (besides stance), does not include names or result
-        punch_statistics=[  u'fighter_inf_knockdowns_avg',u'fighter_inf_pass_avg',u'fighter_inf_reversals_avg',u'fighter_inf_sub_attempts_avg',u'fighter_inf_takedowns_landed_avg',u'fighter_inf_takedowns_attempts_avg',u'fighter_inf_sig_strikes_landed_avg',u'fighter_inf_sig_strikes_attempts_avg',u'fighter_inf_total_strikes_landed_avg',u'fighter_inf_total_strikes_attempts_avg',u'fighter_inf_head_strikes_landed_avg',u'fighter_inf_head_strikes_attempts_avg',u'fighter_inf_body_strikes_landed_avg',u'fighter_inf_body_strikes_attempts_avg',u'fighter_inf_leg_strikes_landed_avg',u'fighter_inf_leg_strikes_attempts_avg',u'fighter_inf_distance_strikes_landed_avg',u'fighter_inf_distance_strikes_attempts_avg',u'fighter_inf_clinch_strikes_landed_avg',u'fighter_inf_clinch_strikes_attempts_avg',u'fighter_inf_ground_strikes_landed_avg',u'fighter_inf_ground_strikes_attempts_avg',u'fighter_abs_knockdowns_avg',u'fighter_abs_pass_avg',u'fighter_abs_reversals_avg',u'fighter_abs_sub_attempts_avg',u'fighter_abs_takedowns_landed_avg',u'fighter_abs_takedowns_attempts_avg',u'fighter_abs_sig_strikes_landed_avg',u'fighter_abs_sig_strikes_attempts_avg',u'fighter_abs_total_strikes_landed_avg',u'fighter_abs_total_strikes_attempts_avg',u'fighter_abs_head_strikes_landed_avg',u'fighter_abs_head_strikes_attempts_avg',u'fighter_abs_body_strikes_landed_avg',u'fighter_abs_body_strikes_attempts_avg',u'fighter_abs_leg_strikes_landed_avg',u'fighter_abs_leg_strikes_attempts_avg',u'fighter_abs_distance_strikes_landed_avg',u'fighter_abs_distance_strikes_attempts_avg',u'fighter_abs_clinch_strikes_landed_avg',u'fighter_abs_clinch_strikes_attempts_avg',u'fighter_abs_ground_strikes_landed_avg',u'fighter_abs_ground_strikes_attempts_avg',u'opponent_inf_knockdowns_avg',u'opponent_inf_pass_avg',u'opponent_inf_reversals_avg',u'opponent_inf_sub_attempts_avg',u'opponent_inf_takedowns_landed_avg',u'opponent_inf_takedowns_attempts_avg',u'opponent_inf_sig_strikes_landed_avg',u'opponent_inf_sig_strikes_attempts_avg',u'opponent_inf_total_strikes_landed_avg',u'opponent_inf_total_strikes_attempts_avg',u'opponent_inf_head_strikes_landed_avg',u'opponent_inf_head_strikes_attempts_avg',u'opponent_inf_body_strikes_landed_avg',u'opponent_inf_body_strikes_attempts_avg',u'opponent_inf_leg_strikes_landed_avg',u'opponent_inf_leg_strikes_attempts_avg',u'opponent_inf_distance_strikes_landed_avg',u'opponent_inf_distance_strikes_attempts_avg',u'opponent_inf_clinch_strikes_landed_avg',u'opponent_inf_clinch_strikes_attempts_avg',u'opponent_inf_ground_strikes_landed_avg',u'opponent_inf_ground_strikes_attempts_avg',u'opponent_abs_knockdowns_avg',u'opponent_abs_pass_avg',u'opponent_abs_reversals_avg',u'opponent_abs_sub_attempts_avg',u'opponent_abs_takedowns_landed_avg',u'opponent_abs_takedowns_attempts_avg',u'opponent_abs_sig_strikes_landed_avg',u'opponent_abs_sig_strikes_attempts_avg',u'opponent_abs_total_strikes_landed_avg',u'opponent_abs_total_strikes_attempts_avg',u'opponent_abs_head_strikes_landed_avg',u'opponent_abs_head_strikes_attempts_avg',u'opponent_abs_body_strikes_landed_avg',u'opponent_abs_body_strikes_attempts_avg',u'opponent_abs_leg_strikes_landed_avg',u'opponent_abs_leg_strikes_attempts_avg',u'opponent_abs_distance_strikes_landed_avg',u'opponent_abs_distance_strikes_attempts_avg',u'opponent_abs_clinch_strikes_landed_avg',u'opponent_abs_clinch_strikes_attempts_avg',u'opponent_abs_ground_strikes_landed_avg',u'opponent_abs_ground_strikes_attempts_avg']
-
-        #adding record differences to ufc_fights
-        record_statistics_diff = []
-        half_length=int(len(record_statistics)/2)
-        for i in range(half_length):
-            ufc_fights_winner[record_statistics[i]+'_diff_2']=ufc_fights_winner[record_statistics[i]]-ufc_fights_winner[record_statistics[i+half_length]]
-            ufc_fights_method[record_statistics[i]+'_diff_2']=ufc_fights_method[record_statistics[i]]-ufc_fights_method[record_statistics[i+half_length]]
-            record_statistics_diff.append(record_statistics[i]+'_diff_2')
-
-        #lets try and improve the greedy algorithm by considering differences. Lets start by replacing height and reach by their differences
-        ufc_fights_winner['height_diff']=ufc_fights_winner['fighter_height'].apply(float)-ufc_fights_winner['opponent_height'].apply(float)
-        ufc_fights_winner['reach_diff']=ufc_fights_winner['fighter_reach'].apply(float)-ufc_fights_winner['opponent_reach'].apply(float)
-        ufc_fights_method['height_diff']=ufc_fights_method['fighter_height'].apply(float)-ufc_fights_method['opponent_height'].apply(float)
-        ufc_fights_method['reach_diff']=ufc_fights_method['fighter_reach'].apply(float)-ufc_fights_method['opponent_reach'].apply(float)
-
-        physical_stats_diff = ['fighter_age_diff', 'height_diff', 'reach_diff']
-
-        #adding punch differences to ufc_fights
-        punch_statistics_diff = []
-        half_length=int(len(punch_statistics)/2)
-        for i in range(half_length):
-            ufc_fights_method[punch_statistics[i]+'_diff_2']=ufc_fights_method[punch_statistics[i]]-ufc_fights_method[punch_statistics[i+half_length]]
-            ufc_fights_winner[punch_statistics[i]+'_diff_2']=ufc_fights_winner[punch_statistics[i]]-ufc_fights_winner[punch_statistics[i+half_length]]
-            punch_statistics_diff.append(punch_statistics[i]+'_diff_2')
-
-        possible_stats = record_statistics_diff + physical_stats_diff + punch_statistics_diff
-
-        #setting
-        ufc_fights_winner['fighter_age'] = ufc_fights_winner['fighter_age'].apply(float)
-        ufc_fights_winner['opponent_age'] = ufc_fights_winner['opponent_age'].apply(float)
-        ufc_fights_winner['fighter_age_diff'] = ufc_fights_winner['fighter_age']-ufc_fights_winner['opponent_age']
-
+        ufc_fights_winner = self.ufc_fights_winner.copy()
+            
         # WE SET UP A LOGISTIC REGRESSION MODEL BELOW WITH A MINIMAL SET OF FEATURES
         # TODO TRY XGBOOST AND RANDOM FOREST # TODO ALSO PREDICT METHOD OF VICTORY
-
-        # found this to be the best set of features in our offline testing
-        # k-fighter_score_diff : the difference in the fighter's score in the for their last k fights 
-        # k-fight_math : the difference in the fighter's fight math score for the last k years
-        best_smallest_set = ['4-fighter_score_diff', 
-        '9-fighter_score_diff',
-        '15-fighter_score_diff',
-        '1-fight_math',
-        '6-fight_math',
-        'fighter_L5Y_sub_wins_diff_2',
-        'fighter_L5Y_losses_diff_2',
-        'fighter_L5Y_ko_losses_diff_2',
-        'fighter_age_diff',
-        'fighter_abs_total_strikes_landed_avg_diff_2',
-        'fighter_abs_head_strikes_landed_avg_diff_2',
-        'fighter_inf_ground_strikes_landed_avg_diff_2',
-        'fighter_inf_takedowns_attempts_avg_diff_2',
-        'fighter_inf_head_strikes_landed_avg_diff_2',
+        
+        current_best_feature_set = [
+         'fighter_age_diff',
+            'height_diff',
+            'reach_diff',
+            'fighter_L5Y_wins_diff_2',
+            'fighter_L5Y_losses_diff_2',
+            'fighter_ko_losses_diff_2',
+            'fighter_L5Y_ko_wins_diff_2',
+            'fighter_L2Y_ko_losses_diff_2',
+            'fighter_L5Y_ko_losses_diff_2',
+            'fighter_sub_wins_diff_2',
+            'fighter_L2Y_sub_losses_diff_2',
+            'fighter_inf_knockdowns_avg_diff_2',
+            'fighter_inf_distance_strikes_landed_avg_diff_2',
+            'fighter_inf_ground_strikes_landed_avg_diff_2',
+            'fighter_inf_distance_strikes_attempts_avg_diff_2',
+            'fighter_inf_head_strikes_attempts_avg_diff_2',
+            'fighter_inf_takedowns_attempts_avg_diff_2',
+            # 'fighter_abs_reversals_avg_diff_2', # reversals has problems
+            'fighter_abs_clinch_strikes_landed_avg_diff_2',
+            'fighter_abs_distance_strikes_landed_avg_diff_2',
+            'fighter_abs_leg_strikes_landed_avg_diff_2',
+            'fighter_abs_takedowns_attempts_avg_diff_2',
+            'fighter_abs_distance_strikes_attempts_avg_diff_2',
+            'fighter_abs_head_strikes_attempts_avg_diff_2',
+            'fighter_abs_total_strikes_attempts_avg_diff_2',
+            '6-fight_math',
+            '9-fighter_score_diff',
+            '4-fighter_score_diff',
         ]
 
-        ufc_fights_df = ufc_fights_winner[best_smallest_set]
+        y=ufc_fights_winner['result'].iloc[0:40*75]
+        X=ufc_fights_winner[current_best_feature_set].iloc[0:40*75]
+        # winPredictionModel=LogisticRegression(solver='lbfgs', max_iter=5000, fit_intercept=False)
+        # self.scaler = preprocessing.StandardScaler().fit(X)
+        # X_scaled = self.scaler.transform(X) 
+        # winPredictionModel.fit(X_scaled,y)
 
-        self.theta, self.b = self.find_best_regression_coeffs(ufc_fights_df, ufc_fights_winner)
+        # print('model score: '+str(winPredictionModel.score(X,y)))
+        # print('neg log loss of model: '+str(self.model_score(ufc_fights_winner,current_best_feature_set,scoring='neg_log_loss')))
+        # print('cross val avg probability of result: '+str(np.exp(self.model_score(ufc_fights_winner,current_best_feature_set,scoring='neg_log_loss'))))
+        # print('cross val accuracy: '+str(self.model_score(ufc_fights_winner,current_best_feature_set,scoring='accuracy')))
         
-    def find_best_regression_coeffs(self, ufc_fights_df, ufc_fights_winner):
+        # self.theta = list(winPredictionModel.coef_[0])
+        # self.b = winPredictionModel.intercept_[0]
+
+        ufc_fights_df = ufc_fights_winner[current_best_feature_set]
+        results = ufc_fights_winner['result']
+        self.theta, self.b = self.find_best_regression_coeffs(ufc_fights_df, results)
+        
+    #scores a model
+    def model_score(self, dataframe, features, iloc_val = 3200, _max_iter = 2000, scoring='neg_log_loss', scaled=True):
+        yyy=dataframe['result'].iloc[0:iloc_val]
+        XXX=dataframe[features].iloc[0:iloc_val]
+        XXXscaler = preprocessing.StandardScaler().fit(XXX)
+        XXX_scaled = XXXscaler.transform(XXX) 
+        X = XXX_scaled if scaled else XXX
+        winPredictionModel=LogisticRegression(solver='lbfgs', max_iter=_max_iter, fit_intercept=False)
+        # find the cross val score with log loss
+        return cross_val_score(winPredictionModel,X,yyy,cv=4,scoring=scoring).mean()
+        
+    def find_best_regression_coeffs(self, ufc_fights_df, results):
         # say there is an average of 10 fights per week, then 2200 fights is about 55 months of data
         #decided to force intercept to be 0 due to symmetry of dataset (all stats are differences so if we switch fighters, we must get the negative of the result)
         # make some hyperparams
-        max_iters = [1800, 2000, 2200, 2500, 3500]
+        max_iters = [2000, 2200, 2500, 5000]
         solvers = ['lbfgs']
-        num_fights_in_history = [1600, 1800, 2000, 2200]
+        num_fights_in_history = [1600, 2000, 3000]
         theta_list = []
         b_list = []
         cross_val_scores = []
+        neg_log_loss_scores = []
         max_iter_history = []
         solver_history = []
         num_fights_history = []
-        num_reps = 10
+        scaler_history = []
+        num_reps = 50
         for solver in solvers:
             for max_iter in max_iters:
                 for num_fights in num_fights_in_history:
@@ -170,43 +136,56 @@ class FightPredictor:
                         # print(f'Training Logistic Regression with solver={solver} and max_iter={max_iter}')
                         # create a logistic regression model
                         winPredictionModel = LogisticRegression(solver=solver, max_iter=max_iter, fit_intercept=False)
+                        scaler = StandardScaler()
                         X = ufc_fights_df.iloc[0:num_fights].to_numpy()
-                        y = ufc_fights_winner['result'].iloc[0:num_fights]
-                        winPredictionModel.fit(X,y)
+                        X_scaled = scaler.fit_transform(X)
+                        y = results.iloc[0:num_fights]
+                        winPredictionModel.fit(X_scaled,y)
+                        # TODO scale to zero mean and unit variance
                         cross_val_score_mean = cross_val_score(winPredictionModel, X, y, cv=3).mean()
+                        neg_log_loss_score = cross_val_score(winPredictionModel, X, y, cv=3, scoring='neg_log_loss').mean()
                         theta = list(winPredictionModel.coef_[0])
                         b = winPredictionModel.intercept_[0]
                         theta_list.append(theta)
                         b_list.append(b)
+                        scaler_history.append(scaler)
                         cross_val_scores.append(cross_val_score_mean)
+                        neg_log_loss_scores.append(neg_log_loss_score)
                         max_iter_history.append(max_iter)
                         solver_history.append(solver)
                         num_fights_history.append(num_fights)
-        best_cross_val_score = max(cross_val_scores)
-        best_index = cross_val_scores.index(best_cross_val_score)
+        # TODO change this to find the best neg_log_loss instead of accuracy
+        
+        # Using best hyperparameters: solver=lbfgs, max_iter=1800, num_fights=2200
+        # Best cross-validation score: 0.630
+        # neg_log_loss score: -0.648
+        # probability of observing data given model: 0.523
+        
+        # WHAT THE HELL... IN THE WORKSHEET I AM GETTING A HUGELY BETTER ANSWER...
+        # TODO EXPLAIN THIS... I THOUGHT IT WAS FROM THE LACK OF SCALING...
+        
+        # model score: 0.656
+        # neg log loss of model: -0.636851776860466
+        # cross val avg probability of result: 0.528955074077124
+        # cross val accuracy: 0.645625
+
+        # best_cross_val_score = max(cross_val_scores)
+        # best_index = cross_val_scores.index(best_cross_val_score)
+        best_neg_log_loss = max(neg_log_loss_scores)
+        best_index = neg_log_loss_scores.index(best_neg_log_loss)
+        cross_val_score_of_best_nll = cross_val_scores[best_index]
+        best_scaler = scaler_history[best_index]
+        self.scaler = best_scaler
         best_theta = theta_list[best_index]
         best_b = b_list[best_index]
         print(f'Using best hyperparameters: solver={solver_history[best_index]}, max_iter={max_iter_history[best_index]}, num_fights={num_fights_history[best_index]}')
-        print(f'Best cross-validation score: {best_cross_val_score:.3f}')
+        print(f'Best cross-validation score: {cross_val_score_of_best_nll:.3f}')
+        print(f'neg_log_loss score: {neg_log_loss_score:.3f}')
+        print(f'probability of observing data given model: {np.exp(neg_log_loss_score):.3f}')
         return best_theta, best_b
 
     def get_regression_coeffs_and_intercept(self):
         return self.theta, self.b
-        
-    #there are some issues with how names are saved in the case when a fighter changes their name or uses a nickname
-    # TODO this should be done on incoming data in DataHandler, not here. But to do this we must also do a global change to existing data by running this function offline and re-saving csvs and jsons
-    def clean_names(self, df:pd.DataFrame, column_names:list):
-        alias_dict = {
-            'Joanne Calderwood': ['Joanne Wood'],
-            'Bobby Green': ['King Green', 'Bobby King Green'],
-        }
-        
-        for column_name in column_names:
-            for i, name in enumerate(df[column_name]):
-                for default_name, alias_list in alias_dict.items():
-                    if name in alias_list:
-                        df.at[i, 'fighter'] = default_name
-                        
 
     # now make predictions for the new fights added to the new scraped fights
     def predict_upcoming_fights(self, prediction_history:pd.DataFrame, fights_list:list, card_date:str, theta, b):
@@ -235,21 +214,86 @@ class FightPredictor:
     #I've defined this in such a way to predict what happens when fighter1 in their day1 version fights fighter2
     #in their day2 version. Meaning we could compare for example 2014 Tyron Woodley to 2019 Colby Covington
     def ufc_prediction_tuple(self, fighter1,fighter2,day1=date.today(),day2=date.today()):
-        return [fighter_score_diff(fighter1,fighter2,day1, 4),
-                fighter_score_diff(fighter1,fighter2,day1, 9),
-                fighter_score_diff(fighter1,fighter2,day1, 15),
-                fight_math_diff(fighter1,fighter2,day1, 1),
-                fight_math_diff(fighter1,fighter2,day1, 6),
-                L5Y_sub_wins(fighter1,day1)-L5Y_sub_wins(fighter2,day2),
-                L5Y_losses(fighter1,day1)-L5Y_losses(fighter2,day2),
-                L5Y_ko_losses(fighter1,day1)-L5Y_ko_losses(fighter2,day2),
-                fighter_age(fighter1,day1)-fighter_age(fighter2,day2),
-                avg_count('total_strikes_landed',fighter1,'abs',day1)-avg_count('total_strikes_landed',fighter2,'abs',day2),
-                avg_count('head_strikes_landed',fighter1,'abs',day1)-avg_count('head_strikes_landed',fighter2,'abs',day2),
-                avg_count('ground_strikes_landed',fighter1,'inf',day1)-avg_count('ground_strikes_landed',fighter2,'inf',day2),
-                avg_count('takedowns_attempts',fighter1,'inf',day1)-avg_count('takedowns_attempts',fighter2,'inf',day2),
-                avg_count('head_strikes_landed',fighter1,'inf',day1)-avg_count('head_strikes_landed',fighter2,'inf',day2),
-            ]
+        # TODO rescale the features to zero mean and unit variance
+        
+        # return [fighter_score_diff(fighter1,fighter2,day1, 4),
+        #         fighter_score_diff(fighter1,fighter2,day1, 9),
+        #         fighter_score_diff(fighter1,fighter2,day1, 15),
+        #         fight_math_diff(fighter1,fighter2,day1, 1),
+        #         fight_math_diff(fighter1,fighter2,day1, 6),
+        #         L5Y_sub_wins(fighter1,day1)-L5Y_sub_wins(fighter2,day2),
+        #         L5Y_losses(fighter1,day1)-L5Y_losses(fighter2,day2),
+        #         L5Y_ko_losses(fighter1,day1)-L5Y_ko_losses(fighter2,day2),
+        #         fighter_age(fighter1,day1)-fighter_age(fighter2,day2),
+        #         avg_count('total_strikes_landed',fighter1,'abs',day1)-avg_count('total_strikes_landed',fighter2,'abs',day2),
+        #         avg_count('head_strikes_landed',fighter1,'abs',day1)-avg_count('head_strikes_landed',fighter2,'abs',day2),
+        #         avg_count('ground_strikes_landed',fighter1,'inf',day1)-avg_count('ground_strikes_landed',fighter2,'inf',day2),
+        #         avg_count('takedowns_attempts',fighter1,'inf',day1)-avg_count('takedowns_attempts',fighter2,'inf',day2),
+        #         avg_count('head_strikes_landed',fighter1,'inf',day1)-avg_count('head_strikes_landed',fighter2,'inf',day2),
+        #     ]
+        prediction_tuple = [
+        # 'fighter_age_diff',
+        #     'height_diff',
+        #     'reach_diff',
+        #     'fighter_L5Y_wins_diff_2',
+        #     'fighter_L5Y_losses_diff_2',
+        #     'fighter_ko_losses_diff_2',
+        #     'fighter_L5Y_ko_wins_diff_2',
+        #     'fighter_L2Y_ko_losses_diff_2',
+            fighter_age(fighter1, day1) - fighter_age(fighter2, day2),
+            fighter_height(fighter1) - fighter_height(fighter2),
+            fighter_reach(fighter1) - fighter_reach(fighter2),
+            L5Y_wins(fighter1, day1) - L5Y_wins(fighter2, day2),
+            L5Y_losses(fighter1, day1) - L5Y_losses(fighter2, day2),
+            ko_losses(fighter1, day1) - ko_losses(fighter2, day2),
+            L5Y_ko_wins(fighter1, day1) - L5Y_ko_wins(fighter2, day2),
+            L2Y_ko_losses(fighter1, day1) - L2Y_ko_losses(fighter2, day2),
+            #     'fighter_L5Y_ko_losses_diff_2',
+        #     'fighter_sub_wins_diff_2',
+        #     'fighter_L2Y_sub_losses_diff_2',
+        #     'fighter_inf_knockdowns_avg_diff_2',
+            L2Y_ko_losses(fighter1, day1) - L2Y_ko_losses(fighter2, day2),
+            sub_wins(fighter1, day1) - sub_wins(fighter2, day2),
+            L2Y_sub_losses(fighter1, day1) - L2Y_sub_losses(fighter2, day2),
+            avg_count('knockdowns', fighter1, 'inf', day1) - avg_count('knockdowns', fighter2, 'inf', day2),
+        
+        #     'fighter_inf_distance_strikes_landed_avg_diff_2',
+            avg_count('distance_strikes_landed', fighter1, 'inf', day1) - avg_count('distance_strikes_landed', fighter2, 'inf', day2),
+        #     'fighter_inf_ground_strikes_landed_avg_diff_2',
+            avg_count('ground_strikes_landed', fighter1, 'inf', day1) - avg_count('ground_strikes_landed', fighter2, 'inf', day2),
+        #     'fighter_inf_distance_strikes_attempts_avg_diff_2',
+            avg_count('distance_strikes_attempts', fighter1, 'inf', day1) - avg_count('distance_strikes_attempts', fighter2, 'inf', day2),
+            
+            
+            #     'fighter_inf_head_strikes_attempts_avg_diff_2',
+            avg_count('head_strikes_attempts', fighter1, 'inf', day1) - avg_count('head_strikes_attempts', fighter2, 'inf', day2),
+        #     'fighter_inf_takedowns_attempts_avg_diff_2',
+            avg_count('takedowns_attempts', fighter1, 'inf', day1) - avg_count('takedowns_attempts', fighter2, 'inf', day2),
+        #     'fighter_abs_reversals_avg_diff_2',
+            # avg_count('reversals', fighter1, 'abs', day1) - avg_count('reversals', fighter2, 'abs', day2), # problem with reversals...
+        #     'fighter_abs_clinch_strikes_landed_avg_diff_2',
+            avg_count('clinch_strikes_landed', fighter1, 'abs', day1) - avg_count('clinch_strikes_landed', fighter2, 'abs', day2),
+        #     'fighter_abs_distance_strikes_landed_avg_diff_2',
+            avg_count('distance_strikes_landed', fighter1, 'abs', day1) - avg_count('distance_strikes_landed', fighter2, 'abs', day2),
+            
+             #     'fighter_abs_leg_strikes_landed_avg_diff_2',
+            avg_count('leg_strikes_landed', fighter1, 'abs', day1) - avg_count('leg_strikes_landed', fighter2, 'abs', day2),
+        #     'fighter_abs_takedowns_attempts_avg_diff_2',
+            avg_count('takedowns_attempts', fighter1, 'abs', day1) - avg_count('takedowns_attempts', fighter2, 'abs', day2),
+        #     'fighter_abs_distance_strikes_attempts_avg_diff_2',
+            avg_count('distance_strikes_attempts', fighter1, 'abs', day1) - avg_count('distance_strikes_attempts', fighter2, 'abs', day2),
+        #     'fighter_abs_head_strikes_attempts_avg_diff_2',
+            avg_count('head_strikes_attempts', fighter1, 'abs', day1) - avg_count('head_strikes_attempts', fighter2, 'abs', day2),
+        #     'fighter_abs_total_strikes_attempts_avg_diff_2',
+            avg_count('total_strikes_attempts', fighter1, 'abs', day1) - avg_count('total_strikes_attempts', fighter2, 'abs', day2),
+                    #     '6-fight_math',
+        #     '9-fighter_score_diff',
+        #     '4-fighter_score_diff',
+            fight_math_diff(fighter1, fighter2, day1, 6),
+            fighter_score_diff(fighter1, fighter2, day1, 9),
+            fighter_score_diff(fighter1, fighter2, day1, 4),
+        ]
+        return self.scaler.transform(np.array(prediction_tuple).reshape(1, -1))[0].tolist()
         
 
     # We want to predict how many times out of 10 the winning fighter would win, so we look at the values

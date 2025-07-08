@@ -13,13 +13,17 @@ dh = DataHandler()
 print('scraping new statistics from ufcstats.com')
 dh.update_data_csvs_and_jsons()
 
-fight_predictor = FightPredictor(dh.get('ufc_fights'))
+ufc_fights = dh.get('ufc_fights')
+ufc_fights_winner = dh.clean_ufc_fights_for_winner_prediction(ufc_fights)
+fight_predictor = FightPredictor(ufc_fights_winner)
+print('Training logistic regression model on ufc_fights_winner data')
 fight_predictor.train_logistic_regression_model()
 theta, b = fight_predictor.get_regression_coeffs_and_intercept()
 
 # use the data handler to update the model coefficients in the json files
-dh.set_regression_coeffs_and_intercept(theta, b)
-print("Saved new regression coefficients and intercept to json files to run model in website")
+# 7/7/2025 stopped doing this. We are going to stick to the model the website is already using for now.
+# dh.set_regression_coeffs_and_intercept(theta, b)
+# print("Saved new regression coefficients and intercept to json files to run model in website")
 
 print('Saving results of previous card to prediction_history.json')
 # now that the previous card which we made predictions for has happened, we can add the results to the prediction history
