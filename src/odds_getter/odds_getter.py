@@ -29,7 +29,7 @@ class OddsGetter:
         driver.get(self.fight_odds_url)
 
         # Wait for JavaScript to render (adjust time if needed or use WebDriverWait)
-        time.sleep(5)
+        time.sleep(10) # changed from 5 to 10 seconds to avoid index out of range error
 
         # Get the rendered HTML
         html = driver.page_source
@@ -46,6 +46,7 @@ class OddsGetter:
         # current_year = pd.Timestamp.now().year
         # date = np.datetime.datetime.strptime(f"{current_year} {date}", "%Y %B %d").strftime("%Y-%m-%d")
         
+        # TODO figure out why I got an index out of range error here.. need to do time.sleep for longer?
         odds_sections = soup.find_all("thead", class_="MuiTableHead-root")[0]
         odds_data = soup.find_all("tbody", class_="MuiTableBody-root")[0]
 
