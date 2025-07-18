@@ -941,19 +941,18 @@ setTimeout(() => { //this builds a table for the history of predictions which is
     } else {
       bestOpponentBookie = null; // default to null if not present
     }
-    if (bestFighterBookie != null) {
-      bestFighterBookieOddsOnFighter = prediction_history[`fighter ${bestFighterBookie}`][i];
-      bestFighterBookieOddsOnOpponent = prediction_history[`opponent ${bestFighterBookie}`][i];
-      if (bestFighterBookie){
+    if (bestFighterBookie) {
         numTotalWithBookieOdds += 1; // count only if we have bookie odds
-      }
+        console.log(`bestFighterBookie is ${bestFighterBookie}`);
+        bestFighterBookieOddsOnFighter = prediction_history[`fighter ${bestFighterBookie}`][i];
+        bestFighterBookieOddsOnOpponent = prediction_history[`opponent ${bestFighterBookie}`][i];
     } else {
       bestFighterBookieOddsOnFighter = null; // default to null if not
       bestFighterBookieOddsOnOpponent = null; // default to null if not present
     }
-    if (bestOpponentBookie != null) {
-      bestOpponentBookieOddsOnFighter = prediction_history[`fighter ${bestOpponentBookie}`][i];
-      bestOpponentBookieOddsOnOpponent = prediction_history[`opponent ${bestOpponentBookie}`][i];
+    if (bestOpponentBookie) {
+        bestOpponentBookieOddsOnFighter = prediction_history[`fighter ${bestOpponentBookie}`][i];
+        bestOpponentBookieOddsOnOpponent = prediction_history[`opponent ${bestOpponentBookie}`][i];
     } else {  
       bestOpponentBookieOddsOnFighter = null; // default to null if not present
       bestOpponentBookieOddsOnOpponent = null; // default to null if not present
