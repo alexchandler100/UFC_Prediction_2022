@@ -18,31 +18,110 @@ ufc_fights_crap = pd.read_csv('content/data/processed/ufc_fights_crap.csv')
 # updated scraped fighter data (after running fight_hist_updated function from UFC_data_scraping file)
 fighter_stats = pd.read_csv('content/data/processed/fighter_stats.csv')
 
-# first call pip install python-Levenshtein
-def same_name(str1, str2, verbose = False):
-    try:
-        str1 = str1.lower().replace("st.", 'saint').replace(
-            " st ", ' saint ').replace('.', '').replace("-", ' ')
-        str2 = str2.lower().replace("st.", 'saint').replace(
-            " st ", ' saint ').replace('.', '').replace("-", ' ')
-        str1_list = str1.split()
-        str2_list = str2.split()
-        str1_set = set(str1_list)
-        str2_set = set(str2_list)
-        if str1 == str2:
-            return True
-        elif str1_set == str2_set:
+alias_array = [
+    ['Ian Machado Garry', 'Ian Garry'],
+    ['Christian Leroy Duncan', 'Christian Duncan'],
+    ['Matheus Nicolau Pereira', 'Matheus Nicolau'],
+    ['Katlyn Cerminara', 'Katlyn Chookagian'],
+    ['Alatengheili', 'Heili Alateng'],
+    ['Montserrat Conejo Ruiz', 'Montserrat Conejo'],
+    ['Tecia Pennington', 'Tecia Torres'],
+    ['Mizuki', 'Mizuki Inoue'],
+    ['Veronica Hardy', 'Veronica Macedo'],
+    ['Daniel Lacerda', 'Daniel Da Silva'],
+    ['Yana Santos', 'Yana Kunitskaya'],
+    ['Da-Un Jung', 'Da Woon Jung'],
+    ['Rayanne dos Santos', 'Rayanne Amanda'],
+    ['Billy Ray Goff', 'Billy Goff'],
+    ['Joanne Wood', 'Joanne Calderwood'],
+    ['King Green', 'Bobby Green'],
+    ['Zach Reese', 'Zachary Reese'],
+    ['Michelle Waterson-Gomez', 'Michelle Waterson'],
+    ['Bruno Korea', 'Bruno Rodrigues'],
+    ['Nina Nunes', 'Nina Ansaroff'],
+    ['Ariane da Silva', 'Ariane Lipski'],
+    ['Brianna Fortino', 'Brianna Van Buren'],
+    ['Melissa Mullins', 'Melissa Dixon'],
+    ['Rongzhu', 'Rong Zhu'],
+    ['Ricky Glenn', 'Rick Glenn'],
+    ['Wulijiburen', 'Wuliji Buren'],
+    [ 'Sumudaerji', 'Su Mudaerji'],
+    ['Yizha', 'Yi Zha'],
+    ['Asu Almabayev', 'Assu Almabayev']
+]
+
+def regularize_name(name):
+    name = name.lower().replace("st.", 'saint').replace(
+    " st ", ' saint ').replace('.', '').replace("-", ' ')
+    return name
+
+
+alias_array_flat_reg = [regularize_name(name) for sublist in alias_array for name in sublist]
+
+# exceptions_to_levenshtein = [
+#     ['Mike Kyle', 'Mike Pyle'],
+#     ['Erik Silva', 'Erick Silva'],
+# ]
+
+
+def maybe_replace_alias_by_default_name(name, verbose=False):
+    if not regularize_name(name) in alias_array_flat_reg:
+        return name
+    for alias_list in alias_array:
+        if any(check_equality_up_to_ordering_and_levenshtein(name, alias_name, verbose=False) for alias_name in alias_list):
             if verbose:
-                print(str1+' ... (same name as) ... '+str2+' ... (different ordering)')
-            return True
-        elif lev(str1, str2) < 3:
-            if verbose:
-                print(str1+' ... (same name as) ... '+str2 + ' ... (small Levenshtein distance apart)')
-            return True
-        else:
-            return False
-    except:
+                print(f'Replacing alias name {name} by default name {alias_list[0]}')
+            return alias_list[0] 
+    return name
+
+def check_equality_up_to_ordering_and_levenshtein(str1, str2, verbose = False):
+    if str1 == str2:
+        return True
+    
+    str1 = regularize_name(str1)
+    str2 = regularize_name(str2)
+    
+    if str1 == str2:
+        return True
+    
+    str1_list = str1.split()
+    str2_list = str2.split()
+    str1_set = set(str1_list)
+    str2_set = set(str2_list)
+    
+    # check_lev = True
+                
+    # TODO could be out of order and off by a character
+    if str1_set == str2_set:
+        if verbose:
+            print(str1+' ... (same name as) ... '+str2+' ... (different ordering)')
+        return True
+    # elif check_lev and lev(str1, str2) < 2:
+    #     if verbose:
+    #         print(str1+' ... (same name as) ... '+str2 + ' ... (small Levenshtein distance apart)')
+    #     return True
+    else:
         return False
+    
+
+# first call pip install python-Levenshtein
+def same_name(str1, str2, verbose=False):
+    
+    if str1 == str2:
+        return True
+    
+    str1 = regularize_name(str1)
+    str2 = regularize_name(str2)
+    
+    if str1 == str2:
+        return True
+    
+    str1 = maybe_replace_alias_by_default_name(str1, verbose=verbose)
+    str2 = maybe_replace_alias_by_default_name(str2, verbose=verbose)
+
+    result = check_equality_up_to_ordering_and_levenshtein(str1, str2, verbose=verbose)
+        
+    return result
     
 same_name_vect = np.vectorize(same_name)
 
@@ -184,11 +263,11 @@ def fighter_height(fighter):
             a = fighter_stats['height'][i]
             break
     if a == '--' or a == 0:
-        b = 'unknown'
+        b = np.nan
     elif a[4] == '"':
-        b = int(a[0])*30.48+int(a[3])*2.54
-    else:
-        b = int(a[0])*30.48+int(a[3]+a[4])*2.54
+        b = int(a[0])*12+int(a[3])
+    elif a[5] == '"':
+        b = int(a[0])*12+int(a[3]+a[4])
     return b
 
 
@@ -802,3 +881,77 @@ def bet_payout(american_odds, bet_amount, result):
         raise ValueError("Result must be 'W' or 'L'.")
     
     return payout
+
+import re
+
+def feet_inches_to_inches(s):
+    # Match patterns like 6' 11", 6'11", or 6ft 11in
+    match = re.match(r"\s*(\d+)\s*['ft]+\s*(\d+)\s*[\"]?", s)
+    if match:
+        feet = int(match.group(1))
+        inches = int(match.group(2))
+        return feet * 12 + inches
+    else:
+        raise ValueError(f"Invalid height format: {s}")
+    
+def get_fighter_stats(fighter):
+    height = np.nan
+    reach = np.nan
+    dob = np.nan
+    stance_ = 'unknown'
+        
+    # TODO get rid of for loop and just do the computations directly
+    for stat_name in ['height', 'reach', 'dob', 'stance']:
+        stat_value = fighter_stats.loc[same_name_vect(fighter_stats['name'], fighter), stat_name]
+        # if there is more than one name match, alert the user
+        if len(stat_value) > 1:
+            print(f"Warning: Multiple entries found for fighter '{fighter}' in fighter_stats. Cannot resolve. Returning None.")
+            return None
+        if len(stat_value) == 0:
+            print(f"Warning: No entry found for fighter '{fighter}' in fighter_stats. Returning None.")
+            return None
+        stat_value = stat_value.iloc[0]  # get the first match
+        if stat_name == 'height':
+            if isinstance(stat_value, str):
+                try:
+                    height = feet_inches_to_inches(stat_value)
+                except ValueError as e:
+                    print(e)
+                    height = np.nan
+            else:
+                print(f"Warning: Height for fighter '{fighter}' is not a string. Returning NaN.")
+                height = np.nan
+        elif stat_name == 'reach':
+            if isinstance(stat_value, str):
+                if stat_value == '--' or stat_value == '':
+                    reach = np.nan
+                try:
+                    # remove " if present
+                    stat_value = stat_value.replace('"', '')
+                    reach = int(stat_value)
+                except ValueError as e:
+                    print(f"Warning: Reach for fighter '{fighter}' is not a valid integer. Returning NaN.")
+                    reach = np.nan
+            elif isinstance(stat_value, (int, float)):
+                print(f"Warning: Reach for fighter '{fighter}' is a number, not a string. Returning NaN.")
+                reach = np.nan
+        elif stat_name == 'dob':
+            # get date of birth from fighter_stats
+            dob_str = fighter_stats.loc[same_name_vect(fighter_stats['name'], fighter), 'dob']
+            if len(dob_str) == 0:
+                print(f"Warning: No date of birth found for fighter '{fighter}' in fighter_stats. Returning NaN.")
+                dob = np.nan
+            dob_str = dob_str.iloc[0]
+            dob = pd.to_datetime(dob_str, errors='coerce')
+            if pd.isna(dob):
+                print(f"Warning: Invalid date of birth format for fighter '{fighter}': {dob_str}. Returning NaN.")
+        elif stat_name == 'stance':
+            if isinstance(stat_value, str):
+                if stat_value == '' or stat_value == 'Unknown':
+                    stance_ = np.nan
+                else:
+                    stance_ = stat_value
+            else:
+                print(f"Warning: Stance for fighter '{fighter}' is not a string. Returning NaN.")
+                stance_ = np.nan
+    return height, reach, dob, stance_

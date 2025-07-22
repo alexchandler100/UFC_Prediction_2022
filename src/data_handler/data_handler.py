@@ -268,96 +268,93 @@ class DataHandler:
     def get_fight_stats(self, url):
         page = requests.get(url)
         soup = BeautifulSoup(page.content, "html.parser")
-        fd_columns = {'fighter': [], 'knockdowns': [], 'sig_strikes': [], 'total_strikes': [], 'takedowns': [], 'sub_attempts': [], 'pass': [],
-                    'reversals': []}
+        fd_columns = {'fighter': [], 'knockdowns': [], 'sig_strikes': [], 'total_strikes': [], 'takedowns': [], 'sub_attempts': [], 'pass': [], 'reversals': []}
 
         # gets overall fight details
         fight_details = soup.select_one('tbody.b-fight-details__table-body')
         if fight_details == None:
             print('missing fight details for:', url)
             return None
-        else:
-            fd_cols = fight_details.select('td.b-fight-details__table-col')
-            for i in range(len(fd_cols)):
-                # skip 3 and 6: strike % and takedown %, will calculate these later
-                if i == 3 or i == 6:
-                    pass
-                else:
-                    col = fd_cols[i].select('p')
-                    for row in col:
-                        data = row.text.strip()
-                        if i == 0:  # add to fighter
-                            fd_columns['fighter'].append(data)
-                        elif i == 1:  # add to sig strikes
-                            fd_columns['knockdowns'].append(data)
-                        elif i == 2:  # add to total strikes
-                            fd_columns['sig_strikes'].append(data)
-                        elif i == 4:  # add to total strikes
-                            fd_columns['total_strikes'].append(data)
-                        elif i == 5:  # add to takedowns
-                            fd_columns['takedowns'].append(data)
-                        elif i == 7:  # add to sub attempts
-                            fd_columns['sub_attempts'].append(data)
-                        elif i == 8:  # add to passes
-                            fd_columns['pass'].append(data)
-                        elif i == 9:  # add to reversals
-                            fd_columns['reversals'].append(data)
-            ov_details = pd.DataFrame(fd_columns)
+        fd_cols = fight_details.select('td.b-fight-details__table-col')
+        for i in range(len(fd_cols)):
+            # skip 3 and 6: strike % and takedown %, will calculate these later
+            if i == 3 or i == 6:
+                pass
+            else:
+                col = fd_cols[i].select('p')
+                for row in col:
+                    data = row.text.strip()
+                    if i == 0:  # add to fighter
+                        fd_columns['fighter'].append(data)
+                    elif i == 1:  # add to sig strikes
+                        fd_columns['knockdowns'].append(data)
+                    elif i == 2:  # add to total strikes
+                        fd_columns['sig_strikes'].append(data)
+                    elif i == 4:  # add to total strikes
+                        fd_columns['total_strikes'].append(data)
+                    elif i == 5:  # add to takedowns
+                        fd_columns['takedowns'].append(data)
+                    elif i == 7:  # add to sub attempts
+                        fd_columns['sub_attempts'].append(data)
+                    elif i == 8:  # add to passes
+                        fd_columns['pass'].append(data)
+                    elif i == 9:  # add to reversals
+                        fd_columns['reversals'].append(data)
+        ov_details = pd.DataFrame(fd_columns)
 
-            # get sig strike details
-            sig_strike_details = soup.find('p', class_='b-fight-details__collapse-link_tot', text=re.compile(
-                'Significant Strikes')).find_next('tbody', class_='b-fight-details__table-body')
-            sig_columns = {'fighter': [], 'head_strikes': [], 'body_strikes': [], 'leg_strikes': [], 'distance_strikes': [],
-                        'clinch_strikes': [], 'ground_strikes': []}
-            fd_cols = sig_strike_details.select('td.b-fight-details__table-col')
-            for i in range(len(fd_cols)):
-                # skip 1, 2 (sig strikes, sig %)
-                if i == 1 or i == 2:
-                    pass
-                else:
-                    col = fd_cols[i].select('p')
-                    for row in col:
-                        data = row.text.strip()
-                        if i == 0:  # add to fighter
-                            sig_columns['fighter'].append(data)
-                        elif i == 3:  # add to head strikes
-                            sig_columns['head_strikes'].append(data)
-                        elif i == 4:  # add to body strikes
-                            sig_columns['body_strikes'].append(data)
-                        elif i == 5:  # add to leg strikes
-                            sig_columns['leg_strikes'].append(data)
-                        elif i == 6:  # add to distance strikes
-                            sig_columns['distance_strikes'].append(data)
-                        elif i == 7:  # add to clinch strikes
-                            sig_columns['clinch_strikes'].append(data)
-                        elif i == 8:  # add to ground strikes
-                            sig_columns['ground_strikes'].append(data)
-            sig_details = pd.DataFrame(sig_columns)
+        # get sig strike details
+        sig_strike_details = soup.find('p', class_='b-fight-details__collapse-link_tot', text=re.compile(
+            'Significant Strikes')).find_next('tbody', class_='b-fight-details__table-body')
+        sig_columns = {'fighter': [], 'head_strikes': [], 'body_strikes': [], 'leg_strikes': [], 'distance_strikes': [],
+                    'clinch_strikes': [], 'ground_strikes': []}
+        fd_cols = sig_strike_details.select('td.b-fight-details__table-col')
+        for i in range(len(fd_cols)):
+            # skip 1, 2 (sig strikes, sig %)
+            if i == 1 or i == 2:
+                pass
+            else:
+                col = fd_cols[i].select('p')
+                for row in col:
+                    data = row.text.strip()
+                    if i == 0:  # add to fighter
+                        sig_columns['fighter'].append(data)
+                    elif i == 3:  # add to head strikes
+                        sig_columns['head_strikes'].append(data)
+                    elif i == 4:  # add to body strikes
+                        sig_columns['body_strikes'].append(data)
+                    elif i == 5:  # add to leg strikes
+                        sig_columns['leg_strikes'].append(data)
+                    elif i == 6:  # add to distance strikes
+                        sig_columns['distance_strikes'].append(data)
+                    elif i == 7:  # add to clinch strikes
+                        sig_columns['clinch_strikes'].append(data)
+                    elif i == 8:  # add to ground strikes
+                        sig_columns['ground_strikes'].append(data)
+        sig_details = pd.DataFrame(sig_columns)
 
-            cfd = pd.merge(ov_details, sig_details, on='fighter', how='left', copy=False)
+        cfd = pd.merge(ov_details, sig_details, on='fighter', how='left', copy=False)
 
-            cfd['takedowns_landed'] = cfd.takedowns.str.split( ' of ').str[0].astype(int)
-            cfd['takedowns_attempts'] = cfd.takedowns.str.split( ' of ').str[-1].astype(int)
-            cfd['sig_strikes_landed'] = cfd.sig_strikes.str.split( ' of ').str[0].astype(int)
-            cfd['sig_strikes_attempts'] = cfd.sig_strikes.str.split( ' of ').str[-1].astype(int)
-            cfd['total_strikes_landed'] = cfd.total_strikes.str.split( ' of ').str[0].astype(int)
-            cfd['total_strikes_attempts'] = cfd.total_strikes.str.split( ' of ').str[-1].astype(int)
-            cfd['head_strikes_landed'] = cfd.head_strikes.str.split( ' of ').str[0].astype(int)
-            cfd['head_strikes_attempts'] = cfd.head_strikes.str.split( ' of ').str[-1].astype(int)
-            cfd['body_strikes_landed'] = cfd.body_strikes.str.split( ' of ').str[0].astype(int)
-            cfd['body_strikes_attempts'] = cfd.body_strikes.str.split( ' of ').str[-1].astype(int)
-            cfd['leg_strikes_landed'] = cfd.leg_strikes.str.split( ' of ').str[0].astype(int)
-            cfd['leg_strikes_attempts'] = cfd.leg_strikes.str.split( ' of ').str[-1].astype(int)
-            cfd['distance_strikes_landed'] = cfd.distance_strikes.str.split( ' of ').str[0].astype(int)
-            cfd['distance_strikes_attempts'] = cfd.distance_strikes.str.split( ' of ').str[-1].astype(int)
-            cfd['clinch_strikes_landed'] = cfd.clinch_strikes.str.split( ' of ').str[0].astype(int)
-            cfd['clinch_strikes_attempts'] = cfd.clinch_strikes.str.split( ' of ').str[-1].astype(int)
-            cfd['ground_strikes_landed'] = cfd.ground_strikes.str.split( ' of ').str[0].astype(int)
-            cfd['ground_strikes_attempts'] = cfd.ground_strikes.str.split( ' of ').str[-1].astype(int)
+        cfd['takedowns_landed'] = cfd.takedowns.str.split( ' of ').str[0].astype(int)
+        cfd['takedowns_attempts'] = cfd.takedowns.str.split( ' of ').str[-1].astype(int)
+        cfd['sig_strikes_landed'] = cfd.sig_strikes.str.split( ' of ').str[0].astype(int)
+        cfd['sig_strikes_attempts'] = cfd.sig_strikes.str.split( ' of ').str[-1].astype(int)
+        cfd['total_strikes_landed'] = cfd.total_strikes.str.split( ' of ').str[0].astype(int)
+        cfd['total_strikes_attempts'] = cfd.total_strikes.str.split( ' of ').str[-1].astype(int)
+        cfd['head_strikes_landed'] = cfd.head_strikes.str.split( ' of ').str[0].astype(int)
+        cfd['head_strikes_attempts'] = cfd.head_strikes.str.split( ' of ').str[-1].astype(int)
+        cfd['body_strikes_landed'] = cfd.body_strikes.str.split( ' of ').str[0].astype(int)
+        cfd['body_strikes_attempts'] = cfd.body_strikes.str.split( ' of ').str[-1].astype(int)
+        cfd['leg_strikes_landed'] = cfd.leg_strikes.str.split( ' of ').str[0].astype(int)
+        cfd['leg_strikes_attempts'] = cfd.leg_strikes.str.split( ' of ').str[-1].astype(int)
+        cfd['distance_strikes_landed'] = cfd.distance_strikes.str.split( ' of ').str[0].astype(int)
+        cfd['distance_strikes_attempts'] = cfd.distance_strikes.str.split( ' of ').str[-1].astype(int)
+        cfd['clinch_strikes_landed'] = cfd.clinch_strikes.str.split( ' of ').str[0].astype(int)
+        cfd['clinch_strikes_attempts'] = cfd.clinch_strikes.str.split( ' of ').str[-1].astype(int)
+        cfd['ground_strikes_landed'] = cfd.ground_strikes.str.split( ' of ').str[0].astype(int)
+        cfd['ground_strikes_attempts'] = cfd.ground_strikes.str.split( ' of ').str[-1].astype(int)
 
-            cfd = cfd.drop(['takedowns', 'sig_strikes', 'total_strikes', 'head_strikes', 'body_strikes', 'leg_strikes', 'distance_strikes',
-                            'clinch_strikes', 'ground_strikes'], axis=1)
-            return (cfd)
+        cfd = cfd.drop(['takedowns', 'sig_strikes', 'total_strikes', 'head_strikes', 'body_strikes', 'leg_strikes', 'distance_strikes', 'clinch_strikes', 'ground_strikes'], axis=1)
+        return (cfd)
         
     # updates fighter attributes with new fighters not yet saved yet
     def update_fighter_stats(self):
@@ -405,28 +402,11 @@ class DataHandler:
         self.set('fighter_stats', updated_fighters)
         self.save_csv('fighter_stats')
         self.save_json('fighter_stats', 'name')
-        
-    #there are some issues with how names are saved in the case when a fighter changes their name or uses a nickname
-    # TODO this should be done on incoming data in DataHandler, not here. But to do this we must also do a global change to existing data by running this function offline and re-saving csvs and jsons
-    def clean_names(self, df:pd.DataFrame, column_names:list):
-        alias_dict = {
-            'Joanne Calderwood': ['Joanne Wood'],
-            'Bobby Green': ['King Green', 'Bobby King Green'],
-        }
-        
-        for column_name in column_names:
-            for i, name in enumerate(df[column_name]):
-                for default_name, alias_list in alias_dict.items():
-                    if name in alias_list:
-                        df.at[i, 'fighter'] = default_name
                         
         
     def clean_ufc_fights_for_winner_prediction(self, ufc_fights):
         #importing csv fight data and saving as dataframes
         ufc_fights_winner = ufc_fights.copy()
-        #there are some issues with how names are saved in the case when a fighter changes their name or uses a nickname
-        # TODO this should be done on incoming data, not here. But to do this we must also do a global change to existing data by running this function offline and re-saving csvs and jsons
-        self.clean_names(ufc_fights_winner, ['fighter', 'opponent'])
         #cleaning the methods column for winner prediction
         #changing anything other than 'U-DEC','M-DEC', 'KO/TKO', 'SUB', to 'bullshit'
         #changing 'U-DEC','M-DEC', to 'DEC'
@@ -481,9 +461,6 @@ class DataHandler:
     
     def clean_ufc_fights_for_method_prediction(self, ufc_fights):
         ufc_fights_method = ufc_fights.copy()
-        #there are some issues with how names are saved in the case when a fighter changes their name or uses a nickname
-        # TODO this should be done on incoming data, not here. But to do this we must also do a global change to existing data by running this function offline and re-saving csvs and jsons
-        self.clean_names(ufc_fights_method, ['fighter', 'opponent'])
         #cleaning the methods column for method prediction
         #changing anything other than 'U-DEC','M-DEC', 'S-DEC', 'KO/TKO', 'SUB', to 'bullshit'
         #changing 'U-DEC','M-DEC', 'S-DEC', to 'DEC'
