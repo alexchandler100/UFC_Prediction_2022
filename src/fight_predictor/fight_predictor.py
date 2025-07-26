@@ -36,7 +36,7 @@ class FightPredictor:
         self.ufc_fighter_names = set(fighter_names + opponent_names)
         self.scaler = None
         
-    def train_logistic_regression_model(self):
+    def train_logistic_regression_model(self, random_state=14):
         r"""
         Train a logistic regression model to predict the winner of a UFC fight based on various statistics.
         This method processes the fight data, cleans the necessary columns, and prepares the data for training.
@@ -160,13 +160,13 @@ class FightPredictor:
         ufc_fights_df = ufc_fights_winner[self.amazing_feature_set]
         results = ufc_fights_winner['result']
         # self.theta, self.b = self.find_best_regression_coeffs(ufc_fights_df, results)
-        self.theta, self.b = self.find_regression_coeffs(ufc_fights_df, results)
+        self.theta, self.b = self.find_regression_coeffs(ufc_fights_df, results, random_state=random_state)
     
     
-    def find_regression_coeffs(self, X, y, _max_iter=20000):
+    def find_regression_coeffs(self, X, y, _max_iter=20000, random_state=14):
         # do another split
         from sklearn.model_selection import train_test_split
-        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=14)
+        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=random_state)
         # see how the new features do on the test set we already made
         # train the model with the best features
 
