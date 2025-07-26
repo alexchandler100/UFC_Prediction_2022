@@ -894,7 +894,7 @@ def feet_inches_to_inches(s):
     else:
         raise ValueError(f"Invalid height format: {s}")
     
-def get_fighter_stats(fighter):
+def get_fighter_stats(fighter, fighter_stats):
     height = np.nan
     reach = np.nan
     dob = np.nan
@@ -955,3 +955,38 @@ def get_fighter_stats(fighter):
                 print(f"Warning: Stance for fighter '{fighter}' is not a string. Returning NaN.")
                 stance_ = np.nan
     return height, reach, dob, stance_
+
+def make_cumsum_before_current_fight(df, col_name, timeframe):
+    lxy_pattern = re.compile(r'l\dy')
+    assert timeframe == 'all' or re.fullmatch(lxy_pattern, timeframe) , f'timeframe must be all or lky where k is a digit, got {timeframe}' # l2y=(last 2 years), l5y=(last 5 years)
+    # make a cumsum column for the given column name, but shifted down by 1 so it doesn't include the current fight
+    if timeframe == 'all':
+        cumsum_before = df[col_name].cumsum() - df[col_name]
+    else:
+        num_years = int(timeframe[1])  # extract the number of years from the timeframe string
+        num_days = num_years * 365  # approximate number of days in the given number of years
+        window = f'{num_days}D'  # create a rolling window string for the given number of days
+        cumsum_before = df[col_name].rolling(window=window).sum() - df[col_name]  # rolling sum for the given number of days, shifted down by 1 so it doesn't include the current fight
+    return cumsum_before
+
+def make_avg_before_current_fight(df, col_name, timeframe, landed_attempts):
+    assert 'total_fight_time' in df.columns, 'df must have a total_fight_time column in minutes to compute averages'
+    lxy_pattern = re.compile(r'l\dy')
+    assert timeframe == 'all' or re.fullmatch(lxy_pattern, timeframe) , f'timeframe must be all or lky where k is a digit, got {timeframe}' # l2y=(last 2 years), l5y=(last 5 years)
+    assert landed_attempts in ['landed', 'attempts', None], f'landed_attempts must be one of landed or attempts, got {landed_attempts}' # landed=landed, attempts=attempts
+    total_fight_time = df['total_fight_time'] / 60 # in minutes
+    if landed_attempts is not None:
+        col_name = f'{col_name}_{landed_attempts}' # e.g. sig_strikes_landed
+    # make a cumsum column for the given column name, but shifted down by 1 so it doesn't include the current fight
+    if timeframe == 'all':
+        cumsum_before = df[col_name].cumsum() - df[col_name]
+        time_before = total_fight_time.cumsum() - total_fight_time  # total fight time in minutes before current fight
+    else:
+        num_years = int(timeframe[1])  # extract the number of years from the timeframe string
+        num_days = num_years * 365  # approximate number of days in the given number of years
+        window = f'{num_days}D'  # create a rolling window string for the given number of days
+        cumsum_before = df[col_name].rolling(window=window).sum() - df[col_name]  # rolling sum for the given number of days, shifted down by 1 so it doesn't include the current fight
+        time_before = total_fight_time.rolling(window=window).sum() - total_fight_time  # total fight time in minutes before current fight
+    avg_before = cumsum_before / time_before.replace(0, np.nan)  # avoid division by zero
+    avg_before = avg_before.fillna(0)  # fill NaN values with 0
+    return avg_before

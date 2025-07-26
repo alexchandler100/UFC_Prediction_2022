@@ -5,7 +5,6 @@ os.chdir(f'{git_root}/src')
 # from data_handler import DataHandler
 
 import pandas as pd
-import numpy as npy
 from datetime import date, datetime
 import random
 import requests
@@ -102,7 +101,7 @@ def get_fight_card(url):
         fight_data_dict = pd.merge(fight_data_dict, strike_data_dict, on='fighter', how='left', copy=False)
         
         # add fight details to fight card
-        fight_card = pd.concat([fight_card, fight_data_dict], axis=0)
+        fight_card = pd.concat([fight_data_dict, fight_card], axis=0)
         
     fight_card = fight_card.reset_index(drop=True)
     return fight_card
@@ -316,7 +315,7 @@ def get_all_fight_stats():
         # if event_count > 2:  # limit to the last 3 if we want to debug quickly
         #     break
         stats = get_fight_card(event)
-        fight_stats = pd.concat([fight_stats, stats], axis = 0)
+        fight_stats = pd.concat([stats, fight_stats], axis = 0)
         event_count += 1
         
     fight_stats = fight_stats.reset_index(drop = True)

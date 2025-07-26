@@ -5,7 +5,7 @@ os.chdir(f'{git_root}/src')
 from data_handler import DataHandler
 
 import pandas as pd
-import numpy as npy
+import numpy as np
 from datetime import date, datetime
 import random
 import requests
@@ -23,11 +23,11 @@ fighter_stats = pd.read_csv(fighter_stats_path)
 ufc_fights_reported_doubled_path = f'{git_root}/src/content/data/processed/ufc_fights_reported_doubled.csv'
 ufc_fights_reported_doubled = pd.read_csv(ufc_fights_reported_doubled_path)
 ufc_fights_reported_doubled['date'] = pd.to_datetime(ufc_fights_reported_doubled['date'], errors='coerce')
-ufc_fights_reported_doubled = ufc_fights_reported_doubled.loc[::-1]  # reverse the order so newest fights are first, newest last (better than sort because it preserves order of fights within cards)
+ufc_fights_reported_doubled = ufc_fights_reported_doubled.loc[::-1]  # I think i fixed it so this doesn't happen
 ufc_fights_reported_doubled.set_index('date', inplace=True)
 print(f'Loaded existing fight history with stats from {ufc_fights_reported_doubled_path}, shape {ufc_fights_reported_doubled.shape}')
 
-ufc_fights_predictive = ufc_fights_reported_doubled[['fighter', 'opponent', 'result', 'method', 'division']].copy()
+ufc_fights_reported_derived_doubled = ufc_fights_reported_doubled[['fighter', 'opponent', 'result', 'method', 'division']].copy()
 
 # GOAL reproduce these statistics 
 
@@ -105,10 +105,9 @@ def make_avg_before_current_fight(df, col_name, timeframe, landed_attempts):
         cumsum_before = df[col_name].rolling(window=window).sum() - df[col_name]  # rolling sum for the given number of days, shifted down by 1 so it doesn't include the current fight
         time_before = total_fight_time.rolling(window=window).sum() - total_fight_time  # total fight time in minutes before current fight
     avg_before = cumsum_before / time_before.replace(0, np.nan)  # avoid division by zero
+    avg_before.replace(np.nan, 0, inplace=True)  # replace NaN with 0 for the first fight
     return avg_before
 
-
-ufc_fights_reported_doubled_localized_dict = {}
 for idx, name in enumerate(fighter_stats.name):
     if idx % 100 == 0:
         print(f'Processing fighter {idx+1}/{len(fighter_stats)}: {name}')
@@ -130,7 +129,7 @@ for idx, name in enumerate(fighter_stats.name):
     record_indicator_df['lost_ko'] = ((localized_df['result'] == 'L') & (localized_df['method'].str.contains('KO|TKO', na=False))).astype(int)
     record_indicator_df['lost_sub'] = ((localized_df['result'] == 'L') & (localized_df['method'].str.contains('SUB', na=False))).astype(int)
     record_indicator_df['lost_dec'] = ((localized_df['result'] == 'L') & (localized_df['method'].str.contains('DEC', na=False))).astype(int)
-    record_indicator_df['num_fights'] = npy.arange(0, len(localized_df))  # cumulative fights
+    record_indicator_df['num_fights'] = np.arange(0, len(localized_df))  # cumulative fights
     # column of all ones to use for cumsum calculations
     record_indicator_df['ones'] = 1
     
@@ -141,7 +140,7 @@ for idx, name in enumerate(fighter_stats.name):
     # add physical stats (age, height, reach, stance) which don't need rolling averages
     physical_stats = [u'age', u'height', u'reach', u'stance']
 
-    fighter_stats_results = get_fighter_stats(name)
+    fighter_stats_results = get_fighter_stats(name, fighter_stats)
     if fighter_stats_results is None:
         print(f'Warning: Either no stats or too many stats found for fighter {name}, not populating fighters statistics')
         continue
@@ -164,7 +163,7 @@ for idx, name in enumerate(fighter_stats.name):
     # record statistic columns 
     for stat_name, stat_indicator in zip(['wins', 'wins_ko', 'wins_sub', 'wins_dec', 'losses', 'losses_ko', 'losses_sub', 'losses_dec', 'num_fights'],
                                          ['won', 'won_ko', 'won_sub', 'won_dec', 'lost', 'lost_ko', 'lost_sub', 'lost_dec', 'ones']):
-        for timeframe in ['all', 'l1y', 'l2y', 'l3y', 'l5y']:
+        for timeframe in ['all', 'l1y', 'l3y', 'l5y']:
             new_col_name = f'{timeframe}_{stat_name}'
             stats_to_add_to_main_df.append(new_col_name)
             new_columns_dict[new_col_name] = make_cumsum_before_current_fight(record_indicator_df, stat_indicator, timeframe=timeframe)
@@ -173,7 +172,7 @@ for idx, name in enumerate(fighter_stats.name):
     for stat in grappling_event_stats:
         col_name = f'{stat}'
         for inf_abs in ['inf', 'abs']:
-            for timeframe in ['all', 'l1y', 'l2y', 'l3y', 'l5y']:
+            for timeframe in ['all', 'l1y', 'l3y', 'l5y']:
                 new_col_name = f'{timeframe}_{inf_abs}_{col_name}_per_min'
                 stats_to_add_to_main_df.append(new_col_name)
                 if inf_abs == 'inf':
@@ -194,7 +193,7 @@ for idx, name in enumerate(fighter_stats.name):
     for stat in striking_event_stats:
         col_name = f'{stat}'
         for inf_abs in ['inf', 'abs']:
-            for timeframe in ['all', 'l1y', 'l2y', 'l3y', 'l5y']:
+            for timeframe in ['all', 'l1y', 'l3y', 'l5y']:
                 new_col_name = f'{timeframe}_{inf_abs}_{col_name}_per_min'
                 stats_to_add_to_main_df.append(new_col_name)
                 if inf_abs == 'inf':
@@ -216,7 +215,7 @@ for idx, name in enumerate(fighter_stats.name):
     for stat in grappling_stats:
         col_name = f'{stat}'
         for inf_abs in ['inf', 'abs']:
-            for timeframe in ['all', 'l1y', 'l2y', 'l3y', 'l5y']:
+            for timeframe in ['all', 'l1y', 'l3y', 'l5y']:
                 for landed_attempts in ['landed', 'attempts']:
                     new_col_name_per_min = f'{timeframe}_{inf_abs}_{col_name}_{landed_attempts}_per_min'
                     stats_to_add_to_main_df.append(new_col_name_per_min)
@@ -238,13 +237,14 @@ for idx, name in enumerate(fighter_stats.name):
                 new_col_name_accuracy = f'{timeframe}_{inf_abs}_{col_name}_accuracy'
                 stats_to_add_to_main_df.append(new_col_name_accuracy)
                 accuracy = new_columns_dict[f'{timeframe}_{inf_abs}_{col_name}_landed_per_min'] / new_columns_dict[f'{timeframe}_{inf_abs}_{col_name}_attempts_per_min'].replace(0, np.nan) # avoid division by zero
+                accuracy.replace(np.nan, 0, inplace=True)  # replace NaN with 0
                 new_columns_dict[new_col_name_accuracy] = accuracy
                         
     # adding striking stats
     for stat in striking_stats:
         col_name = f'{stat}'
         for inf_abs in ['inf', 'abs']:
-            for timeframe in ['all', 'l1y', 'l2y', 'l3y', 'l5y']:
+            for timeframe in ['all', 'l1y', 'l3y', 'l5y']:
                 for landed_attempts in ['landed', 'attempts']:
                     new_col_name = f'{timeframe}_{inf_abs}_{col_name}_{landed_attempts}_per_min'
                     stats_to_add_to_main_df.append(new_col_name)
@@ -266,6 +266,7 @@ for idx, name in enumerate(fighter_stats.name):
                 new_col_name_accuracy = f'{timeframe}_{inf_abs}_{col_name}_accuracy'
                 stats_to_add_to_main_df.append(new_col_name_accuracy)
                 accuracy = new_columns_dict[f'{timeframe}_{inf_abs}_{col_name}_landed_per_min'] / new_columns_dict[f'{timeframe}_{inf_abs}_{col_name}_attempts_per_min'].replace(0, np.nan) # avoid division by zero
+                accuracy.replace(np.nan, 0, inplace=True)  # replace NaN with 0
                 new_columns_dict[new_col_name_accuracy] = accuracy
                 
     # STATS COMPUTED FROM THE new_columns_dict
@@ -275,7 +276,7 @@ for idx, name in enumerate(fighter_stats.name):
     # say a knockdown is worth 10 times a landed strike
     # add up all inf attempts
     inf_abs = 'inf'  # we only care about inflicted stats for the striking score
-    for timeframe in ['all', 'l1y', 'l2y', 'l3y', 'l5y']:
+    for timeframe in ['all', 'l1y', 'l3y', 'l5y']:
         new_col_name = f'{timeframe}_offensive_standing_striking_score'
         stats_to_add_to_main_df.append(new_col_name)
         # import ipdb; ipdb.set_trace(context=10)  # uncomment to debug
@@ -289,7 +290,7 @@ for idx, name in enumerate(fighter_stats.name):
         
     # add an defensive striking loss (smaller is better)
     inf_abs = 'abs'  # we only care about absorbed stats for the striking loss
-    for timeframe in ['all', 'l1y', 'l2y', 'l3y', 'l5y']:
+    for timeframe in ['all', 'l1y', 'l3y', 'l5y']:
         new_col_name = f'{timeframe}_defensive_standing_striking_loss'
         stats_to_add_to_main_df.append(new_col_name)
         defensive_standup_striking_loss = new_columns_dict[f'{timeframe}_{inf_abs}_knockdowns_per_min'] * 10
@@ -305,7 +306,7 @@ for idx, name in enumerate(fighter_stats.name):
     offensive_grappling_score_stats = [u'takedowns', u'sub_attempts', u'reversals', u'control']
     # takedowns and sub attempts and reversals are equally weighted. 30 seconds of control is worth 1 takedown or sub attempt
     inf_abs = 'inf'  # we only care about inflicted stats for the grappling score
-    for timeframe in ['all', 'l1y', 'l2y', 'l3y', 'l5y']:
+    for timeframe in ['all', 'l1y', 'l3y', 'l5y']:
         new_col_name = f'{timeframe}_offensive_grappling_score'
         stats_to_add_to_main_df.append(new_col_name)
         offensive_grappling_score = new_columns_dict[f'{timeframe}_{inf_abs}_takedowns_landed_per_min'] 
@@ -327,7 +328,7 @@ for idx, name in enumerate(fighter_stats.name):
     defensive_grappling_loss_stats = [u'takedowns', u'sub_attempts', u'reversals', u'control']
     # takedowns and sub attempts and reversals are equally weighted. 30 seconds of control is worth 1 takedown or sub attempt
     inf_abs = 'abs'  # we only care about absorbed stats for the grappling
-    for timeframe in ['all', 'l1y', 'l2y', 'l3y', 'l5y']:
+    for timeframe in ['all', 'l1y', 'l3y', 'l5y']:
         new_col_name = f'{timeframe}_defensive_grappling_loss'
         stats_to_add_to_main_df.append(new_col_name)
         defensive_grappling_loss = new_columns_dict[f'{timeframe}_{inf_abs}_takedowns_landed_per_min'] 
@@ -350,9 +351,9 @@ for idx, name in enumerate(fighter_stats.name):
     new_columns_df = pd.DataFrame(new_columns_dict, index=localized_df.index)
     localized_df = pd.concat([localized_df, new_columns_df], axis=1)
     # add all new stats to main df at once to avoid highly fragmented df warning
-    ufc_fights_predictive.loc[fighter_mask, stats_to_add_to_main_df] = localized_df
+    ufc_fights_reported_derived_doubled.loc[fighter_mask, stats_to_add_to_main_df] = localized_df
         
 # save the results to a csv file 
-ufc_fights_predictive_path = f'{git_root}/src/content/data/processed/ufc_fights_reported_derived_doubled.csv'
-ufc_fights_predictive.to_csv(ufc_fights_predictive_path, index=True)
-print(f'Saved predictive fight history with stats to {ufc_fights_predictive_path}, shape {ufc_fights_predictive.shape}')
+ufc_fights_reported_derived_doubled_path = f'{git_root}/src/content/data/processed/ufc_fights_reported_derived_doubled.csv'
+ufc_fights_reported_derived_doubled.to_csv(ufc_fights_reported_derived_doubled_path, index=True)
+print(f'Saved predictive fight history with stats to {ufc_fights_reported_derived_doubled_path}, shape {ufc_fights_reported_derived_doubled.shape}')

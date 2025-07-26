@@ -8,7 +8,6 @@ from dateutil.relativedelta import relativedelta
 from sklearn.preprocessing import StandardScaler
 from sklearn import preprocessing
 
-
 from fight_stat_helpers import (
     fighter_score_diff, 
     fight_math_diff, 
@@ -29,7 +28,8 @@ from fight_stat_helpers import (
     )
 
 class FightPredictor:
-    def __init__(self, ufc_fights_winner):
+    def __init__(self, ufc_fights_winner, dh):
+        self.dh = dh
         self.ufc_fights_winner = ufc_fights_winner.copy()
         fighter_names = [name for name in ufc_fights_winner['fighter'].unique()]
         opponent_names = [name for name in ufc_fights_winner['opponent'].unique()]
@@ -51,40 +51,99 @@ class FightPredictor:
             
         # WE SET UP A LOGISTIC REGRESSION MODEL BELOW WITH A MINIMAL SET OF FEATURES
         # TODO TRY XGBOOST AND RANDOM FOREST # TODO ALSO PREDICT METHOD OF VICTORY
-        
-        current_best_feature_set = [
-         'fighter_age_diff',
-            'height_diff',
+                
+        # result without squares
+        self.amazing_feature_set = [
+            'l3y_wins_diff',
+            'age_diff',
+            'age_sum',
+            'l5y_offensive_grappling_score_diff',
+            'l5y_inf_ground_strikes_attempts_per_min_diff',
+            'l5y_losses_ko_diff',
+            'l5y_defensive_grappling_loss_diff',
+            'all_inf_takedowns_attempts_per_min_diff',
+            'l5y_abs_ground_strikes_landed_per_min_diff',
+            'l1y_abs_ground_strikes_attempts_per_min_diff',
+            'all_abs_ground_strikes_attempts_per_min_diff',
+            'l1y_abs_control_per_min_diff',
+            'l1y_abs_clinch_strikes_accuracy_diff',
+            'l1y_inf_takedowns_attempts_per_min_diff',
+            'l1y_losses_ko_diff',
             'reach_diff',
-            'fighter_L5Y_wins_diff_2',
-            'fighter_L5Y_losses_diff_2',
-            'fighter_ko_losses_diff_2',
-            'fighter_L5Y_ko_wins_diff_2',
-            'fighter_L2Y_ko_losses_diff_2',
-            'fighter_L5Y_ko_losses_diff_2',
-            'fighter_sub_wins_diff_2',
-            'fighter_L2Y_sub_losses_diff_2',
-            'fighter_inf_knockdowns_avg_diff_2',
-            'fighter_inf_distance_strikes_landed_avg_diff_2',
-            'fighter_inf_ground_strikes_landed_avg_diff_2',
-            'fighter_inf_distance_strikes_attempts_avg_diff_2',
-            'fighter_inf_head_strikes_attempts_avg_diff_2',
-            'fighter_inf_takedowns_attempts_avg_diff_2',
-            # 'fighter_abs_reversals_avg_diff_2', # reversals has problems
-            'fighter_abs_clinch_strikes_landed_avg_diff_2',
-            'fighter_abs_distance_strikes_landed_avg_diff_2',
-            'fighter_abs_leg_strikes_landed_avg_diff_2',
-            'fighter_abs_takedowns_attempts_avg_diff_2',
-            'fighter_abs_distance_strikes_attempts_avg_diff_2',
-            'fighter_abs_head_strikes_attempts_avg_diff_2',
-            'fighter_abs_total_strikes_attempts_avg_diff_2',
-            '6-fight_math',
-            '9-fighter_score_diff',
-            '4-fighter_score_diff',
+            'all_inf_reversals_per_min_diff',
+            'l3y_inf_reversals_per_min_diff',
+            'l3y_inf_ground_strikes_attempts_per_min_sum',
+            'all_inf_ground_strikes_landed_per_min_sum',
+            'l1y_inf_takedowns_accuracy_diff',
+            'l3y_inf_leg_strikes_accuracy_diff',
+            'l5y_inf_total_strikes_attempts_per_min_diff',
+            'all_inf_total_strikes_landed_per_min_diff',
+            'l3y_inf_head_strikes_landed_per_min_diff',
+            'all_inf_clinch_strikes_landed_per_min_diff',
+            'l3y_inf_clinch_strikes_attempts_per_min_diff',
+            'l3y_inf_ground_strikes_accuracy_diff',
+            'all_abs_body_strikes_attempts_per_min_diff',
+            'l5y_abs_body_strikes_landed_per_min_diff',
+            'l1y_inf_sig_strikes_accuracy_diff',
+            'l1y_inf_clinch_strikes_attempts_per_min_diff',
+            'l5y_inf_head_strikes_attempts_per_min_diff',
+            'l3y_inf_clinch_strikes_landed_per_min_diff',
+            'l5y_num_fights_diff',
+            'l1y_inf_ground_strikes_landed_per_min_diff',
+            'l5y_inf_knockdowns_per_min_diff',
+            'l1y_inf_knockdowns_per_min_diff',
+            'l5y_abs_body_strikes_attempts_per_min_diff',
+            'l3y_inf_total_strikes_attempts_per_min_diff',
+            'all_inf_body_strikes_landed_per_min_diff',
+            'l3y_abs_sub_attempts_per_min_diff',
+            'l5y_abs_sub_attempts_per_min_diff',
+            'l3y_abs_ground_strikes_landed_per_min_diff',
+            'l3y_abs_ground_strikes_attempts_per_min_diff',
+            'l1y_abs_body_strikes_accuracy_diff',
+            'l1y_inf_knockdowns_per_min_sum',
+            'all_inf_knockdowns_per_min_diff',
+            'all_inf_reversals_per_min_sum',
+            'l5y_inf_ground_strikes_landed_per_min_diff',
+            'all_abs_distance_strikes_attempts_per_min_diff',
+            'all_inf_head_strikes_accuracy_diff',
+            'l3y_abs_clinch_strikes_accuracy_diff',
+            'l1y_abs_body_strikes_landed_per_min_diff',
+            'l3y_inf_body_strikes_accuracy_diff',
+            'all_abs_clinch_strikes_accuracy_diff',
+            'all_inf_body_strikes_accuracy_diff',
+            'l5y_inf_clinch_strikes_landed_per_min_diff',
+            'l3y_inf_head_strikes_attempts_per_min_diff',
+            'all_wins_dec_diff',
+            'l1y_inf_total_strikes_accuracy_diff',
+            'l1y_abs_head_strikes_landed_per_min_diff',
+            'l1y_abs_head_strikes_accuracy_diff',
+            'all_abs_head_strikes_landed_per_min_diff',
+            'l1y_inf_distance_strikes_attempts_per_min_diff',
+            'all_abs_head_strikes_attempts_per_min_diff',
+            'all_inf_distance_strikes_landed_per_min_diff',
+            'l1y_inf_clinch_strikes_accuracy_diff',
+            'l1y_inf_clinch_strikes_landed_per_min_diff',
+            'l1y_losses_dec_diff',
+            'l5y_abs_clinch_strikes_landed_per_min_diff',
+            'all_inf_head_strikes_attempts_per_min_diff',
+            'l1y_inf_sub_attempts_per_min_diff',
+            'l3y_inf_sub_attempts_per_min_diff',
+            'l3y_abs_head_strikes_landed_per_min_diff',
+            'l1y_inf_sig_strikes_attempts_per_min_diff',
+            'l1y_abs_total_strikes_attempts_per_min_diff', 
+            'l1y_abs_total_strikes_landed_per_min_diff',
+            'all_inf_leg_strikes_accuracy_diff',
+            'l3y_abs_body_strikes_accuracy_diff',
+            'l3y_inf_sig_strikes_accuracy_diff',
+            'all_abs_body_strikes_landed_per_min_diff',
+            'all_inf_ground_strikes_accuracy_diff',
+            'all_abs_leg_strikes_accuracy_diff',
+            'all_abs_total_strikes_landed_per_min_diff',
+            'all_abs_clinch_strikes_landed_per_min_diff',
         ]
 
-        y=ufc_fights_winner['result'].iloc[0:40*75]
-        X=ufc_fights_winner[current_best_feature_set].iloc[0:40*75]
+        # y=ufc_fights_winner['result'].iloc[0:40*75]
+        # X=ufc_fights_winner[amazing_feature_set].iloc[0:40*75]
         # winPredictionModel=LogisticRegression(solver='lbfgs', max_iter=5000, fit_intercept=False)
         # self.scaler = preprocessing.StandardScaler().fit(X)
         # X_scaled = self.scaler.transform(X) 
@@ -98,11 +157,37 @@ class FightPredictor:
         # self.theta = list(winPredictionModel.coef_[0])
         # self.b = winPredictionModel.intercept_[0]
 
-        ufc_fights_df = ufc_fights_winner[current_best_feature_set]
+        ufc_fights_df = ufc_fights_winner[self.amazing_feature_set]
         results = ufc_fights_winner['result']
-        self.theta, self.b = self.find_best_regression_coeffs(ufc_fights_df, results)
+        # self.theta, self.b = self.find_best_regression_coeffs(ufc_fights_df, results)
+        self.theta, self.b = self.find_regression_coeffs(ufc_fights_df, results)
+    
+    
+    def find_regression_coeffs(self, X, y, _max_iter=20000):
+        # do another split
+        from sklearn.model_selection import train_test_split
+        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=14)
+        # see how the new features do on the test set we already made
+        # train the model with the best features
+
+        best_model = LogisticRegression(solver='lbfgs', max_iter=_max_iter)#, C=0.1, penalty='l2')#, fit_intercept=False)
+        best_model.fit(X_train, y_train)
+
+        # evaluate the model on the training set
+        train_score = best_model.score(X_train, y_train)
+
+        print(f'Train set accuracy: {train_score}')
+
+        # evaluate the model on the test set
+        test_score = best_model.score(X_test, y_test)
+        print(f'Test set accuracy: {test_score} \n')
         
-    #scores a model
+        theta = list(best_model.coef_[0])
+        b = best_model.intercept_[0]
+        
+        return theta, b
+    
+    #scores a model # TODO BEFORE WE USE THIS< UPDATE TO DO REGULARIZATION
     def model_score(self, dataframe, features, iloc_val = 3200, _max_iter = 2000, scoring='neg_log_loss', scaled=True):
         yyy=dataframe['result'].iloc[0:iloc_val]
         XXX=dataframe[features].iloc[0:iloc_val]
@@ -184,7 +269,7 @@ class FightPredictor:
         print(f'probability of observing data given model: {np.exp(neg_log_loss_score):.3f}')
         return best_theta, best_b
 
-    def get_regression_coeffs_and_intercept(self):
+    def get_regression_coeffs_intercept_and_scaler(self):
         return self.theta, self.b
 
     # now make predictions for the new fights added to the new scraped fights
@@ -214,86 +299,22 @@ class FightPredictor:
     #I've defined this in such a way to predict what happens when fighter1 in their day1 version fights fighter2
     #in their day2 version. Meaning we could compare for example 2014 Tyron Woodley to 2019 Colby Covington
     def ufc_prediction_tuple(self, fighter1,fighter2,day1=date.today(),day2=date.today()):
-        # TODO rescale the features to zero mean and unit variance
+        new_rows_dict = {
+            'fighter':[fighter1, fighter2], 
+            'opponent':[fighter2, fighter1], 
+            'date':[day1,day1],
+            'result':["N/A","N/A"],
+            'method':["N/A","N/A"], 
+            'division':["TODO","TODO"]
+            }
+        new_rows = pd.DataFrame(new_rows_dict)
+        dh = self.dh
+        derived_doubled_tuple = dh.make_derived_doubled_vector_for_fight(new_rows)
+        # now make the predictive flattened diffs
+        ufc_fights_predictive_flattened_diffs = dh.make_ufc_fights_predictive_flattened_diffs(derived_doubled_tuple)
+        prediction_tuple = ufc_fights_predictive_flattened_diffs[self.amazing_feature_set].to_numpy()
+        return prediction_tuple
         
-        # return [fighter_score_diff(fighter1,fighter2,day1, 4),
-        #         fighter_score_diff(fighter1,fighter2,day1, 9),
-        #         fighter_score_diff(fighter1,fighter2,day1, 15),
-        #         fight_math_diff(fighter1,fighter2,day1, 1),
-        #         fight_math_diff(fighter1,fighter2,day1, 6),
-        #         L5Y_sub_wins(fighter1,day1)-L5Y_sub_wins(fighter2,day2),
-        #         L5Y_losses(fighter1,day1)-L5Y_losses(fighter2,day2),
-        #         L5Y_ko_losses(fighter1,day1)-L5Y_ko_losses(fighter2,day2),
-        #         fighter_age(fighter1,day1)-fighter_age(fighter2,day2),
-        #         avg_count('total_strikes_landed',fighter1,'abs',day1)-avg_count('total_strikes_landed',fighter2,'abs',day2),
-        #         avg_count('head_strikes_landed',fighter1,'abs',day1)-avg_count('head_strikes_landed',fighter2,'abs',day2),
-        #         avg_count('ground_strikes_landed',fighter1,'inf',day1)-avg_count('ground_strikes_landed',fighter2,'inf',day2),
-        #         avg_count('takedowns_attempts',fighter1,'inf',day1)-avg_count('takedowns_attempts',fighter2,'inf',day2),
-        #         avg_count('head_strikes_landed',fighter1,'inf',day1)-avg_count('head_strikes_landed',fighter2,'inf',day2),
-        #     ]
-        prediction_tuple = [
-        # 'fighter_age_diff',
-        #     'height_diff',
-        #     'reach_diff',
-        #     'fighter_L5Y_wins_diff_2',
-        #     'fighter_L5Y_losses_diff_2',
-        #     'fighter_ko_losses_diff_2',
-        #     'fighter_L5Y_ko_wins_diff_2',
-        #     'fighter_L2Y_ko_losses_diff_2',
-            fighter_age(fighter1, day1) - fighter_age(fighter2, day2),
-            fighter_height(fighter1) - fighter_height(fighter2),
-            fighter_reach(fighter1) - fighter_reach(fighter2),
-            L5Y_wins(fighter1, day1) - L5Y_wins(fighter2, day2),
-            L5Y_losses(fighter1, day1) - L5Y_losses(fighter2, day2),
-            ko_losses(fighter1, day1) - ko_losses(fighter2, day2),
-            L5Y_ko_wins(fighter1, day1) - L5Y_ko_wins(fighter2, day2),
-            L2Y_ko_losses(fighter1, day1) - L2Y_ko_losses(fighter2, day2),
-            #     'fighter_L5Y_ko_losses_diff_2',
-        #     'fighter_sub_wins_diff_2',
-        #     'fighter_L2Y_sub_losses_diff_2',
-        #     'fighter_inf_knockdowns_avg_diff_2',
-            L2Y_ko_losses(fighter1, day1) - L2Y_ko_losses(fighter2, day2),
-            sub_wins(fighter1, day1) - sub_wins(fighter2, day2),
-            L2Y_sub_losses(fighter1, day1) - L2Y_sub_losses(fighter2, day2),
-            avg_count('knockdowns', fighter1, 'inf', day1) - avg_count('knockdowns', fighter2, 'inf', day2),
-        
-        #     'fighter_inf_distance_strikes_landed_avg_diff_2',
-            avg_count('distance_strikes_landed', fighter1, 'inf', day1) - avg_count('distance_strikes_landed', fighter2, 'inf', day2),
-        #     'fighter_inf_ground_strikes_landed_avg_diff_2',
-            avg_count('ground_strikes_landed', fighter1, 'inf', day1) - avg_count('ground_strikes_landed', fighter2, 'inf', day2),
-        #     'fighter_inf_distance_strikes_attempts_avg_diff_2',
-            avg_count('distance_strikes_attempts', fighter1, 'inf', day1) - avg_count('distance_strikes_attempts', fighter2, 'inf', day2),
-            
-            
-            #     'fighter_inf_head_strikes_attempts_avg_diff_2',
-            avg_count('head_strikes_attempts', fighter1, 'inf', day1) - avg_count('head_strikes_attempts', fighter2, 'inf', day2),
-        #     'fighter_inf_takedowns_attempts_avg_diff_2',
-            avg_count('takedowns_attempts', fighter1, 'inf', day1) - avg_count('takedowns_attempts', fighter2, 'inf', day2),
-        #     'fighter_abs_reversals_avg_diff_2',
-            # avg_count('reversals', fighter1, 'abs', day1) - avg_count('reversals', fighter2, 'abs', day2), # problem with reversals...
-        #     'fighter_abs_clinch_strikes_landed_avg_diff_2',
-            avg_count('clinch_strikes_landed', fighter1, 'abs', day1) - avg_count('clinch_strikes_landed', fighter2, 'abs', day2),
-        #     'fighter_abs_distance_strikes_landed_avg_diff_2',
-            avg_count('distance_strikes_landed', fighter1, 'abs', day1) - avg_count('distance_strikes_landed', fighter2, 'abs', day2),
-            
-             #     'fighter_abs_leg_strikes_landed_avg_diff_2',
-            avg_count('leg_strikes_landed', fighter1, 'abs', day1) - avg_count('leg_strikes_landed', fighter2, 'abs', day2),
-        #     'fighter_abs_takedowns_attempts_avg_diff_2',
-            avg_count('takedowns_attempts', fighter1, 'abs', day1) - avg_count('takedowns_attempts', fighter2, 'abs', day2),
-        #     'fighter_abs_distance_strikes_attempts_avg_diff_2',
-            avg_count('distance_strikes_attempts', fighter1, 'abs', day1) - avg_count('distance_strikes_attempts', fighter2, 'abs', day2),
-        #     'fighter_abs_head_strikes_attempts_avg_diff_2',
-            avg_count('head_strikes_attempts', fighter1, 'abs', day1) - avg_count('head_strikes_attempts', fighter2, 'abs', day2),
-        #     'fighter_abs_total_strikes_attempts_avg_diff_2',
-            avg_count('total_strikes_attempts', fighter1, 'abs', day1) - avg_count('total_strikes_attempts', fighter2, 'abs', day2),
-                    #     '6-fight_math',
-        #     '9-fighter_score_diff',
-        #     '4-fighter_score_diff',
-            fight_math_diff(fighter1, fighter2, day1, 6),
-            fighter_score_diff(fighter1, fighter2, day1, 9),
-            fighter_score_diff(fighter1, fighter2, day1, 4),
-        ]
-        return self.scaler.transform(np.array(prediction_tuple).reshape(1, -1))[0].tolist()
         
 
     # We want to predict how many times out of 10 the winning fighter would win, so we look at the values
@@ -301,11 +322,10 @@ class FightPredictor:
     # how likely the outcome is.
 
     def presigmoid_value(self, fighter1,fighter2,date1,date2,theta,b):
-        value = 0
         tup = self.ufc_prediction_tuple(fighter1,fighter2,date1,date2)
-        for i in range(len(tup)):
-            value += tup[i]*theta[i]
+        value = np.dot(tup, theta)
         return value + b
+    
 
     def manual_prediction(self, fighter1,fighter2,date1,date2,theta,b):
         value = self.presigmoid_value(fighter1,fighter2,date1,date2,theta,b)
@@ -323,9 +343,8 @@ class FightPredictor:
         return self.sigmoid(presig)
 
     def odds(self, fighter1, fighter2, theta, b):
-        date1=(date.today() - relativedelta(months=1)).strftime("%B %d, %Y")
-        date2=(date.today() - relativedelta(months=1)).strftime("%B %d, %Y")
-        p=self.probability(fighter1,fighter2,date1,date2,theta,b)
+        date_today=(date.today()).strftime("%B %d, %Y")
+        p=self.probability(fighter1,fighter2,date_today,date_today,theta,b)
         
         if p < 0.5:
             fighterOdds = round(100 / p - 100)
