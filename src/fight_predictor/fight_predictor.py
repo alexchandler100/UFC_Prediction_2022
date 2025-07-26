@@ -83,8 +83,8 @@ class FightPredictor:
             '4-fighter_score_diff',
         ]
 
-        y=ufc_fights_winner['result'].iloc[0:40*75]
-        X=ufc_fights_winner[current_best_feature_set].iloc[0:40*75]
+        y=ufc_fights_winner['result'].iloc[0:3600]
+        X=ufc_fights_winner[current_best_feature_set].iloc[0:3600]
         # winPredictionModel=LogisticRegression(solver='lbfgs', max_iter=5000, fit_intercept=False)
         # self.scaler = preprocessing.StandardScaler().fit(X)
         # X_scaled = self.scaler.transform(X) 
@@ -117,9 +117,14 @@ class FightPredictor:
         # say there is an average of 10 fights per week, then 2200 fights is about 55 months of data
         #decided to force intercept to be 0 due to symmetry of dataset (all stats are differences so if we switch fighters, we must get the negative of the result)
         # make some hyperparams
-        max_iters = [2000, 2200, 2500, 5000]
+        
+        # make training set and test set out of ufc_fights_df and results
+        from sklearn.model_selection import train_test_split
+        X_train, X_test, y_train, y_test = train_test_split(ufc_fights_df, results, test_size=0.2, random_state=34)
+        
+        max_iters = [2000, 2500, 5000]
         solvers = ['lbfgs']
-        num_fights_in_history = [1600, 2000, 3000]
+        num_fights_in_history = [2500, 3000]
         theta_list = []
         b_list = []
         cross_val_scores = []
@@ -128,7 +133,8 @@ class FightPredictor:
         solver_history = []
         num_fights_history = []
         scaler_history = []
-        num_reps = 50
+        models = []
+        num_reps = 20
         for solver in solvers:
             for max_iter in max_iters:
                 for num_fights in num_fights_in_history:
@@ -137,15 +143,16 @@ class FightPredictor:
                         # create a logistic regression model
                         winPredictionModel = LogisticRegression(solver=solver, max_iter=max_iter, fit_intercept=False)
                         scaler = StandardScaler()
-                        X = ufc_fights_df.iloc[0:num_fights].to_numpy()
+                        X = X_train.iloc[0:num_fights].to_numpy()
                         X_scaled = scaler.fit_transform(X)
-                        y = results.iloc[0:num_fights]
+                        y = y_train.iloc[0:num_fights]
                         winPredictionModel.fit(X_scaled,y)
                         # TODO scale to zero mean and unit variance
                         cross_val_score_mean = cross_val_score(winPredictionModel, X, y, cv=3).mean()
                         neg_log_loss_score = cross_val_score(winPredictionModel, X, y, cv=3, scoring='neg_log_loss').mean()
                         theta = list(winPredictionModel.coef_[0])
                         b = winPredictionModel.intercept_[0]
+                        models.append(winPredictionModel)
                         theta_list.append(theta)
                         b_list.append(b)
                         scaler_history.append(scaler)
@@ -178,10 +185,16 @@ class FightPredictor:
         self.scaler = best_scaler
         best_theta = theta_list[best_index]
         best_b = b_list[best_index]
+        best_model = models[best_index]
         print(f'Using best hyperparameters: solver={solver_history[best_index]}, max_iter={max_iter_history[best_index]}, num_fights={num_fights_history[best_index]}')
         print(f'Best cross-validation score: {cross_val_score_of_best_nll:.3f}')
         print(f'neg_log_loss score: {neg_log_loss_score:.3f}')
         print(f'probability of observing data given model: {np.exp(neg_log_loss_score):.3f}')
+        # evaluate on test set
+        X_test_scaled = best_scaler.transform(X_test.to_numpy())
+        test_score = best_model.score(X_test_scaled, y_test)
+        print(f'Test set accuracy: {test_score:.3f}')
+        
         return best_theta, best_b
 
     def get_regression_coeffs_and_intercept(self):
