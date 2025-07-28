@@ -15,15 +15,13 @@ import re
 #have to change directory to import functions after April 2022 restructure of folders
 from fight_stat_helpers import *
 
-# import ipdb; ipdb.set_trace(context=10)  # uncomment to debug
-
 fighter_stats_path = f'{git_root}/src/content/data/processed/fighter_stats.csv'
 fighter_stats = pd.read_csv(fighter_stats_path)
 
 ufc_fights_reported_doubled_path = f'{git_root}/src/content/data/processed/ufc_fights_reported_doubled.csv'
 ufc_fights_reported_doubled = pd.read_csv(ufc_fights_reported_doubled_path)
 ufc_fights_reported_doubled['date'] = pd.to_datetime(ufc_fights_reported_doubled['date'], errors='coerce')
-ufc_fights_reported_doubled = ufc_fights_reported_doubled.loc[::-1]  # I think i fixed it so this doesn't happen
+ufc_fights_reported_doubled = ufc_fights_reported_doubled.loc[::-1]
 ufc_fights_reported_doubled.set_index('date', inplace=True)
 print(f'Loaded existing fight history with stats from {ufc_fights_reported_doubled_path}, shape {ufc_fights_reported_doubled.shape}')
 
@@ -42,6 +40,7 @@ striking_event_stats = [u'knockdowns']
 grappling_stats = [u'takedowns']
 striking_stats = [u'sig_strikes', u'total_strikes', u'head_strikes', u'body_strikes', u'leg_strikes', u'distance_strikes', u'clinch_strikes', u'ground_strikes']
 
+# NOTE we don't actually use these all_..._stats lists, but they are useful to see what combinations we are making
 all_record_stats = []
 for stat in record_stats:
     for timeframe in ['all', 'l2y', 'l5y']:
@@ -73,41 +72,6 @@ for stat in striking_stats:
             for land_att in ['landed', 'attempts']:
                 all_striking_stats.append(f'{timeframe}_{stat}_{inf_abs}_{land_att}')
 
-def make_cumsum_before_current_fight(df, col_name, timeframe):
-    lxy_pattern = re.compile(r'l\dy')
-    assert timeframe == 'all' or re.fullmatch(lxy_pattern, timeframe) , f'timeframe must be all or lky where k is a digit, got {timeframe}' # l2y=(last 2 years), l5y=(last 5 years)
-    # make a cumsum column for the given column name, but shifted down by 1 so it doesn't include the current fight
-    if timeframe == 'all':
-        cumsum_before = df[col_name].cumsum() - df[col_name]
-    else:
-        num_years = int(timeframe[1])  # extract the number of years from the timeframe string
-        num_days = num_years * 365  # approximate number of days in the given number of years
-        window = f'{num_days}D'  # create a rolling window string for the given number of days
-        cumsum_before = df[col_name].rolling(window=window).sum() - df[col_name]  # rolling sum for the given number of days, shifted down by 1 so it doesn't include the current fight
-    return cumsum_before
-
-def make_avg_before_current_fight(df, col_name, timeframe, landed_attempts):
-    assert 'total_fight_time' in df.columns, 'df must have a total_fight_time column in minutes to compute averages'
-    lxy_pattern = re.compile(r'l\dy')
-    assert timeframe == 'all' or re.fullmatch(lxy_pattern, timeframe) , f'timeframe must be all or lky where k is a digit, got {timeframe}' # l2y=(last 2 years), l5y=(last 5 years)
-    assert landed_attempts in ['landed', 'attempts', None], f'landed_attempts must be one of landed or attempts, got {landed_attempts}' # landed=landed, attempts=attempts
-    total_fight_time = df['total_fight_time'] / 60 # in minutes
-    if landed_attempts is not None:
-        col_name = f'{col_name}_{landed_attempts}' # e.g. sig_strikes_landed
-    # make a cumsum column for the given column name, but shifted down by 1 so it doesn't include the current fight
-    if timeframe == 'all':
-        cumsum_before = df[col_name].cumsum() - df[col_name]
-        time_before = total_fight_time.cumsum() - total_fight_time  # total fight time in minutes before current fight
-    else:
-        num_years = int(timeframe[1])  # extract the number of years from the timeframe string
-        num_days = num_years * 365  # approximate number of days in the given number of years
-        window = f'{num_days}D'  # create a rolling window string for the given number of days
-        cumsum_before = df[col_name].rolling(window=window).sum() - df[col_name]  # rolling sum for the given number of days, shifted down by 1 so it doesn't include the current fight
-        time_before = total_fight_time.rolling(window=window).sum() - total_fight_time  # total fight time in minutes before current fight
-    avg_before = cumsum_before / time_before.replace(0, np.nan)  # avoid division by zero
-    avg_before.replace(np.nan, 0, inplace=True)  # replace NaN with 0 for the first fight
-    return avg_before
-
 for idx, name in enumerate(fighter_stats.name):
     if idx % 100 == 0:
         print(f'Processing fighter {idx+1}/{len(fighter_stats)}: {name}')
@@ -117,6 +81,35 @@ for idx, name in enumerate(fighter_stats.name):
     localized_df     = ufc_fights_reported_doubled[fighter_inf_mask].copy() # to store results of computations for this fighter
     localized_df_inf = ufc_fights_reported_doubled[fighter_inf_mask].copy() # to compute inflicted stats for this fighter
     localized_df_abs = ufc_fights_reported_doubled[fighter_abs_mask].copy() # to compute absorbed stats for this fighter
+    
+    fighter_1_wins_mask = ufc_fights_reported_doubled['result'] == 'W'
+    # Use these to do stuff like fight math and fighter score
+    global_inf_wins_mask = fighter_inf_mask & fighter_1_wins_mask
+    global_inf_losses_mask = fighter_inf_mask & ~fighter_1_wins_mask
+    # global_abs_wins_mask = fighter_abs_mask & ~fighter_1_wins_mask  # if the fighter is the opponent and the result is L, then the fighter won
+    # global_abs_losses_mask = fighter_abs_mask & fighter_1_wins_mask  # if the fighter is the opponent and the result is W, then the fighter lost
+    
+    # make localized versions of the masks above     
+    localized_inf_wins_mask = localized_df_inf['result'] == 'W'
+    localized_inf_losses_mask = localized_df_inf['result'] == 'L'
+    # localized_abs_wins_mask = localized_df_abs['result'] == 'L'
+    # localized_abs_losses_mask = localized_df_abs['result'] == 'W'
+    
+    # make corresponding dataframes
+    localized_inf_wins_df = localized_df_inf[localized_inf_wins_mask].copy()
+    localized_inf_losses_df = localized_df_inf[localized_inf_losses_mask].copy()
+    # localized_abs_wins_df = localized_df_abs[localized_abs_wins_mask].copy()
+    # localized_abs_losses_df = localized_df_abs[localized_abs_losses_mask].copy()
+    
+    # find all people who this fighter has beaten
+    fighter_has_beaten = localized_inf_wins_df['opponent'].unique()
+    # find all people who this fighter has lost to
+    fighter_has_lost_to = localized_inf_losses_df['opponent'].unique()
+    # make dataframe of all fights where fighter won or someone they beat won
+    fighter_2deg_of_sep_wins_df = ufc_fights_reported_doubled.loc[fighter_inf_mask | (ufc_fights_reported_doubled['fighter'].isin(fighter_has_beaten) & (ufc_fights_reported_doubled['result'] == 'W'))].copy()
+    # make dataframe of all fights where fighter lost or someone they lost to lost
+    fighter_2deg_of_sep_loss_df = ufc_fights_reported_doubled.loc[fighter_inf_mask | (ufc_fights_reported_doubled['fighter'].isin(fighter_has_lost_to) & (ufc_fights_reported_doubled['result'] == 'L'))].copy()
+    # maybe include cross terms too, e.g. losses of people you beat or wins of people you lost to
     
     # compute record stats first
     record_indicator_df = pd.DataFrame(index=localized_df.index)  # will hold indicators for wins, losses, etc for cumsum calculations
@@ -136,7 +129,6 @@ for idx, name in enumerate(fighter_stats.name):
     stats_to_add_to_main_df = [] # keep track of new columns we are adding to the main df (to avoid highly fragmented df warning)
     new_columns_dict = {}
     
-    # import ipdb; ipdb.set_trace(context=10)  # uncomment to debug
     # add physical stats (age, height, reach, stance) which don't need rolling averages
     physical_stats = [u'age', u'height', u'reach', u'stance']
 
@@ -167,6 +159,46 @@ for idx, name in enumerate(fighter_stats.name):
             new_col_name = f'{timeframe}_{stat_name}'
             stats_to_add_to_main_df.append(new_col_name)
             new_columns_dict[new_col_name] = make_cumsum_before_current_fight(record_indicator_df, stat_indicator, timeframe=timeframe)
+            
+    # captures the quality of wins and losses
+    # compute 2nd degree of separation stats (e.g. wins of people you beat, losses of people you lost to)
+        
+    for timeframe in ['all', 'l1y', 'l3y', 'l5y']:
+        new_col_name = f'{timeframe}_wins_wins'
+        stats_to_add_to_main_df.append(new_col_name)
+        wins_wins_extended = count_wins_wins_before_fight(fighter_2deg_of_sep_wins_df, name, timeframe=timeframe)
+        # get the sub series that has the fighter as the fighter (not opponent)
+        wins_wins = wins_wins_extended[same_name_vect(fighter_2deg_of_sep_wins_df['fighter'], name)]
+        new_columns_dict[new_col_name] = wins_wins
+        
+        new_col_name = f'{timeframe}_losses_losses'
+        stats_to_add_to_main_df.append(new_col_name)
+        losses_losses_extended = count_losses_losses_before_fight(fighter_2deg_of_sep_loss_df, name, timeframe=timeframe)
+        # get the sub series that has the fighter as the fighter (not opponent)
+        losses_losses = losses_losses_extended[same_name_vect(fighter_2deg_of_sep_loss_df['fighter'], name)]
+        new_columns_dict[new_col_name] = losses_losses
+        
+        # new_col_name = f'{timeframe}_wins_losses'
+        # stats_to_add_to_main_df.append(new_col_name)
+        # fighter_2deg_of_sep_wins_df['defeated_fighter_lost'] = ((fighter_2deg_of_sep_wins_df['result'] == 'L') & (fighter_2deg_of_sep_wins_df['fighter'].isin(fighter_has_beaten))).astype(int)
+        # wins_losses_cumsum = make_cumsum_before_current_fight(fighter_2deg_of_sep_wins_df, 'defeated_fighter_lost', timeframe=timeframe)
+        # wins_losses = wins_losses_cumsum[same_name_vect(fighter_2deg_of_sep_wins_df['fighter'], name)]
+        # new_columns_dict[new_col_name] = wins_losses.reindex(localized_df.index).fillna(0)
+        
+        # new_col_name = f'{timeframe}_losses_losses'
+        # stats_to_add_to_main_df.append(new_col_name)
+        # fighter_2deg_of_sep_loss_df['defeated_fighter_lost'] = ((fighter_2deg_of_sep_loss_df['result'] == 'L') & (fighter_2deg_of_sep_loss_df['fighter'].isin(fighter_has_lost_to))).astype(int)
+        # losses_losses_cumsum = make_cumsum_before_current_fight(fighter_2deg_of_sep_loss_df, 'defeated_fighter_lost', timeframe=timeframe)
+        # losses_losses = losses_losses_cumsum[same_name_vect(fighter_2deg_of_sep_loss_df['fighter'], name)]
+        # new_columns_dict[new_col_name] = losses_losses.reindex(localized_df.index).fillna(0)
+        
+        # new_col_name = f'{timeframe}_losses_wins'
+        # stats_to_add_to_main_df.append(new_col_name)
+        # fighter_2deg_of_sep_loss_df['defeated_fighter_won'] = ((fighter_2deg_of_sep_loss_df['result'] == 'W') & (fighter_2deg_of_sep_loss_df['fighter'].isin(fighter_has_lost_to))).astype(int)
+        # losses_wins_cumsum = make_cumsum_before_current_fight(fighter_2deg_of_sep_loss_df, 'defeated_fighter_won', timeframe=timeframe)
+        # losses_wins = losses_wins_cumsum[same_name_vect(fighter_2deg_of_sep_loss_df['fighter'], name)]
+        # new_columns_dict[new_col_name] = losses_wins.reindex(localized_df.index).fillna(0)
+        
             
     # compute grappling stats
     for stat in grappling_event_stats:
@@ -279,7 +311,6 @@ for idx, name in enumerate(fighter_stats.name):
     for timeframe in ['all', 'l1y', 'l3y', 'l5y']:
         new_col_name = f'{timeframe}_offensive_standing_striking_score'
         stats_to_add_to_main_df.append(new_col_name)
-        # import ipdb; ipdb.set_trace(context=10)  # uncomment to debug
         offensive_standup_striking_score = new_columns_dict[f'{timeframe}_{inf_abs}_knockdowns_per_min'] * 10 # 10 times more valuable than a attempted strike
         for stat in standup_striking_score_stats:
             offensive_standup_striking_score += new_columns_dict[f'{timeframe}_{inf_abs}_{stat}_landed_per_min'] * 3  # 3 times more valuable than a strike attempted
@@ -344,7 +375,16 @@ for idx, name in enumerate(fighter_stats.name):
         # add the score to the new columns dict
         new_columns_dict[new_col_name] = defensive_grappling_loss
     
-        
+    # make overall fighter scores
+    for timeframe in ['all', 'l1y', 'l3y', 'l5y']:
+        new_col_name = f'{timeframe}_overall_fighter_score'
+        stats_to_add_to_main_df.append(new_col_name)
+        overall_fighter_score = new_columns_dict[f'{timeframe}_offensive_standing_striking_score'] - new_columns_dict[f'{timeframe}_defensive_standing_striking_loss']
+        overall_fighter_score += new_columns_dict[f'{timeframe}_offensive_grappling_score'] - new_columns_dict[f'{timeframe}_defensive_grappling_loss']
+        # add a bonus for winning fights
+        overall_fighter_score += new_columns_dict[f'{timeframe}_wins'] * 2  # each win is worth 2 points
+        overall_fighter_score -= new_columns_dict[f'{timeframe}_losses'] * 2  # each loss is worth -2 points
+        new_columns_dict[new_col_name] = overall_fighter_score
     # TODO make fight_math stats for all timeframes
                         
     # add all new columns to localized df at once to avoid highly fragmented df warning

@@ -18,8 +18,8 @@ ufc_fights_predictive_flattened_diffs = dh.make_ufc_fights_predictive_flattened_
 ufc_fights_winner = dh.clean_ufc_fights_for_winner_prediction(ufc_fights_predictive_flattened_diffs)
 fight_predictor = FightPredictor(ufc_fights_winner, dh) # maybe not the best thing to pass in dh here, but it works for now
 print('Training logistic regression model on ufc_fights_winner data')
-fight_predictor.train_logistic_regression_model()
-theta, b = fight_predictor.get_regression_coeffs_intercept_and_scaler()
+fight_predictor.train_logistic_regression_model(random_state=44) # 44 is the random state we used to get the best model
+theta, b, scaler = fight_predictor.get_regression_coeffs_intercept_and_scaler()
 
 # UPDATED UP TO HERE BUT DOUBLE CHECK ITS ALL WORKING
 
@@ -38,7 +38,8 @@ print("#########################################################################
 dh.update_card_info()
 card_date, card_title, fights_list = dh.get_next_fight_card()
 prediction_history = dh.get('prediction_history', filetype='json')
-predicted_odds_df = fight_predictor.predict_upcoming_fights(prediction_history, fights_list, card_date, theta, b)
+fighter_stats = dh.get('fighter_stats')
+predicted_odds_df = fight_predictor.predict_upcoming_fights(prediction_history, fighter_stats, fights_list, card_date, theta, b, scaler)
 # fill in vegas odds from ufcfights.io
 predicted_odds_df_with_vegas_odds = dh.save_fightoddsio_to_vegas_odds_json_and_merge_with_predictions_df(predicted_odds_df)
 dh.update_vegas_odds(predicted_odds_df_with_vegas_odds)

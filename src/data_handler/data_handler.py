@@ -6,51 +6,23 @@ import urllib.request
 import requests
 import csv
 import json
-from datetime import datetime
 from datetime import date
-import random
 import re
 import numpy as np
 
 # local imports
-from fight_stat_helpers import (in_ufc, 
+from fight_stat_helpers import (
                        same_name, 
                        same_name_vect,
-                       wins_before_vect, 
-                       losses_before_vect, 
-                       fighter_age_vect, 
-                       fighter_height, 
-                       L5Y_wins_vect, 
-                       L5Y_losses_vect, 
-                       L2Y_wins_vect, 
-                       L2Y_losses_vect, 
-                       ko_wins_vect, 
-                       ko_losses_vect, 
-                       L5Y_ko_wins_vect, 
-                       L5Y_ko_losses_vect, 
-                       L2Y_ko_wins_vect, 
-                       L2Y_ko_losses_vect, 
-                       sub_wins_vect, 
-                       sub_losses_vect, 
-                       L5Y_sub_wins_vect, 
-                       L5Y_sub_losses_vect, 
-                       L2Y_sub_wins_vect, 
-                       L2Y_sub_losses_vect, 
-                       avg_count_vect, 
-                       zero_vect, 
-                       opponent_column,
-                       stance_vect,
-                       time_diff,
-                       time_diff_vect,
-                       fight_math_diff_vect,
-                       fighter_score_diff_vect,
                        get_kelly_bet_from_ev_and_dk_odds,
                        bet_payout,
                        clean_method_for_winner_predictions,
                        clean_method_for_method_predictions,
                        make_cumsum_before_current_fight,
                        make_avg_before_current_fight,
-                       get_fighter_stats
+                       get_fighter_stats,
+                       count_wins_wins_before_fight,
+                       count_losses_losses_before_fight,
             )
 
 from odds_getter import OddsGetter
@@ -114,7 +86,8 @@ class DataHandler:
             assert key in list(self.json_data.keys()), "Invalid key provided"
             return self.json_data[key].copy()
         assert key in list(self.csv_data.keys()), "Invalid key provided"
-        return self.csv_data[key].copy()
+        df = self.csv_data[key].copy()
+        return df
     
     def set(self, key, value):
         assert key in list(self.csv_data.keys()), "Invalid key provided"
@@ -154,6 +127,7 @@ class DataHandler:
         elif key == 'all':
             self.update_ufc_fights_reported_doubled()
             self.update_fighter_stats()
+            # import ipdb;ipdb.set_trace(context=10)  # uncomment to debug
             self.update_ufc_fights_reported_derived_doubled()
             self.update_ufc_fight_data_for_website()
             self.update_pictures()
@@ -540,17 +514,19 @@ class DataHandler:
         #cleaning the methods column for winner prediction
         #changing anything other than 'U-DEC','M-DEC', 'KO/TKO', 'SUB', to 'bullshit'
         #changing 'U-DEC','M-DEC', to 'DEC'
-        ufc_fights_winner['method'] = clean_method_for_winner_predictions(ufc_fights_winner['method']) # TODO add method column for cleaning purposes
+        ufc_fights_winner['method'] = clean_method_for_winner_predictions(ufc_fights_winner['method'])
         #getting rid of rows with incomplete or useless data
         #fights with outcome "Win" or "Loss" (no "Draw")
         draw_mask=ufc_fights_winner['result'] != 'D'
         #fights where the method of victory is TKO/SUB/DEC (no split decision or DQ or Overturned or anything else like that)
-        # method_mask_winner=(ufc_fights_winner['method']!='bullshit') # TODO add method column for cleaning purposes
+        method_mask_winner=(ufc_fights_winner['method']!='bullshit')
         # drop any rows with nan in any column
-        ufc_fights_winner=ufc_fights_winner[draw_mask] #&method_mask_winner] # TODO add method column for cleaning purposes
+        ufc_fights_winner=ufc_fights_winner[draw_mask & method_mask_winner]
         ufc_fights_winner = ufc_fights_winner.dropna(axis=0, how='any')
+        ufc_fights_winner['result'] = (ufc_fights_winner['result'] == 'W').values.astype(int)
         
-        return ufc_fights_winner 
+        return ufc_fights_winner
+        
     
     def clean_ufc_fights_for_method_prediction(self, ufc_fights_predictive_flattened_diffs):
         ufc_fights_method = ufc_fights_predictive_flattened_diffs.copy()
@@ -609,7 +585,6 @@ class DataHandler:
         ufc_fights_method['fighter_age_diff'] = ufc_fights_method['fighter_age']-ufc_fights_method['opponent_age']
     
     def update_ufc_fights_reported_derived_doubled(self):
-        # import ipdb;ipdb.set_trace(context=10)
         # most recent fight in ufc_fights_reported_doubled_updated versus most recent fight in ufc_fights_reported_derived_doubled
         most_recent_date_in_updated_ufc_fights_reported_doubled = self.get_most_recent_fight_date('ufc_fights_reported_doubled')
         most_recent_date_in_old_ufc_fights_reported_derived_doubled = self.get_most_recent_fight_date('ufc_fights_reported_derived_doubled')
@@ -625,13 +600,15 @@ class DataHandler:
         ufc_fights_reported_doubled_updated['date'] = pd.to_datetime(ufc_fights_reported_doubled_updated['date'], format='%Y-%m-%d')
         # get only the fights in ufc_fights_reported_doubled_updated whose dates are more recent than the most recent date in ufc_fights_reported_derived_doubled
         new_rows = ufc_fights_reported_doubled_updated[ufc_fights_reported_doubled_updated['date'] > most_recent_date_in_old_ufc_fights_reported_derived_doubled]
-
+        # import ipdb;ipdb.set_trace(context=10)
+        # TODO SOMETHING IS GOING VERY WRONG WITH UPDATING HERE. IT MAKES OUR PREDICTION ACCURACY 100% SO THE RESULT IS GETTING MIXED IN SOMEHOW
         if update_time > 0: # should just stop the script here. Can do this later once we do everything inside a function call
             ufc_fights_reported_derived_doubled = self.populate_new_fights_with_statistics(new_rows)
             # save the results to a csv file 
             ufc_fights_reported_derived_doubled_path = f'{git_root}/src/content/data/processed/ufc_fights_reported_derived_doubled.csv'
-            ufc_fights_reported_derived_doubled.to_csv(ufc_fights_reported_derived_doubled_path, index=True)
+            ufc_fights_reported_derived_doubled.to_csv(ufc_fights_reported_derived_doubled_path, index=False)
             # set the new dataframe in the data manager
+            ufc_fights_reported_derived_doubled.reset_index(inplace=True)
             self.set('ufc_fights_reported_derived_doubled', ufc_fights_reported_derived_doubled)
             print(f'Saved predictive fight history with stats to {ufc_fights_reported_derived_doubled_path}, shape {ufc_fights_reported_derived_doubled.shape}')
         else:
@@ -690,9 +667,12 @@ class DataHandler:
         for col in predictive_columns:
             if col not in ['fighter', 'opponent', 'result', 'method', 'division']:
                 ufc_fights_predictive_diffs_dict[f'{col}_diff'] = ufc_fights_predictive_even[col].values - ufc_fights_predictive_odd[col].values
-                ufc_fights_predictive_diffs_dict[f'{col}_sum'] = ufc_fights_predictive_even[col].values + ufc_fights_predictive_odd[col].values
-                # ufc_fights_predictive_diffs_dict[f'{col}_sq_diff'] = ufc_fights_predictive_even[col].values ** 2 - ufc_fights_predictive_odd[col].values ** 2
-                # ufc_fights_predictive_diffs_dict[f'{col}_sq_sum'] = ufc_fights_predictive_even[col].values ** 2 + ufc_fights_predictive_odd[col].values ** 2
+        # add a select few sum columns / higher order too
+        # so we can determine absolute age and not just relative age
+        ufc_fights_predictive_diffs_dict['age_sum'] = ufc_fights_predictive_even['age'].values + ufc_fights_predictive_odd['age'].values
+        # I am thinking these are causing over fitting. test this, maybe include just sq diff?
+        # ufc_fights_predictive_diffs_dict['age_sq_diff'] = ufc_fights_predictive_even['age'].values ** 2 - ufc_fights_predictive_odd['age'].values ** 2
+        # ufc_fights_predictive_diffs_dict['age_sq_sum'] = ufc_fights_predictive_even['age'].values ** 2 + ufc_fights_predictive_odd['age'].values ** 2
                 
         ufc_fights_predictive_diffs = pd.DataFrame(ufc_fights_predictive_diffs_dict)
         return ufc_fights_predictive_diffs
@@ -843,13 +823,13 @@ class DataHandler:
     def update_prediction_history(self):
 
         vegas_odds_old=self.get('vegas_odds', filetype='json') # this is the old vegas odds dataframe (from last week)
-        ufc_fights_reported_derived_doubled = self.get('ufc_fights_reported_derived_doubled') # THIS SHOULD HAVE BEEN UPDATED AT THIS POINT! WE SHOULD ADD A CHECK TO CHECK THIS
+        ufc_fights_reported_doubled = self.get('ufc_fights_reported_doubled') # THIS SHOULD HAVE BEEN UPDATED AT THIS POINT! WE SHOULD ADD A CHECK TO CHECK THIS
         prediction_history=self.get('prediction_history', filetype='json')
         
-        currentBankroll = prediction_history['current bankroll after'].iloc[0] if 'current bankroll after' in prediction_history.columns else 300; # default bankroll if not present in prediction history
+        currentBankroll = prediction_history['current bankroll after'].iloc[0] if 'current bankroll after' in prediction_history.columns else 300.0; # default bankroll if not present in prediction history
 
         # getting rid of fights that didn't actually happen and adding correctness results of those that did
-        vegas_odds_old = self.update_prediction_correctness(vegas_odds_old, ufc_fights_reported_derived_doubled, currentBankroll)
+        vegas_odds_old = self.update_prediction_correctness(vegas_odds_old, ufc_fights_reported_doubled, currentBankroll)
 
         #making a copy of vegas_odds
         vegas_odds_copy=vegas_odds_old.copy()
@@ -936,16 +916,6 @@ class DataHandler:
         df = df.drop(irr)
         return df
 
-
-    # TODO name should better indicate the context
-    def drop_non_ufc_fights(self, df):
-        irr = []
-        for i in df.index:
-            if (not in_ufc(df['fighter name'][i])) or (not in_ufc(df['opponent name'][i])):
-                irr.append(i)
-        df = df.drop(irr)
-        return df
-
     # TODO name should better indicate the context
     def drop_repeats(self, df):
         irr = []
@@ -962,7 +932,7 @@ class DataHandler:
         return df
     
     # TODO name should better indicate the context
-    def update_prediction_correctness(self, vegas_odds_old, ufc_fights_reported_derived_doubled, currentBankroll):
+    def update_prediction_correctness(self, vegas_odds_old, ufc_fights_reported_doubled, currentBankroll):
         r"""
         This function checks the vegas odds dataframe against the ufc fights dataframe to find fights that didn't happen
         and to add correctness results for those that did happen. It returns a list of indices of fights that didn't happen.
@@ -970,9 +940,9 @@ class DataHandler:
         """
         # getting rid of fights that didn't actually happen and adding correctness results of those that did
         bad_indices = []
-        vegas_odds_old['fighter bet'] = 0
-        vegas_odds_old['opponent bet'] = 0
-        vegas_odds_old['current bankroll after'] = 0
+        vegas_odds_old['fighter bet'] = 0.0
+        vegas_odds_old['opponent bet'] = 0.0
+        vegas_odds_old['current bankroll after'] = 0.0
         vegas_odds_old['bet result'] = 'N/A'
         for index1, row1 in vegas_odds_old.iloc[::-1].iterrows(): # iterate backwards in the order the fights actually happened
             card_date = row1['date']
@@ -1000,22 +970,22 @@ class DataHandler:
             if best_opponent_bookie_odds:
                 best_opponent_bookie_odds = int(row1.get(f'opponent {best_opponent_bookie}'))
                 
-            fighter_bankroll_percentage = row1.get('fighter bet bankroll percentage', 0)
+            fighter_bankroll_percentage = row1.get('fighter bet bankroll percentage', 0.0)
             if not fighter_bankroll_percentage:
                 print(f'No bankroll percentage found for fighter {row1["fighter name"]}, skipping...')
-                fighter_bankroll_percentage = 0
+                fighter_bankroll_percentage = 0.0
                 
-            opponent_bankroll_percentage = row1.get('opponent bet bankroll percentage', 0)
+            opponent_bankroll_percentage = row1.get('opponent bet bankroll percentage', 0.0)
             if not opponent_bankroll_percentage:
                 print(f'No bankroll percentage found for opponent {row1["opponent name"]}, skipping...')
-                opponent_bankroll_percentage = 0
+                opponent_bankroll_percentage = 0.0
                 
             fighter_bankroll_percentage = float(fighter_bankroll_percentage)
             opponent_bankroll_percentage = float(opponent_bankroll_percentage)
             
             # if a prediction was made, check if the fight actually happened and then check if the prediction / bet was correct / won
             # TODO this is slow but sort of necessary if we need to add multiple cards at the same time
-            relevant_fights = ufc_fights_reported_derived_doubled[pd.to_datetime(ufc_fights_reported_derived_doubled['date']) == card_date]
+            relevant_fights = ufc_fights_reported_doubled[pd.to_datetime(ufc_fights_reported_doubled.index) == card_date]
             print(f'searching through {relevant_fights.shape[0]//2} confirmed fights on {str(card_date).split(" ")[0]} for {row1["fighter name"]} vs {row1["opponent name"]}')
             
             match_found = False
@@ -1030,10 +1000,10 @@ class DataHandler:
                     else:
                         vegas_odds_old.at[index1,'correct?'] = 0
                     # update the bankroll based on the bet made
-                    fighter_bet = 0
-                    opponent_bet = 0
-                    fighter_payout = 0
-                    opponent_payout = 0
+                    fighter_bet = 0.0
+                    opponent_bet = 0.0
+                    fighter_payout = 0.0
+                    opponent_payout = 0.0
                     bet_result = 'N/A'
                     if fighter_bankroll_percentage > 0: # check if we even made a bet on the fighter
                         fighter_bet = fighter_bankroll_percentage / 100 * currentBankroll
@@ -1047,6 +1017,7 @@ class DataHandler:
                         bet_result = 'L' if row2['result'] == 'W' else 'W'
                         opponent_payout = bet_payout(best_opponent_bookie_odds, opponent_bet, bet_result)
                     currentBankroll = currentBankroll + fighter_payout + opponent_payout - fighter_bet - opponent_bet
+                    # TODO why is this set to dtype int?
                     vegas_odds_old.at[index1, 'current bankroll after'] = currentBankroll
                     vegas_odds_old.at[index1, 'bet result'] = bet_result
                     # TODO add case for draw
@@ -1065,6 +1036,7 @@ class DataHandler:
         ufc_fights_reported_doubled.set_index('date', inplace=True)
 
         ufc_fights_reported_derived_doubled = self.get('ufc_fights_reported_derived_doubled')
+        # import ipdb; ipdb.set_trace(context=10)  # uncomment to debug
         ufc_fights_reported_derived_doubled['date'] = pd.to_datetime(ufc_fights_reported_derived_doubled['date'], errors='coerce')
         ufc_fights_reported_derived_doubled.set_index('date', inplace=True)
         
@@ -1077,7 +1049,7 @@ class DataHandler:
         # add new rows to bottom of doubled reported dataframe in reverse order
         ufc_fights_reported_doubled = pd.concat([ufc_fights_reported_doubled, new_rows_derived[::-1]], axis=0)
         # replace all nan values with zeros in just the rows we added (otherwise rolling averages will all be nan since we subtract off the current row to not include current fight)
-        ufc_fights_reported_doubled.iloc[-len(new_rows_derived):] = ufc_fights_reported_doubled.iloc[-len(new_rows_derived):].replace(np.nan, 0)
+        ufc_fights_reported_doubled.iloc[-len(new_rows_derived):] = ufc_fights_reported_doubled.iloc[-len(new_rows_derived):].replace(np.nan, 0.0)
         
         names_to_update = new_rows.fighter
         
@@ -1110,7 +1082,7 @@ class DataHandler:
         
         ufc_fights_reported_derived_doubled = self.fill_in_statistics_for_fights(ufc_fights_reported_derived_doubled, ufc_fights_reported_doubled, names_to_update, fighter_stats)
                 
-        return ufc_fights_reported_derived_doubled.reset_index()
+        return ufc_fights_reported_derived_doubled
     
     ########### FUNCTIONS USED IN update_data_csvs_and_jsons.py ###########
     
@@ -1132,13 +1104,36 @@ class DataHandler:
         striking_stats = [u'sig_strikes', u'total_strikes', u'head_strikes', u'body_strikes', u'leg_strikes', u'distance_strikes', u'clinch_strikes', u'ground_strikes']
 
         for idx, name in enumerate(names_to_update):
-            print(f'Processing fighter {idx+1}/{len(fighter_stats)}: {name}')
+            print(f'Processing fighter {idx+1}/{len(names_to_update)}: {name}')
             fighter_inf_mask = same_name_vect(ufc_fights_reported_doubled['fighter'], name)
             fighter_mask = fighter_inf_mask # mask where the fighter is the given name (choosing to make this name without the word inf to avoid confusion later)
             fighter_abs_mask = same_name_vect(ufc_fights_reported_doubled['opponent'], name)
             localized_df     = ufc_fights_reported_doubled[fighter_inf_mask].copy() # to store results of computations for this fighter
             localized_df_inf = ufc_fights_reported_doubled[fighter_inf_mask].copy() # to compute inflicted stats for this fighter
             localized_df_abs = ufc_fights_reported_doubled[fighter_abs_mask].copy() # to compute absorbed stats for this fighter
+            
+            fighter_1_wins_mask = ufc_fights_reported_doubled['result'] == 'W'
+            # Use these to do stuff like fight math and fighter score
+            global_inf_wins_mask = fighter_inf_mask & fighter_1_wins_mask
+            global_inf_losses_mask = fighter_inf_mask & ~fighter_1_wins_mask
+            
+            # make localized versions of the masks above     
+            localized_inf_wins_mask = localized_df_inf['result'] == 'W'
+            localized_inf_losses_mask = localized_df_inf['result'] == 'L'
+            
+            # make corresponding dataframes
+            localized_inf_wins_df = localized_df_inf[localized_inf_wins_mask].copy()
+            localized_inf_losses_df = localized_df_inf[localized_inf_losses_mask].copy()
+            
+            # find all people who this fighter has beaten
+            fighter_has_beaten = localized_inf_wins_df['opponent'].unique()
+            # find all people who this fighter has lost to
+            fighter_has_lost_to = localized_inf_losses_df['opponent'].unique()
+            # make dataframe of all fights where fighter won or someone they beat won
+            fighter_2deg_of_sep_wins_df = ufc_fights_reported_doubled.loc[fighter_inf_mask | (ufc_fights_reported_doubled['fighter'].isin(fighter_has_beaten) & (ufc_fights_reported_doubled['result'] == 'W'))].copy()
+            # make dataframe of all fights where fighter lost or someone they lost to lost
+            fighter_2deg_of_sep_loss_df = ufc_fights_reported_doubled.loc[fighter_inf_mask | (ufc_fights_reported_doubled['fighter'].isin(fighter_has_lost_to) & (ufc_fights_reported_doubled['result'] == 'L'))].copy()
+            # maybe include cross terms too, e.g. losses of people you beat or wins of people you lost to
             
             # compute record stats first
             record_indicator_df = pd.DataFrame(index=localized_df.index)  # will hold indicators for wins, losses, etc for cumsum calculations
@@ -1172,6 +1167,7 @@ class DataHandler:
                 age_series = pd.Series([np.nan] * len(localized_df), index=localized_df.index)
             else:
                 dob_date = pd.to_datetime(dob, errors='coerce')
+                # import ipdb; ipdb.set_trace(context=10)  # uncomment to debug
                 age_series = (localized_df.index - dob_date).days / 365.25 # ends up in weird format so we need to convert to a numpy array first
                 age_series = pd.Series(np.array(age_series), index=localized_df.index)
             # add stats to new_columns_dict
@@ -1190,6 +1186,22 @@ class DataHandler:
                     stats_to_add_to_main_df.append(new_col_name)
                     new_columns_dict[new_col_name] = make_cumsum_before_current_fight(record_indicator_df, stat_indicator, timeframe=timeframe)
                     
+
+            for timeframe in ['all', 'l1y', 'l3y', 'l5y']:
+                new_col_name = f'{timeframe}_wins_wins'
+                stats_to_add_to_main_df.append(new_col_name)
+                wins_wins_extended = count_wins_wins_before_fight(fighter_2deg_of_sep_wins_df, name, timeframe=timeframe)
+                # get the sub series that has the fighter as the fighter (not opponent)
+                wins_wins = wins_wins_extended[same_name_vect(fighter_2deg_of_sep_wins_df['fighter'], name)]
+                new_columns_dict[new_col_name] = wins_wins
+                
+                new_col_name = f'{timeframe}_losses_losses'
+                stats_to_add_to_main_df.append(new_col_name)
+                losses_losses_extended = count_losses_losses_before_fight(fighter_2deg_of_sep_loss_df, name, timeframe=timeframe)
+                # get the sub series that has the fighter as the fighter (not opponent)
+                losses_losses = losses_losses_extended[same_name_vect(fighter_2deg_of_sep_loss_df['fighter'], name)]
+                new_columns_dict[new_col_name] = losses_losses
+        
             # compute grappling stats
             for stat in grappling_event_stats:
                 col_name = f'{stat}'
@@ -1365,6 +1377,17 @@ class DataHandler:
                 defensive_grappling_loss += new_columns_dict[f'{timeframe}_losses_sub'] * 3  # 3 times more costly than a takedown per minute
                 # add the score to the new columns dict
                 new_columns_dict[new_col_name] = defensive_grappling_loss
+                
+                # make overall fighter scores
+            for timeframe in ['all', 'l1y', 'l3y', 'l5y']:
+                new_col_name = f'{timeframe}_overall_fighter_score'
+                stats_to_add_to_main_df.append(new_col_name)
+                overall_fighter_score = new_columns_dict[f'{timeframe}_offensive_standing_striking_score'] - new_columns_dict[f'{timeframe}_defensive_standing_striking_loss']
+                overall_fighter_score += new_columns_dict[f'{timeframe}_offensive_grappling_score'] - new_columns_dict[f'{timeframe}_defensive_grappling_loss']
+                # add a bonus for winning fights
+                overall_fighter_score += new_columns_dict[f'{timeframe}_wins'] * 2  # each win is worth 2 points
+                overall_fighter_score -= new_columns_dict[f'{timeframe}_losses'] * 2  # each loss is worth -2 points
+                new_columns_dict[new_col_name] = overall_fighter_score
         
             # TODO make fight_math stats for all timeframes
                                 
