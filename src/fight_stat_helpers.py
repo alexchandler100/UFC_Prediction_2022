@@ -13,6 +13,7 @@ from sklearn.model_selection import cross_val_score
 from sklearn import preprocessing
 import itertools
 import networkx as nx
+from unidecode import unidecode
 
 from sklearn.preprocessing import StandardScaler
 
@@ -45,12 +46,14 @@ alias_array = [
     ['Wulijiburen', 'Wuliji Buren'],
     [ 'Sumudaerji', 'Su Mudaerji'],
     ['Yizha', 'Yi Zha'],
-    ['Asu Almabayev', 'Assu Almabayev']
+    ['Asu Almabayev', 'Assu Almabayev'],
+    ['Hyun-Sung Park', 'Hyun Sung Park', 'HyunSung Park'],
 ]
 
 def regularize_name(name):
     name = name.lower().replace("st.", 'saint').replace(
     " st ", ' saint ').replace('.', '').replace("-", ' ')
+    name = unidecode(name)  # remove accents
     return name
 
 

@@ -137,7 +137,7 @@ class DataHandler:
         
     def get_most_recent_fight_date(self, key):
         # find the most recent fight date in the specified key's dataframe
-        assert key in ['ufc_fights_reported_doubled', 'ufc_fights_reported_derived_doubled', 'ufc_fights_predictive_flattened_diffs'], "Invalid key provided"
+        assert key in ['ufc_fights_reported_doubled', 'ufc_fights_reported_derived_doubled'], "Invalid key provided"
         dates = self.csv_data[key]['date']
         # convert dates to datetime objects if they are not already
         if not pd.api.types.is_datetime64_any_dtype(dates):
@@ -606,9 +606,9 @@ class DataHandler:
             ufc_fights_reported_derived_doubled = self.populate_new_fights_with_statistics(new_rows)
             # save the results to a csv file 
             ufc_fights_reported_derived_doubled_path = f'{git_root}/src/content/data/processed/ufc_fights_reported_derived_doubled.csv'
-            ufc_fights_reported_derived_doubled.to_csv(ufc_fights_reported_derived_doubled_path, index=False)
+            ufc_fights_reported_derived_doubled.to_csv(ufc_fights_reported_derived_doubled_path, index=True)
+            ufc_fights_reported_derived_doubled.reset_index(inplace=True, drop=False)
             # set the new dataframe in the data manager
-            ufc_fights_reported_derived_doubled.reset_index(inplace=True)
             self.set('ufc_fights_reported_derived_doubled', ufc_fights_reported_derived_doubled)
             print(f'Saved predictive fight history with stats to {ufc_fights_reported_derived_doubled_path}, shape {ufc_fights_reported_derived_doubled.shape}')
         else:
