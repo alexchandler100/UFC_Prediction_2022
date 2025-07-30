@@ -38,7 +38,6 @@ class DataHandler:
         # updated scraped fight data (after running ufc_fights_reported_doubled_updated function from UFC_data_scraping file)
         self.csv_filepaths = {
             'fighter_stats': f'{git_root}/src/content/data/processed/fighter_stats.csv',
-            'ufc_fights_predictive_flattened_diffs': f'{git_root}/src/content/data/processed/ufc_fights_predictive_flattened_diffs.csv',
             'ufc_fights_reported_derived_doubled': f'{git_root}/src/content/data/processed/ufc_fights_reported_derived_doubled.csv',
             'ufc_fights_reported_doubled': f'{git_root}/src/content/data/processed/ufc_fights_reported_doubled.csv',
             'ufc_fight_data_for_website': f'{git_root}/src/content/data/processed/ufc_fight_data_for_website.csv', # not really needed...
@@ -1187,27 +1186,30 @@ class DataHandler:
                     stats_to_add_to_main_df.append(new_col_name)
                     new_columns_dict[new_col_name] = make_cumsum_before_current_fight(record_indicator_df, stat_indicator, timeframe=timeframe)
                     
-
+            fighter_2deg_wins_mask = same_name_vect(fighter_2deg_of_sep_wins_df['fighter'], name)
+            fighter_2deg_losses_mask = same_name_vect(fighter_2deg_of_sep_loss_df['fighter'], name)
             for timeframe in ['all', 'l1y', 'l3y', 'l5y']:
                 new_col_name = f'{timeframe}_wins_wins'
                 stats_to_add_to_main_df.append(new_col_name)
                 wins_wins_extended = count_wins_wins_before_fight(fighter_2deg_of_sep_wins_df, name, timeframe=timeframe)
                 # get the sub series that has the fighter as the fighter (not opponent)
-                wins_wins = wins_wins_extended[same_name_vect(fighter_2deg_of_sep_wins_df['fighter'], name)]
+                wins_wins = wins_wins_extended[fighter_2deg_wins_mask]
                 new_columns_dict[new_col_name] = wins_wins
                 
                 new_col_name = f'{timeframe}_losses_losses'
                 stats_to_add_to_main_df.append(new_col_name)
                 losses_losses_extended = count_losses_losses_before_fight(fighter_2deg_of_sep_loss_df, name, timeframe=timeframe)
                 # get the sub series that has the fighter as the fighter (not opponent)
-                losses_losses = losses_losses_extended[same_name_vect(fighter_2deg_of_sep_loss_df['fighter'], name)]
+                losses_losses = losses_losses_extended[fighter_2deg_losses_mask]
                 new_columns_dict[new_col_name] = losses_losses
                 
                 new_col_name = f'{timeframe}_fight_math'
                 stats_to_add_to_main_df.append(new_col_name)
-                fight_math_extended = fight_math(name, fighter_2deg_of_sep_wins_df, timeframe)
-                fight_math_col = fight_math_extended[fighter_2deg_of_sep_wins_df]
+                fight_math_extended = fight_math(name, fighter_2deg_of_sep_wins_df, timeframe=timeframe)
+                fight_math_col = fight_math_extended[fighter_2deg_wins_mask]
                 new_columns_dict[new_col_name] = fight_math_col
+                
+            # TODO ADD DOMINANCE SCORES PER FIGHT
         
             # compute grappling stats
             for stat in grappling_event_stats:
@@ -1395,18 +1397,13 @@ class DataHandler:
                 overall_fighter_score += new_columns_dict[f'{timeframe}_wins'] * 2  # each win is worth 2 points
                 overall_fighter_score -= new_columns_dict[f'{timeframe}_losses'] * 2  # each loss is worth -2 points
                 new_columns_dict[new_col_name] = overall_fighter_score
-        
-            # TODO make fight_math stats for all timeframes
-                                
+                                        
             # add all new columns to localized df at once to avoid highly fragmented df warning
             new_columns_df = pd.DataFrame(new_columns_dict, index=localized_df.index)
             localized_df = pd.concat([localized_df, new_columns_df], axis=1)
             # add all new stats to main df at once to avoid highly fragmented df warning
             localized_df = localized_df[stats_to_add_to_main_df].copy()  # keep only the new stats we computed
                         
-            # for stat in stats_to_add_to_main_df:
-            #     ufc_fights_reported_derived_doubled.loc[fighter_mask, stat] = localized_df[stat]
-            # THIS IS ABSOLUTE BULLSHIT THAT THIS WORKS BUT THE FOLLOWING DOES NOT BECAUSE IT CREATES A COPY
             ufc_fights_reported_derived_doubled.loc[fighter_mask, stats_to_add_to_main_df] = localized_df[stats_to_add_to_main_df]
         return ufc_fights_reported_derived_doubled
 

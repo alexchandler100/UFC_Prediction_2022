@@ -21,8 +21,6 @@ print('Training logistic regression model on ufc_fights_winner data')
 fight_predictor.train_logistic_regression_model(random_state=44) # 44 is the random state we used to get the best model
 theta, b, scaler = fight_predictor.get_regression_coeffs_intercept_and_scaler()
 
-# UPDATED UP TO HERE BUT DOUBLE CHECK ITS ALL WORKING
-
 # use the data handler to update the model coefficients in the json files
 # 7/7/2025 stopped doing this. We are going to stick to the model the website is already using for now.
 # dh.set_regression_coeffs_and_intercept(theta, b)
