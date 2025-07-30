@@ -821,8 +821,15 @@ setTimeout(() => { //timeout because other data needs to load first (probably be
       bestOpponentBookie = null; // default to null if not present
     }
     if (bestFighterBookie) {
-      bestFighterBookieOddsOnFighter = vegas_odds[`fighter ${bestFighterBookie}`][i];
-      bestFighterBookieOddsOnOpponent = vegas_odds[`opponent ${bestFighterBookie}`][i];
+      // check if `fighter ${bestFighterBookie}` is in vegas_odds keys
+      if (!(`fighter ${bestFighterBookie}` in vegas_odds) || !(`opponent ${bestFighterBookie}` in vegas_odds)) {
+        console.warn(`Best fighter bookie ${bestFighterBookie} not found in vegas_odds keys for fight between ${fighter} and ${opponent}. Setting odds to null.`);
+        bestFighterBookieOddsOnFighter = null;
+        bestFighterBookieOddsOnOpponent = null;
+      } else {
+        bestFighterBookieOddsOnFighter = vegas_odds[`fighter ${bestFighterBookie}`][i];
+        bestFighterBookieOddsOnOpponent = vegas_odds[`opponent ${bestFighterBookie}`][i];
+      }
     } else {
       bestFighterBookieOddsOnFighter = null; // default to null if not present
       bestFighterBookieOddsOnOpponent = null; // default to null if not present
@@ -941,19 +948,18 @@ setTimeout(() => { //this builds a table for the history of predictions which is
     } else {
       bestOpponentBookie = null; // default to null if not present
     }
-    if (bestFighterBookie != null) {
-      bestFighterBookieOddsOnFighter = prediction_history[`fighter ${bestFighterBookie}`][i];
-      bestFighterBookieOddsOnOpponent = prediction_history[`opponent ${bestFighterBookie}`][i];
-      if (bestFighterBookie){
+    if (bestFighterBookie) {
         numTotalWithBookieOdds += 1; // count only if we have bookie odds
-      }
+        // console.log(`bestFighterBookie is ${bestFighterBookie}`);
+        bestFighterBookieOddsOnFighter = prediction_history[`fighter ${bestFighterBookie}`][i];
+        bestFighterBookieOddsOnOpponent = prediction_history[`opponent ${bestFighterBookie}`][i];
     } else {
       bestFighterBookieOddsOnFighter = null; // default to null if not
       bestFighterBookieOddsOnOpponent = null; // default to null if not present
     }
-    if (bestOpponentBookie != null) {
-      bestOpponentBookieOddsOnFighter = prediction_history[`fighter ${bestOpponentBookie}`][i];
-      bestOpponentBookieOddsOnOpponent = prediction_history[`opponent ${bestOpponentBookie}`][i];
+    if (bestOpponentBookie) {
+        bestOpponentBookieOddsOnFighter = prediction_history[`fighter ${bestOpponentBookie}`][i];
+        bestOpponentBookieOddsOnOpponent = prediction_history[`opponent ${bestOpponentBookie}`][i];
     } else {  
       bestOpponentBookieOddsOnFighter = null; // default to null if not present
       bestOpponentBookieOddsOnOpponent = null; // default to null if not present
@@ -1002,13 +1008,13 @@ setTimeout(() => { //this builds a table for the history of predictions which is
     } else {
       betResult = betResultCol[i]; // default to null if not present
       if (betResult == 'W') {
-        console.log(`1 bet result is W for ${fighter} vs ${opponent}`);
+        // console.log(`1 bet result is W for ${fighter} vs ${opponent}`);
         bankrollColor = 'green'; // color based on bankroll difference
       } else if (betResult == 'L') {
-        console.log(`2 bet result is L for ${fighter} vs ${opponent}`);
+        // console.log(`2 bet result is L for ${fighter} vs ${opponent}`);
         bankrollColor = 'red'; // color based on bankroll difference
       } else {
-        console.log(`3 bet result is not W or L for ${fighter} vs ${opponent}`);
+        // console.log(`3 bet result is not W or L for ${fighter} vs ${opponent}`);
         bankrollColor = 'white'; // color based on bankroll difference
       }
     }
