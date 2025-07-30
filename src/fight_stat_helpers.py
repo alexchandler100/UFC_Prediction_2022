@@ -12,6 +12,7 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import cross_val_score
 from sklearn import preprocessing
 import itertools
+import networkx as nx
 
 from sklearn.preprocessing import StandardScaler
 
@@ -457,6 +458,48 @@ def make_avg_before_current_fight(df, col_name, timeframe, landed_attempts):
     avg_before = avg_before.fillna(0)  # fill NaN values with 0
     return avg_before
 
+
+def fight_math(fighter, localized_expanded_df, timeframe):
+    lxy_pattern = re.compile(r'l\dy')
+    assert timeframe == 'all' or re.fullmatch(lxy_pattern, timeframe) , f'timeframe must be all or lky where k is a digit, got {timeframe}' # l2y=(last 2 years), l5y=(last 5 years)
+    # make a cumsum column for the given column name, but shifted down by 1 so it doesn't include the current fight
+    num_days = np.inf
+    if not timeframe == 'all':
+        # restrict to fights in the given timeframe (the index is a datetime index)
+        num_years = int(timeframe[1])  # extract the number of years from the timeframe string
+        num_days = num_years * 365  # approximate number of days in the given number of years
+    edges_that_count = [] # entries look like [date, (fighter, opponent)]
+    localized_expanded_df = localized_expanded_df.copy()
+    localized_expanded_df.reset_index(drop=False, inplace=True)  # ensure df is indexed from 0 to n-1
+    localized_expanded_df[f'{timeframe}-fight_math'] = np.nan
+    for i in range(len(localized_expanded_df)):
+        fight_date = localized_expanded_df['date'].iloc[i]
+        row = localized_expanded_df.iloc[i]
+        if same_name(row['fighter'], fighter):
+            # TODO This line is including future fights... why?
+            fight_math_edges = [entry[1] for entry in edges_that_count if (0 < (fight_date - entry[0]).days < num_days) and not same_name(entry[1][1], fighter)]  # only count edges where the date is before the current fight and within the timeframe, and the opponent is not the fighter
+            G = nx.DiGraph()
+            G.add_nodes_from([row['fighter'], row['opponent']])
+            G.add_edges_from(fight_math_edges)
+            num_paths = count_limited_paths(G, row['fighter'], row['opponent'], max_depth=3)
+            localized_expanded_df.at[i, f'{timeframe}-fight_math'] = num_paths
+            if row['result'] == 'W':
+                edges_that_count.append([fight_date, (row['fighter'], row['opponent'])])
+        else:
+            edges_that_count.append([fight_date, (row['fighter'], row['opponent'])])
+    return (localized_expanded_df[f'{timeframe}-fight_math'].fillna(0)).to_numpy()
+
+def count_limited_paths(G, source, target, max_depth=3):
+    def dfs(node, depth):
+        if depth > max_depth:
+            return 0
+        if same_name(node, target) and depth > 0:
+            return 1
+        count = 0
+        for neighbor in G.neighbors(node):
+            count += dfs(neighbor, depth + 1)
+        return count
+    return dfs(source, 0)
 
 def model_test_score(X_train, X_test, features, _max_iter = 20000, scaled=True):
     # see how the new features do on the test set we already made

@@ -163,41 +163,31 @@ for idx, name in enumerate(fighter_stats.name):
     # captures the quality of wins and losses
     # compute 2nd degree of separation stats (e.g. wins of people you beat, losses of people you lost to)
         
+    fighter_2deg_wins_mask = same_name_vect(fighter_2deg_of_sep_wins_df['fighter'], name)
+    fighter_2deg_losses_mask = same_name_vect(fighter_2deg_of_sep_loss_df['fighter'], name)
     for timeframe in ['all', 'l1y', 'l3y', 'l5y']:
         new_col_name = f'{timeframe}_wins_wins'
         stats_to_add_to_main_df.append(new_col_name)
         wins_wins_extended = count_wins_wins_before_fight(fighter_2deg_of_sep_wins_df, name, timeframe=timeframe)
         # get the sub series that has the fighter as the fighter (not opponent)
-        wins_wins = wins_wins_extended[same_name_vect(fighter_2deg_of_sep_wins_df['fighter'], name)]
+        wins_wins = wins_wins_extended[fighter_2deg_wins_mask]
         new_columns_dict[new_col_name] = wins_wins
         
         new_col_name = f'{timeframe}_losses_losses'
         stats_to_add_to_main_df.append(new_col_name)
         losses_losses_extended = count_losses_losses_before_fight(fighter_2deg_of_sep_loss_df, name, timeframe=timeframe)
         # get the sub series that has the fighter as the fighter (not opponent)
-        losses_losses = losses_losses_extended[same_name_vect(fighter_2deg_of_sep_loss_df['fighter'], name)]
+        losses_losses = losses_losses_extended[fighter_2deg_losses_mask]
         new_columns_dict[new_col_name] = losses_losses
-        
+        # TODO MAYBE TRY THIS?
         # new_col_name = f'{timeframe}_wins_losses'
-        # stats_to_add_to_main_df.append(new_col_name)
-        # fighter_2deg_of_sep_wins_df['defeated_fighter_lost'] = ((fighter_2deg_of_sep_wins_df['result'] == 'L') & (fighter_2deg_of_sep_wins_df['fighter'].isin(fighter_has_beaten))).astype(int)
-        # wins_losses_cumsum = make_cumsum_before_current_fight(fighter_2deg_of_sep_wins_df, 'defeated_fighter_lost', timeframe=timeframe)
-        # wins_losses = wins_losses_cumsum[same_name_vect(fighter_2deg_of_sep_wins_df['fighter'], name)]
-        # new_columns_dict[new_col_name] = wins_losses.reindex(localized_df.index).fillna(0)
-        
-        # new_col_name = f'{timeframe}_losses_losses'
-        # stats_to_add_to_main_df.append(new_col_name)
-        # fighter_2deg_of_sep_loss_df['defeated_fighter_lost'] = ((fighter_2deg_of_sep_loss_df['result'] == 'L') & (fighter_2deg_of_sep_loss_df['fighter'].isin(fighter_has_lost_to))).astype(int)
-        # losses_losses_cumsum = make_cumsum_before_current_fight(fighter_2deg_of_sep_loss_df, 'defeated_fighter_lost', timeframe=timeframe)
-        # losses_losses = losses_losses_cumsum[same_name_vect(fighter_2deg_of_sep_loss_df['fighter'], name)]
-        # new_columns_dict[new_col_name] = losses_losses.reindex(localized_df.index).fillna(0)
-        
         # new_col_name = f'{timeframe}_losses_wins'
-        # stats_to_add_to_main_df.append(new_col_name)
-        # fighter_2deg_of_sep_loss_df['defeated_fighter_won'] = ((fighter_2deg_of_sep_loss_df['result'] == 'W') & (fighter_2deg_of_sep_loss_df['fighter'].isin(fighter_has_lost_to))).astype(int)
-        # losses_wins_cumsum = make_cumsum_before_current_fight(fighter_2deg_of_sep_loss_df, 'defeated_fighter_won', timeframe=timeframe)
-        # losses_wins = losses_wins_cumsum[same_name_vect(fighter_2deg_of_sep_loss_df['fighter'], name)]
-        # new_columns_dict[new_col_name] = losses_wins.reindex(localized_df.index).fillna(0)
+        
+        new_col_name = f'{timeframe}_fight_math'
+        stats_to_add_to_main_df.append(new_col_name)
+        fight_math_extended = fight_math(name, fighter_2deg_of_sep_wins_df, timeframe)
+        fight_math_col = fight_math_extended[fighter_2deg_wins_mask]
+        new_columns_dict[new_col_name] = fight_math_col
         
             
     # compute grappling stats

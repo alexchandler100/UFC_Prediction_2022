@@ -23,6 +23,7 @@ from fight_stat_helpers import (
                        get_fighter_stats,
                        count_wins_wins_before_fight,
                        count_losses_losses_before_fight,
+                       fight_math
             )
 
 from odds_getter import OddsGetter
@@ -1201,6 +1202,12 @@ class DataHandler:
                 # get the sub series that has the fighter as the fighter (not opponent)
                 losses_losses = losses_losses_extended[same_name_vect(fighter_2deg_of_sep_loss_df['fighter'], name)]
                 new_columns_dict[new_col_name] = losses_losses
+                
+                new_col_name = f'{timeframe}_fight_math'
+                stats_to_add_to_main_df.append(new_col_name)
+                fight_math_extended = fight_math(name, fighter_2deg_of_sep_wins_df, timeframe)
+                fight_math_col = fight_math_extended[fighter_2deg_of_sep_wins_df]
+                new_columns_dict[new_col_name] = fight_math_col
         
             # compute grappling stats
             for stat in grappling_event_stats:
