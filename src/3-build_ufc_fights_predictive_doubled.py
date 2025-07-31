@@ -1,3 +1,6 @@
+# NOTE: This makes a non symmetric predictive dataset where we repeat each fight twice, once with each fighter as "fighter" and once as "opponent"
+# This is to allow the model to learn that it doesn't matter which fighter is which, the model should predict the same odds
+# WE ARE CURRENTLY NOT USING THIS. We are using the symmetric version via ufc_fights_predictive_flattened_diffs in update_and_rebuild_model.py
 import git, os
 git_repo = git.Repo(os.getcwd(), search_parent_directories=True)
 git_root = git_repo.git.rev_parse("--show-toplevel")

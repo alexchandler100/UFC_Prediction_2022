@@ -23,7 +23,8 @@ from fight_stat_helpers import (
                        get_fighter_stats,
                        count_wins_wins_before_fight,
                        count_losses_losses_before_fight,
-                       fight_math
+                       fight_math,
+                       get_fight_card,
             )
 
 from odds_getter import OddsGetter
@@ -54,31 +55,16 @@ class DataHandler:
             'vegas_odds': f'{git_root}/src/content/data/external/vegas_odds.json',
         }
         self.csv_data = {key : pd.read_csv(self.csv_filepaths[key], sep=',') for key in self.csv_filepaths.keys()}
-        
-        # card_info = pd.read_json(self.json_filepaths['card_info'])
-        # fighter_stats = pd.read_json(self.json_filepaths['fighter_stats'])
-        # interesting_stats = pd.read_json(self.json_filepaths['interesting_stats'])
         prediction_history = pd.read_json(self.json_filepaths['prediction_history'])
-        # theta = pd.read_json(self.json_filepaths['theta'])
-        # intercept = pd.read_json(self.json_filepaths['intercept'])
-        # ufc_fight_data_for_website = pd.read_json(self.json_filepaths['ufc_fight_data_for_website'])
         vegas_odds = pd.read_json(self.json_filepaths['vegas_odds'])
 
         self.json_data = {
-            # 'card_info': card_info,
-            # 'fighter_stats': fighter_stats,
-            # 'interesting_stats': interesting_stats,
             'prediction_history': prediction_history,
-            # 'theta': theta,
-            # 'intercept': intercept,
-            # 'ufc_fight_data_for_website': ufc_fight_data_for_website,
             'vegas_odds': vegas_odds,
         }
-        # {key : pd.read_json(self.json_filepaths[key]) for key in self.json_filepaths.keys()}
         
         self.odds_getter = OddsGetter()
         
-        # TODO update this with the actual bookies we are getting odds from (or just those I can actually use)
         self.bookies = ['DraftKings', 'BetMGM', 'Caesars', 'BetRivers', 'FanDuel', 'PointsBet', 'Unibet', 'Bet365', 'BetWay', '5D', 'Ref']
 
     def get(self, key, filetype='csv'):
@@ -103,6 +89,7 @@ class DataHandler:
         self.make_json(self.csv_filepaths[key], self.json_filepaths[key], column)
         
     def set_regression_coeffs_and_intercept(self, theta, b):
+        # NOTE we don't even do this anymore. We just have an old theta and b in the json files that we use for the website
         # TODO this is a bit clunky, should be able to just set the theta and b directly using the set method
         # these need to be dictionaries to use json.dump
         self.theta_dict = {i:theta[i] for i in range(len(theta))}
@@ -127,7 +114,6 @@ class DataHandler:
         elif key == 'all':
             self.update_ufc_fights_reported_doubled()
             self.update_fighter_stats()
-            # import ipdb;ipdb.set_trace(context=10)  # uncomment to debug
             self.update_ufc_fights_reported_derived_doubled()
             self.update_ufc_fight_data_for_website()
             self.update_pictures()
@@ -162,7 +148,7 @@ class DataHandler:
             return
         for event in new_events: # skip events that are already in the old_ufc_fights_reported_doubled
             print(event)
-            stats = self.get_fight_card(event)
+            stats = get_fight_card(event)
             ufc_fights_reported_doubled_new_rows = pd.concat([stats, ufc_fights_reported_doubled_new_rows], axis=0)
             
         # convert date column to string format YYYY-MM-DD
@@ -175,294 +161,9 @@ class DataHandler:
         self.set('ufc_fights_reported_doubled', updated_stats)
         self.save_csv('ufc_fights_reported_doubled')
     
-    def get_fight_card(self, url):
-        page = requests.get(url)
-        soup = BeautifulSoup(page.content, "html.parser")
-
-        fight_card = pd.DataFrame()
-        date = soup.select_one('li.b-list__box-list-item').text.strip().split('\n')[-1].strip()
-        date = pd.to_datetime(date, format='%B %d, %Y')
-        # can use df.date.dt.to_pydatetime() to get an array of datetime.datetime objects if needed
-        rows = soup.select('tr.b-fight-details__table-row')[1:]
-        
-        print(f'date: {date}, url: {url}, number of fights on card: {len(rows)}')
-        
-        for row in rows:
-            fight_data_dict = {'date': [], 'fight_url': [], 'event_url': [], 'result': [], 'fighter': [], 'opponent': [], 'division': [], 'method': [],
-                        'round': [], 'time': [], 'total_fight_time': [], 'fighter_url': [], 'opponent_url': []}
-            fight_data_dict['date'] += [date, date]  # add date of fight # TODO consider changing to datetime object
-            fight_data_dict['event_url'] += [url, url]  # add event url
-            cols = row.select('td')
-            
-            if not cols:
-                print(f'A fight card for {url} is probably in progress so we are skipping this event.')
-                return
-            
-            cols0_a = cols[0].select_one('a')
-            
-            if not cols0_a:
-                print(f'B fight card for {url} is probably in progress so we are skipping this event.')
-                return 
-            
-            # get fight url and results
-            fight_url = cols0_a['href']  # get fight url
-            fight_data_dict['fight_url'] += [fight_url, fight_url]
-            results = cols[0].select('p')
-            # pick 0 or 1 randomly (use this to determine the ordering of fighter and opponent) (winner always listed first and we dont want that order all the time)
-            fighter = cols[1].select('p')[0].text.strip()
-            opponent = cols[1].select('p')[1].text.strip()
-            fighter_url = cols[1].select('a')[0]['href']
-            opponent_url = cols[1].select('a')[1]['href']
-            
-            result = ['D', 'D'] if len(results) == 2 else ['W','L']
-            fight_data_dict['result'] += result
-            
-            # get fighter names and fighter urls
-            fight_data_dict['fighter'] += [fighter, opponent]
-            fight_data_dict['opponent'] += [opponent, fighter]
-            fight_data_dict['fighter_url'] += [fighter_url, opponent_url]
-            fight_data_dict['opponent_url'] += [opponent_url, fighter_url]
-                        
-            # get division
-            division = cols[6].select_one('p').text.strip()
-            fight_data_dict['division'] += [division, division]
-            
-            # get method
-            method = cols[7].select_one('p').text.strip()
-            fight_data_dict['method'] += [method, method]
-            
-            # get round
-            rd = cols[8].select_one('p').text.strip()
-            rd = int(rd) if rd.isdigit() else np.nan  # sometimes it says 'N/A' for no contest, so convert to 0
-            fight_data_dict['round'] += [rd, rd]
-            
-            # get time
-            time = cols[9].select_one('p').text.strip()
-            fight_data_dict['time'] += [time, time]
-            
-            # calculate the number of seconds in the last round
-            time_tuple = time.split(':')
-            assert len(time_tuple) == 2, f"Time format error: {time} in fight {fight_url}"
-            minutes, seconds = time_tuple
-            minutes = int(minutes) if minutes.isdigit() else 0
-            seconds = int(seconds) if seconds.isdigit() else 0
-            total_seconds = minutes * 60 + seconds
-            
-            total_fight_time = (rd - 1) * 60 * 5 + total_seconds
-            fight_data_dict['total_fight_time'] += [total_fight_time, total_fight_time]
-
-            fight_data_dict = pd.DataFrame(fight_data_dict)
-            # get striking details
-            strike_data_dict = self.get_fight_stats(fight_url, fighter, opponent)
-                    
-            if strike_data_dict is None:
-                continue  # skip this fight if no fight details available
-            
-            # join to fight details
-            fight_data_dict = pd.merge(fight_data_dict, strike_data_dict, on='fighter', how='left', copy=False)
-            
-            # add fight details to fight card
-            fight_card = pd.concat([fight_card, fight_data_dict], axis=0)
-            
-        fight_card = fight_card.reset_index(drop=True)
-        return fight_card
-
-        
-    def get_fight_stats(self, url, fighter, opponent):
-        r"""
-        Makes dataframe with two rows per fight, one for each fighter
-        """
-        page = requests.get(url)
-        soup = BeautifulSoup(page.content, "html.parser")
-        
-        fd_columns = {}
-        
-        statistics1 = [
-            'knockdowns', 
-            'sig_strikes_landed', 'sig_strikes_attempts', 
-            'total_strikes_landed', 'total_strikes_attempts', 
-            'takedowns_landed', 'takedowns_attempts', 
-            'sub_attempts', 
-            'reversals', 
-            'control'
-            ]
-        
-        statistics2 = [
-            'head_strikes_landed', 'head_strikes_attempts',
-            'body_strikes_landed', 'body_strikes_attempts',
-            'leg_strikes_landed', 'leg_strikes_attempts',
-            'distance_strikes_landed', 'distance_strikes_attempts',
-            'clinch_strikes_landed', 'clinch_strikes_attempts',
-            'ground_strikes_landed', 'ground_strikes_attempts'
-            ]
-        
-        statistics = statistics1 + statistics2
-        fd_columns['fighter'] = []
-        for stat in statistics:
-            fd_columns[stat] = []
-            
-        # gets overall fight details
-        fight_data_details = soup.select_one('tbody.b-fight-details__table-body')
-        if fight_data_details == None:
-            print('missing fight details for:', url)
-            return None
-        fd_cols = fight_data_details.select('td.b-fight-details__table-col')
-        
-        def get_attempts_and_landed_from_str(stat_str):
-            if ' of ' in stat_str:
-                landed, attempts = stat_str.split(' of ')
-                landed = int(landed) if landed.isdigit() else np.nan
-                attempts = int(attempts) if attempts.isdigit() else np.nan
-                return landed, attempts
-            else:
-                return np.nan, np.nan
-            
-        def get_seconds_from_minutes_seconds(time_str):
-            if ':' in time_str:
-                mins, secs = time_str.split(':')
-                total_secs = int(mins) * 60 + int(secs)
-                return total_secs
-            else:
-                print('Unexpected time format:', time_str)
-                return np.nan
-                
-        fighter_col_index = 0
-        knockdowns_col_index = 1
-        sig_strikes_col_index = 2
-        total_strikes_col_index = 4
-        takedowns_col_index = 5
-        sub_attempts_col_index = 7
-        reversals_col_index = 8
-        control_col_index = 9
-        
-        fighter_col = fd_cols[fighter_col_index].select('p')
-        knockdown_col = fd_cols[knockdowns_col_index].select('p')
-        sig_strike_col = fd_cols[sig_strikes_col_index].select('p')
-        total_strike_col = fd_cols[total_strikes_col_index].select('p')
-        takedown_col = fd_cols[takedowns_col_index].select('p')
-        sub_attempt_col = fd_cols[sub_attempts_col_index].select('p')
-        reversal_col = fd_cols[reversals_col_index].select('p')
-        control_col = fd_cols[control_col_index].select('p')
-        
-        fighter_index = 0 
-        opponent_index = 1
-        
-        fighter = fighter_col[fighter_index].text.strip()
-        opponent = fighter_col[opponent_index].text.strip()
-        fd_columns['fighter'] += [fighter, opponent]
-            
-        fighter_knockdowns = knockdown_col[fighter_index].text.strip() # looks like an integer 
-        opponent_knockdowns = knockdown_col[opponent_index].text.strip() # looks like an integer
-        fighter_knockdowns = int(fighter_knockdowns) if fighter_knockdowns.isdigit() else np.nan
-        opponent_knockdowns = int(opponent_knockdowns) if opponent_knockdowns.isdigit() else np.nan
-        fd_columns['knockdowns'] += [fighter_knockdowns, opponent_knockdowns]
-        
-        fighter_sig_strikes = sig_strike_col[fighter_index].text.strip() # looks like '10 of 20' so we split into attempts and landed
-        opponent_sig_strikes = sig_strike_col[opponent_index].text.strip()
-        fighter_sig_strikes_landed, fighter_sig_strikes_attempts = get_attempts_and_landed_from_str(fighter_sig_strikes)
-        opponent_sig_strikes_landed, opponent_sig_strikes_attempts = get_attempts_and_landed_from_str(opponent_sig_strikes)
-        fd_columns['sig_strikes_landed'] += [fighter_sig_strikes_landed, opponent_sig_strikes_landed]
-        fd_columns['sig_strikes_attempts'] += [fighter_sig_strikes_attempts, opponent_sig_strikes_attempts]
-        
-        fighter_total_strikes = total_strike_col[fighter_index].text.strip() # looks like '10 of 20' so we split into attempts and landed
-        fighter_total_strikes_landed, fighter_total_strikes_attempts = get_attempts_and_landed_from_str(fighter_total_strikes)
-        opponent_total_strikes = total_strike_col[opponent_index].text.strip() # looks like '10 of 20' so we split into attempts and landed
-        opponent_total_strikes_landed, opponent_total_strikes_attempts = get_attempts_and_landed_from_str(opponent_total_strikes)
-        fd_columns['total_strikes_landed'] += [fighter_total_strikes_landed, opponent_total_strikes_landed]
-        fd_columns['total_strikes_attempts'] += [fighter_total_strikes_attempts, opponent_total_strikes_attempts]
-        
-        fighter_takedowns = takedown_col[fighter_index].text.strip() # looks like '10 of 20' so we split into attempts and landed
-        fighter_takedowns_landed, fighter_takedowns_attempts = get_attempts_and_landed_from_str(fighter_takedowns)
-        opponent_takedowns = takedown_col[opponent_index].text.strip() # looks like '10 of 20' so we split into attempts and landed
-        opponent_takedowns_landed, opponent_takedowns_attempts = get_attempts_and_landed_from_str(opponent_takedowns)
-        fd_columns['takedowns_landed'] += [fighter_takedowns_landed, opponent_takedowns_landed]
-        fd_columns['takedowns_attempts'] += [fighter_takedowns_attempts, opponent_takedowns_attempts]
-        
-        fighter_sub_attempts = sub_attempt_col[fighter_index].text.strip() # looks like an integer
-        fighter_sub_attempts = int(fighter_sub_attempts) if fighter_sub_attempts.isdigit() else np.nan
-        opponent_sub_attempts = sub_attempt_col[opponent_index].text.strip() # looks like an integer
-        opponent_sub_attempts = int(opponent_sub_attempts) if opponent_sub_attempts.isdigit() else np.nan
-        fd_columns['sub_attempts'] += [fighter_sub_attempts, opponent_sub_attempts]
-        
-        fighter_reversals = reversal_col[fighter_index].text.strip() # looks like an integer
-        fighter_reversals = int(fighter_reversals) if fighter_reversals.isdigit() else np.nan
-        opponent_reversals = reversal_col[opponent_index].text.strip() # looks like an integer
-        opponent_reversals = int(opponent_reversals) if opponent_reversals.isdigit() else np.nan
-        fd_columns['reversals'] += [fighter_reversals, opponent_reversals]
-        
-        fighter_control = control_col[fighter_index].text.strip() # looks like '1:30' for 1 minute 30 seconds
-        fighter_control = get_seconds_from_minutes_seconds(fighter_control)
-        opponent_control = control_col[opponent_index].text.strip() # looks like '1:30' for 1 minute 30 seconds
-        opponent_control = get_seconds_from_minutes_seconds(opponent_control)
-        fd_columns['control'] += [fighter_control, opponent_control]
-
-        # get sig strike details
-        sig_strike_details = soup.find('p', class_='b-fight-details__collapse-link_tot', string=re.compile('Significant Strikes')).find_next('tbody', class_='b-fight-details__table-body')
-        fd_cols = sig_strike_details.select('td.b-fight-details__table-col')
-        
-        head_strikes_col_index = 3
-        body_strikes_col_index = 4
-        leg_strikes_col_index = 5
-        distance_strikes_col_index = 6
-        clinch_strikes_col_index = 7
-        ground_strikes_col_index = 8
-        
-        head_strikes_col = fd_cols[head_strikes_col_index].select('p')
-        body_strikes_col = fd_cols[body_strikes_col_index].select('p')
-        leg_strikes_col = fd_cols[leg_strikes_col_index].select('p')
-        distance_strikes_col = fd_cols[distance_strikes_col_index].select('p')
-        clinch_strikes_col = fd_cols[clinch_strikes_col_index].select('p')
-        ground_strikes_col = fd_cols[ground_strikes_col_index].select('p')
-        
-        fighter_head_strikes = head_strikes_col[fighter_index].text.strip()
-        fighter_head_strikes_landed, fighter_head_strikes_attempts = get_attempts_and_landed_from_str(fighter_head_strikes)
-        opponent_head_strikes = head_strikes_col[opponent_index].text.strip()
-        opponent_head_strikes_landed, opponent_head_strikes_attempts = get_attempts_and_landed_from_str(opponent_head_strikes)
-        fd_columns['head_strikes_landed'] += [fighter_head_strikes_landed, opponent_head_strikes_landed]
-        fd_columns['head_strikes_attempts'] += [fighter_head_strikes_attempts, opponent_head_strikes_attempts]
-        
-        fighter_body_strikes = body_strikes_col[fighter_index].text.strip()
-        fighter_body_strikes_landed, fighter_body_strikes_attempts = get_attempts_and_landed_from_str(fighter_body_strikes)
-        opponent_body_strikes = body_strikes_col[opponent_index].text.strip()
-        opponent_body_strikes_landed, opponent_body_strikes_attempts = get_attempts_and_landed_from_str(opponent_body_strikes)
-        fd_columns['body_strikes_landed'] += [fighter_body_strikes_landed, opponent_body_strikes_landed]
-        fd_columns['body_strikes_attempts'] += [fighter_body_strikes_attempts, opponent_body_strikes_attempts]
-        
-        fighter_leg_strikes = leg_strikes_col[fighter_index].text.strip()
-        fighter_leg_strikes_landed, fighter_leg_strikes_attempts = get_attempts_and_landed_from_str(fighter_leg_strikes)
-        opponent_leg_strikes = leg_strikes_col[opponent_index].text.strip()
-        opponent_leg_strikes_landed, opponent_leg_strikes_attempts = get_attempts_and_landed_from_str(opponent_leg_strikes)
-        fd_columns['leg_strikes_landed'] += [fighter_leg_strikes_landed, opponent_leg_strikes_landed]
-        fd_columns['leg_strikes_attempts'] += [fighter_leg_strikes_attempts, opponent_leg_strikes_attempts]
-        
-        fighter_distance_strikes = distance_strikes_col[fighter_index].text.strip()
-        fighter_distance_strikes_landed, fighter_distance_strikes_attempts = get_attempts_and_landed_from_str(fighter_distance_strikes)
-        opponent_distance_strikes = distance_strikes_col[opponent_index].text.strip()
-        opponent_distance_strikes_landed, opponent_distance_strikes_attempts = get_attempts_and_landed_from_str(opponent_distance_strikes)
-        fd_columns['distance_strikes_landed'] += [fighter_distance_strikes_landed, opponent_distance_strikes_landed]
-        fd_columns['distance_strikes_attempts'] += [fighter_distance_strikes_attempts, opponent_distance_strikes_attempts]
-        
-        fighter_clinch_strikes = clinch_strikes_col[fighter_index].text.strip()
-        fighter_clinch_strikes_landed, fighter_clinch_strikes_attempts = get_attempts_and_landed_from_str(fighter_clinch_strikes)
-        opponent_clinch_strikes = clinch_strikes_col[opponent_index].text.strip()
-        opponent_clinch_strikes_landed, opponent_clinch_strikes_attempts = get_attempts_and_landed_from_str(opponent_clinch_strikes)
-        fd_columns['clinch_strikes_landed'] += [fighter_clinch_strikes_landed, opponent_clinch_strikes_landed]
-        fd_columns['clinch_strikes_attempts'] += [fighter_clinch_strikes_attempts, opponent_clinch_strikes_attempts]
-        
-        fighter_ground_strikes = ground_strikes_col[fighter_index].text.strip()
-        fighter_ground_strikes_landed, fighter_ground_strikes_attempts = get_attempts_and_landed_from_str(fighter_ground_strikes)
-        opponent_ground_strikes = ground_strikes_col[opponent_index].text.strip()
-        opponent_ground_strikes_landed, opponent_ground_strikes_attempts = get_attempts_and_landed_from_str(opponent_ground_strikes)
-        fd_columns['ground_strikes_landed'] += [fighter_ground_strikes_landed, opponent_ground_strikes_landed]
-        fd_columns['ground_strikes_attempts'] += [fighter_ground_strikes_attempts, opponent_ground_strikes_attempts]
-        
-        fight_stat_df = pd.DataFrame(fd_columns)
-        
-        return fight_stat_df
         
     # updates fighter attributes with new fighters not yet saved yet
     def update_fighter_stats(self):
-        # TODO find a way to avoid using the old version of fighter_stats.csv ... this is clunky
         ufc_fights_reported_doubled = self.get('ufc_fights_reported_doubled')
         fighter_stats = self.get('fighter_stats')
         fighter_stats_urls = fighter_stats.url.unique()
@@ -508,13 +209,16 @@ class DataHandler:
         self.save_json('fighter_stats', 'name')
                         
         
-    def clean_ufc_fights_for_winner_prediction(self, ufc_fights_predictive_flattened_diffs):
+    def clean_ufc_fights_for_winner_prediction(self, ufc_fights_predictive_flattened_diffs, prediction_type='winner'):
         #importing csv fight data and saving as dataframes
         ufc_fights_winner = ufc_fights_predictive_flattened_diffs.copy()
         #cleaning the methods column for winner prediction
         #changing anything other than 'U-DEC','M-DEC', 'KO/TKO', 'SUB', to 'bullshit'
         #changing 'U-DEC','M-DEC', to 'DEC'
-        ufc_fights_winner['method'] = clean_method_for_winner_predictions(ufc_fights_winner['method'])
+        if prediction_type == 'winner':
+            ufc_fights_winner['method'] = clean_method_for_winner_predictions(ufc_fights_winner['method'])
+        elif prediction_type == 'method':
+            ufc_fights_winner['method'] = clean_method_for_method_predictions(ufc_fights_winner['method'])
         #getting rid of rows with incomplete or useless data
         #fights with outcome "Win" or "Loss" (no "Draw")
         draw_mask=ufc_fights_winner['result'] != 'D'
@@ -526,63 +230,7 @@ class DataHandler:
         ufc_fights_winner['result'] = (ufc_fights_winner['result'] == 'W').values.astype(int)
         
         return ufc_fights_winner
-        
     
-    def clean_ufc_fights_for_method_prediction(self, ufc_fights_predictive_flattened_diffs):
-        ufc_fights_method = ufc_fights_predictive_flattened_diffs.copy()
-        #cleaning the methods column for method prediction
-        #changing anything other than 'U-DEC','M-DEC', 'S-DEC', 'KO/TKO', 'SUB', to 'bullshit'
-        #changing 'U-DEC','M-DEC', 'S-DEC', to 'DEC'
-        ufc_fights_method['method'] = clean_method_for_method_predictions(ufc_fights_method['method'])
-        #fights with outcome "Win" or "Loss" (no "Draw")
-        draw_mask=ufc_fights_method['result'] != 'D'
-        #fights where the method of victory is TKO/SUB/DEC (no split decision or DQ or Overturned or anything else like that)
-        method_mask_method=(ufc_fights_method['method']!='bullshit')
-        #fights where age is known
-        age_mask=(ufc_fights_method['fighter_age']!='unknown')&(ufc_fights_method['opponent_age']!='unknown')&(ufc_fights_method['fighter_age']!=0)&(ufc_fights_method['opponent_age']!=0)
-        #fights where height/reach is known
-        height_mask=(ufc_fights_method['fighter_height']!='unknown')&(ufc_fights_method['opponent_height']!='unknown')
-        reach_mask=(ufc_fights_method['fighter_reach']!='unknown')&(ufc_fights_method['opponent_reach']!='unknown')
-        #fights where number of wins is known
-        wins_mask=(ufc_fights_method['fighter_wins'] != 'unknown' )&(ufc_fights_method['opponent_wins'] != 'unknown')
-        #fights where both fighters have strike statistics (gets rid of UFC debuts)
-        strikes_mask=(ufc_fights_method['fighter_inf_sig_strikes_attempts_avg'] != 0)&(ufc_fights_method['opponent_inf_sig_strikes_attempts_avg'] != 0)
-        #includes only the fights satisfying these conditions
-        ufc_fights_method=ufc_fights_method[draw_mask&method_mask_method&age_mask&height_mask&reach_mask&wins_mask&strikes_mask]
-        # ufc_fights_predictive_flattened_diffs=ufc_fights_predictive_flattened_diffs[draw_mask&method_mask_winner&age_mask&height_mask&reach_mask&wins_mask&strikes_mask]
-
-        #listing all stats and making some new stats from them (differences often score higher in the learning models)
-        record_statistics=[u'fighter_wins',u'fighter_losses',u'fighter_L5Y_wins',u'fighter_L5Y_losses',u'fighter_L2Y_wins',u'fighter_L2Y_losses',u'fighter_ko_wins',u'fighter_ko_losses',u'fighter_L5Y_ko_wins',u'fighter_L5Y_ko_losses',u'fighter_L2Y_ko_wins',u'fighter_L2Y_ko_losses',u'fighter_sub_wins',u'fighter_sub_losses',u'fighter_L5Y_sub_wins',u'fighter_L5Y_sub_losses',u'fighter_L2Y_sub_wins',u'fighter_L2Y_sub_losses',u'opponent_wins',u'opponent_losses',u'opponent_L5Y_wins',u'opponent_L5Y_losses',u'opponent_L2Y_wins',u'opponent_L2Y_losses',u'opponent_ko_wins',u'opponent_ko_losses',u'opponent_L5Y_ko_wins',u'opponent_L5Y_ko_losses',u'opponent_L2Y_ko_wins',u'opponent_L2Y_ko_losses',u'opponent_sub_wins',u'opponent_sub_losses',u'opponent_L5Y_sub_wins',u'opponent_L5Y_sub_losses',u'opponent_L2Y_sub_wins',u'opponent_L2Y_sub_losses']
-        physical_stats=[ u'fighter_age',u'fighter_height',u'fighter_reach',u'opponent_age',u'opponent_height',u'opponent_reach']
-        #THERE MAY BE A PROBLEM IN AGE HEIGHT REACH TO DO WITH STRING VS FLOAT. MAKE SURE THESE ARE ALL THE CORRECT TYPE
-        #MAYBE WE ARE LOSING PREDICTABILITY HERE (but we apply float later so may it is ok)
-        #here is the list of all stats available (besides stance), does not include names or result
-        punch_statistics=[  u'fighter_inf_knockdowns_avg',u'fighter_inf_pass_avg',u'fighter_inf_reversals_avg',u'fighter_inf_sub_attempts_avg',u'fighter_inf_takedowns_landed_avg',u'fighter_inf_takedowns_attempts_avg',u'fighter_inf_sig_strikes_landed_avg',u'fighter_inf_sig_strikes_attempts_avg',u'fighter_inf_total_strikes_landed_avg',u'fighter_inf_total_strikes_attempts_avg',u'fighter_inf_head_strikes_landed_avg',u'fighter_inf_head_strikes_attempts_avg',u'fighter_inf_body_strikes_landed_avg',u'fighter_inf_body_strikes_attempts_avg',u'fighter_inf_leg_strikes_landed_avg',u'fighter_inf_leg_strikes_attempts_avg',u'fighter_inf_distance_strikes_landed_avg',u'fighter_inf_distance_strikes_attempts_avg',u'fighter_inf_clinch_strikes_landed_avg',u'fighter_inf_clinch_strikes_attempts_avg',u'fighter_inf_ground_strikes_landed_avg',u'fighter_inf_ground_strikes_attempts_avg',u'fighter_abs_knockdowns_avg',u'fighter_abs_pass_avg',u'fighter_abs_reversals_avg',u'fighter_abs_sub_attempts_avg',u'fighter_abs_takedowns_landed_avg',u'fighter_abs_takedowns_attempts_avg',u'fighter_abs_sig_strikes_landed_avg',u'fighter_abs_sig_strikes_attempts_avg',u'fighter_abs_total_strikes_landed_avg',u'fighter_abs_total_strikes_attempts_avg',u'fighter_abs_head_strikes_landed_avg',u'fighter_abs_head_strikes_attempts_avg',u'fighter_abs_body_strikes_landed_avg',u'fighter_abs_body_strikes_attempts_avg',u'fighter_abs_leg_strikes_landed_avg',u'fighter_abs_leg_strikes_attempts_avg',u'fighter_abs_distance_strikes_landed_avg',u'fighter_abs_distance_strikes_attempts_avg',u'fighter_abs_clinch_strikes_landed_avg',u'fighter_abs_clinch_strikes_attempts_avg',u'fighter_abs_ground_strikes_landed_avg',u'fighter_abs_ground_strikes_attempts_avg',u'opponent_inf_knockdowns_avg',u'opponent_inf_pass_avg',u'opponent_inf_reversals_avg',u'opponent_inf_sub_attempts_avg',u'opponent_inf_takedowns_landed_avg',u'opponent_inf_takedowns_attempts_avg',u'opponent_inf_sig_strikes_landed_avg',u'opponent_inf_sig_strikes_attempts_avg',u'opponent_inf_total_strikes_landed_avg',u'opponent_inf_total_strikes_attempts_avg',u'opponent_inf_head_strikes_landed_avg',u'opponent_inf_head_strikes_attempts_avg',u'opponent_inf_body_strikes_landed_avg',u'opponent_inf_body_strikes_attempts_avg',u'opponent_inf_leg_strikes_landed_avg',u'opponent_inf_leg_strikes_attempts_avg',u'opponent_inf_distance_strikes_landed_avg',u'opponent_inf_distance_strikes_attempts_avg',u'opponent_inf_clinch_strikes_landed_avg',u'opponent_inf_clinch_strikes_attempts_avg',u'opponent_inf_ground_strikes_landed_avg',u'opponent_inf_ground_strikes_attempts_avg',u'opponent_abs_knockdowns_avg',u'opponent_abs_pass_avg',u'opponent_abs_reversals_avg',u'opponent_abs_sub_attempts_avg',u'opponent_abs_takedowns_landed_avg',u'opponent_abs_takedowns_attempts_avg',u'opponent_abs_sig_strikes_landed_avg',u'opponent_abs_sig_strikes_attempts_avg',u'opponent_abs_total_strikes_landed_avg',u'opponent_abs_total_strikes_attempts_avg',u'opponent_abs_head_strikes_landed_avg',u'opponent_abs_head_strikes_attempts_avg',u'opponent_abs_body_strikes_landed_avg',u'opponent_abs_body_strikes_attempts_avg',u'opponent_abs_leg_strikes_landed_avg',u'opponent_abs_leg_strikes_attempts_avg',u'opponent_abs_distance_strikes_landed_avg',u'opponent_abs_distance_strikes_attempts_avg',u'opponent_abs_clinch_strikes_landed_avg',u'opponent_abs_clinch_strikes_attempts_avg',u'opponent_abs_ground_strikes_landed_avg',u'opponent_abs_ground_strikes_attempts_avg']
-        #adding record differences to ufc_fights_predictive_flattened_diffs
-        record_statistics_diff = []
-        half_length=int(len(record_statistics)/2)
-        for i in range(half_length):
-            ufc_fights_method[record_statistics[i]+'_diff_2']=ufc_fights_method[record_statistics[i]]-ufc_fights_method[record_statistics[i+half_length]]
-            record_statistics_diff.append(record_statistics[i]+'_diff_2')
-        #lets try and improve the greedy algorithm by considering differences. Lets start by replacing height and reach by their differences
-        ufc_fights_method['height_diff']=ufc_fights_method['fighter_height'].apply(float)-ufc_fights_method['opponent_height'].apply(float)
-        ufc_fights_method['reach_diff']=ufc_fights_method['fighter_reach'].apply(float)-ufc_fights_method['opponent_reach'].apply(float)
-
-        physical_stats_diff = ['fighter_age_diff', 'height_diff', 'reach_diff']
-
-        #adding punch differences to ufc_fights_predictive_flattened_diffs
-        punch_statistics_diff = []
-        half_length=int(len(punch_statistics)/2)
-        for i in range(half_length):
-            ufc_fights_method[punch_statistics[i]+'_diff_2']=ufc_fights_method[punch_statistics[i]]-ufc_fights_method[punch_statistics[i+half_length]]
-            punch_statistics_diff.append(punch_statistics[i]+'_diff_2')
-
-        possible_stats = record_statistics_diff + physical_stats_diff + punch_statistics_diff
-
-        #setting
-        ufc_fights_method['fighter_age'] = ufc_fights_method['fighter_age'].apply(float)
-        ufc_fights_method['opponent_age'] = ufc_fights_method['opponent_age'].apply(float)
-        ufc_fights_method['fighter_age_diff'] = ufc_fights_method['fighter_age']-ufc_fights_method['opponent_age']
     
     def update_ufc_fights_reported_derived_doubled(self):
         # most recent fight in ufc_fights_reported_doubled_updated versus most recent fight in ufc_fights_reported_derived_doubled
@@ -600,8 +248,6 @@ class DataHandler:
         ufc_fights_reported_doubled_updated['date'] = pd.to_datetime(ufc_fights_reported_doubled_updated['date'], format='%Y-%m-%d')
         # get only the fights in ufc_fights_reported_doubled_updated whose dates are more recent than the most recent date in ufc_fights_reported_derived_doubled
         new_rows = ufc_fights_reported_doubled_updated[ufc_fights_reported_doubled_updated['date'] > most_recent_date_in_old_ufc_fights_reported_derived_doubled]
-        # import ipdb;ipdb.set_trace(context=10)
-        # TODO SOMETHING IS GOING VERY WRONG WITH UPDATING HERE. IT MAKES OUR PREDICTION ACCURACY 100% SO THE RESULT IS GETTING MIXED IN SOMEHOW
         if update_time > 0: # should just stop the script here. Can do this later once we do everything inside a function call
             ufc_fights_reported_derived_doubled = self.populate_new_fights_with_statistics(new_rows)
             # save the results to a csv file 
@@ -610,7 +256,7 @@ class DataHandler:
             ufc_fights_reported_derived_doubled.reset_index(inplace=True, drop=False)
             # set the new dataframe in the data manager
             self.set('ufc_fights_reported_derived_doubled', ufc_fights_reported_derived_doubled)
-            print(f'Saved predictive fight history with stats to {ufc_fights_reported_derived_doubled_path}, shape {ufc_fights_reported_derived_doubled.shape}')
+            print(f'Saved ufc_fights_reported_derived_doubled to {ufc_fights_reported_derived_doubled_path}, shape {ufc_fights_reported_derived_doubled.shape}')
         else:
             print('nothing to update')
             
@@ -724,11 +370,6 @@ class DataHandler:
         odds_df['best fighter bookie'] = ''
         odds_df['best opponent bookie'] = ''
         
-        # import ipdb; ipdb.set_trace(context=10)  # uncomment to debug
-        
-        # cannot ipdb before oddsgetter makes the selenium request
-        # import ipdb; ipdb.set_trace(context=10)  # uncomment to debug
-        
         # merge into predictions_df 
         # TODO IF WE COME TO TRUST THIS fightodds.io website we can use this as our source of upcoming fights instead of ufcstats.com and avoid the merge 
         for i in range(len(predictions_df)):
@@ -782,32 +423,7 @@ class DataHandler:
                 predictions_df.at[i, 'best opponent bookie'] = best_opponent_bookie
                 predictions_df.at[i, 'fighter bet bankroll percentage'] = fighter_bookie_kelly_dict[best_fighter_bookie]
                 predictions_df.at[i, 'opponent bet bankroll percentage'] = opponent_bookie_kelly_dict[best_opponent_bookie]
-                    
-            # dk_fighter_vegas_odds = predictions_df.at[i, f'fighter DraftKings']
-            # dk_opponent_vegas_odds = predictions_df.at[i, f'opponent DraftKings']
-            # if not fighter_predicted_odds or not dk_fighter_vegas_odds or not dk_opponent_vegas_odds:
-            #     continue  # skip if any of these values are missing
-            # fighter_predicted_odds = int(fighter_predicted_odds)
-            # dk_fighter_vegas_odds = int(dk_fighter_vegas_odds)
-            # dk_opponent_vegas_odds = int(dk_opponent_vegas_odds)
-            # fighter_bankroll_percentage, opponent_bankroll_percentage = get_kelly_bet_from_ev_and_dk_odds(fighter_predicted_odds, dk_fighter_vegas_odds, dk_opponent_vegas_odds)
-            # predictions_df.at[i, 'fighter bet bankroll percentage'] = fighter_bankroll_percentage
-            # predictions_df.at[i, 'opponent bet bankroll percentage'] = opponent_bankroll_percentage
 
-            
-        # save to vegas_oddsjson
-        # odds_df= self.drop_irrelevant_fights(odds_df,3) #allows 3 bookies to have missing odds. can increase this to 2 or 3 as needed
-        # odds_df = self.drop_non_ufc_fights(odds_df)
-        #odds_df=drop_repeats(odds_df)
-        
-        # NOTE COMMENTED THIS OUT BECAUSE WE ARE OVERWRITING IT JUST AFTER WE CALL THIS FUNCTION. SHOULD BE FINE...
-        # print('saving odds to content/data/external/vegas_odds.json')
-        # result = odds_df.to_json()
-        # parsed = json.loads(result)
-        # jsonFilePath='content/data/external/vegas_odds.json'
-        # with open(jsonFilePath, 'w', encoding='utf-8') as jsonf:
-        #    jsonf.write(json.dumps(parsed, indent=4))
-        # print('saved to '+jsonFilePath)
         return predictions_df
     
     # TODO vegas_odds is really not the right name for this data as it contains predictions, not just vegas odds
@@ -1029,7 +645,6 @@ class DataHandler:
         return vegas_odds_old
     
     def make_derived_doubled_vector_for_fight(self, new_rows):
-        fighter_stats = self.get('fighter_stats')
         ufc_fights_reported_doubled = self.get('ufc_fights_reported_doubled')
         ufc_fights_reported_doubled['date'] = pd.to_datetime(ufc_fights_reported_doubled['date'], errors='coerce')
         ufc_fights_reported_doubled = ufc_fights_reported_doubled.loc[::-1]
@@ -1053,7 +668,7 @@ class DataHandler:
         
         names_to_update = new_rows.fighter
         
-        ufc_fights_reported_derived_doubled = self.fill_in_statistics_for_fights(ufc_fights_reported_derived_doubled, ufc_fights_reported_doubled, names_to_update, fighter_stats)
+        ufc_fights_reported_derived_doubled = self.fill_in_statistics_for_fights(ufc_fights_reported_derived_doubled, ufc_fights_reported_doubled, names_to_update)
                 
         # grab just the most recent two rows
         last_two_rows = ufc_fights_reported_derived_doubled.iloc[-len(new_rows_derived):]
@@ -1062,7 +677,6 @@ class DataHandler:
     
                 
     def populate_new_fights_with_statistics(self, new_rows):
-        fighter_stats = self.get('fighter_stats')
         ufc_fights_reported_doubled = self.get('ufc_fights_reported_doubled')
         ufc_fights_reported_doubled['date'] = pd.to_datetime(ufc_fights_reported_doubled['date'], errors='coerce')
         ufc_fights_reported_doubled = ufc_fights_reported_doubled.loc[::-1]
@@ -1080,19 +694,21 @@ class DataHandler:
         
         names_to_update = new_rows.fighter
         
-        ufc_fights_reported_derived_doubled = self.fill_in_statistics_for_fights(ufc_fights_reported_derived_doubled, ufc_fights_reported_doubled, names_to_update, fighter_stats)
+        ufc_fights_reported_derived_doubled = self.fill_in_statistics_for_fights(ufc_fights_reported_derived_doubled, ufc_fights_reported_doubled, names_to_update)
                 
         return ufc_fights_reported_derived_doubled
     
     ########### FUNCTIONS USED IN update_data_csvs_and_jsons.py ###########
     
-    def fill_in_statistics_for_fights(self, ufc_fights_reported_derived_doubled, ufc_fights_reported_doubled, names_to_update, fighter_stats):
+    def fill_in_statistics_for_fights(self, ufc_fights_reported_derived_doubled, ufc_fights_reported_doubled, names_to_update=None):
+        fighter_stats = self.get('fighter_stats')
+        if names_to_update is None:
+            names_to_update = list(fighter_stats['name'].unique())
         # GOAL reproduce these statistics 
         
         ufc_fights_reported_derived_doubled = ufc_fights_reported_derived_doubled.copy()
         ufc_fights_reported_doubled = ufc_fights_reported_doubled.copy()
 
-        # TODO MAKE THIS GRABBABLE WITH A FUNCTION CALL
         physical_stats = [u'age', u'height', u'reach', u'stance']
         # the rest will have total, l2y and l5y versions
         record_stats = [u'wins', u'losses', u'wins_ko', u'wins_sub', u'wins_dec', u'losses_ko', u'losses_sub' u'losses_dec']
@@ -1437,6 +1053,3 @@ class DataHandler:
             fighter, opponent, _, weight_class = [entry.get_text().strip() for entry in fight.find_all('p') if entry.get_text().strip()!= '']
             fights_list.append([fighter,opponent,weight_class])
         return card_date, card_title, fights_list
-
-
-    # thresh is the number of bookies we allow to not have odds on the books
