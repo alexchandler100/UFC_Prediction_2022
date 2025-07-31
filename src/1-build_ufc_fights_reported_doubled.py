@@ -29,7 +29,7 @@ def get_all_fight_stats():
         # if event_count > 2:  # limit to the last 3 if we want to debug quickly
         #     break
         stats = get_fight_card(event)
-        fight_stats = pd.concat([stats, fight_stats], axis = 0)
+        fight_stats = pd.concat([fight_stats, stats], axis = 0)
         event_count += 1
         
     fight_stats = fight_stats.reset_index(drop = True)
