@@ -716,7 +716,7 @@ function populateLast5Fights(fighter, corner) {
     let result;
     let opponent;
     let method;
-    let yearDiff = parseInt(yr) - ufcfightscrap[fight]['date'].slice(-4)
+    let yearDiff = parseInt(yr) - parseInt(ufcfightscrap[fight]['date'].slice(0,4))
     // note I changed to checking set equality of the set {firstName, middleName, lastName} because different orderings are used in different databases
     if (same_name(ufcfightscrap[fight]['fighter'], fighter) && yearDiff >= 0) {
       result = ufcfightscrap[fight]['result']
