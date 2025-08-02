@@ -261,7 +261,7 @@ class DataHandler:
             print('nothing to update')
             
             
-    def make_ufc_fights_predictive_flattened_diffs(self, derived_doubled_df):
+    def make_ufc_fights_predictive_flattened_diffs(self, derived_doubled_df, shuffle=True):
 
         ufc_fights_reported_derived_doubled = derived_doubled_df.copy()
 
@@ -281,7 +281,9 @@ class DataHandler:
         shuffled_rows = []
         for i in range(0, len(ufc_fights_reported_derived_doubled), 2):
             pair = ufc_fights_reported_derived_doubled.iloc[i:i+2]
-            pair = pair.sample(frac=1).reset_index(drop=True)  # shuffle within the pair
+            # import ipdb; ipdb.set_trace(context=10)
+            if shuffle:
+                pair = pair.sample(frac=1).reset_index(drop=True)  # shuffle within the pair
             shuffled_rows.append(pair)
         # Concatenate back into a single DataFrame
         ufc_fights_reported_derived_doubled = pd.concat(shuffled_rows).reset_index(drop=True)
@@ -672,7 +674,7 @@ class DataHandler:
                 
         # grab just the most recent two rows
         last_two_rows = ufc_fights_reported_derived_doubled.iloc[-len(new_rows_derived):]
-        ufc_fights_reported_derived_doubled = last_two_rows
+        ufc_fights_reported_derived_doubled = last_two_rows[::-1] # reverse back to original order
         return ufc_fights_reported_derived_doubled.reset_index()
     
                 

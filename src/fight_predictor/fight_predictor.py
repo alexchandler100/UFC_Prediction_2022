@@ -21,7 +21,7 @@ class FightPredictor:
         self.ufc_fighter_names = set(fighter_names + opponent_names)
         self.scaler = None
         
-    def train_logistic_regression_model(self, random_state=14):
+    def train_logistic_regression_model(self, random_state=14, scaled=True, C=100):
         r"""
         Train a logistic regression model to predict the winner of a UFC fight based on various statistics.
         This method processes the fight data, cleans the necessary columns, and prepares the data for training.
@@ -38,86 +38,105 @@ class FightPredictor:
         # TODO TRY XGBOOST AND RANDOM FOREST # TODO ALSO PREDICT METHOD OF VICTORY
                 
         # got 64 % on a test set
-        self.amazing_feature_set = ['l5y_overall_fighter_score_diff',
+        self.amazing_feature_set = [
+        # 'l5y_overall_fighter_score_diff', # VIF = 10 (no change)
+        # physical
         'age_diff',
-        'l5y_wins_diff',
-        'l5y_wins_wins_diff',
-        'l1y_inf_clinch_strikes_accuracy_diff',
-        'all_abs_head_strikes_accuracy_diff',
-        'all_inf_distance_strikes_accuracy_diff',
-        'l5y_inf_takedowns_attempts_per_min_diff',
-        'all_inf_total_strikes_attempts_per_min_diff',
-        'l1y_inf_clinch_strikes_landed_per_min_diff',
-        'all_abs_leg_strikes_attempts_per_min_diff',
-        'all_abs_takedowns_attempts_per_min_diff',
-        'all_abs_control_per_min_diff',
-        'l3y_abs_takedowns_landed_per_min_diff',
         'reach_diff',
-        'all_inf_sub_attempts_per_min_diff',
-        'l3y_defensive_grappling_loss_diff',
-        'l3y_inf_sub_attempts_per_min_diff',
-        'all_inf_clinch_strikes_accuracy_diff',
-        'l5y_inf_body_strikes_accuracy_diff',
-        'l1y_inf_body_strikes_landed_per_min_diff',
-        'l3y_abs_body_strikes_accuracy_diff',
-        'l5y_inf_knockdowns_per_min_diff',
-        'l1y_abs_total_strikes_attempts_per_min_diff',
-        'all_wins_wins_diff',
-        'all_losses_losses_diff',
-        'l1y_inf_ground_strikes_attempts_per_min_diff',
-        'all_defensive_grappling_loss_diff',
-        'l3y_losses_dec_diff',
-        'l5y_defensive_grappling_loss_diff',
-        'l3y_overall_fighter_score_diff',
-        'l1y_abs_ground_strikes_landed_per_min_diff',
-        'all_inf_head_strikes_accuracy_diff',
-        'l3y_inf_head_strikes_accuracy_diff',
-        'l3y_inf_distance_strikes_landed_per_min_diff',
-        'l3y_inf_sig_strikes_attempts_per_min_diff',
-        'l3y_inf_body_strikes_accuracy_diff',
-        'l3y_inf_takedowns_accuracy_diff',
-        'l3y_abs_total_strikes_attempts_per_min_diff',
-        'l3y_abs_control_per_min_diff',
-        'l5y_fight_math_diff',
+        'height_diff', # added by instinct and it raised test model score
+        'l5y_wins_diff',
         'l1y_wins_sub_diff',
         'l1y_wins_ko_diff',
-        'all_abs_sig_strikes_accuracy_diff',
+        'l3y_wins_ko_diff',
+        'all_wins_ko_diff',
+        'l5y_wins_wins_diff',
+        # 'all_wins_wins_diff',
+        'l3y_losses_dec_diff',
+        'all_losses_losses_diff',
+        'l1y_losses_losses_diff',
+        # punch stats
+        'l1y_inf_clinch_strikes_accuracy_diff',
+        'all_inf_distance_strikes_accuracy_diff', # VIF = 4 (removal decreased test model score)
+        'all_inf_total_strikes_attempts_per_min_diff',
+        'l1y_inf_clinch_strikes_landed_per_min_diff',
+        'all_inf_clinch_strikes_accuracy_diff',
+        'l5y_inf_knockdowns_per_min_diff',
+        'l3y_inf_head_strikes_accuracy_diff',
+        'l5y_inf_body_strikes_accuracy_diff',
+        'l3y_inf_distance_strikes_landed_per_min_diff',
+        'l1y_inf_total_strikes_accuracy_diff',
+        'l1y_inf_body_strikes_attempts_per_min_diff',
+        'all_abs_head_strikes_accuracy_diff',
+        'l3y_abs_body_strikes_accuracy_diff',
+        'l3y_abs_total_strikes_attempts_per_min_diff',
         'l1y_abs_clinch_strikes_attempts_per_min_diff',
-        'l1y_abs_clinch_strikes_landed_per_min_diff',
         'all_abs_clinch_strikes_accuracy_diff',
         'l3y_abs_leg_strikes_attempts_per_min_diff',
-        'all_wins_ko_diff',
-        'l3y_wins_ko_diff',
-        'l1y_losses_losses_diff',
-        'l1y_inf_body_strikes_attempts_per_min_diff',
-        'l3y_abs_body_strikes_attempts_per_min_diff',
-        'l3y_abs_body_strikes_landed_per_min_diff',
         'l1y_abs_body_strikes_attempts_per_min_diff',
-        'l1y_inf_distance_strikes_accuracy_diff',
-        'l1y_inf_total_strikes_accuracy_diff',
         'l5y_abs_body_strikes_landed_per_min_diff',
+        # grappling stats
+        'all_inf_sub_attempts_per_min_diff',
+        'l1y_inf_ground_strikes_attempts_per_min_diff',
+        'l5y_inf_takedowns_attempts_per_min_diff',
+        'l3y_inf_takedowns_accuracy_diff',
+        'l3y_inf_takedowns_landed_per_min_diff', # VIF = 4
+        'l1y_abs_ground_strikes_landed_per_min_diff',
+        'all_abs_control_per_min_diff',
+        'all_abs_takedowns_attempts_per_min_diff',
+        'l3y_abs_takedowns_landed_per_min_diff',
+        # higher order stats
+        'l5y_fight_math_diff',
         'all_offensive_grappling_score_diff',
-        'l3y_inf_takedowns_landed_per_min_diff',
-        'l3y_offensive_grappling_score_diff']
+        'all_defensive_grappling_loss_diff',
+        'l3y_defensive_grappling_loss_diff',
+        # 'all_abs_leg_strikes_attempts_per_min_diff', # VIF = 8 (removal increased test model score)
+        # 'l3y_inf_sub_attempts_per_min_diff', # VIF = 16
+        # 'l1y_inf_body_strikes_landed_per_min_diff', # VIF = 12 (removal increased test model score)
+        # 'l1y_abs_total_strikes_attempts_per_min_diff', # VIF = 4
+        # 'l5y_defensive_grappling_loss_diff', # VIF = 9 (removal decreased test model score)
+        # 'l3y_overall_fighter_score_diff', # VIF = 24 (removal decreased test model score)
+        # 'all_inf_head_strikes_accuracy_diff', # VIF = 15 (removal increased test model score)
+        # 'l3y_inf_sig_strikes_attempts_per_min_diff', # VIF = 16 (removal increased test model score)
+        # 'l3y_inf_body_strikes_accuracy_diff', # VIF = 19 (removal decreased test model score)
+        # 'l3y_abs_control_per_min_diff', # VIF = 8 (removal increased test model score)
+        # 'all_abs_sig_strikes_accuracy_diff', # VIF = 16 (removal decreased test model score)
+        # 'l1y_abs_clinch_strikes_landed_per_min_diff', # VIF = 19  (removal decreased test model score)
+        # 'l3y_abs_body_strikes_attempts_per_min_diff', # VIF = 8 (removal decreased test model score)
+        # 'l3y_abs_body_strikes_landed_per_min_diff', # VIF = 31 (removal increased test model score)
+        # 'l1y_inf_distance_strikes_accuracy_diff', # VIF = 6 (no change)
+        # 'l3y_offensive_grappling_score_diff' # VIF = inf (removal increased test model score)
+        ]
 
 
         ufc_fights_df = ufc_fights_winner[self.amazing_feature_set]
         results = ufc_fights_winner['result']
         # self.theta, self.b = self.find_best_regression_coeffs(ufc_fights_df, results)
-        self.theta, self.b, self.scaler = self.find_regression_coeffs(ufc_fights_df, results, random_state=random_state)
+        self.theta, self.b, self.scaler = self.find_regression_coeffs(
+            ufc_fights_df, 
+            results, 
+            random_state=random_state, 
+            scaled=scaled, 
+            C=C
+            )
     
     
-    def find_regression_coeffs(self, X, y, _max_iter=20000, random_state=14):
+    def find_regression_coeffs(self, X, y, _max_iter=20000, random_state=14, scaled=True, C=0.1):
         # do another split
         from sklearn.model_selection import train_test_split
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=random_state)
         # see how the new features do on the test set we already made
         # train the model with the best features
-        scaler = StandardScaler()
-        X_train_scaled = scaler.fit_transform(X_train)
-        X_test_scaled = scaler.transform(X_test)
+        best_model = LogisticRegression(solver='lbfgs', max_iter=_max_iter, C=C, penalty='l2')#, fit_intercept=False)
+        if scaled:
+            print('Scaling features')
+            scaler = StandardScaler()
+            X_train_scaled = scaler.fit_transform(X_train)
+            X_test_scaled = scaler.transform(X_test)
 
-        best_model = LogisticRegression(solver='lbfgs', max_iter=_max_iter, C=0.1, penalty='l2')#, fit_intercept=False)
+        else:
+            scaler = None
+            X_train_scaled = X_train
+            X_test_scaled = X_test
         best_model.fit(X_train_scaled, y_train)
 
         # evaluate the model on the training set
@@ -187,7 +206,7 @@ class FightPredictor:
         dh = self.dh
         derived_doubled_tuple = dh.make_derived_doubled_vector_for_fight(new_rows)
         # now make the predictive flattened diffs
-        ufc_fights_predictive_flattened_diffs = dh.make_ufc_fights_predictive_flattened_diffs(derived_doubled_tuple)
+        ufc_fights_predictive_flattened_diffs = dh.make_ufc_fights_predictive_flattened_diffs(derived_doubled_tuple, shuffle=False)
         prediction_tuple = ufc_fights_predictive_flattened_diffs[self.amazing_feature_set]
         return prediction_tuple
         
@@ -199,7 +218,8 @@ class FightPredictor:
 
     def presigmoid_value(self, fighter1,fighter2,date1,date2,theta,b,scaler):
         tup = self.ufc_prediction_tuple(fighter1,fighter2,date1,date2)
-        tup = scaler.transform(tup)
+        if scaler:
+            tup = scaler.transform(tup)
         value = np.dot(tup, theta)
         presig_value = value + b
         return presig_value

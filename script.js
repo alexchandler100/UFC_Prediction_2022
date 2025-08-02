@@ -870,17 +870,32 @@ setTimeout(() => { //timeout because other data needs to load first (probably be
     tr.appendChild(td4);
     tr.appendChild(td5);
     tr.appendChild(td6);
+    fighter_stats = fighter_data[fighter]
+    opponent_stats = fighter_data[opponent]
+    if (!fighter_stats) {
+      console.warn(`Fighter data not found for ${fighter}. Skipping row.`);
+      fighterHtml = '#'
+    } else {
+      fighterHtml = fighter_stats['url']
+    }
+    if (!opponent_stats) {
+      console.warn(`Fighter data not found for ${opponent}. Skipping row.`);
+      opponentHtml = '#'
+    } else {
+      opponentHtml = opponent_stats['url']
+    }
+
     if (fighterOdds == '') { //if no prediction was made
-      tr.cells.item(0).innerHTML = `<a href=https://en.wikipedia.org/wiki/${fighter.replace(" ", '_')}#Mixed_martial_arts_record target="_blank" style = "color: white">${fighter}</a>`
-      tr.cells.item(1).innerHTML = `<a href=https://en.wikipedia.org/wiki/${opponent.replace(" ", '_')}#Mixed_martial_arts_record target="_blank" style = "color: white">${opponent}</a>`
+      tr.cells.item(0).innerHTML = `<a href=${fighterHtml} target="_blank" style = "color: white">${fighter}</a>`
+      tr.cells.item(1).innerHTML = `<a href=${opponentHtml} target="_blank" style = "color: white">${opponent}</a>`
     }
     else if (fighterOdds[0] == '-') { // if fighter is predicted to win
       //TODO check if they have a wikipedia page and if not, link to their UFC profile https://www.ufc.com/athlete/${fighter.replace(" ", '_')#athlete-record
-      tr.cells.item(0).innerHTML = `<a href=https://en.wikipedia.org/wiki/${fighter.replace(" ", '_')}#Mixed_martial_arts_record target="_blank" style = "color: gold">${fighter}</a>`
-      tr.cells.item(1).innerHTML = `<a href=https://en.wikipedia.org/wiki/${opponent.replace(" ", '_')}#Mixed_martial_arts_record target="_blank" style = "color: white">${opponent}</a>`
+      tr.cells.item(0).innerHTML = `<a href=${fighterHtml} target="_blank" style = "color: gold">${fighter}</a>`
+      tr.cells.item(1).innerHTML = `<a href=${opponentHtml} target="_blank" style = "color: white">${opponent}</a>`
     } else { // if opponent is predicted to win
-      tr.cells.item(0).innerHTML = `<a href=https://en.wikipedia.org/wiki/${fighter.replace(" ", '_')}#Mixed_martial_arts_record target="_blank" style = "color: white">${fighter}</a>`
-      tr.cells.item(1).innerHTML = `<a href=https://en.wikipedia.org/wiki/${opponent.replace(" ", '_')}#Mixed_martial_arts_record target="_blank" style = "color: gold">${opponent}</a>`
+      tr.cells.item(0).innerHTML = `<a href=${fighterHtml} target="_blank" style = "color: white">${fighter}</a>`
+      tr.cells.item(1).innerHTML = `<a href=${opponentHtml} target="_blank" style = "color: gold">${opponent}</a>`
     }
 
     tr.cells.item(2).innerHTML = fighterOdds;

@@ -18,7 +18,7 @@ ufc_fights_predictive_flattened_diffs = dh.make_ufc_fights_predictive_flattened_
 ufc_fights_winner = dh.clean_ufc_fights_for_winner_prediction(ufc_fights_predictive_flattened_diffs)
 fight_predictor = FightPredictor(ufc_fights_winner, dh) # maybe not the best thing to pass in dh here, but it works for now
 print('Training logistic regression model on ufc_fights_winner data')
-fight_predictor.train_logistic_regression_model(random_state=44) # 44 is the random state we used to get the best model
+fight_predictor.train_logistic_regression_model(random_state=99, scaled=False, C=100) # 44 is the random state we used to get the best model
 theta, b, scaler = fight_predictor.get_regression_coeffs_intercept_and_scaler()
 
 # use the data handler to update the model coefficients in the json files
