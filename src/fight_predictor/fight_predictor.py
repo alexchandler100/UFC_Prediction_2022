@@ -10,6 +10,7 @@ from sklearn import preprocessing
 
 from fight_stat_helpers import (
     in_ufc, 
+    visualize_prediction_bokeh
     )
 
 class FightPredictor:
@@ -189,6 +190,7 @@ class FightPredictor:
                 print('predicting: '+fighter,'versus '+opponent,'.... '+str(odds_calc))
                 vegas_odds.loc[i, 'predicted fighter odds']=odds_calc[0]
                 vegas_odds.loc[i, 'predicted opponent odds']=odds_calc[1]
+                
         return vegas_odds
             
     #I've defined this in such a way to predict what happens when fighter1 in their day1 version fights fighter2
@@ -220,8 +222,12 @@ class FightPredictor:
         tup = self.ufc_prediction_tuple(fighter1,fighter2,date1,date2)
         if scaler:
             tup = scaler.transform(tup)
+            
         value = np.dot(tup, theta)
         presig_value = value + b
+        p = self.sigmoid(presig_value[0])
+        
+        visualize_prediction_bokeh(fighter1, fighter2, theta, date1, tup, p)
         return presig_value
 
 

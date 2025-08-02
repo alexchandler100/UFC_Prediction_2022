@@ -18,6 +18,12 @@ from bs4 import BeautifulSoup
 import urllib.request
 import requests
 
+from bokeh.plotting import figure, output_file, save
+from bokeh.io import show
+from bokeh.models import ColumnDataSource
+from bokeh.models import FixedTicker
+from bokeh.layouts import row, column, Spacer
+
 from sklearn.preprocessing import StandardScaler
 
 alias_array = [
@@ -910,3 +916,61 @@ def get_fight_stats(url, fighter, opponent):
     fight_stat_df = pd.DataFrame(fd_columns)
     
     return fight_stat_df
+
+
+def visualize_prediction_bokeh(fighter, opponent, theta, card_date, tup_scaled, p):
+    df = tup_scaled.T
+    df.columns = ['value']
+    df['value_scaled'] = tup_scaled.T
+    df['theta'] = theta
+    # df['abs_theta'] = df['theta'].abs()
+    df['contribution'] = df['value_scaled'] * df['theta']
+    df['abs_contribution'] = df['contribution'].abs()
+    # sort by contribution
+    df = df.sort_values(by='abs_contribution', ascending=False)
+    source = ColumnDataSource(data=dict(index=df.index, contribution=df['contribution']))
+
+    # Prepare output file
+    # convert card date from August 02, 2025 to 2025-08-02
+    card_date_formatted = pd.to_datetime(card_date).strftime('%Y-%m-%d')
+    # convert fighter and opponent to lowercase and replace spaces with underscores
+    html_str = f'content/bokehPlots/{card_date_formatted}_{fighter.lower().replace(" ", "_")}_vs_{opponent.lower().replace(" ", "_")}_bokeh_barplot.html'
+    output_file(html_str)
+
+    # Create the figure
+    p = figure(y_range=list(df.index), width=1200, height=600, title=f"{opponent}(p={1-p:.2f}) --vs-- {fighter}(p={p:.2f})",
+            toolbar_location=None, tools="")
+    
+    # color bars red when theta is negative, green when positive
+    colors = ['#d62728' if val < 0 else '#2ca02c' for val in df['theta']]
+    source.data['color'] = colors
+
+    # Draw horizontal bars
+    p.hbar(y='index', right='contribution', height=0.8, source=source, color='color')
+
+    # Style the plot
+    # make y grid lines for each category
+    # p.ygrid.grid_line_color = None
+    p.ygrid.grid_line_alpha = 0.3
+    p.xgrid.grid_line_alpha = 0.3
+    # make more vertical grid lines
+    # p.xgrid.ticker = FixedTicker(ticks=np.arange(-10, 11, 1).tolist())
+    p.xaxis.axis_label = "Contribution to log-odds"
+    # p.x_range.start = min(df['contribution']) - 1
+    # p.x_range.end = max(df['contribution']) + 1
+    
+    # make another bar plot below this one that shows the theta values
+    # now sort by theta
+    df = df.sort_values(by='theta', ascending=False)
+    source2 = ColumnDataSource(data=dict(index=df.index, theta=df['theta']))
+    p2 = figure(y_range=list(df.index), width=1200, height=600, title=f"Theta values for {opponent} and {fighter}",
+            toolbar_location=None, tools="")
+    p2.hbar(y='index', right='theta', height=0.8, source=source2)
+    p2.xaxis.axis_label = "Theta values"
+    p2.ygrid.grid_line_alpha = 0.3
+    p2.xgrid.grid_line_alpha = 0.3
+    
+
+    # Save to HTML at f'{git_root}/src/content/bokehPlots/
+    save(column(p, Spacer(height=20), p2))
+    print(f'Bokeh plot saved to {html_str}')

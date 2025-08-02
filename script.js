@@ -898,8 +898,21 @@ setTimeout(() => { //timeout because other data needs to load first (probably be
       tr.cells.item(1).innerHTML = `<a href=${opponentHtml} target="_blank" style = "color: gold">${opponent}</a>`
     }
 
-    tr.cells.item(2).innerHTML = fighterOdds;
-    tr.cells.item(3).innerHTML = opponentOdds;
+    // convert fighter name by removing spaces for linking to bokeh plot
+    // e.g. "Elves Brener" -> "elves_brener"
+    let fighterLinkName = fighter.toLowerCase().replace(" ", '_');
+    let opponentLinkName = opponent.toLowerCase().replace(" ", '_');
+    // convert date to YYYY-MM-DD format for linking to bokeh plot
+    // e.g. "August 2, 2025" -> "2025-08-02"
+    let fightDate = vegas_odds['date'][i]; // e.g. "August 2, 2025"
+    let dateObj = new Date(fightDate);
+    let year = dateObj.getFullYear();
+    let month = (dateObj.getMonth() + 1).toString().padStart(2, '0'); // Months are zero-based
+    let day = dateObj.getDate().toString().padStart(2, '0');
+    let fightDateFormatted = `${year}-${month}-${day}`; // e.g. "2025-08-02"
+    oddsHtml = `src/content/bokehPlots/${fightDateFormatted}_${fighterLinkName}_vs_${opponentLinkName}_bokeh_barplot.html`
+    tr.cells.item(2).innerHTML =  `<a href=${oddsHtml} target="_blank" style="color: white"; >${fighterOdds}</a>`;
+    tr.cells.item(3).innerHTML = `<a href=${oddsHtml} target="_blank" style="color: white"; >${opponentOdds}</a>`;
     
     // make the fighter and opponent names bold and gold if they have higher expected value
     // than the opponent and fighter respectively
