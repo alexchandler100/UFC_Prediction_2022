@@ -34,7 +34,7 @@ for index1, row1 in prediction_history.iloc[9::-1].iterrows(): # iterate backwar
         print(f"no prediction made for fight from  between {row1['fighter name']} and {row1['opponent name']}")
         continue
     
-    import ipdb; ipdb.set_trace(context=10) # uncomment to debug
+    # import ipdb; ipdb.set_trace(context=10) # uncomment to debug
     
     fighter_odds = int(row1['predicted fighter odds'])
     opponent_odds = int(row1['predicted opponent odds'])

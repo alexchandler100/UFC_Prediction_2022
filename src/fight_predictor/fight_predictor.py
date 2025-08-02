@@ -8,35 +8,21 @@ from dateutil.relativedelta import relativedelta
 from sklearn.preprocessing import StandardScaler
 from sklearn import preprocessing
 
-
 from fight_stat_helpers import (
-    fighter_score_diff, 
-    fight_math_diff, 
-    L5Y_sub_wins, 
-    sub_wins,
-    L5Y_losses, 
-    L5Y_ko_wins,
-    L2Y_ko_losses,
-    L5Y_ko_losses, 
-    fighter_age, 
-    avg_count, 
     in_ufc, 
-    fighter_height,
-    fighter_reach,
-    L5Y_wins,
-    ko_losses,
-    L2Y_sub_losses
+    visualize_prediction_bokeh
     )
 
 class FightPredictor:
-    def __init__(self, ufc_fights_winner):
+    def __init__(self, ufc_fights_winner, dh):
+        self.dh = dh
         self.ufc_fights_winner = ufc_fights_winner.copy()
         fighter_names = [name for name in ufc_fights_winner['fighter'].unique()]
         opponent_names = [name for name in ufc_fights_winner['opponent'].unique()]
         self.ufc_fighter_names = set(fighter_names + opponent_names)
         self.scaler = None
         
-    def train_logistic_regression_model(self):
+    def train_logistic_regression_model(self, random_state=14, scaled=True, C=100):
         r"""
         Train a logistic regression model to predict the winner of a UFC fight based on various statistics.
         This method processes the fight data, cleans the necessary columns, and prepares the data for training.
@@ -51,157 +37,138 @@ class FightPredictor:
             
         # WE SET UP A LOGISTIC REGRESSION MODEL BELOW WITH A MINIMAL SET OF FEATURES
         # TODO TRY XGBOOST AND RANDOM FOREST # TODO ALSO PREDICT METHOD OF VICTORY
-        
-        current_best_feature_set = [
-         'fighter_age_diff',
-            'height_diff',
-            'reach_diff',
-            'fighter_L5Y_wins_diff_2',
-            'fighter_L5Y_losses_diff_2',
-            'fighter_ko_losses_diff_2',
-            'fighter_L5Y_ko_wins_diff_2',
-            'fighter_L2Y_ko_losses_diff_2',
-            'fighter_L5Y_ko_losses_diff_2',
-            'fighter_sub_wins_diff_2',
-            'fighter_L2Y_sub_losses_diff_2',
-            'fighter_inf_knockdowns_avg_diff_2',
-            'fighter_inf_distance_strikes_landed_avg_diff_2',
-            'fighter_inf_ground_strikes_landed_avg_diff_2',
-            'fighter_inf_distance_strikes_attempts_avg_diff_2',
-            'fighter_inf_head_strikes_attempts_avg_diff_2',
-            'fighter_inf_takedowns_attempts_avg_diff_2',
-            # 'fighter_abs_reversals_avg_diff_2', # reversals has problems
-            'fighter_abs_clinch_strikes_landed_avg_diff_2',
-            'fighter_abs_distance_strikes_landed_avg_diff_2',
-            'fighter_abs_leg_strikes_landed_avg_diff_2',
-            'fighter_abs_takedowns_attempts_avg_diff_2',
-            'fighter_abs_distance_strikes_attempts_avg_diff_2',
-            'fighter_abs_head_strikes_attempts_avg_diff_2',
-            'fighter_abs_total_strikes_attempts_avg_diff_2',
-            '6-fight_math',
-            '9-fighter_score_diff',
-            '4-fighter_score_diff',
+                
+        # got 64 % on a test set
+        self.amazing_feature_set = [
+        # 'l5y_overall_fighter_score_diff', # VIF = 10 (no change)
+        # physical
+        'age_diff',
+        'reach_diff',
+        'height_diff', # added by instinct and it raised test model score
+        'l5y_wins_diff',
+        'l1y_wins_sub_diff',
+        'l1y_wins_ko_diff',
+        'l3y_wins_ko_diff',
+        'all_wins_ko_diff',
+        'l5y_wins_wins_diff',
+        # 'all_wins_wins_diff',
+        'l3y_losses_dec_diff',
+        'all_losses_losses_diff',
+        'l1y_losses_losses_diff',
+        # punch stats
+        'l1y_inf_clinch_strikes_accuracy_diff',
+        'all_inf_distance_strikes_accuracy_diff', # VIF = 4 (removal decreased test model score)
+        'all_inf_total_strikes_attempts_per_min_diff',
+        'l1y_inf_clinch_strikes_landed_per_min_diff',
+        'all_inf_clinch_strikes_accuracy_diff',
+        'l5y_inf_knockdowns_per_min_diff',
+        'l3y_inf_head_strikes_accuracy_diff',
+        'l5y_inf_body_strikes_accuracy_diff',
+        'l3y_inf_distance_strikes_landed_per_min_diff',
+        'l1y_inf_total_strikes_accuracy_diff',
+        'l1y_inf_body_strikes_attempts_per_min_diff',
+        'all_abs_head_strikes_accuracy_diff',
+        'l3y_abs_body_strikes_accuracy_diff',
+        'l3y_abs_total_strikes_attempts_per_min_diff',
+        'l1y_abs_clinch_strikes_attempts_per_min_diff',
+        'all_abs_clinch_strikes_accuracy_diff',
+        'l3y_abs_leg_strikes_attempts_per_min_diff',
+        'l1y_abs_body_strikes_attempts_per_min_diff',
+        'l5y_abs_body_strikes_landed_per_min_diff',
+        # grappling stats
+        'all_inf_sub_attempts_per_min_diff',
+        'l1y_inf_ground_strikes_attempts_per_min_diff',
+        'l5y_inf_takedowns_attempts_per_min_diff',
+        'l3y_inf_takedowns_accuracy_diff',
+        'l3y_inf_takedowns_landed_per_min_diff', # VIF = 4
+        'l1y_abs_ground_strikes_landed_per_min_diff',
+        'all_abs_control_per_min_diff',
+        'all_abs_takedowns_attempts_per_min_diff',
+        'l3y_abs_takedowns_landed_per_min_diff',
+        # higher order stats
+        'l5y_fight_math_diff',
+        'all_offensive_grappling_score_diff',
+        'all_defensive_grappling_loss_diff',
+        'l3y_defensive_grappling_loss_diff',
+        # 'all_abs_leg_strikes_attempts_per_min_diff', # VIF = 8 (removal increased test model score)
+        # 'l3y_inf_sub_attempts_per_min_diff', # VIF = 16
+        # 'l1y_inf_body_strikes_landed_per_min_diff', # VIF = 12 (removal increased test model score)
+        # 'l1y_abs_total_strikes_attempts_per_min_diff', # VIF = 4
+        # 'l5y_defensive_grappling_loss_diff', # VIF = 9 (removal decreased test model score)
+        # 'l3y_overall_fighter_score_diff', # VIF = 24 (removal decreased test model score)
+        # 'all_inf_head_strikes_accuracy_diff', # VIF = 15 (removal increased test model score)
+        # 'l3y_inf_sig_strikes_attempts_per_min_diff', # VIF = 16 (removal increased test model score)
+        # 'l3y_inf_body_strikes_accuracy_diff', # VIF = 19 (removal decreased test model score)
+        # 'l3y_abs_control_per_min_diff', # VIF = 8 (removal increased test model score)
+        # 'all_abs_sig_strikes_accuracy_diff', # VIF = 16 (removal decreased test model score)
+        # 'l1y_abs_clinch_strikes_landed_per_min_diff', # VIF = 19  (removal decreased test model score)
+        # 'l3y_abs_body_strikes_attempts_per_min_diff', # VIF = 8 (removal decreased test model score)
+        # 'l3y_abs_body_strikes_landed_per_min_diff', # VIF = 31 (removal increased test model score)
+        # 'l1y_inf_distance_strikes_accuracy_diff', # VIF = 6 (no change)
+        # 'l3y_offensive_grappling_score_diff' # VIF = inf (removal increased test model score)
         ]
 
-        y=ufc_fights_winner['result'].iloc[0:3600]
-        X=ufc_fights_winner[current_best_feature_set].iloc[0:3600]
-        # winPredictionModel=LogisticRegression(solver='lbfgs', max_iter=5000, fit_intercept=False)
-        # self.scaler = preprocessing.StandardScaler().fit(X)
-        # X_scaled = self.scaler.transform(X) 
-        # winPredictionModel.fit(X_scaled,y)
 
-        # print('model score: '+str(winPredictionModel.score(X,y)))
-        # print('neg log loss of model: '+str(self.model_score(ufc_fights_winner,current_best_feature_set,scoring='neg_log_loss')))
-        # print('cross val avg probability of result: '+str(np.exp(self.model_score(ufc_fights_winner,current_best_feature_set,scoring='neg_log_loss'))))
-        # print('cross val accuracy: '+str(self.model_score(ufc_fights_winner,current_best_feature_set,scoring='accuracy')))
-        
-        # self.theta = list(winPredictionModel.coef_[0])
-        # self.b = winPredictionModel.intercept_[0]
-
-        ufc_fights_df = ufc_fights_winner[current_best_feature_set]
+        ufc_fights_df = ufc_fights_winner[self.amazing_feature_set]
         results = ufc_fights_winner['result']
-        self.theta, self.b = self.find_best_regression_coeffs(ufc_fights_df, results)
-        
-    #scores a model
-    def model_score(self, dataframe, features, iloc_val = 3200, _max_iter = 2000, scoring='neg_log_loss', scaled=True):
-        yyy=dataframe['result'].iloc[0:iloc_val]
-        XXX=dataframe[features].iloc[0:iloc_val]
-        XXXscaler = preprocessing.StandardScaler().fit(XXX)
-        XXX_scaled = XXXscaler.transform(XXX) 
-        X = XXX_scaled if scaled else XXX
-        winPredictionModel=LogisticRegression(solver='lbfgs', max_iter=_max_iter, fit_intercept=False)
-        # find the cross val score with log loss
-        return cross_val_score(winPredictionModel,X,yyy,cv=4,scoring=scoring).mean()
-        
-    def find_best_regression_coeffs(self, ufc_fights_df, results):
-        # say there is an average of 10 fights per week, then 2200 fights is about 55 months of data
-        #decided to force intercept to be 0 due to symmetry of dataset (all stats are differences so if we switch fighters, we must get the negative of the result)
-        # make some hyperparams
-        
-        # make training set and test set out of ufc_fights_df and results
+        # self.theta, self.b = self.find_best_regression_coeffs(ufc_fights_df, results)
+        self.theta, self.b, self.scaler = self.find_regression_coeffs(
+            ufc_fights_df, 
+            results, 
+            random_state=random_state, 
+            scaled=scaled, 
+            C=C
+            )
+    
+    
+    def find_regression_coeffs(self, X, y, _max_iter=20000, random_state=14, scaled=True, C=0.1):
+        # do another split
         from sklearn.model_selection import train_test_split
-        X_train, X_test, y_train, y_test = train_test_split(ufc_fights_df, results, test_size=0.2, random_state=34)
-        
-        max_iters = [2000, 2500, 5000]
-        solvers = ['lbfgs']
-        num_fights_in_history = [2500, 3000]
-        theta_list = []
-        b_list = []
-        cross_val_scores = []
-        neg_log_loss_scores = []
-        max_iter_history = []
-        solver_history = []
-        num_fights_history = []
-        scaler_history = []
-        models = []
-        num_reps = 20
-        for solver in solvers:
-            for max_iter in max_iters:
-                for num_fights in num_fights_in_history:
-                    for rep in range(num_reps): # try with different random seeds
-                        # print(f'Training Logistic Regression with solver={solver} and max_iter={max_iter}')
-                        # create a logistic regression model
-                        winPredictionModel = LogisticRegression(solver=solver, max_iter=max_iter, fit_intercept=False)
-                        scaler = StandardScaler()
-                        X = X_train.iloc[0:num_fights].to_numpy()
-                        X_scaled = scaler.fit_transform(X)
-                        y = y_train.iloc[0:num_fights]
-                        winPredictionModel.fit(X_scaled,y)
-                        # TODO scale to zero mean and unit variance
-                        cross_val_score_mean = cross_val_score(winPredictionModel, X, y, cv=3).mean()
-                        neg_log_loss_score = cross_val_score(winPredictionModel, X, y, cv=3, scoring='neg_log_loss').mean()
-                        theta = list(winPredictionModel.coef_[0])
-                        b = winPredictionModel.intercept_[0]
-                        models.append(winPredictionModel)
-                        theta_list.append(theta)
-                        b_list.append(b)
-                        scaler_history.append(scaler)
-                        cross_val_scores.append(cross_val_score_mean)
-                        neg_log_loss_scores.append(neg_log_loss_score)
-                        max_iter_history.append(max_iter)
-                        solver_history.append(solver)
-                        num_fights_history.append(num_fights)
-        # TODO change this to find the best neg_log_loss instead of accuracy
-        
-        # Using best hyperparameters: solver=lbfgs, max_iter=1800, num_fights=2200
-        # Best cross-validation score: 0.630
-        # neg_log_loss score: -0.648
-        # probability of observing data given model: 0.523
-        
-        # WHAT THE HELL... IN THE WORKSHEET I AM GETTING A HUGELY BETTER ANSWER...
-        # TODO EXPLAIN THIS... I THOUGHT IT WAS FROM THE LACK OF SCALING...
-        
-        # model score: 0.656
-        # neg log loss of model: -0.636851776860466
-        # cross val avg probability of result: 0.528955074077124
-        # cross val accuracy: 0.645625
+        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=random_state)
+        # see how the new features do on the test set we already made
+        # train the model with the best features
+        best_model = LogisticRegression(solver='lbfgs', max_iter=_max_iter, C=C, penalty='l2')#, fit_intercept=False)
+        if scaled:
+            print('Scaling features')
+            scaler = StandardScaler()
+            X_train_scaled = scaler.fit_transform(X_train)
+            X_test_scaled = scaler.transform(X_test)
 
-        # best_cross_val_score = max(cross_val_scores)
-        # best_index = cross_val_scores.index(best_cross_val_score)
-        best_neg_log_loss = max(neg_log_loss_scores)
-        best_index = neg_log_loss_scores.index(best_neg_log_loss)
-        cross_val_score_of_best_nll = cross_val_scores[best_index]
-        best_scaler = scaler_history[best_index]
-        self.scaler = best_scaler
-        best_theta = theta_list[best_index]
-        best_b = b_list[best_index]
-        best_model = models[best_index]
-        print(f'Using best hyperparameters: solver={solver_history[best_index]}, max_iter={max_iter_history[best_index]}, num_fights={num_fights_history[best_index]}')
-        print(f'Best cross-validation score: {cross_val_score_of_best_nll:.3f}')
-        print(f'neg_log_loss score: {neg_log_loss_score:.3f}')
-        print(f'probability of observing data given model: {np.exp(neg_log_loss_score):.3f}')
-        # evaluate on test set
-        X_test_scaled = best_scaler.transform(X_test.to_numpy())
+        else:
+            scaler = None
+            X_train_scaled = X_train
+            X_test_scaled = X_test
+        best_model.fit(X_train_scaled, y_train)
+
+        # evaluate the model on the training set
+        train_score = best_model.score(X_train_scaled, y_train)
+
+        print(f'Train set accuracy: {train_score}')
+
+        # evaluate the model on the test set
         test_score = best_model.score(X_test_scaled, y_test)
-        print(f'Test set accuracy: {test_score:.3f}')
+        print(f'Test set accuracy: {test_score} \n')
         
-        return best_theta, best_b
+        theta = list(best_model.coef_[0])
+        b = best_model.intercept_[0]
+        
+        return theta, b, scaler
+        
 
-    def get_regression_coeffs_and_intercept(self):
-        return self.theta, self.b
+    def get_regression_coeffs_intercept_and_scaler(self):
+        return self.theta, self.b, self.scaler
 
     # now make predictions for the new fights added to the new scraped fights
-    def predict_upcoming_fights(self, prediction_history:pd.DataFrame, fights_list:list, card_date:str, theta, b):
+    def predict_upcoming_fights(
+        self, 
+        prediction_history:pd.DataFrame, 
+        fighter_stats:pd.DataFrame, 
+        fights_list:list, 
+        card_date:str, 
+        theta, 
+        b, 
+        scaler
+        ):
         vegas_odds_col_names = list(prediction_history.columns)
         vegas_odds_col_values = [['' for _ in range(len(fights_list))] for _ in range(len(vegas_odds_col_names))]
         vegas_odds_d = dict(zip(vegas_odds_col_names, vegas_odds_col_values))
@@ -213,117 +180,55 @@ class FightPredictor:
         vegas_odds['date'] = card_date
 
         print('Making predictions for all fights on the books')
+        # import ipdb;ipdb.set_trace(context=10)
         #filling in predictions
         for i in vegas_odds.index:
             fighter=vegas_odds['fighter name'][i]
             opponent=vegas_odds['opponent name'][i]
-            if in_ufc(fighter) and in_ufc(opponent):
-                odds_calc = self.odds(fighter,opponent,theta,b)
+            if in_ufc(fighter, fighter_stats) and in_ufc(opponent, fighter_stats):
+                odds_calc = self.odds(fighter,opponent,theta,b,scaler)
                 print('predicting: '+fighter,'versus '+opponent,'.... '+str(odds_calc))
                 vegas_odds.loc[i, 'predicted fighter odds']=odds_calc[0]
                 vegas_odds.loc[i, 'predicted opponent odds']=odds_calc[1]
+                
         return vegas_odds
             
     #I've defined this in such a way to predict what happens when fighter1 in their day1 version fights fighter2
     #in their day2 version. Meaning we could compare for example 2014 Tyron Woodley to 2019 Colby Covington
     def ufc_prediction_tuple(self, fighter1,fighter2,day1=date.today(),day2=date.today()):
-        # TODO rescale the features to zero mean and unit variance
+        new_rows_dict = {
+            'fighter':[fighter1, fighter2], 
+            'opponent':[fighter2, fighter1], 
+            'date':[day1,day1],
+            'result':["N/A","N/A"],
+            'method':["N/A","N/A"], 
+            'division':["TODO","TODO"]
+            }
+        new_rows = pd.DataFrame(new_rows_dict)
+        dh = self.dh
+        derived_doubled_tuple = dh.make_derived_doubled_vector_for_fight(new_rows)
+        # now make the predictive flattened diffs
+        ufc_fights_predictive_flattened_diffs = dh.make_ufc_fights_predictive_flattened_diffs(derived_doubled_tuple, shuffle=False)
+        prediction_tuple = ufc_fights_predictive_flattened_diffs[self.amazing_feature_set]
+        return prediction_tuple
         
-        # return [fighter_score_diff(fighter1,fighter2,day1, 4),
-        #         fighter_score_diff(fighter1,fighter2,day1, 9),
-        #         fighter_score_diff(fighter1,fighter2,day1, 15),
-        #         fight_math_diff(fighter1,fighter2,day1, 1),
-        #         fight_math_diff(fighter1,fighter2,day1, 6),
-        #         L5Y_sub_wins(fighter1,day1)-L5Y_sub_wins(fighter2,day2),
-        #         L5Y_losses(fighter1,day1)-L5Y_losses(fighter2,day2),
-        #         L5Y_ko_losses(fighter1,day1)-L5Y_ko_losses(fighter2,day2),
-        #         fighter_age(fighter1,day1)-fighter_age(fighter2,day2),
-        #         avg_count('total_strikes_landed',fighter1,'abs',day1)-avg_count('total_strikes_landed',fighter2,'abs',day2),
-        #         avg_count('head_strikes_landed',fighter1,'abs',day1)-avg_count('head_strikes_landed',fighter2,'abs',day2),
-        #         avg_count('ground_strikes_landed',fighter1,'inf',day1)-avg_count('ground_strikes_landed',fighter2,'inf',day2),
-        #         avg_count('takedowns_attempts',fighter1,'inf',day1)-avg_count('takedowns_attempts',fighter2,'inf',day2),
-        #         avg_count('head_strikes_landed',fighter1,'inf',day1)-avg_count('head_strikes_landed',fighter2,'inf',day2),
-        #     ]
-        prediction_tuple = [
-        # 'fighter_age_diff',
-        #     'height_diff',
-        #     'reach_diff',
-        #     'fighter_L5Y_wins_diff_2',
-        #     'fighter_L5Y_losses_diff_2',
-        #     'fighter_ko_losses_diff_2',
-        #     'fighter_L5Y_ko_wins_diff_2',
-        #     'fighter_L2Y_ko_losses_diff_2',
-            fighter_age(fighter1, day1) - fighter_age(fighter2, day2),
-            fighter_height(fighter1) - fighter_height(fighter2),
-            fighter_reach(fighter1) - fighter_reach(fighter2),
-            L5Y_wins(fighter1, day1) - L5Y_wins(fighter2, day2),
-            L5Y_losses(fighter1, day1) - L5Y_losses(fighter2, day2),
-            ko_losses(fighter1, day1) - ko_losses(fighter2, day2),
-            L5Y_ko_wins(fighter1, day1) - L5Y_ko_wins(fighter2, day2),
-            L2Y_ko_losses(fighter1, day1) - L2Y_ko_losses(fighter2, day2),
-            #     'fighter_L5Y_ko_losses_diff_2',
-        #     'fighter_sub_wins_diff_2',
-        #     'fighter_L2Y_sub_losses_diff_2',
-        #     'fighter_inf_knockdowns_avg_diff_2',
-            L2Y_ko_losses(fighter1, day1) - L2Y_ko_losses(fighter2, day2),
-            sub_wins(fighter1, day1) - sub_wins(fighter2, day2),
-            L2Y_sub_losses(fighter1, day1) - L2Y_sub_losses(fighter2, day2),
-            avg_count('knockdowns', fighter1, 'inf', day1) - avg_count('knockdowns', fighter2, 'inf', day2),
-        
-        #     'fighter_inf_distance_strikes_landed_avg_diff_2',
-            avg_count('distance_strikes_landed', fighter1, 'inf', day1) - avg_count('distance_strikes_landed', fighter2, 'inf', day2),
-        #     'fighter_inf_ground_strikes_landed_avg_diff_2',
-            avg_count('ground_strikes_landed', fighter1, 'inf', day1) - avg_count('ground_strikes_landed', fighter2, 'inf', day2),
-        #     'fighter_inf_distance_strikes_attempts_avg_diff_2',
-            avg_count('distance_strikes_attempts', fighter1, 'inf', day1) - avg_count('distance_strikes_attempts', fighter2, 'inf', day2),
-            
-            
-            #     'fighter_inf_head_strikes_attempts_avg_diff_2',
-            avg_count('head_strikes_attempts', fighter1, 'inf', day1) - avg_count('head_strikes_attempts', fighter2, 'inf', day2),
-        #     'fighter_inf_takedowns_attempts_avg_diff_2',
-            avg_count('takedowns_attempts', fighter1, 'inf', day1) - avg_count('takedowns_attempts', fighter2, 'inf', day2),
-        #     'fighter_abs_reversals_avg_diff_2',
-            # avg_count('reversals', fighter1, 'abs', day1) - avg_count('reversals', fighter2, 'abs', day2), # problem with reversals...
-        #     'fighter_abs_clinch_strikes_landed_avg_diff_2',
-            avg_count('clinch_strikes_landed', fighter1, 'abs', day1) - avg_count('clinch_strikes_landed', fighter2, 'abs', day2),
-        #     'fighter_abs_distance_strikes_landed_avg_diff_2',
-            avg_count('distance_strikes_landed', fighter1, 'abs', day1) - avg_count('distance_strikes_landed', fighter2, 'abs', day2),
-            
-             #     'fighter_abs_leg_strikes_landed_avg_diff_2',
-            avg_count('leg_strikes_landed', fighter1, 'abs', day1) - avg_count('leg_strikes_landed', fighter2, 'abs', day2),
-        #     'fighter_abs_takedowns_attempts_avg_diff_2',
-            avg_count('takedowns_attempts', fighter1, 'abs', day1) - avg_count('takedowns_attempts', fighter2, 'abs', day2),
-        #     'fighter_abs_distance_strikes_attempts_avg_diff_2',
-            avg_count('distance_strikes_attempts', fighter1, 'abs', day1) - avg_count('distance_strikes_attempts', fighter2, 'abs', day2),
-        #     'fighter_abs_head_strikes_attempts_avg_diff_2',
-            avg_count('head_strikes_attempts', fighter1, 'abs', day1) - avg_count('head_strikes_attempts', fighter2, 'abs', day2),
-        #     'fighter_abs_total_strikes_attempts_avg_diff_2',
-            avg_count('total_strikes_attempts', fighter1, 'abs', day1) - avg_count('total_strikes_attempts', fighter2, 'abs', day2),
-                    #     '6-fight_math',
-        #     '9-fighter_score_diff',
-        #     '4-fighter_score_diff',
-            fight_math_diff(fighter1, fighter2, day1, 6),
-            fighter_score_diff(fighter1, fighter2, day1, 9),
-            fighter_score_diff(fighter1, fighter2, day1, 4),
-        ]
-        return self.scaler.transform(np.array(prediction_tuple).reshape(1, -1))[0].tolist()
         
 
     # We want to predict how many times out of 10 the winning fighter would win, so we look at the values
     # x*theta+b. If the value is >=0 its a win and <=0 its a loss. Distance from zero gives indication of
     # how likely the outcome is.
 
-    def presigmoid_value(self, fighter1,fighter2,date1,date2,theta,b):
-        value = 0
+    def presigmoid_value(self, fighter1,fighter2,date1,date2,theta,b,scaler):
         tup = self.ufc_prediction_tuple(fighter1,fighter2,date1,date2)
-        for i in range(len(tup)):
-            value += tup[i]*theta[i]
-        return value + b
-
-    def manual_prediction(self, fighter1,fighter2,date1,date2,theta,b):
-        value = self.presigmoid_value(fighter1,fighter2,date1,date2,theta,b)
-        value2 = self.presigmoid_value(fighter2,fighter1,date2,date1,theta,b)
-        return value-value2>=0
+        if scaler:
+            tup = scaler.transform(tup)
+            
+        value = np.dot(tup, theta)
+        presig_value = value + b
+        p = self.sigmoid(presig_value[0])
+        
+        visualize_prediction_bokeh(fighter1, fighter2, theta, date1, tup, p)
+        return presig_value
 
 
     def sigmoid(self, x):
@@ -331,14 +236,14 @@ class FightPredictor:
         return sig
 
     #returns the probability that fighter1 defeats fighter2 on date1,date2
-    def probability(self, fighter1,fighter2,date1,date2,theta,b):
-        presig=self.presigmoid_value(fighter1,fighter2,date1,date2,theta,b)
-        return self.sigmoid(presig)
+    def probability(self, fighter1,fighter2,date1,date2,theta,b,scaler):
+        presig=self.presigmoid_value(fighter1,fighter2,date1,date2,theta,b,scaler)
+        prob = self.sigmoid(presig)
+        return prob
 
-    def odds(self, fighter1, fighter2, theta, b):
-        date1=(date.today() - relativedelta(months=1)).strftime("%B %d, %Y")
-        date2=(date.today() - relativedelta(months=1)).strftime("%B %d, %Y")
-        p=self.probability(fighter1,fighter2,date1,date2,theta,b)
+    def odds(self, fighter1, fighter2, theta, b, scaler):
+        date_today=(date.today()).strftime("%B %d, %Y")
+        p=self.probability(fighter1,fighter2,date_today,date_today,theta,b,scaler)
         
         if p < 0.5:
             fighterOdds = round(100 / p - 100)
@@ -371,4 +276,6 @@ class FightPredictor:
             print(winner+" wins 9 out of 10 times.")
         elif abs_value >= 0.8:
             print(winner+" wins 10 out of 10 times.")
+            
+
             
