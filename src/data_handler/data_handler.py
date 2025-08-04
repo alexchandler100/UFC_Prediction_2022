@@ -281,7 +281,6 @@ class DataHandler:
         shuffled_rows = []
         for i in range(0, len(ufc_fights_reported_derived_doubled), 2):
             pair = ufc_fights_reported_derived_doubled.iloc[i:i+2]
-            # import ipdb; ipdb.set_trace(context=10)
             if shuffle:
                 pair = pair.sample(frac=1).reset_index(drop=True)  # shuffle within the pair
             shuffled_rows.append(pair)
@@ -715,8 +714,8 @@ class DataHandler:
         # the rest will have total, l2y and l5y versions
         record_stats = [u'wins', u'losses', u'wins_ko', u'wins_sub', u'wins_dec', u'losses_ko', u'losses_sub' u'losses_dec']
         # the following will also have inflicted (inf) and absorbed (abs) versions
-        grappling_event_stats = [u'reversals', u'control', u'sub_attempts']
-        striking_event_stats = [u'knockdowns']
+        grappling_event_stats = [u'reversals', u'control', u'sub_attempts'] # does not include landed/attempted (hence event)
+        striking_event_stats = [u'knockdowns'] # does not include landed/attempted (hence event)
         # the following will also have attempts and landed versions
         grappling_stats = [u'takedowns']
         striking_stats = [u'sig_strikes', u'total_strikes', u'head_strikes', u'body_strikes', u'leg_strikes', u'distance_strikes', u'clinch_strikes', u'ground_strikes']
@@ -771,7 +770,6 @@ class DataHandler:
             stats_to_add_to_main_df = [] # keep track of new columns we are adding to the main df (to avoid highly fragmented df warning)
             new_columns_dict = {}
             
-            # import ipdb; ipdb.set_trace(context=10)  # uncomment to debug
             # add physical stats (age, height, reach, stance) which don't need rolling averages
             physical_stats = [u'age', u'height', u'reach', u'stance']
 
@@ -785,7 +783,6 @@ class DataHandler:
                 age_series = pd.Series([np.nan] * len(localized_df), index=localized_df.index)
             else:
                 dob_date = pd.to_datetime(dob, errors='coerce')
-                # import ipdb; ipdb.set_trace(context=10)  # uncomment to debug
                 age_series = (localized_df.index - dob_date).days / 365.25 # ends up in weird format so we need to convert to a numpy array first
                 age_series = pd.Series(np.array(age_series), index=localized_df.index)
             # add stats to new_columns_dict
@@ -930,6 +927,7 @@ class DataHandler:
                         accuracy.replace(np.nan, 0, inplace=True)  # replace NaN with 0
                         new_columns_dict[new_col_name_accuracy] = accuracy
                         
+            ## SOMETHING BETWEEN HERE AND LINE 990 IS SCREWING UP TAKEDOWNS PER MIN... AND PROBABLY OTHER THINGS TOO
             # STATS COMPUTED FROM THE new_columns_dict
             # add an offensive striking score
             standup_striking_score_stats = [u'sig_strikes', u'total_strikes', u'head_strikes', u'body_strikes', u'leg_strikes', u'distance_strikes', u'clinch_strikes']
@@ -940,8 +938,7 @@ class DataHandler:
             for timeframe in ['all', 'l1y', 'l3y', 'l5y']:
                 new_col_name = f'{timeframe}_offensive_standing_striking_score'
                 stats_to_add_to_main_df.append(new_col_name)
-                # import ipdb; ipdb.set_trace(context=10)  # uncomment to debug
-                offensive_standup_striking_score = new_columns_dict[f'{timeframe}_{inf_abs}_knockdowns_per_min'] * 10 # 10 times more valuable than a attempted strike
+                offensive_standup_striking_score = (new_columns_dict[f'{timeframe}_{inf_abs}_knockdowns_per_min'] * 10).copy() # 10 times more valuable than a attempted strike
                 for stat in standup_striking_score_stats:
                     offensive_standup_striking_score += new_columns_dict[f'{timeframe}_{inf_abs}_{stat}_landed_per_min'] * 3  # 3 times more valuable than a strike attempted
                     offensive_standup_striking_score += new_columns_dict[f'{timeframe}_{inf_abs}_{stat}_attempts_per_min']  # add attempts
@@ -954,7 +951,7 @@ class DataHandler:
             for timeframe in ['all', 'l1y', 'l3y', 'l5y']:
                 new_col_name = f'{timeframe}_defensive_standing_striking_loss'
                 stats_to_add_to_main_df.append(new_col_name)
-                defensive_standup_striking_loss = new_columns_dict[f'{timeframe}_{inf_abs}_knockdowns_per_min'] * 10
+                defensive_standup_striking_loss = (new_columns_dict[f'{timeframe}_{inf_abs}_knockdowns_per_min'] * 10).copy() # MAKE SURE TO COPY!!!
                 for stat in standup_striking_score_stats:
                     defensive_standup_striking_loss += new_columns_dict[f'{timeframe}_{inf_abs}_{stat}_landed_per_min'] * 3 # 3 times more costly than a strike attempted
                     defensive_standup_striking_loss += new_columns_dict[f'{timeframe}_{inf_abs}_{stat}_attempts_per_min']  # add attempts
@@ -970,7 +967,7 @@ class DataHandler:
             for timeframe in ['all', 'l1y', 'l3y', 'l5y']:
                 new_col_name = f'{timeframe}_offensive_grappling_score'
                 stats_to_add_to_main_df.append(new_col_name)
-                offensive_grappling_score = new_columns_dict[f'{timeframe}_{inf_abs}_takedowns_landed_per_min'] 
+                offensive_grappling_score = new_columns_dict[f'{timeframe}_{inf_abs}_takedowns_landed_per_min'].copy() # MAKE SURE TO COPY!!!
                 offensive_grappling_score += new_columns_dict[f'{timeframe}_{inf_abs}_takedowns_attempts_per_min'] / 5 # 5 takedown attempts are worth 1 takedown landed
                 offensive_grappling_score += new_columns_dict[f'{timeframe}_{inf_abs}_sub_attempts_per_min'] 
                 offensive_grappling_score += new_columns_dict[f'{timeframe}_{inf_abs}_reversals_per_min']
@@ -992,8 +989,8 @@ class DataHandler:
             for timeframe in ['all', 'l1y', 'l3y', 'l5y']:
                 new_col_name = f'{timeframe}_defensive_grappling_loss'
                 stats_to_add_to_main_df.append(new_col_name)
-                defensive_grappling_loss = new_columns_dict[f'{timeframe}_{inf_abs}_takedowns_landed_per_min'] 
-                defensive_grappling_loss = new_columns_dict[f'{timeframe}_{inf_abs}_takedowns_landed_per_min'] / 5 # 5 takedown attempts are worth 1 takedown landed
+                defensive_grappling_loss = new_columns_dict[f'{timeframe}_{inf_abs}_takedowns_landed_per_min'].copy() # MAKE SURE TO COPY!!!
+                defensive_grappling_loss += new_columns_dict[f'{timeframe}_{inf_abs}_takedowns_attempts_per_min'] / 5 # 5 takedown attempts are worth 1 takedown landed
                 defensive_grappling_loss += new_columns_dict[f'{timeframe}_{inf_abs}_sub_attempts_per_min'] 
                 defensive_grappling_loss += new_columns_dict[f'{timeframe}_{inf_abs}_reversals_per_min']
                 defensive_grappling_loss += new_columns_dict[f'{timeframe}_{inf_abs}_control_per_min'] / 30  # 30 seconds of control is worth 1 takedown or sub attempt

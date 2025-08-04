@@ -10,6 +10,7 @@ from bs4 import BeautifulSoup
 
 #have to change directory to import functions after April 2022 restructure of folders
 # TODO USE datahandler to save the data
+# TODO INCLUDE DWCS fights from ufcstats.com
 
 from fight_stat_helpers import get_fight_card
 

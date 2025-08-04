@@ -1,4 +1,5 @@
 # import ipdb;ipdb.set_trace(context=10) # uncomment to debug
+import pandas as pd
 
 # local imports
 from data_handler import DataHandler
@@ -11,14 +12,22 @@ dh = DataHandler()
 
 # bring csv files up to date and overwrite the old ones
 print('scraping new statistics from ufcstats.com')
+# TODO THERE IS A PROBLEM IN UPDATING THE DERIVED DOUBLED DF
+# WE END UP WITH THINGS LIKE 8 takedowns per minute averages
 dh.update_data_csvs_and_jsons()
 
 ufc_fights_reported_derived_doubled = dh.get('ufc_fights_reported_derived_doubled')
+# only take fights in the last 10 years
+ufc_fights_reported_derived_doubled['date'] = pd.to_datetime(ufc_fights_reported_derived_doubled['date'])
+date_10_years_ago = pd.Timestamp.now() - pd.DateOffset(years=10)
+ufc_fights_reported_derived_doubled = ufc_fights_reported_derived_doubled[ufc_fights_reported_derived_doubled['date'] >= date_10_years_ago]
+
 ufc_fights_predictive_flattened_diffs = dh.make_ufc_fights_predictive_flattened_diffs(ufc_fights_reported_derived_doubled)
 ufc_fights_winner = dh.clean_ufc_fights_for_winner_prediction(ufc_fights_predictive_flattened_diffs)
+
 fight_predictor = FightPredictor(ufc_fights_winner, dh) # maybe not the best thing to pass in dh here, but it works for now
 print('Training logistic regression model on ufc_fights_winner data')
-fight_predictor.train_logistic_regression_model(random_state=99, scaled=False, C=100) # 44 is the random state we used to get the best model
+fight_predictor.train_logistic_regression_model(random_state=48, scaled=True, C=0.1) # WHY IS PERF SO MUCH WORSE THAN IN THE NOTEBOOK????
 theta, b, scaler = fight_predictor.get_regression_coeffs_intercept_and_scaler()
 
 # use the data handler to update the model coefficients in the json files
@@ -37,7 +46,7 @@ dh.update_card_info()
 card_date, card_title, fights_list = dh.get_next_fight_card()
 prediction_history = dh.get('prediction_history', filetype='json')
 fighter_stats = dh.get('fighter_stats')
-predicted_odds_df = fight_predictor.predict_upcoming_fights(prediction_history, fighter_stats, fights_list, card_date, theta, b, scaler)
+predicted_odds_df = fight_predictor.predict_upcoming_fights(prediction_history, fighter_stats, fights_list, card_date)
 # fill in vegas odds from ufcfights.io
 predicted_odds_df_with_vegas_odds = dh.save_fightoddsio_to_vegas_odds_json_and_merge_with_predictions_df(predicted_odds_df)
 dh.update_vegas_odds(predicted_odds_df_with_vegas_odds)

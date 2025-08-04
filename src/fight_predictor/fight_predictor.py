@@ -7,6 +7,7 @@ import math
 from dateutil.relativedelta import relativedelta
 from sklearn.preprocessing import StandardScaler
 from sklearn import preprocessing
+import sklearn.metrics
 
 from fight_stat_helpers import (
     in_ufc, 
@@ -22,7 +23,7 @@ class FightPredictor:
         self.ufc_fighter_names = set(fighter_names + opponent_names)
         self.scaler = None
         
-    def train_logistic_regression_model(self, random_state=14, scaled=True, C=100):
+    def train_logistic_regression_model(self, random_state=56, scaled=True, C=100):
         r"""
         Train a logistic regression model to predict the winner of a UFC fight based on various statistics.
         This method processes the fight data, cleans the necessary columns, and prepares the data for training.
@@ -39,74 +40,45 @@ class FightPredictor:
         # TODO TRY XGBOOST AND RANDOM FOREST # TODO ALSO PREDICT METHOD OF VICTORY
                 
         # got 64 % on a test set
-        self.amazing_feature_set = [
-        # 'l5y_overall_fighter_score_diff', # VIF = 10 (no change)
-        # physical
+        self.amazing_feature_set =  [
         'age_diff',
         'reach_diff',
-        'height_diff', # added by instinct and it raised test model score
         'l5y_wins_diff',
-        'l1y_wins_sub_diff',
-        'l1y_wins_ko_diff',
-        'l3y_wins_ko_diff',
-        'all_wins_ko_diff',
+        'l5y_losses_ko_diff',
+        'all_wins_wins_diff',
         'l5y_wins_wins_diff',
-        # 'all_wins_wins_diff',
-        'l3y_losses_dec_diff',
+        'l5y_losses_losses_diff',
         'all_losses_losses_diff',
-        'l1y_losses_losses_diff',
-        # punch stats
-        'l1y_inf_clinch_strikes_accuracy_diff',
-        'all_inf_distance_strikes_accuracy_diff', # VIF = 4 (removal decreased test model score)
-        'all_inf_total_strikes_attempts_per_min_diff',
-        'l1y_inf_clinch_strikes_landed_per_min_diff',
-        'all_inf_clinch_strikes_accuracy_diff',
-        'l5y_inf_knockdowns_per_min_diff',
-        'l3y_inf_head_strikes_accuracy_diff',
-        'l5y_inf_body_strikes_accuracy_diff',
-        'l3y_inf_distance_strikes_landed_per_min_diff',
-        'l1y_inf_total_strikes_accuracy_diff',
+        'l3y_losses_sub_diff',
+        'l1y_wins_sub_diff',
+        'l1y_wins_diff',
+        # 'all_wins_diff',
+        'l3y_fight_math_diff',
+        'all_inf_control_per_min_diff',
+        'all_inf_distance_strikes_accuracy_diff',
+        'l1y_inf_takedowns_landed_per_min_diff',
+        # 'l1y_inf_takedowns_attempts_per_min_diff',
+        'l3y_inf_takedowns_attempts_per_min_diff',
+        'l3y_inf_ground_strikes_attempts_per_min_diff',
+        'all_inf_body_strikes_accuracy_diff',
         'l1y_inf_body_strikes_attempts_per_min_diff',
-        'all_abs_head_strikes_accuracy_diff',
-        'l3y_abs_body_strikes_accuracy_diff',
-        'l3y_abs_total_strikes_attempts_per_min_diff',
-        'l1y_abs_clinch_strikes_attempts_per_min_diff',
-        'all_abs_clinch_strikes_accuracy_diff',
-        'l3y_abs_leg_strikes_attempts_per_min_diff',
-        'l1y_abs_body_strikes_attempts_per_min_diff',
-        'l5y_abs_body_strikes_landed_per_min_diff',
-        # grappling stats
-        'all_inf_sub_attempts_per_min_diff',
-        'l1y_inf_ground_strikes_attempts_per_min_diff',
-        'l5y_inf_takedowns_attempts_per_min_diff',
-        'l3y_inf_takedowns_accuracy_diff',
-        'l3y_inf_takedowns_landed_per_min_diff', # VIF = 4
-        'l1y_abs_ground_strikes_landed_per_min_diff',
-        'all_abs_control_per_min_diff',
+        'l5y_inf_body_strikes_attempts_per_min_diff',
+        'all_inf_clinch_strikes_landed_per_min_diff',
+        # 'l5y_inf_clinch_strikes_attempts_per_min_diff',
+        'l1y_inf_total_strikes_landed_per_min_diff',
+        'l1y_abs_knockdowns_per_min_diff',
+        'l1y_abs_takedowns_attempts_per_min_diff',
         'all_abs_takedowns_attempts_per_min_diff',
-        'l3y_abs_takedowns_landed_per_min_diff',
-        # higher order stats
-        'l5y_fight_math_diff',
-        'all_offensive_grappling_score_diff',
-        'all_defensive_grappling_loss_diff',
-        'l3y_defensive_grappling_loss_diff',
-        # 'all_abs_leg_strikes_attempts_per_min_diff', # VIF = 8 (removal increased test model score)
-        # 'l3y_inf_sub_attempts_per_min_diff', # VIF = 16
-        # 'l1y_inf_body_strikes_landed_per_min_diff', # VIF = 12 (removal increased test model score)
-        # 'l1y_abs_total_strikes_attempts_per_min_diff', # VIF = 4
-        # 'l5y_defensive_grappling_loss_diff', # VIF = 9 (removal decreased test model score)
-        # 'l3y_overall_fighter_score_diff', # VIF = 24 (removal decreased test model score)
-        # 'all_inf_head_strikes_accuracy_diff', # VIF = 15 (removal increased test model score)
-        # 'l3y_inf_sig_strikes_attempts_per_min_diff', # VIF = 16 (removal increased test model score)
-        # 'l3y_inf_body_strikes_accuracy_diff', # VIF = 19 (removal decreased test model score)
-        # 'l3y_abs_control_per_min_diff', # VIF = 8 (removal increased test model score)
-        # 'all_abs_sig_strikes_accuracy_diff', # VIF = 16 (removal decreased test model score)
-        # 'l1y_abs_clinch_strikes_landed_per_min_diff', # VIF = 19  (removal decreased test model score)
-        # 'l3y_abs_body_strikes_attempts_per_min_diff', # VIF = 8 (removal decreased test model score)
-        # 'l3y_abs_body_strikes_landed_per_min_diff', # VIF = 31 (removal increased test model score)
-        # 'l1y_inf_distance_strikes_accuracy_diff', # VIF = 6 (no change)
-        # 'l3y_offensive_grappling_score_diff' # VIF = inf (removal increased test model score)
+        'l3y_abs_head_strikes_accuracy_diff',
+        'l1y_abs_body_strikes_accuracy_diff',
+        'l3y_abs_body_strikes_accuracy_diff',
+        # 'l1y_abs_clinch_strikes_accuracy_diff',
+        'l3y_abs_clinch_strikes_landed_per_min_diff',
+        'l3y_abs_clinch_strikes_accuracy_diff',
         ]
+        
+        # TODO FIGURE OUT WHY PERF IS SO MUCH WORSE WHEN WE do it here versus in the notebook 
+        # C:\Users\Alex\OneDrive\Documents\GitHub\UFC_Prediction_2022\src\models\notebooks\Exploratory\FeatureSelection_REMOVE_DERIVED_SCORES.ipynb
 
 
         ufc_fights_df = ufc_fights_winner[self.amazing_feature_set]
@@ -121,7 +93,7 @@ class FightPredictor:
             )
     
     
-    def find_regression_coeffs(self, X, y, _max_iter=20000, random_state=14, scaled=True, C=0.1):
+    def find_regression_coeffs(self, X, y, _max_iter=30000, random_state=14, scaled=True, C=0.1):
         # do another split
         from sklearn.model_selection import train_test_split
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=random_state)
@@ -139,16 +111,20 @@ class FightPredictor:
             X_train_scaled = X_train
             X_test_scaled = X_test
         best_model.fit(X_train_scaled, y_train)
-
+        
         # evaluate the model on the training set
         train_score = best_model.score(X_train_scaled, y_train)
-
-        print(f'Train set accuracy: {train_score}')
+        print(f'Training set size: {X_train.shape} accuracy: {train_score}')
 
         # evaluate the model on the test set
         test_score = best_model.score(X_test_scaled, y_test)
-        print(f'Test set accuracy: {test_score} \n')
+        print(f'Test set size: {X_test.shape} accuracy: {test_score}')
         
+        # get the neg log loss score of the test set and convert it to a probability
+        y_proba_test = best_model.predict_proba(X_test_scaled)
+        log_loss = sklearn.metrics.log_loss(y_test, y_proba_test)
+        print(f'Test set neg log loss: {-log_loss}. Average probability to observe data given model: {np.exp(-log_loss)}')
+    
         theta = list(best_model.coef_[0])
         b = best_model.intercept_[0]
         
@@ -165,9 +141,6 @@ class FightPredictor:
         fighter_stats:pd.DataFrame, 
         fights_list:list, 
         card_date:str, 
-        theta, 
-        b, 
-        scaler
         ):
         vegas_odds_col_names = list(prediction_history.columns)
         vegas_odds_col_values = [['' for _ in range(len(fights_list))] for _ in range(len(vegas_odds_col_names))]
@@ -186,16 +159,20 @@ class FightPredictor:
             fighter=vegas_odds['fighter name'][i]
             opponent=vegas_odds['opponent name'][i]
             if in_ufc(fighter, fighter_stats) and in_ufc(opponent, fighter_stats):
-                odds_calc = self.odds(fighter,opponent,theta,b,scaler)
+                derived_doubled_tuple = self.get_ufc_fights_reported_derived_doubled_for_upcoming_fight(fighter, opponent, day1=pd.to_datetime(card_date), day2=pd.to_datetime(card_date))
+                diff_tup = self.ufc_prediction_tuple(derived_doubled_tuple)
+                diffless_feature_set = [feature.replace('_diff','') for feature in self.amazing_feature_set]
+                derived_doubled_tuple_localized = derived_doubled_tuple[diffless_feature_set]
+                # make a bokeh plot to visualize the prediction in a html file viewable on the website
+                visualize_prediction_bokeh(fighter, opponent, self.theta, card_date, derived_doubled_tuple_localized, diff_tup)
+                odds_calc = self.odds(diff_tup)
                 print('predicting: '+fighter,'versus '+opponent,'.... '+str(odds_calc))
                 vegas_odds.loc[i, 'predicted fighter odds']=odds_calc[0]
                 vegas_odds.loc[i, 'predicted opponent odds']=odds_calc[1]
                 
         return vegas_odds
-            
-    #I've defined this in such a way to predict what happens when fighter1 in their day1 version fights fighter2
-    #in their day2 version. Meaning we could compare for example 2014 Tyron Woodley to 2019 Colby Covington
-    def ufc_prediction_tuple(self, fighter1,fighter2,day1=date.today(),day2=date.today()):
+    
+    def get_ufc_fights_reported_derived_doubled_for_upcoming_fight(self, fighter1, fighter2, day1=date.today(), day2=date.today()):
         new_rows_dict = {
             'fighter':[fighter1, fighter2], 
             'opponent':[fighter2, fighter1], 
@@ -206,8 +183,16 @@ class FightPredictor:
             }
         new_rows = pd.DataFrame(new_rows_dict)
         dh = self.dh
+        # check if anthony hernandez is one of the fighters (TO DEBUG SPECIFIC FIGHTERS)
+        # if fighter1 == 'Anthony Hernandez' or fighter2 == 'Anthony Hernandez':
+        #     import ipdb;ipdb.set_trace(context=10)
         derived_doubled_tuple = dh.make_derived_doubled_vector_for_fight(new_rows)
-        # now make the predictive flattened diffs
+        return derived_doubled_tuple
+            
+    #I've defined this in such a way to predict what happens when fighter1 in their day1 version fights fighter2
+    #in their day2 version. Meaning we could compare for example 2014 Tyron Woodley to 2019 Colby Covington
+    def ufc_prediction_tuple(self, derived_doubled_tuple):
+        dh = self.dh
         ufc_fights_predictive_flattened_diffs = dh.make_ufc_fights_predictive_flattened_diffs(derived_doubled_tuple, shuffle=False)
         prediction_tuple = ufc_fights_predictive_flattened_diffs[self.amazing_feature_set]
         return prediction_tuple
@@ -218,16 +203,14 @@ class FightPredictor:
     # x*theta+b. If the value is >=0 its a win and <=0 its a loss. Distance from zero gives indication of
     # how likely the outcome is.
 
-    def presigmoid_value(self, fighter1,fighter2,date1,date2,theta,b,scaler):
-        tup = self.ufc_prediction_tuple(fighter1,fighter2,date1,date2)
-        if scaler:
-            tup = scaler.transform(tup)
+    def presigmoid_value(self, diff_tup):
+        if self.scaler:
+            diff_tup = self.scaler.transform(diff_tup)
             
-        value = np.dot(tup, theta)
-        presig_value = value + b
+        value = np.dot(diff_tup, self.theta)
+        presig_value = value + self.b
         p = self.sigmoid(presig_value[0])
         
-        visualize_prediction_bokeh(fighter1, fighter2, theta, date1, tup, p)
         return presig_value
 
 
@@ -236,14 +219,13 @@ class FightPredictor:
         return sig
 
     #returns the probability that fighter1 defeats fighter2 on date1,date2
-    def probability(self, fighter1,fighter2,date1,date2,theta,b,scaler):
-        presig=self.presigmoid_value(fighter1,fighter2,date1,date2,theta,b,scaler)
+    def probability(self, diff_tup):
+        presig=self.presigmoid_value(diff_tup)
         prob = self.sigmoid(presig)
         return prob
 
-    def odds(self, fighter1, fighter2, theta, b, scaler):
-        date_today=(date.today()).strftime("%B %d, %Y")
-        p=self.probability(fighter1,fighter2,date_today,date_today,theta,b,scaler)
+    def odds(self, diff_tup):
+        p=self.probability(diff_tup)
         
         if p < 0.5:
             fighterOdds = round(100 / p - 100)
@@ -253,29 +235,5 @@ class FightPredictor:
             fighterOdds = round(1 / (1 / p - 1) * 100)
             opponentOdds = round(100 / (1 - p) - 100)
             return ['-' + str(fighterOdds), '+' + str(opponentOdds)]
-
-    def give_odds(self, fighter1, fighter2, date1, date2, theta, b):
-        value = self.presigmoid_value(fighter1, fighter2, date1, date2, theta, b)
-        value2 = self.presigmoid_value(fighter2, fighter1, date2, date1, theta, b)
-        
-        if value - value2 >= 0:
-            winner = fighter1
-        else:
-            winner = fighter2
-            
-        value2 = self.presigmoid_value(fighter2, fighter1, date2, date1, theta, b)
-        abs_value = (abs(value) + abs(value2)) / 2
-        
-        if abs_value >=0 and abs_value <= 0.2:
-            print(winner+" wins a little over 5 times out of 10 times.")
-        elif abs_value >= 0.2 and abs_value <= 0.4:
-            print(winner+" wins 6 out of 10 times.")
-        elif abs_value >= 0.4 and abs_value <= 0.6:
-            print(winner+" wins 7 out of 10 times.")
-        elif abs_value >= 0.6 and abs_value <= 0.8:
-            print(winner+" wins 9 out of 10 times.")
-        elif abs_value >= 0.8:
-            print(winner+" wins 10 out of 10 times.")
-            
 
             

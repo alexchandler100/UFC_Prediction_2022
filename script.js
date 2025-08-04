@@ -95,6 +95,14 @@ function americanToImpliedProb(odds) {
   }
 }
 
+function betPayout(amount, odds) {
+  if (odds > 0) {
+    return amount * (odds / 100);
+  } else {
+    return amount * (100 / -odds) ;
+  }
+}
+
 function computeKelly() {
   const fighterPred = parseFloat(document.getElementById('fighterPred').value);
   const opponentPred = parseFloat(document.getElementById('opponentPred').value);
@@ -870,6 +878,7 @@ setTimeout(() => { //timeout because other data needs to load first (probably be
     tr.appendChild(td4);
     tr.appendChild(td5);
     tr.appendChild(td6);
+    // TODO use same_name function to match fighter names else we miss some
     fighter_stats = fighter_data[fighter]
     opponent_stats = fighter_data[opponent]
     if (!fighter_stats) {
@@ -916,18 +925,45 @@ setTimeout(() => { //timeout because other data needs to load first (probably be
     
     // make the fighter and opponent names bold and gold if they have higher expected value
     // than the opponent and fighter respectively
+    // TODO indicate potential payout
     let evPickColor = '#85BB65'; // default color for expected value text (money green)
     let coloredBrText = '';
     if (fighterBankrollPercentage && opponentBankrollPercentage) { // check if both expected values are defined
       if (fighterBankrollPercentage > opponentBankrollPercentage && fighterBankrollPercentage > 0) { //if fighter has higher expected value
         tr.cells.item(4).innerHTML = `${bestFighterBookie}<br>${bestFighterBookieOddsOnFighter}, ${bestFighterBookieOddsOnOpponent}`;
-        coloredBrText = `<span style="color:${evPickColor}">${fighterBankrollPercentage}</span><br>${fighter}`;
+        if (parseInt(bestFighterBookieOddsOnFighter) < 0) { //if fighter is favorite
+          fav_dog = 'fav'
+          fav_dog_color = 'gold'
+        } else {
+          fav_dog = 'dog'
+          fav_dog_color = 'white'
+        }
+        payout = betPayout(fighterBankrollPercentage, parseInt(bestFighterBookieOddsOnFighter)).toFixed(2)
+        coloredBrText = `${fighterBankrollPercentage} -> <span style="color:${evPickColor}">${payout}</span><br>${fighter} (<span style="color:${fav_dog_color}">${fav_dog}</span>)`;
       } else if (opponentBankrollPercentage > fighterBankrollPercentage && opponentBankrollPercentage > 0) { //if opponent has higher expected value
         tr.cells.item(4).innerHTML = `${bestOpponentBookie}<br>${bestOpponentBookieOddsOnFighter}, ${bestOpponentBookieOddsOnOpponent}`;
-        coloredBrText = `<span style="color:${evPickColor}">${opponentBankrollPercentage}</span><br>${opponent}`;
+        if (parseInt(bestOpponentBookieOddsOnOpponent) < 0) { //if opponent is favorite
+          fav_dog = 'fav'
+          fav_dog_color = 'gold'
+        } else {
+          fav_dog = 'dog'
+          fav_dog_color = 'white'
+        }
+        payout = betPayout(opponentBankrollPercentage, parseInt(bestOpponentBookieOddsOnOpponent)).toFixed(2)
+        coloredBrText = `${opponentBankrollPercentage} -> <span style="color:${evPickColor}">${payout}</span><br>${opponent} (<span style="color:${fav_dog_color}">${fav_dog}</span>)`;
+
       } else if (fighterBankrollPercentage == opponentBankrollPercentage && fighterBankrollPercentage > 0) { //if both have same expected value
         tr.cells.item(4).innerHTML = `${bestFighterBookie}<br>${bestFighterBookieOddsOnFighter}, ${bestFighterBookieOddsOnOpponent}`;
-        coloredBrText = `<span style="color:${evPickColor}">${fighterBankrollPercentage}</span><br>${fighter}`;
+        if (parseInt(bestFighterBookieOddsOnFighter) < 0) { //if fighter is favorite
+          fav_dog = 'fav'
+          fav_dog_color = 'gold'
+        } else {
+          fav_dog = 'dog'
+          fav_dog_color = 'white'
+        }
+        payout = betPayout(fighterBankrollPercentage, parseInt(bestFighterBookieOddsOnFighter)).toFixed(2)
+        coloredBrText = `${fighterBankrollPercentage} -> <span style="color:${evPickColor}">${payout}</span><br>${fighter} (<span style="color:${fav_dog_color}">${fav_dog}</span>)`;
+
       } else { //if both have negative expected value
         coloredBrText = `0.00`;
       }

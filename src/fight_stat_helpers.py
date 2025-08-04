@@ -498,7 +498,7 @@ def model_test_score(X_train, X_test, features, _max_iter = 20000, scaled=True):
     # get the neg log loss score of the test set and convert it to a probability
     y_proba_test = best_model.predict_proba(X_test_scaled)
     log_loss = sklearn.metrics.log_loss(y_test, y_proba_test)
-    print(f'Test set neg log loss: {-log_loss}. Probability to observe data given model: {np.exp(-log_loss)}')
+    print(f'Test set neg log loss: {-log_loss}. Average probability to observe data given model: {np.exp(-log_loss)}')
 
 #scores a model
 def model_score(dataframe, features, iloc_val = 3200, _max_iter = 2000, scoring='neg_log_loss', scaled=True):
@@ -918,13 +918,17 @@ def get_fight_stats(url, fighter, opponent):
     return fight_stat_df
 
 
-def visualize_prediction_bokeh(fighter, opponent, theta, card_date, tup_scaled, p):
-    df = tup_scaled.T
-    df.columns = ['value']
-    df['value_scaled'] = tup_scaled.T
+def visualize_prediction_bokeh(fighter, opponent, theta, card_date, derived_doubled_tuple, diff_tup):
+    df = diff_tup.T
+    df.columns = ['diff_value_scaled']
+    # import ipdb;ipdb.set_trace(context=10)
+    fighter_values = derived_doubled_tuple.iloc[0,:].T
+    opponent_values = derived_doubled_tuple.iloc[1,:].T
+    df['fighter_value'] = fighter_values.values
+    df['opponent_value'] = opponent_values.values
     df['theta'] = theta
     # df['abs_theta'] = df['theta'].abs()
-    df['contribution'] = df['value_scaled'] * df['theta']
+    df['contribution'] = df['diff_value_scaled'] * df['theta']
     df['abs_contribution'] = df['contribution'].abs()
     # sort by contribution
     df = df.sort_values(by='abs_contribution', ascending=False)
@@ -938,7 +942,7 @@ def visualize_prediction_bokeh(fighter, opponent, theta, card_date, tup_scaled, 
     output_file(html_str)
 
     # Create the figure
-    p = figure(y_range=list(df.index), width=1200, height=600, title=f"{opponent}(p={1-p:.2f}) --vs-- {fighter}(p={p:.2f})",
+    p = figure(y_range=list(df.index), width=1200, height=600, title=f"{opponent} --vs-- {fighter}",
             toolbar_location=None, tools="")
     
     # color bars red when theta is negative, green when positive
@@ -970,7 +974,40 @@ def visualize_prediction_bokeh(fighter, opponent, theta, card_date, tup_scaled, 
     p2.ygrid.grid_line_alpha = 0.3
     p2.xgrid.grid_line_alpha = 0.3
     
+    # make another figure that contains the df as a table
+    from bokeh.models import DataTable, TableColumn
+    columns = [
+        TableColumn(field="index", title="Feature"),
+        TableColumn(field="fighter_value", title=f"{fighter} Value"),
+        TableColumn(field="opponent_value", title=f"{opponent} Value"),
+        TableColumn(field="diff_value_scaled", title="Diff (scaled)"),
+        TableColumn(field="theta", title="Theta"),
+        TableColumn(field="contribution", title="Contribution"),
+        TableColumn(field="abs_contribution", title="Abs Contribution"),
+    ]
+    
+    data_table_source = ColumnDataSource(data=dict(
+        index=df.index,
+        fighter_value=df['fighter_value'],
+        opponent_value=df['opponent_value'],
+        diff_value_scaled=df['diff_value_scaled'],
+        theta=df['theta'],
+        contribution=df['contribution'],
+        abs_contribution=df['abs_contribution'],
+    ))
+    data_table = DataTable(source=data_table_source, columns=columns, width=1200, height=400, index_position=None)
+    # p3 = figure(width=1200, height=400, title="Feature Contributions Table")
+    # p3.add_layout(data_table)
+    # ValueError: failed to validate figure(id='p1103', ...).center: expected an element of List(Instance(Renderer)), got seq with invalid items [DataTable(id='p1097', ...)] 
+    # p3.toolbar.active_drag = None
+    # p3.toolbar.active_scroll = None
+    # p3.toolbar.active_tap = None
+    # p3.xgrid.grid_line_color = None
+    # p3.ygrid.grid_line_color = None
+    # p3.axis.visible = False
+    # p3.outline_line_color = None
+    
 
     # Save to HTML at f'{git_root}/src/content/bokehPlots/
-    save(column(p, Spacer(height=20), p2))
+    save(column(p, Spacer(height=20), p2, Spacer(height=20), data_table))
     print(f'Bokeh plot saved to {html_str}')
