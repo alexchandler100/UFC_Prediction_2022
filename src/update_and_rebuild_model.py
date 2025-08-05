@@ -12,8 +12,6 @@ dh = DataHandler()
 
 # bring csv files up to date and overwrite the old ones
 print('scraping new statistics from ufcstats.com')
-# TODO THERE IS A PROBLEM IN UPDATING THE DERIVED DOUBLED DF
-# WE END UP WITH THINGS LIKE 8 takedowns per minute averages
 dh.update_data_csvs_and_jsons()
 
 ufc_fights_reported_derived_doubled = dh.get('ufc_fights_reported_derived_doubled')

@@ -918,14 +918,15 @@ def get_fight_stats(url, fighter, opponent):
     return fight_stat_df
 
 
-def visualize_prediction_bokeh(fighter, opponent, theta, card_date, derived_doubled_tuple, diff_tup):
-    df = diff_tup.T
+def visualize_prediction_bokeh(fighter, opponent, theta, card_date, derived_doubled_tuple, diff_tup_scaled):
+    df = diff_tup_scaled.T
     df.columns = ['diff_value_scaled']
     # import ipdb;ipdb.set_trace(context=10)
     fighter_values = derived_doubled_tuple.iloc[0,:].T
     opponent_values = derived_doubled_tuple.iloc[1,:].T
     df['fighter_value'] = fighter_values.values
     df['opponent_value'] = opponent_values.values
+    df['diff'] = df['fighter_value'] - df['opponent_value']
     df['theta'] = theta
     # df['abs_theta'] = df['theta'].abs()
     df['contribution'] = df['diff_value_scaled'] * df['theta']
@@ -942,7 +943,7 @@ def visualize_prediction_bokeh(fighter, opponent, theta, card_date, derived_doub
     output_file(html_str)
 
     # Create the figure
-    p = figure(y_range=list(df.index), width=1200, height=600, title=f"{opponent} --vs-- {fighter}",
+    p = figure(y_range=list(df.index), width=1000, height=600, title=f"{opponent} --vs-- {fighter}",
             toolbar_location=None, tools="")
     
     # color bars red when theta is negative, green when positive
@@ -967,7 +968,7 @@ def visualize_prediction_bokeh(fighter, opponent, theta, card_date, derived_doub
     # now sort by theta
     df = df.sort_values(by='theta', ascending=False)
     source2 = ColumnDataSource(data=dict(index=df.index, theta=df['theta']))
-    p2 = figure(y_range=list(df.index), width=1200, height=600, title=f"Theta values for {opponent} and {fighter}",
+    p2 = figure(y_range=list(df.index), width=1000, height=600, title=f"Theta values for {opponent} and {fighter}",
             toolbar_location=None, tools="")
     p2.hbar(y='index', right='theta', height=0.8, source=source2)
     p2.xaxis.axis_label = "Theta values"
@@ -986,6 +987,10 @@ def visualize_prediction_bokeh(fighter, opponent, theta, card_date, derived_doub
         TableColumn(field="abs_contribution", title="Abs Contribution"),
     ]
     
+            
+    # for each feature, if the name ends in _diff, remove the _diff for display purposes
+    df.index = [name[:-5] if name.endswith('_diff') else name for name in df.index]
+    
     data_table_source = ColumnDataSource(data=dict(
         index=df.index,
         fighter_value=df['fighter_value'],
@@ -995,8 +1000,47 @@ def visualize_prediction_bokeh(fighter, opponent, theta, card_date, derived_doub
         contribution=df['contribution'],
         abs_contribution=df['abs_contribution'],
     ))
-    data_table = DataTable(source=data_table_source, columns=columns, width=1200, height=400, index_position=None)
-    # p3 = figure(width=1200, height=400, title="Feature Contributions Table")
+    data_table = DataTable(source=data_table_source, columns=columns, width=1000, height=400, index_position=None)#, autosize_mode='fit_columns')
+    # add columns sums to data table 
+    sums = {
+        'index': 'Total',
+        'fighter_value': df['fighter_value'].sum(),
+        'opponent_value': df['opponent_value'].sum(),
+        'diff_value_scaled': df['diff_value_scaled'].sum(),
+        'theta': df['theta'].sum(),
+        'contribution': df['contribution'].sum(),
+        'abs_contribution': df['abs_contribution'].sum(),
+    }
+    sums_source = ColumnDataSource(data=dict(
+        index=[sums['index']],
+        fighter_value=[sums['fighter_value']],
+        opponent_value=[sums['opponent_value']],
+        diff_value_scaled=[sums['diff_value_scaled']],
+        theta=[sums['theta']],
+        contribution=[sums['contribution']],
+        abs_contribution=[sums['abs_contribution']],
+    ))
+    # add a row to the data table for the sums
+    from bokeh.models import Div
+    div = Div(text=f"<b>Total Contribution: {sums['contribution']:.4f}</b>", width=1000, height=30)
+    data_table_source.stream(sums_source.data)
+    
+    # format table so all floats have 3 decimal places
+    from bokeh.models import NumberFormatter
+    for col in columns:
+        if col.field in ['fighter_value', 'opponent_value', 'diff_value_scaled', 'theta', 'contribution', 'abs_contribution']:
+            col.formatter = NumberFormatter(format="0.000")
+            
+    # fit columns to width of widest content 
+    # data_table.width = 1500
+    # data_table.height = 400
+    
+
+    
+    
+    
+    
+    # p3 = figure(width=1000, height=400, title="Feature Contributions Table")
     # p3.add_layout(data_table)
     # ValueError: failed to validate figure(id='p1103', ...).center: expected an element of List(Instance(Renderer)), got seq with invalid items [DataTable(id='p1097', ...)] 
     # p3.toolbar.active_drag = None

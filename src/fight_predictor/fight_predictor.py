@@ -99,7 +99,7 @@ class FightPredictor:
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=random_state)
         # see how the new features do on the test set we already made
         # train the model with the best features
-        best_model = LogisticRegression(solver='lbfgs', max_iter=_max_iter, C=C, penalty='l2')#, fit_intercept=False)
+        best_model = LogisticRegression(solver='lbfgs', max_iter=_max_iter, C=C, penalty='l2', fit_intercept=False)
         if scaled:
             print('Scaling features')
             scaler = StandardScaler()
@@ -164,7 +164,11 @@ class FightPredictor:
                 diffless_feature_set = [feature.replace('_diff','') for feature in self.amazing_feature_set]
                 derived_doubled_tuple_localized = derived_doubled_tuple[diffless_feature_set]
                 # make a bokeh plot to visualize the prediction in a html file viewable on the website
-                visualize_prediction_bokeh(fighter, opponent, self.theta, card_date, derived_doubled_tuple_localized, diff_tup)
+                # make scaled diff tup 
+                if self.scaler:
+                    diff_tup_scaled = self.scaler.transform(diff_tup)
+                    diff_tup_scaled = pd.DataFrame(diff_tup_scaled, columns=diff_tup.columns, index=diff_tup.index)
+                visualize_prediction_bokeh(fighter, opponent, self.theta, card_date, derived_doubled_tuple_localized, diff_tup_scaled)
                 odds_calc = self.odds(diff_tup)
                 print('predicting: '+fighter,'versus '+opponent,'.... '+str(odds_calc))
                 vegas_odds.loc[i, 'predicted fighter odds']=odds_calc[0]
