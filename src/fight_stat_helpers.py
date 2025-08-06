@@ -1029,7 +1029,7 @@ def visualize_prediction_bokeh(fighter, opponent, theta, card_date, derived_doub
     from bokeh.models import NumberFormatter
     for col in columns:
         if col.field in ['fighter_value', 'opponent_value', 'diff_value_scaled', 'theta', 'contribution', 'abs_contribution']:
-            col.formatter = NumberFormatter(format="0.000")
+            col.formatter = NumberFormatter(format="0.0000")
             
     # fit columns to width of widest content 
     # data_table.width = 1500

@@ -602,6 +602,7 @@ class DataHandler:
             
             # if a prediction was made, check if the fight actually happened and then check if the prediction / bet was correct / won
             # TODO this is slow but sort of necessary if we need to add multiple cards at the same time
+            import ipdb;ipdb.set_trace(context=10)
             relevant_fights = ufc_fights_reported_doubled[pd.to_datetime(ufc_fights_reported_doubled.index) == card_date]
             print(f'searching through {relevant_fights.shape[0]//2} confirmed fights on {str(card_date).split(" ")[0]} for {row1["fighter name"]} vs {row1["opponent name"]}')
             

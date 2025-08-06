@@ -939,7 +939,7 @@ setTimeout(() => { //timeout because other data needs to load first (probably be
           fav_dog_color = 'white'
         }
         payout = betPayout(fighterBankrollPercentage, parseInt(bestFighterBookieOddsOnFighter)).toFixed(2)
-        coloredBrText = `${fighterBankrollPercentage} -> <span style="color:${evPickColor}">${payout}</span><br>${fighter} (<span style="color:${fav_dog_color}">${fav_dog}</span>)`;
+        coloredBrText = `<span class="clickable">${fighterBankrollPercentage}</span>`;
       } else if (opponentBankrollPercentage > fighterBankrollPercentage && opponentBankrollPercentage > 0) { //if opponent has higher expected value
         tr.cells.item(4).innerHTML = `${bestOpponentBookie}<br>${bestOpponentBookieOddsOnFighter}, ${bestOpponentBookieOddsOnOpponent}`;
         if (parseInt(bestOpponentBookieOddsOnOpponent) < 0) { //if opponent is favorite
@@ -950,7 +950,7 @@ setTimeout(() => { //timeout because other data needs to load first (probably be
           fav_dog_color = 'white'
         }
         payout = betPayout(opponentBankrollPercentage, parseInt(bestOpponentBookieOddsOnOpponent)).toFixed(2)
-        coloredBrText = `${opponentBankrollPercentage} -> <span style="color:${evPickColor}">${payout}</span><br>${opponent} (<span style="color:${fav_dog_color}">${fav_dog}</span>)`;
+        coloredBrText = `<span class="clickable">${opponentBankrollPercentage}</span> -> <span style="color:${evPickColor}">${payout}</span><br>${opponent} (<span style="color:${fav_dog_color}">${fav_dog}</span>)`;
 
       } else if (fighterBankrollPercentage == opponentBankrollPercentage && fighterBankrollPercentage > 0) { //if both have same expected value
         tr.cells.item(4).innerHTML = `${bestFighterBookie}<br>${bestFighterBookieOddsOnFighter}, ${bestFighterBookieOddsOnOpponent}`;
@@ -962,7 +962,7 @@ setTimeout(() => { //timeout because other data needs to load first (probably be
           fav_dog_color = 'white'
         }
         payout = betPayout(fighterBankrollPercentage, parseInt(bestFighterBookieOddsOnFighter)).toFixed(2)
-        coloredBrText = `${fighterBankrollPercentage} -> <span style="color:${evPickColor}">${payout}</span><br>${fighter} (<span style="color:${fav_dog_color}">${fav_dog}</span>)`;
+        coloredBrText = `<span class="clickable">${fighterBankrollPercentage}</span> -> <span style="color:${evPickColor}">${payout}</span><br>${fighter} (<span style="color:${fav_dog_color}">${fav_dog}</span>)`;
 
       } else { //if both have negative expected value
         coloredBrText = `0.00`;
@@ -970,6 +970,34 @@ setTimeout(() => { //timeout because other data needs to load first (probably be
     }
 
     tr.cells.item(5).innerHTML = coloredBrText;
+
+    var item = tr.cells.item(5);
+    const clickable = item.querySelector('.clickable');
+    if (clickable != null){
+      clickable.addEventListener('click', function(event) {
+        clickedSpan = event.target;
+
+        // get the parent <td> of the span
+        const cell = clickedSpan.closest('td');
+        const row = cell.closest('tr');
+        const cells = row.querySelectorAll('td');
+        const fighterName = cells[0].innerText;
+        const opponentName = cells[1].innerText;
+        // populate the active fighter and opponent names
+        const d = new Date();
+        let month = d.getMonth();
+        let year = d.getFullYear();
+        var months = ["January", "February", 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', "November", 'December']
+        document.getElementById('select1').value = fighterName;
+        document.getElementById('select2').value = opponentName;
+        document.getElementById('f1selectmonth').value = months[month]
+        document.getElementById('f1selectyear').value = year
+        document.getElementById('f2selectmonth').value = months[month]
+        document.getElementById('f2selectyear').value = year
+        selectFighterAndDate('select1', 'name1', 'f1selectmonth', 'month1', 'f1selectyear', 'year1')
+        selectFighterAndDate('select2', 'name2', 'f2selectmonth', 'month2', 'f2selectyear', 'year2')
+      })
+    }
 
     tr.cells.item(0).style.backgroundColor = "#323232";
     tr.cells.item(1).style.backgroundColor = "#323232";
