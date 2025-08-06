@@ -950,7 +950,7 @@ setTimeout(() => { //timeout because other data needs to load first (probably be
           fav_dog_color = 'white'
         }
         payout = betPayout(opponentBankrollPercentage, parseInt(bestOpponentBookieOddsOnOpponent)).toFixed(2)
-        coloredBrText = `<span class="clickable">${opponentBankrollPercentage}</span> -> <span style="color:${evPickColor}">${payout}</span><br>${opponent} (<span style="color:${fav_dog_color}">${fav_dog}</span>)`;
+        coloredBrText = `<span class="clickable">coloredBrText = `${fighterBankrollPercentage} -> <span style="color:${evPickColor}">${payout}</span><br>${fighter} (<span style="color:${fav_dog_color}">${fav_dog}</span>)`;</span> -> <span style="color:${evPickColor}">${payout}</span><br>${opponent} (<span style="color:${fav_dog_color}">${fav_dog}</span>)`;
 
       } else if (fighterBankrollPercentage == opponentBankrollPercentage && fighterBankrollPercentage > 0) { //if both have same expected value
         tr.cells.item(4).innerHTML = `${bestFighterBookie}<br>${bestFighterBookieOddsOnFighter}, ${bestFighterBookieOddsOnOpponent}`;
