@@ -928,44 +928,46 @@ setTimeout(() => { //timeout because other data needs to load first (probably be
     // TODO indicate potential payout
     let evPickColor = '#85BB65'; // default color for expected value text (money green)
     let coloredBrText = '';
+    let fav_color = '#6cddffff';
+    let dog_color = '#e9b24cff';
     if (fighterBankrollPercentage && opponentBankrollPercentage) { // check if both expected values are defined
       if (fighterBankrollPercentage > opponentBankrollPercentage && fighterBankrollPercentage > 0) { //if fighter has higher expected value
         tr.cells.item(4).innerHTML = `${bestFighterBookie}<br>${bestFighterBookieOddsOnFighter}, ${bestFighterBookieOddsOnOpponent}`;
         if (parseInt(bestFighterBookieOddsOnFighter) < 0) { //if fighter is favorite
           fav_dog = 'fav'
-          fav_dog_color = 'gold'
+          fav_dog_color = fav_color
         } else {
           fav_dog = 'dog'
-          fav_dog_color = 'white'
+          fav_dog_color = dog_color
         }
         payout = betPayout(fighterBankrollPercentage, parseInt(bestFighterBookieOddsOnFighter)).toFixed(2)
-        coloredBrText = `<span class="clickable">${fighterBankrollPercentage}</span>`;
+        coloredBrText = `<span class="clickable">${fighterBankrollPercentage}</span> -> <span style="color:${evPickColor}">${payout}</span><br>${fighter} (<span style="color:${fav_dog_color}">${fav_dog}</span>)`;
       } else if (opponentBankrollPercentage > fighterBankrollPercentage && opponentBankrollPercentage > 0) { //if opponent has higher expected value
         tr.cells.item(4).innerHTML = `${bestOpponentBookie}<br>${bestOpponentBookieOddsOnFighter}, ${bestOpponentBookieOddsOnOpponent}`;
         if (parseInt(bestOpponentBookieOddsOnOpponent) < 0) { //if opponent is favorite
           fav_dog = 'fav'
-          fav_dog_color = 'gold'
+          fav_dog_color = fav_color
         } else {
           fav_dog = 'dog'
-          fav_dog_color = 'white'
+          fav_dog_color = dog_color
         }
         payout = betPayout(opponentBankrollPercentage, parseInt(bestOpponentBookieOddsOnOpponent)).toFixed(2)
-        coloredBrText = `<span class="clickable">coloredBrText = `${fighterBankrollPercentage} -> <span style="color:${evPickColor}">${payout}</span><br>${fighter} (<span style="color:${fav_dog_color}">${fav_dog}</span>)`;</span> -> <span style="color:${evPickColor}">${payout}</span><br>${opponent} (<span style="color:${fav_dog_color}">${fav_dog}</span>)`;
+        coloredBrText = `<span class="clickable">${opponentBankrollPercentage}</span> -> <span style="color:${evPickColor}">${payout}</span><br>${opponent} (<span style="color:${fav_dog_color}">${fav_dog}</span>)`;
 
       } else if (fighterBankrollPercentage == opponentBankrollPercentage && fighterBankrollPercentage > 0) { //if both have same expected value
         tr.cells.item(4).innerHTML = `${bestFighterBookie}<br>${bestFighterBookieOddsOnFighter}, ${bestFighterBookieOddsOnOpponent}`;
         if (parseInt(bestFighterBookieOddsOnFighter) < 0) { //if fighter is favorite
           fav_dog = 'fav'
-          fav_dog_color = 'gold'
+          fav_dog_color = fav_color
         } else {
           fav_dog = 'dog'
-          fav_dog_color = 'white'
+          fav_dog_color = dog_color
         }
         payout = betPayout(fighterBankrollPercentage, parseInt(bestFighterBookieOddsOnFighter)).toFixed(2)
         coloredBrText = `<span class="clickable">${fighterBankrollPercentage}</span> -> <span style="color:${evPickColor}">${payout}</span><br>${fighter} (<span style="color:${fav_dog_color}">${fav_dog}</span>)`;
 
       } else { //if both have negative expected value
-        coloredBrText = `0.00`;
+        coloredBrText = `<span class="clickable">${0.0}</span>`;
       }
     }
 
