@@ -499,6 +499,8 @@ def model_test_score(X_train, X_test, features, _max_iter = 20000, scaled=True):
     y_proba_test = best_model.predict_proba(X_test_scaled)
     log_loss = sklearn.metrics.log_loss(y_test, y_proba_test)
     print(f'Test set neg log loss: {-log_loss}. Average probability to observe data given model: {np.exp(-log_loss)}')
+    
+    return train_score, test_score
 
 #scores a model
 def model_score(dataframe, features, iloc_val = 3200, _max_iter = 2000, scoring='neg_log_loss', scaled=True):
