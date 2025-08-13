@@ -98,7 +98,7 @@
         <!--
     <img src="neural.png" />
    -->
-        Deep Learning UFC Fight Predictor
+        UFC Fight Predictor
         <!--
       <img style = "transform: rotate(180deg);" src="neural2.png"/>
       -->
@@ -117,9 +117,9 @@
         <article>
           <!--
           used to use colorize class but switched to CNN stylization
-          <img class="colorize" style='border: 10px solid #555' id=fighter2pic src="" alt="" height="350" width="350">
+          <img class="colorize" style='border: 10px solid #555' id=rcFighterPic src="" alt="" height="350" width="350">
          -->
-          <img style='display:none; border: 10px solid #212121' id=fighter1pic src="" alt="" height="350" width="350">
+          <img style='display:none; border: 10px solid #212121' id=rcFighterPic src="" alt="" height="350" width="350">
         </article>
 
       </center>
@@ -133,9 +133,9 @@
         <article>
           <!--
           used to use colorize class but switched to CNN stylization
-          <img class="colorize" style='border: 10px solid #555' id=fighter2pic src="" alt="" height="350" width="350">
+          <img class="colorize" style='border: 10px solid #555' id=rcFighterPic src="" alt="" height="350" width="350">
          -->
-          <img style='display:none; border: 10px solid #212121' id=fighter2pic src="" alt="" height="350" width="350">
+          <img style='display:none; border: 10px solid #212121' id=bcFighterPic src="" alt="" height="350" width="350">
         </article>
       </center>
     </aside>
@@ -164,13 +164,12 @@
       <center>
         <article>
           <p>
-            <input onfocus=this.value='' id=select1 type="text" list="fighters" value=""><br><br>
-            <input onfocus=this.value='' type="text2" id=f1selectmonth list="months" value="March"> <input
-              onfocus=this.value='' type="text3" id=f1selectyear list="years" value=2022><br>
+            <input onfocus=this.value='' id=rc type="text" list="fighters" value=""><br><br>
+            <input onfocus=this.value='' type="text2" id=selectMonth_rc list="months" value="March"> <input
+              onfocus=this.value='' type="text3" id=selectYear_rc list="years" value=2022><br>
           </p>
           <button style="font-variant: small-caps; margin-top:.3cm" class="button button1"
-            onclick="selectFighterAndDate('select1','name1','f1selectmonth','month1','f1selectyear','year1')"> Confirm
-            Red Corner</button>
+            onclick="selectFighterAndDate('rc')"> Confirm Red Corner</button>
         </article>
       </center>
     </main>
@@ -179,13 +178,12 @@
       <center>
         <article>
           <p>
-            <input onfocus=this.value='' type="text" id=select2 list="fighters" value=""><br><br>
-            <input onfocus=this.value='' type="text2" id=f2selectmonth list="months" value="March"> <input
-              onfocus=this.value='' type="text3" id=f2selectyear list="years" value=2022><br>
+            <input onfocus=this.value='' id=bc type="text" list="fighters" value=""><br><br>
+            <input onfocus=this.value='' type="text2" id=selectMonth_bc list="months" value="March"> <input
+              onfocus=this.value='' type="text3" id=selectYear_bc list="years" value=2022><br>
           </p>
           <button style="font-variant: small-caps; margin-top:.3cm" class="button button2"
-            onclick="selectFighterAndDate('select2','name2','f2selectmonth','month2','f2selectyear','year2')"> Confirm
-            Blue Corner</button>
+            onclick="selectFighterAndDate('bc')"> Confirm Blue Corner</button>
         </article>
       </center>
     </aside>
@@ -199,25 +197,25 @@
       </h1>
     </div>
 
-    <main id="month1selecter" style="display:none" role="main">
+    <main id="month_rcselecter" style="display:none" role="main">
       <center>
         <p>
-          <span class="month1"></span> <span class="year1"></span>
+          <span class="month_rc"></span> <span class="year_rc"></span>
         </p>
       </center>
     </main>
 
-    <aside style="display:none" id="month2selecter">
+    <aside style="display:none" id="month_bcselecter">
       <center>
         <p>
-          <span class="month2"></span> <span class="year2"></span>
+          <span class="month_bc"></span> <span class="year_bc"></span>
         </p>
       </center>
     </aside>
 
     <main style="display:none" id="table1display" role="main">
       <center>
-        <table id="table1">
+        <table id="table_rc">
           <tr style="color: #fff; font-size:30px;font-variant: small-caps;">
             <td colspan="4"></td>
           </tr>
@@ -239,7 +237,7 @@
 
     <aside style="display:none" id="table2display">
       <center>
-        <table id="table2">
+        <table id="table_bc">
           <tr style="color: #fff; font-size:30px;font-variant: small-caps;">
             <td colspan="4"></td>
           </tr>
@@ -269,7 +267,7 @@
     </div>
     <main style="display:none" id="fighterl5y" role="main">
       <center>
-        <table id="l5ytable1" style="width:80%;">
+        <table id="l5ytable_rc" style="width:80%;">
           <thead>
             <tr style="color: #fff; font-size:30px;">
               <td colspan="4"></td>
@@ -319,7 +317,7 @@
 
     <aside style="display:none" id="opponentl5y">
       <center>
-        <table id="l5ytable2" style="width:80%;">
+        <table id="l5ytable_bc" style="width:80%;">
           <thead>
             <tr style="color: #fff; font-size:30px;">
               <td colspan="4"></td>
@@ -381,7 +379,7 @@
     <div>
       <center>
         <button class="button button3"
-          onclick="predict('select1','select2','f1selectmonth','f1selectyear','f2selectmonth','f2selectyear',)">
+          onclick="predict('rc','bc','selectMonth_rc','selectYear_rc','selectMonth_bc','selectYear_bc',)">
           Calculate </button>
       </center>
     </div>
@@ -583,18 +581,18 @@
       document.getElementById("tablehistory").style.display = "inline-block";
       document.getElementById("upcoming").style.display = "inline-block";
       document.getElementById("predict").style.display = "block";
-      document.getElementById("bc").style.display = "inline-block";
       document.getElementById("rc").style.display = "inline-block";
+      document.getElementById("bc").style.display = "inline-block";
       document.getElementById("mainpart").style.display = "inline-block";
       document.getElementById("asidepart").style.display = "inline-block";
-      document.getElementById("month1selecter").style.display = "block";
-      document.getElementById("month2selecter").style.display = "block";
+      document.getElementById("month_rcselecter").style.display = "block";
+      document.getElementById("month_bcselecter").style.display = "block";
       document.getElementById("table1display").style.display = "inline-block";
       document.getElementById("table2display").style.display = "inline-block";
       document.getElementById("fighterl5y").style.display = "inline-block";
       document.getElementById("opponentl5y").style.display = "inline-block";
-      document.getElementById("fighter1pic").style.display = "inline";
-      document.getElementById("fighter2pic").style.display = "inline";
+      document.getElementById("bcFighterPic").style.display = "inline";
+      document.getElementById("rcFighterPic").style.display = "inline";
       document.getElementById("taletape").style.display = "block";
       document.getElementById("last5fights").style.display = "block";
       document.getElementById("futurefights").style.display = "block";

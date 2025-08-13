@@ -204,49 +204,41 @@ let picIndex = 0;
 //set picIndex to be a random number between 0 and 4
 picIndex = getRandomInt(4);
 
-function selectFighter(id, out) {
-  selectElement = document.querySelector('#' + id);
-  output = selectElement.value;
+function selectFighter(id) { // id is 'rc' or 'bc' for red corner or blue corner
+  var selectElement = document.querySelector('#' + id);
+  var fighterNameText = selectElement.value;
   //document.querySelector('.' + out).textContent = output;
-  let i = id[6]
   picIndex += 1
   let j = (picIndex) % 4 + 1
-  name = selectElement.value;
-  var name_encoded = encodeURIComponent(name)
+  var name_encoded = encodeURIComponent(fighterNameText)
   var name_decoded = decodeURIComponent(name_encoded)
   name_decoded = decodeURIComponent(name_decoded)
   name_decoded = name_decoded.replace(new RegExp(' ', 'g'), '');
 
   // set the path to check if gif file exists (otherwise use pictures)
   if (checkFileExist("src/content/gifs/postCNNGIFs/" + name_decoded + ".gif")) {
-    document.getElementById("fighter" + i + "pic").src = "src/content/gifs/postCNNGIFs/" + name_decoded + ".gif" //sets the image
+    document.getElementById(`${id}FighterPic`).src = "src/content/gifs/postCNNGIFs/" + name_decoded + ".gif" //sets the image
   } else if (checkFileExist("src/content/images2/" + j + name_decoded + ".jpg")) {
-    document.getElementById("fighter" + i + "pic").src = "src/content/images2/" + j + name_decoded + ".jpg" //sets the image
+    document.getElementById(`${id}FighterPic`).src = "src/content/images2/" + j + name_decoded + ".jpg" //sets the image
   } else {
-    document.getElementById("fighter" + i + "pic").src = "src/content/images/" + j + name_decoded + ".jpg" //sets the image
+    document.getElementById(`${id}FighterPic`).src = "src/content/images/" + j + name_decoded + ".jpg" //sets the image
   }
-  if (i == '1') {
-    populateTaleOfTheTape(output, 'rc')
-    populateLast5Fights(output, 'rc')
-  } else {
-    populateTaleOfTheTape(output, 'bc')
-    populateLast5Fights(output, 'bc')
-  }
+  populateTaleOfTheTape(fighterNameText, id)
+  populateLast5Fights(fighterNameText, id)
 }
 
-function selectDate(monthid, monthout, yearid, yearout) {
-  //sets the image to be the image of the fighter
-  selectMonth = document.querySelector('#' + monthid);
-  output = selectMonth.value;
-  document.querySelector('.' + monthout).textContent = output;
-  selectYear = document.querySelector('#' + yearid);
-  output2 = selectYear.value;
-  document.querySelector('.' + yearout).textContent = output2;
-}
+// function selectDate(id) {
+//   selectMonth = document.querySelector(`selectMonth_${id}`);
+//   output = selectMonth.value;
+//   document.querySelector(`.selectMonth_${id}`).textContent = output;
+//   selectYear = document.querySelector(`.year_${id}`);
+//   output2 = selectYear.value;
+//   document.querySelector(`.selectYear_${id}`).textContent = output2;
+// }
 
-function selectFighterAndDate(id, out, monthid, monthout, yearid, yearout) {
-  selectFighter(id, out)
-  selectDate(monthid, monthout, yearid, yearout)
+function selectFighterAndDate(id) {
+  selectFighter(id)
+  // selectDate(id)
 }
 
 function fighter_age(fighter, yearSelected) {
@@ -545,6 +537,7 @@ function betting_oddsAbsolute(fighter1, fighter2, month1, year1, month2, year2) 
 //this takes as input certain html locations holding this data... not strings
 function predictionTuple(fighter1, fighter2, month1, year1, month2, year2) {
   let result;
+  // Note # selects by id and . selects by class
   guy1 = document.querySelector('#' + fighter1).value;
   guy2 = document.querySelector('#' + fighter2).value;
   mon1 = document.querySelector('#' + month1).value;
@@ -677,23 +670,17 @@ function predict(fighter1, fighter2, month1, year1, month2, year2) {
 
 function populateTaleOfTheTape(fighter, corner) {
   var myTab;
-  if (corner == 'rc') {
-    yr = document.querySelector('#' + 'f1selectyear').value;
-    myTab = document.getElementById("table1");
-  } else if (corner == 'bc') {
-    yr = document.querySelector('#' + 'f2selectyear').value;
-    myTab = document.getElementById("table2");
-  }
-  // LOOP THROUGH EACH ROW OF THE TABLE AFTER HEADER.
+  yr = document.querySelector(`#selectYear_${corner}`).value;
+  myTab = document.getElementById(`table_${corner}`);
+
   myTab.rows.item(0).cells.item(0).style.backgroundColor = "#212121";
-
   myTab.rows.item(0).cells.item(0).innerHTML = fighter;
-
+  
+  // LOOP THROUGH EACH ROW OF THE TABLE AFTER HEADER.
   myTab.rows.item(2).cells.item(0).innerHTML = fighter_data[fighter]['height'];
   myTab.rows.item(2).cells.item(1).innerHTML = fighter_data[fighter]['reach'];
   myTab.rows.item(2).cells.item(2).innerHTML = fighter_age(fighter, yr);
   myTab.rows.item(2).cells.item(3).innerHTML = fighter_data[fighter]['stance'];
-  //document.querySelector('.tableEntry').textContent = fighter
 }
 
 function eqSet(as, bs) {
@@ -706,13 +693,9 @@ function eqSet(as, bs) {
 //same_name function should be used here instead of eqSet (because same_name is stronger)
 function populateLast5Fights(fighter, corner) {
   var myTab;
-  if (corner == 'rc') {
-    yr = document.querySelector('#' + 'f1selectyear').value;
-    myTab = document.getElementById("l5ytable1");
-  } else if (corner == 'bc') {
-    yr = document.querySelector('#' + 'f2selectyear').value;
-    myTab = document.getElementById("l5ytable2");
-  }
+  yr = document.querySelector(`#selectYear_${corner}`).value;
+  myTab = document.getElementById(`l5ytable_${corner}`);
+
   for (numb = 2; numb < 7; numb++) { //reset color of rows to white and empty text content
     for (let j = 0; j < 4; j++) {
       myTab.rows.item(numb).cells.item(j).innerHTML = ''
@@ -724,21 +707,38 @@ function populateLast5Fights(fighter, corner) {
     let result;
     let opponent;
     let method;
-    let yearDiff = parseInt(yr) - parseInt(ufcfightscrap[fight]['date'].slice(0,4))
+    let yearDiff = parseInt(yr) - parseInt(ufcfightscrap[fight]['date'].slice(0,4));
+    tableTitleCell = myTab.rows.item(0).cells.item(0);
+    tableTitleCell.innerHTML = fighter
+    tableTitleCell.style.backgroundColor = "#212121";
     // note I changed to checking set equality of the set {firstName, middleName, lastName} because different orderings are used in different databases
     if (same_name(ufcfightscrap[fight]['fighter'], fighter) && yearDiff >= 0) {
+
       result = ufcfightscrap[fight]['result']
       fighter = ufcfightscrap[fight]['fighter']
       opponent = ufcfightscrap[fight]['opponent']
       method = ufcfightscrap[fight]['method']
       date = ufcfightscrap[fight]['date']
       fightNumber += 1
-      myTab.rows.item(0).cells.item(0).innerHTML = fighter
-      myTab.rows.item(0).cells.item(0).style.backgroundColor = "#212121";
-      myTab.rows.item(fightNumber).cells.item(0).innerHTML = opponent
+
+      let opponentText = `<span class="clickable">${opponent}</span>`;
+      myTab.rows.item(fightNumber).cells.item(0).innerHTML = opponentText
+
+      let item = myTab.rows.item(fightNumber).cells.item(0);
+      let clickable2 = item.querySelector('.clickable');
+      if (clickable2 != null){
+        clickable2.addEventListener('click', function(event) {
+          let opponentName = item.innerText;
+          // populate the active fighter and opponent names
+          document.getElementById(corner).value = opponentName;
+          selectFighter(corner)
+        })
+      }
+
       myTab.rows.item(fightNumber).cells.item(1).innerHTML = result
       myTab.rows.item(fightNumber).cells.item(2).innerHTML = method
       myTab.rows.item(fightNumber).cells.item(3).innerHTML = date
+
       if (result == "W") {
         myTab.rows.item(fightNumber).cells.item(1).style.backgroundColor = "#54ff6b";
       } else if (result == "L") {
@@ -757,48 +757,6 @@ function populateLast5Fights(fighter, corner) {
     myTab.rows.item(fightNumber).cells.item(1).style.backgroundColor = "#dedede";
     myTab.rows.item(fightNumber).cells.item(2).style.backgroundColor = "#dedede";
     myTab.rows.item(fightNumber).cells.item(3).style.backgroundColor = "#dedede";
-  }
-
-}
-
-
-function myFunction1() {
-  document.getElementById("myDropdown1").classList.toggle("show");
-}
-
-function myFunction2() {
-  document.getElementById("myDropdown2").classList.toggle("show");
-}
-
-function filterFunction1() {
-  var input, filter, ul, li, a, i;
-  input = document.getElementById("myInput1");
-  filter = input.value.toUpperCase();
-  div = document.getElementById("myDropdown1");
-  a = div.getElementsByTagName("a");
-  for (i = 0; i < a.length; i++) {
-    txtValue = a[i].textContent || a[i].innerText;
-    if (txtValue.toUpperCase().indexOf(filter) > -1) {
-      a[i].style.display = "";
-    } else {
-      a[i].style.display = "none";
-    }
-  }
-}
-
-function filterFunction2() {
-  var input, filter, ul, li, a, i;
-  input = document.getElementById("myInput2");
-  filter = input.value.toUpperCase();
-  div = document.getElementById("myDropdown2");
-  a = div.getElementsByTagName("a");
-  for (i = 0; i < a.length; i++) {
-    txtValue = a[i].textContent || a[i].innerText;
-    if (txtValue.toUpperCase().indexOf(filter) > -1) {
-      a[i].style.display = "";
-    } else {
-      a[i].style.display = "none";
-    }
   }
 }
 
@@ -990,14 +948,14 @@ setTimeout(() => { //timeout because other data needs to load first (probably be
         let month = d.getMonth();
         let year = d.getFullYear();
         var months = ["January", "February", 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', "November", 'December']
-        document.getElementById('select1').value = fighterName;
-        document.getElementById('select2').value = opponentName;
-        document.getElementById('f1selectmonth').value = months[month]
-        document.getElementById('f1selectyear').value = year
-        document.getElementById('f2selectmonth').value = months[month]
-        document.getElementById('f2selectyear').value = year
-        selectFighterAndDate('select1', 'name1', 'f1selectmonth', 'month1', 'f1selectyear', 'year1')
-        selectFighterAndDate('select2', 'name2', 'f2selectmonth', 'month2', 'f2selectyear', 'year2')
+        document.getElementById('rc').value = fighterName;
+        document.getElementById('bc').value = opponentName;
+        document.getElementById('selectMonth_rc').value = months[month]
+        document.getElementById('selectYear_rc').value = year
+        document.getElementById('selectMonth_bc').value = months[month]
+        document.getElementById('selectYear_bc').value = year
+        selectFighterAndDate('rc')
+        selectFighterAndDate('bc')
       })
     }
 
@@ -1243,14 +1201,14 @@ setTimeout(() => {
   let month = d.getMonth();
   let year = d.getFullYear();
   var months = ["January", "February", 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', "November", 'December']
-  document.getElementById('select1').value = upcomingFightsTable.rows[2].cells[0].textContent
-  document.getElementById('select2').value = upcomingFightsTable.rows[2].cells[1].textContent
-  document.getElementById('f1selectmonth').value = months[month]
-  document.getElementById('f1selectyear').value = year
-  document.getElementById('f2selectmonth').value = months[month]
-  document.getElementById('f2selectyear').value = year
-  selectFighterAndDate('select1', 'name1', 'f1selectmonth', 'month1', 'f1selectyear', 'year1')
-  selectFighterAndDate('select2', 'name2', 'f2selectmonth', 'month2', 'f2selectyear', 'year2')
+  document.getElementById('rc').value = upcomingFightsTable.rows[2].cells[0].textContent
+  document.getElementById('bc').value = upcomingFightsTable.rows[2].cells[1].textContent
+  document.getElementById('selectMonth_rc').value = months[month]
+  document.getElementById('selectYear_rc').value = year
+  document.getElementById('selectMonth_bc').value = months[month]
+  document.getElementById('selectYear_bc').value = year
+  selectFighterAndDate('rc')
+  selectFighterAndDate('bc')
   var myTab;
   myTab = document.getElementById("tableoutcome");
   // LOOP THROUGH EACH ROW OF THE TABLE AFTER HEADER.
