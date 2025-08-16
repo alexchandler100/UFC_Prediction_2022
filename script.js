@@ -925,6 +925,7 @@ setTimeout(() => { //timeout because other data needs to load first (probably be
         coloredBrText = `<span class="clickable">${fighterBankrollPercentage}</span> -> <span style="color:${evPickColor}">${payout}</span><br>${fighter} (<span style="color:${fav_dog_color}">${fav_dog}</span>)`;
 
       } else { //if both have negative expected value
+        tr.cells.item(4).innerHTML = `${bestFighterBookie}<br>${bestFighterBookieOddsOnFighter}, ${bestFighterBookieOddsOnOpponent}`;
         coloredBrText = `<span class="clickable">${0.0}</span>`;
       }
     }

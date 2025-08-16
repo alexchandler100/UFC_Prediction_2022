@@ -11,7 +11,8 @@ import sklearn.metrics
 
 from fight_stat_helpers import (
     in_ufc, 
-    visualize_prediction_bokeh
+    visualize_prediction_bokeh,
+    get_canonical_name,
     )
 
 class FightPredictor:
@@ -158,6 +159,14 @@ class FightPredictor:
         for i in vegas_odds.index:
             fighter=vegas_odds['fighter name'][i]
             opponent=vegas_odds['opponent name'][i]
+            # replace with canonical names from fighter_stats
+            fighter_canonical_name = get_canonical_name(fighter, fighter_stats)
+            opponent_canonical_name = get_canonical_name(opponent, fighter_stats)
+            fighter = fighter_canonical_name
+            opponent = opponent_canonical_name
+            vegas_odds.at[i, 'fighter name'] = fighter
+            vegas_odds.at[i, 'opponent name'] = opponent
+            
             if in_ufc(fighter, fighter_stats) and in_ufc(opponent, fighter_stats):
                 derived_doubled_tuple = self.get_ufc_fights_reported_derived_doubled_for_upcoming_fight(fighter, opponent, day1=pd.to_datetime(card_date), day2=pd.to_datetime(card_date))
                 diff_tup = self.ufc_prediction_tuple(derived_doubled_tuple)

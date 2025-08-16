@@ -27,6 +27,9 @@ from fight_stat_helpers import (
                        get_fight_card,
             )
 
+# replace downcasting behavior deprecated
+pd.set_option('future.no_silent_downcasting', True)
+
 from odds_getter import OddsGetter
 
 git_repo = git.Repo(os.getcwd(), search_parent_directories=True)
@@ -239,8 +242,8 @@ class DataHandler:
         most_recent_date_in_updated_ufc_fights_reported_doubled = pd.to_datetime(most_recent_date_in_updated_ufc_fights_reported_doubled)
         most_recent_date_in_old_ufc_fights_reported_derived_doubled = pd.to_datetime(most_recent_date_in_old_ufc_fights_reported_derived_doubled)
         
-        update_time = (most_recent_date_in_updated_ufc_fights_reported_doubled - most_recent_date_in_old_ufc_fights_reported_derived_doubled).days
-        print('days since last update: '+str(update_time))
+        self.update_time = (most_recent_date_in_updated_ufc_fights_reported_doubled - most_recent_date_in_old_ufc_fights_reported_derived_doubled).days
+        print('days since last update: '+str(self.update_time))
 
         # this gives the new rows in ufc_fights_reported_doubled_updated which do not appear in ufc_fights_reported_derived_doubled
         ufc_fights_reported_doubled_updated = self.get('ufc_fights_reported_doubled')
@@ -248,7 +251,7 @@ class DataHandler:
         ufc_fights_reported_doubled_updated['date'] = pd.to_datetime(ufc_fights_reported_doubled_updated['date'], format='%Y-%m-%d')
         # get only the fights in ufc_fights_reported_doubled_updated whose dates are more recent than the most recent date in ufc_fights_reported_derived_doubled
         new_rows = ufc_fights_reported_doubled_updated[ufc_fights_reported_doubled_updated['date'] > most_recent_date_in_old_ufc_fights_reported_derived_doubled]
-        if update_time > 0: # should just stop the script here. Can do this later once we do everything inside a function call
+        if self.update_time > 0: # should just stop the script here. Can do this later once we do everything inside a function call
             ufc_fights_reported_derived_doubled = self.populate_new_fights_with_statistics(new_rows)
             # save the results to a csv file 
             ufc_fights_reported_derived_doubled_path = f'{git_root}/src/content/data/processed/ufc_fights_reported_derived_doubled.csv'
@@ -496,6 +499,9 @@ class DataHandler:
         print('saved to '+jsonFilePath)
     
     def update_prediction_history(self):
+        if self.update_time == 0:
+            print('No new fights have occurred since last update, skipping prediction history update')
+            return
 
         vegas_odds_old=self.get('vegas_odds', filetype='json') # this is the old vegas odds dataframe (from last week)
         ufc_fights_reported_doubled = self.get('ufc_fights_reported_doubled') # THIS SHOULD HAVE BEEN UPDATED AT THIS POINT! WE SHOULD ADD A CHECK TO CHECK THIS

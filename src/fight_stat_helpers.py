@@ -57,6 +57,8 @@ alias_array = [
     ['Yizha', 'Yi Zha'],
     ['Asu Almabayev', 'Assu Almabayev'],
     ['Hyun-Sung Park', 'Hyun Sung Park', 'HyunSung Park'],
+    ['Lupita Godinez', 'Loopy Godinez'],
+    ['Baisangur Susurkaev', 'Baysangur Susurkaev']
 ]
 
 def regularize_name(name):
@@ -1057,3 +1059,11 @@ def visualize_prediction_bokeh(fighter, opponent, theta, card_date, derived_doub
     # Save to HTML at f'{git_root}/src/content/bokehPlots/
     save(column(p, Spacer(height=20), p2, Spacer(height=20), data_table))
     print(f'Bokeh plot saved to {html_str}')
+    
+def get_canonical_name(name, fighter_stats):
+    name_mask = same_name_vect(name, fighter_stats['name'].to_numpy())
+    if not np.any(name_mask):
+        print(f'Fighter name {name} not found in fighter stats database.')
+        return name
+    canonical_name = fighter_stats['name'].to_numpy()[name_mask][0]
+    return canonical_name
