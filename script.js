@@ -867,8 +867,8 @@ setTimeout(() => { //timeout because other data needs to load first (probably be
 
     // convert fighter name by removing spaces for linking to bokeh plot
     // e.g. "Elves Brener" -> "elves_brener"
-    let fighterLinkName = fighter.toLowerCase().replace(" ", '_');
-    let opponentLinkName = opponent.toLowerCase().replace(" ", '_');
+    let fighterLinkName = fighter.toLowerCase().replaceAll(" ", '_');
+    let opponentLinkName = opponent.toLowerCase().replaceAll(" ", '_');
     // convert date to YYYY-MM-DD format for linking to bokeh plot
     // e.g. "August 2, 2025" -> "2025-08-02"
     let fightDate = vegas_odds['date'][i]; // e.g. "August 2, 2025"
