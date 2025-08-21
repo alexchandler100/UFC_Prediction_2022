@@ -50,16 +50,18 @@ alias_array = [
     ['Ariane da Silva', 'Ariane Lipski'],
     ['Brianna Fortino', 'Brianna Van Buren'],
     ['Melissa Mullins', 'Melissa Dixon'],
-    ['Rongzhu', 'Rong Zhu'],
+    ['Rongzhu', 'Rong Zhu', 'Zhu Rong'],
     ['Ricky Glenn', 'Rick Glenn'],
     ['Wulijiburen', 'Wuliji Buren'],
-    [ 'Sumudaerji', 'Su Mudaerji'],
-    ['Yizha', 'Yi Zha'],
+    ['Sumudaerji', 'Su Mudaerji'],
+    ['Yizha', 'Yi Zha', 'Zha Yi'],
     ['Asu Almabayev', 'Assu Almabayev'],
     ['Hyun-Sung Park', 'Hyun Sung Park', 'HyunSung Park'],
     ['Lupita Godinez', 'Loopy Godinez'],
     ['Baisangur Susurkaev', 'Baysangur Susurkaev'],
     ['Sergey Pavlovich', 'Sergei Pavlovich'],
+    ['Zhao Long', 'Long Zhao'],
+    ['Soo Young Yoo', 'SuYoung You']
 ]
 
 def regularize_name(name):
