@@ -69,7 +69,7 @@ alias_array = [
 
 def regularize_name(name):
     name = name.lower().replace("st.", 'saint').replace(
-    " st ", ' saint ').replace('.', '').replace("-", ' ')
+    " st ", ' saint ').replace("jr.", '').replace('.', '').replace("-", ' ').replace('junior', '').strip()
     name = unidecode(name)  # remove accents
     return name
 
@@ -291,12 +291,14 @@ def get_fighter_stats(fighter, fighter_stats):
         
     # TODO get rid of for loop and just do the computations directly
     for stat_name in ['height', 'reach', 'dob', 'stance']:
-        stat_value = fighter_stats.loc[same_name_vect(fighter_stats['name'], fighter), stat_name]
+        fighter_loc = same_name_vect(fighter_stats['name'], fighter)
+        stat_value = fighter_stats.loc[fighter_loc, stat_name]
         # if there is more than one name match, alert the user
         if len(stat_value) > 1:
             print(f"Warning: Multiple entries found for fighter '{fighter}' in fighter_stats. Cannot resolve. Returning None.")
             return None
         if len(stat_value) == 0:
+            import ipdb;ipdb.set_trace(context=10)
             print(f"Warning: No entry found for fighter '{fighter}' in fighter_stats. Returning None.")
             return None
         stat_value = stat_value.iloc[0]  # get the first match

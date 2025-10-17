@@ -180,6 +180,11 @@ class FightPredictor:
                 visualize_prediction_bokeh(fighter, opponent, self.theta, card_date, derived_doubled_tuple_localized, diff_tup_scaled)
                 odds_calc = self.odds(diff_tup)
                 print('predicting: '+fighter,'versus '+opponent,'.... '+str(odds_calc))
+                if not odds_calc:
+                    print('odds calculation failed for some reason')
+                    vegas_odds.loc[i, 'predicted fighter odds'] = None
+                    vegas_odds.loc[i, 'predicted opponent odds'] = None
+                    continue
                 vegas_odds.loc[i, 'predicted fighter odds']=odds_calc[0]
                 vegas_odds.loc[i, 'predicted opponent odds']=odds_calc[1]
                 

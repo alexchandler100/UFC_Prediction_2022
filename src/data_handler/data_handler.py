@@ -474,7 +474,8 @@ class DataHandler:
                 if bookie_fighter_odds and bookie_opponent_odds:
                     fighter_bookie_odds_dict[bookie] = int(bookie_fighter_odds)
                     opponent_bookie_odds_dict[bookie] = int(bookie_opponent_odds)
-                    fighter_kelly, opponent_kelly = get_kelly_bet_from_ev_and_dk_odds(int(fighter_predicted_odds), int(bookie_fighter_odds), int(bookie_opponent_odds))
+                    predicted_fighter_odds = int(fighter_predicted_odds)
+                    fighter_kelly, opponent_kelly = get_kelly_bet_from_ev_and_dk_odds(predicted_fighter_odds, int(bookie_fighter_odds), int(bookie_opponent_odds))
                     fighter_bookie_kelly_dict[bookie] = fighter_kelly
                     opponent_bookie_kelly_dict[bookie] = opponent_kelly
             # fight highest kelly percentage for fighter and opponent
