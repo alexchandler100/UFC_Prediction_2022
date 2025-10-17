@@ -852,7 +852,7 @@ setTimeout(() => { //timeout because other data needs to load first (probably be
       opponentHtml = opponent_stats['url']
     }
 
-    if (fighterOdds == '') { //if no prediction was made
+    if (fighterOdds == '' || fighterOdds == null) { //if no prediction was made
       tr.cells.item(0).innerHTML = `<a href=${fighterHtml} target="_blank" style = "color: white">${fighter}</a>`
       tr.cells.item(1).innerHTML = `<a href=${opponentHtml} target="_blank" style = "color: white">${opponent}</a>`
     }
