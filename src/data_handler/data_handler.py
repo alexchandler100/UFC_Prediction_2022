@@ -630,7 +630,7 @@ class DataHandler:
             card_date = row1['date']
             
             # if no prediction was made, throw it away
-            if row1['predicted fighter odds'] == '':
+            if not row1['predicted fighter odds']:
                 bad_indices.append(index1)
                 print('no prediction made for fight from '+str(card_date)+' between '+row1['fighter name']+' and '+row1['opponent name'])
                 continue
