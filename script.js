@@ -95,6 +95,16 @@ function americanToImpliedProb(odds) {
   }
 }
 
+// function that converts probability to american odds
+function probToAmerican(prob) {
+  if (prob >= 0.5) {
+    return Math.round(-100 * prob / (1 - prob));
+  } else {
+    return Math.round(100 * (1 - prob) / prob);
+  }
+}
+
+
 function betPayout(amount, odds) {
   if (odds > 0) {
     return amount * (odds / 100);

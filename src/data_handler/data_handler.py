@@ -432,6 +432,9 @@ class DataHandler:
         odds_df['best fighter bookie'] = ''
         odds_df['best opponent bookie'] = ''
         
+        # TODO go through and figure out if any parlays have better expectation values
+        # than the individual bets (2 leg and 3 leg parlays only probably worth it)
+        
         # merge into predictions_df 
         # TODO IF WE COME TO TRUST THIS fightodds.io website we can use this as our source of upcoming fights instead of ufcstats.com and avoid the merge 
         for i in range(len(predictions_df)):
