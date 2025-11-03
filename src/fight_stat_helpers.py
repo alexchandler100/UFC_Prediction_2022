@@ -74,7 +74,10 @@ alias_array = [
     ['Yadier DelValle', 'Yadier del Valle'],
     ['Timothy Cuamba', 'Timmy Cuamba'],
     ['ChangHo Lee', 'Chang Ho Lee'],
-    ['Seok Hyun Ko', 'Seokhyun Ko', 'Seokhyeon Ko']
+    ['Seok Hyun Ko', 'Seokhyun Ko', 'Seokhyeon Ko'],
+    ['Marco Tulio Silva', 'Marco Tulio'],
+    ['Christian Duncan', 'Christian Leroy Duncan'],
+    ['Christian Quinonez', 'Cristian Quinonez']
 ]
 
 def regularize_name(name):
