@@ -68,7 +68,7 @@ class DataHandler:
         
         self.odds_getter = OddsGetter()
         
-        self.bookies = ['DraftKings', 'BetMGM', 'Caesars', 'BetRivers', 'FanDuel', 'PointsBet', 'Unibet', 'Bet365', 'BetWay', '5D', 'Ref']
+        self.bookies = ['DraftKings', 'BetMGM', 'Caesars', 'BetRivers', 'FanDuel', 'PointsBet', 'Unibet', 'Bet365', 'BetWay', '5D', 'Ref','BetOnline','MyBookie']
 
     def get(self, key, filetype='csv'):
         if filetype == 'json':
