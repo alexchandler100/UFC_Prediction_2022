@@ -445,12 +445,14 @@ class DataHandler:
             fighter_a = 'fighter'
             fighter_b = 'opponent'
             if odds_row.empty:
+                # try switching fighter and opponent
                 opponent = predictions_df['fighter name'][i]
                 fighter = predictions_df['opponent name'][i]
                 fighter_a = 'opponent'
                 fighter_b = 'fighter'
                 odds_row = odds_df[same_name_vect(odds_df['fighter name'], fighter) & same_name_vect(odds_df['opponent name'], opponent)]
             if odds_row.empty:
+                import ipdb; ipdb.set_trace(context=10)
                 print(f'No odds found for {fighter} vs {opponent} on fightodds.io, skipping...')
                 continue
             # TODO update these with the actual bookies we are getting odds from (or just those I can actually use)
