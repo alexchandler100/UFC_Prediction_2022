@@ -83,7 +83,9 @@ alias_array = [
     ['Dan Hooker', 'Daniel Hooker'],
     ['Ismail Naurdiev', 'Ismael Naurdiev'],
     ['Abdul Rakhman Yakhyaev', 'Abdulrakhman Yakhyaev'],
-    ['Rafael Cerquiera', 'Raffael Cerqueira']
+    ['Rafael Cerquiera', 'Raffael Cerqueira'],
+    ['Joshua Van', 'Josh Van'],
+    ['Muhammadjon Naimov', 'Muhammad Naimov'],
 ]
 
 def regularize_name(name):
