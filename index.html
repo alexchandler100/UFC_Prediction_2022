@@ -164,12 +164,12 @@
       <center>
         <article>
           <p>
-            <input onfocus=this.value='' id=rc type="text" list="fighters" value=""><br><br>
-            <input onfocus=this.value='' type="text2" id=selectMonth_rc list="months" value="March"> <input
-              onfocus=this.value='' type="text3" id=selectYear_rc list="years" value=2022><br>
+            <input onfocus=this.value='' id=rcList type="text" list="fighters" value=""><br><br>
+            <input onfocus=this.value='' type="text2" id=selectMonth_rc list="months" value="March"> 
+            <input onfocus=this.value='' type="text3" id=selectYear_rc list="years" value=2022><br>
           </p>
           <button style="font-variant: small-caps; margin-top:.3cm" class="button button1"
-            onclick="selectFighterAndDate('rc')"> Confirm Red Corner</button>
+            onclick="selectFighterHighlightedInList('rc')"> Confirm Red Corner</button>
         </article>
       </center>
     </main>
@@ -178,12 +178,12 @@
       <center>
         <article>
           <p>
-            <input onfocus=this.value='' id=bc type="text" list="fighters" value=""><br><br>
+            <input onfocus=this.value='' id=bcList type="text" list="fighters" value=""><br><br>
             <input onfocus=this.value='' type="text2" id=selectMonth_bc list="months" value="March"> <input
               onfocus=this.value='' type="text3" id=selectYear_bc list="years" value=2022><br>
           </p>
           <button style="font-variant: small-caps; margin-top:.3cm" class="button button2"
-            onclick="selectFighterAndDate('bc')"> Confirm Blue Corner</button>
+            onclick="selectFighterHighlightedInList('bc')"> Confirm Blue Corner</button>
         </article>
       </center>
     </aside>

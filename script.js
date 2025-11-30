@@ -214,7 +214,9 @@ let picIndex = 0;
 //set picIndex to be a random number between 0 and 4
 picIndex = getRandomInt(4);
 
-function selectFighter(id) { // id is 'rc' or 'bc' for red corner or blue corner
+function selectFighter(name, id) { // id is 'rc' or 'bc' for red corner or blue corner
+  populateListWithName(id, name);
+  document.getElementById(id).value = name;
   var selectElement = document.querySelector('#' + id);
   var fighterNameText = selectElement.value;
   //document.querySelector('.' + out).textContent = output;
@@ -246,8 +248,29 @@ function selectFighter(id) { // id is 'rc' or 'bc' for red corner or blue corner
 //   document.querySelector(`.selectYear_${id}`).textContent = output2;
 // }
 
-function selectFighterAndDate(id) {
-  selectFighter(id)
+function populateListWithName(id, name) {
+  var selectElement = document.getElementById(id + 'List');
+  selectElement.value = name;
+}
+
+function getnamefromlist(id) {
+  // grab current value from list <input onfocus=this.value='' id=bc type="text" list="fighters" value=""><br><br>
+  // var selectElement = document.querySelector('#' + id);
+  var selectElement = document.getElementById(id + 'List');
+  fighterNameText = selectElement.value;
+  // fighterNameText = selectElement.options[selectElement.selectedIndex].text;
+  return fighterNameText
+}
+
+
+function selectFighterHighlightedInList(id) {
+  name = getnamefromlist(id)
+  selectFighter(name, id)
+  // selectDate(id)  
+}
+
+function selectFighterAndDate(name, id) {
+  selectFighter(name, id)
   // selectDate(id)
 }
 
@@ -740,8 +763,7 @@ function populateLast5Fights(fighter, corner) {
         clickable2.addEventListener('click', function(event) {
           let opponentName = item.innerText;
           // populate the active fighter and opponent names
-          document.getElementById(corner).value = opponentName;
-          selectFighter(corner)
+          selectFighter(opponentName, corner)
         })
       }
 
@@ -955,18 +977,19 @@ setTimeout(() => { //timeout because other data needs to load first (probably be
         const fighterName = cells[0].innerText;
         const opponentName = cells[1].innerText;
         // populate the active fighter and opponent names
+        // TODO get date working again
         const d = new Date();
         let month = d.getMonth();
         let year = d.getFullYear();
         var months = ["January", "February", 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', "November", 'December']
-        document.getElementById('rc').value = fighterName;
-        document.getElementById('bc').value = opponentName;
         document.getElementById('selectMonth_rc').value = months[month]
         document.getElementById('selectYear_rc').value = year
         document.getElementById('selectMonth_bc').value = months[month]
         document.getElementById('selectYear_bc').value = year
-        selectFighterAndDate('rc')
-        selectFighterAndDate('bc')
+        document.getElementById('rcList').value = fighterName
+        document.getElementById('bcList').value = opponentName
+        selectFighterAndDate(fighterName, 'rc')
+        selectFighterAndDate(opponentName, 'bc')
       })
     }
 
@@ -1208,18 +1231,19 @@ setTimeout(() => { //this builds a table for the history of predictions which is
 //set initial table values and display fight
 setTimeout(() => {
   var upcomingFightsTable = document.getElementById('upcoming')
+  // TODO get date working again
   const d = new Date();
   let month = d.getMonth();
   let year = d.getFullYear();
   var months = ["January", "February", 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', "November", 'December']
-  document.getElementById('rc').value = upcomingFightsTable.rows[2].cells[0].textContent
-  document.getElementById('bc').value = upcomingFightsTable.rows[2].cells[1].textContent
+  fighterName = upcomingFightsTable.rows[2].cells[0].textContent
+  opponentName = upcomingFightsTable.rows[2].cells[1].textContent
   document.getElementById('selectMonth_rc').value = months[month]
   document.getElementById('selectYear_rc').value = year
   document.getElementById('selectMonth_bc').value = months[month]
   document.getElementById('selectYear_bc').value = year
-  selectFighterAndDate('rc')
-  selectFighterAndDate('bc')
+  selectFighterAndDate(fighterName, 'rc')
+  selectFighterAndDate(opponentName, 'bc')
   var myTab;
   myTab = document.getElementById("tableoutcome");
   // LOOP THROUGH EACH ROW OF THE TABLE AFTER HEADER.
