@@ -239,14 +239,14 @@ function selectFighter(name, id) { // id is 'rc' or 'bc' for red corner or blue 
   populateLast5Fights(fighterNameText, id)
 }
 
-// function selectDate(id) {
-//   selectMonth = document.querySelector(`selectMonth_${id}`);
-//   output = selectMonth.value;
-//   document.querySelector(`.selectMonth_${id}`).textContent = output;
-//   selectYear = document.querySelector(`.year_${id}`);
-//   output2 = selectYear.value;
-//   document.querySelector(`.selectYear_${id}`).textContent = output2;
-// }
+function selectDate(id) {
+  var monthList = document.getElementById(`selectMonth_${id}`);
+  var selectedMonth = monthList.value;
+  monthList.textContent = selectedMonth;
+  var yearList = document.getElementById(`selectYear_${id}`);
+  var selectedYear = yearList.value;
+  yearList.textContent = selectedYear;
+}
 
 function populateListWithName(id, name) {
   var selectElement = document.getElementById(id + 'List');
@@ -266,12 +266,12 @@ function getnamefromlist(id) {
 function selectFighterHighlightedInList(id) {
   name = getnamefromlist(id)
   selectFighter(name, id)
-  // selectDate(id)  
+  selectDate(id)  
 }
 
 function selectFighterAndDate(name, id) {
   selectFighter(name, id)
-  // selectDate(id)
+  selectDate(id)
 }
 
 function fighter_age(fighter, yearSelected) {
