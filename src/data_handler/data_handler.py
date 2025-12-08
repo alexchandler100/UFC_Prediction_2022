@@ -452,8 +452,10 @@ class DataHandler:
                 fighter_b = 'fighter'
                 odds_row = odds_df[same_name_vect(odds_df['fighter name'], fighter) & same_name_vect(odds_df['opponent name'], opponent)]
             if odds_row.empty:
-                import ipdb; ipdb.set_trace(context=10)
+                # import ipdb; ipdb.set_trace(context=10)
                 print(f'No odds found for {fighter} vs {opponent} on fightodds.io, skipping...')
+                print(f'Suggestion: either add alias which identifies {fighter} or {opponent} in odds_df:')
+                print(odds_df[['fighter name', 'opponent name']])
                 continue
             # TODO update these with the actual bookies we are getting odds from (or just those I can actually use)
             for bookie in self.bookies:
