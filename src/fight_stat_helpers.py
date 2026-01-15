@@ -87,6 +87,9 @@ alias_array = [
     ['Joshua Van', 'Josh Van'],
     ['Muhammadjon Naimov', 'Muhammad Naimov'],
     ['Melsik Baghdasaryan', 'Melsik Bagdasaryan'],
+    ['Natalia Cristina da Silva', 'Natalia Silva'],
+    ['Ateba Gautier', 'Ateba Abega Gautier']
+    # NOTE LANCE GIBSON has the same name as his father who is also a fighter, so i may have to just go in and manually delete one of them later
 ]
 
 def regularize_name(name):
