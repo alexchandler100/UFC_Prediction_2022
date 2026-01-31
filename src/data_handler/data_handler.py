@@ -142,16 +142,22 @@ class DataHandler:
         soup = BeautifulSoup(page.content, "html.parser")
         events_table = soup.select_one('tbody')
         ufc_fights_reported_doubled_new_rows = pd.DataFrame()
-        
-        events = [event['href'] for event in events_table.select( 'a')[1:]] # omit first event (future event) # TODO WE MAY AS WELL USE THIS TO POPULATE THE FUTURE EVENT INSTEAD OF GETTING IT FROM ANOTHER WEBSITE LATER...
-        saved_events = set(old_ufc_fights_reported_doubled.event_url.unique())
-        new_events = [event for event in events if event not in saved_events]  # get only new events
+            
+        events = list(events_table.select('a')[1:]) #omit first event, future event
+        saved_event_hrefs = set(old_ufc_fights_reported_doubled.event_url.unique())
+        new_events = [event for event in events if event['href'] not in saved_event_hrefs]  # get only new events
         if not new_events:
             print('No new events to scrape for ufc_fights_reported_doubled')
             return
-        for event in new_events: # skip events that are already in the old_ufc_fights_reported_doubled
-            print(event)
-            stats = get_fight_card(event)
+        new_event_dict = {}
+        for event in new_events:
+            event_name = event.text.strip()
+            new_event_dict[event_name] = event['href']
+
+        for name, href in new_event_dict.items():
+            if "road to ufc" in name.lower():
+                continue  # skip Road to UFC events
+            stats = get_fight_card(href)
             ufc_fights_reported_doubled_new_rows = pd.concat([stats, ufc_fights_reported_doubled_new_rows], axis=0)
             
         # convert date column to string format YYYY-MM-DD
@@ -780,6 +786,7 @@ class DataHandler:
             names_to_update = list(fighter_stats['name'].unique())
         # GOAL reproduce these statistics 
         
+        # SOMETIMES ROAD TO UFC OR OTHER SIMILAR EVENTS SCREW THIS UP... careful
         ufc_fights_reported_derived_doubled = ufc_fights_reported_derived_doubled.copy()
         ufc_fights_reported_doubled = ufc_fights_reported_doubled.copy()
 

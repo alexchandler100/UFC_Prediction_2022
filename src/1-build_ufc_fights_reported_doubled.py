@@ -22,13 +22,19 @@ def get_all_fight_stats():
     soup = BeautifulSoup(page.content, "html.parser") 
     
     events_table = soup.select_one('tbody')
-    events = [event['href'] for event in events_table.select('a')[1:]] #omit first event, future event
+    events = list(events_table.select('a')[1:]) #omit first event, future event
+    event_dict = {}
+    for event in events:
+        event_name = event.text.strip()
+        event_dict[event_name] = event['href']
 
     fight_stats = pd.DataFrame()
     event_count = 0
-    for event in events:
+    for name, event in event_dict.items():
         # if event_count > 2:  # limit to the last 3 if we want to debug quickly
         #     break
+        if "road to ufc" in name.lower():
+            continue  # skip Road to UFC events
         stats = get_fight_card(event)
         fight_stats = pd.concat([fight_stats, stats], axis = 0)
         event_count += 1
