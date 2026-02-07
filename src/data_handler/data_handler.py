@@ -145,10 +145,11 @@ class DataHandler:
             
         events = list(events_table.select('a')[1:]) #omit first event, future event
         saved_event_hrefs = set(old_ufc_fights_reported_doubled.event_url.unique())
-        new_events = [event for event in events if event['href'] not in saved_event_hrefs]  # get only new events
+        new_events = [event for event in events if (event['href'] not in saved_event_hrefs) and ("road to ufc" not in event.text.strip().lower())]  # get only new events
         if not new_events:
             print('No new events to scrape for ufc_fights_reported_doubled')
             return
+        
         new_event_dict = {}
         for event in new_events:
             event_name = event.text.strip()
@@ -161,6 +162,10 @@ class DataHandler:
             ufc_fights_reported_doubled_new_rows = pd.concat([stats, ufc_fights_reported_doubled_new_rows], axis=0)
             
         # convert date column to string format YYYY-MM-DD
+        if ufc_fights_reported_doubled_new_rows.empty:
+            print('ufc_fights_reported_doubled_new_rows empty but new events reported... whats going on...')
+            return
+        
         ufc_fights_reported_doubled_new_rows['date'] = pd.to_datetime(ufc_fights_reported_doubled_new_rows['date'], errors='coerce')
         ufc_fights_reported_doubled_new_rows['date'] = ufc_fights_reported_doubled_new_rows['date'].dt.strftime('%Y-%m-%d')
 
