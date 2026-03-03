@@ -14,6 +14,9 @@ dh = DataHandler()
 print('scraping new statistics from ufcstats.com')
 dh.update_data_csvs_and_jsons()
 
+# TODO THERE IS A PROBLEM WITH NAME CLASHES e.g. Erik Silva and Erick Silva sometimes misspelling cause clashes
+# The proper way to do this is to instead of same_name we should use same_fighter where we compare name, height, etc (could still have issues but maybe better)
+
 ufc_fights_reported_derived_doubled = dh.get('ufc_fights_reported_derived_doubled')
 # only take fights in the last 10 years
 ufc_fights_reported_derived_doubled['date'] = pd.to_datetime(ufc_fights_reported_derived_doubled['date'])
