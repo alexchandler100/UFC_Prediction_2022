@@ -103,7 +103,8 @@ alias_array = [
     ['Montserrat Rendon', 'Montse Rendon'],
     ['Bia Mesquita', 'Beatriz Mesquita'],
     ['Joseph Pyfer', 'Joe Pyfer'],
-    ['Michael Chiesa', 'Mike Chiesa']
+    ['Michael Chiesa', 'Mike Chiesa'],
+    ['Lando Vannata', 'Landon Vanata']
     
     # NOTE LANCE GIBSON has the same name as his father who is also a fighter, so i may have to just go in and manually delete one of them later
 ]
@@ -299,7 +300,7 @@ def bet_payout(american_odds, bet_amount, result):
     """
     american_odds = int(american_odds)
     bet_amount = float(bet_amount)
-    assert result in ['W', 'L'], "Result must be 'W' or 'L'."
+    assert result in ['W', 'L', 'D'], "Result must be 'W' or 'L' or 'D'"
     if result == 'W':
         if american_odds > 0:
             payout = bet_amount + (bet_amount * american_odds / 100)
@@ -307,6 +308,8 @@ def bet_payout(american_odds, bet_amount, result):
             payout = bet_amount + (bet_amount * 100 / abs(american_odds))
     elif result == 'L':
         payout = 0
+    elif result == 'D':
+        payout = bet_amount  # return the original bet amount in case of a draw
     else:
         raise ValueError("Result must be 'W' or 'L'.")
     
