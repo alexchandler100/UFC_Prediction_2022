@@ -104,7 +104,8 @@ alias_array = [
     ['Bia Mesquita', 'Beatriz Mesquita'],
     ['Joseph Pyfer', 'Joe Pyfer'],
     ['Michael Chiesa', 'Mike Chiesa'],
-    ['Lando Vannata', 'Landon Vanata']
+    ['Lando Vannata', 'Landon Vanata'],
+    ['Patricio Freire', 'Patricio Pitbull']
     
     # NOTE LANCE GIBSON has the same name as his father who is also a fighter, so i may have to just go in and manually delete one of them later
 ]
@@ -342,7 +343,7 @@ def get_fighter_stats(fighter, fighter_stats):
             print(f"Warning: Multiple entries found for fighter '{fighter}' in fighter_stats. Cannot resolve. Returning None.")
             return None
         if len(stat_value) == 0:
-            import ipdb;ipdb.set_trace(context=10)
+            # import ipdb;ipdb.set_trace(context=10)
             print(f"Warning: No entry found for fighter '{fighter}' in fighter_stats. Returning None.")
             return None
         stat_value = stat_value.iloc[0]  # get the first match
