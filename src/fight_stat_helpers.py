@@ -107,7 +107,8 @@ alias_array = [
     ['Lando Vannata', 'Landon Vanata'],
     ['Patricio Freire', 'Patricio Pitbull'],
     ['Dennis Buzukja', 'Dennis Buzukia'],
-    ['Dariya Zheleznyakova', 'Daria Zhelezniakova']
+    ['Dariya Zheleznyakova', 'Daria Zhelezniakova'],
+    ['Youssef Zalaal', 'Youssef Zalal']
     
     # NOTE LANCE GIBSON has the same name as his father who is also a fighter, so i may have to just go in and manually delete one of them later
 ]
