@@ -65,7 +65,7 @@ alias_array = [
     ['Andreas Gustafsson Berg', 'Andreas Gustafsson'],
     ['Jafel Cavalcante Filho', 'Jafel Filho'],
     ['Thomas Peterson', 'Thomas Petersen'],
-    ['Djorden Santos', 'Diorden Ribeiro'],
+    ['Djorden Santos', 'Diorden Ribeiro', 'Diorden Santos'],
     ['Aoriqileng', 'Qileng Aori', 'Aori Qileng'],
     ['Jailton Junior', 'Jailton Almeida'],
     ['Jun Yong Park', 'Junyong Park'],
@@ -108,7 +108,10 @@ alias_array = [
     ['Patricio Freire', 'Patricio Pitbull'],
     ['Dennis Buzukja', 'Dennis Buzukia'],
     ['Dariya Zheleznyakova', 'Daria Zhelezniakova'],
-    ['Youssef Zalaal', 'Youssef Zalal']
+    ['Youssef Zalaal', 'Youssef Zalal'],
+    ['Ateba Abega Gautier', 'Ateba Gautier'],
+    ['Ozzy Diaz', 'Osman Diaz'],
+    
     
     # NOTE LANCE GIBSON has the same name as his father who is also a fighter, so i may have to just go in and manually delete one of them later
 ]
