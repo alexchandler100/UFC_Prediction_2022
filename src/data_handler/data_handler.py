@@ -5,7 +5,7 @@ import urllib.request
 import requests
 import csv
 import json
-from datetime import date
+from datetime import date, datetime, timezone
 import re
 import numpy as np
 from pathlib import Path
@@ -72,6 +72,35 @@ def atomic_to_csv(dataframe, path, *, index=False):
         if os.path.exists(temporary_name):
             os.unlink(temporary_name)
 
+
+def ufcstats_identity(value):
+    """Return the stable identifier at the end of a UFCStats URL."""
+    if value is None or (not isinstance(value, (list, tuple, dict)) and pd.isna(value)):
+        return ''
+    return str(value).strip().rstrip('/').rsplit('/', 1)[-1].lower()
+
+
+def validate_scraped_event_integrity(
+    event_url, scraped_stats, manifest_fight_urls, stored_fight_urls=()
+):
+    """Reject partial event parses and quarantine unexpected source deletions."""
+    parsed_fights = set(scraped_stats['fight_url'].dropna().astype(str))
+    advertised_fights = set(str(value) for value in manifest_fight_urls)
+    stored_fights = set(str(value) for value in stored_fight_urls)
+    if parsed_fights != advertised_fights:
+        missing = sorted(advertised_fights - parsed_fights)
+        unexpected = sorted(parsed_fights - advertised_fights)
+        raise UFCStatsError(
+            f'Parsed fight IDs did not match the event manifest for {event_url}; '
+            f'missing={missing[:3]}, unexpected={unexpected[:3]}'
+        )
+    removed = stored_fights - parsed_fights
+    if removed:
+        raise UFCStatsError(
+            f'Refusing to shrink stored event {event_url}; source omitted '
+            f'{len(removed)} existing fight(s): {sorted(removed)[:3]}'
+        )
+
 class DataHandler:
     def __init__(self):
         # updated scraped fight data (after running ufc_fights_reported_doubled_updated function from UFC_data_scraping file)
@@ -92,7 +121,14 @@ class DataHandler:
             'ufc_fight_data_for_website': f'{git_root}/src/content/data/external/ufc_fight_data_for_website.json',
             'vegas_odds': f'{git_root}/src/content/data/external/vegas_odds.json',
         }
-        self.csv_data = {key : pd.read_csv(self.csv_filepaths[key], sep=',') for key in self.csv_filepaths.keys()}
+        # The 68 MB legacy derived table is no longer part of the weekly model
+        # or website publication path.  Load it lazily only for old notebooks
+        # and manual tools that explicitly request it.
+        self.csv_data = {
+            key: pd.read_csv(path, sep=',')
+            for key, path in self.csv_filepaths.items()
+            if key != 'ufc_fights_reported_derived_doubled'
+        }
         prediction_history = pd.read_json(self.json_filepaths['prediction_history'])
         vegas_odds = pd.read_json(self.json_filepaths['vegas_odds'])
 
@@ -102,6 +138,7 @@ class DataHandler:
         }
         
         self.odds_getter = OddsGetter()
+        self.update_time = 0
         
         self.bookies = ['DraftKings', 'BetMGM', 'Caesars', 'BetRivers', 'FanDuel', 'PointsBet', 'Unibet', 'Bet365', 'BetWay', '5D', 'Ref','BetOnline','MyBookie']
 
@@ -109,12 +146,14 @@ class DataHandler:
         if filetype == 'json':
             assert key in list(self.json_data.keys()), "Invalid key provided"
             return self.json_data[key].copy()
-        assert key in list(self.csv_data.keys()), "Invalid key provided"
+        assert key in self.csv_filepaths, "Invalid key provided"
+        if key not in self.csv_data:
+            self.csv_data[key] = pd.read_csv(self.csv_filepaths[key], sep=',')
         df = self.csv_data[key].copy()
         return df
     
     def set(self, key, value):
-        assert key in list(self.csv_data.keys()), "Invalid key provided"
+        assert key in self.csv_filepaths, "Invalid key provided"
         self.csv_data[key] = value
     
     def save_csv(self, key):
@@ -137,7 +176,7 @@ class DataHandler:
         atomic_write_text(self.json_filepaths['intercept'], json.dumps(b))
         
     def update_data_csvs_and_jsons(self, key='all'):
-        assert key in list(self.csv_data.keys()) + ['all'], "Invalid key provided"
+        assert key in list(self.csv_filepaths.keys()) + ['all'], "Invalid key provided"
         if key == 'ufc_fights_reported_doubled':
             self.update_ufc_fights_reported_doubled()
         elif key == 'fighter_stats':
@@ -149,7 +188,6 @@ class DataHandler:
         elif key == 'all':
             self.update_ufc_fights_reported_doubled()
             self.update_fighter_stats()
-            self.update_ufc_fights_reported_derived_doubled()
             self.update_ufc_fight_data_for_website()
             # Image search is optional presentation work and depends on a
             # third-party Google HTML layout.  It must not make the core weekly
@@ -171,6 +209,72 @@ class DataHandler:
                 
     def update_ufc_fights_reported_doubled(self):  # takes dataframe of fight stats as input
         old_ufc_fights_reported_doubled = self.get('ufc_fights_reported_doubled')
+        raw_schema_migrated = False
+        if (
+            'source_card_index' not in old_ufc_fights_reported_doubled
+            or 'bout_order' not in old_ufc_fights_reported_doubled
+            or 'time_format' not in old_ufc_fights_reported_doubled
+            or old_ufc_fights_reported_doubled[
+                [
+                    column for column in ('source_card_index', 'bout_order')
+                    if column in old_ufc_fights_reported_doubled
+                ]
+            ].isna().any().any()
+        ):
+            # The stored row order within each event is the UFCStats display
+            # order (main event first).  Materialize it once as durable source
+            # metadata; future scrapes supply these columns directly.
+            positions = np.arange(len(old_ufc_fights_reported_doubled))
+            temporary = old_ufc_fights_reported_doubled[
+                ['event_url', 'fight_url']
+            ].copy()
+            temporary['_position'] = positions
+            first_positions = (
+                temporary.groupby(['event_url', 'fight_url'], sort=False)['_position']
+                .min()
+                .rename('first_position')
+                .reset_index()
+            )
+            first_positions['source_card_index'] = first_positions.groupby(
+                'event_url', sort=False
+            )['first_position'].rank(method='dense').astype(int) - 1
+            event_sizes = first_positions.groupby('event_url')['fight_url'].transform('size')
+            first_positions['bout_order'] = (
+                event_sizes - 1 - first_positions['source_card_index']
+            )
+            order_lookup = first_positions.set_index(
+                ['event_url', 'fight_url']
+            )[['source_card_index', 'bout_order']]
+            keys = list(old_ufc_fights_reported_doubled[
+                ['event_url', 'fight_url']
+            ].itertuples(index=False, name=None))
+            old_ufc_fights_reported_doubled['source_card_index'] = [
+                int(order_lookup.loc[key, 'source_card_index']) for key in keys
+            ]
+            old_ufc_fights_reported_doubled['bout_order'] = [
+                int(order_lookup.loc[key, 'bout_order']) for key in keys
+            ]
+            if 'time_format' not in old_ufc_fights_reported_doubled:
+                old_ufc_fights_reported_doubled['time_format'] = ''
+                legacy_dates = pd.to_datetime(
+                    old_ufc_fights_reported_doubled['date'], errors='coerce'
+                )
+                legacy_rounds = pd.to_numeric(
+                    old_ufc_fights_reported_doubled['round'], errors='coerce'
+                )
+                uncertain_legacy_duration = (
+                    (legacy_dates < pd.Timestamp('2001-01-01'))
+                    & (legacy_rounds > 1)
+                )
+                old_ufc_fights_reported_doubled.loc[
+                    uncertain_legacy_duration, 'total_fight_time'
+                ] = np.nan
+                print(
+                    'Marked '
+                    f'{int(uncertain_legacy_duration.sum())} legacy fight sides '
+                    'with unknown nonstandard round duration'
+                )
+            raw_schema_migrated = True
         # Older parser versions collapsed no-contests into draws.  UFCStats'
         # explicit CNC/overturned methods let us repair those labels safely.
         mislabeled_no_contests = old_ufc_fights_reported_doubled['method'].isin(
@@ -196,33 +300,23 @@ class DataHandler:
             and "road to ufc" not in event.text.strip().lower()
         ]
 
-        # Cheaply reconcile the manifests for recent stored events.  This
-        # repairs late-added or formerly partial bouts without downloading the
-        # full historical site every week.
+        # Re-scrape a bounded recent window, not just changed URL manifests.
+        # UFCStats can correct a result, method, identity, time, or detailed
+        # statistics without changing any fight URL.
         recent_saved_events = [
             event for event in events
             if event['href'] in saved_event_hrefs
             and "road to ufc" not in event.text.strip().lower()
         ][:12]
-        events_to_refresh = []
-        for event in recent_saved_events:
-            source_fights = set(get_event_fight_urls(event['href']))
-            stored_fights = set(
-                old_ufc_fights_reported_doubled.loc[
-                    old_ufc_fights_reported_doubled['event_url'] == event['href'],
-                    'fight_url',
-                ]
+        events_to_refresh = recent_saved_events
+        if events_to_refresh:
+            print(
+                f'Reconciling source contents for {len(events_to_refresh)} recent events'
             )
-            if source_fights != stored_fights:
-                print(
-                    f'Reconciling changed event manifest {event.text.strip()}: '
-                    f'{len(stored_fights)} stored vs {len(source_fights)} source fights'
-                )
-                events_to_refresh.append(event)
 
         events_to_scrape = new_events + events_to_refresh
         if not events_to_scrape:
-            if normalized_existing_results:
+            if normalized_existing_results or raw_schema_migrated:
                 old_ufc_fights_reported_doubled['date'] = pd.to_datetime(
                     old_ufc_fights_reported_doubled['date'], errors='raise'
                 )
@@ -242,25 +336,68 @@ class DataHandler:
                     f'Normalized {normalized_existing_results} historical '
                     'no-contest fight sides'
                 )
+                if raw_schema_migrated:
+                    print('Added durable source card order to historical fights')
             print('No new events to scrape for ufc_fights_reported_doubled')
             return
         
         refreshed_event_hrefs = set()
+        new_event_hrefs = {event['href'] for event in new_events}
+        completed_new_event_hrefs = set()
         for event in events_to_scrape:
             name = event.text.strip()
             href = event['href']
             if "road to ufc" in name.lower():
                 continue  # skip Road to UFC events
             try:
+                manifest_fight_urls = get_event_fight_urls(href)
                 stats = get_fight_card(href)
+                stored_fight_urls = old_ufc_fights_reported_doubled.loc[
+                    old_ufc_fights_reported_doubled['event_url'].eq(href),
+                    'fight_url',
+                ].unique()
+                validate_scraped_event_integrity(
+                    href,
+                    stats,
+                    manifest_fight_urls,
+                    stored_fight_urls,
+                )
             except UFCStatsEventNotComplete as error:
                 print(f'Deferring incomplete same-day event {name}: {error}')
                 continue
+            except UFCStatsError as error:
+                if href in new_event_hrefs:
+                    print(f'Deferring new event {name} after a source error: {error}')
+                else:
+                    print(
+                        f'Keeping stored event {name} after refresh error: {error}'
+                    )
+                continue
             refreshed_event_hrefs.add(href)
+            if href in new_event_hrefs:
+                completed_new_event_hrefs.add(href)
             ufc_fights_reported_doubled_new_rows = pd.concat([stats, ufc_fights_reported_doubled_new_rows], axis=0)
             
         # convert date column to string format YYYY-MM-DD
         if ufc_fights_reported_doubled_new_rows.empty:
+            if normalized_existing_results or raw_schema_migrated:
+                old_ufc_fights_reported_doubled['date'] = pd.to_datetime(
+                    old_ufc_fights_reported_doubled['date'], errors='raise'
+                )
+                old_ufc_fights_reported_doubled = (
+                    old_ufc_fights_reported_doubled.sort_values(
+                        'date', ascending=False, kind='stable'
+                    ).reset_index(drop=True)
+                )
+                old_ufc_fights_reported_doubled['date'] = (
+                    old_ufc_fights_reported_doubled['date'].dt.strftime('%Y-%m-%d')
+                )
+                self.set(
+                    'ufc_fights_reported_doubled',
+                    old_ufc_fights_reported_doubled,
+                )
+                self.save_csv('ufc_fights_reported_doubled')
+                print('Saved raw schema/result normalization before deferring events')
             print(
                 'No fully completed new event rows were available; deferred '
                 'events will be retried on the next run'
@@ -292,6 +429,14 @@ class DataHandler:
                 f'Refusing to save incomplete doubled fights; invalid fight_url counts: {invalid}'
             )
         # set ufc_fights_reported_doubled and save it to csv
+        self.update_time = int(
+            ufc_fights_reported_doubled_new_rows.loc[
+                ufc_fights_reported_doubled_new_rows['event_url'].isin(
+                    completed_new_event_hrefs
+                ),
+                'fight_url',
+            ].nunique()
+        )
         self.set('ufc_fights_reported_doubled', updated_stats)
         self.save_csv('ufc_fights_reported_doubled')
     
@@ -300,44 +445,80 @@ class DataHandler:
     def update_fighter_stats(self):
         ufc_fights_reported_doubled = self.get('ufc_fights_reported_doubled')
         fighter_stats = self.get('fighter_stats')
-        fighter_stats_urls = fighter_stats.url.unique()
-        ufc_fights_reported_doubled_urls = ufc_fights_reported_doubled.fighter_url.unique()
-        
-        fighter_details = {'name': [], 'height': [],
-                        'reach': [], 'stance': [], 'dob': [], 'url': []}
-        known_fighter_urls = set(fighter_stats_urls)
+        known_fighter_urls = set(fighter_stats['url'].dropna().astype(str))
+        all_source_urls = set(
+            ufc_fights_reported_doubled['fighter_url'].dropna().astype(str)
+        )
+        raw_dates = pd.to_datetime(
+            ufc_fights_reported_doubled['date'], errors='coerce'
+        )
+        recent_event_urls = (
+            ufc_fights_reported_doubled.assign(_date=raw_dates)
+            .groupby('event_url', as_index=False)['_date'].max()
+            .sort_values('_date', ascending=False, kind='stable')
+            .head(3)['event_url']
+        )
+        active_urls = set(
+            ufc_fights_reported_doubled.loc[
+                ufc_fights_reported_doubled['event_url'].isin(recent_event_urls),
+                'fighter_url',
+            ].dropna().astype(str)
+        )
+        refresh_urls = sorted((all_source_urls - known_fighter_urls) | active_urls)
+        refreshed_profiles = []
+        for f_url in refresh_urls:
+            action = 'refreshing active fighter' if f_url in known_fighter_urls else 'adding new fighter'
+            print(f'{action}: {f_url}')
+            try:
+                page = ufcstats_client.get(
+                    f_url, expected_text='b-list__info-box'
+                )
+                soup = BeautifulSoup(page.content, "html.parser")
+                name_element = soup.find(
+                    'span', class_='b-content__title-highlight'
+                )
+                info_box = soup.select_one(
+                    'div.b-list__info-box.b-list__info-box_style_small-width.js-guide'
+                )
+                if name_element is None or info_box is None:
+                    raise UFCStatsError(
+                        f'fighter profile fields were missing at {f_url}'
+                    )
+                attributes = {}
+                for item in info_box.select('li'):
+                    label = item.find('i')
+                    if label is None:
+                        continue
+                    key = label.get_text(' ', strip=True).rstrip(':').casefold()
+                    full_text = item.get_text(' ', strip=True)
+                    value = full_text[len(label.get_text(' ', strip=True)):].strip()
+                    attributes[key] = value
+                refreshed_profiles.append(
+                    {
+                        'name': name_element.get_text(' ', strip=True),
+                        'height': attributes.get('height', '--'),
+                        'reach': attributes.get('reach', '--'),
+                        'stance': attributes.get('stance', '--'),
+                        'dob': attributes.get('dob', '--'),
+                        'url': f_url,
+                    }
+                )
+            except UFCStatsError as error:
+                print(f'Keeping existing/unknown fighter profile after source error: {error}')
 
-        for f_url in ufc_fights_reported_doubled_urls:
-            if f_url in known_fighter_urls:
-                continue # if we already have the fighter in our stats, skip it
-            
-            print('adding new fighter:', f_url)
-            page = ufcstats_client.get(f_url, expected_text='b-list__info-box')
-            soup = BeautifulSoup(page.content, "html.parser")
-
-            fighter_name = soup.find(
-                'span', class_='b-content__title-highlight').text.strip()
-            fighter_details['name'].append(fighter_name)
-
-            fighter_details['url'].append(f_url)
-
-            fighter_attr = soup.find(
-                'div', class_='b-list__info-box b-list__info-box_style_small-width js-guide').select('li')
-            for i in range(len(fighter_attr)):
-                attr = fighter_attr[i].text.split(':')[-1].strip()
-                if i == 0:
-                    fighter_details['height'].append(attr)
-                elif i == 1:
-                    pass  # weight is always just whatever weightclass they were fighting at
-                elif i == 2:
-                    fighter_details['reach'].append(attr)
-                elif i == 3:
-                    fighter_details['stance'].append(attr)
-                else:
-                    fighter_details['dob'].append(attr)
-        new_fighters = pd.DataFrame(fighter_details)
-        updated_fighters = pd.concat([new_fighters, fighter_stats])
-        updated_fighters = updated_fighters.reset_index(drop=True)
+        refreshed_fighters = pd.DataFrame(
+            refreshed_profiles,
+            columns=['name', 'height', 'reach', 'stance', 'dob', 'url'],
+        )
+        refreshed_urls = set(refreshed_fighters['url'])
+        updated_fighters = pd.concat(
+            [
+                refreshed_fighters,
+                fighter_stats[~fighter_stats['url'].isin(refreshed_urls)],
+            ],
+            ignore_index=True,
+        )
+        updated_fighters = updated_fighters.drop_duplicates('url', keep='first')
         self.set('fighter_stats', updated_fighters)
         self.save_csv('fighter_stats')
         self.save_json('fighter_stats', 'name')
@@ -609,8 +790,50 @@ class DataHandler:
             self.scrape_pictures(name)
             
     def save_fightoddsio_to_vegas_odds_json_and_merge_with_predictions_df(self, predictions_df):
+        # Third-party odds are optional enrichment. Keep an untouched model
+        # forecast fallback so *any* scrape, schema, or merge failure cannot
+        # discard a valid UFCStats/model publication.
+        fallback = predictions_df.copy(deep=True)
+        try:
+            return self._merge_fightodds_with_predictions(
+                predictions_df.copy(deep=True)
+            )
+        except Exception as error:
+            fallback['odds source status'] = 'unavailable'
+            fallback['odds observed at'] = ''
+            fallback['market no-vig fighter probability'] = np.nan
+            fallback['betting status'] = (
+                'disabled_pending_market_relative_validation'
+            )
+            fallback['fighter bet bankroll percentage'] = np.nan
+            fallback['opponent bet bankroll percentage'] = np.nan
+            fallback['best fighter bookie'] = ''
+            fallback['best opponent bookie'] = ''
+            if 'average bookie odds' not in fallback:
+                fallback['average bookie odds'] = pd.Series(
+                    [None] * len(fallback), dtype=object
+                )
+            print(
+                'WARNING: fightodds.io enrichment failed after scraping; '
+                'publishing the independent model forecasts without book lines '
+                f'({type(error).__name__}: {error})'
+            )
+            return fallback
+
+    def _merge_fightodds_with_predictions(self, predictions_df):
         print('getting bookie odds from fightodds.io')
         predictions_df['odds source status'] = 'unmatched'
+        predictions_df['odds observed at'] = ''
+        predictions_df['market no-vig fighter probability'] = np.nan
+        predictions_df['betting status'] = 'disabled_pending_market_relative_validation'
+        predictions_df['fighter bet bankroll percentage'] = np.nan
+        predictions_df['opponent bet bankroll percentage'] = np.nan
+        predictions_df['best fighter bookie'] = ''
+        predictions_df['best opponent bookie'] = ''
+        if 'average bookie odds' not in predictions_df:
+            predictions_df['average bookie odds'] = pd.Series(
+                [None] * len(predictions_df), dtype=object
+            )
         try:
             odds_df = self.odds_getter.make_odds_df()
         except Exception as error:
@@ -624,6 +847,8 @@ class DataHandler:
                 f'predictions without book lines ({type(error).__name__}: {error})'
             )
             return predictions_df
+        observed_at = datetime.now(timezone.utc).replace(microsecond=0).isoformat()
+        previous_vegas = self.get('vegas_odds', filetype='json')
         odds_df['fighter bet bankroll percentage'] = np.nan
         odds_df['opponent bet bankroll percentage'] = np.nan
         odds_df['best fighter bookie'] = ''
@@ -653,10 +878,12 @@ class DataHandler:
                 print(f'No odds found for {fighter} vs {opponent} on fightodds.io, skipping...')
                 continue
             if len(odds_row) != 1:
-                raise ValueError(
+                predictions_df.at[i, 'odds source status'] = 'ambiguous'
+                print(
                     f'Ambiguous fightodds.io matchup for {fighter} vs {opponent}: '
-                    f'{len(odds_row)} rows'
+                    f'{len(odds_row)} rows; skipping...'
                 )
+                continue
             matched_fights += 1
             predictions_df.at[i, 'odds source status'] = 'matched'
             # TODO update these with the actual bookies we are getting odds from (or just those I can actually use)
@@ -669,13 +896,112 @@ class DataHandler:
                     predictions_df.at[i, f'opponent {bookie}'] = odds_row[opponent_source].iloc[0]
             # add average odds for fighter and opponent
             consensus_odds = odds_row['average bookie odds'].iloc[0]
+            consensus_probability = odds_row.get(
+                'average bookie probability', pd.Series([np.nan], index=odds_row.index)
+            ).iloc[0]
             if fighter_a == 'opponent' and isinstance(consensus_odds, (list, tuple)):
                 consensus_odds = list(reversed(consensus_odds))
+                if pd.notna(consensus_probability):
+                    consensus_probability = 1.0 - float(consensus_probability)
             predictions_df.at[i, f'average bookie odds'] = consensus_odds
+            predictions_df.at[i, 'market no-vig fighter probability'] = consensus_probability
+            if pd.notna(consensus_probability):
+                market_fighter_odds = self.odds_getter.probability_to_odds(
+                    float(consensus_probability)
+                )
+                market_opponent_odds = self.odds_getter.probability_to_odds(
+                    1.0 - float(consensus_probability)
+                )
+                predictions_df.at[i, 'forecast probability'] = float(
+                    consensus_probability
+                )
+                predictions_df.at[i, 'forecast source'] = 'market_no_vig_consensus'
+                predictions_df.at[i, 'forecast fighter odds'] = (
+                    f'+{market_fighter_odds}'
+                    if market_fighter_odds > 0 else str(market_fighter_odds)
+                )
+                predictions_df.at[i, 'forecast opponent odds'] = (
+                    f'+{market_opponent_odds}'
+                    if market_opponent_odds > 0 else str(market_opponent_odds)
+                )
+            predictions_df.at[i, 'odds observed at'] = observed_at
+            # Preserve the original observation time on an identical retry.
+            # This keeps no-change workflow runs byte-stable and prevents a
+            # manual rerun from pretending unchanged lines were first seen
+            # later than they really were.
+            if not previous_vegas.empty:
+                prediction_fighter_id = str(
+                    predictions_df.at[i, 'fighter id']
+                    if 'fighter id' in predictions_df else ''
+                ).strip()
+                prediction_opponent_id = str(
+                    predictions_df.at[i, 'opponent id']
+                    if 'opponent id' in predictions_df else ''
+                ).strip()
+                if (
+                    prediction_fighter_id
+                    and prediction_opponent_id
+                    and {'fighter id', 'opponent id'}.issubset(previous_vegas.columns)
+                ):
+                    identity_match = (
+                        previous_vegas['fighter id'].astype(str).eq(prediction_fighter_id)
+                        & previous_vegas['opponent id'].astype(str).eq(prediction_opponent_id)
+                    )
+                else:
+                    # Compatibility path for forecasts created before stable
+                    # UFCStats fighter IDs were published.
+                    identity_match = (
+                        same_name_vect(
+                            previous_vegas['fighter name'],
+                            predictions_df.at[i, 'fighter name'],
+                        )
+                        & same_name_vect(
+                            previous_vegas['opponent name'],
+                            predictions_df.at[i, 'opponent name'],
+                        )
+                    )
+                date_match = (
+                    pd.to_datetime(previous_vegas['date'], errors='coerce').dt.normalize()
+                    == pd.to_datetime(
+                        predictions_df.at[i, 'date'], errors='coerce'
+                    ).normalize()
+                )
+                previous_match = previous_vegas[identity_match & date_match]
+                if len(previous_match) == 1:
+                    previous_row = previous_match.iloc[0]
+                    comparison_columns = [
+                        'model id', 'predicted fighter odds', 'predicted opponent odds',
+                        'average bookie odds', 'market no-vig fighter probability',
+                        *[f'fighter {bookie}' for bookie in self.bookies],
+                        *[f'opponent {bookie}' for bookie in self.bookies],
+                    ]
+
+                    def comparable(value):
+                        if isinstance(value, (list, tuple, np.ndarray)):
+                            return tuple(comparable(item) for item in value)
+                        if pd.isna(value):
+                            return None
+                        return str(value)
+
+                    quotes_unchanged = all(
+                        comparable(previous_row.get(column))
+                        == comparable(predictions_df.at[i, column])
+                        for column in comparison_columns
+                        if column in predictions_df
+                    )
+                    previous_observed_at = previous_row.get('odds observed at')
+                    if quotes_unchanged and pd.notna(previous_observed_at) and str(previous_observed_at):
+                        predictions_df.at[i, 'odds observed at'] = previous_observed_at
             
             # add expected values for fighter and opponent
             fighter_predicted_odds = predictions_df.at[i, 'predicted fighter odds']
             if pd.isna(fighter_predicted_odds) or fighter_predicted_odds == '':
+                continue
+            # The available history does not yet demonstrate incremental edge
+            # over timestamped no-vig market probabilities.  Collect the data
+            # now, but do not turn an unvalidated model residual into a wager.
+            model_id = predictions_df.at[i, 'model id'] if 'model id' in predictions_df else ''
+            if pd.notna(model_id) and str(model_id).strip():
                 continue
             # search over all bookies for the best odds
             fighter_bookie_odds_dict = {}
@@ -850,12 +1176,29 @@ class DataHandler:
         vegas_odds_old['current bankroll after'] = 0.0
         vegas_odds_old['bet result'] = 'N/A'
         vegas_odds_old['forecast status'] = 'unmatched_or_canceled'
+        for score_column in ('correct?', 'model correct?'):
+            if score_column in vegas_odds_old:
+                vegas_odds_old[score_column] = vegas_odds_old[
+                    score_column
+                ].astype(object)
+            else:
+                vegas_odds_old[score_column] = pd.Series(
+                    'N/A', index=vegas_odds_old.index, dtype=object
+                )
         for index1, row1 in vegas_odds_old.iloc[::-1].iterrows(): # iterate backwards in the order the fights actually happened
             card_date = row1['date']
             
-            prediction_value = row1.get('predicted fighter odds')
+            forecast_prediction_value = row1.get('forecast fighter odds')
+            prediction_value = (
+                forecast_prediction_value
+                if pd.notna(forecast_prediction_value)
+                and str(forecast_prediction_value).strip()
+                else row1.get('predicted fighter odds')
+            )
+            model_prediction_value = row1.get('predicted fighter odds')
             if pd.isna(prediction_value) or str(prediction_value).strip() == '':
                 vegas_odds_old.at[index1, 'correct?'] = 'N/A'
+                vegas_odds_old.at[index1, 'model correct?'] = 'N/A'
                 vegas_odds_old.at[index1, 'forecast status'] = 'no_prediction'
                 vegas_odds_old.at[index1, 'current bankroll after'] = currentBankroll
                 print('no prediction made for fight from '+str(card_date)+' between '+row1['fighter name']+' and '+row1['opponent name'])
@@ -864,9 +1207,12 @@ class DataHandler:
             fighter_odds = self.odds_getter.parse_american_odds(prediction_value)
             if fighter_odds is None:
                 raise ValueError(
-                    f'Invalid predicted fighter odds {prediction_value!r} for '
+                    f'Invalid forecast fighter odds {prediction_value!r} for '
                     f'{row1["fighter name"]} vs {row1["opponent name"]}'
                 )
+            model_fighter_odds = self.odds_getter.parse_american_odds(
+                model_prediction_value
+            )
             best_fighter_bookie = row1['best fighter bookie']
             best_opponent_bookie = row1['best opponent bookie']
             
@@ -911,25 +1257,54 @@ class DataHandler:
             ).dt.normalize()
             relevant_fights = ufc_fights_reported_doubled[fight_dates == card_timestamp]
             print(f'searching through {relevant_fights.shape[0]//2} confirmed fights on {str(card_date).split(" ")[0]} for {row1["fighter name"]} vs {row1["opponent name"]}')
+
+            forecast_fighter_id = str(row1.get('fighter id', '')).strip().lower()
+            forecast_opponent_id = str(row1.get('opponent id', '')).strip().lower()
             
             match_found = False
             for index2, row2 in relevant_fights.iterrows():
-                if same_name(row1['fighter name'], row2['fighter']) and same_name(row1['opponent name'], row2['opponent']):
+                has_stable_ids = bool(forecast_fighter_id and forecast_opponent_id)
+                if has_stable_ids:
+                    is_match = (
+                        ufcstats_identity(row2.get('fighter_url')) == forecast_fighter_id
+                        and ufcstats_identity(row2.get('opponent_url')) == forecast_opponent_id
+                    )
+                else:
+                    # Compatibility path for historical forecasts that predate
+                    # the stable-ID schema.
+                    is_match = (
+                        same_name(row1['fighter name'], row2['fighter'])
+                        and same_name(row1['opponent name'], row2['opponent'])
+                    )
+                if is_match:
                     match_found = True
                     print('adding fight from '+str(card_date)+' between '+row1['fighter name']+' and '+row1['opponent name'])
                     actual_result = row2['result']
+                    vegas_odds_old.at[index1, 'fight id'] = ufcstats_identity(
+                        row2.get('fight_url')
+                    )
+                    vegas_odds_old.at[index1, 'fight url'] = row2.get('fight_url', '')
+                    vegas_odds_old.at[index1, 'actual result'] = actual_result
+
+                    def score_pick(american_odds):
+                        if actual_result in ['D', 'NC'] or american_odds is None:
+                            return 'N/A'
+                        if abs(int(american_odds)) == 100:
+                            return 'N/A'
+                        picked_fighter = int(american_odds) < 0
+                        fighter_won = actual_result == 'W'
+                        return int(picked_fighter == fighter_won)
+
+                    vegas_odds_old.at[index1, 'correct?'] = score_pick(fighter_odds)
+                    vegas_odds_old.at[index1, 'model correct?'] = score_pick(
+                        model_fighter_odds
+                    )
                     if actual_result in ['D', 'NC']:
-                        vegas_odds_old.at[index1, 'correct?'] = 'N/A'
                         result_status = {'D': 'draw', 'NC': 'no_contest'}[actual_result]
                         vegas_odds_old.at[index1, 'forecast status'] = result_status
                     elif abs(int(fighter_odds)) == 100:
-                        vegas_odds_old.at[index1,'correct?'] = 'N/A' # model did not predict a winner, called it dead even
-                        vegas_odds_old.at[index1, 'forecast status'] = 'completed'
-                    elif (int(fighter_odds) < 0 and actual_result == 'W') or (int(fighter_odds) > 0 and actual_result == 'L'):
-                        vegas_odds_old.at[index1,'correct?'] = 1
                         vegas_odds_old.at[index1, 'forecast status'] = 'completed'
                     else:
-                        vegas_odds_old.at[index1,'correct?'] = 0
                         vegas_odds_old.at[index1, 'forecast status'] = 'completed'
                     # update the bankroll based on the bet made
                     fighter_bet = 0.0
@@ -958,6 +1333,7 @@ class DataHandler:
                     break
             if not match_found:
                 vegas_odds_old.at[index1, 'correct?'] = 'N/A'
+                vegas_odds_old.at[index1, 'model correct?'] = 'N/A'
                 vegas_odds_old.at[index1, 'current bankroll after'] = currentBankroll
                 print('fight from '+str(card_date)+' between '+row1['fighter name']+' and '+row1['opponent name'] + ' not found in ufc_fights_reported_derived_doubled.csv')
         return vegas_odds_old
@@ -1398,5 +1774,16 @@ class DataHandler:
                     f'Expected four fields for an upcoming fight at {card_link}, got {entries!r}'
                 )
             fighter, opponent, _, weight_class = entries
-            fights_list.append([fighter,opponent,weight_class])
+            fighter_links = [
+                anchor.get('href') for anchor in fight.find_all('a')
+                if 'fighter-details' in str(anchor.get('href', ''))
+            ]
+            if len(fighter_links) != 2:
+                raise UFCStatsError(
+                    f'Expected two fighter IDs for {fighter} vs {opponent} at '
+                    f'{card_link}, got {fighter_links!r}'
+                )
+            fights_list.append(
+                [fighter, opponent, weight_class, fighter_links[0], fighter_links[1]]
+            )
         return card_date, card_title, fights_list

@@ -2,21 +2,30 @@
 
 The checks deliberately focus on contracts whose violation would make a
 weekly publication misleading: complete doubled pairs, stable source IDs,
-valid numeric domains, matching raw/derived rows, parseable JSON, and fresh
-completed/upcoming snapshots.
+valid numeric domains, a causal point-in-time model contract, parseable JSON,
+and fresh completed/upcoming snapshots. The obsolete derived notebook table is
+intentionally outside the weekly publication gate.
 """
 
 from __future__ import annotations
 
 import argparse
+from hashlib import sha256
 import json
 from collections import Counter
 from dataclasses import dataclass, field
 from datetime import date
 from pathlib import Path
+import re
 
 import numpy as np
 import pandas as pd
+
+from fight_predictor.point_in_time import (
+    MODEL_VERSION,
+    PointInTimeDatasetBuilder,
+    training_fingerprint,
+)
 
 
 RAW_REQUIRED_COLUMNS = {
@@ -36,6 +45,25 @@ RAW_REQUIRED_COLUMNS = {
 }
 
 FIGHTER_REQUIRED_COLUMNS = {"name", "height", "reach", "stance", "dob", "url"}
+
+POINT_IN_TIME_REQUIRED_COLUMNS = {
+    "schema_version",
+    "date",
+    "event_id",
+    "fight_id",
+    "fight_url",
+    "event_url",
+    "fighter_id",
+    "opponent_id",
+    "fighter_url",
+    "opponent_url",
+    "target",
+    "bout_order",
+    "label_method",
+    "label_finish_round",
+    "label_total_fight_seconds",
+    "label_time_format",
+}
 
 LANDED_ATTEMPTED_PAIRS = (
     ("sig_strikes_landed", "sig_strikes_attempts"),
@@ -134,6 +162,46 @@ def validate_raw_fights(raw: pd.DataFrame) -> ValidationReport:
     report.require(
         (fight_counts == 2).all(), "every fight_url must occur exactly twice"
     )
+    if {"source_card_index", "bout_order"} <= set(raw.columns):
+        source_index = pd.to_numeric(raw["source_card_index"], errors="coerce")
+        bout_order = pd.to_numeric(raw["bout_order"], errors="coerce")
+        report.require(
+            source_index.notna().all() and bout_order.notna().all(),
+            "raw card-order metadata must be numeric",
+        )
+        report.require(
+            (source_index.dropna() >= 0).all()
+            and (bout_order.dropna() >= 0).all()
+            and np.equal(source_index.dropna() % 1, 0).all()
+            and np.equal(bout_order.dropna() % 1, 0).all(),
+            "raw card-order metadata must contain nonnegative integers",
+        )
+        report.require(
+            (source_index.iloc[0::2].reset_index(drop=True)
+             == source_index.iloc[1::2].reset_index(drop=True)).all()
+            and (bout_order.iloc[0::2].reset_index(drop=True)
+                 == bout_order.iloc[1::2].reset_index(drop=True)).all(),
+            "mirrored raw fight sides disagree on card order",
+        )
+        fight_order = raw.drop_duplicates("fight_url")
+        for event_url, event in fight_order.groupby("event_url", sort=False):
+            expected = set(range(len(event)))
+            report.require(
+                set(pd.to_numeric(event["source_card_index"], errors="coerce")) == expected,
+                f"source_card_index is not contiguous for event {event_url}",
+            )
+            report.require(
+                set(pd.to_numeric(event["bout_order"], errors="coerce")) == expected,
+                f"bout_order is not contiguous for event {event_url}",
+            )
+            event_source = pd.to_numeric(
+                event["source_card_index"], errors="coerce"
+            )
+            event_bout = pd.to_numeric(event["bout_order"], errors="coerce")
+            report.require(
+                (event_source + event_bout == len(event) - 1).all(),
+                f"source_card_index and bout_order are not inverse for event {event_url}",
+            )
 
     numeric_columns = {
         "round",
@@ -148,14 +216,29 @@ def validate_raw_fights(raw: pd.DataFrame) -> ValidationReport:
         values = pd.to_numeric(raw[column], errors="coerce")
         invalid = values.isna() & raw[column].notna()
         report.require(not invalid.any(), f"raw {column} contains non-numeric values")
+        report.require(
+            np.isfinite(values.dropna().to_numpy(dtype=float)).all(),
+            f"raw {column} contains non-finite values",
+        )
         report.require(not (values.dropna() < 0).any(), f"raw {column} contains negatives")
 
     rounds = pd.to_numeric(raw["round"], errors="coerce")
-    report.require(rounds.dropna().between(1, 5).all(), "round must be between 1 and 5")
+    no_contest_rows = (
+        raw["result"].astype(str).str.upper().eq("NC")
+        | raw["method"].fillna("").astype(str).str.casefold().str.contains(
+            "cnc|overturned", regex=True
+        )
+    )
+    report.require(
+        rounds[~no_contest_rows].notna().all()
+        and rounds.dropna().between(1, 5).all()
+        and np.equal(rounds.dropna() % 1, 0).all(),
+        "round must be an integer between 1 and 5 except unknown no-contests",
+    )
     duration = pd.to_numeric(raw["total_fight_time"], errors="coerce")
     report.require(
-        duration.dropna().between(1, 1500).all(),
-        "total_fight_time must be between one second and 25 minutes",
+        duration.dropna().between(1, 7200).all(),
+        "known total_fight_time must be between one second and two hours",
     )
     if "control" in raw:
         control = pd.to_numeric(raw["control"], errors="coerce")
@@ -215,7 +298,9 @@ def validate_derived(raw: pd.DataFrame, derived: pd.DataFrame) -> ValidationRepo
         not np.isinf(numeric.to_numpy(dtype=float, copy=False)).any(),
         "derived features contain positive or negative infinity",
     )
-    raw_max = pd.to_datetime(raw["date"], errors="coerce").max()
+    raw_max = pd.to_datetime(
+        raw.loc[raw["result"].isin(["W", "L"]), "date"], errors="coerce"
+    ).max()
     derived_max = pd.to_datetime(derived["date"], errors="coerce").max()
     report.require(raw_max == derived_max, "raw and derived maximum fight dates differ")
     report.facts.append(f"derived fights: {derived.shape[0]:,} rows / {derived.shape[1]:,} columns")
@@ -229,12 +314,336 @@ def validate_fighters(fighters: pd.DataFrame) -> ValidationReport:
     report.require(fighters["url"].notna().all(), "fighter stats contains a null URL")
     report.require(fighters["name"].notna().all(), "fighter stats contains a null name")
     report.require(not fighters["url"].duplicated().any(), "fighter URLs must be unique")
+    report.require(
+        fighters["name"].astype(str).str.strip().ne("").all(),
+        "fighter display names must not be blank",
+    )
+
+    def placeholder(value: object) -> bool:
+        return pd.isna(value) or str(value).strip().casefold() in {
+            "", "--", "n/a", "nan", "none"
+        }
+
+    for index, value in fighters["height"].items():
+        if placeholder(value):
+            continue
+        match = re.fullmatch(r"\s*(\d+)\s*'\s*(\d+)\s*\"?\s*", str(value))
+        valid = bool(match)
+        if match:
+            inches = int(match.group(1)) * 12 + int(match.group(2))
+            valid = 48 <= inches <= 96 and 0 <= int(match.group(2)) < 12
+        report.require(valid, f"fighter height is implausible at row {index}: {value!r}")
+    for index, value in fighters["reach"].items():
+        if placeholder(value):
+            continue
+        match = re.search(r"\d+(?:\.\d+)?", str(value))
+        valid = bool(match) and 48 <= float(match.group()) <= 100
+        report.require(valid, f"fighter reach is implausible at row {index}: {value!r}")
+    known_dob = ~fighters["dob"].map(placeholder)
+    parsed_dob = pd.to_datetime(fighters.loc[known_dob, "dob"], errors="coerce")
+    report.require(parsed_dob.notna().all(), "fighter stats contains an invalid known DOB")
+    if not parsed_dob.empty:
+        report.require(
+            (
+                (parsed_dob >= pd.Timestamp("1930-01-01"))
+                & (parsed_dob <= pd.Timestamp.today().normalize() - pd.DateOffset(years=18))
+            ).all(),
+            "fighter stats contains an implausible known DOB",
+        )
     duplicate_names = sorted(fighters.loc[fighters["name"].duplicated(False), "name"].unique())
     if duplicate_names:
         report.warnings.append(
             "Display names are not unique; ID-based joins are required: " + ", ".join(duplicate_names)
         )
     report.facts.append(f"fighter stats: {len(fighters):,} source IDs")
+    return report
+
+
+def validate_point_in_time(raw: pd.DataFrame, point_in_time: pd.DataFrame) -> ValidationReport:
+    report = ValidationReport()
+    if not _require_columns(
+        point_in_time,
+        POINT_IN_TIME_REQUIRED_COLUMNS,
+        "point-in-time fights",
+        report,
+    ):
+        return report
+    report.require(not point_in_time.empty, "point-in-time fights is empty")
+    report.require(
+        point_in_time["fight_id"].is_unique,
+        "point-in-time fights must contain one row per fight_id",
+    )
+    report.require(
+        point_in_time["schema_version"].eq(1).all(),
+        "point-in-time fights has an unsupported schema version",
+    )
+    report.require(
+        point_in_time["target"].isin([0, 1]).all(),
+        "point-in-time target must contain only binary W/L labels",
+    )
+    report.require(
+        (point_in_time["fighter_id"].astype(str) < point_in_time["opponent_id"].astype(str)).all(),
+        "point-in-time matchup orientation is not canonical by fighter ID",
+    )
+    dates = pd.to_datetime(point_in_time["date"], errors="coerce")
+    report.require(dates.notna().all(), "point-in-time fights contains invalid dates")
+    report.require(dates.is_monotonic_increasing, "point-in-time fights is not chronological")
+    expected_order = point_in_time.assign(_parsed_date=dates).sort_values(
+        ["_parsed_date", "event_id", "bout_order", "fight_id"], kind="stable"
+    )["fight_id"].astype(str).tolist()
+    report.require(
+        expected_order == point_in_time["fight_id"].astype(str).tolist(),
+        "point-in-time fights are not in causal date/event/bout order",
+    )
+    feature_columns = [column for column in point_in_time if column.endswith("_diff")]
+    report.require(bool(feature_columns), "point-in-time fights has no explicit diff features")
+    numeric = point_in_time[feature_columns].apply(pd.to_numeric, errors="coerce")
+    report.require(
+        numeric.notna().all().all(),
+        "point-in-time feature matrix contains null or non-numeric values",
+    )
+    report.require(
+        np.isfinite(numeric.to_numpy(dtype=float)).all(),
+        "point-in-time feature matrix contains infinity",
+    )
+    lineage_columns = {
+        "date", "fight_url", "event_url", "fighter_url", "opponent_url",
+        "result", "method", "round", "total_fight_time", "bout_order",
+    }
+    missing_raw = sorted(lineage_columns - set(raw.columns))
+    if missing_raw:
+        report.errors.append(
+            f"raw fights cannot validate point-in-time lineage; missing: {missing_raw}"
+        )
+        return report
+    raw = raw.copy()
+    raw_bout_order = pd.to_numeric(raw["bout_order"], errors="coerce")
+    if (
+        raw_bout_order.isna().any()
+        or not np.equal(raw_bout_order % 1, 0).all()
+    ):
+        report.errors.append(
+            "raw bout_order must be integral before point-in-time lineage can be validated"
+        )
+        return report
+    raw["bout_order"] = raw_bout_order.astype(int)
+
+    def identity_token(value: object) -> str:
+        if value is None or pd.isna(value):
+            return ""
+        return str(value).strip().rstrip("/").rsplit("/", 1)[-1]
+
+    expected_rows: list[dict[str, object]] = []
+    invalid_groups = []
+    for fight_url, group in raw.groupby("fight_url", sort=False, dropna=False):
+        if len(group) != 2:
+            invalid_groups.append(str(fight_url))
+            continue
+        working = group.copy()
+        working["_fighter_id"] = working["fighter_url"].map(identity_token)
+        working["_opponent_id"] = working["opponent_url"].map(identity_token)
+        results = working["result"].astype(str).str.upper()
+        if sorted(results.tolist()) != ["L", "W"]:
+            continue
+        canonical = working.sort_values("_fighter_id", kind="stable").iloc[0]
+        expected_rows.append(
+            {
+                "fight_id": identity_token(fight_url),
+                "fight_url": canonical["fight_url"],
+                "event_id": identity_token(canonical["event_url"]),
+                "event_url": canonical["event_url"],
+                "date": pd.to_datetime(canonical["date"], errors="coerce").normalize(),
+                "fighter_id": canonical["_fighter_id"],
+                "fighter_url": canonical["fighter_url"],
+                "opponent_id": canonical["_opponent_id"],
+                "opponent_url": canonical["opponent_url"],
+                "target": 1 if str(canonical["result"]).upper() == "W" else 0,
+                "bout_order": int(canonical["bout_order"]),
+                "label_method": canonical["method"],
+                "label_finish_round": canonical.get("round", np.nan),
+                "label_total_fight_seconds": canonical.get(
+                    "total_fight_time", np.nan
+                ),
+                "label_time_format": canonical.get("time_format", ""),
+            }
+        )
+    report.require(
+        not invalid_groups,
+        "raw fights contain invalid groups, so point-in-time completeness cannot be proven",
+    )
+    if not expected_rows:
+        report.errors.append("raw fights contain no terminal W/L rows for point-in-time validation")
+        return report
+    expected = pd.DataFrame(expected_rows).set_index("fight_id", drop=False)
+    actual = point_in_time.copy()
+    actual["date"] = dates
+    actual["fight_id"] = actual["fight_id"].astype(str)
+    actual = actual.set_index("fight_id", drop=False)
+    expected_ids = set(expected.index.astype(str))
+    actual_ids = set(actual.index.astype(str))
+    report.require(
+        actual_ids == expected_ids,
+        "point-in-time fight IDs are not the exact set of terminal raw W/L fights",
+    )
+    if point_in_time["fight_id"].is_unique:
+        for fight_id in sorted(actual_ids & expected_ids):
+            expected_row = expected.loc[fight_id]
+            actual_row = actual.loc[fight_id]
+            for column in (
+                "fight_url", "event_id", "event_url", "date", "fighter_id",
+                "fighter_url", "opponent_id", "opponent_url", "target", "bout_order",
+                "label_method", "label_finish_round",
+                "label_total_fight_seconds", "label_time_format",
+            ):
+                both_missing = pd.isna(actual_row[column]) and pd.isna(
+                    expected_row[column]
+                )
+                if not both_missing and actual_row[column] != expected_row[column]:
+                    report.errors.append(
+                        f"point-in-time {column} disagrees with raw lineage for fight {fight_id}"
+                    )
+    point_url_tokens = point_in_time["fighter_url"].map(identity_token)
+    opponent_url_tokens = point_in_time["opponent_url"].map(identity_token)
+    report.require(
+        point_url_tokens.eq(point_in_time["fighter_id"].astype(str)).all()
+        and opponent_url_tokens.eq(point_in_time["opponent_id"].astype(str)).all(),
+        "point-in-time URL tokens do not match fighter IDs",
+    )
+    terminal_raw = raw[raw["result"].astype(str).str.upper().isin(["W", "L"])]
+    raw_max = pd.to_datetime(terminal_raw["date"], errors="coerce").max()
+    point_max = dates.max()
+    report.require(
+        raw_max == point_max,
+        "latest terminal raw W/L and point-in-time label dates differ",
+    )
+    report.facts.append(
+        f"point-in-time fights: {len(point_in_time):,} rows / {len(feature_columns):,} features"
+    )
+    return report
+
+
+def validate_model_artifact(
+    artifact: object,
+    raw: pd.DataFrame,
+    fighters: pd.DataFrame,
+    point_in_time: pd.DataFrame | None,
+) -> ValidationReport:
+    report = ValidationReport()
+    if not isinstance(artifact, dict):
+        report.errors.append("winner_model.json must contain a JSON object")
+        return report
+    required = {
+        "schema_version", "model_version", "model_id", "data_through",
+        "source_data_through", "training_labels_through", "training_fights",
+        "training_fingerprint_sha256", "state_fingerprint_sha256",
+        "feature_columns", "scaler_scale", "coefficients", "intercept",
+        "calibration_slope", "selected_c", "temporal_evaluation",
+    }
+    missing = sorted(required - set(artifact))
+    report.require(not missing, f"winner model artifact is missing fields: {missing}")
+    if missing:
+        return report
+    report.require(artifact["schema_version"] == 1, "winner model schema version must be 1")
+    report.require(
+        artifact["model_version"] == MODEL_VERSION,
+        "winner model version is not supported by this code",
+    )
+    features = artifact["feature_columns"]
+    scales = artifact["scaler_scale"]
+    coefficients = artifact["coefficients"]
+    report.require(isinstance(features, list) and bool(features), "winner model features must be a list")
+    report.require(isinstance(scales, list), "winner model scales must be a list")
+    report.require(isinstance(coefficients, list), "winner model coefficients must be a list")
+    if not isinstance(scales, list):
+        scales = []
+    if not isinstance(coefficients, list):
+        coefficients = []
+    if isinstance(features, list):
+        report.require(len(features) == len(set(features)), "winner model features are duplicated")
+        report.require(all(str(value).endswith("_diff") for value in features), "winner model has a non-difference feature")
+        report.require(
+            len(scales) == len(features) and len(coefficients) == len(features),
+            "winner model vector lengths do not match its features",
+        )
+        if point_in_time is not None:
+            report.require(
+                features == [column for column in point_in_time if column.endswith("_diff")],
+                "winner model feature order differs from the point-in-time matrix",
+            )
+    try:
+        numeric = np.asarray(
+            [
+                *scales, *coefficients, artifact["intercept"],
+                artifact["calibration_slope"], artifact["selected_c"],
+            ],
+            dtype=float,
+        )
+        report.require(np.isfinite(numeric).all(), "winner model contains non-finite parameters")
+        report.require((np.asarray(scales, dtype=float) > 0).all(), "winner model scales must be positive")
+        report.require(float(artifact["intercept"]) == 0.0, "winner model intercept must be zero")
+        report.require(float(artifact["calibration_slope"]) > 0, "winner model calibration slope must be positive")
+        report.require(float(artifact["selected_c"]) > 0, "winner model selected_c must be positive")
+    except (TypeError, ValueError):
+        report.errors.append("winner model parameters are not numeric")
+    unhashed = dict(artifact)
+    supplied_model_id = unhashed.pop("model_id", None)
+    try:
+        canonical = json.dumps(unhashed, sort_keys=True, separators=(",", ":"), allow_nan=False)
+        expected_model_id = sha256(canonical.encode("utf-8")).hexdigest()[:20]
+        report.require(supplied_model_id == expected_model_id, "winner model_id does not match artifact contents")
+    except (TypeError, ValueError):
+        report.errors.append("winner model cannot be encoded canonically")
+    raw_max = pd.to_datetime(raw["date"], errors="coerce").max().strftime("%Y-%m-%d")
+    report.require(artifact["data_through"] == raw_max, "winner model is not trained through latest raw date")
+    report.require(
+        artifact["source_data_through"] == raw_max,
+        "winner model source cutoff differs from latest raw date",
+    )
+    try:
+        state_builder = PointInTimeDatasetBuilder(raw, fighters)
+        prepared_raw = state_builder._validate_and_prepare_raw()
+        expected_state_fingerprint = state_builder._state_source_fingerprint(
+            prepared_raw
+        )
+        report.require(
+            artifact["state_fingerprint_sha256"] == expected_state_fingerprint,
+            "winner model state fingerprint differs from raw/profile source data",
+        )
+    except (KeyError, TypeError, ValueError) as error:
+        report.errors.append(
+            f"winner model state fingerprint could not be verified: {error}"
+        )
+    if point_in_time is not None:
+        point_dates = pd.to_datetime(point_in_time["date"], errors="coerce")
+        training_mask = point_dates >= (
+            pd.to_datetime(raw_max, errors="raise") - pd.DateOffset(years=10)
+        )
+        expected_training_count = int(training_mask.sum())
+        try:
+            training_fights = int(artifact["training_fights"])
+        except (TypeError, ValueError):
+            training_fights = -1
+            report.errors.append("winner model training_fights is not an integer")
+        report.require(
+            training_fights == expected_training_count,
+            "winner model training count differs from its ten-year point-in-time window",
+        )
+        label_max = point_dates.max().strftime("%Y-%m-%d")
+        report.require(
+            artifact["training_labels_through"] == label_max,
+            "winner model label cutoff differs from latest point-in-time W/L",
+        )
+        if isinstance(features, list) and set(features) <= set(point_in_time.columns):
+            training = point_in_time.loc[training_mask].copy()
+            training["date"] = point_dates.loc[training_mask]
+            expected_fingerprint = training_fingerprint(training, features)
+            report.require(
+                artifact["training_fingerprint_sha256"] == expected_fingerprint,
+                "winner model training fingerprint differs from point-in-time data",
+            )
+    report.facts.append(
+        f"winner model: {artifact['model_id']} / {artifact['training_fights']} fights"
+    )
     return report
 
 
@@ -247,7 +656,13 @@ def _load_json(path: Path, report: ValidationReport):
 
 
 def validate_publication(
-    data_root: Path, raw: pd.DataFrame, *, allow_stale: bool = False
+    data_root: Path,
+    raw: pd.DataFrame,
+    fighters: pd.DataFrame,
+    *,
+    allow_stale: bool = False,
+    point_in_time: pd.DataFrame | None = None,
+    require_model_artifact: bool = False,
 ) -> ValidationReport:
     report = ValidationReport()
     external = data_root / "external"
@@ -261,12 +676,22 @@ def validate_publication(
         "ufc_fight_data_for_website",
         "vegas_odds",
     }
+    if require_model_artifact:
+        required_json.add("winner_model")
     report.require(
         required_json.issubset(objects),
         f"missing publication JSON files: {sorted(required_json - set(objects))}",
     )
     if report.errors:
         return report
+
+    winner_model = objects.get("winner_model")
+    if winner_model is not None and require_model_artifact:
+        report.merge(
+            validate_model_artifact(
+                winner_model, raw, fighters, point_in_time
+            )
+        )
 
     website_data = objects["ufc_fight_data_for_website"]
     report.require(isinstance(website_data, dict), "website fight data must be a JSON object")
@@ -302,6 +727,81 @@ def validate_publication(
                     (vegas_dates.dt.normalize() == card_date.normalize()).all(),
                     "vegas odds dates do not match card_info",
                 )
+            if (
+                require_model_artifact
+                and winner_model is not None
+                and isinstance(winner_model, dict)
+            ):
+                model_id = winner_model.get("model_id")
+                model_columns = {
+                    "model id", "model version", "model trained through",
+                    "model probability", "model status", "forecast probability",
+                    "forecast source", "betting status", "odds observed at",
+                }
+                if _require_columns(vegas, model_columns, "vegas odds model", report):
+                    report.require(
+                        vegas["model id"].astype(str).eq(str(model_id)).all(),
+                        "vegas odds model IDs do not match winner_model.json",
+                    )
+                    report.require(
+                        vegas["model version"].astype(str).eq(
+                            str(winner_model.get("model_version"))
+                        ).all(),
+                        "vegas odds model versions do not match winner_model.json",
+                    )
+                    report.require(
+                        vegas["model trained through"].astype(str).eq(
+                            str(winner_model.get("data_through"))
+                        ).all(),
+                        "vegas odds training cutoffs do not match winner_model.json",
+                    )
+                    model_probability = pd.to_numeric(
+                        vegas["model probability"], errors="coerce"
+                    )
+                    forecast_probability = pd.to_numeric(
+                        vegas["forecast probability"], errors="coerce"
+                    )
+                    resolved = vegas["model status"] != "abstain_unresolved_identity"
+                    report.require(
+                        model_probability[resolved].between(0, 1, inclusive="neither").all(),
+                        "resolved model probabilities must be strictly between zero and one",
+                    )
+                    report.require(
+                        forecast_probability[resolved].between(0, 1, inclusive="neither").all(),
+                        "resolved forecast probabilities must be strictly between zero and one",
+                    )
+                    matched = vegas.get(
+                        "odds source status", pd.Series("", index=vegas.index)
+                    ).eq("matched")
+                    observed = pd.to_datetime(
+                        vegas.loc[matched, "odds observed at"], errors="coerce", utc=True
+                    )
+                    report.require(
+                        observed.notna().all(),
+                        "matched odds rows require a parseable observation timestamp",
+                    )
+                    market_rows = vegas["forecast source"].eq(
+                        "market_no_vig_consensus"
+                    )
+                    market_probability = pd.to_numeric(
+                        vegas.get(
+                            "market no-vig fighter probability",
+                            pd.Series(np.nan, index=vegas.index),
+                        ),
+                        errors="coerce",
+                    )
+                    report.require(
+                        market_probability[market_rows].between(
+                            0, 1, inclusive="neither"
+                        ).all(),
+                        "market forecasts require a valid no-vig probability",
+                    )
+                    report.require(
+                        vegas["betting status"].eq(
+                            "disabled_pending_market_relative_validation"
+                        ).all(),
+                        "betting must remain disabled until market-relative validation",
+                    )
 
     completed_max = pd.to_datetime(raw["date"], errors="coerce").max()
     completed_age = (pd.Timestamp.today().normalize() - completed_max.normalize()).days
@@ -320,28 +820,58 @@ def validate_publication(
     return report
 
 
-def validate_repository(repo_root: Path, *, allow_stale: bool = False) -> ValidationReport:
+def validate_repository(
+    repo_root: Path,
+    *,
+    allow_stale: bool = False,
+    require_model_artifact: bool = False,
+) -> ValidationReport:
     data_root = repo_root / "src" / "content" / "data"
     processed = data_root / "processed"
     raw = pd.read_csv(processed / "ufc_fights_reported_doubled.csv", low_memory=False)
-    derived = pd.read_csv(
-        processed / "ufc_fights_reported_derived_doubled.csv", low_memory=False
-    )
     fighters = pd.read_csv(processed / "fighter_stats.csv", low_memory=False)
+    point_path = processed / "ufc_fights_point_in_time.csv"
+    point_in_time = (
+        pd.read_csv(point_path, low_memory=False) if point_path.exists() else None
+    )
 
     report = ValidationReport()
     report.merge(validate_raw_fights(raw))
-    report.merge(validate_derived(raw, derived))
     report.merge(validate_fighters(fighters))
-    report.merge(validate_publication(data_root, raw, allow_stale=allow_stale))
+    raw_schema_valid = RAW_REQUIRED_COLUMNS <= set(raw.columns)
+    if require_model_artifact:
+        report.require(
+            {"source_card_index", "bout_order", "time_format"} <= set(raw.columns),
+            "generated raw fights require durable card order and time_format fields",
+        )
+    if raw_schema_valid:
+        if point_in_time is not None and require_model_artifact:
+            report.merge(validate_point_in_time(raw, point_in_time))
+        elif require_model_artifact:
+            report.errors.append("ufc_fights_point_in_time.csv is missing")
+        elif point_in_time is not None:
+            report.warnings.append(
+                "point-in-time/model compatibility was deferred to the post-update validation"
+            )
+        report.merge(
+            validate_publication(
+                data_root,
+                raw,
+                fighters,
+                allow_stale=allow_stale,
+                point_in_time=point_in_time,
+                require_model_artifact=require_model_artifact,
+            )
+        )
+    else:
+        report.errors.append(
+            "dependent point-in-time/publication checks skipped because raw schema is invalid"
+        )
 
     raw_dates = pd.to_datetime(raw["date"], errors="coerce")
-    derived_dates = pd.to_datetime(derived["date"], errors="coerce")
     ordering_problems = []
     if not raw_dates.is_monotonic_decreasing:
         ordering_problems.append("raw fights are not sorted newest-to-oldest")
-    if not derived_dates.is_monotonic_increasing:
-        ordering_problems.append("derived fights are not sorted oldest-to-newest")
     if allow_stale:
         report.warnings.extend(ordering_problems)
     else:
@@ -358,13 +888,22 @@ def main() -> int:
         help="repository root (defaults to the parent of src)",
     )
     parser.add_argument(
+        "--require-model-artifact",
+        action="store_true",
+        help="require and cross-check the point-in-time matrix and winner model",
+    )
+    parser.add_argument(
         "--allow-stale",
         action="store_true",
         help="run structural checks without rejecting old completed/upcoming snapshots",
     )
     args = parser.parse_args()
 
-    report = validate_repository(args.repo_root.resolve(), allow_stale=args.allow_stale)
+    report = validate_repository(
+        args.repo_root.resolve(),
+        allow_stale=args.allow_stale,
+        require_model_artifact=args.require_model_artifact,
+    )
     for fact in report.facts:
         print(f"FACT: {fact}")
     for warning in report.warnings:

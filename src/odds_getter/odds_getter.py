@@ -134,8 +134,18 @@ class OddsGetter:
         # American moneylines are nonlinear, so averaging the signed odds is
         # invalid.  Convert each complete two-sided book quote to probability,
         # remove that book's vig, then aggregate probabilities.
+        consensus_probabilities = [
+            self.get_consensus_probability(row, bookies_list)
+            for _, row in df.iterrows()
+        ]
+        df['average bookie probability'] = consensus_probabilities
         df['average bookie odds'] = [
-            self.get_consensus_odds(row, bookies_list) for _, row in df.iterrows()
+            [
+                self.probability_to_odds(probability),
+                self.probability_to_odds(1 - probability),
+            ]
+            if probability is not None else [None, None]
+            for probability in consensus_probabilities
         ]
         return df
 
@@ -166,7 +176,7 @@ class OddsGetter:
             return -round(100 * probability / (1 - probability))
         return round(100 * (1 - probability) / probability)
 
-    def get_consensus_odds(self, row, bookies_list):
+    def get_consensus_probability(self, row, bookies_list):
         fighter_probabilities = []
         for bookie in bookies_list:
             fighter_odds = self.parse_american_odds(row.get(f'fighter {bookie}'))
@@ -181,8 +191,13 @@ class OddsGetter:
             fighter_probabilities.append(fighter_implied / overround)
 
         if not fighter_probabilities:
+            return None
+        return float(np.mean(fighter_probabilities))
+
+    def get_consensus_odds(self, row, bookies_list):
+        fighter_probability = self.get_consensus_probability(row, bookies_list)
+        if fighter_probability is None:
             return [None, None]
-        fighter_probability = float(np.mean(fighter_probabilities))
         return [
             self.probability_to_odds(fighter_probability),
             self.probability_to_odds(1 - fighter_probability),

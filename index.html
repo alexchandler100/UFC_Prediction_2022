@@ -374,8 +374,9 @@
       </h1>
     </div>
     <center>
-      <strong>Experimental legacy comparison.</strong> This browser calculation
-      does not yet use the same model artifact as the weekly card predictions.
+      <strong>Experimental legacy calculator.</strong> This browser-only calculation is separate from
+      the weekly point-in-time forecast and does not use its model artifact. Weekly forecasts appear
+      only in the Upcoming Fights table below.
     </center>
     <div>
       <center>
@@ -409,27 +410,29 @@
       </h1>
     </div>
     <center>
-      Here we show the model's predictions for upcoming fights which are on the vegas books (only those for which both
-      fighters have fought previously in the UFC).
-      The predicted winner is shown in <span style="color:gold">gold</span>.
+      The forecast columns show the published weekly forecast. A timestamped, no-vig market consensus is used when
+      available; otherwise the point-in-time statistics model is shown. The independent model status and provenance
+      remain visible for every matchup, including low-history and unresolved fighters.
       <br>
-      In the final column we show the Kelly bankroll percentages of betting on the fighter or opponent based on the predicted
-      odds and the DraftKings odds. The number shown is bankroll percentage recommended by the Kelly criterion which maximizes long term profit for binary outcome bets.
-      In <span style="color:rgb(133, 187, 101)">green</span> we show the positive bankroll percentages indicating a likely profitable bet.
+      <strong>Betting recommendations are disabled.</strong> These forecasts and market probabilities are published for
+      evaluation and recordkeeping, not as suggested wagers.
+      <p id="weekly-model-provenance" style="margin-top:.35cm;font-size:14px;">
+        Loading weekly model provenance...
+      </p>
     </center>
     <center>
       <table id="upcoming" style="margin-top:.5cm; display: none">
         <thead>
           <tr id = "card-title-style" style="color: #fff; font-size:15px;font-variant: small-caps;">
-            <th id="card title and date" style="white-space: pre" colspan="7">Upcoming Fights</th>
+            <th id="card title and date" style="white-space: pre" colspan="6">Upcoming Fights</th>
           </tr>
           <tr>
             <th style="color: #ffffff;background-color: #323232;font-size:15px;">Fighter</th>
             <th style="color: #ffffff;background-color: #323232;font-size:15px;">Opponent</th>
-            <th style="color: #ffffff;background-color: #323232;font-size:15px;">Predicted<br>Fighter<br>Odds</th>
-            <th style="color: #ffffff;background-color: #323232;font-size:15px;">Predicted<br>Opponent<br>Odds</th>
-            <th style="color: #ffffff;background-color: #323232;font-size:15px;">Best Bookie<br>For<br>Bet</th>
-            <th style="color: #ffffff;background-color: #323232;font-size:15px;">Kelly<br>bankroll%</th>
+            <th style="color: #ffffff;background-color: #323232;font-size:15px;">Forecast<br>Fighter<br>Odds</th>
+            <th style="color: #ffffff;background-color: #323232;font-size:15px;">Forecast<br>Opponent<br>Odds</th>
+            <th style="color: #ffffff;background-color: #323232;font-size:15px;">Market No-vig<br>Probability</th>
+            <th style="color: #ffffff;background-color: #323232;font-size:15px;">Status &amp;<br>Provenance</th>
           </tr>
         </thead>
         <tbody>
@@ -440,8 +443,9 @@
 
   <section>
     <center>
-    <h2>Kelly Criterion Calculator</h2>
-        Here we give the user the capability to input live odds from any bookie (the above odds were grabbed on Wednesday 8pm MST from DraftKings and they have likely changed).
+    <h2>Standalone Kelly Criterion Calculator (Experimental)</h2>
+        This informational calculator is separate from the weekly forecast and does not enable betting recommendations.
+        You can manually input live odds from any bookie.
         Live odds can be found at  <a href="https://fightodds.io/" target="_blank" rel="noopener noreferrer">fightodds.io</a>
         <style>
           #kelly-table {
@@ -498,28 +502,28 @@
     </div>
 
     <center>
-      We started running this program to predict fights on April 23, 2022. Below we show the history of predictions
+      We started publishing fight forecasts on April 23, 2022. Below we show the history of forecasts
       made
       before each event.
-      For reference, the average bookie odds are also shown (this average is formed from the betting odds on
-      Draftkings,
-      BetMGM, Caesars, BetRivers, FanDuel, PointsBet, Unibet, Bet365, BetWay, SD, Ref).
+      For reference, available sportsbook prices are also shown. New records use a no-vig consensus in
+      probability space; older records may contain the site's legacy arithmetic odds average.
       After each event, the table is automatically updated to indicate the winners in <span
         style="color:gold">gold</span> and keep a running total of the prediction accuracy.
       Correctly predicted fights are indicated in <span style="color:green">green</span> and incorrectly predicted
       fights are shown in <span style="color:red">red</span>.
-      After a large number of fights, the accuracy is expected for theoretical reasons to converge to about 64%.
+      Historical accuracy is descriptive only: this table spans multiple model versions, and older rows may lack
+      stable fight IDs or complete provenance. It is not a betting-performance guarantee.
     </center>
 
     <center>
       <table id="tablehistory" style="margin-top:.5cm;display:none">
         <thead>
           <tr style="color: #fff; font-size:15px;font-variant: small-caps;">
-            <th colspan="5">Fight Prediction History</th>
+            <th colspan="5">Fight Forecast History</th>
           </tr>
           <tr id="history">
             <th style="color: #ffffff;background-color: #323232;font-size:15px;">Fighter vs Opponent</th>
-            <th style="color: #ffffff;background-color: #323232;font-size:15px;">Predicted<br>Odds</th>
+            <th style="color: #ffffff;background-color: #323232;font-size:15px;">Published<br>Forecast<br>Odds</th>
             <th style="color: #ffffff;background-color: #323232;font-size:15px;">Best Bookie</th>
             <th style="color: #ffffff;background-color: #323232;font-size:15px;">Kelly<br>Criterion<br>Bet</th>
             <th style="color: #ffffff;background-color: #323232;font-size:15px;">Bankroll<br>After<br>Fight</th>
@@ -535,7 +539,7 @@
         <p style="font-size:16pt" class="stats"> The following statistics were compiled based on the model's performance
           since April 23, 2022</p>
           <center>
-            <p style="font-size:16pt" id="myaccuracy"> Model Accuracy</p>
+            <p style="font-size:16pt" id="myaccuracy"> Forecast Accuracy</p>
             <p style="font-size:16pt" id="bookieaccuracy"> Bookie Accuracy</p>
           </center>
         </div>
@@ -550,7 +554,7 @@
         and predict the most likely outcome if they were to fight exactly as they were on the specified dates.
         Details on how these models were constructed can be found <a
           href="https://github.com/alexchandler100/UFC_Prediction_2022" target="_blank">here</a> on our Github.
-        Accuracy of predicting the correct winner is 63%.
+        This experimental browser model is not the validated weekly model and has no current accuracy claim.
         All photos are scraped from Google image search acted on by a convolutional neural network (CNN) for artistic
         style transfer (8,964 photos total).
         Bookie odds are scraped from <a href="https://www.bestfightodds.com/" target="_blank">here</a>.

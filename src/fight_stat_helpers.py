@@ -724,6 +724,60 @@ def get_event_fight_urls(url):
     return fight_urls
 
 
+def calculate_total_fight_time(round_number, final_round_time, time_format):
+    """Calculate elapsed seconds from UFCStats' declared round format."""
+    round_value = pd.to_numeric(pd.Series([round_number]), errors='coerce').iloc[0]
+    if pd.isna(round_value):
+        return np.nan
+    round_value = int(round_value)
+    time_match = re.fullmatch(r'\s*(\d+):(\d{2})\s*', str(final_round_time))
+    if time_match is None:
+        return np.nan
+    final_seconds = int(time_match.group(1)) * 60 + int(time_match.group(2))
+    if round_value == 1:
+        return final_seconds
+
+    declared_lengths = [
+        int(value) for value in re.findall(
+            r'\d+',
+            (re.search(r'\(([^)]*)\)', str(time_format or '')) or [None, ''])[1],
+        )
+    ]
+    if not declared_lengths:
+        return np.nan
+    # UFCStats sometimes abbreviates conventional formats as "3 Rnd (5-5)"
+    # or "5 Rnd (5-5)". Repeat the final declared length when necessary;
+    # explicit historical/overtime sequences such as (15-3) still retain
+    # their distinct earlier rounds.
+    while len(declared_lengths) < round_value - 1:
+        declared_lengths.append(declared_lengths[-1])
+    return sum(declared_lengths[: round_value - 1]) * 60 + final_seconds
+
+
+def extract_time_format(soup, url='<unknown fight>'):
+    """Return UFCStats' declared round format from a fight-detail page."""
+    for label in soup.select('i.b-fight-details__label'):
+        normalized_label = re.sub(
+            r'[^a-z]', '', label.get_text(' ', strip=True).casefold()
+        )
+        if normalized_label != 'timeformat':
+            continue
+        container = label.find_parent(
+            'i', class_='b-fight-details__text-item'
+        ) or label.parent
+        container_text = container.get_text(' ', strip=True)
+        time_format = re.sub(
+            r'^\s*time[\s_]*format\s*:\s*',
+            '',
+            container_text,
+            flags=re.IGNORECASE,
+        ).strip()
+        if time_format:
+            return time_format
+        raise UFCStatsError(f'Blank time-format metadata for {url}')
+    raise UFCStatsError(f'Missing time-format metadata for {url}')
+
+
 def get_fight_card(url):
     page = ufcstats_client.get(url, expected_text='b-fight-details__table')
     soup = BeautifulSoup(page.content, "html.parser")
@@ -744,11 +798,21 @@ def get_fight_card(url):
     
     print(f'date: {date}, url: {url}, number of fights on card: {len(rows)}')
     
-    for row in rows:
+    card_size = len(rows)
+    for source_card_index, row in enumerate(rows):
         fight_data_dict = {'date': [], 'fight_url': [], 'event_url': [], 'result': [], 'fighter': [], 'opponent': [], 'division': [], 'method': [],
-                    'round': [], 'time': [], 'total_fight_time': [], 'fighter_url': [], 'opponent_url': []}
+                    'round': [], 'time': [], 'total_fight_time': [], 'fighter_url': [], 'opponent_url': [],
+                    'source_card_index': [], 'bout_order': []}
         fight_data_dict['date'] += [date, date]  # add date of fight # TODO consider changing to datetime object
         fight_data_dict['event_url'] += [url, url]  # add event url
+        # UFCStats renders main event first.  Persist both the source position
+        # and chronological order so old tournament rounds can be replayed
+        # causally without relying on dataframe adjacency.
+        fight_data_dict['source_card_index'] += [source_card_index, source_card_index]
+        fight_data_dict['bout_order'] += [
+            card_size - 1 - source_card_index,
+            card_size - 1 - source_card_index,
+        ]
         cols = row.select('td')
         
         if not cols:
@@ -810,16 +874,9 @@ def get_fight_card(url):
         time = cols[9].select_one('p').text.strip()
         fight_data_dict['time'] += [time, time]
         
-        # calculate the number of seconds in the last round
-        time_tuple = time.split(':')
-        assert len(time_tuple) == 2, f"Time format error: {time} in fight {fight_url}"
-        minutes, seconds = time_tuple
-        minutes = int(minutes) if minutes.isdigit() else 0
-        seconds = int(seconds) if seconds.isdigit() else 0
-        total_seconds = minutes * 60 + seconds
-        
-        total_fight_time = (rd - 1) * 60 * 5 + total_seconds
-        fight_data_dict['total_fight_time'] += [total_fight_time, total_fight_time]
+        # The elapsed duration is computed after reading the fight detail
+        # page's TIME_FORMAT. Early UFC rounds were not uniformly five minutes.
+        fight_data_dict['total_fight_time'] += [np.nan, np.nan]
 
         fight_data_dict = pd.DataFrame(fight_data_dict)
         # get striking details
@@ -835,6 +892,20 @@ def get_fight_card(url):
         
         # join to fight details
         fight_data_dict = pd.merge(fight_data_dict, strike_data_dict, on='fighter', how='left', copy=False)
+        time_formats = fight_data_dict['time_format'].dropna().astype(str).unique()
+        if len(time_formats) != 1 or not time_formats[0].strip():
+            raise UFCStatsError(
+                f'Fight detail page did not provide one TIME_FORMAT for {fight_url}'
+            )
+        total_fight_time = calculate_total_fight_time(
+            rd, time, time_formats[0]
+        )
+        if result[0] != 'NC' and not np.isfinite(total_fight_time):
+            raise UFCStatsError(
+                f'Could not calculate elapsed time for completed fight {fight_url} '
+                f'from round={rd!r}, time={time!r}, format={time_formats[0]!r}'
+            )
+        fight_data_dict['total_fight_time'] = total_fight_time
         
         # add fight details to fight card
         fight_card = pd.concat([fight_card, fight_data_dict], axis=0)
@@ -873,6 +944,7 @@ def get_fight_stats(url, fighter, opponent):
     
     statistics = statistics1 + statistics2
     fd_columns['fighter'] = []
+    fd_columns['time_format'] = []
     for stat in statistics:
         fd_columns[stat] = []
         
@@ -925,6 +997,8 @@ def get_fight_stats(url, fighter, opponent):
     fighter = fighter_col[fighter_index].text.strip()
     opponent = fighter_col[opponent_index].text.strip()
     fd_columns['fighter'] += [fighter, opponent]
+    time_format = extract_time_format(soup, url)
+    fd_columns['time_format'] += [time_format, time_format]
         
     fighter_knockdowns = knockdown_col[fighter_index].text.strip() # looks like an integer 
     opponent_knockdowns = knockdown_col[opponent_index].text.strip() # looks like an integer

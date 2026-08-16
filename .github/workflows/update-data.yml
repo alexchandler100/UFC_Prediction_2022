@@ -17,7 +17,7 @@ concurrency:
 jobs:
   update_data:
     runs-on: ubuntu-24.04
-    # Normal runs take ~20 minutes; the larger limit permits a one-time catch-up
+    # A recent catch-up completed in ~8 minutes; the larger limit permits a
     # after an outage without silently killing an otherwise healthy rebuild.
     timeout-minutes: 180
     env:
@@ -28,7 +28,9 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v7
         with:
-          fetch-depth: 0
+          # The repository has a large history; the updater only needs the
+          # triggering revision plus one explicit remote-tip safety check.
+          fetch-depth: 1
 
       - name: Set up Python 3.11
         uses: actions/setup-python@v7
@@ -53,7 +55,7 @@ jobs:
         run: python update_and_rebuild_model.py
 
       - name: Validate generated snapshot
-        run: python src/validate_data.py
+        run: python src/validate_data.py --require-model-artifact
 
       - name: Commit validated generated files
         shell: bash
@@ -61,9 +63,11 @@ jobs:
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
           git add -- \
-            src/content/data/processed \
-            src/content/data/external \
-            src/content/bokehPlots
+            src/content/data/processed/fighter_stats.csv \
+            src/content/data/processed/ufc_fights_reported_doubled.csv \
+            src/content/data/processed/ufc_fight_data_for_website.csv \
+            src/content/data/processed/ufc_fights_point_in_time.csv \
+            src/content/data/external
 
           if git diff --cached --quiet; then
             echo "No validated data changes to commit."
@@ -71,5 +75,9 @@ jobs:
           fi
 
           git commit -m "Update UFC data ($(date -u +%F))"
-          git pull --rebase origin "${GITHUB_REF_NAME}"
+          git fetch --no-tags --depth=1 origin "${GITHUB_REF_NAME}"
+          if [ "$(git rev-parse FETCH_HEAD)" != "${GITHUB_SHA}" ]; then
+            echo "Main changed during this build; refusing to publish artifacts built from older code."
+            exit 1
+          fi
           git push origin "HEAD:${GITHUB_REF_NAME}"

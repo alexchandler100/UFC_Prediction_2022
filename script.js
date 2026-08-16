@@ -34,6 +34,11 @@ $(function () { // building object fighter_data from fighter_data.json file
       select.insertAdjacentHTML('beforeend', `<option value="${i}">${i}</option>`)
       fighter_data[i] = f
     });
+    // The weekly card may have rendered before this larger file arrived. Render
+    // again so fighter profile links are added without relying on a timer.
+    if (vegas_odds['fighter name']) {
+      renderUpcomingPredictions();
+    }
   });
 });
 
@@ -50,6 +55,9 @@ $(function () { // building object vegas_odds from vegas_odds.json file
     $.each(data, function (i, f) {
       vegas_odds[i] = f
     });
+    renderUpcomingPredictions();
+  }).fail(function () {
+    renderUpcomingPredictions('Weekly forecast data could not be loaded.');
   });
 });
 
@@ -817,221 +825,307 @@ function populateLast5Fights(fighter, corner) {
   }
 }
 
-//Building upcoming predictions table
-
-setTimeout(() => { //timeout because other data needs to load first (probably better to do with async)
-  var upcomingFightsTable = document.getElementById('upcoming')
-  for (const i in vegas_odds['fighter name']) {
-    fighter = vegas_odds['fighter name'][i]
-    opponent = vegas_odds['opponent name'][i]
-    fighterOdds = vegas_odds['predicted fighter odds'][i]
-    opponentOdds = vegas_odds['predicted opponent odds'][i]
-    // grab columns which may or may not be present
-    bestFighterBookieCol = vegas_odds['best fighter bookie'] || null; // default to null if not present
-    bestOpponentBookieCol = vegas_odds['best opponent bookie'] || null;
-    fighterBankrollPercentageCol = vegas_odds['fighter bet bankroll percentage'] || null; // default to null if not present
-    opponentBankrollPercentageCol = vegas_odds['opponent bet bankroll percentage'] || null; // default to null if not present
-
-    if (bestFighterBookieCol != null) {
-      bestFighterBookie = bestFighterBookieCol[i];
-    } else {
-      bestFighterBookie = null; // default to null if not present
-    }
-    // get info on best bookie odds for fighter and opponent
-    if (bestOpponentBookieCol != null) {
-      bestOpponentBookie = bestOpponentBookieCol[i];
-    } else {
-      bestOpponentBookie = null; // default to null if not present
-    }
-    if (bestFighterBookie) {
-      // check if `fighter ${bestFighterBookie}` is in vegas_odds keys
-      if (!(`fighter ${bestFighterBookie}` in vegas_odds) || !(`opponent ${bestFighterBookie}` in vegas_odds)) {
-        console.warn(`Best fighter bookie ${bestFighterBookie} not found in vegas_odds keys for fight between ${fighter} and ${opponent}. Setting odds to null.`);
-        bestFighterBookieOddsOnFighter = null;
-        bestFighterBookieOddsOnOpponent = null;
-      } else {
-        bestFighterBookieOddsOnFighter = vegas_odds[`fighter ${bestFighterBookie}`][i];
-        bestFighterBookieOddsOnOpponent = vegas_odds[`opponent ${bestFighterBookie}`][i];
-      }
-    } else {
-      bestFighterBookieOddsOnFighter = null; // default to null if not present
-      bestFighterBookieOddsOnOpponent = null; // default to null if not present
-    }
-    if (bestOpponentBookie) {
-      bestOpponentBookieOddsOnFighter = vegas_odds[`fighter ${bestOpponentBookie}`][i];
-      bestOpponentBookieOddsOnOpponent = vegas_odds[`opponent ${bestOpponentBookie}`][i];
-    } else {
-      bestOpponentBookieOddsOnFighter = null; // default to null if not present
-      bestOpponentBookieOddsOnOpponent = null; // default to null if not present
-    }
-
-    // get info on kelly criterion bankroll percentages
-    if (fighterBankrollPercentageCol != null) {
-      fighterBankrollPercentage = parseFloat(fighterBankrollPercentageCol[i]).toFixed(2);
-    } else {
-      fighterBankrollPercentage = null; // default to null if not present
-    }
-    if (opponentBankrollPercentageCol != null) {
-      opponentBankrollPercentage = parseFloat(opponentBankrollPercentageCol[i]).toFixed(2);
-    } else {
-      opponentBankrollPercentage = null; // default to null if not present
-    }
-
-    // populate table with the data
-    upcomingFightsTable.rows.item(0).cells.item(0).style.backgroundColor = "#212121";
-    var tbody = upcomingFightsTable.tBodies[0]
-    var tr = tbody.insertRow(-1);
-    var td1 = document.createElement('td'); // Fighter</th>
-    var td2 = document.createElement('td'); // Opponent</th>
-    var td3 = document.createElement('td'); // Predicted<br>Fighter<br>Odds</th>
-    var td4 = document.createElement('td'); // Predicted<br>Opponent<br>Odds</th>
-    var td5 = document.createElement('td'); // Best Bookie<br>For Fighter<br>Bet</th>
-    var td6 = document.createElement('td'); // Kelly<br>bankroll%</th> 
-    tr.appendChild(td1);
-    tr.appendChild(td2);
-    tr.appendChild(td3);
-    tr.appendChild(td4);
-    tr.appendChild(td5);
-    tr.appendChild(td6);
-    // TODO use same_name function to match fighter names else we miss some
-    fighter_stats = fighter_data[fighter]
-    opponent_stats = fighter_data[opponent]
-    if (!fighter_stats) {
-      console.warn(`Fighter data not found for ${fighter}. Skipping row.`);
-      fighterHtml = '#'
-    } else {
-      fighterHtml = fighter_stats['url']
-    }
-    if (!opponent_stats) {
-      console.warn(`Fighter data not found for ${opponent}. Skipping row.`);
-      opponentHtml = '#'
-    } else {
-      opponentHtml = opponent_stats['url']
-    }
-
-    if (fighterOdds == '' || fighterOdds == null) { //if no prediction was made
-      tr.cells.item(0).innerHTML = `<a href=${fighterHtml} target="_blank" style = "color: white">${fighter}</a>`
-      tr.cells.item(1).innerHTML = `<a href=${opponentHtml} target="_blank" style = "color: white">${opponent}</a>`
-    }
-    else if (fighterOdds[0] == '-') { // if fighter is predicted to win
-      //TODO check if they have a wikipedia page and if not, link to their UFC profile https://www.ufc.com/athlete/${fighter.replace(" ", '_')#athlete-record
-      tr.cells.item(0).innerHTML = `<a href=${fighterHtml} target="_blank" style = "color: gold">${fighter}</a>`
-      tr.cells.item(1).innerHTML = `<a href=${opponentHtml} target="_blank" style = "color: white">${opponent}</a>`
-    } else { // if opponent is predicted to win
-      tr.cells.item(0).innerHTML = `<a href=${fighterHtml} target="_blank" style = "color: white">${fighter}</a>`
-      tr.cells.item(1).innerHTML = `<a href=${opponentHtml} target="_blank" style = "color: gold">${opponent}</a>`
-    }
-
-    // convert fighter name by removing spaces for linking to bokeh plot
-    // e.g. "Elves Brener" -> "elves_brener"
-    let fighterLinkName = fighter.toLowerCase().replaceAll(" ", '_');
-    let opponentLinkName = opponent.toLowerCase().replaceAll(" ", '_');
-    // convert date to YYYY-MM-DD format for linking to bokeh plot
-    // e.g. "August 2, 2025" -> "2025-08-02"
-    let fightDate = vegas_odds['date'][i]; // e.g. "August 2, 2025"
-    let dateObj = new Date(fightDate);
-    let year = dateObj.getFullYear();
-    let month = (dateObj.getMonth() + 1).toString().padStart(2, '0'); // Months are zero-based
-    let day = dateObj.getDate().toString().padStart(2, '0');
-    let fightDateFormatted = `${year}-${month}-${day}`; // e.g. "2025-08-02"
-    oddsHtml = `src/content/bokehPlots/${fightDateFormatted}_${fighterLinkName}_vs_${opponentLinkName}_bokeh_barplot.html`
-    tr.cells.item(2).innerHTML =  `<a href=${oddsHtml} target="_blank" style="color: white"; >${fighterOdds}</a>`;
-    tr.cells.item(3).innerHTML = `<a href=${oddsHtml} target="_blank" style="color: white"; >${opponentOdds}</a>`;
-    
-    // make the fighter and opponent names bold and gold if they have higher expected value
-    // than the opponent and fighter respectively
-    // TODO indicate potential payout
-    let evPickColor = '#85BB65'; // default color for expected value text (money green)
-    let coloredBrText = '';
-    let fav_color = '#6cddffff';
-    let dog_color = '#e9b24cff';
-    if (fighterBankrollPercentage && opponentBankrollPercentage) { // check if both expected values are defined
-      if (fighterBankrollPercentage > opponentBankrollPercentage && fighterBankrollPercentage > 0) { //if fighter has higher expected value
-        tr.cells.item(4).innerHTML = `${bestFighterBookie}<br>${bestFighterBookieOddsOnFighter}, ${bestFighterBookieOddsOnOpponent}`;
-        if (parseInt(bestFighterBookieOddsOnFighter) < 0) { //if fighter is favorite
-          fav_dog = 'fav'
-          fav_dog_color = fav_color
-        } else {
-          fav_dog = 'dog'
-          fav_dog_color = dog_color
-        }
-        payout = betPayout(fighterBankrollPercentage, parseInt(bestFighterBookieOddsOnFighter)).toFixed(2)
-        coloredBrText = `<span class="clickable">${fighterBankrollPercentage}</span> -> <span style="color:${evPickColor}">${payout}</span><br>${fighter} (<span style="color:${fav_dog_color}">${fav_dog}</span>)`;
-      } else if (opponentBankrollPercentage > fighterBankrollPercentage && opponentBankrollPercentage > 0) { //if opponent has higher expected value
-        tr.cells.item(4).innerHTML = `${bestOpponentBookie}<br>${bestOpponentBookieOddsOnFighter}, ${bestOpponentBookieOddsOnOpponent}`;
-        if (parseInt(bestOpponentBookieOddsOnOpponent) < 0) { //if opponent is favorite
-          fav_dog = 'fav'
-          fav_dog_color = fav_color
-        } else {
-          fav_dog = 'dog'
-          fav_dog_color = dog_color
-        }
-        payout = betPayout(opponentBankrollPercentage, parseInt(bestOpponentBookieOddsOnOpponent)).toFixed(2)
-        coloredBrText = `<span class="clickable">${opponentBankrollPercentage}</span> -> <span style="color:${evPickColor}">${payout}</span><br>${opponent} (<span style="color:${fav_dog_color}">${fav_dog}</span>)`;
-
-      } else if (fighterBankrollPercentage == opponentBankrollPercentage && fighterBankrollPercentage > 0) { //if both have same expected value
-        tr.cells.item(4).innerHTML = `${bestFighterBookie}<br>${bestFighterBookieOddsOnFighter}, ${bestFighterBookieOddsOnOpponent}`;
-        if (parseInt(bestFighterBookieOddsOnFighter) < 0) { //if fighter is favorite
-          fav_dog = 'fav'
-          fav_dog_color = fav_color
-        } else {
-          fav_dog = 'dog'
-          fav_dog_color = dog_color
-        }
-        payout = betPayout(fighterBankrollPercentage, parseInt(bestFighterBookieOddsOnFighter)).toFixed(2)
-        coloredBrText = `<span class="clickable">${fighterBankrollPercentage}</span> -> <span style="color:${evPickColor}">${payout}</span><br>${fighter} (<span style="color:${fav_dog_color}">${fav_dog}</span>)`;
-
-      } else { //if both have negative expected value
-        tr.cells.item(4).innerHTML = `${bestFighterBookie}<br>${bestFighterBookieOddsOnFighter}, ${bestFighterBookieOddsOnOpponent}`;
-        coloredBrText = `<span class="clickable">${0.0}</span>`;
-      }
-    }
-
-    tr.cells.item(5).innerHTML = coloredBrText;
-
-    var item = tr.cells.item(5);
-    const clickable = item.querySelector('.clickable');
-    if (clickable != null){
-      clickable.addEventListener('click', function(event) {
-        clickedSpan = event.target;
-
-        // get the parent <td> of the span
-        const cell = clickedSpan.closest('td');
-        const row = cell.closest('tr');
-        const cells = row.querySelectorAll('td');
-        const fighterName = cells[0].innerText;
-        const opponentName = cells[1].innerText;
-        // populate the active fighter and opponent names
-        // TODO get date working again
-        const d = new Date();
-        let month = d.getMonth();
-        let year = d.getFullYear();
-        var months = ["January", "February", 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', "November", 'December']
-        document.getElementById('selectMonth_rc').value = months[month]
-        document.getElementById('selectYear_rc').value = year
-        document.getElementById('selectMonth_bc').value = months[month]
-        document.getElementById('selectYear_bc').value = year
-        document.getElementById('rcList').value = fighterName
-        document.getElementById('bcList').value = opponentName
-        selectFighterAndDate(fighterName, 'rc')
-        selectFighterAndDate(opponentName, 'bc')
-      })
-    }
-
-    tr.cells.item(0).style.backgroundColor = "#323232";
-    tr.cells.item(1).style.backgroundColor = "#323232";
-    tr.cells.item(2).style.backgroundColor = "#323232";
-    tr.cells.item(3).style.backgroundColor = "#323232";
-    tr.cells.item(4).style.backgroundColor = "#323232";
-    tr.cells.item(5).style.backgroundColor = "#323232";
-    tr.cells.item(0).style.color = "#ffffff";
-    tr.cells.item(1).style.color = "#ffffff";
-    tr.cells.item(2).style.color = "#ffffff";
-    tr.cells.item(3).style.color = "#ffffff";
-    tr.cells.item(4).style.color = "#ffffff";
-    tr.cells.item(5).style.color = "#ffffff";
+// Build the upcoming forecast table from the published JSON contract. The
+// weekly point-in-time model is deliberately not connected to the legacy
+// browser calculator or its old Bokeh explanations.
+function tableValue(table, column, index) {
+  const values = table && table[column];
+  if (!values || !Object.prototype.hasOwnProperty.call(values, index)) {
+    return null;
   }
-}, 1000) //originally 350
+  return values[index];
+}
+
+function hasDisplayValue(value) {
+  if (value === null || value === undefined) {
+    return false;
+  }
+  if (typeof value === 'number') {
+    return Number.isFinite(value);
+  }
+  const text = String(value).trim().toLowerCase();
+  return text !== '' && text !== 'nan' && text !== 'none' &&
+    text !== 'null' && text !== 'undefined';
+}
+
+function firstDisplayValue() {
+  for (const value of arguments) {
+    if (hasDisplayValue(value)) {
+      return value;
+    }
+  }
+  return null;
+}
+
+function finiteNumber(value) {
+  if (!hasDisplayValue(value)) {
+    return null;
+  }
+  const number = Number(value);
+  return Number.isFinite(number) ? number : null;
+}
+
+function formatProbability(value) {
+  const probability = finiteNumber(value);
+  if (probability === null || probability < 0 || probability > 1) {
+    return '—';
+  }
+  return (probability * 100).toFixed(1) + '%';
+}
+
+function formatOdds(value) {
+  if (!hasDisplayValue(value)) {
+    return '—';
+  }
+  const text = String(value).trim();
+  const number = Number(text);
+  if (!Number.isFinite(number)) {
+    return text;
+  }
+  return number > 0 && text[0] !== '+' ? '+' + text : text;
+}
+
+function formatHistoryCount(value) {
+  const count = finiteNumber(value);
+  return count === null || count < 0 ? '—' : String(Math.round(count));
+}
+
+function humanizeForecastLabel(value) {
+  if (!hasDisplayValue(value)) {
+    return '';
+  }
+  const key = String(value).trim().toLowerCase();
+  const labels = {
+    'model': 'Model available',
+    'low_history': 'Low history — interpret cautiously',
+    'abstain_unresolved_identity': 'Model unavailable — unresolved fighter identity',
+    'market_no_vig': 'Market no-vig consensus',
+    'market_no_vig_consensus': 'Market no-vig consensus',
+    'point_in_time_model': 'Point-in-time statistics model',
+    'stats_model': 'Point-in-time statistics model',
+    'stats_model_low_history': 'Point-in-time model (low history)',
+    'weekly_forecast': 'Weekly forecast',
+    'legacy_weekly_prediction': 'Legacy weekly prediction',
+    'disabled_pending_market_relative_validation':
+      'Betting disabled — awaiting market-relative validation'
+  };
+  if (labels[key]) {
+    return labels[key];
+  }
+  const text = key.replaceAll('_', ' ');
+  return text.charAt(0).toUpperCase() + text.slice(1);
+}
+
+function setCellLines(cell, lines) {
+  cell.textContent = '';
+  const visibleLines = lines.filter(hasDisplayValue);
+  if (visibleLines.length === 0) {
+    cell.textContent = '—';
+    return;
+  }
+  visibleLines.forEach(function (line, lineIndex) {
+    if (lineIndex > 0) {
+      cell.appendChild(document.createElement('br'));
+    }
+    cell.appendChild(document.createTextNode(String(line)));
+  });
+}
+
+function setFighterCell(cell, fighterName, isFavored) {
+  cell.textContent = '';
+  const name = hasDisplayValue(fighterName) ? String(fighterName) : 'Unknown fighter';
+  const profile = fighter_data[name];
+  const profileUrl = profile && hasDisplayValue(profile.url) ? profile.url : null;
+  const label = profileUrl ? document.createElement('a') : document.createElement('span');
+  label.textContent = name;
+  label.style.color = isFavored ? 'gold' : 'white';
+  if (profileUrl) {
+    label.href = profileUrl;
+    label.target = '_blank';
+    label.rel = 'noopener noreferrer';
+  }
+  cell.appendChild(label);
+}
+
+function americanOddsProbability(value) {
+  const odds = finiteNumber(value);
+  if (odds === null || odds === 0) {
+    return null;
+  }
+  return odds > 0 ? 100 / (odds + 100) : -odds / (-odds + 100);
+}
+
+function favoredForecastSide(probabilityValue, fighterOdds, opponentOdds) {
+  const probability = finiteNumber(probabilityValue);
+  if (probability !== null && probability >= 0 && probability <= 1) {
+    if (probability > 0.5) {
+      return 'fighter';
+    }
+    if (probability < 0.5) {
+      return 'opponent';
+    }
+    return null;
+  }
+  const fighterProbability = americanOddsProbability(fighterOdds);
+  const opponentProbability = americanOddsProbability(opponentOdds);
+  if (fighterProbability === null || opponentProbability === null ||
+      fighterProbability === opponentProbability) {
+    return null;
+  }
+  return fighterProbability > opponentProbability ? 'fighter' : 'opponent';
+}
+
+function renderWeeklyModelProvenance(indices, loadError) {
+  const provenance = document.getElementById('weekly-model-provenance');
+  if (!provenance) {
+    return;
+  }
+  if (loadError) {
+    provenance.textContent = loadError;
+    return;
+  }
+  let provenanceIndex = null;
+  for (const index of indices) {
+    if (hasDisplayValue(tableValue(vegas_odds, 'model id', index))) {
+      provenanceIndex = index;
+      break;
+    }
+  }
+  if (provenanceIndex === null) {
+    provenance.textContent =
+      'Legacy weekly forecast loaded; point-in-time model provenance is not available for this card.';
+    return;
+  }
+  const modelVersion = tableValue(vegas_odds, 'model version', provenanceIndex);
+  const modelId = tableValue(vegas_odds, 'model id', provenanceIndex);
+  const trainedThrough = tableValue(vegas_odds, 'model trained through', provenanceIndex);
+  const details = ['Point-in-time model'];
+  if (hasDisplayValue(modelVersion)) {
+    details.push('version ' + modelVersion);
+  }
+  details.push('ID ' + modelId);
+  if (hasDisplayValue(trainedThrough)) {
+    details.push('trained through ' + trainedThrough);
+  }
+  provenance.textContent = details.join(' · ');
+}
+
+function renderUpcomingPredictions(loadError) {
+  const upcomingFightsTable = document.getElementById('upcoming');
+  if (!upcomingFightsTable || !upcomingFightsTable.tBodies.length) {
+    return;
+  }
+  const tbody = upcomingFightsTable.tBodies[0];
+  tbody.textContent = '';
+  const fighterNames = vegas_odds && vegas_odds['fighter name'];
+  const indices = fighterNames ? Object.keys(fighterNames) : [];
+  renderWeeklyModelProvenance(indices, loadError);
+
+  if (loadError || indices.length === 0) {
+    const row = tbody.insertRow(-1);
+    const cell = row.insertCell(-1);
+    cell.colSpan = 6;
+    cell.style.backgroundColor = '#323232';
+    cell.style.color = '#ffffff';
+    cell.textContent = loadError || 'No upcoming weekly forecasts are available.';
+    return;
+  }
+
+  upcomingFightsTable.rows.item(0).cells.item(0).style.backgroundColor = '#212121';
+  for (const index of indices) {
+    const fighter = tableValue(vegas_odds, 'fighter name', index);
+    const opponent = tableValue(vegas_odds, 'opponent name', index);
+    const forecastFighterOdds = firstDisplayValue(
+      tableValue(vegas_odds, 'forecast fighter odds', index),
+      tableValue(vegas_odds, 'predicted fighter odds', index)
+    );
+    const forecastOpponentOdds = firstDisplayValue(
+      tableValue(vegas_odds, 'forecast opponent odds', index),
+      tableValue(vegas_odds, 'predicted opponent odds', index)
+    );
+    const modelProbability = tableValue(vegas_odds, 'model probability', index);
+    const forecastProbability = firstDisplayValue(
+      tableValue(vegas_odds, 'forecast probability', index),
+      modelProbability
+    );
+    const marketProbability = tableValue(
+      vegas_odds, 'market no-vig fighter probability', index
+    );
+    const oddsObservedAt = tableValue(vegas_odds, 'odds observed at', index);
+    const modelStatus = tableValue(vegas_odds, 'model status', index);
+    const modelId = tableValue(vegas_odds, 'model id', index);
+    let forecastSource = tableValue(vegas_odds, 'forecast source', index);
+    if (!hasDisplayValue(forecastSource)) {
+      forecastSource = hasDisplayValue(modelId) || hasDisplayValue(modelProbability)
+        ? 'point_in_time_model'
+        : 'legacy_weekly_prediction';
+    }
+
+    const row = tbody.insertRow(-1);
+    row.dataset.matchup = 'true';
+    for (let columnIndex = 0; columnIndex < 6; columnIndex += 1) {
+      row.appendChild(document.createElement('td'));
+    }
+
+    const favoredSide = favoredForecastSide(
+      forecastProbability, forecastFighterOdds, forecastOpponentOdds
+    );
+    setFighterCell(row.cells.item(0), fighter, favoredSide === 'fighter');
+    setFighterCell(row.cells.item(1), opponent, favoredSide === 'opponent');
+
+    const probabilityNumber = finiteNumber(forecastProbability);
+    setCellLines(row.cells.item(2), [
+      formatOdds(forecastFighterOdds),
+      probabilityNumber === null ? null : formatProbability(probabilityNumber)
+    ]);
+    setCellLines(row.cells.item(3), [
+      formatOdds(forecastOpponentOdds),
+      probabilityNumber === null ? null : formatProbability(1 - probabilityNumber)
+    ]);
+
+    const marketNumber = finiteNumber(marketProbability);
+    setCellLines(row.cells.item(4), marketNumber === null ? ['Not available'] : [
+      'Fighter ' + formatProbability(marketNumber),
+      'Opponent ' + formatProbability(1 - marketNumber)
+    ]);
+
+    const fighterHistory = formatHistoryCount(
+      tableValue(vegas_odds, 'fighter prior fights', index)
+    );
+    const opponentHistory = formatHistoryCount(
+      tableValue(vegas_odds, 'opponent prior fights', index)
+    );
+    const statusLines = [
+      'Forecast: ' + humanizeForecastLabel(forecastSource)
+    ];
+    if (hasDisplayValue(modelStatus)) {
+      statusLines.push(humanizeForecastLabel(modelStatus));
+    }
+    if (hasDisplayValue(modelProbability)) {
+      statusLines.push('Independent model: ' + formatProbability(modelProbability));
+    }
+    if (fighterHistory !== '—' || opponentHistory !== '—') {
+      statusLines.push('Prior UFC fights: ' + fighterHistory + ' / ' + opponentHistory);
+    }
+    if (hasDisplayValue(oddsObservedAt)) {
+      statusLines.push(
+        'Market observed: ' + String(oddsObservedAt).replace('T', ' ').replace('+00:00', ' UTC')
+      );
+    }
+    statusLines.push('Betting disabled');
+    setCellLines(row.cells.item(5), statusLines);
+
+    for (const cell of row.cells) {
+      cell.style.backgroundColor = '#323232';
+      cell.style.color = '#ffffff';
+    }
+    row.cells.item(5).style.fontSize = '12px';
+    if (String(modelStatus).toLowerCase() === 'low_history' ||
+        String(modelStatus).toLowerCase().startsWith('abstain')) {
+      row.cells.item(5).style.color = '#e9b24c';
+    }
+  }
+}
 
 
 
@@ -1040,11 +1134,21 @@ setTimeout(() => { //this builds a table for the history of predictions which is
   var numberTotal = 0
   var numTotalWithBookieOdds = 0
   var numBookieCorrect = 0
-  for (const i in prediction_history['fighter name']) { //iterating over rows of prediction_history
+  const historyFighters = prediction_history['fighter name'] || {}
+  for (const i in historyFighters) { //iterating over rows of prediction_history
     fighter = prediction_history['fighter name'][i]
     opponent = prediction_history['opponent name'][i]
-    fighterOdds = String(prediction_history['predicted fighter odds'][i])
-    opponentOdds = String(prediction_history['predicted opponent odds'][i])
+    fighterOdds = formatOdds(firstDisplayValue(
+      tableValue(prediction_history, 'forecast fighter odds', i),
+      tableValue(prediction_history, 'predicted fighter odds', i)
+    ))
+    opponentOdds = formatOdds(firstDisplayValue(
+      tableValue(prediction_history, 'forecast opponent odds', i),
+      tableValue(prediction_history, 'predicted opponent odds', i)
+    ))
+    const bettingStatus = tableValue(prediction_history, 'betting status', i)
+    const bettingDisabled = hasDisplayValue(bettingStatus) &&
+      String(bettingStatus).toLowerCase().startsWith('disabled')
 
     bestFighterBookieCol = prediction_history['best fighter bookie'] || null; // default to null if not present
     if (bestFighterBookieCol != null) {
@@ -1078,38 +1182,39 @@ setTimeout(() => { //this builds a table for the history of predictions which is
 
     fighterBankrollPercentageCol = prediction_history['fighter bet bankroll percentage'] || null; // default to null if not present
     if (fighterBankrollPercentageCol != null) {
-      fighterBankrollPercentage = parseFloat(fighterBankrollPercentageCol[i]).toFixed(2);
+      fighterBankrollPercentage = finiteNumber(fighterBankrollPercentageCol[i]) || 0;
     } else {
       fighterBankrollPercentage = 0; // or some default value
     }
 
     fighterBetCol = prediction_history['fighter bet'] || null; // default to null if not present
     if (fighterBetCol != null) {
-      fighterBet = parseFloat(fighterBetCol[i]).toFixed(2);
+      fighterBet = finiteNumber(fighterBetCol[i]) || 0;
     } else {
       fighterBet = 0; // or some default value
     }
 
     opponentBankrollPercentageCol = prediction_history['opponent bet bankroll percentage'] || null; // default to null if not present
     if (opponentBankrollPercentageCol != null) {
-      opponentBankrollPercentage = parseFloat(opponentBankrollPercentageCol[i]).toFixed(2);
+      opponentBankrollPercentage = finiteNumber(opponentBankrollPercentageCol[i]) || 0;
     } else {
       opponentBankrollPercentage = 0; // or some default value
     }
 
     opponentBetCol = prediction_history['opponent bet'] || null; // default to null if not present
     if (opponentBetCol != null) {
-      opponentBet = parseFloat(opponentBetCol[i]).toFixed(2);
+      opponentBet = finiteNumber(opponentBetCol[i]) || 0;
     } else {  
       opponentBet = 0; // or some default value
     }
 
 
     bankrollCol = prediction_history['current bankroll after'] || null; // default to null if not present
-    if (bankrollCol != null) {    
-      currentBankroll = parseFloat(bankrollCol[i]).toFixed(2);
+    const currentBankrollNumber = bankrollCol == null ? null : finiteNumber(bankrollCol[i])
+    if (currentBankrollNumber !== null) {
+      currentBankroll = currentBankrollNumber.toFixed(2);
     } else {
-      currentBankroll = 0; // or some default value
+      currentBankroll = '—';
     }
 
     // TODO does not take into account if we bet on both the fighter and the opponent (maybe TODO)
@@ -1130,7 +1235,6 @@ setTimeout(() => { //this builds a table for the history of predictions which is
       }
     }
 
-    numberTotal += 1;
     var fightHistoryTable = document.getElementById('tablehistory')
     fightHistoryTable.rows.item(0).cells.item(0).style.backgroundColor = "#212121";
     var tbody = fightHistoryTable.tBodies[0]
@@ -1157,8 +1261,8 @@ setTimeout(() => { //this builds a table for the history of predictions which is
     tr.cells.item(3).style.color = "#ffffff";
     tr.cells.item(4).style.color = "#ffffff";
 
-    tr.cells.item(0).innerHTML = `${fighter} vs ${opponent}`;
-    tr.cells.item(1).innerHTML = `${fighterOdds}, ${opponentOdds}`;
+    tr.cells.item(0).textContent = `${fighter} vs ${opponent}`;
+    tr.cells.item(1).textContent = `${fighterOdds}, ${opponentOdds}`;
 
     bestBookie = '';
     bestBookieOddsOnFighter = 0;
@@ -1182,17 +1286,32 @@ setTimeout(() => { //this builds a table for the history of predictions which is
       bet = opponentBet;
       bettingOn = opponent;
     }
-    tr.cells.item(2).innerHTML = `${bestBookie}<br>${bestBookieOddsOnFighter}, ${bestBookieOddsOnOpponent}`;
-    tr.cells.item(3).innerHTML = `${bankrollPercentage}% = ${bet}$<br>${bettingOn}`;
+    if (bettingDisabled) {
+      tr.cells.item(2).textContent = 'No wager';
+      tr.cells.item(3).textContent = humanizeForecastLabel(bettingStatus);
+    } else {
+      setCellLines(tr.cells.item(2), [
+        bestBookie || 'No book recorded',
+        bestBookie ? `${formatOdds(bestBookieOddsOnFighter)}, ${formatOdds(bestBookieOddsOnOpponent)}` : null
+      ]);
+      setCellLines(tr.cells.item(3), [
+        `${Number(bankrollPercentage).toFixed(2)}% = ${Number(bet).toFixed(2)}$`,
+        bettingOn || null
+      ]);
+    }
 
     // color the current bankroll based on the result of the bet (green = won, red = lost)
-    currentBankrollText = `<span style="color:${bankrollColor}">${currentBankroll}</span>`;
-    tr.cells.item(4).innerHTML = currentBankrollText;
+    const currentBankrollText = document.createElement('span');
+    currentBankrollText.style.color = bankrollColor;
+    currentBankrollText.textContent = currentBankroll;
+    tr.cells.item(4).textContent = '';
+    tr.cells.item(4).appendChild(currentBankrollText);
 
     color = 'gold'; //winner color
     fighterWon = false;
     opponentWon = false;
     if (prediction_history['correct?'][i] == 1) {
+      numberTotal += 1;
       tr.cells.item(1).style.backgroundColor = "#00ff00";
       numberModelCorrect += 1
       if (parseInt(fighterOdds) < parseInt(opponentOdds)) { //if fighter is predicted to win
@@ -1203,6 +1322,7 @@ setTimeout(() => { //this builds a table for the history of predictions which is
         opponentWon = true;
       }
     } else if (prediction_history['correct?'][i] == 0) {
+      numberTotal += 1;
       tr.cells.item(1).style.backgroundColor = "#ff0000";
       if (parseInt(fighterOdds) < 0) {
         coloredFightText = `<span>${fighter}</span> | vs | <span style="color:${color}">${opponent}</span>`;
@@ -1222,7 +1342,7 @@ setTimeout(() => { //this builds a table for the history of predictions which is
     tr.cells.item(0).innerHTML = coloredFightText;
 
     // color bookie bet columns to indicate if they picked correctly
-    if (bestFighterBookie != null) {
+    if (bestFighterBookie && !bettingDisabled) {
       if (fighterWon){
         if (parseInt(bestBookieOddsOnFighter) < parseInt(bestBookieOddsOnOpponent)) {
           numBookieCorrect += 1;
@@ -1240,17 +1360,17 @@ setTimeout(() => { //this builds a table for the history of predictions which is
       }
     }
   }
-  var acc = numberModelCorrect / numberTotal;
-  var bookieAcc = numBookieCorrect / numTotalWithBookieOdds;
+  var acc = numberTotal > 0 ? numberModelCorrect / numberTotal : null;
+  var bookieAcc = numTotalWithBookieOdds > 0 ? numBookieCorrect / numTotalWithBookieOdds : null;
   var accuracy = document.getElementById("myaccuracy")
   // round accuracy to 2 decimal places
-  acc = (Math.round(acc * 10000) / 100).toFixed(2);
-  bookieAcc = (Math.round(bookieAcc * 10000) / 100).toFixed(2);
+  acc = acc === null ? 'N/A' : (Math.round(acc * 10000) / 100).toFixed(2) + '%';
+  bookieAcc = bookieAcc === null ? 'N/A' : (Math.round(bookieAcc * 10000) / 100).toFixed(2) + '%';
   console.log(`Bookie accuracy: ${bookieAcc}`)
   // set accuracy text
-  accuracy.innerText = `Accuracy: ${acc}%`;
+  accuracy.innerText = `Forecast Accuracy: ${acc}`;
   var bookieAccuracy = document.getElementById("bookieaccuracy")
-  bookieAccuracy.innerText = `Bookie Accuracy: ${bookieAcc}%`;
+  bookieAccuracy.innerText = `Bookie Accuracy: ${bookieAcc}`;
 }, 1500) //originally 450
 
 //set initial table values and display fight
@@ -1261,14 +1381,21 @@ setTimeout(() => {
   let month = d.getMonth();
   let year = d.getFullYear();
   var months = ["January", "February", 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', "November", 'December']
-  fighterName = upcomingFightsTable.rows[2].cells[0].textContent
-  opponentName = upcomingFightsTable.rows[2].cells[1].textContent
+  const firstMatchupRow = upcomingFightsTable.querySelector('tbody tr[data-matchup="true"]')
   document.getElementById('selectMonth_rc').value = months[month]
   document.getElementById('selectYear_rc').value = year
   document.getElementById('selectMonth_bc').value = months[month]
   document.getElementById('selectYear_bc').value = year
-  selectFighterAndDate(fighterName, 'rc')
-  selectFighterAndDate(opponentName, 'bc')
+  if (firstMatchupRow) {
+    const fighterName = firstMatchupRow.cells[0].textContent
+    const opponentName = firstMatchupRow.cells[1].textContent
+    // Low-history/debut rows may not yet exist in the legacy browser dataset.
+    // Do not let that prevent the weekly forecast table from rendering.
+    if (fighter_data[fighterName] && fighter_data[opponentName]) {
+      selectFighterAndDate(fighterName, 'rc')
+      selectFighterAndDate(opponentName, 'bc')
+    }
+  }
   var myTab;
   myTab = document.getElementById("tableoutcome");
   // LOOP THROUGH EACH ROW OF THE TABLE AFTER HEADER.

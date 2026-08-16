@@ -1,9 +1,12 @@
 # import ipdb;ipdb.set_trace(context=10) # uncomment to debug
+from pathlib import Path
+import os
 import pandas as pd
 
 # local imports
 from data_handler import DataHandler
-from fight_predictor import FightPredictor
+from data_handler.data_handler import atomic_to_csv
+from fight_predictor import PointInTimeDatasetBuilder, TemporalFightPredictor
 
 # create a data handler object to access the data stored in csvs and jsons
 # has built-in dataframes mirroring the csvs and jsons
@@ -14,41 +17,114 @@ dh = DataHandler()
 print('scraping new statistics from ufcstats.com')
 dh.update_data_csvs_and_jsons()
 
-# TODO THERE IS A PROBLEM WITH NAME CLASHES e.g. Erik Silva and Erick Silva sometimes misspelling cause clashes
-# The proper way to do this is to instead of same_name we should use same_fighter where we compare name, height, etc (could still have issues but maybe better)
+raw_fights = dh.get('ufc_fights_reported_doubled')
+fighter_stats = dh.get('fighter_stats')
+print('Building stable-ID point-in-time training data')
+feature_builder = PointInTimeDatasetBuilder(raw_fights, fighter_stats)
+point_in_time_fights = feature_builder.build()
+point_in_time_path = (
+    Path(__file__).resolve().parent
+    / 'content/data/processed/ufc_fights_point_in_time.csv'
+)
+atomic_to_csv(point_in_time_fights, point_in_time_path, index=False)
+# Treat the persisted table as the canonical training input. This guarantees
+# that artifact fingerprints and strict validation see exactly the same
+# round-tripped numeric values on every platform.
+point_in_time_fights = pd.read_csv(point_in_time_path, low_memory=False)
+feature_builder.training_data = point_in_time_fights.copy()
 
-ufc_fights_reported_derived_doubled = dh.get('ufc_fights_reported_derived_doubled')
-# only take fights in the last 10 years
-ufc_fights_reported_derived_doubled['date'] = pd.to_datetime(ufc_fights_reported_derived_doubled['date'])
-date_10_years_ago = pd.Timestamp.now() - pd.DateOffset(years=10)
-ufc_fights_reported_derived_doubled = ufc_fights_reported_derived_doubled[ufc_fights_reported_derived_doubled['date'] >= date_10_years_ago]
-
-ufc_fights_predictive_flattened_diffs = dh.make_ufc_fights_predictive_flattened_diffs(ufc_fights_reported_derived_doubled)
-ufc_fights_winner = dh.clean_ufc_fights_for_winner_prediction(ufc_fights_predictive_flattened_diffs)
-
-fight_predictor = FightPredictor(ufc_fights_winner, dh) # maybe not the best thing to pass in dh here, but it works for now
-print('Training logistic regression model on ufc_fights_winner data')
-fight_predictor.train_logistic_regression_model(random_state=48, scaled=True, C=0.1) # WHY IS PERF SO MUCH WORSE THAN IN THE NOTEBOOK????
-theta, b, scaler = fight_predictor.get_regression_coeffs_intercept_and_scaler()
-
-# use the data handler to update the model coefficients in the json files
-# 7/7/2025 stopped doing this. We are going to stick to the model the website is already using for now.
-# dh.set_regression_coeffs_and_intercept(theta, b)
-# print("Saved new regression coefficients and intercept to json files to run model in website")
+print('Training and temporally evaluating the point-in-time winner model')
+candidate_predictor = TemporalFightPredictor(point_in_time_fights, feature_builder, dh)
+evaluation = candidate_predictor.train()
+walk_forward = evaluation['walk_forward']['aggregate']
+holdout = evaluation['calibrated_model']
+if (
+    walk_forward['log_loss'] >= 0.683
+    or walk_forward['accuracy'] <= 0.58
+    or holdout['log_loss'] >= 0.70
+):
+    raise RuntimeError(
+        'Refusing to publish a degraded winner model: '
+        f'walk-forward accuracy={walk_forward["accuracy"]:.3f}, '
+        f'walk-forward log loss={walk_forward["log_loss"]:.3f}, '
+        f'holdout log loss={holdout["log_loss"]:.3f}'
+    )
+artifact_path = (
+    Path(__file__).resolve().parent
+    / 'content/data/external/winner_model.json'
+)
+candidate_predictor.save_artifact(artifact_path)
+# Predict from the just-written portable artifact, not an unpersisted in-memory
+# object.  This makes every published probability exactly reproducible.
+fight_predictor = TemporalFightPredictor.load_artifact(
+    artifact_path, feature_builder, dh
+)
 
 print('Saving results of previous card to prediction_history.json')
 # now that the previous card which we made predictions for has happened, we can add the results to the prediction history
 # vegas odds is always a week ahead of the prediction history, so we can use it to update the prediction history by comparing vegas_odds and ufc_fights_crap which contains the results from last week
 dh.update_prediction_history()
 
-print('Scraping next ufc fight card from fightodds.io')
+print('Scraping the next UFC fight card from ufcstats.com')
 print("###############################################################################################################")    
 card_date, card_title, fights_list = dh.update_card_info()
 prediction_history = dh.get('prediction_history', filetype='json')
-fighter_stats = dh.get('fighter_stats')
 predicted_odds_df = fight_predictor.predict_upcoming_fights(prediction_history, fighter_stats, fights_list, card_date)
-# fill in vegas odds from ufcfights.io
+# Merge available sportsbook odds from fightodds.io.
 predicted_odds_df_with_vegas_odds = dh.save_fightoddsio_to_vegas_odds_json_and_merge_with_predictions_df(predicted_odds_df)
 dh.update_vegas_odds(predicted_odds_df_with_vegas_odds)
 print('saving scraped fights and predictions to content/data/external/vegas_odds.json')
 print("###############################################################################################################")
+
+# Put the important health signals on the Actions run summary. Missing/misaligned
+# third-party odds are degraded enrichment, not a reason to discard valid model
+# and UFCStats updates.
+summary_path = os.environ.get('GITHUB_STEP_SUMMARY')
+if summary_path:
+    try:
+        matched_odds = int(
+            predicted_odds_df_with_vegas_odds.get(
+                'odds source status', pd.Series(dtype=object)
+            ).eq('matched').sum()
+        )
+        resolved_models = int(
+            predicted_odds_df_with_vegas_odds.get(
+                'model probability', pd.Series(dtype=float)
+            ).pipe(pd.to_numeric, errors='coerce').notna().sum()
+        )
+        artifact = fight_predictor.artifact()
+        summary_lines = [
+            '## UFC weekly update',
+            '',
+            f'- Completed raw fights: {raw_fights["fight_url"].nunique():,}',
+            f'- Point-in-time W/L rows: {len(point_in_time_fights):,}',
+            f'- Model: `{artifact["model_id"]}` through {artifact["data_through"]}',
+            (
+                '- Walk-forward: '
+                f'{walk_forward["accuracy"]:.1%} accuracy, '
+                f'{walk_forward["log_loss"]:.4f} log loss'
+            ),
+            f'- Upcoming card: {card_title} ({card_date})',
+            (
+                f'- Forecast coverage: {resolved_models}/'
+                f'{len(predicted_odds_df_with_vegas_odds)}'
+            ),
+            (
+                f'- FightOdds coverage: {matched_odds}/'
+                f'{len(predicted_odds_df_with_vegas_odds)}'
+            ),
+            '- Betting: disabled pending timestamped market-relative validation',
+            '',
+        ]
+        if matched_odds < len(predicted_odds_df_with_vegas_odds):
+            summary_lines.extend(
+                [
+                    '> [!WARNING]',
+                    '> FightOdds did not match every UFCStats matchup; unmatched rows use the stats model and contain no bet recommendation.',
+                    '',
+                ]
+            )
+        with open(summary_path, 'a', encoding='utf-8') as summary_file:
+            summary_file.write('\n'.join(summary_lines))
+    except Exception as error:
+        print(f'Could not write optional GitHub Actions summary: {error}')
