@@ -23,6 +23,7 @@ import pandas as pd
 
 from fight_predictor.point_in_time import (
     MODEL_VERSION,
+    REGULARIZATION_C_GRID,
     PointInTimeDatasetBuilder,
     training_fingerprint,
 )
@@ -537,7 +538,8 @@ def validate_model_artifact(
         "source_data_through", "training_labels_through", "training_fights",
         "training_fingerprint_sha256", "state_fingerprint_sha256",
         "feature_columns", "scaler_scale", "coefficients", "intercept",
-        "calibration_slope", "selected_c", "temporal_evaluation",
+        "calibration_slope", "selected_c", "regularization_c_grid",
+        "temporal_evaluation",
     }
     missing = sorted(required - set(artifact))
     report.require(not missing, f"winner model artifact is missing fields: {missing}")
@@ -547,6 +549,17 @@ def validate_model_artifact(
     report.require(
         artifact["model_version"] == MODEL_VERSION,
         "winner model version is not supported by this code",
+    )
+    try:
+        artifact_c_grid = tuple(
+            float(value) for value in artifact["regularization_c_grid"]
+        )
+    except (TypeError, ValueError):
+        artifact_c_grid = ()
+        report.errors.append("winner model regularization grid is not numeric")
+    report.require(
+        artifact_c_grid == REGULARIZATION_C_GRID,
+        "winner model regularization grid is not supported by this code",
     )
     features = artifact["feature_columns"]
     scales = artifact["scaler_scale"]
@@ -583,6 +596,10 @@ def validate_model_artifact(
         report.require(float(artifact["intercept"]) == 0.0, "winner model intercept must be zero")
         report.require(float(artifact["calibration_slope"]) > 0, "winner model calibration slope must be positive")
         report.require(float(artifact["selected_c"]) > 0, "winner model selected_c must be positive")
+        report.require(
+            float(artifact["selected_c"]) in artifact_c_grid,
+            "winner model selected_c is not part of its regularization grid",
+        )
     except (TypeError, ValueError):
         report.errors.append("winner model parameters are not numeric")
     unhashed = dict(artifact)

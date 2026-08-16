@@ -66,18 +66,25 @@ Betting remains disabled. Available historical odds suggest the market is a stro
 
 ## Leakage-safe evaluation
 
-The final GitHub-equivalent disposable run passed in about 8 minutes 12 seconds
-(7 minutes 33 seconds for the updater plus tests and strict validation). It
+The final model-v2 GitHub-equivalent disposable run passed in about 7 minutes
+12 seconds (6 minutes 33 seconds for the updater plus tests and strict
+validation). It
 ingested 134 newly completed fights, producing 17,598 raw sides / 8,799 fights,
 2,723 fighter IDs, and 8,644 eligible point-in-time W/L rows with 82 features.
 The production model trained on 4,927 fights from 2016-08-20 through 2026-08-08
 with `C=0.01` and calibration slope 1.13225. The reloaded, fingerprint-verified
-artifact ID was `a8afc32a34c2b3445ac4`.
+artifact ID was `bbd8ee967ce46ab23de5`.
 
 | Evaluation | Fights | Accuracy | AUC | Log loss | Brier | ECE |
 |---|---:|---:|---:|---:|---:|---:|
-| Nested 2023-2026 walk-forward | 1,852 | 63.93% | 0.6994 | 0.6308 | 0.2204 | 0.0291 |
+| Nested 2023-2026 walk-forward | 1,852 | 64.15% | 0.6996 | 0.6297 | 0.2200 | 0.0260 |
 | Newest-20% holdout | 995 | 64.92% | 0.7193 | 0.6194 | 0.2151 | 0.0537 |
+
+The walk-forward folds selected `C=0.003` for 2023 and 2024 and `C=0.01` for
+2025 and 2026. Relative to the same refreshed-data v1 run, the expanded grid
+improved aggregate log loss from 0.630802 to 0.629725 and accuracy from 63.93%
+to 64.15%. The newest holdout remained unchanged because its development
+period still selected `C=0.01`.
 
 For the August 22 card, all 13 matchups resolved to model probabilities (seven
 normal-history and six low-history statuses) with zero abstentions. FightOdds
@@ -90,6 +97,49 @@ August 8 (seven days old).
 These are historical estimates, not guaranteed future accuracy or evidence of profit. Log loss and Brier score are the primary promotion metrics because they penalize confident mistakes and evaluate probability quality; accuracy alone discards that information.
 
 For context, the legacy 30-feature methodology scored about 59.1% accuracy and 0.708 log loss across comparable future-year folds. The large gap between its random and chronological results is why future cards, never randomly mixed fights, must be the outer evaluation unit.
+
+### First-pass performance experiments
+
+After the initial upgrade, fixed and strictly nested challengers were compared on
+the identical 1,720-fight 2023-2026 walk-forward sample from the checked-in
+snapshot ending 2026-05-09. Every original fold
+selected `C=0.01`, the strongest regularization the code allowed. Extending the
+grid to `(0.001, 0.003, 0.01, 0.03, 0.1)` showed that the first apparent
+recency-weighting gain was mostly a proxy for missing stronger shrinkage.
+
+| Challenger | Accuracy | Log loss | Brier | AUC |
+|---|---:|---:|---:|---:|
+| Original regularization grid | 63.84% | 0.632912 | 0.221335 | 0.69602 |
+| Expanded grid, uniform training | 64.07% | 0.631740 | 0.220906 | 0.69630 |
+| Nested recency weighting | 63.90% | 0.631856 | 0.220968 | 0.69614 |
+| Nested decision-reliability weighting | 64.19% | 0.632058 | 0.221051 | 0.69590 |
+| Global Glicko rating + RD | 64.19% | 0.630488 | 0.220276 | 0.69906 |
+| Five-year recency + Glicko | 64.42% | 0.630461 | 0.220221 | 0.69946 |
+
+The expanded uniform grid improved aggregate log loss by 0.00117 and no yearly
+fold worsened; 2023 and 2024 selected the now-interior `C=0.003`, while 2025 and
+2026 retained `0.01`. It is the only promoted change because it fixes a search
+boundary at almost no complexity cost.
+
+The weighting grid tested half-lives of none, 8, 5, and 3 years and
+split/majority multipliers of 1.0, 0.75, and 0.5. Weights were calculated only
+inside each training fold, normalized to mean one, and applied to both scaling
+and logistic fitting; calibration and scoring remained unweighted.
+
+The best Glicko combination improved log loss by only 0.00128 versus the
+properly retuned baseline. Its 90% event-block bootstrap interval for
+candidate-minus-baseline log loss was `[-0.00305, +0.00050]`, 2026 worsened by
+0.00039, and holdout accuracy fell. Recency added only 0.00003 beyond Glicko.
+These challengers therefore remain unpromoted. Because these same historical
+folds were used for model development, genuinely new events—not this table—are
+the unbiased confirmation set.
+
+The retained Glicko challenger specification is global rating plus rating
+deviation, initial rating 1500, initial/maximum RD 350, minimum RD 50, a
+four-year uncertainty-reset horizon, and the existing 0.75 split/majority
+update weight. Ratings update simultaneously from pre-bout state; no-contests
+inflate uncertainty and advance its clock without moving or contracting the
+rating. Division Glicko and confidence-shrunk duplicates did not help.
 
 ## Market benchmark
 
@@ -111,7 +161,7 @@ This is not a verified closing-line comparison: old records lack collection time
 1. Rebuild the full legacy prediction history from immutable fight facts. Of 1,093 matched dated records, 51 stored `correct?` values disagreed with raw outcomes, and 397 of 1,491 rows have no date. New rows are fixed, but the legacy backfill still needs cancellation/rematch/alias review.
 2. Remove the custom browser calculator or implement the exact artifact feature/scaler/calibration contract in a service or browser-compatible runtime. Do not maintain two user-facing models indefinitely.
 3. Accumulate timestamped multi-book snapshots and evaluate market-only versus market-plus-stats on untouched future cards. Track coverage and abstentions alongside performance.
-4. Consider Glicko-2/uncertainty, scheduled rounds/title status, weight-class changes, stance interactions, and line movement one at a time. Promote only changes that improve nested future log loss; the dataset is too small for complexity by default.
+4. Preserve global Glicko rating/RD as a fixed challenger and reassess it only after genuinely new events accumulate. Test scheduled rounds/title status, weight-class changes, stance interactions, and line movement one at a time; the dataset is too small for complexity by default.
 5. Add a slower periodic deep reconciliation beyond the recent-event window for very late overturns/corrections, and a bounded refresh cadence for inactive profiles.
 6. Move large immutable datasets/model archives to releases, object storage, or Git LFS if desired. Removing generated files shrinks future checkouts, but the existing `.git` pack remains about 1 GiB unless history is deliberately rewritten.
 7. Keep betting disabled until the forecast process beats the timestamp-aligned no-vig market baseline with credible uncertainty across multiple future folds.
@@ -121,6 +171,6 @@ This is not a verified closing-line comparison: old records lack collection time
 1. Review the working-tree diff. Shared production CSV/JSON files were deliberately not overwritten during this implementation; all networked verification ran in disposable OS-temporary copies.
 2. Commit and push the code/workflow/cleanup changes to the default branch.
 3. Open **Actions -> Update UFC data**. Enable the workflow if GitHub still shows `disabled_inactivity`, then select **Run workflow** once.
-4. Confirm the run passes 36 tests, strict `--require-model-artifact` validation, and the starting-SHA publication guard.
+4. Confirm the run passes 37 tests, strict `--require-model-artifact` validation, and the starting-SHA publication guard.
 5. Inspect the first bot commit: it should contain only the scoped processed/external data and model artifact paths.
 6. Leave betting disabled and monitor the Actions summary for raw/PIT counts, temporal metrics, card/model coverage, and FightOdds enrichment coverage.

@@ -33,7 +33,8 @@ from sklearn.preprocessing import StandardScaler
 
 
 MODEL_SCHEMA_VERSION = 1
-MODEL_VERSION = "point-in-time-elo-logistic-v1"
+MODEL_VERSION = "point-in-time-elo-logistic-v2"
+REGULARIZATION_C_GRID = (0.001, 0.003, 0.01, 0.03, 0.1)
 ELO_K_FACTORS = (32.0, 64.0, 128.0)
 ELO_NAMES = ("elo_slow", "elo_medium", "elo_fast")
 PIT_SORT_COLUMNS = ("date", "event_id", "bout_order", "fight_id")
@@ -1018,7 +1019,11 @@ class TemporalFightPredictor:
         logits = np.log(probability / (1.0 - probability))
         return 1.0 / (1.0 + np.exp(-np.clip(slope * logits, -709, 709)))
 
-    def train(self, c_grid=(0.01, 0.03, 0.1, 0.3, 1.0)) -> dict[str, object]:
+    def train(self) -> dict[str, object]:
+        # This grid is part of the production artifact contract. Candidate
+        # experiments must run separately rather than creating an artifact
+        # that the production loader cannot reproduce.
+        c_grid = REGULARIZATION_C_GRID
         frame = self.training_data.copy()
         frame["date"] = pd.to_datetime(frame["date"], errors="raise")
         if len(frame) < 100:
@@ -1075,7 +1080,7 @@ class TemporalFightPredictor:
             "elo_only": _metrics(holdout["target"], elo_probability),
             "coin_flip": _metrics(holdout["target"], np.full(len(holdout), 0.5)),
         }
-        self.evaluation["walk_forward"] = self.walk_forward_evaluation(c_grid=c_grid)
+        self.evaluation["walk_forward"] = self.walk_forward_evaluation()
         print(
             "Point-in-time temporal holdout: "
             f"{self.evaluation['calibrated_model']['accuracy']:.3f} accuracy, "
@@ -1087,9 +1092,9 @@ class TemporalFightPredictor:
     def walk_forward_evaluation(
         self,
         years: tuple[int, ...] | None = None,
-        c_grid=(0.01, 0.03, 0.1, 0.3, 1.0),
     ) -> dict[str, object]:
         """Nested expanding-year evaluation without consulting a future fold."""
+        c_grid = REGULARIZATION_C_GRID
         frame = self.point_in_time_data.copy()
         frame["date"] = pd.to_datetime(frame["date"], errors="raise")
         available_years = sorted(frame["date"].dt.year.unique())
@@ -1270,6 +1275,7 @@ class TemporalFightPredictor:
             "intercept": 0.0,
             "calibration_slope": float(self.calibration_slope),
             "selected_c": float(self.best_c),
+            "regularization_c_grid": list(REGULARIZATION_C_GRID),
             "rating_config": {
                 "initial_rating": 1500.0,
                 "k_factors": list(ELO_K_FACTORS),
@@ -1311,7 +1317,7 @@ class TemporalFightPredictor:
             "source_data_through", "training_labels_through", "training_fights",
             "training_fingerprint_sha256", "state_fingerprint_sha256",
             "feature_columns", "scaler_scale", "coefficients", "intercept",
-            "calibration_slope", "selected_c",
+            "calibration_slope", "selected_c", "regularization_c_grid",
         }
         missing = sorted(required - set(artifact))
         if missing:
@@ -1342,6 +1348,20 @@ class TemporalFightPredictor:
         selected_c = float(artifact.get("selected_c", math.nan))
         if not math.isfinite(selected_c) or selected_c <= 0:
             raise ValueError("Model artifact selected_c must be finite and positive")
+        try:
+            artifact_c_grid = tuple(
+                float(value) for value in artifact.get("regularization_c_grid", [])
+            )
+        except (TypeError, ValueError):
+            raise ValueError("Model artifact regularization grid must be numeric")
+        if artifact_c_grid != REGULARIZATION_C_GRID:
+            raise ValueError(
+                "Model artifact regularization grid is not supported by this code"
+            )
+        if selected_c not in artifact_c_grid:
+            raise ValueError(
+                "Model artifact selected_c is not part of its regularization grid"
+            )
         supplied_model_id = artifact.get("model_id")
         unhashed = dict(artifact)
         unhashed.pop("model_id", None)

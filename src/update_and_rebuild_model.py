@@ -100,6 +100,10 @@ if summary_path:
             f'- Point-in-time W/L rows: {len(point_in_time_fights):,}',
             f'- Model: `{artifact["model_id"]}` through {artifact["data_through"]}',
             (
+                f'- Regularization: C={artifact["selected_c"]:g} selected from '
+                f'{artifact["regularization_c_grid"]}'
+            ),
+            (
                 '- Walk-forward: '
                 f'{walk_forward["accuracy"]:.1%} accuracy, '
                 f'{walk_forward["log_loss"]:.4f} log loss'

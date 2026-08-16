@@ -17,6 +17,8 @@ The weekly job:
 
 The 82-feature model is antisymmetric: swapping the fighters produces the complementary probability. Historical features use only information available before that bout; appending future fights cannot change an existing training row. Split decisions are valid W/L labels, while draws and no-contests are retained as state/history events but are not binary training labels.
 
+The regularization search includes `C=0.001` and `0.003`; an ablation found the old `0.01` lower boundary was masking stronger shrinkage. Recency weighting, decision-label weighting, and Glicko/RD were tested but remain unpromoted because their gains were small or inconsistent. Exact results are recorded in [AUDIT.md](AUDIT.md).
+
 The auditable artifacts are:
 
 - `src/content/data/processed/ufc_fights_point_in_time.csv`

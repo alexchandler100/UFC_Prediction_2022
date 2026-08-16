@@ -23,7 +23,11 @@ from fight_predictor import (
     PointInTimeDatasetBuilder,
     TemporalFightPredictor,
 )
-from fight_predictor.point_in_time import _metrics, training_fingerprint
+from fight_predictor.point_in_time import (
+    REGULARIZATION_C_GRID,
+    _metrics,
+    training_fingerprint,
+)
 import fight_stat_helpers
 from fight_stat_helpers import (
     calculate_total_fight_time,
@@ -241,6 +245,13 @@ class RawValidationTests(unittest.TestCase):
 
 
 class PointInTimeFeatureTests(unittest.TestCase):
+
+    def test_regularization_grid_extends_below_the_legacy_boundary(self):
+        self.assertEqual(
+            REGULARIZATION_C_GRID,
+            (0.001, 0.003, 0.01, 0.03, 0.1),
+        )
+        self.assertLess(min(REGULARIZATION_C_GRID), 0.01)
     @staticmethod
     def make_fight(
         fight_id,
@@ -619,7 +630,20 @@ class PointInTimeFeatureTests(unittest.TestCase):
                 TemporalFightPredictor.load_artifact(path, builder)
             builder.training_data = original_training
 
-            tampered = json.loads(path.read_text(encoding="utf-8"))
+            original_artifact = json.loads(path.read_text(encoding="utf-8"))
+            tampered = json.loads(json.dumps(original_artifact))
+            tampered["regularization_c_grid"] = [0.01]
+            path.write_text(json.dumps(tampered), encoding="utf-8")
+            with self.assertRaisesRegex(ValueError, "regularization grid"):
+                TemporalFightPredictor.load_artifact(path, builder)
+
+            tampered = json.loads(json.dumps(original_artifact))
+            tampered["selected_c"] = 0.02
+            path.write_text(json.dumps(tampered), encoding="utf-8")
+            with self.assertRaisesRegex(ValueError, "selected_c.*regularization grid"):
+                TemporalFightPredictor.load_artifact(path, builder)
+
+            tampered = json.loads(json.dumps(original_artifact))
             tampered["coefficients"][0] += 1.0
             path.write_text(json.dumps(tampered), encoding="utf-8")
             with self.assertRaisesRegex(ValueError, "model_id"):
