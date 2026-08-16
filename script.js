@@ -54,11 +54,27 @@ $(function () { // building object vegas_odds from vegas_odds.json file
 });
 
 const years = document.getElementById('years')
+const currentYear = new Date().getFullYear()
 for (let i = 0; i < 30; i++) {
-  year = 2022 - i
+  const year = currentYear - i
   years.insertAdjacentHTML('beforeend', `
 <option value="${year}">${year}</option>
 `)
+}
+document.getElementById('selectYear_rc').value = currentYear
+document.getElementById('selectYear_bc').value = currentYear
+
+// Website fight data is stored as ISO YYYY-MM-DD today, while older snapshots
+// used human-readable dates.  Never infer a year from the last four characters
+// of an unknown format ("2026-05-09" would otherwise become "5-09").
+function yearFromDate(dateValue) {
+  const text = String(dateValue || '').trim()
+  const isoMatch = text.match(/^(\d{4})-\d{2}-\d{2}$/)
+  if (isoMatch) {
+    return parseInt(isoMatch[1], 10)
+  }
+  const yearMatch = text.match(/\b(19|20)\d{2}\b/)
+  return yearMatch ? parseInt(yearMatch[0], 10) : NaN
 }
 
 //set initial table values
@@ -283,7 +299,7 @@ function fighter_age(fighter, yearSelected) {
       break;
     }
   }
-  let yearBorn = fighter_data[fighterName]['dob'].slice(-4)
+  let yearBorn = yearFromDate(fighter_data[fighterName]['dob'])
   return parseInt(yearSelected) - parseInt(yearBorn)
 }
 
@@ -296,7 +312,7 @@ function l5y_wins(fighter, year) {
   wins = 0
   for (const fight in ufcfightscrap) {
     let name = ufcfightscrap[fight]['fighter']
-    let yearDiff = parseInt(year) - ufcfightscrap[fight]['date'].slice(-4)
+    let yearDiff = parseInt(year) - yearFromDate(ufcfightscrap[fight]['date'])
     let result = ufcfightscrap[fight]['result']
     if (yearDiff >= 6) {
       return wins
@@ -314,7 +330,7 @@ function l2y_wins(fighter, year) {
   wins = 0
   for (const fight in ufcfightscrap) {
     let name = ufcfightscrap[fight]['fighter']
-    let yearDiff = parseInt(year) - ufcfightscrap[fight]['date'].slice(-4)
+    let yearDiff = parseInt(year) - yearFromDate(ufcfightscrap[fight]['date'])
     let result = ufcfightscrap[fight]['result']
     if (yearDiff >= 3) {
       return wins
@@ -331,7 +347,7 @@ function l5y_ko_losses(fighter, year) {
   ko_losses = 0
   for (const fight in ufcfightscrap) {
     let name = ufcfightscrap[fight]['fighter']
-    let yearDiff = parseInt(year) - ufcfightscrap[fight]['date'].slice(-4)
+    let yearDiff = parseInt(year) - yearFromDate(ufcfightscrap[fight]['date'])
     let result = ufcfightscrap[fight]['result']
     let method = ufcfightscrap[fight]['method']
     if (yearDiff >= 6) {
@@ -349,7 +365,7 @@ function l5y_sub_wins(fighter, year) {
   sub_wins = 0
   for (const fight in ufcfightscrap) {
     let name = ufcfightscrap[fight]['fighter']
-    let yearDiff = parseInt(year) - ufcfightscrap[fight]['date'].slice(-4)
+    let yearDiff = parseInt(year) - yearFromDate(ufcfightscrap[fight]['date'])
     let result = ufcfightscrap[fight]['result']
     let method = ufcfightscrap[fight]['method']
     if (yearDiff >= 6) {
@@ -367,7 +383,7 @@ function l5y_losses(fighter, year) {
   losses = 0
   for (const fight in ufcfightscrap) {
     let name = ufcfightscrap[fight]['fighter']
-    let yearDiff = parseInt(year) - ufcfightscrap[fight]['date'].slice(-4)
+    let yearDiff = parseInt(year) - yearFromDate(ufcfightscrap[fight]['date'])
     let result = ufcfightscrap[fight]['result']
     if (yearDiff >= 6) {
       return losses;
@@ -391,7 +407,7 @@ function avg_count(stat, fighter, inf_abs, year) { // e.g. avg_count('total_stri
   }
   for (const fight in ufcfightscrap) {
     let name = ufcfightscrap[fight][person]
-    let yearDiff = parseInt(year) - ufcfightscrap[fight]['date'].slice(-4)
+    let yearDiff = parseInt(year) - yearFromDate(ufcfightscrap[fight]['date'])
     if (same_name(name, fighter) && yearDiff >= 0) {
       summ += parseInt(ufcfightscrap[fight][stat])
       let round = parseInt(ufcfightscrap[fight]['round'])
@@ -410,7 +426,10 @@ function onlyUnique(value, index, self) {
 function wins_wins(fighter, year, years) {
   let relevant_fights = []
   for (let i = 0; i < ufc_wins_list.length; i++) {
-    let yearDiff = parseInt(year) - ufc_wins_list[i][2].slice(-4)
+    let yearDiff = parseInt(year) - yearFromDate(ufc_wins_list[i][2])
+    if (yearDiff < 0) {
+      continue
+    }
     if (yearDiff > years) {
       break
     } else {
@@ -438,7 +457,10 @@ function wins_wins(fighter, year, years) {
 function losses_losses(fighter, year, years) {
   let relevant_fights = []
   for (let i = 0; i < ufc_wins_list.length; i++) {
-    let yearDiff = parseInt(year) - ufc_wins_list[i][2].slice(-4)
+    let yearDiff = parseInt(year) - yearFromDate(ufc_wins_list[i][2])
+    if (yearDiff < 0) {
+      continue
+    }
     if (yearDiff > years) {
       break
     } else {
@@ -467,7 +489,10 @@ function losses_losses(fighter, year, years) {
 function fight_math(fighter, opponent, year, years) {
   let relevant_fights = []
   for (let i = 0; i < ufc_wins_list.length; i++) {
-    let yearDiff = parseInt(year) - ufc_wins_list[i][2].slice(-4)
+    let yearDiff = parseInt(year) - yearFromDate(ufc_wins_list[i][2])
+    if (yearDiff < 0) {
+      continue
+    }
     if (yearDiff > years) {
       break
     } else {
@@ -499,11 +524,11 @@ function fighter_score_diff(fighter, opponent, year1, year2, years) {
   return fighter_score(fighter, year1, years) - fighter_score(opponent, year2, years)
 }
 
-function avg_count_diff(stat, fighter, opponent, inf_abs, year) {
-  if (isNaN(avg_count(stat, fighter, inf_abs, year)) || isNaN(avg_count(stat, opponent, inf_abs, year))) {
+function avg_count_diff(stat, fighter, opponent, inf_abs, fighterYear, opponentYear) {
+  if (isNaN(avg_count(stat, fighter, inf_abs, fighterYear)) || isNaN(avg_count(stat, opponent, inf_abs, opponentYear))) {
     return 0
   }
-  return avg_count(stat, fighter, inf_abs, year) - avg_count(stat, opponent, inf_abs, year)
+  return avg_count(stat, fighter, inf_abs, fighterYear) - avg_count(stat, opponent, inf_abs, opponentYear)
 }
 
 //the input to this function looks like strings ("Mike Perry", "Conor McGregor", "June", "2022", "June", "2022")
@@ -524,11 +549,11 @@ function predictionTupleAbsolute(fighter1, fighter2, month1, year1, month2, year
   let l5y_losses_diff = l5y_losses(guy1, yr1).toFixed(2) - l5y_losses(guy2, yr2).toFixed(2)
   let l5y_ko_losses_diff = l5y_ko_losses(guy1, yr1).toFixed(2) - l5y_ko_losses(guy2, yr2).toFixed(2)
   let age_diff = fighter_age(guy1, yr1).toFixed(2) - fighter_age(guy2, yr2).toFixed(2)
-  let av_total_strikes_diff = avg_count_diff('total_strikes_landed', guy1, guy2, 'abs', yr1).toFixed(2)
-  let av_abs_head_strikes_diff = avg_count_diff('head_strikes_landed', guy1, guy2, 'abs', yr1).toFixed(2)
-  let av_inf_gr_strikes = avg_count_diff('ground_strikes_landed', guy1, guy2, 'inf', yr1).toFixed(2)
-  let av_tk_atmps_diff = avg_count_diff('takedowns_attempts', guy1, guy2, 'inf', yr1).toFixed(2)
-  let av_inf_head_strikes_diff = avg_count_diff('head_strikes_landed', guy1, guy2, 'inf', yr1).toFixed(2)
+  let av_total_strikes_diff = avg_count_diff('total_strikes_landed', guy1, guy2, 'abs', yr1, yr2).toFixed(2)
+  let av_abs_head_strikes_diff = avg_count_diff('head_strikes_landed', guy1, guy2, 'abs', yr1, yr2).toFixed(2)
+  let av_inf_gr_strikes = avg_count_diff('ground_strikes_landed', guy1, guy2, 'inf', yr1, yr2).toFixed(2)
+  let av_tk_atmps_diff = avg_count_diff('takedowns_attempts', guy1, guy2, 'inf', yr1, yr2).toFixed(2)
+  let av_inf_head_strikes_diff = avg_count_diff('head_strikes_landed', guy1, guy2, 'inf', yr1, yr2).toFixed(2)
   result = [fighter_score_diff_4, fighter_score_diff_9, fighter_score_diff_15, fight_math_1, fight_math_6,
     l5y_sub_wins_diff, l5y_losses_diff, l5y_ko_losses_diff, age_diff, av_total_strikes_diff, av_abs_head_strikes_diff,
     av_inf_gr_strikes, av_tk_atmps_diff, av_inf_head_strikes_diff
@@ -586,11 +611,11 @@ function predictionTuple(fighter1, fighter2, month1, year1, month2, year2) {
   let l5y_losses_diff = l5y_losses(guy1, yr1).toFixed(2) - l5y_losses(guy2, yr2).toFixed(2)
   let l5y_ko_losses_diff = l5y_ko_losses(guy1, yr1).toFixed(2) - l5y_ko_losses(guy2, yr2).toFixed(2)
   let age_diff = fighter_age(guy1, yr1).toFixed(2) - fighter_age(guy2, yr2).toFixed(2)
-  let av_total_strikes_diff = avg_count_diff('total_strikes_landed', guy1, guy2, 'abs', yr1).toFixed(2)
-  let av_abs_head_strikes_diff = avg_count_diff('head_strikes_landed', guy1, guy2, 'abs', yr1).toFixed(2)
-  let av_inf_gr_strikes = avg_count_diff('ground_strikes_landed', guy1, guy2, 'inf', yr1).toFixed(2)
-  let av_tk_atmps_diff = avg_count_diff('takedowns_attempts', guy1, guy2, 'inf', yr1).toFixed(2)
-  let av_inf_head_strikes_diff = avg_count_diff('head_strikes_landed', guy1, guy2, 'inf', yr1).toFixed(2)
+  let av_total_strikes_diff = avg_count_diff('total_strikes_landed', guy1, guy2, 'abs', yr1, yr2).toFixed(2)
+  let av_abs_head_strikes_diff = avg_count_diff('head_strikes_landed', guy1, guy2, 'abs', yr1, yr2).toFixed(2)
+  let av_inf_gr_strikes = avg_count_diff('ground_strikes_landed', guy1, guy2, 'inf', yr1, yr2).toFixed(2)
+  let av_tk_atmps_diff = avg_count_diff('takedowns_attempts', guy1, guy2, 'inf', yr1, yr2).toFixed(2)
+  let av_inf_head_strikes_diff = avg_count_diff('head_strikes_landed', guy1, guy2, 'inf', yr1, yr2).toFixed(2)
   result = [fighter_score_diff_4, fighter_score_diff_9, fighter_score_diff_15, fight_math_1, fight_math_6,
     l5y_sub_wins_diff, l5y_losses_diff, l5y_ko_losses_diff, age_diff, av_total_strikes_diff, av_abs_head_strikes_diff,
     av_inf_gr_strikes, av_tk_atmps_diff, av_inf_head_strikes_diff

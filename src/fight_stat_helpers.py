@@ -15,8 +15,7 @@ import itertools
 import networkx as nx
 from unidecode import unidecode
 from bs4 import BeautifulSoup
-import urllib.request
-import requests
+from ufcstats_client import UFCStatsError, UFCStatsEventNotComplete, ufcstats_client
 
 from bokeh.plotting import figure, output_file, save
 from bokeh.io import show
@@ -218,9 +217,8 @@ def clean_method_for_winner_predictions(a):
         return 'KO/TKO'
     elif (a == 'SUB'):
         return 'SUB'
-    elif ((a == 'U-DEC') or (a == 'M-DEC')):
+    elif ((a == 'U-DEC') or (a == 'M-DEC') or (a == 'S-DEC')):
         return 'DEC'
-    # counting S-DEC as bullshit!
     else:
         return 'bullshit'
 
@@ -267,7 +265,13 @@ def odds_to_profit(odds):
     else:
         return 100 / abs(odds)  # profit + initial bet
 
-def get_kelly_bet_from_ev_and_dk_odds(predicted_fighter_odds, fighter_dk_odds, opponent_dk_odds):
+def get_kelly_bet_from_ev_and_dk_odds(
+    predicted_fighter_odds,
+    fighter_dk_odds,
+    opponent_dk_odds,
+    kelly_fraction=0.25,
+    max_bankroll_percentage=5.0,
+):
     """
     Calculate the profit from expected value and DraftKings odds.
     
@@ -285,11 +289,22 @@ def get_kelly_bet_from_ev_and_dk_odds(predicted_fighter_odds, fighter_dk_odds, o
     predicted_fighter_probability = odds_to_prob(predicted_fighter_odds)
 
     fighter_b = odds_to_profit(fighter_dk_odds)
-    fighter_bankroll_percentage = (predicted_fighter_probability - (1 - predicted_fighter_probability) / fighter_b) * 100
+    fighter_full_kelly = (predicted_fighter_probability - (1 - predicted_fighter_probability) / fighter_b) * 100
 
     opponent_b = odds_to_profit(opponent_dk_odds)
     predicted_opponent_probability = 1 - predicted_fighter_probability
-    opponent_bankroll_percentage = (predicted_opponent_probability - (1 - predicted_opponent_probability) / opponent_b) * 100
+    opponent_full_kelly = (predicted_opponent_probability - (1 - predicted_opponent_probability) / opponent_b) * 100
+
+    # Raw model probabilities are not sufficiently calibrated to justify full
+    # Kelly (historical recommendations reached most of the bankroll).  Use a
+    # conservative fractional Kelly and a hard per-fight-side cap; negative
+    # edge means no wager.
+    fighter_bankroll_percentage = min(
+        max_bankroll_percentage, max(0.0, fighter_full_kelly * kelly_fraction)
+    )
+    opponent_bankroll_percentage = min(
+        max_bankroll_percentage, max(0.0, opponent_full_kelly * kelly_fraction)
+    )
 
     return fighter_bankroll_percentage, opponent_bankroll_percentage
 
@@ -307,7 +322,7 @@ def bet_payout(american_odds, bet_amount, result):
     """
     american_odds = int(american_odds)
     bet_amount = float(bet_amount)
-    assert result in ['W', 'L', 'D'], "Result must be 'W' or 'L' or 'D'"
+    assert result in ['W', 'L', 'D', 'NC'], "Result must be W, L, D, or NC"
     if result == 'W':
         if american_odds > 0:
             payout = bet_amount + (bet_amount * american_odds / 100)
@@ -315,8 +330,8 @@ def bet_payout(american_odds, bet_amount, result):
             payout = bet_amount + (bet_amount * 100 / abs(american_odds))
     elif result == 'L':
         payout = 0
-    elif result == 'D':
-        payout = bet_amount  # return the original bet amount in case of a draw
+    elif result in ['D', 'NC']:
+        payout = bet_amount  # draws/no-contests void a standard moneyline bet
     else:
         raise ValueError("Result must be 'W' or 'L'.")
     
@@ -401,59 +416,54 @@ def get_fighter_stats(fighter, fighter_stats):
 def count_wins_wins_before_fight(df, fighter, timeframe):
     lxy_pattern = re.compile(r'l\dy')
     assert timeframe == 'all' or re.fullmatch(lxy_pattern, timeframe) , f'timeframe must be all or lky where k is a digit, got {timeframe}' # l2y=(last 2 years), l5y=(last 5 years)
-    # make a cumsum column for the given column name, but shifted down by 1 so it doesn't include the current fight
-    timeframe_mask = [True]*len(df)  # default to all True
-    if not timeframe == 'all':
-        # restrict to fights in the given timeframe (the index is a datetime index)
-        num_years = int(timeframe[1])  # extract the number of years from the timeframe string
-        num_days = num_years * 365  # approximate number of days in the given number of years
-        timeframe_mask = (df.index >= (df.index.max() - pd.Timedelta(days=num_days)))
-    df = df.reset_index(drop=True)  # ensure df is indexed from 0 to n-1
-    opponent_wins = {}
-    opponents_whose_wins_count = []
+    # Track dated win events and evaluate the window relative to *each* target
+    # fight.  Anchoring to df.index.max() makes old features change whenever a
+    # fighter has a future bout appended (point-in-time leakage).
+    num_days = np.inf if timeframe == 'all' else int(timeframe[1]) * 365
+    df = df.sort_index(kind='stable').reset_index(names='date')
+    opponent_win_dates = {}
+    opponents_whose_wins_count = set()
     wins_wins_before = np.zeros(len(df))
     for i in range(len(df)):
-        if not timeframe_mask[i]:
-            continue
         fighter1 = df['fighter'].iloc[i]
+        fight_date = df['date'].iloc[i]
         if not same_name(fighter1, fighter):
-            if not fighter1 in opponent_wins:
-                opponent_wins[fighter1] = 0
-            opponent_wins[fighter1] += 1
+            opponent_win_dates.setdefault(fighter1, []).append(fight_date)
             continue
-        wins_wins_before[i] = sum([opponent_wins.get(person, 0) for person in opponents_whose_wins_count])
+        wins_wins_before[i] = sum(
+            1
+            for person in opponents_whose_wins_count
+            for event_date in opponent_win_dates.get(person, [])
+            if 0 < (fight_date - event_date).days < num_days
+        )
         if df['result'].iloc[i] == 'W':
             fighter2 = df['opponent'].iloc[i]
-            opponents_whose_wins_count.append(fighter2)
+            opponents_whose_wins_count.add(fighter2)
     return wins_wins_before
 
 def count_losses_losses_before_fight(df, fighter, timeframe):
     lxy_pattern = re.compile(r'l\dy')
     assert timeframe == 'all' or re.fullmatch(lxy_pattern, timeframe) , f'timeframe must be all or lky where k is a digit, got {timeframe}' # l2y=(last 2 years), l5y=(last 5 years)
-    # make a cumsum column for the given column name, but shifted down by 1 so it doesn't include the current fight
-    timeframe_mask = [True]*len(df)  # default to all True
-    if not timeframe == 'all':
-        # restrict to fights in the given timeframe (the index is a datetime index)
-        num_years = int(timeframe[1])  # extract the number of years from the timeframe string
-        num_days = num_years * 365  # approximate number of days in the given number of years
-        timeframe_mask = (df.index >= (df.index.max() - pd.Timedelta(days=num_days)))
-    df = df.reset_index(drop=True)  # ensure df is indexed from 0 to n-1
-    opponent_losses = {}
-    opponents_whose_losses_count = []
+    num_days = np.inf if timeframe == 'all' else int(timeframe[1]) * 365
+    df = df.sort_index(kind='stable').reset_index(names='date')
+    opponent_loss_dates = {}
+    opponents_whose_losses_count = set()
     losses_losses_before = np.zeros(len(df))
     for i in range(len(df)):
-        if not timeframe_mask[i]:
-            continue
         fighter1 = df['fighter'].iloc[i]
+        fight_date = df['date'].iloc[i]
         if not same_name(fighter1, fighter):
-            if not fighter1 in opponent_losses:
-                opponent_losses[fighter1] = 0
-            opponent_losses[fighter1] += 1
+            opponent_loss_dates.setdefault(fighter1, []).append(fight_date)
             continue
-        losses_losses_before[i] = sum([opponent_losses.get(person, 0) for person in opponents_whose_losses_count])
+        losses_losses_before[i] = sum(
+            1
+            for person in opponents_whose_losses_count
+            for event_date in opponent_loss_dates.get(person, [])
+            if 0 < (fight_date - event_date).days < num_days
+        )
         if df['result'].iloc[i] == 'L':
             fighter2 = df['opponent'].iloc[i]
-            opponents_whose_losses_count.append(fighter2)
+            opponents_whose_losses_count.add(fighter2)
     return losses_losses_before
 
 
@@ -695,15 +705,42 @@ def additive_greedy(X_train, X_test, current_best_feature_set=[], search_doubles
 
 # FUNCTIONS THAT INTERACT WITH WEBSITES
 
+def get_event_fight_urls(url):
+    """Return the source fight IDs advertised by one UFCStats event page."""
+    page = ufcstats_client.get(url, expected_text='b-fight-details__table')
+    soup = BeautifulSoup(page.content, "html.parser")
+    rows = soup.find_all(
+        "tr",
+        class_=(
+            "b-fight-details__table-row "
+            "b-fight-details__table-row__hover js-fight-details-click"
+        ),
+    )
+    fight_urls = [row.get('data-link') for row in rows if row.get('data-link')]
+    if not fight_urls:
+        raise UFCStatsError(f'No fight IDs were found for event {url}')
+    if len(fight_urls) != len(set(fight_urls)):
+        raise UFCStatsError(f'Duplicate fight IDs were found for event {url}')
+    return fight_urls
+
+
 def get_fight_card(url):
-    page = requests.get(url)
+    page = ufcstats_client.get(url, expected_text='b-fight-details__table')
     soup = BeautifulSoup(page.content, "html.parser")
 
     fight_card = pd.DataFrame()
     date = soup.select_one('li.b-list__box-list-item').text.strip().split('\n')[-1].strip()
     date = pd.to_datetime(date, format='%B %d, %Y')
+    event_is_current = date.date() >= pd.Timestamp.today().date()
+
+    def reject_incomplete_event(message):
+        error_type = UFCStatsEventNotComplete if event_is_current else UFCStatsError
+        raise error_type(message)
+
     # can use df.date.dt.to_pydatetime() to get an array of datetime.datetime objects if needed
     rows = soup.select('tr.b-fight-details__table-row')[1:]
+    if not rows:
+        reject_incomplete_event(f'No completed fight rows were found for event {url}')
     
     print(f'date: {date}, url: {url}, number of fights on card: {len(rows)}')
     
@@ -715,26 +752,39 @@ def get_fight_card(url):
         cols = row.select('td')
         
         if not cols:
-            print(f'A fight card for {url} is probably in progress so we are skipping this event.')
-            return
+            reject_incomplete_event(
+                f'Fight card {url} contained a row without cells; refusing a partial event'
+            )
         
         cols0_a = cols[0].select_one('a')
         
         if not cols0_a:
-            print(f'B fight card for {url} is probably in progress so we are skipping this event.')
-            return 
+            reject_incomplete_event(
+                f'Fight card {url} contained a row without a fight link; refusing a partial event'
+            )
         
         # get fight url and results
         fight_url = cols0_a['href']  # get fight url
         fight_data_dict['fight_url'] += [fight_url, fight_url]
-        results = cols[0].select('p')
+        result_markers = [
+            marker.text.strip().casefold() for marker in cols[0].select('p')
+        ]
         # pick 0 or 1 randomly (use this to determine the ordering of fighter and opponent) (winner always listed first and we dont want that order all the time)
         fighter = cols[1].select('p')[0].text.strip()
         opponent = cols[1].select('p')[1].text.strip()
         fighter_url = cols[1].select('a')[0]['href']
         opponent_url = cols[1].select('a')[1]['href']
         
-        result = ['D', 'D'] if len(results) == 2 else ['W','L']
+        if result_markers == ['win']:
+            result = ['W', 'L']
+        elif result_markers and all(marker in {'nc', 'n/c'} for marker in result_markers):
+            result = ['NC', 'NC']
+        elif result_markers and all(marker in {'draw', 'd'} for marker in result_markers):
+            result = ['D', 'D']
+        else:
+            raise UFCStatsError(
+                f'Unrecognized result markers {result_markers!r} for {fight_url}'
+            )
         fight_data_dict['result'] += result
         
         # get fighter names and fighter urls
@@ -776,7 +826,12 @@ def get_fight_card(url):
         strike_data_dict = get_fight_stats(fight_url, fighter, opponent)
                 
         if strike_data_dict is None:
-            continue  # skip this fight if no fight details available
+            # Never mark a partially scraped event as complete.  The caller
+            # must retry the whole event on a later run instead of permanently
+            # losing a bout because one detail page was temporarily missing.
+            raise UFCStatsError(
+                f'Fight details were unavailable for {fight_url}; refusing a partial event'
+            )
         
         # join to fight details
         fight_data_dict = pd.merge(fight_data_dict, strike_data_dict, on='fighter', how='left', copy=False)
@@ -792,7 +847,7 @@ def get_fight_stats(url, fighter, opponent):
     r"""
     Makes dataframe with two rows per fight, one for each fighter
     """
-    page = requests.get(url)
+    page = ufcstats_client.get(url, expected_text='b-fight-details__table-body')
     soup = BeautifulSoup(page.content, "html.parser")
     
     fd_columns = {}

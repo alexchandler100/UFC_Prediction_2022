@@ -5,7 +5,6 @@ os.chdir(f'{git_root}/src')
 # from data_handler import DataHandler
 
 import pandas as pd
-import requests
 from bs4 import BeautifulSoup
 
 #have to change directory to import functions after April 2022 restructure of folders
@@ -13,15 +12,18 @@ from bs4 import BeautifulSoup
 # TODO INCLUDE DWCS fights from ufcstats.com
 
 from fight_stat_helpers import get_fight_card
+from ufcstats_client import UFCStatsError, ufcstats_client
 
 # TODO for some reason this did not grab UFC 1
 #function that gets stats on all fights on all cards
 def get_all_fight_stats():
     url = 'http://ufcstats.com/statistics/events/completed?page=all'
-    page = requests.get(url)
+    page = ufcstats_client.get(url, expected_text='b-statistics__table-events')
     soup = BeautifulSoup(page.content, "html.parser") 
     
     events_table = soup.select_one('tbody')
+    if events_table is None:
+        raise UFCStatsError(f'Completed-events table was not found at {url}')
     events = list(events_table.select('a')[1:]) #omit first event, future event
     event_dict = {}
     for event in events:

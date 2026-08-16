@@ -1,9 +1,8 @@
 # need to use selenium as the javascript renders the html after the page load
 from selenium import webdriver
-from selenium.webdriver.chrome.service import Service
-from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.chrome.options import Options
-import time
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
 import pandas as pd
 import numpy as np
 from bs4 import BeautifulSoup
@@ -22,20 +21,22 @@ class OddsGetter:
         options.add_argument("--disable-dev-shm-usage")
 
 
-        # Create WebDriver
-        driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
-
-        # Load the page
-        driver.get(self.fight_odds_url)
-
-        # Wait for JavaScript to render (adjust time if needed or use WebDriverWait)
-        time.sleep(10) # changed from 5 to 10 seconds to avoid index out of range error
-
-        # Get the rendered HTML
-        html = driver.page_source
-
-        # Close the browser
-        driver.quit()
+        # Selenium Manager uses the Chrome/driver installed on the runner and
+        # resolves a compatible driver when necessary.  Always quit, including
+        # after a timeout or parser exception.
+        driver = webdriver.Chrome(options=options)
+        try:
+            driver.set_page_load_timeout(60)
+            driver.get(self.fight_odds_url)
+            WebDriverWait(driver, 45).until(
+                lambda current_driver: (
+                    current_driver.find_elements(By.CSS_SELECTOR, "thead.MuiTableHead-root")
+                    and current_driver.find_elements(By.CSS_SELECTOR, "tbody.MuiTableBody-root tr")
+                )
+            )
+            html = driver.page_source
+        finally:
+            driver.quit()
 
         # Now parse with BeautifulSoup
         soup = BeautifulSoup(html, "html.parser")
@@ -46,17 +47,23 @@ class OddsGetter:
         # current_year = pd.Timestamp.now().year
         # date = np.datetime.datetime.strptime(f"{current_year} {date}", "%Y %B %d").strftime("%Y-%m-%d")
         
-        # TODO figure out why I got an index out of range error here.. need to do time.sleep for longer?
-        odds_sections = soup.find_all("thead", class_="MuiTableHead-root")[0]
-        odds_data = soup.find_all("tbody", class_="MuiTableBody-root")[0]
+        odds_sections = soup.find("thead", class_="MuiTableHead-root")
+        odds_data = soup.find("tbody", class_="MuiTableBody-root")
+        if odds_sections is None or odds_data is None:
+            raise RuntimeError(
+                "fightodds.io loaded without the expected odds table; its layout may have changed"
+            )
 
         self.df = self.get_fighter_odds_for_card(odds_data, odds_sections)
         # self.df["date"] = date
         return self.df
     
     def get_name(self, row):
-        name = row.find_all("td")[0].find("a").get_text()
-        return name
+        cells = row.find_all("td")
+        link = cells[0].find("a") if cells else None
+        if link is None:
+            raise ValueError("fightodds.io row did not contain a fighter link")
+        return link.get_text(strip=True)
 
     def get_odds(self, row, bookies_list):
         # td_list = row.find_all("td")
@@ -86,6 +93,10 @@ class OddsGetter:
         bookies = section_rows[0].find_all("th")
         bookies_list = [bookie.get_text() for bookie in bookies[1:-1]] # empty first and last bookies
         rows = odds_data.find_all("tr")
+        if not rows or len(rows) % 2:
+            raise ValueError(
+                f"Expected a non-empty even number of fightodds.io rows, got {len(rows)}"
+            )
         data = []
 
         print(f'bookies_list: {bookies_list}')
@@ -114,10 +125,65 @@ class OddsGetter:
             
         # Convert the list of dictionaries to a DataFrame
         df = pd.DataFrame(data)
+        if df.empty or df[['fighter name', 'opponent name']].isna().any().any():
+            raise ValueError("fightodds.io produced an empty or unnamed matchup")
+        if df.duplicated(['fighter name', 'opponent name']).any():
+            raise ValueError("fightodds.io produced duplicate matchup rows")
         df["predicted fighter odds"] = np.nan
         df["predicted opponent odds"] = np.nan
-        average_bookie_fighter_odds = np.mean(df[[f"fighter {bookie}" for bookie in bookies_list]].replace("", np.nan).astype(float), axis=1)
-        average_bookie_opponent_odds = np.mean(df[[f"opponent {bookie}" for bookie in bookies_list]].replace("", np.nan).astype(float), axis=1)
-        # make a column with values of the form [str(avg_fighter_odds), str(avg_opponent_odds)]
-        df['average bookie odds'] = [[str(round(av_fighter_odds)), str(round(av_opponent_odds))] for av_fighter_odds, av_opponent_odds in zip(average_bookie_fighter_odds, average_bookie_opponent_odds)]
+        # American moneylines are nonlinear, so averaging the signed odds is
+        # invalid.  Convert each complete two-sided book quote to probability,
+        # remove that book's vig, then aggregate probabilities.
+        df['average bookie odds'] = [
+            self.get_consensus_odds(row, bookies_list) for _, row in df.iterrows()
+        ]
         return df
+
+    @staticmethod
+    def parse_american_odds(value):
+        if value is None or (isinstance(value, float) and np.isnan(value)):
+            return None
+        normalized = str(value).strip().replace('−', '-').replace('–', '-')
+        if not normalized:
+            return None
+        if normalized.upper() in {'EVEN', 'EV', 'PK', 'PICK'}:
+            return 100
+        try:
+            odds = int(float(normalized))
+        except ValueError:
+            return None
+        return odds if odds != 0 else None
+
+    @staticmethod
+    def odds_to_probability(odds):
+        return 100 / (odds + 100) if odds > 0 else abs(odds) / (abs(odds) + 100)
+
+    @staticmethod
+    def probability_to_odds(probability):
+        if not 0 < probability < 1:
+            return None
+        if probability >= 0.5:
+            return -round(100 * probability / (1 - probability))
+        return round(100 * (1 - probability) / probability)
+
+    def get_consensus_odds(self, row, bookies_list):
+        fighter_probabilities = []
+        for bookie in bookies_list:
+            fighter_odds = self.parse_american_odds(row.get(f'fighter {bookie}'))
+            opponent_odds = self.parse_american_odds(row.get(f'opponent {bookie}'))
+            if fighter_odds is None or opponent_odds is None:
+                continue
+            fighter_implied = self.odds_to_probability(fighter_odds)
+            opponent_implied = self.odds_to_probability(opponent_odds)
+            overround = fighter_implied + opponent_implied
+            if not 0.9 <= overround <= 1.3:
+                continue
+            fighter_probabilities.append(fighter_implied / overround)
+
+        if not fighter_probabilities:
+            return [None, None]
+        fighter_probability = float(np.mean(fighter_probabilities))
+        return [
+            self.probability_to_odds(fighter_probability),
+            self.probability_to_odds(1 - fighter_probability),
+        ]

@@ -1,12 +1,11 @@
 import numpy as np
 import pandas as pd
 from sklearn.linear_model import LogisticRegression
-from sklearn.model_selection import cross_val_score
 from datetime import date
 import math
-from dateutil.relativedelta import relativedelta
+from pathlib import Path
 from sklearn.preprocessing import StandardScaler
-from sklearn import preprocessing
+from sklearn.impute import SimpleImputer
 import sklearn.metrics
 
 from fight_stat_helpers import (
@@ -23,6 +22,7 @@ class FightPredictor:
         opponent_names = [name for name in ufc_fights_winner['opponent'].unique()]
         self.ufc_fighter_names = set(fighter_names + opponent_names)
         self.scaler = None
+        self.imputer = None
         
     def train_logistic_regression_model(self, random_state=56, scaled=True, C=100):
         r"""
@@ -82,52 +82,110 @@ class FightPredictor:
         # C:\Users\Alex\OneDrive\Documents\GitHub\UFC_Prediction_2022\src\models\notebooks\Exploratory\FeatureSelection_REMOVE_DERIVED_SCORES.ipynb
 
 
+        if 'date' in ufc_fights_winner.columns:
+            ufc_fights_winner = ufc_fights_winner.sort_values('date', kind='stable')
         ufc_fights_df = ufc_fights_winner[self.amazing_feature_set]
         results = ufc_fights_winner['result']
+        dates = ufc_fights_winner['date'] if 'date' in ufc_fights_winner.columns else None
         # self.theta, self.b = self.find_best_regression_coeffs(ufc_fights_df, results)
         self.theta, self.b, self.scaler = self.find_regression_coeffs(
             ufc_fights_df, 
             results, 
+            dates=dates,
             random_state=random_state, 
             scaled=scaled, 
             C=C
             )
     
     
-    def find_regression_coeffs(self, X, y, _max_iter=30000, random_state=14, scaled=True, C=0.1):
-        # do another split
-        from sklearn.model_selection import train_test_split
-        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=random_state)
-        # see how the new features do on the test set we already made
-        # train the model with the best features
-        best_model = LogisticRegression(solver='lbfgs', max_iter=_max_iter, C=C, penalty='l2', fit_intercept=False)
+    def find_regression_coeffs(self, X, y, dates=None, _max_iter=30000, random_state=14, scaled=True, C=0.1):
+        if len(X) < 10:
+            raise ValueError(f'At least 10 fights are required to train, got {len(X)}')
+
+        # Evaluate the way this system is deployed: older cards train the
+        # model and the newest 20% of cards are held out.  Random row splits
+        # substantially overstated recent performance.
+        if dates is not None:
+            parsed_dates = pd.to_datetime(dates).to_numpy()
+            order = np.argsort(parsed_dates, kind='stable')
+        else:
+            parsed_dates = None
+            order = np.arange(len(X))
+            print('Warning: no dates supplied; temporal validation uses the existing row order')
+        split_index = max(1, int(len(order) * 0.8))
+        if parsed_dates is not None and split_index < len(order):
+            cutoff = parsed_dates[order[split_index]]
+            train_indices = order[parsed_dates[order] < cutoff]
+            test_indices = order[parsed_dates[order] >= cutoff]
+        else:
+            train_indices = order[:split_index]
+            test_indices = order[split_index:]
+        if not len(train_indices) or not len(test_indices):
+            raise ValueError('Temporal validation needs at least two distinct fight dates')
+        X_train = X.iloc[train_indices]
+        X_test = X.iloc[test_indices]
+        y_train = y.iloc[train_indices]
+        y_test = y.iloc[test_indices]
+
+        # Zero means "no known difference" for the antisymmetric matchup
+        # features.  This preserves fights with sparse physical/history data
+        # instead of selecting only well-documented veterans.
+        evaluation_imputer = SimpleImputer(
+            strategy='constant', fill_value=0.0, keep_empty_features=True
+        )
+        X_train_imputed = evaluation_imputer.fit_transform(X_train)
+        X_test_imputed = evaluation_imputer.transform(X_test)
+
+        evaluation_model = LogisticRegression(
+            solver='lbfgs', max_iter=_max_iter, C=C, penalty='l2',
+            fit_intercept=False, random_state=random_state,
+        )
         if scaled:
             print('Scaling features')
-            scaler = StandardScaler()
-            X_train_scaled = scaler.fit_transform(X_train)
-            X_test_scaled = scaler.transform(X_test)
+            evaluation_scaler = StandardScaler(with_mean=False)
+            X_train_scaled = evaluation_scaler.fit_transform(X_train_imputed)
+            X_test_scaled = evaluation_scaler.transform(X_test_imputed)
 
         else:
-            scaler = None
-            X_train_scaled = X_train
-            X_test_scaled = X_test
-        best_model.fit(X_train_scaled, y_train)
+            evaluation_scaler = None
+            X_train_scaled = X_train_imputed
+            X_test_scaled = X_test_imputed
+        evaluation_model.fit(X_train_scaled, y_train)
         
         # evaluate the model on the training set
-        train_score = best_model.score(X_train_scaled, y_train)
+        train_score = evaluation_model.score(X_train_scaled, y_train)
         print(f'Training set size: {X_train.shape} accuracy: {train_score}')
 
         # evaluate the model on the test set
-        test_score = best_model.score(X_test_scaled, y_test)
+        test_score = evaluation_model.score(X_test_scaled, y_test)
         print(f'Test set size: {X_test.shape} accuracy: {test_score}')
         
         # get the neg log loss score of the test set and convert it to a probability
-        y_proba_test = best_model.predict_proba(X_test_scaled)
+        y_proba_test = evaluation_model.predict_proba(X_test_scaled)
         log_loss = sklearn.metrics.log_loss(y_test, y_proba_test)
-        print(f'Test set neg log loss: {-log_loss}. Average probability to observe data given model: {np.exp(-log_loss)}')
-    
-        theta = list(best_model.coef_[0])
-        b = best_model.intercept_[0]
+        brier = sklearn.metrics.brier_score_loss(y_test, y_proba_test[:, 1])
+        print(f'Temporal test log loss: {log_loss}. Brier score: {brier}. Average probability to observe data given model: {np.exp(-log_loss)}')
+
+        # The holdout model is for evaluation only.  Production must use all
+        # eligible history after the feature contract/hyperparameters are fixed.
+        final_model = LogisticRegression(
+            solver='lbfgs', max_iter=_max_iter, C=C, penalty='l2',
+            fit_intercept=False, random_state=random_state,
+        )
+        self.imputer = SimpleImputer(
+            strategy='constant', fill_value=0.0, keep_empty_features=True
+        )
+        X_imputed = self.imputer.fit_transform(X)
+        if scaled:
+            scaler = StandardScaler(with_mean=False)
+            X_final = scaler.fit_transform(X_imputed)
+        else:
+            scaler = None
+            X_final = X_imputed
+        final_model.fit(X_final, y)
+
+        theta = list(final_model.coef_[0])
+        b = float(final_model.intercept_[0])
         
         return theta, b, scaler
         
@@ -174,10 +232,35 @@ class FightPredictor:
                 derived_doubled_tuple_localized = derived_doubled_tuple[diffless_feature_set]
                 # make a bokeh plot to visualize the prediction in a html file viewable on the website
                 # make scaled diff tup 
-                if self.scaler:
-                    diff_tup_scaled = self.scaler.transform(diff_tup)
+                diff_tup_scaled = self.imputer.transform(diff_tup)
+                if self.scaler is not None:
+                    diff_tup_scaled = self.scaler.transform(diff_tup_scaled)
                     diff_tup_scaled = pd.DataFrame(diff_tup_scaled, columns=diff_tup.columns, index=diff_tup.index)
-                visualize_prediction_bokeh(fighter, opponent, self.theta, card_date, derived_doubled_tuple_localized, diff_tup_scaled)
+                else:
+                    diff_tup_scaled = pd.DataFrame(
+                        diff_tup_scaled, columns=diff_tup.columns, index=diff_tup.index
+                    )
+                card_date_formatted = pd.to_datetime(card_date).strftime('%Y-%m-%d')
+                plot_path = Path(
+                    'content/bokehPlots/'
+                    f'{card_date_formatted}_{fighter.lower().replace(" ", "_")}'
+                    f'_vs_{opponent.lower().replace(" ", "_")}_bokeh_barplot.html'
+                )
+                data_changed = getattr(self.dh, 'update_time', 0) > 0
+                if data_changed or not plot_path.exists():
+                    try:
+                        visualize_prediction_bokeh(
+                            fighter, opponent, self.theta, card_date,
+                            derived_doubled_tuple_localized, diff_tup_scaled,
+                        )
+                    except Exception as error:
+                        # Plot generation is presentation-only.  A filesystem
+                        # or Bokeh regression must not discard an otherwise
+                        # valid weekly prediction card.
+                        print(
+                            f'WARNING: prediction plot failed for {fighter} vs '
+                            f'{opponent} ({type(error).__name__}: {error})'
+                        )
                 odds_calc = self.odds(diff_tup)
                 print('predicting: '+fighter,'versus '+opponent,'.... '+str(odds_calc))
                 if not odds_calc:
@@ -222,19 +305,18 @@ class FightPredictor:
     # how likely the outcome is.
 
     def presigmoid_value(self, diff_tup):
-        if self.scaler:
+        if self.imputer is not None:
+            diff_tup = self.imputer.transform(diff_tup)
+        if self.scaler is not None:
             diff_tup = self.scaler.transform(diff_tup)
-            
-        value = np.dot(diff_tup, self.theta)
-        presig_value = value + self.b
-        p = self.sigmoid(presig_value[0])
-        
-        return presig_value
+
+        value = float(np.dot(np.asarray(diff_tup).reshape(-1), self.theta))
+        return value + float(self.b)
 
 
     def sigmoid(self, x):
-        sig = 1 / (1 + math.exp(-x))
-        return sig
+        x = float(np.clip(x, -709, 709))
+        return 1 / (1 + math.exp(-x))
 
     #returns the probability that fighter1 defeats fighter2 on date1,date2
     def probability(self, diff_tup):
@@ -254,4 +336,3 @@ class FightPredictor:
             opponentOdds = round(100 / (1 - p) - 100)
             return ['-' + str(fighterOdds), '+' + str(opponentOdds)]
 
-            
