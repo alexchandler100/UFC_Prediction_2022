@@ -1,4 +1,5 @@
 [![Update Data](https://github.com/alexchandler100/UFC_Prediction_2022/actions/workflows/update-data.yml/badge.svg)](https://github.com/alexchandler100/UFC_Prediction_2022/actions/workflows/update-data.yml)
+[![Collect Market Snapshot](https://github.com/alexchandler100/UFC_Prediction_2022/actions/workflows/collect-market-snapshot.yml/badge.svg)](https://github.com/alexchandler100/UFC_Prediction_2022/actions/workflows/collect-market-snapshot.yml)
 
 # UFC Prediction
 
@@ -26,6 +27,47 @@ The auditable artifacts are:
 - `src/content/data/external/vegas_odds.json`
 
 When complete two-sided lines are available, the published primary forecast is the no-vig market consensus and the independent model probability remains visible. Betting recommendations are disabled until timestamped rolling tests demonstrate a repeatable market-relative edge.
+
+## Expected-return research
+
+Expected return is evaluated against sportsbook prices, not inferred from winner
+accuracy. A separate, paper-only market tracker now stores each retrieval as an
+immutable multi-book snapshot with stable event/fighter IDs, a fresh UTC
+observation time, first-seen time, source-payload hash, and the exact frozen
+model probability/model ID. Consensus probabilities never mix retrieval runs.
+When one book's offered price is evaluated, that book is excluded from the
+consensus and at least three other books are required.
+If more than one capture exists for a matchup, evaluation requires a
+predeclared per-event UTC cutoff and deterministically selects the latest
+capture at or before it; later snapshots cannot be chosen using outcomes.
+
+The conservative Git-history reconstruction found 503 completed W/L fights
+with at least three of the five core books. Only 230 also had a defensible
+same-capture legacy model forecast, and 119 remained after prior-card warmup.
+On those 119 fights, market-only log loss was `0.58713`, the legacy model was
+`0.61856`, and the prior-card-selected blend was `0.58836`. The blend did not
+beat the market.
+
+The locked exploratory paper rule required at least 5% predicted EV, used the
+best listed core-book price, risked a hypothetical flat 1 unit, and never used
+the target book in its own probability. It made 26 selections and finished
+3-23, `-15.47u` (`-59.5%` hypothetical ROI). A fixed market-only comparator
+using the identical fights, prices, and 5% rule made just 7 selections and lost
+all 7 (`-7u`). This is not an executable return:
+legacy commit times only bound when a quote was saved, availability was not
+verified, 2024 is absent, and the sample is small. It is evidence to keep
+betting disabled and collect prospective data, not a reason to loosen the
+threshold or optimize the backtest.
+
+Reproduce the read-only reconstruction or regenerate its content-addressed
+outputs with:
+
+```console
+python -B src/backfill_market_history.py --dry-run
+python -B src/backfill_market_history.py
+```
+
+The audit and ledgers are in `src/content/data/market_history_backfill/`.
 
 ## Local setup and verification
 
@@ -59,9 +101,25 @@ The old scripts `src/1-build_ufc_fights_reported_doubled.py` and `src/2-build_uf
 
 `.github/workflows/update-data.yml` runs each Wednesday at 9:33 PM America/Chicago and can also be started manually. It uses pinned dependencies, tests before mutation, strict post-build validation, a shallow checkout, scoped staging, a no-op commit guard, and a starting-commit check so artifacts built from stale code are never rebased onto newer code.
 
+`.github/workflows/collect-market-snapshot.yml` runs separately each Thursday at
+12:17 PM and 6:17 PM America/Chicago. The second bounded attempt protects
+against a delayed source-card refresh. Each run validates the frozen card/model publication,
+captures one fresh FightOdds table, appends only the quote/forecast ledgers and
+a bounded audit report, then revalidates their mirrors before publication. The
+two publishing workflows share one concurrency group and exact path allowlists.
+The collector creates no paper or live wager.
+
 After committing and pushing this upgrade, open **Actions -> Update UFC data** and use **Run workflow** once to verify the backlog update. If GitHub still marks the inactivity-disabled schedule as disabled, click **Enable workflow** once. Normal weekly runs should then require no local command.
 
 FightOdds is optional enrichment: an outage, malformed schema, ambiguous matchup, or card mismatch publishes model-only forecasts with an explicit status instead of failing the UFCStats/model update.
+
+After the first successful market capture, its files can be checked locally
+with:
+
+```console
+python -B src/capture_market_snapshot.py --validate-only
+python -B src/validate_data.py --allow-stale --require-market-data
+```
 
 ## Evaluation and limitations
 

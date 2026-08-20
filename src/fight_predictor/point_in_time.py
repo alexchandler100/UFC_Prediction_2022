@@ -1170,7 +1170,8 @@ class TemporalFightPredictor:
         output = pd.DataFrame("", index=range(len(fights_list)), columns=columns)
         artifact = self.artifact()
         for required in (
-            "fighter name", "opponent name", "date", "fighter id", "opponent id",
+            "fighter name", "opponent name", "date", "division",
+            "event id", "event url", "fighter id", "opponent id",
             "model id", "model version", "model trained through", "model probability", "model status",
             "forecast probability", "forecast source", "forecast fighter odds",
             "forecast opponent odds",
@@ -1184,10 +1185,22 @@ class TemporalFightPredictor:
             division = fight[2] if len(fight) > 2 else "Unknown"
             fighter_url = fight[3] if len(fight) > 3 else None
             opponent_url = fight[4] if len(fight) > 4 else None
+            event_url = fight[5] if len(fight) > 5 else None
             fighter_id = self.builder.resolve_fighter_id(fighter_name, fighter_url)
             opponent_id = self.builder.resolve_fighter_id(opponent_name, opponent_url)
-            output.loc[index, ["fighter name", "opponent name", "date"]] = [
-                fighter_name, opponent_name, card_date
+            output.loc[
+                index,
+                [
+                    "fighter name", "opponent name", "date", "division",
+                    "event id", "event url",
+                ],
+            ] = [
+                fighter_name,
+                opponent_name,
+                card_date,
+                division,
+                _identity_token(event_url) if event_url else "",
+                str(event_url or ""),
             ]
             output.at[index, "model version"] = MODEL_VERSION
             output.at[index, "model id"] = artifact["model_id"]

@@ -1,0 +1,167 @@
+{
+  "algorithm_version": 1,
+  "audit_schema_version": 1,
+  "betting_status": "disabled_paper_only_no_execution",
+  "conservative_rules": {
+    "date_only_timing": "commit_utc_date_strictly_before_event_date",
+    "dated_mapping": "exact_event_date_only",
+    "duplicate_rule": "one_identical_row_per_commit_fight_conflicts_rejected",
+    "moneyline": "paired_integer_abs_ge_100_and_overround_0.90_to_1.30",
+    "name_matching": "explicit_aliases_plus_order_insensitive_same_name_no_fuzzy_distance",
+    "observed_bound": "max(author_timestamp,committer_timestamp)_utc",
+    "snapshot_selection": "latest_eligible_before_event_without_result",
+    "undated_mapping": "unique_name_pair_and_1_to_30_utc_calendar_days"
+  },
+  "core_books": [
+    "DraftKings",
+    "BetMGM",
+    "Caesars",
+    "BetRivers",
+    "FanDuel"
+  ],
+  "dry_run": false,
+  "exploratory_report_sha256": "e52baab831dca2a7f7e3052ca38f654c0c834ffab93dc7749b549efcae923cd1",
+  "generated_records": {
+    "dataset_sha256": {
+      "forecasts": "92d6c88e61850f32a1b7890baed85dad6a34f3ae02659be8b7bd03ec75c940a0",
+      "paper_decisions": "1bef1e8b55ab75737b18af9bec942098f5ce95a17bdf2477e87268244224bed7",
+      "paper_settlements": "f75c4272a91a7fd133ff01debcae953887fa5ae0284accc8117f5e82f1bde2f7",
+      "quotes": "60f7671bf6ec26ff53da8095854eefe7b39d80a99481ce5d2ce3ca1def93f3c8"
+    },
+    "forecasts": 367,
+    "paper_decisions": 117,
+    "paper_settlements": 117,
+    "quotes": 3718
+  },
+  "latest_core_five_sample": {
+    "cards_by_year": {
+      "2022": 16,
+      "2023": 17,
+      "2025": 19,
+      "2026": 6
+    },
+    "commit_to_event_lead_buckets": {
+      "D-1": 50,
+      "D-15_to_D-30_or_more": 25,
+      "D-2_to_D-3": 263,
+      "D-4_to_D-7": 133,
+      "D-8_to_D-14": 32
+    },
+    "draw_nc_outcomes": 9,
+    "first_event_date": "2022-04-23",
+    "last_event_date": "2026-04-04",
+    "latest_eligible_outcomes": 512,
+    "lead_bucket_warning": "commit-to-event upper bounds are not quote ages or T-minus execution times",
+    "minimum_core_books": 3,
+    "w_l_by_year": {
+      "2022": 104,
+      "2023": 121,
+      "2025": 206,
+      "2026": 72
+    },
+    "w_l_outcomes": 503
+  },
+  "lineage": {
+    "prediction_history": {
+      "author_committer_timestamp_mismatches": 0,
+      "commits": 169,
+      "first_observed_at_utc": "2022-04-26T02:45:07.000000Z",
+      "last_observed_at_utc": "2026-05-16T22:08:41.000000Z",
+      "paths_observed": [
+        "src/content/data/external/prediction_history.json",
+        "src/models/buildingMLModel/data/external/prediction_history.json"
+      ],
+      "unique_blob_oids": 167
+    },
+    "vegas_odds": {
+      "author_committer_timestamp_mismatches": 0,
+      "commits": 198,
+      "first_observed_at_utc": "2022-04-18T20:05:05.000000Z",
+      "last_observed_at_utc": "2026-05-16T22:08:41.000000Z",
+      "paths_observed": [
+        "src/content/data/external/vegas_odds.json",
+        "src/models/buildingMLModel/data/external/vegas_odds.json"
+      ],
+      "unique_blob_oids": 197
+    }
+  },
+  "non_promotable_flags": [
+    "legacy_commit_timestamp_not_source_quote_timestamp",
+    "legacy_rounded_american_odds_probability",
+    "legacy_model_training_contract_unknown",
+    "training_cutoff_inferred_from_current_raw",
+    "current_reconciled_raw_not_as_of_snapshot",
+    "completed_matched_selection_survivorship",
+    "unverified_execution_and_closing_price",
+    "model_and_extraction_not_prospectively_locked",
+    "missing_2024_market_history",
+    "development_only"
+  ],
+  "prediction_history_feasibility": {
+    "ambiguous_entities": 18,
+    "fights_recoverable_only_from_untimed_history": 155,
+    "fights_with_any_history_only_price_tuple": 440,
+    "fights_with_any_undated_history_price": 370,
+    "fights_with_only_undated_history_price": 369,
+    "history_only_price_tuples": 3967,
+    "history_only_stable_fights": 256,
+    "intersection_fights": 360,
+    "intersection_with_strict_vegas_excluding_ref": 3000,
+    "intersection_with_strict_vegas_including_ref": 3214,
+    "lineage_source_rows_including_cumulative_repetitions": 129400,
+    "no_match_entities": 77,
+    "stable_mapped_price_tuples_excluding_ref": 6673,
+    "stable_mapped_price_tuples_including_ref": 7181,
+    "stable_matched_entities": 1475,
+    "timing_eligibility": "excluded",
+    "timing_exclusion_reason": "prediction_history is cumulative and generally committed after settlement; its commit timestamp is not a defensible quote timestamp",
+    "unique_matchup_date_entities": 1570,
+    "unique_valid_entity_book_price_records": 8319
+  },
+  "raw_fights": {
+    "accepted_physical_fights": 8665,
+    "physical_fight_groups": 8665,
+    "rejected_physical_fights": 0,
+    "source_rows": 17330,
+    "source_sha256": "dea5a50c8bae94ba75a544852dfb0322a020c9f09ad493e76b97fb6b4c0e0ea5"
+  },
+  "ref_excluded": true,
+  "source_paths": {
+    "prediction_history": [
+      "src/content/data/external/prediction_history.json",
+      "src/models/buildingMLModel/data/external/prediction_history.json"
+    ],
+    "raw_fights": "src/content/data/processed/ufc_fights_reported_doubled.csv",
+    "vegas_odds": [
+      "src/content/data/external/vegas_odds.json",
+      "src/models/buildingMLModel/data/external/vegas_odds.json"
+    ]
+  },
+  "source_ref": "main",
+  "strict_snapshot_dataset": {
+    "canonical_price_tuples_excluding_ref": 4611,
+    "canonical_price_tuples_including_ref": 4886,
+    "distinct_card_price_signatures": 108,
+    "events": 58,
+    "quote_observations_excluding_ref": 5417,
+    "quote_observations_including_ref": 5719,
+    "strict_fight_snapshot_rows": 803,
+    "unique_commit_event_card_snapshots": 108,
+    "unique_fights_with_any_strict_quote": 518
+  },
+  "vegas_mapping": {
+    "after_event_rows_rejected": 27,
+    "conflicting_duplicate_groups_rejected": 1,
+    "dated_ambiguous": 0,
+    "dated_matched": 1790,
+    "dated_no_match": 173,
+    "duplicate_commit_fight_rows_rejected": 2,
+    "mapped_rows_without_valid_paired_quote": 1079,
+    "same_day_rows_rejected": 262,
+    "source_rows": 2920,
+    "strict_prior_day_rows_before_duplicate_check": 805,
+    "undated_ambiguous_within_30_days": 0,
+    "undated_matched_within_30_days": 383,
+    "undated_no_match_within_30_days": 574
+  }
+}

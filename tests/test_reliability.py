@@ -171,6 +171,10 @@ class OddsTests(unittest.TestCase):
     def test_parses_common_moneyline_formats(self):
         self.assertEqual(OddsGetter.parse_american_odds("EVEN"), 100)
         self.assertEqual(OddsGetter.parse_american_odds("−125"), -125)
+        self.assertEqual(OddsGetter.parse_american_odds("-110.0"), -110)
+        self.assertIsNone(OddsGetter.parse_american_odds("-110.5"))
+        self.assertIsNone(OddsGetter.parse_american_odds("inf"))
+        self.assertIsNone(OddsGetter.parse_american_odds("+99"))
         self.assertIsNone(OddsGetter.parse_american_odds(""))
 
     def test_bet_sizing_is_fractional_nonnegative_and_capped(self):

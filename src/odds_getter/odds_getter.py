@@ -159,10 +159,13 @@ class OddsGetter:
         if normalized.upper() in {'EVEN', 'EV', 'PK', 'PICK'}:
             return 100
         try:
-            odds = int(float(normalized))
-        except ValueError:
+            numeric = float(normalized)
+        except (TypeError, ValueError):
             return None
-        return odds if odds != 0 else None
+        if not np.isfinite(numeric) or not numeric.is_integer():
+            return None
+        odds = int(numeric)
+        return odds if 100 <= abs(odds) <= 100_000 else None
 
     @staticmethod
     def odds_to_probability(odds):

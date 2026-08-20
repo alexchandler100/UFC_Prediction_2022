@@ -27,6 +27,12 @@ from fight_predictor.point_in_time import (
     PointInTimeDatasetBuilder,
     training_fingerprint,
 )
+from market_tracker import (
+    ForecastCaptureStore,
+    MarketDataError,
+    QuoteSnapshotStore,
+    StoreIntegrityError,
+)
 
 
 RAW_REQUIRED_COLUMNS = {
@@ -725,6 +731,17 @@ def validate_publication(
         report.require(bool(card_info.get("title")), "card_info title is blank")
         card_date = pd.to_datetime(card_info.get("date"), errors="coerce")
         report.require(pd.notna(card_date), "card_info date is invalid")
+        if require_model_artifact:
+            event_url = str(card_info.get("event_url", "")).strip()
+            event_id = str(card_info.get("event_id", "")).strip()
+            report.require(bool(event_url), "generated card_info event_url is blank")
+            report.require(bool(event_id), "generated card_info event_id is blank")
+            if event_url and event_id:
+                report.require(
+                    event_url.rstrip("/").rsplit("/", 1)[-1].lower()
+                    == event_id.lower(),
+                    "card_info event_id does not match its UFCStats URL",
+                )
 
     vegas_object = objects["vegas_odds"]
     try:
@@ -754,6 +771,8 @@ def validate_publication(
                     "model id", "model version", "model trained through",
                     "model probability", "model status", "forecast probability",
                     "forecast source", "betting status", "odds observed at",
+                    "forecast issued at", "forecast source commit",
+                    "event id", "event url", "fighter id", "opponent id",
                 }
                 if _require_columns(vegas, model_columns, "vegas odds model", report):
                     report.require(
@@ -772,6 +791,35 @@ def validate_publication(
                         ).all(),
                         "vegas odds training cutoffs do not match winner_model.json",
                     )
+                    issued_at = pd.to_datetime(
+                        vegas["forecast issued at"], errors="coerce", utc=True
+                    )
+                    report.require(
+                        issued_at.notna().all(),
+                        "vegas odds forecasts require a UTC issuance timestamp",
+                    )
+                    report.require(
+                        vegas["forecast source commit"]
+                        .astype(str)
+                        .str.strip()
+                        .str.fullmatch(r"(?:[0-9a-fA-F]{40}|[0-9a-fA-F]{64})")
+                        .fillna(False)
+                        .all(),
+                        "vegas odds forecasts require a 40- or 64-hex source revision",
+                    )
+                    if isinstance(card_info, dict):
+                        report.require(
+                            vegas["event id"].astype(str).eq(
+                                str(card_info.get("event_id", ""))
+                            ).all(),
+                            "vegas odds event IDs do not match card_info",
+                        )
+                        report.require(
+                            vegas["event url"].astype(str).eq(
+                                str(card_info.get("event_url", ""))
+                            ).all(),
+                            "vegas odds event URLs do not match card_info",
+                        )
                     model_probability = pd.to_numeric(
                         vegas["model probability"], errors="coerce"
                     )
@@ -779,6 +827,13 @@ def validate_publication(
                         vegas["forecast probability"], errors="coerce"
                     )
                     resolved = vegas["model status"] != "abstain_unresolved_identity"
+                    report.require(
+                        vegas.loc[resolved, "fighter id"]
+                        .astype(str).str.strip().ne("").all()
+                        and vegas.loc[resolved, "opponent id"]
+                        .astype(str).str.strip().ne("").all(),
+                        "resolved vegas forecasts require stable fighter IDs",
+                    )
                     report.require(
                         model_probability[resolved].between(0, 1, inclusive="neither").all(),
                         "resolved model probabilities must be strictly between zero and one",
@@ -837,11 +892,161 @@ def validate_publication(
     return report
 
 
+def validate_market_data(
+    market_root: Path,
+    *,
+    required: bool = False,
+) -> ValidationReport:
+    """Validate the immutable quote/model ledgers used for shadow research."""
+
+    report = ValidationReport()
+    quote_csv = market_root / "quote_snapshots.csv"
+    quote_jsonl = market_root / "quote_snapshots.jsonl"
+    forecast_csv = market_root / "forecast_captures.csv"
+    forecast_jsonl = market_root / "forecast_captures.jsonl"
+    expected = (quote_csv, quote_jsonl, forecast_csv, forecast_jsonl)
+    existing = [path.exists() for path in expected]
+    if not any(existing):
+        if required:
+            report.errors.append("market quote/forecast ledgers are missing")
+        return report
+    if not all(existing):
+        missing = [path.name for path, present in zip(expected, existing) if not present]
+        report.errors.append(f"market ledger mirrors are incomplete: {missing}")
+        return report
+
+    try:
+        quotes = QuoteSnapshotStore(quote_csv, quote_jsonl).read()
+        forecasts = ForecastCaptureStore(forecast_csv, forecast_jsonl).read()
+    except (OSError, UnicodeError, MarketDataError, StoreIntegrityError) as error:
+        report.errors.append(f"market ledgers failed integrity validation: {error}")
+        return report
+
+    report.require(bool(quotes), "market quote ledger is empty")
+    report.require(bool(forecasts), "market forecast ledger is empty")
+    if not quotes or not forecasts:
+        return report
+
+    capture_contracts: dict[str, set[tuple]] = {}
+    capture_source_payloads: dict[tuple[str, str], set[str]] = {}
+    for quote in quotes:
+        capture_contracts.setdefault(quote.capture_id, set()).add(
+            (
+                quote.event_id,
+                quote.event_date,
+                quote.timing_precision,
+                quote.event_start_utc,
+                quote.observed_at_utc,
+            )
+        )
+        capture_source_payloads.setdefault(
+            (quote.capture_id, quote.source.casefold()), set()
+        ).add(quote.source_payload_sha256)
+    report.require(
+        all(len(values) == 1 for values in capture_contracts.values()),
+        "one market capture_id spans multiple event/timing/retrieval contracts",
+    )
+    report.require(
+        all(len(values) == 1 for values in capture_source_payloads.values()),
+        "one market capture/source has multiple payload hashes",
+    )
+
+    forecast_by_key: dict[tuple[str, str], list] = {}
+    for forecast in forecasts:
+        forecast_by_key.setdefault(
+            (forecast.capture_id, forecast.matchup_id), []
+        ).append(forecast)
+        report.require(
+            forecast.capture_id in capture_contracts
+            and any(
+                contract[0] == forecast.event_id
+                for contract in capture_contracts[forecast.capture_id]
+            ),
+            "market forecast capture has no quote event with the same capture_id",
+        )
+    report.require(
+        all(len(values) == 1 for values in forecast_by_key.values()),
+        "one market capture/matchup has multiple frozen forecasts",
+    )
+
+    quote_keys = {(quote.capture_id, quote.matchup_id) for quote in quotes}
+    forecast_keys = set(forecast_by_key)
+    report.require(
+        forecast_keys <= quote_keys,
+        "a frozen market forecast has no quote for the same capture/matchup",
+    )
+    matched_forecast_keys = quote_keys & forecast_keys
+    report.require(
+        bool(matched_forecast_keys),
+        "market quote and forecast ledgers have no matching capture/matchup",
+    )
+    for key in matched_forecast_keys:
+        forecast = forecast_by_key[key][0]
+        matchup_quotes = [
+            quote
+            for quote in quotes
+            if (quote.capture_id, quote.matchup_id) == key
+        ]
+        observed = min(quote.observed_at_utc for quote in matchup_quotes)
+        forecast_identity = (
+            forecast.event_id,
+            forecast.fighter_id,
+            forecast.opponent_id,
+            forecast.event_date,
+            forecast.timing_precision,
+            forecast.event_start_utc,
+        )
+        report.require(
+            all(
+                (
+                    quote.event_id,
+                    quote.fighter_id,
+                    quote.opponent_id,
+                    quote.event_date,
+                    quote.timing_precision,
+                    quote.event_start_utc,
+                )
+                == forecast_identity
+                for quote in matchup_quotes
+            ),
+            "a market quote and frozen forecast disagree on matchup timing/identity",
+        )
+        known_fight_ids = {
+            value
+            for value in [
+                forecast.fight_id,
+                *(quote.fight_id for quote in matchup_quotes),
+            ]
+            if value is not None
+        }
+        report.require(
+            len(known_fight_ids) <= 1,
+            "a market quote and frozen forecast disagree on fight_id",
+        )
+        report.require(
+            forecast.forecast_issued_at_utc <= observed,
+            "a market quote was observed before its frozen model forecast existed",
+        )
+
+    report.facts.append(
+        "market ledger: "
+        f"{len(quotes):,} quotes / {len(forecasts):,} forecasts / "
+        f"{len(capture_contracts):,} captures"
+    )
+    unmatched = len(quote_keys - forecast_keys)
+    if unmatched:
+        report.warnings.append(
+            f"market ledger has {unmatched:,} quote matchup(s) without a model forecast"
+        )
+    return report
+
+
 def validate_repository(
     repo_root: Path,
     *,
     allow_stale: bool = False,
     require_model_artifact: bool = False,
+    require_market_data: bool = False,
 ) -> ValidationReport:
     data_root = repo_root / "src" / "content" / "data"
     processed = data_root / "processed"
@@ -853,6 +1058,11 @@ def validate_repository(
     )
 
     report = ValidationReport()
+    report.merge(
+        validate_market_data(
+            data_root / "market", required=require_market_data
+        )
+    )
     report.merge(validate_raw_fights(raw))
     report.merge(validate_fighters(fighters))
     raw_schema_valid = RAW_REQUIRED_COLUMNS <= set(raw.columns)
@@ -905,6 +1115,11 @@ def main() -> int:
         help="repository root (defaults to the parent of src)",
     )
     parser.add_argument(
+        "--require-market-data",
+        action="store_true",
+        help="require and validate immutable quote/model capture ledgers",
+    )
+    parser.add_argument(
         "--require-model-artifact",
         action="store_true",
         help="require and cross-check the point-in-time matrix and winner model",
@@ -920,6 +1135,7 @@ def main() -> int:
         args.repo_root.resolve(),
         allow_stale=args.allow_stale,
         require_model_artifact=args.require_model_artifact,
+        require_market_data=args.require_market_data,
     )
     for fact in report.facts:
         print(f"FACT: {fact}")

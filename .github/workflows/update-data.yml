@@ -11,14 +11,16 @@ permissions:
   contents: write
 
 concurrency:
-  group: update-ufc-data-main
+  # Serialize every workflow that can publish data so a market capture cannot
+  # race the authoritative model/data update.
+  group: publish-ufc-data-main
   cancel-in-progress: false
 
 jobs:
   update_data:
     runs-on: ubuntu-24.04
     # A recent catch-up completed in ~8 minutes; the larger limit permits a
-    # after an outage without silently killing an otherwise healthy rebuild.
+    # catch-up after an outage without silently killing an otherwise healthy rebuild.
     timeout-minutes: 180
     env:
       PYTHONDONTWRITEBYTECODE: "1"
@@ -67,7 +69,12 @@ jobs:
             src/content/data/processed/ufc_fights_reported_doubled.csv \
             src/content/data/processed/ufc_fight_data_for_website.csv \
             src/content/data/processed/ufc_fights_point_in_time.csv \
-            src/content/data/external
+            src/content/data/external/card_info.json \
+            src/content/data/external/fighter_stats.json \
+            src/content/data/external/prediction_history.json \
+            src/content/data/external/ufc_fight_data_for_website.json \
+            src/content/data/external/vegas_odds.json \
+            src/content/data/external/winner_model.json
 
           if git diff --cached --quiet; then
             echo "No validated data changes to commit."

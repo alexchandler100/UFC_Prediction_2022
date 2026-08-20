@@ -1,12 +1,31 @@
 # import ipdb;ipdb.set_trace(context=10) # uncomment to debug
 from pathlib import Path
 import os
+from datetime import datetime, timezone
 import pandas as pd
+from git import Repo
 
 # local imports
 from data_handler import DataHandler
 from data_handler.data_handler import atomic_to_csv
 from fight_predictor import PointInTimeDatasetBuilder, TemporalFightPredictor
+
+
+def _forecast_source_revision() -> str:
+    """Return a collector-compatible revision for forecast provenance."""
+
+    workflow_sha = os.environ.get('GITHUB_SHA', '').strip()
+    if len(workflow_sha) in {40, 64} and all(
+        character in '0123456789abcdefABCDEF' for character in workflow_sha
+    ):
+        return workflow_sha.lower()
+    repo_root = Path(__file__).resolve().parents[1]
+    revision = Repo(repo_root).head.commit.hexsha.strip().lower()
+    if len(revision) != 40 or any(
+        character not in '0123456789abcdef' for character in revision
+    ):
+        raise RuntimeError('Could not resolve a valid source revision for forecasts')
+    return revision
 
 # create a data handler object to access the data stored in csvs and jsons
 # has built-in dataframes mirroring the csvs and jsons
@@ -70,6 +89,13 @@ print("#########################################################################
 card_date, card_title, fights_list = dh.update_card_info()
 prediction_history = dh.get('prediction_history', filetype='json')
 predicted_odds_df = fight_predictor.predict_upcoming_fights(prediction_history, fighter_stats, fights_list, card_date)
+# Freeze when this exact model/card forecast was issued. Market collectors run
+# independently later and must never confuse their retrieval time with the
+# timestamp of the stats probability they are evaluating.
+predicted_odds_df['forecast issued at'] = (
+    datetime.now(timezone.utc).replace(microsecond=0).isoformat()
+)
+predicted_odds_df['forecast source commit'] = _forecast_source_revision()
 # Merge available sportsbook odds from fightodds.io.
 predicted_odds_df_with_vegas_odds = dh.save_fightoddsio_to_vegas_odds_json_and_merge_with_predictions_df(predicted_odds_df)
 dh.update_vegas_odds(predicted_odds_df_with_vegas_odds)

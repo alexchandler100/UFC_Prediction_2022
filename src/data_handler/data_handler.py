@@ -1081,7 +1081,21 @@ class DataHandler:
         card_date, card_title, fights_list = card or self.get_next_fight_card()
         card_date = self.convert_scraped_date_to_standard_date(card_date)
 
-        card_info_dict = {"date":card_date, "title":card_title}
+        # New scrapes carry the immutable UFCStats event URL alongside each
+        # matchup.  Keep accepting older/manual three-field card fixtures, but
+        # publish stable event lineage whenever it is available so market
+        # snapshots never have to identify a card from its display title.
+        event_url = (
+            str(fights_list[0][5]).strip()
+            if fights_list and len(fights_list[0]) > 5 and fights_list[0][5]
+            else ''
+        )
+        card_info_dict = {
+            "date": card_date,
+            "title": card_title,
+            "event_url": event_url,
+            "event_id": ufcstats_identity(event_url),
+        }
 
         print('Writing upcoming card info to content/data/external/card_info.json')
         atomic_write_text(
@@ -1784,6 +1798,13 @@ class DataHandler:
                     f'{card_link}, got {fighter_links!r}'
                 )
             fights_list.append(
-                [fighter, opponent, weight_class, fighter_links[0], fighter_links[1]]
+                [
+                    fighter,
+                    opponent,
+                    weight_class,
+                    fighter_links[0],
+                    fighter_links[1],
+                    card_link,
+                ]
             )
         return card_date, card_title, fights_list
