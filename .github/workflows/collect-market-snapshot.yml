@@ -3,10 +3,15 @@ name: Collect UFC market snapshot
 on:
   workflow_dispatch:
   schedule:
-    # Nine observations cover opening/midweek movement and the last ~48 hours.
+    # Fourteen observations cover the first post-publication price, midweek
+    # movement, T-24, and the final hours. Together with the Monday/Wednesday
+    # updater this is about 16 requests/week; at the configured two-region
+    # request cost that is roughly 140 credits in an average month.
     # The collector exits successfully without using an API credit once a
     # previously timed card has commenced.
-    - cron: "17 12,18 * * 4"
+    - cron: "17 23 * * 1"
+      timezone: "America/Chicago"
+    - cron: "17 12,18 * * 2,3,4"
       timezone: "America/Chicago"
     - cron: "17 12,18,23 * * 5"
       timezone: "America/Chicago"

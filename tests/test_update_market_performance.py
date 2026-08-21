@@ -148,6 +148,8 @@ class MarketPerformanceTests(unittest.TestCase):
                 "RAW_PATH": raw_path,
                 "QUOTE_CSV_PATH": market_root / "quote_snapshots.csv",
                 "QUOTE_JSONL_PATH": market_root / "quote_snapshots.jsonl",
+                "SOURCE_METADATA_CSV_PATH": market_root / "quote_source_metadata.csv",
+                "SOURCE_METADATA_JSONL_PATH": market_root / "quote_source_metadata.jsonl",
                 "DECISION_CSV_PATH": market_root / "paper_decisions.csv",
                 "DECISION_JSONL_PATH": market_root / "paper_decisions.jsonl",
                 "SETTLEMENT_CSV_PATH": market_root / "paper_settlements.csv",
@@ -212,6 +214,8 @@ class MarketPerformanceTests(unittest.TestCase):
             persisted = json.loads(paths["REPORT_PATH"].read_text(encoding="utf-8"))
             self.assertEqual(persisted, second)
             self.assertFalse(persisted["execution_enabled"])
+            self.assertEqual(persisted["schema_version"], 2)
+            self.assertIn("entry_timing_experiment", persisted)
             validation = validate_market_data(market_root, required=True)
             self.assertEqual(validation.errors, [], validation.errors)
 

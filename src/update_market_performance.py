@@ -21,6 +21,8 @@ from market_tracker import (
     PaperSettlementStore,
     QuoteSnapshot,
     QuoteSnapshotStore,
+    QuoteSourceMetadataStore,
+    evaluate_timing_policies,
     forecast_metrics,
     settle_paper_decision,
     summarize_paper_settlements,
@@ -33,6 +35,8 @@ MARKET_ROOT = ROOT / "content" / "data" / "market"
 RAW_PATH = ROOT / "content" / "data" / "processed" / "ufc_fights_reported_doubled.csv"
 QUOTE_CSV_PATH = MARKET_ROOT / "quote_snapshots.csv"
 QUOTE_JSONL_PATH = MARKET_ROOT / "quote_snapshots.jsonl"
+SOURCE_METADATA_CSV_PATH = MARKET_ROOT / "quote_source_metadata.csv"
+SOURCE_METADATA_JSONL_PATH = MARKET_ROOT / "quote_source_metadata.jsonl"
 DECISION_CSV_PATH = MARKET_ROOT / "paper_decisions.csv"
 DECISION_JSONL_PATH = MARKET_ROOT / "paper_decisions.jsonl"
 SETTLEMENT_CSV_PATH = MARKET_ROOT / "paper_settlements.csv"
@@ -389,6 +393,9 @@ def update_market_performance() -> dict[str, object]:
         SETTLEMENT_CSV_PATH, SETTLEMENT_JSONL_PATH
     )
     quote_store = QuoteSnapshotStore(QUOTE_CSV_PATH, QUOTE_JSONL_PATH)
+    metadata_store = QuoteSourceMetadataStore(
+        SOURCE_METADATA_CSV_PATH, SOURCE_METADATA_JSONL_PATH
+    )
     decisions = decision_store.read()
     existing_settlements = settlement_store.read()
     settled_ids = {item.decision_id for item in existing_settlements}
@@ -423,6 +430,10 @@ def update_market_performance() -> dict[str, object]:
     settlements = settlement_store.read()
     metrics = summarize_paper_settlements(decisions, settlements)
     quotes = quote_store.read()
+    source_metadata = metadata_store.read()
+    timing_experiment = evaluate_timing_policies(
+        quotes, source_metadata, outcomes
+    )
     model_vs_market = _paired_market_log_loss_interval(
         decisions, settlements, "model_probability"
     )
@@ -438,7 +449,7 @@ def update_market_performance() -> dict[str, object]:
         if decision.decision_id in settled_decision_ids
     }
     report_body: dict[str, object] = {
-        "schema_version": 1,
+        "schema_version": 2,
         "betting_status": BETTING_STATUS,
         "paper_only": True,
         "execution_enabled": False,
@@ -446,6 +457,7 @@ def update_market_performance() -> dict[str, object]:
             [
                 *(item.settled_at_utc for item in settlements),
                 *(item.decision_issued_at_utc for item in decisions),
+                *(item.observed_at_utc for item in quotes),
             ],
             default=None,
         ),
@@ -457,6 +469,8 @@ def update_market_performance() -> dict[str, object]:
         "ambiguous_historical_matchup_keys": len(ambiguous_matchups),
         "decision_dataset_sha256": _dataset_hash(decisions),
         "settlement_dataset_sha256": _dataset_hash(settlements),
+        "quote_dataset_sha256": _dataset_hash(quotes),
+        "source_metadata_dataset_sha256": _dataset_hash(source_metadata),
         "paper_metrics": metrics.to_mapping(),
         "forecast_comparators": _forecast_comparators(decisions, settlements),
         "market_relative_log_loss_intervals": {
@@ -465,6 +479,7 @@ def update_market_performance() -> dict[str, object]:
         },
         "paper_return_interval": return_interval,
         "latest_available_price_clv": clv,
+        "entry_timing_experiment": timing_experiment,
         "promotion_gate": {
             "status": "collecting_prospective_evidence",
             "minimum_scored_fights": 500,

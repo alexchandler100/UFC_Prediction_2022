@@ -35,6 +35,7 @@ from market_tracker import (
     QuoteSnapshotStore,
     QuoteSourceMetadataStore,
     StoreIntegrityError,
+    TIMING_POLICY_VERSION,
     consensus_as_of,
     summarize_paper_settlements,
 )
@@ -1214,6 +1215,25 @@ def validate_market_data(
                 == canonical_hash([item.to_mapping() for item in settlements]),
                 "performance report settlement hash is stale",
             )
+            if int(performance.get("schema_version", 1)) >= 2:
+                report.require(
+                    performance.get("quote_dataset_sha256")
+                    == canonical_hash([item.to_mapping() for item in quotes]),
+                    "performance report quote hash is stale",
+                )
+                report.require(
+                    performance.get("source_metadata_dataset_sha256")
+                    == canonical_hash([item.to_mapping() for item in metadata]),
+                    "performance report source metadata hash is stale",
+                )
+                timing = performance.get("entry_timing_experiment")
+                report.require(
+                    isinstance(timing, dict)
+                    and timing.get("policy_version") == TIMING_POLICY_VERSION
+                    and timing.get("paper_only") is True
+                    and timing.get("execution_enabled") is False,
+                    "performance report timing experiment contract is invalid",
+                )
             expected_metrics = summarize_paper_settlements(
                 decisions, settlements
             ).to_mapping()

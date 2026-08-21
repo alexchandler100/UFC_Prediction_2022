@@ -448,7 +448,8 @@ class CaptureMarketSnapshotTests(unittest.TestCase):
             "capture_report.json",
         ):
             self.assertIn(filename, collector_workflow)
-        self.assertIn('cron: "17 12,18 * * 4"', collector_workflow)
+        self.assertIn('cron: "17 23 * * 1"', collector_workflow)
+        self.assertIn('cron: "17 12,18 * * 2,3,4"', collector_workflow)
         self.assertIn('cron: "17 12,18,23 * * 5"', collector_workflow)
         self.assertIn('cron: "17 9,12,15,18 * * 6"', collector_workflow)
         self.assertNotIn("git add .", collector_workflow)
@@ -459,6 +460,7 @@ class CaptureMarketSnapshotTests(unittest.TestCase):
         self.assertIn("python update_market_performance.py", updater_workflow)
         self.assertIn("paper_settlements.jsonl", updater_workflow)
         self.assertIn("performance_report.json", updater_workflow)
+        self.assertIn('cron: "33 21 * * 1,3"', updater_workflow)
 
 
 if __name__ == "__main__":

@@ -58,6 +58,17 @@ and publishes paper ROI, drawdown, forecast scores, coverage, and a latest-
 available same-book CLV proxy. This remains research only; no order, account,
 bankroll, or wager-execution code exists.
 
+A separate timing challenger now tests the handicapper rule "favorites early,
+underdogs late" without enabling bets. The favorite is frozen from the first
+eligible no-vig consensus and is never reclassified after a line flip. Three
+predeclared shadow policies use the same 5% expected-return and leave-one-book-
+out rules: first available for either side, fixed T-24, and an early favorite
+with a late underdog fallback. Early is 32-144 hours before the card, T-24 is
+20-28 hours, and late is 1-5 hours. The bounded performance report compares
+best-price and same-book movement, latest-price CLV, flat-unit hypothetical
+ROI, and deterministic whole-card bootstrap intervals. Capture/price selection
+never uses outcomes, and all execution remains disabled.
+
 The conservative Git-history reconstruction found 503 completed W/L fights
 with at least three of the five core books. Only 230 also had a defensible
 same-capture legacy model forecast, and 119 remained after prior-card warmup.
@@ -117,11 +128,12 @@ The old scripts `src/1-build_ufc_fights_reported_doubled.py` and `src/2-build_uf
 
 ## Weekly automation
 
-`.github/workflows/update-data.yml` runs each Wednesday at 9:33 PM America/Chicago and can also be started manually. It uses pinned dependencies, tests before mutation, strict post-build validation, a shallow checkout, scoped staging, a no-op commit guard, and a starting-commit check so artifacts built from stale code are never rebased onto newer code.
+`.github/workflows/update-data.yml` runs Monday and Wednesday at 9:33 PM America/Chicago and can also be started manually. Monday publishes the next card early enough to observe fight-week movement; Wednesday is a bounded refresh/retry before T-24. It uses pinned dependencies, tests before mutation, strict post-build validation, a shallow checkout, scoped staging, a no-op commit guard, and a starting-commit check so artifacts built from stale code are never rebased onto newer code.
 
-`.github/workflows/collect-market-snapshot.yml` runs separately at 12:17 PM and
-6:17 PM Thursday; 12:17 PM, 6:17 PM, and 11:17 PM Friday; and 9:17 AM, 12:17 PM,
-3:17 PM, and 6:17 PM Saturday (America/Chicago). Once a previously timed card
+`.github/workflows/collect-market-snapshot.yml` runs separately Monday at
+11:17 PM; Tuesday through Thursday at 12:17 PM and 6:17 PM; Friday at 12:17 PM,
+6:17 PM, and 11:17 PM; and Saturday at 9:17 AM, 12:17 PM, 3:17 PM, and 6:17 PM
+(America/Chicago). Once a previously timed card
 has commenced, a late retry exits successfully without spending another API
 credit. Each run validates the frozen card/model publication, captures one
 fresh MMA moneyline response from The Odds API, appends quote/forecast/source-
@@ -133,7 +145,7 @@ The collector creates no live wager.
 
 The source's free Starter tier currently includes 500 request credits per
 month. The configured `h2h` request across `us,us2` costs two credits, so the
-normal updater plus the maximum nine scheduled captures use roughly 87 credits
+two updater runs plus the maximum fourteen scheduled captures use roughly 140 credits
 in an average month (and post-commencement no-ops use none). Create a free key
 at [The Odds API](https://the-odds-api.com/), then add
 it to the repository under **Settings -> Secrets and variables -> Actions ->
@@ -143,7 +155,7 @@ missing, and the key is scoped only to the network capture step.
 The provider's historical-odds endpoint is paid and is deliberately not used;
 this project builds its own prospective history from the free current-odds feed.
 
-After committing and pushing this upgrade, open **Actions -> Update UFC data** and use **Run workflow** once to verify the backlog update. If GitHub still marks the inactivity-disabled schedule as disabled, click **Enable workflow** once. Normal weekly runs should then require no local command.
+After committing and pushing this upgrade, open **Actions -> Update UFC data** and use **Run workflow** once, followed by **Collect UFC market snapshot**, to verify the new report contract. If GitHub still marks a schedule as disabled, click **Enable workflow** once. Normal weekly runs should then require no local command.
 
 Sportsbook prices remain optional enrichment for the authoritative model/data
 update: an API outage, malformed schema, ambiguous matchup, or card mismatch

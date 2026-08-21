@@ -53,6 +53,7 @@ from .prospective import (
     PaperDecisionBuild,
     build_locked_paper_decisions,
 )
+from .timing import TIMING_POLICY_VERSION, evaluate_timing_policies
 
 
 __all__ = (
@@ -87,9 +88,11 @@ __all__ = (
     "QuoteSourceMetadataStore",
     "SCHEMA_VERSION",
     "StoreIntegrityError",
+    "TIMING_POLICY_VERSION",
     "consensus_as_of",
     "build_locked_paper_decisions",
     "forecast_metrics",
+    "evaluate_timing_policies",
     "matchup_id_for",
     "settle_paper_decision",
     "select_latest_observations_by_horizon",

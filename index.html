@@ -410,9 +410,10 @@
       </h1>
     </div>
     <center>
-      The forecast columns show the published weekly forecast. A timestamped, no-vig market consensus from
-      The Odds API is used when available; otherwise the point-in-time statistics model is shown. The independent model status and provenance
-      remain visible for every matchup, including low-history and unresolved fighters.
+      The independent model and Vegas consensus are shown separately. The published forecast uses the
+      timestamped, no-vig market consensus from The Odds API when it is available; otherwise it falls back
+      to the point-in-time statistics model. This is why older versions of this table showed identical
+      "predicted" and Vegas values: the market-backed published forecast was mislabeled as a prediction.
       <br>
       <strong>Betting recommendations are disabled while prospective paper validation runs.</strong>
       The project is tracking fixed-horizon prices, paper return, and line movement; these forecasts are not suggested wagers.
@@ -429,9 +430,9 @@
           <tr>
             <th style="color: #ffffff;background-color: #323232;font-size:15px;">Fighter</th>
             <th style="color: #ffffff;background-color: #323232;font-size:15px;">Opponent</th>
-            <th style="color: #ffffff;background-color: #323232;font-size:15px;">Forecast<br>Fighter<br>Odds</th>
-            <th style="color: #ffffff;background-color: #323232;font-size:15px;">Forecast<br>Opponent<br>Odds</th>
-            <th style="color: #ffffff;background-color: #323232;font-size:15px;">Market No-vig<br>Probability</th>
+            <th style="color: #ffffff;background-color: #323232;font-size:15px;">Independent<br>Model Fair Odds</th>
+            <th style="color: #ffffff;background-color: #323232;font-size:15px;">Vegas Consensus<br>Fair Odds</th>
+            <th style="color: #ffffff;background-color: #323232;font-size:15px;">Published<br>Forecast</th>
             <th style="color: #ffffff;background-color: #323232;font-size:15px;">Status &amp;<br>Provenance</th>
           </tr>
         </thead>

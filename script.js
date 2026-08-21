@@ -885,6 +885,19 @@ function formatOdds(value) {
   return number > 0 && text[0] !== '+' ? '+' + text : text;
 }
 
+function probabilityToAmericanOdds(value) {
+  const probability = finiteNumber(value);
+  if (probability === null || probability <= 0 || probability >= 1) {
+    return null;
+  }
+  if (probability === 0.5) {
+    return 100;
+  }
+  return probability > 0.5
+    ? Math.round(-100 * probability / (1 - probability))
+    : Math.round(100 * (1 - probability) / probability);
+}
+
 function formatHistoryCount(value) {
   const count = finiteNumber(value);
   return count === null || count < 0 ? '—' : String(Math.round(count));
@@ -1044,6 +1057,8 @@ function renderUpcomingPredictions(loadError) {
       tableValue(vegas_odds, 'predicted opponent odds', index)
     );
     const modelProbability = tableValue(vegas_odds, 'model probability', index);
+    const modelFighterOdds = tableValue(vegas_odds, 'predicted fighter odds', index);
+    const modelOpponentOdds = tableValue(vegas_odds, 'predicted opponent odds', index);
     const forecastProbability = firstDisplayValue(
       tableValue(vegas_odds, 'forecast probability', index),
       modelProbability
@@ -1074,20 +1089,27 @@ function renderUpcomingPredictions(loadError) {
     setFighterCell(row.cells.item(0), fighter, favoredSide === 'fighter');
     setFighterCell(row.cells.item(1), opponent, favoredSide === 'opponent');
 
-    const probabilityNumber = finiteNumber(forecastProbability);
-    setCellLines(row.cells.item(2), [
-      formatOdds(forecastFighterOdds),
-      probabilityNumber === null ? null : formatProbability(probabilityNumber)
-    ]);
-    setCellLines(row.cells.item(3), [
-      formatOdds(forecastOpponentOdds),
-      probabilityNumber === null ? null : formatProbability(1 - probabilityNumber)
+    const modelNumber = finiteNumber(modelProbability);
+    setCellLines(row.cells.item(2), modelNumber === null ? ['Not available'] : [
+      'Fighter ' + formatOdds(modelFighterOdds) + ' (' + formatProbability(modelNumber) + ')',
+      'Opponent ' + formatOdds(modelOpponentOdds) + ' (' + formatProbability(1 - modelNumber) + ')'
     ]);
 
     const marketNumber = finiteNumber(marketProbability);
-    setCellLines(row.cells.item(4), marketNumber === null ? ['Not available'] : [
-      'Fighter ' + formatProbability(marketNumber),
-      'Opponent ' + formatProbability(1 - marketNumber)
+    setCellLines(row.cells.item(3), marketNumber === null ? ['Not available'] : [
+      'Fighter ' + formatOdds(probabilityToAmericanOdds(marketNumber)) +
+        ' (' + formatProbability(marketNumber) + ')',
+      'Opponent ' + formatOdds(probabilityToAmericanOdds(1 - marketNumber)) +
+        ' (' + formatProbability(1 - marketNumber) + ')'
+    ]);
+
+    const probabilityNumber = finiteNumber(forecastProbability);
+    setCellLines(row.cells.item(4), [
+      humanizeForecastLabel(forecastSource),
+      'Fighter ' + formatOdds(forecastFighterOdds) +
+        (probabilityNumber === null ? '' : ' (' + formatProbability(probabilityNumber) + ')'),
+      'Opponent ' + formatOdds(forecastOpponentOdds) +
+        (probabilityNumber === null ? '' : ' (' + formatProbability(1 - probabilityNumber) + ')')
     ]);
 
     const fighterHistory = formatHistoryCount(
