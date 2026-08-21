@@ -52,7 +52,15 @@ def _identity(value: object) -> str:
     return str(value).strip().rstrip("/").rsplit("/", 1)[-1].casefold()
 
 
-def _result_index(raw: pd.DataFrame) -> tuple[dict[tuple, tuple[int | None, str]], set[str]]:
+def _result_index(
+    raw: pd.DataFrame,
+) -> tuple[
+    dict[tuple[str, str, str], tuple[int | None, str]],
+    set[str],
+    set[tuple[str, str, str]],
+]:
+    """Index unambiguous results without collapsing same-card rematches."""
+
     required = {
         "event_url",
         "fight_url",
@@ -65,6 +73,7 @@ def _result_index(raw: pd.DataFrame) -> tuple[dict[tuple, tuple[int | None, str]
         raise ValueError(f"raw result data is missing columns: {missing}")
     outcomes: dict[tuple, tuple[int | None, str]] = {}
     completed_events: set[str] = set()
+    ambiguous_matchups: set[tuple[str, str, str]] = set()
     for fight_url, group in raw.groupby("fight_url", sort=False, dropna=False):
         if pd.isna(fight_url) or len(group) != 2:
             continue
@@ -91,9 +100,17 @@ def _result_index(raw: pd.DataFrame) -> tuple[dict[tuple, tuple[int | None, str]
         value = (target, _identity(fight_url))
         prior = outcomes.get(key)
         if prior is not None and prior != value:
-            raise ValueError("raw results contain conflicting stable matchup outcomes")
-        outcomes[key] = value
-    return outcomes, completed_events
+            # Early tournaments can contain two physical fights between the
+            # same competitors on one card (for example Sakuraba-Silveira at
+            # UFC Japan). Event/fighter IDs cannot distinguish those fights,
+            # so quarantine the key rather than choosing one or aborting an
+            # unrelated modern settlement run.
+            outcomes.pop(key, None)
+            ambiguous_matchups.add(key)
+            continue
+        if key not in ambiguous_matchups:
+            outcomes[key] = value
+    return outcomes, completed_events, ambiguous_matchups
 
 
 def _dataset_hash(records: object) -> str:
@@ -378,13 +395,17 @@ def update_market_performance() -> dict[str, object]:
     raw_bytes = RAW_PATH.read_bytes()
     result_hash = sha256(raw_bytes).hexdigest()
     raw = pd.read_csv(RAW_PATH, low_memory=False)
-    outcomes, completed_events = _result_index(raw)
+    outcomes, completed_events, ambiguous_matchups = _result_index(raw)
     settled_at = datetime.now(timezone.utc).replace(microsecond=0)
     pending = []
+    ambiguous_result_decisions = 0
     for decision in decisions:
         if decision.decision_id in settled_ids:
             continue
         key = (decision.event_id, decision.fighter_id, decision.opponent_id)
+        if key in ambiguous_matchups:
+            ambiguous_result_decisions += 1
+            continue
         result = outcomes.get(key)
         if result is None and decision.event_id not in completed_events:
             continue
@@ -432,6 +453,8 @@ def update_market_performance() -> dict[str, object]:
         "decisions_total": len(decisions),
         "settlements_total": len(settlements),
         "unsettled_decisions": len(decisions) - len(settlements),
+        "ambiguous_result_decisions": ambiguous_result_decisions,
+        "ambiguous_historical_matchup_keys": len(ambiguous_matchups),
         "decision_dataset_sha256": _dataset_hash(decisions),
         "settlement_dataset_sha256": _dataset_hash(settlements),
         "paper_metrics": metrics.to_mapping(),

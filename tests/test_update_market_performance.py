@@ -114,6 +114,34 @@ class MarketPerformanceTests(unittest.TestCase):
                         "opponent_url": "https://ufcstats.test/fighter-a",
                         "result": "L",
                     },
+                    {
+                        "event_url": "https://ufcstats.test/tournament-event",
+                        "fight_url": "https://ufcstats.test/tournament-fight-one",
+                        "fighter_url": "https://ufcstats.test/fighter-c",
+                        "opponent_url": "https://ufcstats.test/fighter-d",
+                        "result": "W",
+                    },
+                    {
+                        "event_url": "https://ufcstats.test/tournament-event",
+                        "fight_url": "https://ufcstats.test/tournament-fight-one",
+                        "fighter_url": "https://ufcstats.test/fighter-d",
+                        "opponent_url": "https://ufcstats.test/fighter-c",
+                        "result": "L",
+                    },
+                    {
+                        "event_url": "https://ufcstats.test/tournament-event",
+                        "fight_url": "https://ufcstats.test/tournament-fight-two",
+                        "fighter_url": "https://ufcstats.test/fighter-c",
+                        "opponent_url": "https://ufcstats.test/fighter-d",
+                        "result": "NC",
+                    },
+                    {
+                        "event_url": "https://ufcstats.test/tournament-event",
+                        "fight_url": "https://ufcstats.test/tournament-fight-two",
+                        "fighter_url": "https://ufcstats.test/fighter-d",
+                        "opponent_url": "https://ufcstats.test/fighter-c",
+                        "result": "NC",
+                    },
                 ]
             ).to_csv(raw_path, index=False)
             paths = {
@@ -168,6 +196,8 @@ class MarketPerformanceTests(unittest.TestCase):
             self.assertEqual(settlements[0].settlement_status, "paper_win")
             self.assertEqual(first, second)
             self.assertEqual(first["paper_metrics"]["hypothetical_roi"], 2.0)
+            self.assertEqual(first["ambiguous_historical_matchup_keys"], 1)
+            self.assertEqual(first["ambiguous_result_decisions"], 0)
             self.assertEqual(first["forecast_comparators"]["paired_fights"], 1)
             self.assertEqual(
                 first["forecast_comparators"]["blend_minus_market_log_loss"],
