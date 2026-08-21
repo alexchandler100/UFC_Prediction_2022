@@ -17,7 +17,9 @@ sys.path.insert(0, str(REPO_ROOT / "src"))
 import capture_market_snapshot as collector  # noqa: E402
 from market_tracker import (  # noqa: E402
     ForecastCaptureStore,
+    PaperDecisionStore,
     QuoteSnapshotStore,
+    QuoteSourceMetadataStore,
     matchup_id_for,
 )
 from odds_getter import OddsApiResponse  # noqa: E402
@@ -123,18 +125,30 @@ class CaptureMarketSnapshotTests(unittest.TestCase):
                     {
                         "fighter name": "Alpha One",
                         "opponent name": "Beta Two",
+                        "source event id": "api-event-fixture",
+                        "source commence time": "2026-08-16T17:00:00Z",
                         "fighter BookA": "-120",
                         "opponent BookA": "+105",
+                        "source BookA key": "book-a",
+                        "source BookA last update": "2026-08-14T16:59:30Z",
                         "fighter BookB": "-118",
                         "opponent BookB": "+103",
+                        "source BookB key": "book-b",
+                        "source BookB last update": "2026-08-14T16:59:30Z",
                         "fighter BookC": "-115",
                         "opponent BookC": "+100",
+                        "source BookC key": "book-c",
+                        "source BookC last update": "2026-08-14T16:59:30Z",
                         "fighter BookD": "-117",
                         "opponent BookD": "+102",
+                        "source BookD key": "book-d",
+                        "source BookD last update": "2026-08-14T16:59:30Z",
                     },
                     {
                         "fighter name": "Other Card Fighter",
                         "opponent name": "Other Card Opponent",
+                        "source event id": "another-api-event",
+                        "source commence time": "2026-08-16T18:00:00Z",
                         "fighter BookA": "-110",
                         "opponent BookA": "-110",
                         "fighter BookB": "-110",
@@ -155,6 +169,10 @@ class CaptureMarketSnapshotTests(unittest.TestCase):
                 "QUOTE_JSONL_PATH": market / "quote_snapshots.jsonl",
                 "FORECAST_CSV_PATH": market / "forecast_captures.csv",
                 "FORECAST_JSONL_PATH": market / "forecast_captures.jsonl",
+                "SOURCE_METADATA_CSV_PATH": market / "quote_source_metadata.csv",
+                "SOURCE_METADATA_JSONL_PATH": market / "quote_source_metadata.jsonl",
+                "DECISION_CSV_PATH": market / "paper_decisions.csv",
+                "DECISION_JSONL_PATH": market / "paper_decisions.jsonl",
                 "REPORT_PATH": market / "capture_report.json",
             }
             scrape_order = []
@@ -164,12 +182,20 @@ class CaptureMarketSnapshotTests(unittest.TestCase):
                 self.assertEqual(_CaptureClock.calls, 1)
                 frame = fresh_odds.copy(deep=True)
                 return collector.RetrievedOdds(
-                    source="fixture-odds-api",
+                    source=collector.ODDS_API_SOURCE,
                     frame=frame,
                     source_payload_sha256=collector._source_payload_sha256(
-                        frame, source="fixture-odds-api"
+                        frame, source=collector.ODDS_API_SOURCE
                     ),
-                    request_metadata={"requests_remaining": 499},
+                    request_metadata={
+                        "sport": "mma_mixed_martial_arts",
+                        "market": "h2h",
+                        "regions": "us,us2",
+                        "odds_format": "american",
+                        "requests_remaining": 499,
+                        "requests_used": 1,
+                        "request_cost": 2,
+                    },
                 )
 
             _CaptureClock.calls = 0
@@ -222,6 +248,21 @@ class CaptureMarketSnapshotTests(unittest.TestCase):
             ).read()
             self.assertEqual(len(quotes), 4)
             self.assertEqual(len(forecasts), 1)
+            metadata = QuoteSourceMetadataStore(
+                output_paths["SOURCE_METADATA_CSV_PATH"],
+                output_paths["SOURCE_METADATA_JSONL_PATH"],
+            ).read()
+            self.assertEqual(len(metadata), 4)
+            self.assertEqual(
+                {item.source_quote_age_seconds for item in metadata}, {35.0}
+            )
+            self.assertEqual(
+                PaperDecisionStore(
+                    output_paths["DECISION_CSV_PATH"],
+                    output_paths["DECISION_JSONL_PATH"],
+                ).read(),
+                (),
+            )
             self.assertEqual(
                 {quote.observed_at_utc for quote in quotes},
                 {report["captured_at_utc"]},
@@ -233,12 +274,12 @@ class CaptureMarketSnapshotTests(unittest.TestCase):
             self.assertEqual(
                 report["source_payload_sha256"],
                 collector._source_payload_sha256(
-                    fresh_odds, source="fixture-odds-api"
+                    fresh_odds, source=collector.ODDS_API_SOURCE
                 ),
             )
-            self.assertEqual(report["source"], "fixture-odds-api")
+            self.assertEqual(report["source"], collector.ODDS_API_SOURCE)
             self.assertEqual(
-                report["source_request"], {"requests_remaining": 499}
+                report["source_request"]["requests_remaining"], 499
             )
             self.assertEqual(
                 {path: path.read_bytes() for path in publication_paths},
@@ -362,6 +403,62 @@ class CaptureMarketSnapshotTests(unittest.TestCase):
         }
         with self.assertRaisesRegex(collector.CaptureError, "credential"):
             collector._validate_source_request(report)
+
+    def test_post_commencement_retry_is_a_successful_no_op(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            report_path = root / "capture_report.json"
+            report_path.write_text(
+                json.dumps(
+                    {
+                        "event_id": "event-card",
+                        "event_url": "https://ufcstats.test/event-card",
+                        "timing_precision": "timestamp",
+                        "event_start_utc": "2026-08-14T16:00:00Z",
+                    }
+                ),
+                encoding="utf-8",
+            )
+            with patch.object(collector, "REPORT_PATH", report_path):
+                with self.assertRaisesRegex(collector.CaptureSkipped, "commenced"):
+                    collector._skip_if_prior_capture_card_started(
+                        {
+                            "event_id": "event-card",
+                            "event_url": "https://ufcstats.test/event-card",
+                        },
+                        CAPTURE_STARTED,
+                    )
+
+    def test_workflows_stage_the_complete_paper_only_market_contract(self):
+        collector_workflow = (
+            REPO_ROOT / ".github" / "workflows" / "collect-market-snapshot.yml"
+        ).read_text(encoding="utf-8")
+        for filename in (
+            "quote_snapshots.csv",
+            "quote_snapshots.jsonl",
+            "forecast_captures.csv",
+            "forecast_captures.jsonl",
+            "quote_source_metadata.csv",
+            "quote_source_metadata.jsonl",
+            "paper_decisions.csv",
+            "paper_decisions.jsonl",
+            "paper_settlements.csv",
+            "paper_settlements.jsonl",
+            "performance_report.json",
+            "capture_report.json",
+        ):
+            self.assertIn(filename, collector_workflow)
+        self.assertIn('cron: "17 12,18 * * 4"', collector_workflow)
+        self.assertIn('cron: "17 12,18,23 * * 5"', collector_workflow)
+        self.assertIn('cron: "17 9,12,15,18 * * 6"', collector_workflow)
+        self.assertNotIn("git add .", collector_workflow)
+
+        updater_workflow = (
+            REPO_ROOT / ".github" / "workflows" / "update-data.yml"
+        ).read_text(encoding="utf-8")
+        self.assertIn("python update_market_performance.py", updater_workflow)
+        self.assertIn("paper_settlements.jsonl", updater_workflow)
+        self.assertIn("performance_report.json", updater_workflow)
 
 
 if __name__ == "__main__":

@@ -18,7 +18,10 @@ from market_tracker import (  # noqa: E402
     PriorCardBlendEvaluator,
     QuoteSnapshot,
     QuoteSnapshotStore,
+    QuoteSourceMetadata,
+    QuoteSourceMetadataStore,
     StoreIntegrityError,
+    build_locked_paper_decisions,
     consensus_as_of,
     settle_paper_decision,
     select_latest_observations_by_horizon,
@@ -86,6 +89,47 @@ def make_forecast(*, capture_id="capture-one", probability=0.60):
 
 
 class MarketTrackerTests(unittest.TestCase):
+    @staticmethod
+    def _timestamped_quote(book, fighter_line, opponent_line, *, start=None):
+        return QuoteSnapshot.create(
+            capture_id="capture-t24",
+            event_id="event-one",
+            fighter_id="fighter-a",
+            opponent_id="fighter-b",
+            fighter_name="Fighter A",
+            opponent_name="Fighter B",
+            event_date=EVENT_DATE,
+            timing_precision="timestamp",
+            event_start_utc=start or "2026-01-10T12:00:00Z",
+            observed_at_utc=OBSERVED,
+            source="the-odds-api.com",
+            book=book,
+            fighter_moneyline=fighter_line,
+            opponent_moneyline=opponent_line,
+            source_payload={"capture": "capture-t24"},
+        )
+
+    @staticmethod
+    def _timestamped_forecast():
+        return ForecastCapture.create(
+            capture_id="capture-t24",
+            event_id="event-one",
+            fighter_id="fighter-a",
+            opponent_id="fighter-b",
+            fighter_name="Fighter A",
+            opponent_name="Fighter B",
+            event_date=EVENT_DATE,
+            timing_precision="timestamp",
+            event_start_utc="2026-01-10T12:00:00Z",
+            forecast_issued_at_utc=ISSUED,
+            model_probability=0.60,
+            model_id="model-one",
+            model_version="fixture-v1",
+            model_trained_through="2026-01-03",
+            model_training_cutoff_precision="date",
+            source_commit_sha=SOURCE_SHA,
+        )
+
     def test_date_only_contract_rejects_same_day_quote(self):
         with self.assertRaisesRegex(MarketDataError, "strictly before"):
             make_quote(
@@ -564,6 +608,76 @@ class MarketTrackerTests(unittest.TestCase):
             settlements.append([settlement])
             self.assertEqual(decisions.read(), (decision,))
             self.assertEqual(settlements.read(), (settlement,))
+
+    def test_source_timing_metadata_round_trips_and_rejects_tampering(self):
+        quote = self._timestamped_quote("BookA", -110, -110)
+        metadata = QuoteSourceMetadata.create(
+            quote,
+            source_book_key="book-a",
+            source_event_id="source-event-one",
+            source_quote_updated_at_utc="2026-01-09T11:55:00Z",
+            source_commence_time_utc="2026-01-10T12:00:00Z",
+        )
+        self.assertEqual(metadata.source_quote_age_seconds, 300.0)
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            store = QuoteSourceMetadataStore(
+                root / "metadata.csv", root / "metadata.jsonl"
+            )
+            store.append([metadata])
+            self.assertEqual(store.read(), (metadata,))
+        body = metadata.to_mapping()
+        body["source_quote_age_seconds"] = 0
+        with self.assertRaises(StoreIntegrityError):
+            QuoteSourceMetadata.from_mapping(body)
+
+    def test_locked_t24_policy_requires_fresh_leave_one_out_market(self):
+        quotes = (
+            self._timestamped_quote("BookA", -110, -110),
+            self._timestamped_quote("BookB", -105, -115),
+            self._timestamped_quote("BookC", -115, -105),
+            self._timestamped_quote("Target", +200, -250),
+        )
+        metadata = tuple(
+            QuoteSourceMetadata.create(
+                quote,
+                source_book_key=quote.book.casefold(),
+                source_event_id="source-event-one",
+                source_quote_updated_at_utc="2026-01-09T11:55:00Z",
+                source_commence_time_utc="2026-01-10T12:00:00Z",
+            )
+            for quote in quotes
+        )
+        built = build_locked_paper_decisions(
+            quotes, (self._timestamped_forecast(),), metadata
+        )
+        self.assertTrue(built.eligible_horizon)
+        self.assertEqual(len(built.decisions), 1)
+        self.assertEqual(built.decisions[0].paper_action, "fighter")
+        self.assertEqual(built.decisions[0].selected_gamma, 0.0)
+
+        repeated = build_locked_paper_decisions(
+            quotes,
+            (self._timestamped_forecast(),),
+            metadata,
+            built.decisions,
+        )
+        self.assertEqual(repeated.decisions, ())
+        self.assertEqual(repeated.matchups_already_frozen, 1)
+
+        stale = list(metadata)
+        stale[-1] = QuoteSourceMetadata.create(
+            quotes[-1],
+            source_book_key="target",
+            source_event_id="source-event-one",
+            source_quote_updated_at_utc="2026-01-09T10:00:00Z",
+            source_commence_time_utc="2026-01-10T12:00:00Z",
+        )
+        no_decision = build_locked_paper_decisions(
+            quotes, (self._timestamped_forecast(),), stale
+        )
+        self.assertEqual(no_decision.decisions, ())
+        self.assertEqual(no_decision.matchups_without_fresh_quotes, 1)
 
 
 if __name__ == "__main__":

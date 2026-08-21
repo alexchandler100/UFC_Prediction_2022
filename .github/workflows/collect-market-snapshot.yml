@@ -3,11 +3,14 @@ name: Collect UFC market snapshot
 on:
   workflow_dispatch:
   schedule:
-    # Two bounded Thursday attempts make a delayed source-card refresh less
-    # likely to create a permanently missed week. UFCStats supplies only a date
-    # for upcoming cards, so Thursday remains safely before both normal Saturday
-    # and occasional Friday events.
+    # Nine observations cover opening/midweek movement and the last ~48 hours.
+    # The collector exits successfully without using an API credit once a
+    # previously timed card has commenced.
     - cron: "17 12,18 * * 4"
+      timezone: "America/Chicago"
+    - cron: "17 12,18,23 * * 5"
+      timezone: "America/Chicago"
+    - cron: "17 9,12,15,18 * * 6"
       timezone: "America/Chicago"
 
 permissions:
@@ -69,6 +72,9 @@ jobs:
           THE_ODDS_API_KEY: ${{ secrets.THE_ODDS_API_KEY }}
         run: python src/capture_market_snapshot.py
 
+      - name: Settle completed paper decisions and refresh metrics
+        run: python src/update_market_performance.py
+
       - name: Revalidate market ledgers and bounded report
         run: |
           python src/capture_market_snapshot.py --validate-only
@@ -85,6 +91,13 @@ jobs:
             src/content/data/market/quote_snapshots.jsonl \
             src/content/data/market/forecast_captures.csv \
             src/content/data/market/forecast_captures.jsonl \
+            src/content/data/market/quote_source_metadata.csv \
+            src/content/data/market/quote_source_metadata.jsonl \
+            src/content/data/market/paper_decisions.csv \
+            src/content/data/market/paper_decisions.jsonl \
+            src/content/data/market/paper_settlements.csv \
+            src/content/data/market/paper_settlements.jsonl \
+            src/content/data/market/performance_report.json \
             src/content/data/market/capture_report.json
 
           while IFS= read -r staged_path; do
@@ -93,6 +106,13 @@ jobs:
               src/content/data/market/quote_snapshots.jsonl|\
               src/content/data/market/forecast_captures.csv|\
               src/content/data/market/forecast_captures.jsonl|\
+              src/content/data/market/quote_source_metadata.csv|\
+              src/content/data/market/quote_source_metadata.jsonl|\
+              src/content/data/market/paper_decisions.csv|\
+              src/content/data/market/paper_decisions.jsonl|\
+              src/content/data/market/paper_settlements.csv|\
+              src/content/data/market/paper_settlements.jsonl|\
+              src/content/data/market/performance_report.json|\
               src/content/data/market/capture_report.json)
                 ;;
               *)

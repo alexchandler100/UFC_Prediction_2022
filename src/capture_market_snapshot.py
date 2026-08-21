@@ -31,8 +31,12 @@ from market_tracker import (
     ForecastCapture,
     ForecastCaptureStore,
     MarketDataError,
+    PaperDecisionStore,
     QuoteSnapshot,
     QuoteSnapshotStore,
+    QuoteSourceMetadata,
+    QuoteSourceMetadataStore,
+    build_locked_paper_decisions,
     matchup_id_for,
 )
 from odds_getter import OddsApiError, OddsApiResponse, OddsGetter, TheOddsApiClient
@@ -50,6 +54,10 @@ QUOTE_CSV_PATH = MARKET_ROOT / "quote_snapshots.csv"
 QUOTE_JSONL_PATH = MARKET_ROOT / "quote_snapshots.jsonl"
 FORECAST_CSV_PATH = MARKET_ROOT / "forecast_captures.csv"
 FORECAST_JSONL_PATH = MARKET_ROOT / "forecast_captures.jsonl"
+SOURCE_METADATA_CSV_PATH = MARKET_ROOT / "quote_source_metadata.csv"
+SOURCE_METADATA_JSONL_PATH = MARKET_ROOT / "quote_source_metadata.jsonl"
+DECISION_CSV_PATH = MARKET_ROOT / "paper_decisions.csv"
+DECISION_JSONL_PATH = MARKET_ROOT / "paper_decisions.jsonl"
 REPORT_PATH = MARKET_ROOT / "capture_report.json"
 REPORT_SIZE_LIMIT = 64 * 1024
 SOURCE_RETRY_DELAYS_SECONDS = (15.0, 60.0)
@@ -58,6 +66,10 @@ API_RETRY_DELAYS_SECONDS = (5.0, 30.0)
 
 class CaptureError(RuntimeError):
     """Raised when the frozen publication and fresh source cannot be joined."""
+
+
+class CaptureSkipped(CaptureError):
+    """Raised for an expected no-op after the published card has commenced."""
 
 
 @dataclass(frozen=True)
@@ -79,6 +91,15 @@ class SourceMatch:
     source_row: dict[str, object]
     published: PublishedMatchup
     source_is_reversed: bool
+
+
+@dataclass(frozen=True)
+class SourceBookColumns:
+    book: str
+    fighter_column: str
+    opponent_column: str
+    source_key_column: str | None
+    source_update_column: str | None
 
 
 @dataclass(frozen=True)
@@ -181,6 +202,35 @@ def _event_date(value: object) -> str:
     return parsed.date().isoformat()
 
 
+def _skip_if_prior_capture_card_started(
+    card: dict[str, object], observed_at: datetime
+) -> None:
+    """Avoid spending credits or failing after a previously timed card starts."""
+
+    if not REPORT_PATH.exists():
+        return
+    try:
+        report = _json_object(REPORT_PATH.read_bytes(), REPORT_PATH)
+    except CaptureError:
+        # The strict validator will diagnose a corrupt report. Do not let an
+        # unreadable optional shortcut suppress a fresh capture attempt.
+        return
+    card_event_id = _text(card.get("event_id"))
+    card_event_url = _text(card.get("event_url"))
+    same_event = bool(card_event_id) and card_event_id == _text(
+        report.get("event_id")
+    )
+    if not same_event and card_event_url:
+        same_event = card_event_url == _text(report.get("event_url"))
+    if not same_event or report.get("timing_precision") != "timestamp":
+        return
+    start_text = _text(report.get("event_start_utc"))
+    if start_text and observed_at >= _as_utc(start_text, "event_start_utc"):
+        raise CaptureSkipped(
+            "published card has commenced; retaining the last validated pre-event snapshot"
+        )
+
+
 def _as_utc(value: object, field: str) -> datetime:
     parsed = pd.to_datetime(_text(value), errors="coerce")
     if (
@@ -220,14 +270,6 @@ def _published_matchups(
         raise CaptureError("published vegas_odds contains no upcoming matchups")
 
     event_day = _event_date(card.get("date"))
-    # UFCStats currently publishes only a calendar date for upcoming events.
-    # A same-UTC-day observation cannot be proven pre-event and is rejected.
-    if observed_at.date() >= date.fromisoformat(event_day):
-        raise CaptureError(
-            "market capture requires an observation UTC date strictly before "
-            "the date-only UFC event"
-        )
-
     event_url = _text(card.get("event_url"))
     event_id = _stable_token(card.get("event_id"), "card_info event_id")
     if not event_url or _stable_token(event_url, "card_info event_url") != event_id:
@@ -419,6 +461,44 @@ def _api_payload_sha256(payload: object) -> str:
     return _canonical_hash({"source": ODDS_API_SOURCE, "raw_response": payload})
 
 
+def _capture_timing(
+    source_matches: tuple[SourceMatch, ...],
+    *,
+    event_day: str,
+    observed_at: datetime,
+) -> tuple[str, str | None, float | None]:
+    """Use a conservative card start when the source supplies timestamps."""
+
+    starts = [
+        _text(item.source_row.get("source commence time"))
+        for item in source_matches
+    ]
+    if starts and all(starts):
+        parsed = [
+            _as_utc(value, "source commence time")
+            for value in starts
+        ]
+        card_start = min(parsed)
+        event_date = date.fromisoformat(event_day)
+        if abs((card_start.date() - event_date).days) > 1:
+            raise CaptureError(
+                "source commence times are inconsistent with the published card date"
+            )
+        if observed_at >= card_start:
+            raise CaptureError("market capture occurred at or after card commencement")
+        return (
+            "timestamp",
+            card_start.isoformat(timespec="microseconds").replace("+00:00", "Z"),
+            (card_start - observed_at).total_seconds(),
+        )
+    if observed_at.date() >= date.fromisoformat(event_day):
+        raise CaptureError(
+            "market capture requires an observation UTC date strictly before "
+            "a date-only UFC event"
+        )
+    return "date", None, None
+
+
 def _retrieve_fresh_odds() -> pd.DataFrame:
     """Retry the optional FightOdds browser fallback with a fresh driver."""
 
@@ -510,7 +590,7 @@ def _retrieve_market_odds() -> RetrievedOdds:
     )
 
 
-def _book_columns(odds: pd.DataFrame) -> tuple[tuple[str, str, str], ...]:
+def _book_columns(odds: pd.DataFrame) -> tuple[SourceBookColumns, ...]:
     fighter: dict[str, tuple[str, str]] = {}
     opponent: dict[str, tuple[str, str]] = {}
     for column in odds.columns:
@@ -529,8 +609,19 @@ def _book_columns(odds: pd.DataFrame) -> tuple[tuple[str, str, str], ...]:
             opponent[key] = (book, text)
     if set(fighter) != set(opponent) or not fighter:
         raise CaptureError("market source fighter/opponent book columns are incomplete")
+    columns = {str(column).casefold(): str(column) for column in odds.columns}
     return tuple(
-        (fighter[key][0], fighter[key][1], opponent[key][1])
+        SourceBookColumns(
+            book=fighter[key][0],
+            fighter_column=fighter[key][1],
+            opponent_column=opponent[key][1],
+            source_key_column=columns.get(
+                f"source {fighter[key][0]} key".casefold()
+            ),
+            source_update_column=columns.get(
+                f"source {fighter[key][0]} last update".casefold()
+            ),
+        )
         for key in sorted(fighter)
     )
 
@@ -563,7 +654,7 @@ def _capture_id(observed_at: datetime) -> str:
 
 def _build_captures(
     source_matches: tuple[SourceMatch, ...],
-    book_columns: tuple[tuple[str, str, str], ...],
+    book_columns: tuple[SourceBookColumns, ...],
     existing_quotes: tuple[QuoteSnapshot, ...],
     *,
     capture_id: str,
@@ -573,9 +664,17 @@ def _build_captures(
     artifact: dict[str, object],
     source_payload_sha256: str,
     source: str,
-) -> tuple[tuple[QuoteSnapshot, ...], tuple[ForecastCapture, ...], dict[str, int]]:
+    timing_precision: str,
+    event_start_utc: str | None,
+) -> tuple[
+    tuple[QuoteSnapshot, ...],
+    tuple[ForecastCapture, ...],
+    tuple[QuoteSourceMetadata, ...],
+    dict[str, int],
+]:
     quotes: list[QuoteSnapshot] = []
     forecasts: list[ForecastCapture] = []
+    source_metadata: list[QuoteSourceMetadata] = []
     counters = {
         "incomplete_quote_pairs": 0,
         "invalid_quote_pairs": 0,
@@ -594,7 +693,10 @@ def _build_captures(
         ):
             raise CaptureError("an unstable-identity matchup reached capture construction")
         matchup_quotes: list[QuoteSnapshot] = []
-        for book, fighter_column, opponent_column in book_columns:
+        for columns in book_columns:
+            book = columns.book
+            fighter_column = columns.fighter_column
+            opponent_column = columns.opponent_column
             if source_match.source_is_reversed:
                 raw_fighter = source_row.get(opponent_column)
                 raw_opponent = source_row.get(fighter_column)
@@ -617,8 +719,8 @@ def _build_captures(
                     matchup_id=matchup.matchup_id,
                     fight_id=matchup.fight_id,
                     event_date=event_day,
-                    timing_precision="date",
-                    event_start_utc=None,
+                    timing_precision=timing_precision,
+                    event_start_utc=event_start_utc,
                     observed_at_utc=observed_at,
                     source=source,
                     book=book,
@@ -640,8 +742,8 @@ def _build_captures(
                         matchup_id=matchup.matchup_id,
                         fight_id=matchup.fight_id,
                         event_date=event_day,
-                        timing_precision="date",
-                        event_start_utc=None,
+                        timing_precision=timing_precision,
+                        event_start_utc=event_start_utc,
                         observed_at_utc=observed_at,
                         quote_first_seen_at_utc=first_seen,
                         source=source,
@@ -655,6 +757,40 @@ def _build_captures(
                 counters["invalid_quote_pairs"] += 1
                 continue
             matchup_quotes.append(snapshot)
+            if source == ODDS_API_SOURCE:
+                source_book_key = (
+                    source_row.get(columns.source_key_column)
+                    if columns.source_key_column
+                    else None
+                )
+                source_updated = (
+                    source_row.get(columns.source_update_column)
+                    if columns.source_update_column
+                    else None
+                )
+                source_event_id = source_row.get("source event id")
+                source_commence = source_row.get("source commence time")
+                if not all(
+                    _text(value)
+                    for value in (
+                        source_book_key,
+                        source_updated,
+                        source_event_id,
+                        source_commence,
+                    )
+                ):
+                    raise CaptureError(
+                        "The Odds API quote is missing stable source timing metadata"
+                    )
+                source_metadata.append(
+                    QuoteSourceMetadata.create(
+                        snapshot,
+                        source_book_key=source_book_key,
+                        source_event_id=source_event_id,
+                        source_quote_updated_at_utc=source_updated,
+                        source_commence_time_utc=source_commence,
+                    )
+                )
 
         if not matchup_quotes:
             counters["matchups_without_valid_quotes"] += 1
@@ -680,8 +816,8 @@ def _build_captures(
                 matchup_id=matchup.matchup_id,
                 fight_id=matchup.fight_id,
                 event_date=event_day,
-                timing_precision="date",
-                event_start_utc=None,
+                timing_precision=timing_precision,
+                event_start_utc=event_start_utc,
                 forecast_issued_at_utc=matchup.forecast_issued_at_utc,
                 model_probability=matchup.model_probability,
                 model_id=artifact["model_id"],
@@ -699,7 +835,9 @@ def _build_captures(
     forecast_matchups = {item.matchup_id for item in forecasts}
     if not forecast_matchups <= quote_matchups:
         raise CaptureError("a forecast capture has no quote in the same retrieval")
-    return tuple(quotes), tuple(forecasts), counters
+    if source == ODDS_API_SOURCE and len(source_metadata) != len(quotes):
+        raise CaptureError("every API quote requires source timing metadata")
+    return tuple(quotes), tuple(forecasts), tuple(source_metadata), counters
 
 
 def _atomic_write_report(report: dict[str, object]) -> None:
@@ -771,19 +909,37 @@ def _validate_source_request(report: dict[str, object]) -> None:
 
 
 def validate_generated_capture() -> dict[str, object]:
-    required_paths = (
+    core_paths = (
         QUOTE_CSV_PATH,
         QUOTE_JSONL_PATH,
         FORECAST_CSV_PATH,
         FORECAST_JSONL_PATH,
         REPORT_PATH,
     )
-    missing = [str(path) for path in required_paths if not path.is_file()]
+    missing = [str(path) for path in core_paths if not path.is_file()]
     if missing:
         raise CaptureError(f"market capture outputs are missing: {missing}")
     if REPORT_PATH.stat().st_size > REPORT_SIZE_LIMIT:
         raise CaptureError("capture_report.json is not bounded")
     report = _json_object(_read_bytes(REPORT_PATH), REPORT_PATH)
+    enhanced_fields = {
+        "source_metadata_dataset_sha256",
+        "paper_decision_dataset_sha256",
+    }
+    present_enhanced_fields = enhanced_fields & set(report)
+    if present_enhanced_fields and present_enhanced_fields != enhanced_fields:
+        raise CaptureError("capture report has a partial enhanced market contract")
+    enhanced_contract = enhanced_fields <= set(report)
+    if enhanced_contract:
+        extended_paths = (
+            SOURCE_METADATA_CSV_PATH,
+            SOURCE_METADATA_JSONL_PATH,
+            DECISION_CSV_PATH,
+            DECISION_JSONL_PATH,
+        )
+        missing = [str(path) for path in extended_paths if not path.is_file()]
+        if missing:
+            raise CaptureError(f"enhanced market capture outputs are missing: {missing}")
     supplied_hash = _text(report.get("report_sha256"))
     unhashed = dict(report)
     unhashed.pop("report_sha256", None)
@@ -791,8 +947,12 @@ def validate_generated_capture() -> dict[str, object]:
         raise CaptureError("capture report hash does not match its contents")
     if report.get("betting_status") != BETTING_STATUS:
         raise CaptureError("capture report does not preserve paper-only betting status")
-    if report.get("paper_decisions_created") != 0:
-        raise CaptureError("market capture must not create paper or live decisions")
+    try:
+        paper_decisions_created = int(report.get("paper_decisions_created", 0))
+    except (TypeError, ValueError) as error:
+        raise CaptureError("paper_decisions_created must be an integer") from error
+    if paper_decisions_created < 0:
+        raise CaptureError("paper_decisions_created cannot be negative")
     _validate_source_request(report)
     capture_started = _as_utc(
         report.get("capture_started_at_utc"), "capture_started_at_utc"
@@ -805,17 +965,45 @@ def validate_generated_capture() -> dict[str, object]:
     forecast_store = ForecastCaptureStore(FORECAST_CSV_PATH, FORECAST_JSONL_PATH)
     quotes = quote_store.read()
     forecasts = forecast_store.read()
+    source_metadata = (
+        QuoteSourceMetadataStore(
+            SOURCE_METADATA_CSV_PATH, SOURCE_METADATA_JSONL_PATH
+        ).read()
+        if enhanced_contract
+        else ()
+    )
+    decisions = (
+        PaperDecisionStore(DECISION_CSV_PATH, DECISION_JSONL_PATH).read()
+        if enhanced_contract
+        else ()
+    )
     if _dataset_hash(quotes) != report.get("quote_dataset_sha256"):
         raise CaptureError("quote ledger fingerprint differs from capture report")
     if _dataset_hash(forecasts) != report.get("forecast_dataset_sha256"):
         raise CaptureError("forecast ledger fingerprint differs from capture report")
+    if enhanced_contract and _dataset_hash(source_metadata) != report.get("source_metadata_dataset_sha256"):
+        raise CaptureError("source metadata fingerprint differs from capture report")
+    if enhanced_contract and _dataset_hash(decisions) != report.get("paper_decision_dataset_sha256"):
+        raise CaptureError("paper decision fingerprint differs from capture report")
     capture_id = _stable_token(report.get("capture_id"), "capture report capture_id")
     capture_quotes = tuple(item for item in quotes if item.capture_id == capture_id)
     capture_forecasts = tuple(item for item in forecasts if item.capture_id == capture_id)
+    capture_metadata = tuple(
+        item for item in source_metadata if item.capture_id == capture_id
+    )
+    capture_decisions = tuple(
+        item for item in decisions if item.capture_id == capture_id
+    )
     if len(capture_quotes) != int(report.get("quote_records_in_capture", -1)):
         raise CaptureError("capture report quote count differs from the quote ledger")
     if len(capture_forecasts) != int(report.get("forecast_records_in_capture", -1)):
         raise CaptureError("capture report forecast count differs from the forecast ledger")
+    if enhanced_contract and len(capture_metadata) != int(
+        report.get("source_metadata_records_in_capture", -1)
+    ):
+        raise CaptureError("capture report metadata count differs from the metadata ledger")
+    if len(capture_decisions) != paper_decisions_created:
+        raise CaptureError("capture report paper count differs from the decision ledger")
     quote_matchups = {item.matchup_id for item in capture_quotes}
     forecast_matchups = {item.matchup_id for item in capture_forecasts}
     if not forecast_matchups <= quote_matchups:
@@ -834,7 +1022,7 @@ def validate_generated_capture() -> dict[str, object]:
         raise CaptureError("capture quotes disagree with the report event date")
     if any(
         item.timing_precision != report.get("timing_precision")
-        or item.event_start_utc is not None
+        or item.event_start_utc != report.get("event_start_utc")
         for item in capture_quotes
     ):
         raise CaptureError("capture quote timing precision disagrees with the report")
@@ -847,6 +1035,10 @@ def validate_generated_capture() -> dict[str, object]:
         raise CaptureError("capture quotes disagree with the report source payload")
     if any(item.source != report.get("source") for item in capture_quotes):
         raise CaptureError("capture quotes disagree with the report source")
+    if enhanced_contract and report.get("source") == ODDS_API_SOURCE:
+        quote_ids = {item.quote_id for item in capture_quotes}
+        if {item.quote_id for item in capture_metadata} != quote_ids:
+            raise CaptureError("API quote metadata does not exactly cover the capture")
     observed_times = {item.observed_at_utc for item in capture_quotes}
     if observed_times != {report.get("captured_at_utc")}:
         raise CaptureError("capture quotes disagree with the report retrieval time")
@@ -869,7 +1061,7 @@ def validate_generated_capture() -> dict[str, object]:
             report.get("event_id"),
             report.get("event_date"),
             report.get("timing_precision"),
-            None,
+            report.get("event_start_utc"),
             report.get("model_id"),
             report.get("model_version"),
             report.get("model_trained_through"),
@@ -895,6 +1087,7 @@ def capture_market_snapshot() -> dict[str, object]:
     input_hashes = _publication_hashes(payloads)
     card = _json_object(payloads[CARD_PATH], CARD_PATH)
     artifact = _json_object(payloads[MODEL_PATH], MODEL_PATH)
+    _skip_if_prior_capture_card_started(card, capture_started_at)
     try:
         vegas = pd.read_json(io.BytesIO(payloads[VEGAS_PATH]))
     except (TypeError, ValueError) as error:
@@ -922,13 +1115,22 @@ def capture_market_snapshot() -> dict[str, object]:
     )
     books = _book_columns(fresh_odds)
     source_payload_sha256 = retrieved_odds.source_payload_sha256
+    timing_precision, event_start_utc, lead_time_seconds = _capture_timing(
+        source_matches, event_day=event_day, observed_at=observed_at
+    )
 
     quote_store = QuoteSnapshotStore(QUOTE_CSV_PATH, QUOTE_JSONL_PATH)
     forecast_store = ForecastCaptureStore(FORECAST_CSV_PATH, FORECAST_JSONL_PATH)
+    metadata_store = QuoteSourceMetadataStore(
+        SOURCE_METADATA_CSV_PATH, SOURCE_METADATA_JSONL_PATH
+    )
+    decision_store = PaperDecisionStore(DECISION_CSV_PATH, DECISION_JSONL_PATH)
     existing_quotes = quote_store.read()
     # Fail closed on either mirror before constructing any new records.
     forecast_store.read()
-    quotes, forecasts, counters = _build_captures(
+    existing_metadata = metadata_store.read()
+    existing_decisions = decision_store.read()
+    quotes, forecasts, source_metadata, counters = _build_captures(
         source_matches,
         books,
         existing_quotes,
@@ -939,6 +1141,12 @@ def capture_market_snapshot() -> dict[str, object]:
         artifact=artifact,
         source_payload_sha256=source_payload_sha256,
         source=retrieved_odds.source,
+        timing_precision=timing_precision,
+        event_start_utc=event_start_utc,
+    )
+
+    paper_build = build_locked_paper_decisions(
+        quotes, forecasts, source_metadata, existing_decisions
     )
 
     if _publication_payloads() != payloads:
@@ -949,8 +1157,12 @@ def capture_market_snapshot() -> dict[str, object]:
     # absent. Each individual mirror replacement is atomic inside the stores.
     forecast_result = forecast_store.append(forecasts)
     quote_result = quote_store.append(quotes)
+    metadata_result = metadata_store.append(source_metadata)
+    decision_result = decision_store.append(paper_build.decisions)
     final_quotes = quote_store.read()
     final_forecasts = forecast_store.read()
+    final_metadata = metadata_store.read()
+    final_decisions = decision_store.read()
     quote_matchups = len({item.matchup_id for item in quotes})
     paired_forecast_matchups = len({item.matchup_id for item in forecasts})
     published_without_stable_ids = sum(
@@ -972,7 +1184,9 @@ def capture_market_snapshot() -> dict[str, object]:
         "event_url": event_url,
         "event_title": title,
         "event_date": event_day,
-        "timing_precision": "date",
+        "timing_precision": timing_precision,
+        "event_start_utc": event_start_utc,
+        "capture_lead_time_seconds": lead_time_seconds,
         "model_id": _text(artifact.get("model_id")),
         "model_version": model_version,
         "model_trained_through": _text(artifact.get("data_through")),
@@ -996,10 +1210,19 @@ def capture_market_snapshot() -> dict[str, object]:
         "forecast_records_duplicate": len(forecast_result.duplicate_ids),
         "quote_records_total": quote_result.total_records,
         "forecast_records_total": forecast_result.total_records,
+        "source_metadata_records_in_capture": len(source_metadata),
+        "source_metadata_records_added": len(metadata_result.added_ids),
+        "source_metadata_records_duplicate": len(metadata_result.duplicate_ids),
+        "source_metadata_records_total": metadata_result.total_records,
         "quote_dataset_sha256": _dataset_hash(final_quotes),
         "forecast_dataset_sha256": _dataset_hash(final_forecasts),
+        "source_metadata_dataset_sha256": _dataset_hash(final_metadata),
+        "paper_decision_dataset_sha256": _dataset_hash(final_decisions),
+        "paper_decision_policy": paper_build.to_mapping(),
         **counters,
-        "paper_decisions_created": 0,
+        "paper_decisions_created": len(paper_build.decisions),
+        "paper_decisions_added": len(decision_result.added_ids),
+        "paper_decisions_total": decision_result.total_records,
         "betting_status": BETTING_STATUS,
         "publication_files_unchanged": True,
     }
@@ -1030,6 +1253,11 @@ def capture_market_snapshot() -> dict[str, object]:
             ),
             f"- Quote ledger: {quote_result.total_records} records",
             f"- Forecast ledger: {forecast_result.total_records} records",
+            f"- Source metadata ledger: {metadata_result.total_records} records",
+            (
+                f"- T-24 paper decisions: {len(paper_build.decisions)} "
+                f"(`{BETTING_STATUS}`)"
+            ),
             (
                 "- API credits remaining: "
                 f"{retrieved_odds.request_metadata.get('requests_remaining')}"
@@ -1057,6 +1285,19 @@ def main() -> int:
             if args.validate_only
             else capture_market_snapshot()
         )
+    except CaptureSkipped as skipped:
+        _append_summary(
+            [
+                "## UFC market capture",
+                "",
+                f"> Expected no-op: {skipped}",
+                "",
+                f"- Betting: `{BETTING_STATUS}`",
+                "",
+            ]
+        )
+        print(f"Market capture skipped: {skipped}")
+        return 0
     except Exception as error:
         _append_summary(
             [

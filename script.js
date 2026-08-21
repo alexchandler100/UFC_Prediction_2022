@@ -907,7 +907,7 @@ function humanizeForecastLabel(value) {
     'weekly_forecast': 'Weekly forecast',
     'legacy_weekly_prediction': 'Legacy weekly prediction',
     'disabled_pending_market_relative_validation':
-      'Betting disabled — awaiting market-relative validation'
+      'Betting disabled — prospective return/CLV validation active'
   };
   if (labels[key]) {
     return labels[key];
@@ -1116,7 +1116,7 @@ function renderUpcomingPredictions(loadError) {
     if (hasDisplayValue(oddsSource)) {
       statusLines.push('Market source: ' + String(oddsSource));
     }
-    statusLines.push('Betting disabled');
+    statusLines.push('Betting disabled; paper tracking active');
     setCellLines(row.cells.item(5), statusLines);
 
     for (const cell of row.cells) {

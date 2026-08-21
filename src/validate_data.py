@@ -30,8 +30,20 @@ from fight_predictor.point_in_time import (
 from market_tracker import (
     ForecastCaptureStore,
     MarketDataError,
+    PaperDecisionStore,
+    PaperSettlementStore,
     QuoteSnapshotStore,
+    QuoteSourceMetadataStore,
     StoreIntegrityError,
+    consensus_as_of,
+    summarize_paper_settlements,
+)
+from market_tracker._common import BETTING_STATUS, canonical_hash
+from market_tracker.prospective import (
+    DECISION_TARGET_LEAD_SECONDS,
+    DECISION_WINDOW_SECONDS,
+    MAX_SOURCE_QUOTE_AGE_SECONDS,
+    MIN_CONSENSUS_BOOKS,
 )
 
 
@@ -1028,10 +1040,202 @@ def validate_market_data(
             "a market quote was observed before its frozen model forecast existed",
         )
 
+    quote_by_id = {quote.quote_id: quote for quote in quotes}
+    forecast_by_id = {
+        forecast.forecast_capture_id: forecast for forecast in forecasts
+    }
+
+    metadata_csv = market_root / "quote_source_metadata.csv"
+    metadata_jsonl = market_root / "quote_source_metadata.jsonl"
+    metadata_exists = (metadata_csv.exists(), metadata_jsonl.exists())
+    metadata = ()
+    if any(metadata_exists) and not all(metadata_exists):
+        report.errors.append("quote source metadata mirrors are incomplete")
+    elif all(metadata_exists):
+        try:
+            metadata = QuoteSourceMetadataStore(
+                metadata_csv, metadata_jsonl
+            ).read()
+        except (OSError, UnicodeError, MarketDataError, StoreIntegrityError) as error:
+            report.errors.append(
+                f"quote source metadata failed integrity validation: {error}"
+            )
+    metadata_by_quote = {item.quote_id: item for item in metadata}
+    for item in metadata:
+        quote = quote_by_id.get(item.quote_id)
+        report.require(
+            quote is not None,
+            "quote source metadata references an unknown quote_id",
+        )
+        if quote is None:
+            continue
+        report.require(
+            (
+                item.capture_id,
+                item.matchup_id,
+                item.event_id,
+                item.source,
+                item.book,
+                item.observed_at_utc,
+            )
+            == (
+                quote.capture_id,
+                quote.matchup_id,
+                quote.event_id,
+                quote.source,
+                quote.book,
+                quote.observed_at_utc,
+            ),
+            "quote source metadata disagrees with its immutable quote",
+        )
+    api_quotes = [quote for quote in quotes if quote.source == "the-odds-api.com"]
+    missing_api_metadata = [
+        quote for quote in api_quotes if quote.quote_id not in metadata_by_quote
+    ]
+    if missing_api_metadata:
+        report.warnings.append(
+            f"market ledger has {len(missing_api_metadata):,} legacy API quote(s) "
+            "without source-side update timestamps"
+        )
+
+    decision_csv = market_root / "paper_decisions.csv"
+    decision_jsonl = market_root / "paper_decisions.jsonl"
+    decision_exists = (decision_csv.exists(), decision_jsonl.exists())
+    decisions = ()
+    if any(decision_exists) and not all(decision_exists):
+        report.errors.append("paper decision mirrors are incomplete")
+    elif all(decision_exists):
+        try:
+            decisions = PaperDecisionStore(decision_csv, decision_jsonl).read()
+        except (OSError, UnicodeError, MarketDataError, StoreIntegrityError) as error:
+            report.errors.append(f"paper decisions failed integrity validation: {error}")
+
+    report.require(
+        len({item.matchup_id for item in decisions}) == len(decisions),
+        "prospective policy froze more than one decision for a matchup",
+    )
+    for decision in decisions:
+        reference = quote_by_id.get(decision.reference_quote_id)
+        forecast = forecast_by_id.get(decision.forecast_capture_id)
+        report.require(reference is not None, "paper decision references an unknown quote")
+        report.require(
+            forecast is not None, "paper decision references an unknown forecast"
+        )
+        if reference is None or forecast is None:
+            continue
+        if decision.timing_precision != "timestamp" or not decision.event_start_utc:
+            report.errors.append("prospective paper decision lacks exact event timing")
+            continue
+        lead = (
+            pd.Timestamp(decision.event_start_utc)
+            - pd.Timestamp(decision.market_as_of_utc)
+        ).total_seconds()
+        report.require(
+            abs(lead - DECISION_TARGET_LEAD_SECONDS) <= DECISION_WINDOW_SECONDS,
+            "prospective paper decision is outside the locked T-24 window",
+        )
+        fresh_quotes = [
+            quote
+            for quote in quotes
+            if quote.capture_id == decision.capture_id
+            and quote.matchup_id == decision.matchup_id
+            and quote.quote_id in metadata_by_quote
+            and -300.0
+            <= float(metadata_by_quote[quote.quote_id].source_quote_age_seconds)
+            <= MAX_SOURCE_QUOTE_AGE_SECONDS
+        ]
+        try:
+            market = consensus_as_of(
+                fresh_quotes,
+                capture_id=decision.capture_id,
+                matchup_id=decision.matchup_id,
+                as_of_utc=decision.market_as_of_utc,
+                min_books=MIN_CONSENSUS_BOOKS,
+                exclude_books=(reference.book,),
+            )
+            rebuilt = type(decision).create(
+                market,
+                reference,
+                forecast,
+                selected_gamma=decision.selected_gamma,
+                decision_issued_at_utc=decision.decision_issued_at_utc,
+                minimum_expected_return=decision.minimum_expected_return,
+                maximum_quote_age_seconds=decision.maximum_quote_age_seconds,
+                fight_id=decision.fight_id,
+            )
+            report.require(
+                rebuilt == decision,
+                "paper decision cannot be reproduced from its frozen inputs",
+            )
+        except (MarketDataError, StoreIntegrityError, ValueError) as error:
+            report.errors.append(
+                f"paper decision cannot be reconstructed: {error}"
+            )
+
+    settlement_csv = market_root / "paper_settlements.csv"
+    settlement_jsonl = market_root / "paper_settlements.jsonl"
+    settlement_exists = (settlement_csv.exists(), settlement_jsonl.exists())
+    settlements = ()
+    if any(settlement_exists) and not all(settlement_exists):
+        report.errors.append("paper settlement mirrors are incomplete")
+    elif all(settlement_exists):
+        try:
+            settlements = PaperSettlementStore(
+                settlement_csv, settlement_jsonl
+            ).read()
+            summarize_paper_settlements(decisions, settlements)
+        except (OSError, UnicodeError, MarketDataError, StoreIntegrityError) as error:
+            report.errors.append(f"paper settlements failed integrity validation: {error}")
+
+    performance_path = market_root / "performance_report.json"
+    if performance_path.exists():
+        try:
+            if performance_path.stat().st_size > 64 * 1024:
+                raise ValueError("performance report exceeds 64 KiB")
+            performance = json.loads(performance_path.read_text(encoding="utf-8"))
+            if not isinstance(performance, dict):
+                raise ValueError("performance report is not an object")
+            expected_report_hash = performance.pop("report_sha256", None)
+            if expected_report_hash != canonical_hash(performance):
+                raise ValueError("performance report hash does not match its contents")
+            report.require(
+                performance.get("betting_status") == BETTING_STATUS
+                and performance.get("paper_only") is True
+                and performance.get("execution_enabled") is False,
+                "paper performance report must keep execution disabled",
+            )
+            report.require(
+                performance.get("decision_dataset_sha256")
+                == canonical_hash([item.to_mapping() for item in decisions]),
+                "performance report decision hash is stale",
+            )
+            report.require(
+                performance.get("settlement_dataset_sha256")
+                == canonical_hash([item.to_mapping() for item in settlements]),
+                "performance report settlement hash is stale",
+            )
+            expected_metrics = summarize_paper_settlements(
+                decisions, settlements
+            ).to_mapping()
+            report.require(
+                performance.get("paper_metrics") == expected_metrics,
+                "performance report metrics cannot be reproduced",
+            )
+        except (
+            OSError,
+            UnicodeError,
+            json.JSONDecodeError,
+            ValueError,
+            MarketDataError,
+            StoreIntegrityError,
+        ) as error:
+            report.errors.append(f"paper performance report is invalid: {error}")
+
     report.facts.append(
         "market ledger: "
         f"{len(quotes):,} quotes / {len(forecasts):,} forecasts / "
-        f"{len(capture_contracts):,} captures"
+        f"{len(capture_contracts):,} captures / {len(decisions):,} paper decisions / "
+        f"{len(settlements):,} settlements"
     )
     unmatched = len(quote_keys - forecast_keys)
     if unmatched:

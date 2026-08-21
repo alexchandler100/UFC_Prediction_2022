@@ -43,6 +43,16 @@ from .quotes import (
     QuoteSnapshotStore,
     consensus_as_of,
 )
+from .source_metadata import QuoteSourceMetadata, QuoteSourceMetadataStore
+from .prospective import (
+    DECISION_TARGET_LEAD_SECONDS,
+    DECISION_WINDOW_SECONDS,
+    LOCKED_GAMMA,
+    MAX_SOURCE_QUOTE_AGE_SECONDS,
+    MIN_EXPECTED_RETURN,
+    PaperDecisionBuild,
+    build_locked_paper_decisions,
+)
 
 
 __all__ = (
@@ -52,13 +62,19 @@ __all__ = (
     "BlendObservation",
     "BlendPrediction",
     "DEFAULT_GAMMA_GRID",
+    "DECISION_TARGET_LEAD_SECONDS",
+    "DECISION_WINDOW_SECONDS",
     "ForecastCapture",
     "ForecastCaptureStore",
     "ForecastMetrics",
     "LEGACY_RECONSTRUCTED",
+    "LOCKED_GAMMA",
+    "MAX_SOURCE_QUOTE_AGE_SECONDS",
     "MarketConsensus",
     "MarketDataError",
     "NATIVE_PROBABILITY",
+    "MIN_EXPECTED_RETURN",
+    "PaperDecisionBuild",
     "PaperDecision",
     "PaperDecisionStore",
     "PaperMetrics",
@@ -67,9 +83,12 @@ __all__ = (
     "PriorCardBlendEvaluator",
     "QuoteSnapshot",
     "QuoteSnapshotStore",
+    "QuoteSourceMetadata",
+    "QuoteSourceMetadataStore",
     "SCHEMA_VERSION",
     "StoreIntegrityError",
     "consensus_as_of",
+    "build_locked_paper_decisions",
     "forecast_metrics",
     "matchup_id_for",
     "settle_paper_decision",

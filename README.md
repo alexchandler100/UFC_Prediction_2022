@@ -25,6 +25,11 @@ The auditable artifacts are:
 - `src/content/data/processed/ufc_fights_point_in_time.csv`
 - `src/content/data/external/winner_model.json`
 - `src/content/data/external/vegas_odds.json`
+- `src/content/data/market/quote_snapshots.jsonl`
+- `src/content/data/market/quote_source_metadata.jsonl`
+- `src/content/data/market/paper_decisions.jsonl`
+- `src/content/data/market/paper_settlements.jsonl`
+- `src/content/data/market/performance_report.json`
 
 When complete two-sided lines are available, the published primary forecast is the no-vig market consensus and the independent model probability remains visible. Betting recommendations are disabled until timestamped rolling tests demonstrate a repeatable market-relative edge.
 
@@ -35,11 +40,23 @@ accuracy. A separate, paper-only market tracker now stores each retrieval as an
 immutable multi-book snapshot with stable event/fighter IDs, a fresh UTC
 observation time, first-seen time, source-payload hash, and the exact frozen
 model probability/model ID. Consensus probabilities never mix retrieval runs.
+Native API captures also preserve the source event/book keys, the sportsbook's
+own quote-update timestamp, scheduled commence time, and source-quote age.
 When one book's offered price is evaluated, that book is excluded from the
 consensus and at least three other books are required.
 If more than one capture exists for a matchup, evaluation requires a
 predeclared per-event UTC cutoff and deterministically selects the latest
 capture at or before it; later snapshots cannot be chosen using outcomes.
+
+The prospective policy freezes at most one paper decision per matchup in a
+predeclared T-24 window (20 to 28 hours before the card). It uses only source
+quotes updated within 30 minutes, excludes the evaluated book from a consensus
+of at least three other books, applies a fixed 5% expected-return threshold,
+and currently locks the stats/market blend weight to zero (market-only). The
+weekly updater later settles these immutable records from stable UFCStats IDs
+and publishes paper ROI, drawdown, forecast scores, coverage, and a latest-
+available same-book CLV proxy. This remains research only; no order, account,
+bankroll, or wager-execution code exists.
 
 The conservative Git-history reconstruction found 503 completed W/L fights
 with at least three of the five core books. Only 230 also had a defensible
@@ -89,8 +106,9 @@ To perform the networked update manually:
 ```console
 cd src
 python -B update_and_rebuild_model.py
+python -B update_market_performance.py
 cd ..
-python -B src/validate_data.py --require-model-artifact
+python -B src/validate_data.py --require-model-artifact --require-market-data
 ```
 
 The final command verifies raw data, point-in-time lineage, model/state fingerprints, artifact dimensions, training cutoffs, and publication files together.
@@ -101,18 +119,23 @@ The old scripts `src/1-build_ufc_fights_reported_doubled.py` and `src/2-build_uf
 
 `.github/workflows/update-data.yml` runs each Wednesday at 9:33 PM America/Chicago and can also be started manually. It uses pinned dependencies, tests before mutation, strict post-build validation, a shallow checkout, scoped staging, a no-op commit guard, and a starting-commit check so artifacts built from stale code are never rebased onto newer code.
 
-`.github/workflows/collect-market-snapshot.yml` runs separately each Thursday at
-12:17 PM and 6:17 PM America/Chicago. The second bounded attempt protects
-against a delayed source-card refresh. Each run validates the frozen card/model publication,
-captures one fresh MMA moneyline response from The Odds API, appends only the quote/forecast ledgers and
-a bounded audit report, then revalidates their mirrors before publication. The
+`.github/workflows/collect-market-snapshot.yml` runs separately at 12:17 PM and
+6:17 PM Thursday; 12:17 PM, 6:17 PM, and 11:17 PM Friday; and 9:17 AM, 12:17 PM,
+3:17 PM, and 6:17 PM Saturday (America/Chicago). Once a previously timed card
+has commenced, a late retry exits successfully without spending another API
+credit. Each run validates the frozen card/model publication, captures one
+fresh MMA moneyline response from The Odds API, appends quote/forecast/source-
+timing ledgers, freezes any eligible T-24 paper decisions, and publishes a
+bounded audit report, settles any newly completed prior decisions, and refreshes
+the return/CLV report before strict revalidation. The
 two publishing workflows share one concurrency group and exact path allowlists.
-The collector creates no paper or live wager.
+The collector creates no live wager.
 
 The source's free Starter tier currently includes 500 request credits per
 month. The configured `h2h` request across `us,us2` costs two credits, so the
-normal updater plus two Thursday captures use roughly 26 credits in an average
-month. Create a free key at [The Odds API](https://the-odds-api.com/), then add
+normal updater plus the maximum nine scheduled captures use roughly 87 credits
+in an average month (and post-commencement no-ops use none). Create a free key
+at [The Odds API](https://the-odds-api.com/), then add
 it to the repository under **Settings -> Secrets and variables -> Actions ->
 New repository secret** with the exact name `THE_ODDS_API_KEY`. Never commit
 the key. Both workflows fail early with a clear credential message when it is
@@ -134,6 +157,7 @@ with:
 ```console
 python -B src/capture_market_snapshot.py --validate-only
 python -B src/validate_data.py --allow-stale --require-market-data
+python -B src/update_market_performance.py
 ```
 
 ## Evaluation and limitations

@@ -70,8 +70,12 @@ jobs:
           THE_ODDS_API_KEY: ${{ secrets.THE_ODDS_API_KEY }}
         run: python update_and_rebuild_model.py
 
+      - name: Settle paper decisions and publish return metrics
+        working-directory: src
+        run: python update_market_performance.py
+
       - name: Validate generated snapshot
-        run: python src/validate_data.py --require-model-artifact
+        run: python src/validate_data.py --require-model-artifact --require-market-data
 
       - name: Commit validated generated files
         shell: bash
@@ -88,7 +92,10 @@ jobs:
             src/content/data/external/prediction_history.json \
             src/content/data/external/ufc_fight_data_for_website.json \
             src/content/data/external/vegas_odds.json \
-            src/content/data/external/winner_model.json
+            src/content/data/external/winner_model.json \
+            src/content/data/market/paper_settlements.csv \
+            src/content/data/market/paper_settlements.jsonl \
+            src/content/data/market/performance_report.json
 
           if git diff --cached --quiet; then
             echo "No validated data changes to commit."
