@@ -1,7 +1,7 @@
 {
   "ambiguous_historical_matchup_keys": 1,
   "ambiguous_result_decisions": 0,
-  "as_of_utc": "2026-08-21T05:25:56.814363Z",
+  "as_of_utc": "2026-08-21T06:08:43.519453Z",
   "betting_status": "disabled_paper_only_no_execution",
   "decision_dataset_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
   "decisions_total": 0,
@@ -16,10 +16,10 @@
     "execution_enabled": false,
     "favorite_definition": "side above 50% in the full no-vig consensus at the first eligible capture; classification never changes after a line flip",
     "ledger_counts": {
-      "eligible_captures": 13,
+      "eligible_captures": 26,
       "frozen_classifications": 13,
-      "quotes": 280,
-      "source_metadata": 140
+      "quotes": 420,
+      "source_metadata": 280
     },
     "paper_only": true,
     "policy_version": "favorite-early-dog-late-v1",
@@ -121,19 +121,19 @@
           "opponent": 0
         },
         "clv": {
-          "count": 0,
+          "count": 3,
           "definition": "latest fresh same-book implied probability minus locked break-even; positive favors the selected price",
           "event_block_interval": {
             "bootstrap_samples": 0,
             "ci_95_lower": null,
             "ci_95_upper": null,
             "definition": "whole-card bootstrap of latest same-book CLV probability edge",
-            "event_count": 0,
-            "observation_count": 0,
-            "point_estimate": null
+            "event_count": 1,
+            "observation_count": 3,
+            "point_estimate": 0.0
           },
-          "mean_probability_edge": null,
-          "positive_rate": null
+          "mean_probability_edge": 0.0,
+          "positive_rate": 0.0
         },
         "entry_window_counts": {
           "early": 3,
@@ -334,12 +334,12 @@
     "settled_events": 0,
     "status": "collecting_prospective_evidence"
   },
-  "quote_dataset_sha256": "5d9e94822b18c9199553795f4355528ded8eae78f3ef5e3a5c8952e8607695db",
-  "report_sha256": "5fd1996e89b0282fb232a7ef83532c5c0f01772a202443a9e67799eff8ae1dfb",
+  "quote_dataset_sha256": "f5b0f2ec8c0154f5562f9e49ffccd8ed6402d25c082bbdf9b64146accde34aaa",
+  "report_sha256": "c4ca28eeb4e215ee3c393fe905025fa3d3837edc70b07664bf6355901f39d2d7",
   "result_source_sha256": "4757b34e4d061bb7f98f698139af23def9c7806867a0ccbb7c18c1e293f32db7",
   "schema_version": 2,
   "settlement_dataset_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
   "settlements_total": 0,
-  "source_metadata_dataset_sha256": "6a787178560ebd798c2201ca79ac5f2f1683f713ec5e34bb90772048079a24e4",
+  "source_metadata_dataset_sha256": "7d26b6cd39d45b80d96bf24dbb2de2ac506ec97d67aa38657cc5fc2196d86b96",
   "unsettled_decisions": 0
 }
