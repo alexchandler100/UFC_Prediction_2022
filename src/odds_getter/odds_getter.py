@@ -1,4 +1,8 @@
-# need to use selenium as the javascript renders the html after the page load
+# FightOdds needs Selenium because JavaScript renders its table. The production
+# GitHub workflows use The Odds API; the browser path remains an explicit local
+# fallback.
+import os
+
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
@@ -7,11 +11,33 @@ import pandas as pd
 import numpy as np
 from bs4 import BeautifulSoup
 
+from .the_odds_api import TheOddsApiClient
+
 class OddsGetter:
     def __init__(self):
         self.fight_odds_url = "https://fightodds.io"
-        
+        self.last_source = ""
+        self.last_request_metadata = {}
+
     def make_odds_df(self):
+        source = str(os.environ.get("MARKET_ODDS_SOURCE", "fightodds")).strip().casefold()
+        if source in {"the-odds-api", "the-odds-api.com", "odds-api"}:
+            response = TheOddsApiClient().fetch(
+                os.environ.get("THE_ODDS_API_KEY", ""),
+                regions=os.environ.get("ODDS_API_REGIONS", "us,us2"),
+            )
+            self.last_source = "the-odds-api.com"
+            self.last_request_metadata = response.quota_mapping()
+            return self.add_consensus_columns(response.frame)
+        if source not in {"fightodds", "fightodds.io"}:
+            raise ValueError(
+                "MARKET_ODDS_SOURCE must be 'the-odds-api' or 'fightodds'"
+            )
+        self.last_source = "fightodds.io"
+        self.last_request_metadata = {"transport": "selenium_headless_browser"}
+        return self.make_fightodds_df()
+
+    def make_fightodds_df(self):
         # Setup Chrome options
         options = Options()
         options.add_argument("--headless")  # Run in headless mode (no window)
@@ -129,6 +155,26 @@ class OddsGetter:
             raise ValueError("fightodds.io produced an empty or unnamed matchup")
         if df.duplicated(['fighter name', 'opponent name']).any():
             raise ValueError("fightodds.io produced duplicate matchup rows")
+        return self.add_consensus_columns(df)
+
+    def add_consensus_columns(self, df):
+        """Add no-vig consensus fields to a normalized two-sided odds table."""
+
+        df = df.copy(deep=True)
+        fighter_books = {
+            str(column)[len("fighter ") :].strip().casefold():
+            str(column)[len("fighter ") :].strip()
+            for column in df.columns
+            if str(column).startswith("fighter ") and str(column) != "fighter name"
+        }
+        opponent_books = {
+            str(column)[len("opponent ") :].strip().casefold()
+            for column in df.columns
+            if str(column).startswith("opponent ") and str(column) != "opponent name"
+        }
+        if not fighter_books or set(fighter_books) != opponent_books:
+            raise ValueError("odds table has incomplete fighter/opponent book columns")
+        bookies_list = [fighter_books[key] for key in sorted(fighter_books)]
         df["predicted fighter odds"] = np.nan
         df["predicted opponent odds"] = np.nan
         # American moneylines are nonlinear, so averaging the signed odds is

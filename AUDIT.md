@@ -43,14 +43,14 @@ timestamped track record needed to evaluate expected return honestly.
 
 ### Forecasts, odds, and history
 
-- FightOdds lines are converted to implied probabilities, de-vigged per book, and aggregated in probability space rather than averaging American odds.
+- The Odds API moneylines are converted to implied probabilities, de-vigged per book, and aggregated in probability space rather than averaging American odds.
 - The prospective market ledger records a fresh observation time on every retrieval and a separate first-seen time for an unchanged quote. Capture IDs cannot mix runs, events, timestamps, or source payloads.
 - Every captured quote carries stable event/fighter IDs, a nullable fight ID until settlement, the full parsed-source hash, and a frozen native model forecast with model/version/training/source-commit lineage.
 - Market/stats blending is a one-parameter symmetric logit interpolation selected only from settled prior cards. Same-date cards cannot train each other.
 - Multiple captures for one matchup require a predeclared event cutoff; selection deterministically takes the latest eligible capture and records its capture ID, while a matchup with no on-time capture fails closed.
 - Paper price evaluation is leave-one-book-out: the target book is excluded from its own consensus, at least three other books are required, and the target/consensus must come from the same retrieval timestamp.
 - Valid no-vig market consensus is the primary published forecast; the independent model probability, status, prior-fight counts, model ID, version, and trained-through date remain visible.
-- FightOdds is optional enrichment. Network/browser failures, malformed schemas, duplicate matches, unmatched cards, and merge errors fall back to model-only forecasts with explicit status instead of failing the weekly update.
+- The Odds API is optional enrichment for the authoritative weekly rebuild. Network, schema, duplicate-match, unmatched-card, and merge failures fall back to model-only forecasts with explicit status instead of discarding valid UFCStats/model output. FightOdds remains an explicit local-only browser fallback.
 - New prediction-history rows carry stable fighter/fight IDs and actual result lineage. Forecast correctness and independent-model correctness are computed separately; draws, no-contests, ties, and missing forecasts are unscored rather than counted as losses or deleted.
 - Betting recommendations and execution APIs are explicitly disabled. Paper records use fixed one-unit hypothetical risk only; there is no bankroll, account, order, or live-wager interface.
 
@@ -233,5 +233,6 @@ Immutable outputs and all caveats are recorded under
 3. Open **Actions -> Update UFC data**. Enable the workflow if GitHub still shows `disabled_inactivity`, then select **Run workflow** once.
 4. Confirm the run passes the complete test suite, strict `--require-model-artifact` validation, and the starting-SHA publication guard.
 5. Inspect the first bot commit: it should contain only the scoped processed/external data and model artifact paths.
-6. Manually dispatch **Collect UFC market snapshot** once after the updater succeeds. Confirm it commits only the two quote mirrors, two forecast mirrors, and bounded report under `src/content/data/market/`.
-7. Leave betting disabled and monitor both Actions summaries for raw/PIT counts, temporal metrics, card/model coverage, capture coverage, and FightOdds source-card mismatches.
+6. Create a free The Odds API key and store it as the Actions repository secret `THE_ODDS_API_KEY`; never commit it. The normal three weekly requests use roughly 26 of the free tier's 500 monthly credits.
+7. Manually dispatch **Collect UFC market snapshot** once after the updater succeeds. Confirm it commits only the two quote mirrors, two forecast mirrors, and bounded report under `src/content/data/market/`.
+8. Leave betting disabled and monitor both Actions summaries for raw/PIT counts, temporal metrics, card/model coverage, capture coverage, API credits remaining, and source-card mismatches.

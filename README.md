@@ -14,7 +14,7 @@ The weekly job:
 3. Replays fights in causal bout order and builds one stable-ID feature row per physical W/L fight.
 4. Tunes and evaluates a regularized logistic model with nested chronological folds, adds pre-bout Elo/state features, applies symmetric temperature calibration, and refits on the full ten-year window.
 5. Saves and reloads a content-hashed JSON model artifact before forecasting the next card.
-6. Adds timestamped no-vig FightOdds consensus when valid lines are available and publishes the website JSON.
+6. Adds timestamped no-vig multi-book consensus from The Odds API when valid lines are available and publishes the website JSON.
 
 The 82-feature model is antisymmetric: swapping the fighters produces the complementary probability. Historical features use only information available before that bout; appending future fights cannot change an existing training row. Split decisions are valid W/L labels, while draws and no-contests are retained as state/history events but are not binary training labels.
 
@@ -104,14 +104,29 @@ The old scripts `src/1-build_ufc_fights_reported_doubled.py` and `src/2-build_uf
 `.github/workflows/collect-market-snapshot.yml` runs separately each Thursday at
 12:17 PM and 6:17 PM America/Chicago. The second bounded attempt protects
 against a delayed source-card refresh. Each run validates the frozen card/model publication,
-captures one fresh FightOdds table, appends only the quote/forecast ledgers and
+captures one fresh MMA moneyline response from The Odds API, appends only the quote/forecast ledgers and
 a bounded audit report, then revalidates their mirrors before publication. The
 two publishing workflows share one concurrency group and exact path allowlists.
 The collector creates no paper or live wager.
 
+The source's free Starter tier currently includes 500 request credits per
+month. The configured `h2h` request across `us,us2` costs two credits, so the
+normal updater plus two Thursday captures use roughly 26 credits in an average
+month. Create a free key at [The Odds API](https://the-odds-api.com/), then add
+it to the repository under **Settings -> Secrets and variables -> Actions ->
+New repository secret** with the exact name `THE_ODDS_API_KEY`. Never commit
+the key. Both workflows fail early with a clear credential message when it is
+missing, and the key is scoped only to the network capture step.
+The provider's historical-odds endpoint is paid and is deliberately not used;
+this project builds its own prospective history from the free current-odds feed.
+
 After committing and pushing this upgrade, open **Actions -> Update UFC data** and use **Run workflow** once to verify the backlog update. If GitHub still marks the inactivity-disabled schedule as disabled, click **Enable workflow** once. Normal weekly runs should then require no local command.
 
-FightOdds is optional enrichment: an outage, malformed schema, ambiguous matchup, or card mismatch publishes model-only forecasts with an explicit status instead of failing the UFCStats/model update.
+Sportsbook prices remain optional enrichment for the authoritative model/data
+update: an API outage, malformed schema, ambiguous matchup, or card mismatch
+publishes model-only forecasts with an explicit status instead of discarding a
+valid UFCStats/model rebuild. FightOdds remains available only as an explicit
+local browser fallback; GitHub Actions does not depend on it.
 
 After the first successful market capture, its files can be checked locally
 with:

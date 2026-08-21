@@ -1,4 +1,4 @@
-"""Capture one frozen-model/FightOdds market observation without republishing.
+"""Capture one frozen-model sportsbook observation without republishing.
 
 This command is intentionally separate from the authoritative UFCStats/model
 update.  It treats ``card_info.json``, ``vegas_odds.json`` and
@@ -35,10 +35,11 @@ from market_tracker import (
     QuoteSnapshotStore,
     matchup_id_for,
 )
-from odds_getter import OddsGetter
+from odds_getter import OddsApiError, OddsApiResponse, OddsGetter, TheOddsApiClient
 
 
-SOURCE = "fightodds.io"
+ODDS_API_SOURCE = "the-odds-api.com"
+FIGHTODDS_SOURCE = "fightodds.io"
 ROOT = Path(__file__).resolve().parent
 EXTERNAL_ROOT = ROOT / "content" / "data" / "external"
 MARKET_ROOT = ROOT / "content" / "data" / "market"
@@ -52,6 +53,7 @@ FORECAST_JSONL_PATH = MARKET_ROOT / "forecast_captures.jsonl"
 REPORT_PATH = MARKET_ROOT / "capture_report.json"
 REPORT_SIZE_LIMIT = 64 * 1024
 SOURCE_RETRY_DELAYS_SECONDS = (15.0, 60.0)
+API_RETRY_DELAYS_SECONDS = (5.0, 30.0)
 
 
 class CaptureError(RuntimeError):
@@ -77,6 +79,14 @@ class SourceMatch:
     source_row: dict[str, object]
     published: PublishedMatchup
     source_is_reversed: bool
+
+
+@dataclass(frozen=True)
+class RetrievedOdds:
+    source: str
+    frame: pd.DataFrame
+    source_payload_sha256: str
+    request_metadata: dict[str, object]
 
 
 def _canonical_json(value: object) -> str:
@@ -322,9 +332,11 @@ def _published_matchups(
 def _map_source_rows(
     odds: pd.DataFrame,
     published: tuple[PublishedMatchup, ...],
+    *,
+    event_day: str | None = None,
 ) -> tuple[tuple[SourceMatch, ...], int]:
     if odds.empty:
-        raise CaptureError("FightOdds returned no matchup rows")
+        raise CaptureError("market source returned no matchup rows")
     _require_columns(odds, {"fighter name", "opponent name"})
     matches: list[SourceMatch] = []
     used_matchups: set[str] = set()
@@ -332,6 +344,17 @@ def _map_source_rows(
     for source_row in odds.to_dict("records"):
         source_fighter = _text(source_row.get("fighter name"))
         source_opponent = _text(source_row.get("opponent name"))
+        source_start = _text(source_row.get("source commence time"))
+        if event_day and source_start:
+            start_day = pd.to_datetime(source_start, errors="coerce", utc=True)
+            expected_day = pd.to_datetime(event_day, errors="coerce", utc=True)
+            if (
+                pd.isna(start_day)
+                or pd.isna(expected_day)
+                or abs((start_day.normalize() - expected_day.normalize()).days) > 1
+            ):
+                unmatched_rows += 1
+                continue
         candidates: list[tuple[PublishedMatchup, bool]] = []
         for matchup in published:
             # Display names may help join an external row, but no quote is
@@ -349,7 +372,7 @@ def _map_source_rows(
                 candidates.append((matchup, False))
             if reverse:
                 candidates.append((matchup, True))
-        # FightOdds can expose more than one event.  Unrelated rows are safe to
+        # A source can expose more than one event. Unrelated rows are safe to
         # skip; ambiguous rows are not.  A strong frozen-card coverage check
         # below still rejects a previous/wrong page.
         if not candidates:
@@ -357,13 +380,13 @@ def _map_source_rows(
             continue
         if len(candidates) > 1:
             raise CaptureError(
-                "FightOdds contains an ambiguous matchup: "
+                "market source contains an ambiguous matchup: "
                 f"{source_fighter!r} vs {source_opponent!r} matched "
                 f"{len(candidates)} published rows"
             )
         matchup, reversed_source = candidates[0]
         if matchup.matchup_id in used_matchups:
-            raise CaptureError("FightOdds contains duplicate orientations of one matchup")
+            raise CaptureError("market source contains duplicate orientations of one matchup")
         used_matchups.add(matchup.matchup_id)
         matches.append(SourceMatch(source_row, matchup, reversed_source))
 
@@ -372,13 +395,15 @@ def _map_source_rows(
     )
     if len(matches) < minimum_identifying_rows:
         raise CaptureError(
-            "too few uniquely matching FightOdds rows to identify the published card: "
+            "too few uniquely matching market rows to identify the published card: "
             f"{len(matches)}/{len(published)} (required {minimum_identifying_rows})"
         )
     return tuple(matches), unmatched_rows
 
 
-def _source_payload_sha256(odds: pd.DataFrame) -> str:
+def _source_payload_sha256(
+    odds: pd.DataFrame, *, source: str = FIGHTODDS_SOURCE
+) -> str:
     """Fingerprint the complete parsed retrieval, not one selected book row."""
 
     try:
@@ -386,17 +411,21 @@ def _source_payload_sha256(odds: pd.DataFrame) -> str:
             odds.to_json(orient="split", date_format="iso", date_unit="us")
         )
     except (TypeError, ValueError, json.JSONDecodeError) as error:
-        raise CaptureError("FightOdds table cannot be canonically fingerprinted") from error
-    return _canonical_hash({"source": SOURCE, "parsed_table": payload})
+        raise CaptureError("market table cannot be canonically fingerprinted") from error
+    return _canonical_hash({"source": source, "parsed_table": payload})
+
+
+def _api_payload_sha256(payload: object) -> str:
+    return _canonical_hash({"source": ODDS_API_SOURCE, "raw_response": payload})
 
 
 def _retrieve_fresh_odds() -> pd.DataFrame:
-    """Retry only the isolated browser retrieval, using a fresh driver each time."""
+    """Retry the optional FightOdds browser fallback with a fresh driver."""
 
     failures: list[str] = []
     for attempt in range(len(SOURCE_RETRY_DELAYS_SECONDS) + 1):
         try:
-            odds = OddsGetter().make_odds_df()
+            odds = OddsGetter().make_fightodds_df()
             if not isinstance(odds, pd.DataFrame) or odds.empty:
                 raise CaptureError("FightOdds retrieval returned no table rows")
             return odds
@@ -416,6 +445,71 @@ def _retrieve_fresh_odds() -> pd.DataFrame:
     )
 
 
+def _retrieve_market_odds() -> RetrievedOdds:
+    """Fetch the configured source without exposing credentials in diagnostics."""
+
+    configured = _text(os.environ.get("MARKET_ODDS_SOURCE", "the-odds-api")).casefold()
+    if configured in {"the-odds-api", "the-odds-api.com", "odds-api"}:
+        api_key = os.environ.get("THE_ODDS_API_KEY", "")
+        regions = ",".join(
+            part.strip().casefold()
+            for part in _text(
+                os.environ.get("ODDS_API_REGIONS", "us,us2")
+            ).split(",")
+            if part.strip()
+        )
+        failures: list[str] = []
+        for attempt in range(len(API_RETRY_DELAYS_SECONDS) + 1):
+            try:
+                response: OddsApiResponse = TheOddsApiClient().fetch(
+                    api_key, regions=regions
+                )
+                return RetrievedOdds(
+                    source=ODDS_API_SOURCE,
+                    frame=response.frame,
+                    source_payload_sha256=_api_payload_sha256(response.payload),
+                    request_metadata={
+                        "sport": "mma_mixed_martial_arts",
+                        "market": "h2h",
+                        "regions": regions,
+                        "odds_format": "american",
+                        **response.quota_mapping(),
+                    },
+                )
+            except OddsApiError as error:
+                failures.append(str(error))
+                # Credential and quota errors cannot be healed by retrying.
+                if "THE_ODDS_API_KEY" in str(error) or "quota" in str(error):
+                    break
+                if attempt >= len(API_RETRY_DELAYS_SECONDS):
+                    break
+                delay = API_RETRY_DELAYS_SECONDS[attempt]
+                print(
+                    f"The Odds API attempt {attempt + 1} failed; retrying in "
+                    f"{delay:g}s ({error})"
+                )
+                time.sleep(delay)
+        raise CaptureError(
+            "The Odds API retrieval failed: " + " | ".join(failures)
+        )
+    if configured in {"fightodds", "fightodds.io"}:
+        frame = _retrieve_fresh_odds()
+        return RetrievedOdds(
+            source=FIGHTODDS_SOURCE,
+            frame=frame,
+            source_payload_sha256=_source_payload_sha256(
+                frame, source=FIGHTODDS_SOURCE
+            ),
+            request_metadata={
+                "fallback": True,
+                "transport": "selenium_headless_browser",
+            },
+        )
+    raise CaptureError(
+        "MARKET_ODDS_SOURCE must be 'the-odds-api' or the optional 'fightodds' fallback"
+    )
+
+
 def _book_columns(odds: pd.DataFrame) -> tuple[tuple[str, str, str], ...]:
     fighter: dict[str, tuple[str, str]] = {}
     opponent: dict[str, tuple[str, str]] = {}
@@ -425,16 +519,16 @@ def _book_columns(odds: pd.DataFrame) -> tuple[tuple[str, str, str], ...]:
             book = text[len("fighter ") :].strip()
             key = book.casefold()
             if not book or key in fighter:
-                raise CaptureError("FightOdds contains duplicate fighter book columns")
+                raise CaptureError("market source contains duplicate fighter book columns")
             fighter[key] = (book, text)
         elif text.startswith("opponent ") and text != "opponent name":
             book = text[len("opponent ") :].strip()
             key = book.casefold()
             if not book or key in opponent:
-                raise CaptureError("FightOdds contains duplicate opponent book columns")
+                raise CaptureError("market source contains duplicate opponent book columns")
             opponent[key] = (book, text)
     if set(fighter) != set(opponent) or not fighter:
-        raise CaptureError("FightOdds fighter/opponent book columns are incomplete")
+        raise CaptureError("market source fighter/opponent book columns are incomplete")
     return tuple(
         (fighter[key][0], fighter[key][1], opponent[key][1])
         for key in sorted(fighter)
@@ -478,6 +572,7 @@ def _build_captures(
     observed_at: datetime,
     artifact: dict[str, object],
     source_payload_sha256: str,
+    source: str,
 ) -> tuple[tuple[QuoteSnapshot, ...], tuple[ForecastCapture, ...], dict[str, int]]:
     quotes: list[QuoteSnapshot] = []
     forecasts: list[ForecastCapture] = []
@@ -525,7 +620,7 @@ def _build_captures(
                     timing_precision="date",
                     event_start_utc=None,
                     observed_at_utc=observed_at,
-                    source=SOURCE,
+                    source=source,
                     book=book,
                     fighter_moneyline=fighter_line,
                     opponent_moneyline=opponent_line,
@@ -549,7 +644,7 @@ def _build_captures(
                         event_start_utc=None,
                         observed_at_utc=observed_at,
                         quote_first_seen_at_utc=first_seen,
-                        source=SOURCE,
+                        source=source,
                         book=book,
                         fighter_moneyline=fighter_line,
                         opponent_moneyline=opponent_line,
@@ -598,7 +693,7 @@ def _build_captures(
         )
     if not quotes or not forecasts:
         raise CaptureError(
-            "FightOdds contained no valid paired stable-identity quote/forecast capture"
+            "market source contained no valid paired stable-identity quote/forecast capture"
         )
     quote_matchups = {item.matchup_id for item in quotes}
     forecast_matchups = {item.matchup_id for item in forecasts}
@@ -641,6 +736,40 @@ def _dataset_hash(records: object) -> str:
     return _canonical_hash([record.to_mapping() for record in records])
 
 
+def _validate_source_request(report: dict[str, object]) -> None:
+    metadata = report.get("source_request")
+    if not isinstance(metadata, dict):
+        raise CaptureError("capture report source_request must be an object")
+    for key, value in metadata.items():
+        normalized_key = _text(key).casefold().replace("-", "_")
+        if normalized_key in {"apikey", "api_key", "authorization"}:
+            raise CaptureError("capture report must not contain a source credential")
+        if isinstance(value, (dict, list, tuple, set)):
+            raise CaptureError("capture report source_request values must be scalar")
+
+    if report.get("source") != ODDS_API_SOURCE:
+        return
+    expected = {
+        "sport": "mma_mixed_martial_arts",
+        "market": "h2h",
+        "odds_format": "american",
+    }
+    for key, expected_value in expected.items():
+        if metadata.get(key) != expected_value:
+            raise CaptureError(
+                f"capture report has unexpected The Odds API {key} metadata"
+            )
+    regions = _text(metadata.get("regions"))
+    if not regions or regions != ",".join(
+        part.strip().casefold() for part in regions.split(",") if part.strip()
+    ):
+        raise CaptureError("capture report has invalid The Odds API regions metadata")
+    for key in ("requests_remaining", "requests_used", "request_cost"):
+        value = metadata.get(key)
+        if value is not None and (type(value) is not int or value < 0):
+            raise CaptureError(f"capture report {key} must be a nonnegative integer")
+
+
 def validate_generated_capture() -> dict[str, object]:
     required_paths = (
         QUOTE_CSV_PATH,
@@ -664,6 +793,7 @@ def validate_generated_capture() -> dict[str, object]:
         raise CaptureError("capture report does not preserve paper-only betting status")
     if report.get("paper_decisions_created") != 0:
         raise CaptureError("market capture must not create paper or live decisions")
+    _validate_source_request(report)
     capture_started = _as_utc(
         report.get("capture_started_at_utc"), "capture_started_at_utc"
     )
@@ -770,11 +900,12 @@ def capture_market_snapshot() -> dict[str, object]:
     except (TypeError, ValueError) as error:
         raise CaptureError("vegas_odds.json cannot be loaded as a table") from error
 
-    # This is the only network operation. OddsGetter returns an in-memory table
-    # and has no publication-write capability.
-    fresh_odds = _retrieve_fresh_odds()
-    # The quote became observable only after Selenium returned and parsed the
-    # retrieved page.  Never backdate it to the start of a potentially slow
+    # This is the only network operation. The source adapter returns an
+    # in-memory table and has no publication-write capability.
+    retrieved_odds = _retrieve_market_odds()
+    fresh_odds = retrieved_odds.frame
+    # The quote became observable only after the source response returned and
+    # was parsed. Never backdate it to the start of a potentially slow
     # network call; the validation below rechecks the strict date-only cutoff
     # using this completion timestamp.
     observed_at = datetime.now(timezone.utc)
@@ -786,9 +917,11 @@ def capture_market_snapshot() -> dict[str, object]:
         model_version,
         published,
     ) = _published_matchups(vegas, card, artifact, observed_at)
-    source_matches, unmatched_source_rows = _map_source_rows(fresh_odds, published)
+    source_matches, unmatched_source_rows = _map_source_rows(
+        fresh_odds, published, event_day=event_day
+    )
     books = _book_columns(fresh_odds)
-    source_payload_sha256 = _source_payload_sha256(fresh_odds)
+    source_payload_sha256 = retrieved_odds.source_payload_sha256
 
     quote_store = QuoteSnapshotStore(QUOTE_CSV_PATH, QUOTE_JSONL_PATH)
     forecast_store = ForecastCaptureStore(FORECAST_CSV_PATH, FORECAST_JSONL_PATH)
@@ -805,6 +938,7 @@ def capture_market_snapshot() -> dict[str, object]:
         observed_at=observed_at,
         artifact=artifact,
         source_payload_sha256=source_payload_sha256,
+        source=retrieved_odds.source,
     )
 
     if _publication_payloads() != payloads:
@@ -831,8 +965,9 @@ def capture_market_snapshot() -> dict[str, object]:
         "captured_at_utc": observed_at.isoformat(timespec="microseconds").replace(
             "+00:00", "Z"
         ),
-        "source": SOURCE,
+        "source": retrieved_odds.source,
         "source_payload_sha256": source_payload_sha256,
+        "source_request": retrieved_odds.request_metadata,
         "event_id": event_id,
         "event_url": event_url,
         "event_title": title,
@@ -881,6 +1016,7 @@ def capture_market_snapshot() -> dict[str, object]:
             "",
             f"- Event: {title} ({event_day})",
             f"- Capture: `{capture_id}`",
+            f"- Source: `{retrieved_odds.source}`",
             (
                 f"- Quote matchups: {quote_matchups}/{len(published)} captured "
                 f"from {len(source_matches)} uniquely mapped source rows"
@@ -894,6 +1030,12 @@ def capture_market_snapshot() -> dict[str, object]:
             ),
             f"- Quote ledger: {quote_result.total_records} records",
             f"- Forecast ledger: {forecast_result.total_records} records",
+            (
+                "- API credits remaining: "
+                f"{retrieved_odds.request_metadata.get('requests_remaining')}"
+                if retrieved_odds.source == ODDS_API_SOURCE
+                else "- API credits remaining: not applicable"
+            ),
             f"- Betting: `{BETTING_STATUS}`",
             "",
         ]

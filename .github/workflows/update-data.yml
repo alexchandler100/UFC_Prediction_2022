@@ -25,6 +25,8 @@ jobs:
     env:
       PYTHONDONTWRITEBYTECODE: "1"
       PYTHONUNBUFFERED: "1"
+      MARKET_ODDS_SOURCE: "the-odds-api"
+      ODDS_API_REGIONS: "us,us2"
 
     steps:
       - name: Check out repository
@@ -52,8 +54,20 @@ jobs:
       - name: Validate current snapshot
         run: python src/validate_data.py --allow-stale
 
+      - name: Verify market API credential
+        shell: bash
+        env:
+          THE_ODDS_API_KEY: ${{ secrets.THE_ODDS_API_KEY }}
+        run: |
+          if [ -z "${THE_ODDS_API_KEY}" ]; then
+            echo "::error::THE_ODDS_API_KEY is missing. Add the free key under Settings > Secrets and variables > Actions."
+            exit 1
+          fi
+
       - name: Update data and predictions
         working-directory: src
+        env:
+          THE_ODDS_API_KEY: ${{ secrets.THE_ODDS_API_KEY }}
         run: python update_and_rebuild_model.py
 
       - name: Validate generated snapshot

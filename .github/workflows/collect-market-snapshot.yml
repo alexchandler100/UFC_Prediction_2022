@@ -27,6 +27,8 @@ jobs:
     env:
       PYTHONDONTWRITEBYTECODE: "1"
       PYTHONUNBUFFERED: "1"
+      MARKET_ODDS_SOURCE: "the-odds-api"
+      ODDS_API_REGIONS: "us,us2"
 
     steps:
       - name: Check out frozen publication
@@ -52,7 +54,19 @@ jobs:
       - name: Validate frozen publication
         run: python src/validate_data.py --require-model-artifact
 
-      - name: Capture fresh FightOdds market data
+      - name: Verify market API credential
+        shell: bash
+        env:
+          THE_ODDS_API_KEY: ${{ secrets.THE_ODDS_API_KEY }}
+        run: |
+          if [ -z "${THE_ODDS_API_KEY}" ]; then
+            echo "::error::THE_ODDS_API_KEY is missing. Add the free key under Settings > Secrets and variables > Actions."
+            exit 1
+          fi
+
+      - name: Capture fresh MMA market data
+        env:
+          THE_ODDS_API_KEY: ${{ secrets.THE_ODDS_API_KEY }}
         run: python src/capture_market_snapshot.py
 
       - name: Revalidate market ledgers and bounded report

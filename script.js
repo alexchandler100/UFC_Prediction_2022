@@ -1052,6 +1052,7 @@ function renderUpcomingPredictions(loadError) {
       vegas_odds, 'market no-vig fighter probability', index
     );
     const oddsObservedAt = tableValue(vegas_odds, 'odds observed at', index);
+    const oddsSource = tableValue(vegas_odds, 'odds source', index);
     const modelStatus = tableValue(vegas_odds, 'model status', index);
     const modelId = tableValue(vegas_odds, 'model id', index);
     let forecastSource = tableValue(vegas_odds, 'forecast source', index);
@@ -1111,6 +1112,9 @@ function renderUpcomingPredictions(loadError) {
       statusLines.push(
         'Market observed: ' + String(oddsObservedAt).replace('T', ' ').replace('+00:00', ' UTC')
       );
+    }
+    if (hasDisplayValue(oddsSource)) {
+      statusLines.push('Market source: ' + String(oddsSource));
     }
     statusLines.push('Betting disabled');
     setCellLines(row.cells.item(5), statusLines);

@@ -96,7 +96,7 @@ predicted_odds_df['forecast issued at'] = (
     datetime.now(timezone.utc).replace(microsecond=0).isoformat()
 )
 predicted_odds_df['forecast source commit'] = _forecast_source_revision()
-# Merge available sportsbook odds from fightodds.io.
+# Merge available sportsbook odds from the configured market source.
 predicted_odds_df_with_vegas_odds = dh.save_fightoddsio_to_vegas_odds_json_and_merge_with_predictions_df(predicted_odds_df)
 dh.update_vegas_odds(predicted_odds_df_with_vegas_odds)
 print('saving scraped fights and predictions to content/data/external/vegas_odds.json')
@@ -119,6 +119,8 @@ if summary_path:
             ).pipe(pd.to_numeric, errors='coerce').notna().sum()
         )
         artifact = fight_predictor.artifact()
+        odds_source = getattr(dh.odds_getter, 'last_source', '') or 'unavailable'
+        odds_request = getattr(dh.odds_getter, 'last_request_metadata', {})
         summary_lines = [
             '## UFC weekly update',
             '',
@@ -140,8 +142,15 @@ if summary_path:
                 f'{len(predicted_odds_df_with_vegas_odds)}'
             ),
             (
-                f'- FightOdds coverage: {matched_odds}/'
+                f'- Sportsbook coverage: {matched_odds}/'
                 f'{len(predicted_odds_df_with_vegas_odds)}'
+            ),
+            f'- Sportsbook source: `{odds_source}`',
+            (
+                '- API credits remaining: '
+                f'{odds_request.get("requests_remaining")}'
+                if odds_source == 'the-odds-api.com'
+                else '- API credits remaining: not applicable'
             ),
             '- Betting: disabled pending timestamped market-relative validation',
             '',
@@ -150,7 +159,7 @@ if summary_path:
             summary_lines.extend(
                 [
                     '> [!WARNING]',
-                    '> FightOdds did not match every UFCStats matchup; unmatched rows use the stats model and contain no bet recommendation.',
+                    '> The sportsbook feed did not match every UFCStats matchup; unmatched rows use the stats model and contain no bet recommendation.',
                     '',
                 ]
             )

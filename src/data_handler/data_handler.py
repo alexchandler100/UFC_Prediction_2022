@@ -800,6 +800,7 @@ class DataHandler:
             )
         except Exception as error:
             fallback['odds source status'] = 'unavailable'
+            fallback['odds source'] = ''
             fallback['odds observed at'] = ''
             fallback['market no-vig fighter probability'] = np.nan
             fallback['betting status'] = (
@@ -814,15 +815,16 @@ class DataHandler:
                     [None] * len(fallback), dtype=object
                 )
             print(
-                'WARNING: fightodds.io enrichment failed after scraping; '
+                'WARNING: sportsbook enrichment failed after retrieval; '
                 'publishing the independent model forecasts without book lines '
                 f'({type(error).__name__}: {error})'
             )
             return fallback
 
     def _merge_fightodds_with_predictions(self, predictions_df):
-        print('getting bookie odds from fightodds.io')
+        print('getting sportsbook odds from the configured market source')
         predictions_df['odds source status'] = 'unmatched'
+        predictions_df['odds source'] = ''
         predictions_df['odds observed at'] = ''
         predictions_df['market no-vig fighter probability'] = np.nan
         predictions_df['betting status'] = 'disabled_pending_market_relative_validation'
@@ -843,10 +845,12 @@ class DataHandler:
             # the entire weekly publication.
             predictions_df['odds source status'] = 'unavailable'
             print(
-                'WARNING: fightodds.io odds are unavailable; publishing '
+                'WARNING: sportsbook odds are unavailable; publishing '
                 f'predictions without book lines ({type(error).__name__}: {error})'
             )
             return predictions_df
+        odds_source = getattr(self.odds_getter, 'last_source', '') or 'unknown'
+        predictions_df['odds source'] = odds_source
         observed_at = datetime.now(timezone.utc).replace(microsecond=0).isoformat()
         previous_vegas = self.get('vegas_odds', filetype='json')
         odds_df['fighter bet bankroll percentage'] = np.nan
@@ -858,7 +862,6 @@ class DataHandler:
         # than the individual bets (2 leg and 3 leg parlays only probably worth it)
         
         # merge into predictions_df 
-        # TODO IF WE COME TO TRUST THIS fightodds.io website we can use this as our source of upcoming fights instead of ufcstats.com and avoid the merge 
         matched_fights = 0
         for i in range(len(predictions_df)):
             fighter = predictions_df['fighter name'][i]
@@ -874,13 +877,30 @@ class DataHandler:
                 fighter_a = 'opponent'
                 fighter_b = 'fighter'
                 odds_row = odds_df[same_name_vect(odds_df['fighter name'], fighter) & same_name_vect(odds_df['opponent name'], opponent)]
+            if not odds_row.empty and 'source commence time' in odds_row:
+                expected_day = pd.to_datetime(
+                    predictions_df.at[i, 'date'], errors='coerce', utc=True
+                )
+                source_days = pd.to_datetime(
+                    odds_row['source commence time'], errors='coerce', utc=True
+                )
+                within_card_window = source_days.notna()
+                if pd.isna(expected_day):
+                    within_card_window &= False
+                else:
+                    within_card_window &= (
+                        (source_days.dt.normalize() - expected_day.normalize())
+                        .dt.days.abs()
+                        .le(1)
+                    )
+                odds_row = odds_row[within_card_window]
             if odds_row.empty:
-                print(f'No odds found for {fighter} vs {opponent} on fightodds.io, skipping...')
+                print(f'No odds found for {fighter} vs {opponent} from {odds_source}, skipping...')
                 continue
             if len(odds_row) != 1:
                 predictions_df.at[i, 'odds source status'] = 'ambiguous'
                 print(
-                    f'Ambiguous fightodds.io matchup for {fighter} vs {opponent}: '
+                    f'Ambiguous {odds_source} matchup for {fighter} vs {opponent}: '
                     f'{len(odds_row)} rows; skipping...'
                 )
                 continue
@@ -1032,9 +1052,12 @@ class DataHandler:
                 predictions_df.at[i, 'fighter bet bankroll percentage'] = fighter_bookie_kelly_dict[best_fighter_bookie]
                 predictions_df.at[i, 'opponent bet bankroll percentage'] = opponent_bookie_kelly_dict[best_opponent_bookie]
 
-        print(f'Matched fightodds.io lines for {matched_fights}/{len(predictions_df)} UFCStats fights')
+        print(
+            f'Matched {odds_source} lines for {matched_fights}/'
+            f'{len(predictions_df)} UFCStats fights'
+        )
         if matched_fights < len(predictions_df):
-            print('FightOdds matchups available for comparison:')
+            print(f'{odds_source} matchups available for comparison:')
             print(odds_df[['fighter name', 'opponent name']].to_string(index=False))
         return predictions_df
     
