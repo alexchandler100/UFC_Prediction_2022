@@ -1,0 +1,95 @@
+{
+  "ambiguous_historical_matchup_keys": 1,
+  "ambiguous_result_decisions": 0,
+  "as_of_utc": null,
+  "betting_status": "disabled_paper_only_no_execution",
+  "decision_dataset_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+  "decisions_total": 0,
+  "execution_enabled": false,
+  "forecast_comparators": {
+    "blend_minus_market_log_loss": null,
+    "independent_model": null,
+    "locked_blend": null,
+    "market": null,
+    "model_minus_market_log_loss": null,
+    "paired_fights": 0
+  },
+  "latest_available_price_clv": {
+    "bootstrap_samples": 0,
+    "ci_95_lower": null,
+    "ci_95_upper": null,
+    "count": 0,
+    "definition": "latest available same-book implied probability minus the locked decision break-even probability; positive favors the paper price",
+    "event_count": 0,
+    "mean_probability_edge": null,
+    "median_probability_edge": null,
+    "positive_rate": null
+  },
+  "market_relative_log_loss_intervals": {
+    "independent_model_vs_market": {
+      "bootstrap_samples": 0,
+      "ci_95_lower": null,
+      "ci_95_upper": null,
+      "definition": "candidate minus market paired log loss; negative favors candidate",
+      "event_count": 0,
+      "fight_count": 0,
+      "point_difference": null
+    },
+    "locked_blend_vs_market": {
+      "bootstrap_samples": 0,
+      "ci_95_lower": null,
+      "ci_95_upper": null,
+      "definition": "candidate minus market paired log loss; negative favors candidate",
+      "event_count": 0,
+      "fight_count": 0,
+      "point_difference": null
+    }
+  },
+  "paper_metrics": {
+    "betting_status": "disabled_paper_only_no_execution",
+    "decisions": 0,
+    "forecast_metrics": null,
+    "hypothetical_max_drawdown_units": 0.0,
+    "hypothetical_profit_units": 0,
+    "hypothetical_risk_units": 0,
+    "hypothetical_roi": null,
+    "losses": 0,
+    "paper_only": true,
+    "paper_selections": 0,
+    "passes": 0,
+    "scored_forecasts": 0,
+    "selection_coverage": null,
+    "voids": 0,
+    "wins": 0
+  },
+  "paper_only": true,
+  "paper_return_interval": {
+    "bootstrap_samples": 0,
+    "ci_95_lower": null,
+    "ci_95_upper": null,
+    "definition": "paired whole-card bootstrap of profit per one-unit paper selection",
+    "event_count": 0,
+    "observed_profit_per_selection": null,
+    "selection_count": 0
+  },
+  "promotion_gate": {
+    "blend_market_log_loss_requirement_met": false,
+    "count_requirements_met": false,
+    "execution_enabled": false,
+    "minimum_paper_selections": 100,
+    "minimum_scored_fights": 500,
+    "minimum_settled_events": 40,
+    "paper_return_requirement_met": false,
+    "paper_selections": 0,
+    "positive_clv_requirement_met": false,
+    "scored_fights": 0,
+    "settled_events": 0,
+    "status": "collecting_prospective_evidence"
+  },
+  "report_sha256": "0ae11c0daa3d7e14b92adc795e8c745c0ea32ac3e9d4aa4b5d71df09d1a08586",
+  "result_source_sha256": "4757b34e4d061bb7f98f698139af23def9c7806867a0ccbb7c18c1e293f32db7",
+  "schema_version": 1,
+  "settlement_dataset_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+  "settlements_total": 0,
+  "unsettled_decisions": 0
+}
