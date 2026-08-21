@@ -1,25 +1,25 @@
 {
   "ambiguous_historical_matchup_keys": 1,
   "ambiguous_result_decisions": 0,
-  "as_of_utc": "2026-08-21T06:08:43.519453Z",
+  "as_of_utc": "2026-08-21T17:30:20.218293Z",
   "betting_status": "disabled_paper_only_no_execution",
-  "decision_dataset_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
-  "decisions_total": 0,
+  "decision_dataset_sha256": "6dd9ab61e1a3b5115b937d0413bf68b4182c4a2c5210711f8bed691a4c792726",
+  "decisions_total": 13,
   "entry_timing_experiment": {
     "coverage": {
       "matchups_classified_pickem": 0,
       "matchups_with_early_capture": 13,
       "matchups_with_eligible_capture": 13,
       "matchups_with_late_capture": 0,
-      "matchups_with_t24_capture": 0
+      "matchups_with_t24_capture": 13
     },
     "execution_enabled": false,
     "favorite_definition": "side above 50% in the full no-vig consensus at the first eligible capture; classification never changes after a line flip",
     "ledger_counts": {
-      "eligible_captures": 26,
+      "eligible_captures": 39,
       "frozen_classifications": 13,
-      "quotes": 420,
-      "source_metadata": 280
+      "quotes": 560,
+      "source_metadata": 420
     },
     "paper_only": true,
     "policy_version": "favorite-early-dog-late-v1",
@@ -130,10 +130,10 @@
             "definition": "whole-card bootstrap of latest same-book CLV probability edge",
             "event_count": 1,
             "observation_count": 3,
-            "point_estimate": 0.0
+            "point_estimate": 0.007010423075282046
           },
-          "mean_probability_edge": 0.0,
-          "positive_rate": 0.0
+          "mean_probability_edge": 0.007010423075282046,
+          "positive_rate": 0.6666666666666666
         },
         "entry_window_counts": {
           "early": 3,
@@ -207,7 +207,7 @@
       },
       "fixed_t24": {
         "action_counts": {
-          "fighter": 0,
+          "fighter": 2,
           "opponent": 0
         },
         "clv": {
@@ -227,14 +227,14 @@
         },
         "entry_window_counts": {
           "early": 0,
-          "fixed_t24": 0,
+          "fixed_t24": 2,
           "late": 0,
           "other": 0
         },
         "hypothetical_profit_units": 0,
         "hypothetical_roi": null,
         "losses": 0,
-        "mean_locked_expected_return": null,
+        "mean_locked_expected_return": 0.07206843649152356,
         "paper_only": true,
         "return_event_block_interval": {
           "bootstrap_samples": 0,
@@ -246,8 +246,8 @@
           "point_estimate": null
         },
         "scored_selection_count": 0,
-        "selection_count": 0,
-        "unscored_selection_count": 0,
+        "selection_count": 2,
+        "unscored_selection_count": 2,
         "wins": 0
       }
     },
@@ -295,7 +295,7 @@
   },
   "paper_metrics": {
     "betting_status": "disabled_paper_only_no_execution",
-    "decisions": 0,
+    "decisions": 13,
     "forecast_metrics": null,
     "hypothetical_max_drawdown_units": 0.0,
     "hypothetical_profit_units": 0,
@@ -334,12 +334,12 @@
     "settled_events": 0,
     "status": "collecting_prospective_evidence"
   },
-  "quote_dataset_sha256": "f5b0f2ec8c0154f5562f9e49ffccd8ed6402d25c082bbdf9b64146accde34aaa",
-  "report_sha256": "c4ca28eeb4e215ee3c393fe905025fa3d3837edc70b07664bf6355901f39d2d7",
+  "quote_dataset_sha256": "eff5f5422b471d2f2fe66028e435107f78cc22c03a419ceefa357b80fede7b76",
+  "report_sha256": "c9c59b7a00da59fb21beabb4fbe4d56ea53d7f35b8faddf903ff145c01c32808",
   "result_source_sha256": "4757b34e4d061bb7f98f698139af23def9c7806867a0ccbb7c18c1e293f32db7",
   "schema_version": 2,
   "settlement_dataset_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
   "settlements_total": 0,
-  "source_metadata_dataset_sha256": "7d26b6cd39d45b80d96bf24dbb2de2ac506ec97d67aa38657cc5fc2196d86b96",
-  "unsettled_decisions": 0
+  "source_metadata_dataset_sha256": "8168a3d0a1250b2655ca20ac0e50ddd6fc350ba3087ddd1a493f32c4a67573f3",
+  "unsettled_decisions": 13
 }
