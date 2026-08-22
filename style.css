@@ -510,3 +510,86 @@ input[type="text3"] {
 td {
   height: 24px;
 }
+
+.paper-market-dashboard {
+  margin-top: 35px;
+  padding: 22px;
+  border: 2px solid #212121;
+  background: rgba(255, 255, 255, 0.9);
+}
+
+.paper-market-dashboard h2 {
+  margin-bottom: 12px;
+  text-align: center;
+}
+
+.paper-market-dashboard p {
+  margin: 9px auto;
+  max-width: 900px;
+  line-height: 1.4;
+  text-align: left;
+}
+
+.market-opportunity-status {
+  padding: 10px;
+  border-left: 5px solid #770f0f;
+  background: #eeeeee;
+  font-weight: bold;
+}
+
+.market-table-scroll {
+  overflow-x: auto;
+}
+
+#market-opportunities {
+  width: 100%;
+  min-width: 980px;
+  margin-top: 16px;
+  table-layout: fixed;
+}
+
+#market-opportunities th {
+  padding: 9px;
+  background-color: #212121;
+  color: #ffffff;
+  font-size: 13px;
+}
+
+#market-opportunities td {
+  padding: 9px;
+  background-color: #323232;
+  color: #ffffff;
+  font-size: 12px;
+  line-height: 1.35;
+  text-align: left;
+  vertical-align: top;
+}
+
+#market-opportunities details {
+  cursor: pointer;
+}
+
+#market-opportunities details div {
+  margin-top: 6px;
+}
+
+.opportunity-matchup,
+.opportunity-price {
+  font-weight: bold;
+}
+
+.opportunity-action {
+  color: #76e68a;
+  font-weight: bold;
+}
+
+.opportunity-pass {
+  color: #f1c46b;
+  font-weight: bold;
+}
+
+.opportunity-muted {
+  margin-top: 4px;
+  color: #c9c9c9;
+  font-size: 11px;
+}

@@ -54,6 +54,11 @@ from .prospective import (
     build_locked_paper_decisions,
 )
 from .timing import TIMING_POLICY_VERSION, evaluate_timing_policies
+from .opportunities import (
+    OPPORTUNITY_POLICY_VERSION,
+    build_current_opportunities,
+    validate_current_opportunities,
+)
 
 
 __all__ = (
@@ -74,6 +79,7 @@ __all__ = (
     "MarketConsensus",
     "MarketDataError",
     "NATIVE_PROBABILITY",
+    "OPPORTUNITY_POLICY_VERSION",
     "MIN_EXPECTED_RETURN",
     "PaperDecisionBuild",
     "PaperDecision",
@@ -91,6 +97,7 @@ __all__ = (
     "TIMING_POLICY_VERSION",
     "consensus_as_of",
     "build_locked_paper_decisions",
+    "build_current_opportunities",
     "forecast_metrics",
     "evaluate_timing_policies",
     "matchup_id_for",
@@ -98,4 +105,5 @@ __all__ = (
     "select_latest_observations_by_horizon",
     "summarize_paper_settlements",
     "symmetric_logit_blend",
+    "validate_current_opportunities",
 )

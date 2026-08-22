@@ -174,6 +174,7 @@ class CaptureMarketSnapshotTests(unittest.TestCase):
                 "DECISION_CSV_PATH": market / "paper_decisions.csv",
                 "DECISION_JSONL_PATH": market / "paper_decisions.jsonl",
                 "REPORT_PATH": market / "capture_report.json",
+                "CURRENT_OPPORTUNITIES_PATH": market / "current_opportunities.json",
             }
             scrape_order = []
 
@@ -288,6 +289,18 @@ class CaptureMarketSnapshotTests(unittest.TestCase):
             self.assertEqual(
                 json.loads(output_paths["REPORT_PATH"].read_text(encoding="utf-8")),
                 report,
+            )
+            opportunities = json.loads(
+                output_paths["CURRENT_OPPORTUNITIES_PATH"].read_text(
+                    encoding="utf-8"
+                )
+            )
+            self.assertEqual(opportunities["capture_id"], "capture-fixture")
+            self.assertEqual(opportunities["matchup_count"], 1)
+            self.assertFalse(opportunities["execution_enabled"])
+            self.assertEqual(
+                opportunities["publication_sha256"],
+                report["opportunity_publication_sha256"],
             )
 
     def test_unrelated_rows_are_skipped_but_half_card_coverage_is_required(self):
@@ -446,6 +459,7 @@ class CaptureMarketSnapshotTests(unittest.TestCase):
             "paper_settlements.jsonl",
             "performance_report.json",
             "capture_report.json",
+            "current_opportunities.json",
         ):
             self.assertIn(filename, collector_workflow)
         self.assertIn('cron: "17 23 * * 1"', collector_workflow)

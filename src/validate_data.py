@@ -38,6 +38,7 @@ from market_tracker import (
     TIMING_POLICY_VERSION,
     consensus_as_of,
     summarize_paper_settlements,
+    validate_current_opportunities,
 )
 from market_tracker._common import BETTING_STATUS, canonical_hash
 from market_tracker.prospective import (
@@ -1171,6 +1172,45 @@ def validate_market_data(
         except (MarketDataError, StoreIntegrityError, ValueError) as error:
             report.errors.append(
                 f"paper decision cannot be reconstructed: {error}"
+            )
+
+    opportunities_path = market_root / "current_opportunities.json"
+    if opportunities_path.exists():
+        try:
+            if opportunities_path.stat().st_size > 256 * 1024:
+                raise ValueError("current opportunity publication exceeds 256 KiB")
+            opportunities = json.loads(
+                opportunities_path.read_text(encoding="utf-8")
+            )
+            if not isinstance(opportunities, dict):
+                raise ValueError("current opportunity publication is not an object")
+            capture_id = str(opportunities.get("capture_id", "")).strip()
+            if not capture_id:
+                raise ValueError("current opportunity publication lacks capture_id")
+            validate_current_opportunities(
+                opportunities,
+                quotes,
+                forecasts,
+                metadata,
+                decisions,
+                capture_id=capture_id,
+            )
+            report.require(
+                opportunities.get("betting_status") == BETTING_STATUS
+                and opportunities.get("paper_only") is True
+                and opportunities.get("execution_enabled") is False,
+                "current opportunity publication must keep execution disabled",
+            )
+        except (
+            OSError,
+            UnicodeError,
+            json.JSONDecodeError,
+            ValueError,
+            MarketDataError,
+            StoreIntegrityError,
+        ) as error:
+            report.errors.append(
+                f"current opportunity publication is invalid: {error}"
             )
 
     settlement_csv = market_root / "paper_settlements.csv"

@@ -440,6 +440,41 @@
         </tbody>
       </table>
     </center>
+
+    <div class="paper-market-dashboard">
+      <h2>Paper Betting Opportunities</h2>
+      <p>
+        This is the actionable audit view of the captured market, not a wager feed. For every
+        comparison, the target sportsbook is excluded; each remaining two-sided price is de-vigged,
+        and those probabilities are equally averaged. The target line is then compared with that
+        leave-one-book-out estimate. A signal requires at least 5%
+        estimated expected return. The statistics model is shown as a diagnostic but currently has
+        0% weight in the paper decision probability.
+      </p>
+      <p>
+        Sportsbook access, jurisdiction, limits, and whether a displayed line is still available are
+        not verified. Prices can move after capture. All decisions are hypothetical one-unit records;
+        betting execution remains disabled.
+      </p>
+      <p id="market-opportunity-status" class="market-opportunity-status">
+        Loading current sportsbook capture...
+      </p>
+      <div class="market-table-scroll">
+        <table id="market-opportunities" style="display:none">
+          <thead>
+            <tr>
+              <th>Matchup &amp;<br>Model Diagnostic</th>
+              <th>Locked T-24<br>Paper Decision</th>
+              <th>Current<br>Paper Signal</th>
+              <th>Target Price vs<br>LOO Fair Price</th>
+              <th>Estimated<br>Return</th>
+              <th>All Captured<br>Sportsbooks</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
   </section>
 
   <section>

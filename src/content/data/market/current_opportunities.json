@@ -1,0 +1,2487 @@
+{
+  "betting_status": "disabled_paper_only_no_execution",
+  "capture_id": "capture_20260822T172707575464Z_32587712763_1_f445a955cdb1",
+  "capture_lead_time_seconds": 13672.203304,
+  "decision_target_lead_seconds": 86400.0,
+  "decision_window_seconds": 14400.0,
+  "event_date": "2026-08-22",
+  "event_id": "a0a69dc9914ef6e1",
+  "event_start_utc": "2026-08-22T21:15:00.000000Z",
+  "execution_enabled": false,
+  "matchup_count": 13,
+  "matchups": [
+    {
+      "book_quotes": [
+        {
+          "book": "Bally Bet",
+          "eligible_for_consensus": true,
+          "fighter_moneyline": 310,
+          "opponent_moneyline": -435,
+          "source_quote_age_seconds": 98.796696,
+          "source_quote_updated_at_utc": "2026-08-22T17:25:29.000000Z"
+        },
+        {
+          "book": "BetAnything",
+          "eligible_for_consensus": true,
+          "fighter_moneyline": 265,
+          "opponent_moneyline": -400,
+          "source_quote_age_seconds": 24.796696,
+          "source_quote_updated_at_utc": "2026-08-22T17:26:43.000000Z"
+        },
+        {
+          "book": "BetMGM",
+          "eligible_for_consensus": true,
+          "fighter_moneyline": 310,
+          "opponent_moneyline": -400,
+          "source_quote_age_seconds": 25.796696,
+          "source_quote_updated_at_utc": "2026-08-22T17:26:42.000000Z"
+        },
+        {
+          "book": "BetOnline.ag",
+          "eligible_for_consensus": true,
+          "fighter_moneyline": 316,
+          "opponent_moneyline": -400,
+          "source_quote_age_seconds": 111.796696,
+          "source_quote_updated_at_utc": "2026-08-22T17:25:16.000000Z"
+        },
+        {
+          "book": "betPARX",
+          "eligible_for_consensus": true,
+          "fighter_moneyline": 310,
+          "opponent_moneyline": -435,
+          "source_quote_age_seconds": 71.796696,
+          "source_quote_updated_at_utc": "2026-08-22T17:25:56.000000Z"
+        },
+        {
+          "book": "BetRivers",
+          "eligible_for_consensus": true,
+          "fighter_moneyline": 310,
+          "opponent_moneyline": -435,
+          "source_quote_age_seconds": 49.796696,
+          "source_quote_updated_at_utc": "2026-08-22T17:26:18.000000Z"
+        },
+        {
+          "book": "BetUS",
+          "eligible_for_consensus": true,
+          "fighter_moneyline": 309,
+          "opponent_moneyline": -400,
+          "source_quote_age_seconds": 49.796696,
+          "source_quote_updated_at_utc": "2026-08-22T17:26:18.000000Z"
+        },
+        {
+          "book": "Bovada",
+          "eligible_for_consensus": true,
+          "fighter_moneyline": 320,
+          "opponent_moneyline": -410,
+          "source_quote_age_seconds": 118.796696,
+          "source_quote_updated_at_utc": "2026-08-22T17:25:09.000000Z"
+        },
+        {
+          "book": "DraftKings",
+          "eligible_for_consensus": true,
+          "fighter_moneyline": 310,
+          "opponent_moneyline": -395,
+          "source_quote_age_seconds": 72.796696,
+          "source_quote_updated_at_utc": "2026-08-22T17:25:55.000000Z"
+        },
+        {
+          "book": "FanDuel",
+          "eligible_for_consensus": true,
+          "fighter_moneyline": 310,
+          "opponent_moneyline": -390,
+          "source_quote_age_seconds": 49.796696,
+          "source_quote_updated_at_utc": "2026-08-22T17:26:18.000000Z"
+        },
+        {
+          "book": "Fliff",
+          "eligible_for_consensus": true,
+          "fighter_moneyline": 300,
+          "opponent_moneyline": -420,
+          "source_quote_age_seconds": 25.796696,
+          "source_quote_updated_at_utc": "2026-08-22T17:26:42.000000Z"
+        },
+        {
+          "book": "Hard Rock Bet",
+          "eligible_for_consensus": true,
+          "fighter_moneyline": 300,
+          "opponent_moneyline": -425,
+          "source_quote_age_seconds": 71.796696,
+          "source_quote_updated_at_utc": "2026-08-22T17:25:56.000000Z"
+        }
+      ],
+      "current_signal": {
+        "action_name": null,
+        "best_candidate_name": "Roman Dolidze",
+        "best_candidate_side": "fighter",
+        "break_even_probability": 0.23809523809523808,
+        "consensus_book_count": 11,
+        "consensus_books": [
+          "Bally Bet",
+          "BetAnything",
+          "BetMGM",
+          "BetOnline.ag",
+          "betPARX",
+          "BetRivers",
+          "BetUS",
+          "DraftKings",
+          "FanDuel",
+          "Fliff",
+          "Hard Rock Bet"
+        ],
+        "decision_id": "d4a738baecb8949d66c543eea8e925760ed8f60f64065c85837037bbc6620db9",
+        "estimated_expected_return": -0.01219077192519269,
+        "market_fair_moneyline": 325,
+        "market_probability": 0.23519267335114458,
+        "minimum_expected_return": 0.05,
+        "model_probability_for_fighter": 0.30376055049999995,
+        "model_weight": 0.0,
+        "observed_at_utc": "2026-08-22T17:27:07.796696Z",
+        "offered_moneyline": 320,
+        "paper_action": "pass",
+        "probability_edge": -0.0029025647440935054,
+        "probability_source": "leave_one_book_out_no_vig_market_consensus",
+        "reason": "Pass: best estimated EV is -1.2%, below the 5.0% paper threshold.",
+        "target_book": "Bovada",
+        "target_book_excluded_from_consensus": true
+      },
+      "current_signal_unavailable_reason": null,
+      "fighter_id": "327d5f279895110d",
+      "fighter_name": "Roman Dolidze",
+      "full_market_consensus": {
+        "book_count": 12,
+        "books": [
+          "Bally Bet",
+          "BetAnything",
+          "BetMGM",
+          "BetOnline.ag",
+          "betPARX",
+          "BetRivers",
+          "BetUS",
+          "Bovada",
+          "DraftKings",
+          "FanDuel",
+          "Fliff",
+          "Hard Rock Bet"
+        ],
+        "fighter_fair_moneyline": 326,
+        "fighter_probability": 0.2346345025432087,
+        "opponent_fair_moneyline": -326,
+        "opponent_probability": 0.7653654974567913
+      },
+      "locked_t24_decision": {
+        "action_name": null,
+        "best_candidate_name": "Roman Dolidze",
+        "best_candidate_side": "fighter",
+        "break_even_probability": 0.23809523809523808,
+        "consensus_book_count": 11,
+        "consensus_books": [
+          "Bally Bet",
+          "BetAnything",
+          "BetMGM",
+          "BetOnline.ag",
+          "betPARX",
+          "BetRivers",
+          "BetUS",
+          "Bovada",
+          "DraftKings",
+          "Fliff",
+          "Hard Rock Bet"
+        ],
+        "decision_id": "4a42ee4406dd8d24c397435f69f9db12b04191ea27c9f056c96ddfb516808058",
+        "estimated_expected_return": 0.010333842608494903,
+        "market_fair_moneyline": 316,
+        "market_probability": 0.2405556768115464,
+        "minimum_expected_return": 0.05,
+        "model_probability_for_fighter": 0.30376055049999995,
+        "model_weight": 0.0,
+        "observed_at_utc": "2026-08-21T17:30:20.218293Z",
+        "offered_moneyline": 320,
+        "paper_action": "pass",
+        "probability_edge": 0.0024604387163083274,
+        "probability_source": "leave_one_book_out_no_vig_market_consensus",
+        "reason": "Pass: best estimated EV is 1.0%, below the 5.0% paper threshold.",
+        "target_book": "FanDuel",
+        "target_book_excluded_from_consensus": true
+      },
+      "matchup_id": "matchup_1b9d090be42bc9cbe7c6977d3323219dc57a10c1cb31157b44ed89d760b0a8d7",
+      "model_id": "ff04994f509057072ee9",
+      "model_probability_for_fighter": 0.30376055049999995,
+      "opponent_id": "d549cefc7c54ab78",
+      "opponent_name": "Reinier de Ridder"
+    },
+    {
+      "book_quotes": [
+        {
+          "book": "Bally Bet",
+          "eligible_for_consensus": true,
+          "fighter_moneyline": -124,
+          "opponent_moneyline": 100,
+          "source_quote_age_seconds": 98.796696,
+          "source_quote_updated_at_utc": "2026-08-22T17:25:29.000000Z"
+        },
+        {
+          "book": "BetAnything",
+          "eligible_for_consensus": true,
+          "fighter_moneyline": -125,
+          "opponent_moneyline": -105,
+          "source_quote_age_seconds": 24.796696,
+          "source_quote_updated_at_utc": "2026-08-22T17:26:43.000000Z"
+        },
+        {
+          "book": "BetMGM",
+          "eligible_for_consensus": true,
+          "fighter_moneyline": -120,
+          "opponent_moneyline": 100,
+          "source_quote_age_seconds": 25.796696,
+          "source_quote_updated_at_utc": "2026-08-22T17:26:42.000000Z"
+        },
+        {
+          "book": "BetOnline.ag",
+          "eligible_for_consensus": true,
+          "fighter_moneyline": -120,
+          "opponent_moneyline": 100,
+          "source_quote_age_seconds": 111.796696,
+          "source_quote_updated_at_utc": "2026-08-22T17:25:16.000000Z"
+        },
+        {
+          "book": "betPARX",
+          "eligible_for_consensus": true,
+          "fighter_moneyline": -124,
+          "opponent_moneyline": 100,
+          "source_quote_age_seconds": 71.796696,
+          "source_quote_updated_at_utc": "2026-08-22T17:25:56.000000Z"
+        },
+        {
+          "book": "BetRivers",
+          "eligible_for_consensus": true,
+          "fighter_moneyline": -124,
+          "opponent_moneyline": 100,
+          "source_quote_age_seconds": 49.796696,
+          "source_quote_updated_at_utc": "2026-08-22T17:26:18.000000Z"
+        },
+        {
+          "book": "BetUS",
+          "eligible_for_consensus": true,
+          "fighter_moneyline": -125,
+          "opponent_moneyline": 105,
+          "source_quote_age_seconds": 49.796696,
+          "source_quote_updated_at_utc": "2026-08-22T17:26:18.000000Z"
+        },
+        {
+          "book": "Bovada",
+          "eligible_for_consensus": true,
+          "fighter_moneyline": -125,
+          "opponent_moneyline": 105,
+          "source_quote_age_seconds": 118.796696,
+          "source_quote_updated_at_utc": "2026-08-22T17:25:09.000000Z"
+        },
+        {
+          "book": "DraftKings",
+          "eligible_for_consensus": true,
+          "fighter_moneyline": -125,
+          "opponent_moneyline": 105,
+          "source_quote_age_seconds": 72.796696,
+          "source_quote_updated_at_utc": "2026-08-22T17:25:55.000000Z"
+        },
+        {
+          "book": "FanDuel",
+          "eligible_for_consensus": true,
+          "fighter_moneyline": -124,
+          "opponent_moneyline": 106,
+          "source_quote_age_seconds": 49.796696,
+          "source_quote_updated_at_utc": "2026-08-22T17:26:18.000000Z"
+        },
+        {
+          "book": "Hard Rock Bet",
+          "eligible_for_consensus": true,
+          "fighter_moneyline": -125,
+          "opponent_moneyline": 100,
+          "source_quote_age_seconds": 71.796696,
+          "source_quote_updated_at_utc": "2026-08-22T17:25:56.000000Z"
+        }
+      ],
+      "current_signal": {
+        "action_name": null,
+        "best_candidate_name": "Kennedy Nzechukwu",
+        "best_candidate_side": "opponent",
+        "break_even_probability": 0.4854368932038835,
+        "consensus_book_count": 10,
+        "consensus_books": [
+          "Bally Bet",
+          "BetAnything",
+          "BetMGM",
+          "BetOnline.ag",
+          "betPARX",
+          "BetRivers",
+          "BetUS",
+          "Bovada",
+          "DraftKings",
+          "Hard Rock Bet"
+        ],
+        "decision_id": "a28d4be550b4a0eb6923d0048cd3b03318efac5144c5d4ae8094a629f90e72f8",
+        "estimated_expected_return": -0.024337114959175454,
+        "market_fair_moneyline": 111,
+        "market_probability": 0.4736227597285556,
+        "minimum_expected_return": 0.05,
+        "model_probability_for_fighter": 0.3612782997999999,
+        "model_weight": 0.0,
+        "observed_at_utc": "2026-08-22T17:27:07.796696Z",
+        "offered_moneyline": 106,
+        "paper_action": "pass",
+        "probability_edge": -0.011814133475327893,
+        "probability_source": "leave_one_book_out_no_vig_market_consensus",
+        "reason": "Pass: best estimated EV is -2.4%, below the 5.0% paper threshold.",
+        "target_book": "FanDuel",
+        "target_book_excluded_from_consensus": true
+      },
+      "current_signal_unavailable_reason": null,
+      "fighter_id": "6747ccd6d1acd266",
+      "fighter_name": "Shamil Gaziev",
+      "full_market_consensus": {
+        "book_count": 11,
+        "books": [
+          "Bally Bet",
+          "BetAnything",
+          "BetMGM",
+          "BetOnline.ag",
+          "betPARX",
+          "BetRivers",
+          "BetUS",
+          "Bovada",
+          "DraftKings",
+          "FanDuel",
+          "Hard Rock Bet"
+        ],
+        "fighter_fair_moneyline": -111,
+        "fighter_probability": 0.5269600596069303,
+        "opponent_fair_moneyline": 111,
+        "opponent_probability": 0.47303994039306974
+      },
+      "locked_t24_decision": {
+        "action_name": null,
+        "best_candidate_name": "Kennedy Nzechukwu",
+        "best_candidate_side": "opponent",
+        "break_even_probability": 0.45871559633027525,
+        "consensus_book_count": 10,
+        "consensus_books": [
+          "Bally Bet",
+          "BetAnything",
+          "BetMGM",
+          "BetOnline.ag",
+          "betPARX",
+          "BetRivers",
+          "BetUS",
+          "Bovada",
+          "DraftKings",
+          "Hard Rock Bet"
+        ],
+        "decision_id": "378281c932cab37f777883d540b07e556af725151bb3d7c08ff9f77a19a87189",
+        "estimated_expected_return": -0.023537689693484798,
+        "market_fair_moneyline": 123,
+        "market_probability": 0.44791849096629144,
+        "minimum_expected_return": 0.05,
+        "model_probability_for_fighter": 0.3612782997999999,
+        "model_weight": 0.0,
+        "observed_at_utc": "2026-08-21T17:30:20.218293Z",
+        "offered_moneyline": 118,
+        "paper_action": "pass",
+        "probability_edge": -0.010797105363983817,
+        "probability_source": "leave_one_book_out_no_vig_market_consensus",
+        "reason": "Pass: best estimated EV is -2.4%, below the 5.0% paper threshold.",
+        "target_book": "FanDuel",
+        "target_book_excluded_from_consensus": true
+      },
+      "matchup_id": "matchup_240a006adfc1849d47645e66ebc57cbc6f91d7c8144d48635ac4007950c16f48",
+      "model_id": "ff04994f509057072ee9",
+      "model_probability_for_fighter": 0.3612782997999999,
+      "opponent_id": "8667caa0451d245b",
+      "opponent_name": "Kennedy Nzechukwu"
+    },
+    {
+      "book_quotes": [
+        {
+          "book": "Bally Bet",
+          "eligible_for_consensus": true,
+          "fighter_moneyline": -124,
+          "opponent_moneyline": 100,
+          "source_quote_age_seconds": 98.796696,
+          "source_quote_updated_at_utc": "2026-08-22T17:25:29.000000Z"
+        },
+        {
+          "book": "BetAnything",
+          "eligible_for_consensus": true,
+          "fighter_moneyline": -120,
+          "opponent_moneyline": -110,
+          "source_quote_age_seconds": 24.796696,
+          "source_quote_updated_at_utc": "2026-08-22T17:26:43.000000Z"
+        },
+        {
+          "book": "BetMGM",
+          "eligible_for_consensus": true,
+          "fighter_moneyline": -115,
+          "opponent_moneyline": -105,
+          "source_quote_age_seconds": 25.796696,
+          "source_quote_updated_at_utc": "2026-08-22T17:26:42.000000Z"
+        },
+        {
+          "book": "BetOnline.ag",
+          "eligible_for_consensus": true,
+          "fighter_moneyline": -123,
+          "opponent_moneyline": 103,
+          "source_quote_age_seconds": 111.796696,
+          "source_quote_updated_at_utc": "2026-08-22T17:25:16.000000Z"
+        },
+        {
+          "book": "betPARX",
+          "eligible_for_consensus": true,
+          "fighter_moneyline": -124,
+          "opponent_moneyline": 100,
+          "source_quote_age_seconds": 71.796696,
+          "source_quote_updated_at_utc": "2026-08-22T17:25:56.000000Z"
+        },
+        {
+          "book": "BetRivers",
+          "eligible_for_consensus": true,
+          "fighter_moneyline": -124,
+          "opponent_moneyline": 100,
+          "source_quote_age_seconds": 49.796696,
+          "source_quote_updated_at_utc": "2026-08-22T17:26:18.000000Z"
+        },
+        {
+          "book": "BetUS",
+          "eligible_for_consensus": true,
+          "fighter_moneyline": -115,
+          "opponent_moneyline": -105,
+          "source_quote_age_seconds": 49.796696,
+          "source_quote_updated_at_utc": "2026-08-22T17:26:18.000000Z"
+        },
+        {
+          "book": "Bovada",
+          "eligible_for_consensus": true,
+          "fighter_moneyline": -120,
+          "opponent_moneyline": 100,
+          "source_quote_age_seconds": 118.796696,
+          "source_quote_updated_at_utc": "2026-08-22T17:25:09.000000Z"
+        },
+        {
+          "book": "DraftKings",
+          "eligible_for_consensus": true,
+          "fighter_moneyline": -118,
+          "opponent_moneyline": -102,
+          "source_quote_age_seconds": 72.796696,
+          "source_quote_updated_at_utc": "2026-08-22T17:25:55.000000Z"
+        },
+        {
+          "book": "FanDuel",
+          "eligible_for_consensus": true,
+          "fighter_moneyline": -116,
+          "opponent_moneyline": -102,
+          "source_quote_age_seconds": 49.796696,
+          "source_quote_updated_at_utc": "2026-08-22T17:26:18.000000Z"
+        },
+        {
+          "book": "Fliff",
+          "eligible_for_consensus": true,
+          "fighter_moneyline": -120,
+          "opponent_moneyline": -110,
+          "source_quote_age_seconds": 25.796696,
+          "source_quote_updated_at_utc": "2026-08-22T17:26:42.000000Z"
+        },
+        {
+          "book": "Hard Rock Bet",
+          "eligible_for_consensus": true,
+          "fighter_moneyline": -125,
+          "opponent_moneyline": 100,
+          "source_quote_age_seconds": 71.796696,
+          "source_quote_updated_at_utc": "2026-08-22T17:25:56.000000Z"
+        }
+      ],
+      "current_signal": {
+        "action_name": null,
+        "best_candidate_name": "Nasrat Haqparast",
+        "best_candidate_side": "opponent",
+        "break_even_probability": 0.49261083743842365,
+        "consensus_book_count": 11,
+        "consensus_books": [
+          "Bally Bet",
+          "BetAnything",
+          "BetMGM",
+          "betPARX",
+          "BetRivers",
+          "BetUS",
+          "Bovada",
+          "DraftKings",
+          "FanDuel",
+          "Fliff",
+          "Hard Rock Bet"
+        ],
+        "decision_id": "04f902d3d55b8a6d6d890ec2f721d952ba895df37fc9b0275ffc68809883bfc5",
+        "estimated_expected_return": -0.021724253297682794,
+        "market_fair_moneyline": 108,
+        "market_probability": 0.4819092348287276,
+        "minimum_expected_return": 0.05,
+        "model_probability_for_fighter": 0.6266864566,
+        "model_weight": 0.0,
+        "observed_at_utc": "2026-08-22T17:27:07.796696Z",
+        "offered_moneyline": 103,
+        "paper_action": "pass",
+        "probability_edge": -0.010701602609696048,
+        "probability_source": "leave_one_book_out_no_vig_market_consensus",
+        "reason": "Pass: best estimated EV is -2.2%, below the 5.0% paper threshold.",
+        "target_book": "BetOnline.ag",
+        "target_book_excluded_from_consensus": true
+      },
+      "current_signal_unavailable_reason": null,
+      "fighter_id": "06626b6287e1ae1e",
+      "fighter_name": "Chris Padilla",
+      "full_market_consensus": {
+        "book_count": 12,
+        "books": [
+          "Bally Bet",
+          "BetAnything",
+          "BetMGM",
+          "BetOnline.ag",
+          "betPARX",
+          "BetRivers",
+          "BetUS",
+          "Bovada",
+          "DraftKings",
+          "FanDuel",
+          "Fliff",
+          "Hard Rock Bet"
+        ],
+        "fighter_fair_moneyline": -108,
+        "fighter_probability": 0.5189358708802979,
+        "opponent_fair_moneyline": 108,
+        "opponent_probability": 0.4810641291197021
+      },
+      "locked_t24_decision": {
+        "action_name": null,
+        "best_candidate_name": "Nasrat Haqparast",
+        "best_candidate_side": "opponent",
+        "break_even_probability": 0.5215311004784688,
+        "consensus_book_count": 10,
+        "consensus_books": [
+          "Bally Bet",
+          "BetAnything",
+          "BetMGM",
+          "BetOnline.ag",
+          "betPARX",
+          "BetRivers",
+          "BetUS",
+          "DraftKings",
+          "FanDuel",
+          "Hard Rock Bet"
+        ],
+        "decision_id": "a9e9ea5cffb80c3c66656333ccf22eaf2b5efd96703ef0d3dca11d6a47d82d58",
+        "estimated_expected_return": -0.011363776116262603,
+        "market_fair_moneyline": -106,
+        "market_probability": 0.5156045378149636,
+        "minimum_expected_return": 0.05,
+        "model_probability_for_fighter": 0.6266864566,
+        "model_weight": 0.0,
+        "observed_at_utc": "2026-08-21T17:30:20.218293Z",
+        "offered_moneyline": -109,
+        "paper_action": "pass",
+        "probability_edge": -0.00592656266350533,
+        "probability_source": "leave_one_book_out_no_vig_market_consensus",
+        "reason": "Pass: best estimated EV is -1.1%, below the 5.0% paper threshold.",
+        "target_book": "Bovada",
+        "target_book_excluded_from_consensus": true
+      },
+      "matchup_id": "matchup_4c03993f07ac33b8ae81fd66c8b4c39f26474009ae11e6dcbcb4c942c33e8f6f",
+      "model_id": "ff04994f509057072ee9",
+      "model_probability_for_fighter": 0.6266864566,
+      "opponent_id": "b7b84ccd221be298",
+      "opponent_name": "Nasrat Haqparast"
+    },
+    {
+      "book_quotes": [
+        {
+          "book": "Bally Bet",
+          "eligible_for_consensus": true,
+          "fighter_moneyline": 135,
+          "opponent_moneyline": -167,
+          "source_quote_age_seconds": 98.796696,
+          "source_quote_updated_at_utc": "2026-08-22T17:25:29.000000Z"
+        },
+        {
+          "book": "BetAnything",
+          "eligible_for_consensus": true,
+          "fighter_moneyline": 130,
+          "opponent_moneyline": -160,
+          "source_quote_age_seconds": 24.796696,
+          "source_quote_updated_at_utc": "2026-08-22T17:26:43.000000Z"
+        },
+        {
+          "book": "BetOnline.ag",
+          "eligible_for_consensus": true,
+          "fighter_moneyline": 145,
+          "opponent_moneyline": -165,
+          "source_quote_age_seconds": 111.796696,
+          "source_quote_updated_at_utc": "2026-08-22T17:25:16.000000Z"
+        },
+        {
+          "book": "betPARX",
+          "eligible_for_consensus": true,
+          "fighter_moneyline": 135,
+          "opponent_moneyline": -167,
+          "source_quote_age_seconds": 71.796696,
+          "source_quote_updated_at_utc": "2026-08-22T17:25:56.000000Z"
+        },
+        {
+          "book": "BetRivers",
+          "eligible_for_consensus": true,
+          "fighter_moneyline": 135,
+          "opponent_moneyline": -167,
+          "source_quote_age_seconds": 49.796696,
+          "source_quote_updated_at_utc": "2026-08-22T17:26:18.000000Z"
+        },
+        {
+          "book": "BetUS",
+          "eligible_for_consensus": true,
+          "fighter_moneyline": 138,
+          "opponent_moneyline": -165,
+          "source_quote_age_seconds": 49.796696,
+          "source_quote_updated_at_utc": "2026-08-22T17:26:18.000000Z"
+        },
+        {
+          "book": "Bovada",
+          "eligible_for_consensus": true,
+          "fighter_moneyline": 145,
+          "opponent_moneyline": -170,
+          "source_quote_age_seconds": 118.796696,
+          "source_quote_updated_at_utc": "2026-08-22T17:25:09.000000Z"
+        },
+        {
+          "book": "DraftKings",
+          "eligible_for_consensus": true,
+          "fighter_moneyline": 140,
+          "opponent_moneyline": -166,
+          "source_quote_age_seconds": 72.796696,
+          "source_quote_updated_at_utc": "2026-08-22T17:25:55.000000Z"
+        },
+        {
+          "book": "FanDuel",
+          "eligible_for_consensus": true,
+          "fighter_moneyline": 138,
+          "opponent_moneyline": -164,
+          "source_quote_age_seconds": 49.796696,
+          "source_quote_updated_at_utc": "2026-08-22T17:26:18.000000Z"
+        },
+        {
+          "book": "Hard Rock Bet",
+          "eligible_for_consensus": true,
+          "fighter_moneyline": 135,
+          "opponent_moneyline": -165,
+          "source_quote_age_seconds": 71.796696,
+          "source_quote_updated_at_utc": "2026-08-22T17:25:56.000000Z"
+        }
+      ],
+      "current_signal": {
+        "action_name": null,
+        "best_candidate_name": "Stan Dorsainvil",
+        "best_candidate_side": "fighter",
+        "break_even_probability": 0.40816326530612246,
+        "consensus_book_count": 9,
+        "consensus_books": [
+          "Bally Bet",
+          "BetAnything",
+          "BetOnline.ag",
+          "betPARX",
+          "BetRivers",
+          "BetUS",
+          "DraftKings",
+          "FanDuel",
+          "Hard Rock Bet"
+        ],
+        "decision_id": "6b4a9ff212690d3289d6aa62e4ae055f4e9315df8450bda5b127477ee5be3830",
+        "estimated_expected_return": -0.009831284653480044,
+        "market_fair_moneyline": 147,
+        "market_probability": 0.40415049605980397,
+        "minimum_expected_return": 0.05,
+        "model_probability_for_fighter": 0.05888191349999994,
+        "model_weight": 0.0,
+        "observed_at_utc": "2026-08-22T17:27:07.796696Z",
+        "offered_moneyline": 145,
+        "paper_action": "pass",
+        "probability_edge": -0.004012769246318437,
+        "probability_source": "leave_one_book_out_no_vig_market_consensus",
+        "reason": "Pass: best estimated EV is -1.0%, below the 5.0% paper threshold.",
+        "target_book": "Bovada",
+        "target_book_excluded_from_consensus": true
+      },
+      "current_signal_unavailable_reason": null,
+      "fighter_id": "5be51426ff3c1929",
+      "fighter_name": "Stan Dorsainvil",
+      "full_market_consensus": {
+        "book_count": 10,
+        "books": [
+          "Bally Bet",
+          "BetAnything",
+          "BetOnline.ag",
+          "betPARX",
+          "BetRivers",
+          "BetUS",
+          "Bovada",
+          "DraftKings",
+          "FanDuel",
+          "Hard Rock Bet"
+        ],
+        "fighter_fair_moneyline": 148,
+        "fighter_probability": 0.4030653809039328,
+        "opponent_fair_moneyline": -148,
+        "opponent_probability": 0.5969346190960672
+      },
+      "locked_t24_decision": {
+        "action_name": null,
+        "best_candidate_name": "Stan Dorsainvil",
+        "best_candidate_side": "fighter",
+        "break_even_probability": 0.411522633744856,
+        "consensus_book_count": 9,
+        "consensus_books": [
+          "Bally Bet",
+          "BetAnything",
+          "betPARX",
+          "BetRivers",
+          "BetUS",
+          "Bovada",
+          "DraftKings",
+          "FanDuel",
+          "Hard Rock Bet"
+        ],
+        "decision_id": "456078cd9a2080a98c7e49bbc7518e77efc83eb66da592971bb46cfcb560c44f",
+        "estimated_expected_return": -0.002394947585213081,
+        "market_fair_moneyline": 144,
+        "market_probability": 0.41053705860690826,
+        "minimum_expected_return": 0.05,
+        "model_probability_for_fighter": 0.05888191349999994,
+        "model_weight": 0.0,
+        "observed_at_utc": "2026-08-21T17:30:20.218293Z",
+        "offered_moneyline": 143,
+        "paper_action": "pass",
+        "probability_edge": -0.0009855751379477251,
+        "probability_source": "leave_one_book_out_no_vig_market_consensus",
+        "reason": "Pass: best estimated EV is -0.2%, below the 5.0% paper threshold.",
+        "target_book": "BetOnline.ag",
+        "target_book_excluded_from_consensus": true
+      },
+      "matchup_id": "matchup_564b24b09c16a5d3d71c2e1db2bb03effe03df5c7e291ae2c10b973d56f78dfa",
+      "model_id": "ff04994f509057072ee9",
+      "model_probability_for_fighter": 0.05888191349999994,
+      "opponent_id": "b2a78df161bd67f9",
+      "opponent_name": "Gauge Young"
+    },
+    {
+      "book_quotes": [
+        {
+          "book": "Bally Bet",
+          "eligible_for_consensus": true,
+          "fighter_moneyline": -400,
+          "opponent_moneyline": 295,
+          "source_quote_age_seconds": 98.796696,
+          "source_quote_updated_at_utc": "2026-08-22T17:25:29.000000Z"
+        },
+        {
+          "book": "BetAnything",
+          "eligible_for_consensus": true,
+          "fighter_moneyline": -400,
+          "opponent_moneyline": 265,
+          "source_quote_age_seconds": 24.796696,
+          "source_quote_updated_at_utc": "2026-08-22T17:26:43.000000Z"
+        },
+        {
+          "book": "BetMGM",
+          "eligible_for_consensus": true,
+          "fighter_moneyline": -400,
+          "opponent_moneyline": 310,
+          "source_quote_age_seconds": 25.796696,
+          "source_quote_updated_at_utc": "2026-08-22T17:26:42.000000Z"
+        },
+        {
+          "book": "BetOnline.ag",
+          "eligible_for_consensus": true,
+          "fighter_moneyline": -375,
+          "opponent_moneyline": 299,
+          "source_quote_age_seconds": 111.796696,
+          "source_quote_updated_at_utc": "2026-08-22T17:25:16.000000Z"
+        },
+        {
+          "book": "betPARX",
+          "eligible_for_consensus": true,
+          "fighter_moneyline": -400,
+          "opponent_moneyline": 295,
+          "source_quote_age_seconds": 71.796696,
+          "source_quote_updated_at_utc": "2026-08-22T17:25:56.000000Z"
+        },
+        {
+          "book": "BetRivers",
+          "eligible_for_consensus": true,
+          "fighter_moneyline": -400,
+          "opponent_moneyline": 295,
+          "source_quote_age_seconds": 49.796696,
+          "source_quote_updated_at_utc": "2026-08-22T17:26:18.000000Z"
+        },
+        {
+          "book": "BetUS",
+          "eligible_for_consensus": true,
+          "fighter_moneyline": -375,
+          "opponent_moneyline": 294,
+          "source_quote_age_seconds": 49.796696,
+          "source_quote_updated_at_utc": "2026-08-22T17:26:18.000000Z"
+        },
+        {
+          "book": "Bovada",
+          "eligible_for_consensus": true,
+          "fighter_moneyline": -390,
+          "opponent_moneyline": 310,
+          "source_quote_age_seconds": 118.796696,
+          "source_quote_updated_at_utc": "2026-08-22T17:25:09.000000Z"
+        },
+        {
+          "book": "DraftKings",
+          "eligible_for_consensus": true,
+          "fighter_moneyline": -380,
+          "opponent_moneyline": 300,
+          "source_quote_age_seconds": 72.796696,
+          "source_quote_updated_at_utc": "2026-08-22T17:25:55.000000Z"
+        },
+        {
+          "book": "FanDuel",
+          "eligible_for_consensus": true,
+          "fighter_moneyline": -400,
+          "opponent_moneyline": 315,
+          "source_quote_age_seconds": 49.796696,
+          "source_quote_updated_at_utc": "2026-08-22T17:26:18.000000Z"
+        },
+        {
+          "book": "Fliff",
+          "eligible_for_consensus": true,
+          "fighter_moneyline": -410,
+          "opponent_moneyline": 295,
+          "source_quote_age_seconds": 25.796696,
+          "source_quote_updated_at_utc": "2026-08-22T17:26:42.000000Z"
+        },
+        {
+          "book": "Hard Rock Bet",
+          "eligible_for_consensus": true,
+          "fighter_moneyline": -400,
+          "opponent_moneyline": 300,
+          "source_quote_age_seconds": 71.796696,
+          "source_quote_updated_at_utc": "2026-08-22T17:25:56.000000Z"
+        }
+      ],
+      "current_signal": {
+        "action_name": null,
+        "best_candidate_name": "Jamall Emmers",
+        "best_candidate_side": "opponent",
+        "break_even_probability": 0.24096385542168675,
+        "consensus_book_count": 11,
+        "consensus_books": [
+          "Bally Bet",
+          "BetAnything",
+          "BetMGM",
+          "BetOnline.ag",
+          "betPARX",
+          "BetRivers",
+          "BetUS",
+          "Bovada",
+          "DraftKings",
+          "Fliff",
+          "Hard Rock Bet"
+        ],
+        "decision_id": "1f687e5dd053b2e7fbbeed0e35af8d9b4f6c5007c7b60aa6a420f4123ee4504a",
+        "estimated_expected_return": -0.0016260040861219016,
+        "market_fair_moneyline": 316,
+        "market_probability": 0.2405720472081634,
+        "minimum_expected_return": 0.05,
+        "model_probability_for_fighter": 0.6263897344,
+        "model_weight": 0.0,
+        "observed_at_utc": "2026-08-22T17:27:07.796696Z",
+        "offered_moneyline": 315,
+        "paper_action": "pass",
+        "probability_edge": -0.00039180821352335915,
+        "probability_source": "leave_one_book_out_no_vig_market_consensus",
+        "reason": "Pass: best estimated EV is -0.2%, below the 5.0% paper threshold.",
+        "target_book": "FanDuel",
+        "target_book_excluded_from_consensus": true
+      },
+      "current_signal_unavailable_reason": null,
+      "fighter_id": "640a0f838f057a81",
+      "fighter_name": "Lerryan Douglas",
+      "full_market_consensus": {
+        "book_count": 12,
+        "books": [
+          "Bally Bet",
+          "BetAnything",
+          "BetMGM",
+          "BetOnline.ag",
+          "betPARX",
+          "BetRivers",
+          "BetUS",
+          "Bovada",
+          "DraftKings",
+          "FanDuel",
+          "Fliff",
+          "Hard Rock Bet"
+        ],
+        "fighter_fair_moneyline": -317,
+        "fighter_probability": 0.7601854999357268,
+        "opponent_fair_moneyline": 317,
+        "opponent_probability": 0.23981450006427318
+      },
+      "locked_t24_decision": {
+        "action_name": null,
+        "best_candidate_name": "Jamall Emmers",
+        "best_candidate_side": "opponent",
+        "break_even_probability": 0.23809523809523808,
+        "consensus_book_count": 10,
+        "consensus_books": [
+          "Bally Bet",
+          "BetAnything",
+          "BetMGM",
+          "BetOnline.ag",
+          "betPARX",
+          "BetRivers",
+          "BetUS",
+          "Bovada",
+          "DraftKings",
+          "Hard Rock Bet"
+        ],
+        "decision_id": "8c0d7a551b309c031308700a22bd64bda8e7b57f174cfa512d336531f231109b",
+        "estimated_expected_return": 0.012452034116069433,
+        "market_fair_moneyline": 315,
+        "market_probability": 0.24106000812287365,
+        "minimum_expected_return": 0.05,
+        "model_probability_for_fighter": 0.6263897344,
+        "model_weight": 0.0,
+        "observed_at_utc": "2026-08-21T17:30:20.218293Z",
+        "offered_moneyline": 320,
+        "paper_action": "pass",
+        "probability_edge": 0.002964770027635566,
+        "probability_source": "leave_one_book_out_no_vig_market_consensus",
+        "reason": "Pass: best estimated EV is 1.2%, below the 5.0% paper threshold.",
+        "target_book": "FanDuel",
+        "target_book_excluded_from_consensus": true
+      },
+      "matchup_id": "matchup_5730dbcc9e78781d742f558f3f53256730837650eeeaf894ac53e8987a994db1",
+      "model_id": "ff04994f509057072ee9",
+      "model_probability_for_fighter": 0.6263897344,
+      "opponent_id": "e00a3dee329a51f7",
+      "opponent_name": "Jamall Emmers"
+    },
+    {
+      "book_quotes": [
+        {
+          "book": "Bally Bet",
+          "eligible_for_consensus": true,
+          "fighter_moneyline": 275,
+          "opponent_moneyline": -375,
+          "source_quote_age_seconds": 98.796696,
+          "source_quote_updated_at_utc": "2026-08-22T17:25:29.000000Z"
+        },
+        {
+          "book": "BetAnything",
+          "eligible_for_consensus": true,
+          "fighter_moneyline": 245,
+          "opponent_moneyline": -365,
+          "source_quote_age_seconds": 24.796696,
+          "source_quote_updated_at_utc": "2026-08-22T17:26:43.000000Z"
+        },
+        {
+          "book": "BetMGM",
+          "eligible_for_consensus": true,
+          "fighter_moneyline": 300,
+          "opponent_moneyline": -375,
+          "source_quote_age_seconds": 25.796696,
+          "source_quote_updated_at_utc": "2026-08-22T17:26:42.000000Z"
+        },
+        {
+          "book": "BetOnline.ag",
+          "eligible_for_consensus": true,
+          "fighter_moneyline": 296,
+          "opponent_moneyline": -370,
+          "source_quote_age_seconds": 111.796696,
+          "source_quote_updated_at_utc": "2026-08-22T17:25:16.000000Z"
+        },
+        {
+          "book": "betPARX",
+          "eligible_for_consensus": true,
+          "fighter_moneyline": 275,
+          "opponent_moneyline": -375,
+          "source_quote_age_seconds": 71.796696,
+          "source_quote_updated_at_utc": "2026-08-22T17:25:56.000000Z"
+        },
+        {
+          "book": "BetRivers",
+          "eligible_for_consensus": true,
+          "fighter_moneyline": 275,
+          "opponent_moneyline": -375,
+          "source_quote_age_seconds": 49.796696,
+          "source_quote_updated_at_utc": "2026-08-22T17:26:18.000000Z"
+        },
+        {
+          "book": "BetUS",
+          "eligible_for_consensus": true,
+          "fighter_moneyline": 279,
+          "opponent_moneyline": -350,
+          "source_quote_age_seconds": 49.796696,
+          "source_quote_updated_at_utc": "2026-08-22T17:26:18.000000Z"
+        },
+        {
+          "book": "Bovada",
+          "eligible_for_consensus": true,
+          "fighter_moneyline": 295,
+          "opponent_moneyline": -370,
+          "source_quote_age_seconds": 118.796696,
+          "source_quote_updated_at_utc": "2026-08-22T17:25:09.000000Z"
+        },
+        {
+          "book": "DraftKings",
+          "eligible_for_consensus": true,
+          "fighter_moneyline": 285,
+          "opponent_moneyline": -360,
+          "source_quote_age_seconds": 72.796696,
+          "source_quote_updated_at_utc": "2026-08-22T17:25:55.000000Z"
+        },
+        {
+          "book": "FanDuel",
+          "eligible_for_consensus": true,
+          "fighter_moneyline": 275,
+          "opponent_moneyline": -340,
+          "source_quote_age_seconds": 49.796696,
+          "source_quote_updated_at_utc": "2026-08-22T17:26:18.000000Z"
+        },
+        {
+          "book": "Fliff",
+          "eligible_for_consensus": true,
+          "fighter_moneyline": 275,
+          "opponent_moneyline": -380,
+          "source_quote_age_seconds": 25.796696,
+          "source_quote_updated_at_utc": "2026-08-22T17:26:42.000000Z"
+        },
+        {
+          "book": "Hard Rock Bet",
+          "eligible_for_consensus": true,
+          "fighter_moneyline": 275,
+          "opponent_moneyline": -375,
+          "source_quote_age_seconds": 71.796696,
+          "source_quote_updated_at_utc": "2026-08-22T17:25:56.000000Z"
+        }
+      ],
+      "current_signal": {
+        "action_name": null,
+        "best_candidate_name": "MarQuel Mederos",
+        "best_candidate_side": "fighter",
+        "break_even_probability": 0.25,
+        "consensus_book_count": 11,
+        "consensus_books": [
+          "Bally Bet",
+          "BetAnything",
+          "BetOnline.ag",
+          "betPARX",
+          "BetRivers",
+          "BetUS",
+          "Bovada",
+          "DraftKings",
+          "FanDuel",
+          "Fliff",
+          "Hard Rock Bet"
+        ],
+        "decision_id": "dcc85fa6d7e7db6bf859ee08c01de58d2cd2ba3a7d0897cc741ccdd6264fcea7",
+        "estimated_expected_return": 0.009772787571390662,
+        "market_fair_moneyline": 296,
+        "market_probability": 0.2524431968928477,
+        "minimum_expected_return": 0.05,
+        "model_probability_for_fighter": 0.5063413588,
+        "model_weight": 0.0,
+        "observed_at_utc": "2026-08-22T17:27:07.796696Z",
+        "offered_moneyline": 300,
+        "paper_action": "pass",
+        "probability_edge": 0.0024431968928476655,
+        "probability_source": "leave_one_book_out_no_vig_market_consensus",
+        "reason": "Pass: best estimated EV is 1.0%, below the 5.0% paper threshold.",
+        "target_book": "BetMGM",
+        "target_book_excluded_from_consensus": true
+      },
+      "current_signal_unavailable_reason": null,
+      "fighter_id": "e2be0c1a9b886d92",
+      "fighter_name": "MarQuel Mederos",
+      "full_market_consensus": {
+        "book_count": 12,
+        "books": [
+          "Bally Bet",
+          "BetAnything",
+          "BetMGM",
+          "BetOnline.ag",
+          "betPARX",
+          "BetRivers",
+          "BetUS",
+          "Bovada",
+          "DraftKings",
+          "FanDuel",
+          "Fliff",
+          "Hard Rock Bet"
+        ],
+        "fighter_fair_moneyline": 298,
+        "fighter_probability": 0.2514484579112708,
+        "opponent_fair_moneyline": -298,
+        "opponent_probability": 0.7485515420887292
+      },
+      "locked_t24_decision": {
+        "action_name": null,
+        "best_candidate_name": "MarQuel Mederos",
+        "best_candidate_side": "fighter",
+        "break_even_probability": 0.2702702702702703,
+        "consensus_book_count": 10,
+        "consensus_books": [
+          "Bally Bet",
+          "BetAnything",
+          "BetMGM",
+          "BetOnline.ag",
+          "betPARX",
+          "BetRivers",
+          "BetUS",
+          "Bovada",
+          "FanDuel",
+          "Hard Rock Bet"
+        ],
+        "decision_id": "3db10ab472081de7002e000b0d098482298181ded2270fb82d9ec2e83e25cfcc",
+        "estimated_expected_return": -0.0033647021646859843,
+        "market_fair_moneyline": 271,
+        "market_probability": 0.2693608913068416,
+        "minimum_expected_return": 0.05,
+        "model_probability_for_fighter": 0.5063413588,
+        "model_weight": 0.0,
+        "observed_at_utc": "2026-08-21T17:30:20.218293Z",
+        "offered_moneyline": 270,
+        "paper_action": "pass",
+        "probability_edge": -0.0009093789634286864,
+        "probability_source": "leave_one_book_out_no_vig_market_consensus",
+        "reason": "Pass: best estimated EV is -0.3%, below the 5.0% paper threshold.",
+        "target_book": "DraftKings",
+        "target_book_excluded_from_consensus": true
+      },
+      "matchup_id": "matchup_68e6abbd2402f75a27fca169bbb4b6b4bd8efdf38b2c6172adc63c57c031d894",
+      "model_id": "ff04994f509057072ee9",
+      "model_probability_for_fighter": 0.5063413588,
+      "opponent_id": "f6ad6a1e4d600e0d",
+      "opponent_name": "Mason Jones"
+    },
+    {
+      "book_quotes": [
+        {
+          "book": "Bally Bet",
+          "eligible_for_consensus": true,
+          "fighter_moneyline": 525,
+          "opponent_moneyline": -835,
+          "source_quote_age_seconds": 98.796696,
+          "source_quote_updated_at_utc": "2026-08-22T17:25:29.000000Z"
+        },
+        {
+          "book": "BetAnything",
+          "eligible_for_consensus": true,
+          "fighter_moneyline": 485,
+          "opponent_moneyline": -900,
+          "source_quote_age_seconds": 24.796696,
+          "source_quote_updated_at_utc": "2026-08-22T17:26:43.000000Z"
+        },
+        {
+          "book": "BetMGM",
+          "eligible_for_consensus": true,
+          "fighter_moneyline": 600,
+          "opponent_moneyline": -900,
+          "source_quote_age_seconds": 25.796696,
+          "source_quote_updated_at_utc": "2026-08-22T17:26:42.000000Z"
+        },
+        {
+          "book": "BetOnline.ag",
+          "eligible_for_consensus": true,
+          "fighter_moneyline": 546,
+          "opponent_moneyline": -775,
+          "source_quote_age_seconds": 111.796696,
+          "source_quote_updated_at_utc": "2026-08-22T17:25:16.000000Z"
+        },
+        {
+          "book": "betPARX",
+          "eligible_for_consensus": true,
+          "fighter_moneyline": 525,
+          "opponent_moneyline": -835,
+          "source_quote_age_seconds": 72.796696,
+          "source_quote_updated_at_utc": "2026-08-22T17:25:55.000000Z"
+        },
+        {
+          "book": "BetRivers",
+          "eligible_for_consensus": true,
+          "fighter_moneyline": 525,
+          "opponent_moneyline": -835,
+          "source_quote_age_seconds": 49.796696,
+          "source_quote_updated_at_utc": "2026-08-22T17:26:18.000000Z"
+        },
+        {
+          "book": "BetUS",
+          "eligible_for_consensus": true,
+          "fighter_moneyline": 560,
+          "opponent_moneyline": -855,
+          "source_quote_age_seconds": 49.796696,
+          "source_quote_updated_at_utc": "2026-08-22T17:26:18.000000Z"
+        },
+        {
+          "book": "Bovada",
+          "eligible_for_consensus": true,
+          "fighter_moneyline": 600,
+          "opponent_moneyline": -900,
+          "source_quote_age_seconds": 118.796696,
+          "source_quote_updated_at_utc": "2026-08-22T17:25:09.000000Z"
+        },
+        {
+          "book": "DraftKings",
+          "eligible_for_consensus": true,
+          "fighter_moneyline": 600,
+          "opponent_moneyline": -900,
+          "source_quote_age_seconds": 72.796696,
+          "source_quote_updated_at_utc": "2026-08-22T17:25:55.000000Z"
+        },
+        {
+          "book": "FanDuel",
+          "eligible_for_consensus": true,
+          "fighter_moneyline": 590,
+          "opponent_moneyline": -850,
+          "source_quote_age_seconds": 49.796696,
+          "source_quote_updated_at_utc": "2026-08-22T17:26:18.000000Z"
+        },
+        {
+          "book": "Hard Rock Bet",
+          "eligible_for_consensus": true,
+          "fighter_moneyline": 525,
+          "opponent_moneyline": -850,
+          "source_quote_age_seconds": 71.796696,
+          "source_quote_updated_at_utc": "2026-08-22T17:25:56.000000Z"
+        }
+      ],
+      "current_signal": {
+        "action_name": null,
+        "best_candidate_name": "Elise Reed",
+        "best_candidate_side": "fighter",
+        "break_even_probability": 0.14285714285714285,
+        "consensus_book_count": 10,
+        "consensus_books": [
+          "Bally Bet",
+          "BetAnything",
+          "BetOnline.ag",
+          "betPARX",
+          "BetRivers",
+          "BetUS",
+          "Bovada",
+          "DraftKings",
+          "FanDuel",
+          "Hard Rock Bet"
+        ],
+        "decision_id": "10e268d7c70bbc50207dca55c3034f16a23c2564d18de2cd0781248089d7bbe8",
+        "estimated_expected_return": 0.03181157761308717,
+        "market_fair_moneyline": 578,
+        "market_probability": 0.14740165394472676,
+        "minimum_expected_return": 0.05,
+        "model_probability_for_fighter": 0.16430110190000002,
+        "model_weight": 0.0,
+        "observed_at_utc": "2026-08-22T17:27:07.796696Z",
+        "offered_moneyline": 600,
+        "paper_action": "pass",
+        "probability_edge": 0.004544511087583886,
+        "probability_source": "leave_one_book_out_no_vig_market_consensus",
+        "reason": "Pass: best estimated EV is 3.2%, below the 5.0% paper threshold.",
+        "target_book": "BetMGM",
+        "target_book_excluded_from_consensus": true
+      },
+      "current_signal_unavailable_reason": null,
+      "fighter_id": "ac7c765882f2c68c",
+      "fighter_name": "Elise Reed",
+      "full_market_consensus": {
+        "book_count": 11,
+        "books": [
+          "Bally Bet",
+          "BetAnything",
+          "BetMGM",
+          "BetOnline.ag",
+          "betPARX",
+          "BetRivers",
+          "BetUS",
+          "Bovada",
+          "DraftKings",
+          "FanDuel",
+          "Hard Rock Bet"
+        ],
+        "fighter_fair_moneyline": 583,
+        "fighter_probability": 0.14645480371064826,
+        "opponent_fair_moneyline": -583,
+        "opponent_probability": 0.8535451962893518
+      },
+      "locked_t24_decision": {
+        "action_name": null,
+        "best_candidate_name": "Elise Reed",
+        "best_candidate_side": "fighter",
+        "break_even_probability": 0.14285714285714285,
+        "consensus_book_count": 10,
+        "consensus_books": [
+          "Bally Bet",
+          "BetAnything",
+          "BetOnline.ag",
+          "betPARX",
+          "BetRivers",
+          "BetUS",
+          "Bovada",
+          "DraftKings",
+          "FanDuel",
+          "Hard Rock Bet"
+        ],
+        "decision_id": "1aef996ade7f6d4ccdd8848194e214f45348f73aa08409c8bcb8f469e2d3083a",
+        "estimated_expected_return": 0.04556586377086025,
+        "market_fair_moneyline": 569,
+        "market_probability": 0.14936655196726575,
+        "minimum_expected_return": 0.05,
+        "model_probability_for_fighter": 0.16430110190000002,
+        "model_weight": 0.0,
+        "observed_at_utc": "2026-08-21T17:30:20.218293Z",
+        "offered_moneyline": 600,
+        "paper_action": "pass",
+        "probability_edge": 0.006509409110122905,
+        "probability_source": "leave_one_book_out_no_vig_market_consensus",
+        "reason": "Pass: best estimated EV is 4.6%, below the 5.0% paper threshold.",
+        "target_book": "BetMGM",
+        "target_book_excluded_from_consensus": true
+      },
+      "matchup_id": "matchup_b04f10f44923c1dd86777d35d18bf07dc4299e65e48d7b713d20daceb3137f2e",
+      "model_id": "ff04994f509057072ee9",
+      "model_probability_for_fighter": 0.16430110190000002,
+      "opponent_id": "cfbb3edab781dfd2",
+      "opponent_name": "Shanelle Dyer"
+    },
+    {
+      "book_quotes": [
+        {
+          "book": "Bally Bet",
+          "eligible_for_consensus": true,
+          "fighter_moneyline": -180,
+          "opponent_moneyline": 143,
+          "source_quote_age_seconds": 98.796696,
+          "source_quote_updated_at_utc": "2026-08-22T17:25:29.000000Z"
+        },
+        {
+          "book": "BetAnything",
+          "eligible_for_consensus": true,
+          "fighter_moneyline": -180,
+          "opponent_moneyline": 150,
+          "source_quote_age_seconds": 24.796696,
+          "source_quote_updated_at_utc": "2026-08-22T17:26:43.000000Z"
+        },
+        {
+          "book": "BetMGM",
+          "eligible_for_consensus": true,
+          "fighter_moneyline": -185,
+          "opponent_moneyline": 150,
+          "source_quote_age_seconds": 25.796696,
+          "source_quote_updated_at_utc": "2026-08-22T17:26:42.000000Z"
+        },
+        {
+          "book": "BetOnline.ag",
+          "eligible_for_consensus": true,
+          "fighter_moneyline": -170,
+          "opponent_moneyline": 149,
+          "source_quote_age_seconds": 111.796696,
+          "source_quote_updated_at_utc": "2026-08-22T17:25:16.000000Z"
+        },
+        {
+          "book": "betPARX",
+          "eligible_for_consensus": true,
+          "fighter_moneyline": -180,
+          "opponent_moneyline": 143,
+          "source_quote_age_seconds": 72.796696,
+          "source_quote_updated_at_utc": "2026-08-22T17:25:55.000000Z"
+        },
+        {
+          "book": "BetRivers",
+          "eligible_for_consensus": true,
+          "fighter_moneyline": -180,
+          "opponent_moneyline": 143,
+          "source_quote_age_seconds": 49.796696,
+          "source_quote_updated_at_utc": "2026-08-22T17:26:18.000000Z"
+        },
+        {
+          "book": "BetUS",
+          "eligible_for_consensus": true,
+          "fighter_moneyline": -170,
+          "opponent_moneyline": 142,
+          "source_quote_age_seconds": 49.796696,
+          "source_quote_updated_at_utc": "2026-08-22T17:26:18.000000Z"
+        },
+        {
+          "book": "Bovada",
+          "eligible_for_consensus": true,
+          "fighter_moneyline": -177,
+          "opponent_moneyline": 153,
+          "source_quote_age_seconds": 118.796696,
+          "source_quote_updated_at_utc": "2026-08-22T17:25:09.000000Z"
+        },
+        {
+          "book": "DraftKings",
+          "eligible_for_consensus": true,
+          "fighter_moneyline": -180,
+          "opponent_moneyline": 150,
+          "source_quote_age_seconds": 72.796696,
+          "source_quote_updated_at_utc": "2026-08-22T17:25:55.000000Z"
+        },
+        {
+          "book": "FanDuel",
+          "eligible_for_consensus": true,
+          "fighter_moneyline": -174,
+          "opponent_moneyline": 146,
+          "source_quote_age_seconds": 49.796696,
+          "source_quote_updated_at_utc": "2026-08-22T17:26:18.000000Z"
+        },
+        {
+          "book": "Hard Rock Bet",
+          "eligible_for_consensus": true,
+          "fighter_moneyline": -180,
+          "opponent_moneyline": 145,
+          "source_quote_age_seconds": 71.796696,
+          "source_quote_updated_at_utc": "2026-08-22T17:25:56.000000Z"
+        }
+      ],
+      "current_signal": {
+        "action_name": null,
+        "best_candidate_name": "Wes Schultz",
+        "best_candidate_side": "opponent",
+        "break_even_probability": 0.3952569169960474,
+        "consensus_book_count": 10,
+        "consensus_books": [
+          "Bally Bet",
+          "BetAnything",
+          "BetMGM",
+          "BetOnline.ag",
+          "betPARX",
+          "BetRivers",
+          "BetUS",
+          "DraftKings",
+          "FanDuel",
+          "Hard Rock Bet"
+        ],
+        "decision_id": "17057c37eb7a74e67ae47b937217b54c734f1da6dc3d7ffcfe45396b3aaed1d5",
+        "estimated_expected_return": -0.017445510214165072,
+        "market_fair_moneyline": 157,
+        "market_probability": 0.38836145841337344,
+        "minimum_expected_return": 0.05,
+        "model_probability_for_fighter": 0.5929755742,
+        "model_weight": 0.0,
+        "observed_at_utc": "2026-08-22T17:27:07.796696Z",
+        "offered_moneyline": 153,
+        "paper_action": "pass",
+        "probability_edge": -0.006895458582673986,
+        "probability_source": "leave_one_book_out_no_vig_market_consensus",
+        "reason": "Pass: best estimated EV is -1.7%, below the 5.0% paper threshold.",
+        "target_book": "Bovada",
+        "target_book_excluded_from_consensus": true
+      },
+      "current_signal_unavailable_reason": null,
+      "fighter_id": "3eeec2f53cebdf12",
+      "fighter_name": "Jackson McVey",
+      "full_market_consensus": {
+        "book_count": 11,
+        "books": [
+          "Bally Bet",
+          "BetAnything",
+          "BetMGM",
+          "BetOnline.ag",
+          "betPARX",
+          "BetRivers",
+          "BetUS",
+          "Bovada",
+          "DraftKings",
+          "FanDuel",
+          "Hard Rock Bet"
+        ],
+        "fighter_fair_moneyline": -158,
+        "fighter_probability": 0.6122014814257315,
+        "opponent_fair_moneyline": 158,
+        "opponent_probability": 0.3877985185742685
+      },
+      "locked_t24_decision": {
+        "action_name": null,
+        "best_candidate_name": "Wes Schultz",
+        "best_candidate_side": "opponent",
+        "break_even_probability": 0.3937007874015748,
+        "consensus_book_count": 10,
+        "consensus_books": [
+          "Bally Bet",
+          "BetAnything",
+          "BetMGM",
+          "BetOnline.ag",
+          "betPARX",
+          "BetRivers",
+          "BetUS",
+          "Bovada",
+          "DraftKings",
+          "Hard Rock Bet"
+        ],
+        "decision_id": "af70a03b7cd17e8f5330b09c4367bc8eafc84c4f4d759f54693bf80c2ba6bab1",
+        "estimated_expected_return": -0.009825352760762351,
+        "market_fair_moneyline": 157,
+        "market_probability": 0.38983253828316444,
+        "minimum_expected_return": 0.05,
+        "model_probability_for_fighter": 0.5929755742,
+        "model_weight": 0.0,
+        "observed_at_utc": "2026-08-21T17:30:20.218293Z",
+        "offered_moneyline": 154,
+        "paper_action": "pass",
+        "probability_edge": -0.003868249118410383,
+        "probability_source": "leave_one_book_out_no_vig_market_consensus",
+        "reason": "Pass: best estimated EV is -1.0%, below the 5.0% paper threshold.",
+        "target_book": "FanDuel",
+        "target_book_excluded_from_consensus": true
+      },
+      "matchup_id": "matchup_b8b3107093e97e3246a7af79a6851dcba8bd810a295a6759bd6d28b78f753335",
+      "model_id": "ff04994f509057072ee9",
+      "model_probability_for_fighter": 0.5929755742,
+      "opponent_id": "b4443fae47e7eb9d",
+      "opponent_name": "Wes Schultz"
+    },
+    {
+      "book_quotes": [
+        {
+          "book": "Bally Bet",
+          "eligible_for_consensus": true,
+          "fighter_moneyline": -1000,
+          "opponent_moneyline": 600,
+          "source_quote_age_seconds": 98.796696,
+          "source_quote_updated_at_utc": "2026-08-22T17:25:29.000000Z"
+        },
+        {
+          "book": "BetAnything",
+          "eligible_for_consensus": true,
+          "fighter_moneyline": -800,
+          "opponent_moneyline": 450,
+          "source_quote_age_seconds": 24.796696,
+          "source_quote_updated_at_utc": "2026-08-22T17:26:43.000000Z"
+        },
+        {
+          "book": "BetOnline.ag",
+          "eligible_for_consensus": true,
+          "fighter_moneyline": -800,
+          "opponent_moneyline": 550,
+          "source_quote_age_seconds": 111.796696,
+          "source_quote_updated_at_utc": "2026-08-22T17:25:16.000000Z"
+        },
+        {
+          "book": "betPARX",
+          "eligible_for_consensus": true,
+          "fighter_moneyline": -1000,
+          "opponent_moneyline": 600,
+          "source_quote_age_seconds": 71.796696,
+          "source_quote_updated_at_utc": "2026-08-22T17:25:56.000000Z"
+        },
+        {
+          "book": "BetRivers",
+          "eligible_for_consensus": true,
+          "fighter_moneyline": -1000,
+          "opponent_moneyline": 600,
+          "source_quote_age_seconds": 49.796696,
+          "source_quote_updated_at_utc": "2026-08-22T17:26:18.000000Z"
+        },
+        {
+          "book": "BetUS",
+          "eligible_for_consensus": true,
+          "fighter_moneyline": -800,
+          "opponent_moneyline": 525,
+          "source_quote_age_seconds": 49.796696,
+          "source_quote_updated_at_utc": "2026-08-22T17:26:18.000000Z"
+        },
+        {
+          "book": "Bovada",
+          "eligible_for_consensus": true,
+          "fighter_moneyline": -900,
+          "opponent_moneyline": 600,
+          "source_quote_age_seconds": 118.796696,
+          "source_quote_updated_at_utc": "2026-08-22T17:25:09.000000Z"
+        },
+        {
+          "book": "DraftKings",
+          "eligible_for_consensus": true,
+          "fighter_moneyline": -900,
+          "opponent_moneyline": 600,
+          "source_quote_age_seconds": 72.796696,
+          "source_quote_updated_at_utc": "2026-08-22T17:25:55.000000Z"
+        },
+        {
+          "book": "FanDuel",
+          "eligible_for_consensus": true,
+          "fighter_moneyline": -900,
+          "opponent_moneyline": 610,
+          "source_quote_age_seconds": 49.796696,
+          "source_quote_updated_at_utc": "2026-08-22T17:26:18.000000Z"
+        },
+        {
+          "book": "Fliff",
+          "eligible_for_consensus": true,
+          "fighter_moneyline": -975,
+          "opponent_moneyline": 575,
+          "source_quote_age_seconds": 25.796696,
+          "source_quote_updated_at_utc": "2026-08-22T17:26:42.000000Z"
+        },
+        {
+          "book": "Hard Rock Bet",
+          "eligible_for_consensus": true,
+          "fighter_moneyline": -1000,
+          "opponent_moneyline": 600,
+          "source_quote_age_seconds": 71.796696,
+          "source_quote_updated_at_utc": "2026-08-22T17:25:56.000000Z"
+        }
+      ],
+      "current_signal": {
+        "action_name": null,
+        "best_candidate_name": "Ryan Kuse",
+        "best_candidate_side": "opponent",
+        "break_even_probability": 0.14084507042253522,
+        "consensus_book_count": 10,
+        "consensus_books": [
+          "Bally Bet",
+          "BetAnything",
+          "BetOnline.ag",
+          "betPARX",
+          "BetRivers",
+          "BetUS",
+          "Bovada",
+          "DraftKings",
+          "Fliff",
+          "Hard Rock Bet"
+        ],
+        "decision_id": "9d88d8cb9cd70ac5d532d4daac9b8c73d87833484da1be079de4099e6950098e",
+        "estimated_expected_return": 0.013514577051519261,
+        "market_fair_moneyline": 601,
+        "market_probability": 0.1427485319790872,
+        "minimum_expected_return": 0.05,
+        "model_probability_for_fighter": 0.9241369229,
+        "model_weight": 0.0,
+        "observed_at_utc": "2026-08-22T17:27:07.796696Z",
+        "offered_moneyline": 610,
+        "paper_action": "pass",
+        "probability_edge": 0.0019034615565519941,
+        "probability_source": "leave_one_book_out_no_vig_market_consensus",
+        "reason": "Pass: best estimated EV is 1.4%, below the 5.0% paper threshold.",
+        "target_book": "FanDuel",
+        "target_book_excluded_from_consensus": true
+      },
+      "current_signal_unavailable_reason": null,
+      "fighter_id": "c85bad793cd14e28",
+      "fighter_name": "Marcio Barbosa",
+      "full_market_consensus": {
+        "book_count": 11,
+        "books": [
+          "Bally Bet",
+          "BetAnything",
+          "BetOnline.ag",
+          "betPARX",
+          "BetRivers",
+          "BetUS",
+          "Bovada",
+          "DraftKings",
+          "FanDuel",
+          "Fliff",
+          "Hard Rock Bet"
+        ],
+        "fighter_fair_moneyline": -604,
+        "fighter_probability": 0.8579269711741353,
+        "opponent_fair_moneyline": 604,
+        "opponent_probability": 0.1420730288258647
+      },
+      "locked_t24_decision": {
+        "action_name": null,
+        "best_candidate_name": "Ryan Kuse",
+        "best_candidate_side": "opponent",
+        "break_even_probability": 0.14285714285714285,
+        "consensus_book_count": 9,
+        "consensus_books": [
+          "BetAnything",
+          "BetOnline.ag",
+          "betPARX",
+          "BetRivers",
+          "BetUS",
+          "Bovada",
+          "DraftKings",
+          "FanDuel",
+          "Hard Rock Bet"
+        ],
+        "decision_id": "524e63d62a209f9b0fc24dc83feba971e8bfdd30b61e4f52896ec2068cd24ded",
+        "estimated_expected_return": -0.009184519177663164,
+        "market_fair_moneyline": 606,
+        "market_probability": 0.14154506868890526,
+        "minimum_expected_return": 0.05,
+        "model_probability_for_fighter": 0.9241369229,
+        "model_weight": 0.0,
+        "observed_at_utc": "2026-08-21T17:30:20.218293Z",
+        "offered_moneyline": 600,
+        "paper_action": "pass",
+        "probability_edge": -0.001312074168237587,
+        "probability_source": "leave_one_book_out_no_vig_market_consensus",
+        "reason": "Pass: best estimated EV is -0.9%, below the 5.0% paper threshold.",
+        "target_book": "Bally Bet",
+        "target_book_excluded_from_consensus": true
+      },
+      "matchup_id": "matchup_d3057e06ce72d9d426192e08d0d671361d06fc52181a58554253d713bb947db0",
+      "model_id": "ff04994f509057072ee9",
+      "model_probability_for_fighter": 0.9241369229,
+      "opponent_id": "d958ed9e5a08c849",
+      "opponent_name": "Ryan Kuse"
+    },
+    {
+      "book_quotes": [
+        {
+          "book": "BetAnything",
+          "eligible_for_consensus": true,
+          "fighter_moneyline": -145,
+          "opponent_moneyline": 115,
+          "source_quote_age_seconds": 24.796696,
+          "source_quote_updated_at_utc": "2026-08-22T17:26:43.000000Z"
+        },
+        {
+          "book": "BetOnline.ag",
+          "eligible_for_consensus": true,
+          "fighter_moneyline": -145,
+          "opponent_moneyline": 125,
+          "source_quote_age_seconds": 111.796696,
+          "source_quote_updated_at_utc": "2026-08-22T17:25:16.000000Z"
+        },
+        {
+          "book": "BetUS",
+          "eligible_for_consensus": true,
+          "fighter_moneyline": -145,
+          "opponent_moneyline": 122,
+          "source_quote_age_seconds": 49.796696,
+          "source_quote_updated_at_utc": "2026-08-22T17:26:18.000000Z"
+        },
+        {
+          "book": "Bovada",
+          "eligible_for_consensus": true,
+          "fighter_moneyline": -147,
+          "opponent_moneyline": 127,
+          "source_quote_age_seconds": 118.796696,
+          "source_quote_updated_at_utc": "2026-08-22T17:25:09.000000Z"
+        },
+        {
+          "book": "DraftKings",
+          "eligible_for_consensus": true,
+          "fighter_moneyline": -155,
+          "opponent_moneyline": 130,
+          "source_quote_age_seconds": 72.796696,
+          "source_quote_updated_at_utc": "2026-08-22T17:25:55.000000Z"
+        },
+        {
+          "book": "FanDuel",
+          "eligible_for_consensus": true,
+          "fighter_moneyline": -156,
+          "opponent_moneyline": 132,
+          "source_quote_age_seconds": 49.796696,
+          "source_quote_updated_at_utc": "2026-08-22T17:26:18.000000Z"
+        },
+        {
+          "book": "Fliff",
+          "eligible_for_consensus": true,
+          "fighter_moneyline": -155,
+          "opponent_moneyline": 120,
+          "source_quote_age_seconds": 25.796696,
+          "source_quote_updated_at_utc": "2026-08-22T17:26:42.000000Z"
+        },
+        {
+          "book": "Hard Rock Bet",
+          "eligible_for_consensus": true,
+          "fighter_moneyline": -145,
+          "opponent_moneyline": 120,
+          "source_quote_age_seconds": 71.796696,
+          "source_quote_updated_at_utc": "2026-08-22T17:25:56.000000Z"
+        }
+      ],
+      "current_signal": {
+        "action_name": null,
+        "best_candidate_name": "Serghei Spivac",
+        "best_candidate_side": "opponent",
+        "break_even_probability": 0.43103448275862066,
+        "consensus_book_count": 7,
+        "consensus_books": [
+          "BetAnything",
+          "BetOnline.ag",
+          "BetUS",
+          "Bovada",
+          "DraftKings",
+          "Fliff",
+          "Hard Rock Bet"
+        ],
+        "decision_id": "d97fb0ae7f8b9c42a4fb42204ad9af21c23ddf456942a3ad4a2c6e71200c1e64",
+        "estimated_expected_return": -0.003816588621157968,
+        "market_fair_moneyline": 133,
+        "market_probability": 0.42938940145639737,
+        "minimum_expected_return": 0.05,
+        "model_probability_for_fighter": 0.6563377165,
+        "model_weight": 0.0,
+        "observed_at_utc": "2026-08-22T17:27:07.796696Z",
+        "offered_moneyline": 132,
+        "paper_action": "pass",
+        "probability_edge": -0.0016450813022232946,
+        "probability_source": "leave_one_book_out_no_vig_market_consensus",
+        "reason": "Pass: best estimated EV is -0.4%, below the 5.0% paper threshold.",
+        "target_book": "FanDuel",
+        "target_book_excluded_from_consensus": true
+      },
+      "current_signal_unavailable_reason": null,
+      "fighter_id": "71171fc96445bf65",
+      "fighter_name": "Vitor Petrino",
+      "full_market_consensus": {
+        "book_count": 8,
+        "books": [
+          "BetAnything",
+          "BetOnline.ag",
+          "BetUS",
+          "Bovada",
+          "DraftKings",
+          "FanDuel",
+          "Fliff",
+          "Hard Rock Bet"
+        ],
+        "fighter_fair_moneyline": -134,
+        "fighter_probability": 0.5724976346785264,
+        "opponent_fair_moneyline": 134,
+        "opponent_probability": 0.42750236532147357
+      },
+      "locked_t24_decision": {
+        "action_name": null,
+        "best_candidate_name": "Serghei Spivac",
+        "best_candidate_side": "opponent",
+        "break_even_probability": 0.44642857142857145,
+        "consensus_book_count": 7,
+        "consensus_books": [
+          "BetAnything",
+          "BetOnline.ag",
+          "BetUS",
+          "Bovada",
+          "FanDuel",
+          "Fliff",
+          "Hard Rock Bet"
+        ],
+        "decision_id": "350b4744fdbfb470fd6a03d0c8e0c4de82b0acf2b52fcde24bf78f89e8277b54",
+        "estimated_expected_return": -0.024409384933625655,
+        "market_fair_moneyline": 130,
+        "market_probability": 0.43553152458320266,
+        "minimum_expected_return": 0.05,
+        "model_probability_for_fighter": 0.6563377165,
+        "model_weight": 0.0,
+        "observed_at_utc": "2026-08-21T17:30:20.218293Z",
+        "offered_moneyline": 124,
+        "paper_action": "pass",
+        "probability_edge": -0.010897046845368685,
+        "probability_source": "leave_one_book_out_no_vig_market_consensus",
+        "reason": "Pass: best estimated EV is -2.4%, below the 5.0% paper threshold.",
+        "target_book": "DraftKings",
+        "target_book_excluded_from_consensus": true
+      },
+      "matchup_id": "matchup_d628bb58b0c90e5d3f480b744bc8679bc4858110672f89746bbd8d85f07e21f6",
+      "model_id": "ff04994f509057072ee9",
+      "model_probability_for_fighter": 0.6563377165,
+      "opponent_id": "e2f6b2769aaedd6c",
+      "opponent_name": "Serghei Spivac"
+    },
+    {
+      "book_quotes": [
+        {
+          "book": "Bally Bet",
+          "eligible_for_consensus": true,
+          "fighter_moneyline": 420,
+          "opponent_moneyline": -625,
+          "source_quote_age_seconds": 98.796696,
+          "source_quote_updated_at_utc": "2026-08-22T17:25:29.000000Z"
+        },
+        {
+          "book": "BetAnything",
+          "eligible_for_consensus": true,
+          "fighter_moneyline": 370,
+          "opponent_moneyline": -600,
+          "source_quote_age_seconds": 24.796696,
+          "source_quote_updated_at_utc": "2026-08-22T17:26:43.000000Z"
+        },
+        {
+          "book": "BetMGM",
+          "eligible_for_consensus": true,
+          "fighter_moneyline": 425,
+          "opponent_moneyline": -600,
+          "source_quote_age_seconds": 25.796696,
+          "source_quote_updated_at_utc": "2026-08-22T17:26:42.000000Z"
+        },
+        {
+          "book": "BetOnline.ag",
+          "eligible_for_consensus": true,
+          "fighter_moneyline": 425,
+          "opponent_moneyline": -600,
+          "source_quote_age_seconds": 111.796696,
+          "source_quote_updated_at_utc": "2026-08-22T17:25:16.000000Z"
+        },
+        {
+          "book": "betPARX",
+          "eligible_for_consensus": true,
+          "fighter_moneyline": 420,
+          "opponent_moneyline": -625,
+          "source_quote_age_seconds": 71.796696,
+          "source_quote_updated_at_utc": "2026-08-22T17:25:56.000000Z"
+        },
+        {
+          "book": "BetRivers",
+          "eligible_for_consensus": true,
+          "fighter_moneyline": 420,
+          "opponent_moneyline": -625,
+          "source_quote_age_seconds": 49.796696,
+          "source_quote_updated_at_utc": "2026-08-22T17:26:18.000000Z"
+        },
+        {
+          "book": "BetUS",
+          "eligible_for_consensus": true,
+          "fighter_moneyline": 420,
+          "opponent_moneyline": -590,
+          "source_quote_age_seconds": 49.796696,
+          "source_quote_updated_at_utc": "2026-08-22T17:26:18.000000Z"
+        },
+        {
+          "book": "Bovada",
+          "eligible_for_consensus": true,
+          "fighter_moneyline": 475,
+          "opponent_moneyline": -650,
+          "source_quote_age_seconds": 118.796696,
+          "source_quote_updated_at_utc": "2026-08-22T17:25:09.000000Z"
+        },
+        {
+          "book": "DraftKings",
+          "eligible_for_consensus": true,
+          "fighter_moneyline": 455,
+          "opponent_moneyline": -625,
+          "source_quote_age_seconds": 72.796696,
+          "source_quote_updated_at_utc": "2026-08-22T17:25:55.000000Z"
+        },
+        {
+          "book": "FanDuel",
+          "eligible_for_consensus": true,
+          "fighter_moneyline": 430,
+          "opponent_moneyline": -590,
+          "source_quote_age_seconds": 49.796696,
+          "source_quote_updated_at_utc": "2026-08-22T17:26:18.000000Z"
+        },
+        {
+          "book": "Hard Rock Bet",
+          "eligible_for_consensus": true,
+          "fighter_moneyline": 425,
+          "opponent_moneyline": -650,
+          "source_quote_age_seconds": 71.796696,
+          "source_quote_updated_at_utc": "2026-08-22T17:25:56.000000Z"
+        }
+      ],
+      "current_signal": {
+        "action_name": "Jeisla Chaves",
+        "best_candidate_name": "Jeisla Chaves",
+        "best_candidate_side": "fighter",
+        "break_even_probability": 0.17391304347826086,
+        "consensus_book_count": 10,
+        "consensus_books": [
+          "Bally Bet",
+          "BetAnything",
+          "BetMGM",
+          "BetOnline.ag",
+          "betPARX",
+          "BetRivers",
+          "BetUS",
+          "DraftKings",
+          "FanDuel",
+          "Hard Rock Bet"
+        ],
+        "decision_id": "ceca2db96c22e82f8696741004de10a4890c21bdd3e9be096fe2e892710b59ae",
+        "estimated_expected_return": 0.050585280826705326,
+        "market_fair_moneyline": 447,
+        "market_probability": 0.18271048362203574,
+        "minimum_expected_return": 0.05,
+        "model_probability_for_fighter": 0.3118591111,
+        "model_weight": 0.0,
+        "observed_at_utc": "2026-08-22T17:27:07.796696Z",
+        "offered_moneyline": 475,
+        "paper_action": "fighter",
+        "probability_edge": 0.008797440143774843,
+        "probability_source": "leave_one_book_out_no_vig_market_consensus",
+        "reason": "Paper signal: estimated EV is 5.1%, meeting the 5.0% threshold.",
+        "target_book": "Bovada",
+        "target_book_excluded_from_consensus": true
+      },
+      "current_signal_unavailable_reason": null,
+      "fighter_id": "8061a3136026a673",
+      "fighter_name": "Jeisla Chaves",
+      "full_market_consensus": {
+        "book_count": 11,
+        "books": [
+          "Bally Bet",
+          "BetAnything",
+          "BetMGM",
+          "BetOnline.ag",
+          "betPARX",
+          "BetRivers",
+          "BetUS",
+          "Bovada",
+          "DraftKings",
+          "FanDuel",
+          "Hard Rock Bet"
+        ],
+        "fighter_fair_moneyline": 452,
+        "fighter_probability": 0.1812941595854921,
+        "opponent_fair_moneyline": -452,
+        "opponent_probability": 0.8187058404145079
+      },
+      "locked_t24_decision": {
+        "action_name": "Jeisla Chaves",
+        "best_candidate_name": "Jeisla Chaves",
+        "best_candidate_side": "fighter",
+        "break_even_probability": 0.18181818181818182,
+        "consensus_book_count": 10,
+        "consensus_books": [
+          "Bally Bet",
+          "BetAnything",
+          "BetMGM",
+          "BetOnline.ag",
+          "betPARX",
+          "BetRivers",
+          "BetUS",
+          "DraftKings",
+          "FanDuel",
+          "Hard Rock Bet"
+        ],
+        "decision_id": "30dc1ca97b928526451beb2033f87f045d643f29f501c885265f518ee1dbdbe8",
+        "estimated_expected_return": 0.06522643070895273,
+        "market_fair_moneyline": 416,
+        "market_probability": 0.19367753285617323,
+        "minimum_expected_return": 0.05,
+        "model_probability_for_fighter": 0.3118591111,
+        "model_weight": 0.0,
+        "observed_at_utc": "2026-08-21T17:30:20.218293Z",
+        "offered_moneyline": 450,
+        "paper_action": "fighter",
+        "probability_edge": 0.011859351037991406,
+        "probability_source": "leave_one_book_out_no_vig_market_consensus",
+        "reason": "Paper signal: estimated EV is 6.5%, meeting the 5.0% threshold.",
+        "target_book": "Bovada",
+        "target_book_excluded_from_consensus": true
+      },
+      "matchup_id": "matchup_f02d13336e28fd11d4d67ce3b551ef79a82807effcfdfa6987ffff00233b14ae",
+      "model_id": "ff04994f509057072ee9",
+      "model_probability_for_fighter": 0.3118591111,
+      "opponent_id": "f1ab6f37492c630a",
+      "opponent_name": "Carli Judice"
+    },
+    {
+      "book_quotes": [
+        {
+          "book": "Bally Bet",
+          "eligible_for_consensus": true,
+          "fighter_moneyline": 650,
+          "opponent_moneyline": -1115,
+          "source_quote_age_seconds": 98.796696,
+          "source_quote_updated_at_utc": "2026-08-22T17:25:29.000000Z"
+        },
+        {
+          "book": "BetAnything",
+          "eligible_for_consensus": true,
+          "fighter_moneyline": 565,
+          "opponent_moneyline": -1150,
+          "source_quote_age_seconds": 24.796696,
+          "source_quote_updated_at_utc": "2026-08-22T17:26:43.000000Z"
+        },
+        {
+          "book": "BetMGM",
+          "eligible_for_consensus": true,
+          "fighter_moneyline": 750,
+          "opponent_moneyline": -1200,
+          "source_quote_age_seconds": 25.796696,
+          "source_quote_updated_at_utc": "2026-08-22T17:26:42.000000Z"
+        },
+        {
+          "book": "BetOnline.ag",
+          "eligible_for_consensus": true,
+          "fighter_moneyline": 661,
+          "opponent_moneyline": -1000,
+          "source_quote_age_seconds": 111.796696,
+          "source_quote_updated_at_utc": "2026-08-22T17:25:16.000000Z"
+        },
+        {
+          "book": "betPARX",
+          "eligible_for_consensus": true,
+          "fighter_moneyline": 650,
+          "opponent_moneyline": -1115,
+          "source_quote_age_seconds": 71.796696,
+          "source_quote_updated_at_utc": "2026-08-22T17:25:56.000000Z"
+        },
+        {
+          "book": "BetRivers",
+          "eligible_for_consensus": true,
+          "fighter_moneyline": 650,
+          "opponent_moneyline": -1115,
+          "source_quote_age_seconds": 49.796696,
+          "source_quote_updated_at_utc": "2026-08-22T17:26:18.000000Z"
+        },
+        {
+          "book": "BetUS",
+          "eligible_for_consensus": true,
+          "fighter_moneyline": 625,
+          "opponent_moneyline": -1000,
+          "source_quote_age_seconds": 49.796696,
+          "source_quote_updated_at_utc": "2026-08-22T17:26:18.000000Z"
+        },
+        {
+          "book": "Bovada",
+          "eligible_for_consensus": true,
+          "fighter_moneyline": 750,
+          "opponent_moneyline": -1200,
+          "source_quote_age_seconds": 118.796696,
+          "source_quote_updated_at_utc": "2026-08-22T17:25:09.000000Z"
+        },
+        {
+          "book": "DraftKings",
+          "eligible_for_consensus": true,
+          "fighter_moneyline": 675,
+          "opponent_moneyline": -1050,
+          "source_quote_age_seconds": 72.796696,
+          "source_quote_updated_at_utc": "2026-08-22T17:25:55.000000Z"
+        },
+        {
+          "book": "FanDuel",
+          "eligible_for_consensus": true,
+          "fighter_moneyline": 750,
+          "opponent_moneyline": -1200,
+          "source_quote_age_seconds": 49.796696,
+          "source_quote_updated_at_utc": "2026-08-22T17:26:18.000000Z"
+        },
+        {
+          "book": "Fliff",
+          "eligible_for_consensus": true,
+          "fighter_moneyline": 680,
+          "opponent_moneyline": -1280,
+          "source_quote_age_seconds": 25.796696,
+          "source_quote_updated_at_utc": "2026-08-22T17:26:42.000000Z"
+        },
+        {
+          "book": "Hard Rock Bet",
+          "eligible_for_consensus": true,
+          "fighter_moneyline": 650,
+          "opponent_moneyline": -1100,
+          "source_quote_age_seconds": 71.796696,
+          "source_quote_updated_at_utc": "2026-08-22T17:25:56.000000Z"
+        }
+      ],
+      "current_signal": {
+        "action_name": "Terrance Chatman",
+        "best_candidate_name": "Terrance Chatman",
+        "best_candidate_side": "fighter",
+        "break_even_probability": 0.11764705882352941,
+        "consensus_book_count": 11,
+        "consensus_books": [
+          "Bally Bet",
+          "BetAnything",
+          "BetOnline.ag",
+          "betPARX",
+          "BetRivers",
+          "BetUS",
+          "Bovada",
+          "DraftKings",
+          "FanDuel",
+          "Fliff",
+          "Hard Rock Bet"
+        ],
+        "decision_id": "58aadf83869b9a29e7357b0032d4b8b236b027388134caf39e4c14131e5470c1",
+        "estimated_expected_return": 0.06437469024053666,
+        "market_fair_moneyline": 699,
+        "market_probability": 0.12522055179300434,
+        "minimum_expected_return": 0.05,
+        "model_probability_for_fighter": 0.5,
+        "model_weight": 0.0,
+        "observed_at_utc": "2026-08-22T17:27:07.796696Z",
+        "offered_moneyline": 750,
+        "paper_action": "fighter",
+        "probability_edge": 0.007573492969474904,
+        "probability_source": "leave_one_book_out_no_vig_market_consensus",
+        "reason": "Paper signal: estimated EV is 6.4%, meeting the 5.0% threshold.",
+        "target_book": "BetMGM",
+        "target_book_excluded_from_consensus": true
+      },
+      "current_signal_unavailable_reason": null,
+      "fighter_id": "23a81656507b56a3",
+      "fighter_name": "Terrance Chatman",
+      "full_market_consensus": {
+        "book_count": 12,
+        "books": [
+          "Bally Bet",
+          "BetAnything",
+          "BetMGM",
+          "BetOnline.ag",
+          "betPARX",
+          "BetRivers",
+          "BetUS",
+          "Bovada",
+          "DraftKings",
+          "FanDuel",
+          "Fliff",
+          "Hard Rock Bet"
+        ],
+        "fighter_fair_moneyline": 705,
+        "fighter_probability": 0.12420579566532645,
+        "opponent_fair_moneyline": -705,
+        "opponent_probability": 0.8757942043346736
+      },
+      "locked_t24_decision": {
+        "action_name": "Terrance Chatman",
+        "best_candidate_name": "Terrance Chatman",
+        "best_candidate_side": "fighter",
+        "break_even_probability": 0.11764705882352941,
+        "consensus_book_count": 10,
+        "consensus_books": [
+          "Bally Bet",
+          "BetAnything",
+          "BetOnline.ag",
+          "betPARX",
+          "BetRivers",
+          "BetUS",
+          "Bovada",
+          "DraftKings",
+          "FanDuel",
+          "Hard Rock Bet"
+        ],
+        "decision_id": "359c8bfcf414a032b5e773b1e19abe335bca6b71f84842bab37d209c1c05b425",
+        "estimated_expected_return": 0.07891044227409405,
+        "market_fair_moneyline": 688,
+        "market_probability": 0.1269306402675405,
+        "minimum_expected_return": 0.05,
+        "model_probability_for_fighter": 0.5,
+        "model_weight": 0.0,
+        "observed_at_utc": "2026-08-21T17:30:20.218293Z",
+        "offered_moneyline": 750,
+        "paper_action": "fighter",
+        "probability_edge": 0.009283581444011063,
+        "probability_source": "leave_one_book_out_no_vig_market_consensus",
+        "reason": "Paper signal: estimated EV is 7.9%, meeting the 5.0% threshold.",
+        "target_book": "BetMGM",
+        "target_book_excluded_from_consensus": true
+      },
+      "matchup_id": "matchup_fed9bd92cf25bf722674809712169440431c7630ef62bc2874998709ca4801e9",
+      "model_id": "ff04994f509057072ee9",
+      "model_probability_for_fighter": 0.5,
+      "opponent_id": "b34976c022b24568",
+      "opponent_name": "Anthony Wint"
+    },
+    {
+      "book_quotes": [
+        {
+          "book": "Bally Bet",
+          "eligible_for_consensus": true,
+          "fighter_moneyline": -215,
+          "opponent_moneyline": 170,
+          "source_quote_age_seconds": 98.796696,
+          "source_quote_updated_at_utc": "2026-08-22T17:25:29.000000Z"
+        },
+        {
+          "book": "BetAnything",
+          "eligible_for_consensus": true,
+          "fighter_moneyline": -210,
+          "opponent_moneyline": 175,
+          "source_quote_age_seconds": 24.796696,
+          "source_quote_updated_at_utc": "2026-08-22T17:26:43.000000Z"
+        },
+        {
+          "book": "BetMGM",
+          "eligible_for_consensus": true,
+          "fighter_moneyline": -200,
+          "opponent_moneyline": 165,
+          "source_quote_age_seconds": 25.796696,
+          "source_quote_updated_at_utc": "2026-08-22T17:26:42.000000Z"
+        },
+        {
+          "book": "BetOnline.ag",
+          "eligible_for_consensus": true,
+          "fighter_moneyline": -216,
+          "opponent_moneyline": 184,
+          "source_quote_age_seconds": 111.796696,
+          "source_quote_updated_at_utc": "2026-08-22T17:25:16.000000Z"
+        },
+        {
+          "book": "betPARX",
+          "eligible_for_consensus": true,
+          "fighter_moneyline": -215,
+          "opponent_moneyline": 170,
+          "source_quote_age_seconds": 71.796696,
+          "source_quote_updated_at_utc": "2026-08-22T17:25:56.000000Z"
+        },
+        {
+          "book": "BetRivers",
+          "eligible_for_consensus": true,
+          "fighter_moneyline": -215,
+          "opponent_moneyline": 170,
+          "source_quote_age_seconds": 49.796696,
+          "source_quote_updated_at_utc": "2026-08-22T17:26:18.000000Z"
+        },
+        {
+          "book": "BetUS",
+          "eligible_for_consensus": true,
+          "fighter_moneyline": -210,
+          "opponent_moneyline": 174,
+          "source_quote_age_seconds": 49.796696,
+          "source_quote_updated_at_utc": "2026-08-22T17:26:18.000000Z"
+        },
+        {
+          "book": "Bovada",
+          "eligible_for_consensus": true,
+          "fighter_moneyline": -205,
+          "opponent_moneyline": 173,
+          "source_quote_age_seconds": 118.796696,
+          "source_quote_updated_at_utc": "2026-08-22T17:25:09.000000Z"
+        },
+        {
+          "book": "DraftKings",
+          "eligible_for_consensus": true,
+          "fighter_moneyline": -225,
+          "opponent_moneyline": 185,
+          "source_quote_age_seconds": 72.796696,
+          "source_quote_updated_at_utc": "2026-08-22T17:25:55.000000Z"
+        },
+        {
+          "book": "FanDuel",
+          "eligible_for_consensus": true,
+          "fighter_moneyline": -215,
+          "opponent_moneyline": 180,
+          "source_quote_age_seconds": 49.796696,
+          "source_quote_updated_at_utc": "2026-08-22T17:26:18.000000Z"
+        },
+        {
+          "book": "Fliff",
+          "eligible_for_consensus": true,
+          "fighter_moneyline": -220,
+          "opponent_moneyline": 170,
+          "source_quote_age_seconds": 25.796696,
+          "source_quote_updated_at_utc": "2026-08-22T17:26:42.000000Z"
+        },
+        {
+          "book": "Hard Rock Bet",
+          "eligible_for_consensus": true,
+          "fighter_moneyline": -210,
+          "opponent_moneyline": 170,
+          "source_quote_age_seconds": 71.796696,
+          "source_quote_updated_at_utc": "2026-08-22T17:25:56.000000Z"
+        }
+      ],
+      "current_signal": {
+        "action_name": null,
+        "best_candidate_name": "Gregory Rodrigues",
+        "best_candidate_side": "opponent",
+        "break_even_probability": 0.3508771929824561,
+        "consensus_book_count": 11,
+        "consensus_books": [
+          "Bally Bet",
+          "BetAnything",
+          "BetMGM",
+          "BetOnline.ag",
+          "betPARX",
+          "BetRivers",
+          "BetUS",
+          "Bovada",
+          "FanDuel",
+          "Fliff",
+          "Hard Rock Bet"
+        ],
+        "decision_id": "65d0ad48f581597e39c42545055af78a3aae900fcb54c93285a7f0048d4522a1",
+        "estimated_expected_return": -0.0009520981514898885,
+        "market_fair_moneyline": 185,
+        "market_probability": 0.35054312345561756,
+        "minimum_expected_return": 0.05,
+        "model_probability_for_fighter": 0.7227240645,
+        "model_weight": 0.0,
+        "observed_at_utc": "2026-08-22T17:27:07.796696Z",
+        "offered_moneyline": 185,
+        "paper_action": "pass",
+        "probability_edge": -0.00033406952683856517,
+        "probability_source": "leave_one_book_out_no_vig_market_consensus",
+        "reason": "Pass: best estimated EV is -0.1%, below the 5.0% paper threshold.",
+        "target_book": "DraftKings",
+        "target_book_excluded_from_consensus": true
+      },
+      "current_signal_unavailable_reason": null,
+      "fighter_id": "093e1f5bb73850be",
+      "fighter_name": "Anthony Hernandez",
+      "full_market_consensus": {
+        "book_count": 12,
+        "books": [
+          "Bally Bet",
+          "BetAnything",
+          "BetMGM",
+          "BetOnline.ag",
+          "betPARX",
+          "BetRivers",
+          "BetUS",
+          "Bovada",
+          "DraftKings",
+          "FanDuel",
+          "Fliff",
+          "Hard Rock Bet"
+        ],
+        "fighter_fair_moneyline": -186,
+        "fighter_probability": 0.6506394805149723,
+        "opponent_fair_moneyline": 186,
+        "opponent_probability": 0.34936051948502767
+      },
+      "locked_t24_decision": {
+        "action_name": null,
+        "best_candidate_name": "Gregory Rodrigues",
+        "best_candidate_side": "opponent",
+        "break_even_probability": 0.37037037037037035,
+        "consensus_book_count": 11,
+        "consensus_books": [
+          "Bally Bet",
+          "BetAnything",
+          "BetMGM",
+          "BetOnline.ag",
+          "betPARX",
+          "BetRivers",
+          "BetUS",
+          "Bovada",
+          "FanDuel",
+          "Fliff",
+          "Hard Rock Bet"
+        ],
+        "decision_id": "d77ea62a59ed2f919b6b282b9c397275cc33f9d598de456d8f2523372691ccd9",
+        "estimated_expected_return": 0.007678384274979244,
+        "market_fair_moneyline": 168,
+        "market_probability": 0.37321421639814034,
+        "minimum_expected_return": 0.05,
+        "model_probability_for_fighter": 0.7227240645,
+        "model_weight": 0.0,
+        "observed_at_utc": "2026-08-21T17:30:20.218293Z",
+        "offered_moneyline": 170,
+        "paper_action": "pass",
+        "probability_edge": 0.0028438460277701028,
+        "probability_source": "leave_one_book_out_no_vig_market_consensus",
+        "reason": "Pass: best estimated EV is 0.8%, below the 5.0% paper threshold.",
+        "target_book": "DraftKings",
+        "target_book_excluded_from_consensus": true
+      },
+      "matchup_id": "matchup_ff8fe821f0bf7db65c0f5918339e7534290ecc001f4a1ccd0cd954294f76f759",
+      "model_id": "ff04994f509057072ee9",
+      "model_probability_for_fighter": 0.7227240645,
+      "opponent_id": "d1c65d2cf2925ddd",
+      "opponent_name": "Gregory Rodrigues"
+    }
+  ],
+  "maximum_source_quote_age_seconds": 1800.0,
+  "minimum_consensus_books_excluding_target": 3,
+  "minimum_expected_return": 0.05,
+  "model_weight": 0.0,
+  "observed_at_utc": "2026-08-22T17:27:07.796696Z",
+  "paper_only": true,
+  "policy_version": "leave-one-book-out-paper-v1",
+  "publication_sha256": "b569891438e5afc8075e5048017f5a2adc14f47e306fd257352749c0ff5bd9cd",
+  "schema_version": 1,
+  "source": "the-odds-api.com",
+  "timing_precision": "timestamp",
+  "timing_status": "after_t24_decision_window"
+}

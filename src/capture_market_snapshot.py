@@ -1,11 +1,12 @@
-"""Capture one frozen-model sportsbook observation without republishing.
+"""Capture one frozen-model sportsbook observation and refresh its web view.
 
 This command is intentionally separate from the authoritative UFCStats/model
 update.  It treats ``card_info.json``, ``vegas_odds.json`` and
 ``winner_model.json`` as immutable inputs, maps source display names only when
 they identify one published stable-ID matchup, and appends validated quote and
-forecast captures to the market-tracker ledgers.  It never creates a wager or
-modifies a website publication file.
+forecast captures to the market-tracker ledgers.  It never creates a wager;
+the only website file it writes is a bounded paper-only view reproduced from
+those immutable ledgers.
 """
 
 from __future__ import annotations
@@ -36,8 +37,10 @@ from market_tracker import (
     QuoteSnapshotStore,
     QuoteSourceMetadata,
     QuoteSourceMetadataStore,
+    build_current_opportunities,
     build_locked_paper_decisions,
     matchup_id_for,
+    validate_current_opportunities,
 )
 from odds_getter import OddsApiError, OddsApiResponse, OddsGetter, TheOddsApiClient
 
@@ -59,7 +62,9 @@ SOURCE_METADATA_JSONL_PATH = MARKET_ROOT / "quote_source_metadata.jsonl"
 DECISION_CSV_PATH = MARKET_ROOT / "paper_decisions.csv"
 DECISION_JSONL_PATH = MARKET_ROOT / "paper_decisions.jsonl"
 REPORT_PATH = MARKET_ROOT / "capture_report.json"
+CURRENT_OPPORTUNITIES_PATH = MARKET_ROOT / "current_opportunities.json"
 REPORT_SIZE_LIMIT = 64 * 1024
+CURRENT_OPPORTUNITIES_SIZE_LIMIT = 256 * 1024
 SOURCE_RETRY_DELAYS_SECONDS = (15.0, 60.0)
 API_RETRY_DELAYS_SECONDS = (5.0, 30.0)
 
@@ -859,6 +864,29 @@ def _atomic_write_report(report: dict[str, object]) -> None:
             os.unlink(temporary_name)
 
 
+def _atomic_write_current_opportunities(publication: dict[str, object]) -> None:
+    CURRENT_OPPORTUNITIES_PATH.parent.mkdir(parents=True, exist_ok=True)
+    encoded = json.dumps(
+        publication, indent=2, sort_keys=True, ensure_ascii=False, allow_nan=False
+    ) + "\n"
+    if len(encoded.encode("utf-8")) > CURRENT_OPPORTUNITIES_SIZE_LIMIT:
+        raise CaptureError("current opportunity publication exceeded its size limit")
+    descriptor, temporary_name = tempfile.mkstemp(
+        prefix=f".{CURRENT_OPPORTUNITIES_PATH.name}.",
+        suffix=".tmp",
+        dir=CURRENT_OPPORTUNITIES_PATH.parent,
+    )
+    try:
+        with os.fdopen(descriptor, "w", encoding="utf-8", newline="") as target:
+            target.write(encoded)
+            target.flush()
+            os.fsync(target.fileno())
+        os.replace(temporary_name, CURRENT_OPPORTUNITIES_PATH)
+    finally:
+        if os.path.exists(temporary_name):
+            os.unlink(temporary_name)
+
+
 def _append_summary(lines: list[str]) -> None:
     summary_path = _text(os.environ.get("GITHUB_STEP_SUMMARY"))
     if not summary_path:
@@ -930,6 +958,7 @@ def validate_generated_capture() -> dict[str, object]:
     if present_enhanced_fields and present_enhanced_fields != enhanced_fields:
         raise CaptureError("capture report has a partial enhanced market contract")
     enhanced_contract = enhanced_fields <= set(report)
+    opportunity_contract = "opportunity_publication_sha256" in report
     if enhanced_contract:
         extended_paths = (
             SOURCE_METADATA_CSV_PATH,
@@ -940,6 +969,14 @@ def validate_generated_capture() -> dict[str, object]:
         missing = [str(path) for path in extended_paths if not path.is_file()]
         if missing:
             raise CaptureError(f"enhanced market capture outputs are missing: {missing}")
+    if opportunity_contract:
+        if not CURRENT_OPPORTUNITIES_PATH.is_file():
+            raise CaptureError("current opportunity publication is missing")
+        if (
+            CURRENT_OPPORTUNITIES_PATH.stat().st_size
+            > CURRENT_OPPORTUNITIES_SIZE_LIMIT
+        ):
+            raise CaptureError("current opportunity publication is not bounded")
     supplied_hash = _text(report.get("report_sha256"))
     unhashed = dict(report)
     unhashed.pop("report_sha256", None)
@@ -1077,6 +1114,25 @@ def validate_generated_capture() -> dict[str, object]:
         for item in capture_forecasts
     ):
         raise CaptureError("a captured forecast was issued after the quote retrieval")
+    if opportunity_contract:
+        opportunities = _json_object(
+            _read_bytes(CURRENT_OPPORTUNITIES_PATH), CURRENT_OPPORTUNITIES_PATH
+        )
+        validated_opportunities = validate_current_opportunities(
+            opportunities,
+            quotes,
+            forecasts,
+            source_metadata,
+            decisions,
+            capture_id=capture_id,
+        )
+        if (
+            validated_opportunities.get("publication_sha256")
+            != report.get("opportunity_publication_sha256")
+        ):
+            raise CaptureError(
+                "opportunity publication fingerprint differs from capture report"
+            )
     return report
 
 
@@ -1163,6 +1219,14 @@ def capture_market_snapshot() -> dict[str, object]:
     final_forecasts = forecast_store.read()
     final_metadata = metadata_store.read()
     final_decisions = decision_store.read()
+    current_opportunities = build_current_opportunities(
+        final_quotes,
+        final_forecasts,
+        final_metadata,
+        final_decisions,
+        capture_id=capture_id,
+    )
+    _atomic_write_current_opportunities(current_opportunities)
     quote_matchups = len({item.matchup_id for item in quotes})
     paired_forecast_matchups = len({item.matchup_id for item in forecasts})
     published_without_stable_ids = sum(
@@ -1218,6 +1282,9 @@ def capture_market_snapshot() -> dict[str, object]:
         "forecast_dataset_sha256": _dataset_hash(final_forecasts),
         "source_metadata_dataset_sha256": _dataset_hash(final_metadata),
         "paper_decision_dataset_sha256": _dataset_hash(final_decisions),
+        "opportunity_publication_sha256": current_opportunities[
+            "publication_sha256"
+        ],
         "paper_decision_policy": paper_build.to_mapping(),
         **counters,
         "paper_decisions_created": len(paper_build.decisions),
@@ -1258,6 +1325,7 @@ def capture_market_snapshot() -> dict[str, object]:
                 f"- T-24 paper decisions: {len(paper_build.decisions)} "
                 f"(`{BETTING_STATUS}`)"
             ),
+            "- Website opportunity view: refreshed from this capture",
             (
                 "- API credits remaining: "
                 f"{retrieved_odds.request_metadata.get('requests_remaining')}"

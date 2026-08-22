@@ -5,12 +5,14 @@ ufcfightscrap = {}
 vegas_odds = {}
 prediction_history = {}
 card_info = {}
+market_opportunities = null
 
 $.getJSON('src/content/data/external/card_info.json', function (data) {
   //for each input (i,f), i is the key (a fighter's name) and f is the value (all their data)
   $.each(data, function (i, f) {
     card_info[i] = f
   });
+  renderMarketOpportunities();
 });
 
 $.getJSON('src/content/data/external/theta.json', function (data) {
@@ -56,8 +58,21 @@ $(function () { // building object vegas_odds from vegas_odds.json file
       vegas_odds[i] = f
     });
     renderUpcomingPredictions();
+    renderMarketOpportunities();
   }).fail(function () {
     renderUpcomingPredictions('Weekly forecast data could not be loaded.');
+  });
+});
+
+$(function () {
+  $.getJSON('src/content/data/market/current_opportunities.json', function (data) {
+    market_opportunities = data;
+    renderMarketOpportunities();
+  }).fail(function () {
+    market_opportunities = null;
+    renderMarketOpportunities(
+      'No current book-by-book capture is published yet. The next successful market snapshot will populate this table.'
+    );
   });
 });
 
@@ -1150,6 +1165,299 @@ function renderUpcomingPredictions(loadError) {
         String(modelStatus).toLowerCase().startsWith('abstain')) {
       row.cells.item(5).style.color = '#e9b24c';
     }
+  }
+}
+
+function opportunityEventMatchesCurrentCard(publication) {
+  const publishedEvent = publication && publication.event_id;
+  if (!hasDisplayValue(publishedEvent)) {
+    return false;
+  }
+  if (hasDisplayValue(card_info.event_id)) {
+    return String(publishedEvent) === String(card_info.event_id);
+  }
+  const fighterNames = vegas_odds && vegas_odds['fighter name'];
+  const indices = fighterNames ? Object.keys(fighterNames) : [];
+  if (indices.length > 0) {
+    const currentEvent = tableValue(vegas_odds, 'event id', indices[0]);
+    if (hasDisplayValue(currentEvent)) {
+      return String(publishedEvent) === String(currentEvent);
+    }
+  }
+  return true;
+}
+
+function formatUtcTimestamp(value) {
+  if (!hasDisplayValue(value)) {
+    return 'unknown time';
+  }
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) {
+    return String(value);
+  }
+  return parsed.toLocaleString([], {
+    year: 'numeric', month: 'short', day: 'numeric',
+    hour: 'numeric', minute: '2-digit', timeZoneName: 'short'
+  });
+}
+
+function formatSignedPercent(value) {
+  const number = finiteNumber(value);
+  if (number === null) {
+    return 'N/A';
+  }
+  const percentage = number * 100;
+  return (percentage > 0 ? '+' : '') + percentage.toFixed(1) + '%';
+}
+
+function appendTextLine(container, text, className) {
+  if (!hasDisplayValue(text)) {
+    return;
+  }
+  const line = document.createElement('div');
+  line.textContent = String(text);
+  if (className) {
+    line.className = className;
+  }
+  container.appendChild(line);
+}
+
+function timingStatusLabel(status) {
+  const labels = {
+    'before_t24_decision_window': 'Before the T-24 decision window',
+    'inside_t24_decision_window': 'Inside the T-24 decision window',
+    'after_t24_decision_window': 'After the T-24 decision window',
+    'exact_event_time_unavailable': 'Exact event time unavailable'
+  };
+  return labels[status] || humanizeForecastLabel(status);
+}
+
+function appendDecisionSummary(container, signal, emptyText, isLocked) {
+  if (!signal) {
+    appendTextLine(container, emptyText, 'opportunity-muted');
+    return;
+  }
+  const action = String(signal.paper_action || 'pass').toLowerCase();
+  if (action === 'pass') {
+    appendTextLine(container, 'PASS', 'opportunity-pass');
+    appendTextLine(
+      container,
+      'Best candidate: ' + signal.best_candidate_name + ' at ' + signal.target_book +
+        ' ' + formatOdds(signal.offered_moneyline)
+    );
+  } else {
+    appendTextLine(
+      container,
+      (isLocked ? 'LOCKED PAPER: ' : 'PAPER SIGNAL: ') + signal.action_name,
+      'opportunity-action'
+    );
+    appendTextLine(
+      container,
+      signal.target_book + ' ' + formatOdds(signal.offered_moneyline)
+    );
+  }
+  appendTextLine(container, signal.reason, 'opportunity-muted');
+  if (isLocked) {
+    appendTextLine(
+      container,
+      'Frozen ' + formatUtcTimestamp(signal.observed_at_utc),
+      'opportunity-muted'
+    );
+  }
+}
+
+function appendCurrentPriceComparison(container, signal) {
+  if (!signal) {
+    appendTextLine(container, 'Not evaluable', 'opportunity-muted');
+    return;
+  }
+  appendTextLine(
+    container,
+    signal.best_candidate_name + ' at ' + signal.target_book + ': ' +
+      formatOdds(signal.offered_moneyline),
+    'opportunity-price'
+  );
+  appendTextLine(
+    container,
+    'Leave-one-book-out fair line: ' + formatOdds(signal.market_fair_moneyline) +
+      ' (' + formatProbability(signal.market_probability) + ')'
+  );
+  appendTextLine(
+    container,
+    'Break-even: ' + formatProbability(signal.break_even_probability)
+  );
+  appendTextLine(
+    container,
+    'Consensus: ' + signal.consensus_book_count + ' books; target excluded',
+    'opportunity-muted'
+  );
+}
+
+function appendBookDetails(container, matchup, observedAt) {
+  const details = document.createElement('details');
+  const summary = document.createElement('summary');
+  const quotes = Array.isArray(matchup.book_quotes) ? matchup.book_quotes : [];
+  summary.textContent = 'All ' + quotes.length + ' captured books';
+  details.appendChild(summary);
+  appendTextLine(details, 'Capture: ' + formatUtcTimestamp(observedAt), 'opportunity-muted');
+  for (const quote of quotes) {
+    const age = finiteNumber(quote.source_quote_age_seconds);
+    const freshness = quote.eligible_for_consensus
+      ? 'eligible'
+      : 'not used (stale/missing update time)';
+    appendTextLine(
+      details,
+      quote.book + ': ' + matchup.fighter_name + ' ' +
+        formatOdds(quote.fighter_moneyline) + ' / ' + matchup.opponent_name + ' ' +
+        formatOdds(quote.opponent_moneyline) + ' - ' + freshness +
+        (age === null ? '' : ', source age ' + Math.round(age / 60) + 'm')
+    );
+  }
+  const signal = matchup.current_signal;
+  if (signal && Array.isArray(signal.consensus_books)) {
+    appendTextLine(
+      details,
+      'Books in selected comparison: ' + signal.consensus_books.join(', '),
+      'opportunity-muted'
+    );
+    appendTextLine(
+      details,
+      'Excluded target: ' + signal.target_book,
+      'opportunity-muted'
+    );
+  }
+  container.appendChild(details);
+}
+
+function renderMarketOpportunities(loadError) {
+  const table = document.getElementById('market-opportunities');
+  const status = document.getElementById('market-opportunity-status');
+  if (!table || !status || !table.tBodies.length) {
+    return;
+  }
+  const tbody = table.tBodies[0];
+  tbody.textContent = '';
+  if (loadError) {
+    status.textContent = loadError;
+    table.style.display = 'none';
+    return;
+  }
+  if (!market_opportunities) {
+    status.textContent = 'Loading current sportsbook capture...';
+    table.style.display = 'none';
+    return;
+  }
+  if (!opportunityEventMatchesCurrentCard(market_opportunities)) {
+    status.textContent =
+      'The latest book-by-book capture belongs to a different card, so it is hidden to prevent stale prices from being mistaken for current ones.';
+    table.style.display = 'none';
+    return;
+  }
+  if (hasDisplayValue(market_opportunities.event_start_utc)) {
+    const eventStart = new Date(market_opportunities.event_start_utc);
+    if (!Number.isNaN(eventStart.getTime()) && eventStart.getTime() <= Date.now()) {
+      status.textContent =
+        'This card has commenced, so its captured sportsbook prices are hidden. Historical paper results remain in the research ledgers.';
+      table.style.display = 'none';
+      return;
+    }
+  }
+  if (market_opportunities.paper_only !== true ||
+      market_opportunities.execution_enabled !== false) {
+    status.textContent = 'The market publication failed its paper-only safety contract.';
+    table.style.display = 'none';
+    return;
+  }
+  const matchups = Array.isArray(market_opportunities.matchups)
+    ? market_opportunities.matchups
+    : [];
+  status.textContent =
+    'Captured ' + formatUtcTimestamp(market_opportunities.observed_at_utc) +
+    ' - ' + timingStatusLabel(market_opportunities.timing_status) +
+    ' - paper only; execution disabled.';
+  if (matchups.length === 0) {
+    status.textContent += ' No evaluable matchups were published.';
+    table.style.display = 'none';
+    return;
+  }
+
+  table.style.display = 'table';
+  for (const matchup of matchups) {
+    const row = tbody.insertRow(-1);
+    for (let column = 0; column < 6; column += 1) {
+      row.appendChild(document.createElement('td'));
+    }
+    appendTextLine(
+      row.cells.item(0),
+      matchup.fighter_name + ' vs ' + matchup.opponent_name,
+      'opportunity-matchup'
+    );
+    appendTextLine(
+      row.cells.item(0),
+      'Independent model: ' + formatProbability(matchup.model_probability_for_fighter) +
+        ' ' + matchup.fighter_name,
+      'opportunity-muted'
+    );
+    const fullConsensus = matchup.full_market_consensus;
+    if (fullConsensus) {
+      appendTextLine(
+        row.cells.item(0),
+        'Current all-book no-vig: ' + matchup.fighter_name + ' ' +
+          formatProbability(fullConsensus.fighter_probability) + ' / ' +
+          matchup.opponent_name + ' ' +
+          formatProbability(fullConsensus.opponent_probability) + ' (' +
+          fullConsensus.book_count + ' books)',
+        'opportunity-muted'
+      );
+    }
+
+    appendDecisionSummary(
+      row.cells.item(1),
+      matchup.locked_t24_decision,
+      market_opportunities.timing_status === 'before_t24_decision_window'
+        ? 'Not frozen yet; waiting for T-24 window'
+        : 'No T-24 decision was frozen',
+      true
+    );
+    appendDecisionSummary(
+      row.cells.item(2),
+      matchup.current_signal,
+      matchup.current_signal_unavailable_reason || 'No current signal',
+      false
+    );
+    appendCurrentPriceComparison(row.cells.item(3), matchup.current_signal);
+
+    if (matchup.current_signal) {
+      appendTextLine(
+        row.cells.item(4),
+        formatSignedPercent(matchup.current_signal.estimated_expected_return),
+        matchup.current_signal.paper_action === 'pass'
+          ? 'opportunity-pass'
+          : 'opportunity-action'
+      );
+      appendTextLine(
+        row.cells.item(4),
+        'Probability edge ' +
+          formatSignedPercent(matchup.current_signal.probability_edge)
+      );
+      appendTextLine(
+        row.cells.item(4),
+        'Threshold ' +
+          formatSignedPercent(matchup.current_signal.minimum_expected_return),
+        'opportunity-muted'
+      );
+      appendTextLine(
+        row.cells.item(4),
+        'Model weight in signal: ' +
+          formatProbability(matchup.current_signal.model_weight),
+        'opportunity-muted'
+      );
+    } else {
+      appendTextLine(row.cells.item(4), 'N/A', 'opportunity-muted');
+    }
+    appendBookDetails(
+      row.cells.item(5), matchup, market_opportunities.observed_at_utc
+    );
   }
 }
 
