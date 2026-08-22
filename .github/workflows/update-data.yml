@@ -104,6 +104,15 @@ jobs:
             src/content/data/market/paper_settlements.jsonl \
             src/content/data/market/performance_report.json
 
+          for optional_path in \
+            src/content/data/market/total_round_paper_settlements.csv \
+            src/content/data/market/total_round_paper_settlements.jsonl
+          do
+            if [ -f "$optional_path" ]; then
+              git add -- "$optional_path"
+            fi
+          done
+
           if git diff --cached --quiet; then
             echo "No validated data changes to commit."
             exit 0

@@ -783,8 +783,50 @@ async function renderFighterProfile(fighterId) {
   }
 }
 
+function renderProfitabilityEvidence() {
+  const container = $("#profitability-evidence"); container.replaceChildren();
+  const totals = state.performance?.total_rounds;
+  if (!totals) {
+    container.append(element("div", "empty-state", "The totals decision ledger has not published a performance report yet. It will populate after a successful totals capture reaches the T-24 window."));
+    return;
+  }
+  const official = totals.official_strategy || {};
+  const comparison = totals.forecast_comparators || {};
+  const clv = totals.latest_available_price_clv || {};
+  const residual = totals.next_residual_weight_selection || {};
+  const gate = totals.promotion_gate || {};
+  const metrics = element("div", "stats-grid");
+  [
+    [formatNumber(totals.scored_forecasts, 0), "Settled forecasts", `${formatNumber(gate.minimum_scored_lines, 0)} required before promotion`],
+    [formatNumber(official.selections, 0), "Official paper selections", "5% residual-EV threshold"],
+    [formatPercent(official.hypothetical_roi), "Hypothetical ROI", official.selections ? `${official.wins}-${official.losses} paper record` : "Awaiting selections"],
+    [formatPercent(clv.mean_probability_edge), "Mean closing-line value", clv.count ? `${clv.count} same-book comparisons` : "Awaiting a later same-book price"],
+    [formatNumber(comparison.residual_minus_market_log_loss, 4), "Residual minus market log loss", "Negative is better than market consensus"],
+    [formatPercent(residual.selected_weight), "Independent-model weight", String(residual.selection_status || "market_only_insufficient_history").replaceAll("_", " ")],
+  ].forEach(([value, label, note]) => metrics.append(statTile(value, label, note)));
+  container.append(metrics);
+  appendText(container, "p", "section-note", gate.count_requirements_met
+    ? "The sample-count gate is met; calibration, return, and closing-line confidence requirements must also pass before policy promotion. Execution remains disabled."
+    : `Evidence collection remains active: ${formatNumber(gate.settled_events, 0)} / ${formatNumber(gate.minimum_settled_events, 0)} events and ${formatNumber(gate.paper_selections, 0)} / ${formatNumber(gate.minimum_paper_selections, 0)} paper selections.`);
+  const strategies = totals.shadow_threshold_strategies || {};
+  const thresholds = Object.keys(strategies.market_residual || {});
+  if (!thresholds.length) return;
+  const details = document.createElement("details"); details.append(element("summary", "", "Compare predeclared EV thresholds"));
+  const body = element("div", "details-body book-table-wrap"); const table = element("table", "data-table");
+  const head = document.createElement("thead"); const header = document.createElement("tr");
+  ["Probability source", "EV threshold", "Selections", "Record", "Paper ROI", "Max drawdown"].forEach((value) => appendText(header, "th", "", value)); head.append(header); table.append(head);
+  const tbody = document.createElement("tbody");
+  [["Independent model", strategies.independent_model], ["Market residual", strategies.market_residual]].forEach(([label, rows]) => {
+    thresholds.forEach((threshold) => {
+      const values = rows?.[threshold] || {}; const row = document.createElement("tr");
+      [label, formatPercent(values.threshold), formatNumber(values.selections, 0), `${values.wins || 0}-${values.losses || 0}`, formatPercent(values.hypothetical_roi), formatNumber(values.hypothetical_max_drawdown_units, 2)].forEach((value) => appendText(row, "td", "", value)); tbody.append(row);
+    });
+  });
+  table.append(tbody); body.append(table); details.append(body); container.append(details);
+}
+
 function renderMarket() {
-  const notice = $("#market-notice"); const container = $("#market-matchups"); const opportunityContainer = $("#market-opportunities"); const propContainer = $("#prop-market-details"); notice.replaceChildren(); container.replaceChildren(); opportunityContainer.replaceChildren(); propContainer.replaceChildren();
+  const notice = $("#market-notice"); const container = $("#market-matchups"); const opportunityContainer = $("#market-opportunities"); const propContainer = $("#prop-market-details"); notice.replaceChildren(); container.replaceChildren(); opportunityContainer.replaceChildren(); propContainer.replaceChildren(); renderProfitabilityEvidence();
   const copy = element("div"); appendText(copy, "h2", "", "Paper research only—automatic betting is intentionally off.");
   appendText(copy, "p", "", state.market ? `Quotes captured ${formatTimestamp(state.market.observed_at_utc)}. The policy compares the best available price with a consensus that excludes that target book.` : "No current book-by-book market capture is published. Fighter and matchup research remains available.");
   notice.append(copy, element("span", "pill orange", state.market ? "Execution disabled" : "Capture unavailable"));
@@ -844,6 +886,12 @@ function renderMarket() {
     if (best) {
       const stats = element("div", "signal-line"); [[best.selection, "Best side"], [`${formatOdds(best.offered_moneyline)} - ${best.target_book}`, "Best price"], [formatPercent(best.estimated_expected_return), "Candidate model EV"]].forEach(([value, label]) => { const item = element("div", "signal-stat"); appendText(item, "strong", "", value); appendText(item, "span", "", label); stats.append(item); }); card.append(stats);
     } else appendText(card, "p", "signal-reason", market.forecast_unavailable_reason || "No valid candidate price.");
+    if (market.locked_t24_decision) {
+      const locked = market.locked_t24_decision; const lockedDetails = document.createElement("details"); lockedDetails.append(element("summary", "", "Locked T-24 residual paper decision"));
+      const lockedBody = element("div", "details-body"); const lockedTable = element("table", "data-table"); const lockedRows = document.createElement("tbody");
+      [["Captured", formatTimestamp(locked.captured_at_utc)], ["Paper action", locked.paper_action], ["Selection", locked.selection || "Pass"], ["Target book", locked.target_book], ["Offered price", formatOdds(locked.offered_moneyline)], ["Market over probability", formatPercent(locked.market_over_probability)], ["Independent-model over probability", formatPercent(locked.model_over_probability)], ["Residual over probability", formatPercent(locked.residual_over_probability)], ["Independent-model weight", formatPercent(locked.selected_residual_weight)], ["Estimated return", formatPercent(locked.estimated_expected_return)], ["Residual status", String(locked.residual_selection_status).replaceAll("_", " ")]].forEach(([label, value]) => { const row = document.createElement("tr"); appendText(row, "td", "", label); appendText(row, "td", "", value); lockedRows.append(row); });
+      lockedTable.append(lockedRows); lockedBody.append(lockedTable); lockedDetails.append(lockedBody); card.append(lockedDetails);
+    }
     const details = document.createElement("details"); details.append(element("summary", "", `All ${market.book_quotes.length} total prices`)); const body = element("div", "details-body book-table-wrap"); const table = element("table", "data-table"); const head = document.createElement("thead"); const header = document.createElement("tr"); ["Book", "Over", "Under", "No-vig over", "Quote age"].forEach((value) => appendText(header, "th", "", value)); head.append(header); table.append(head); const tbody = document.createElement("tbody"); market.book_quotes.forEach((quote) => { const row = document.createElement("tr"); [quote.book, formatOdds(quote.over_moneyline), formatOdds(quote.under_moneyline), formatPercent(quote.no_vig_over_probability), `${formatNumber(quote.source_quote_age_seconds, 0)}s`].forEach((value) => appendText(row, "td", "", value)); tbody.append(row); }); table.append(tbody); body.append(table); details.append(body); card.append(details); propContainer.append(card);
   });
   const outcomeMatchups = (state.outcomes?.matchups || []).filter((item) => item.matchup_id && item.terminal_probabilities);

@@ -44,8 +44,11 @@ from market_tracker import (
     TotalRoundsQuoteStore,
     TotalRoundsForecastCapture,
     TotalRoundsForecastStore,
+    TotalRoundsPaperDecisionStore,
+    TotalRoundsPaperSettlementStore,
     build_current_opportunities,
     build_locked_paper_decisions,
+    build_locked_total_round_decisions,
     matchup_id_for,
     validate_current_opportunities,
 )
@@ -71,6 +74,10 @@ TOTAL_ROUNDS_CSV_PATH = MARKET_ROOT / "total_round_quote_snapshots.csv"
 TOTAL_ROUNDS_JSONL_PATH = MARKET_ROOT / "total_round_quote_snapshots.jsonl"
 TOTAL_ROUNDS_FORECAST_CSV_PATH = MARKET_ROOT / "total_round_forecast_captures.csv"
 TOTAL_ROUNDS_FORECAST_JSONL_PATH = MARKET_ROOT / "total_round_forecast_captures.jsonl"
+TOTAL_ROUNDS_DECISION_CSV_PATH = MARKET_ROOT / "total_round_paper_decisions.csv"
+TOTAL_ROUNDS_DECISION_JSONL_PATH = MARKET_ROOT / "total_round_paper_decisions.jsonl"
+TOTAL_ROUNDS_SETTLEMENT_CSV_PATH = MARKET_ROOT / "total_round_paper_settlements.csv"
+TOTAL_ROUNDS_SETTLEMENT_JSONL_PATH = MARKET_ROOT / "total_round_paper_settlements.jsonl"
 DECISION_CSV_PATH = MARKET_ROOT / "paper_decisions.csv"
 DECISION_JSONL_PATH = MARKET_ROOT / "paper_decisions.jsonl"
 REPORT_PATH = MARKET_ROOT / "capture_report.json"
@@ -1280,6 +1287,13 @@ def validate_generated_capture() -> dict[str, object]:
         "total_round_forecast_records_total",
         "total_round_forecast_dataset_sha256",
     }
+    total_round_decision_fields = {
+        "total_round_paper_decision_policy",
+        "total_round_paper_decisions_created",
+        "total_round_paper_decisions_added",
+        "total_round_paper_decisions_total",
+        "total_round_paper_decision_dataset_sha256",
+    }
     present_total_round_fields = total_round_fields & set(report)
     if present_total_round_fields and present_total_round_fields != total_round_fields:
         raise CaptureError("capture report has a partial total-round contract")
@@ -1293,6 +1307,15 @@ def validate_generated_capture() -> dict[str, object]:
     total_round_forecast_contract = total_round_forecast_fields <= set(report)
     if total_round_forecast_contract and not total_round_contract:
         raise CaptureError("total-round forecasts require the quote contract")
+    present_total_round_decision_fields = total_round_decision_fields & set(report)
+    if (
+        present_total_round_decision_fields
+        and present_total_round_decision_fields != total_round_decision_fields
+    ):
+        raise CaptureError("capture report has a partial total-round decision contract")
+    total_round_decision_contract = total_round_decision_fields <= set(report)
+    if total_round_decision_contract and not total_round_forecast_contract:
+        raise CaptureError("total-round decisions require the forecast contract")
     if enhanced_contract:
         extended_paths = (
             SOURCE_METADATA_CSV_PATH,
@@ -1327,6 +1350,14 @@ def validate_generated_capture() -> dict[str, object]:
         missing = [str(path) for path in total_forecast_paths if not path.is_file()]
         if missing:
             raise CaptureError(f"total-round forecast outputs are missing: {missing}")
+    if total_round_decision_contract:
+        total_decision_paths = (
+            TOTAL_ROUNDS_DECISION_CSV_PATH,
+            TOTAL_ROUNDS_DECISION_JSONL_PATH,
+        )
+        missing = [str(path) for path in total_decision_paths if not path.is_file()]
+        if missing:
+            raise CaptureError(f"total-round decision outputs are missing: {missing}")
     supplied_hash = _text(report.get("report_sha256"))
     unhashed = dict(report)
     unhashed.pop("report_sha256", None)
@@ -1379,6 +1410,14 @@ def validate_generated_capture() -> dict[str, object]:
         if total_round_contract
         else ()
     )
+    total_round_decisions = (
+        TotalRoundsPaperDecisionStore(
+            TOTAL_ROUNDS_DECISION_CSV_PATH,
+            TOTAL_ROUNDS_DECISION_JSONL_PATH,
+        ).read()
+        if total_round_decision_contract
+        else ()
+    )
     if _dataset_hash(quotes) != report.get("quote_dataset_sha256"):
         raise CaptureError("quote ledger fingerprint differs from capture report")
     if _dataset_hash(forecasts) != report.get("forecast_dataset_sha256"):
@@ -1395,6 +1434,10 @@ def validate_generated_capture() -> dict[str, object]:
         "total_round_forecast_dataset_sha256"
     ):
         raise CaptureError("total-round forecast fingerprint differs from capture report")
+    if total_round_decision_contract and _dataset_hash(total_round_decisions) != report.get(
+        "total_round_paper_decision_dataset_sha256"
+    ):
+        raise CaptureError("total-round decision fingerprint differs from capture report")
     capture_id = _stable_token(report.get("capture_id"), "capture report capture_id")
     capture_quotes = tuple(item for item in quotes if item.capture_id == capture_id)
     capture_forecasts = tuple(item for item in forecasts if item.capture_id == capture_id)
@@ -1409,6 +1452,9 @@ def validate_generated_capture() -> dict[str, object]:
     )
     capture_total_round_forecasts = tuple(
         item for item in total_round_forecasts if item.capture_id == capture_id
+    )
+    capture_total_round_decisions = tuple(
+        item for item in total_round_decisions if item.capture_id == capture_id
     )
     if len(capture_quotes) != int(report.get("quote_records_in_capture", -1)):
         raise CaptureError("capture report quote count differs from the quote ledger")
@@ -1459,6 +1505,22 @@ def validate_generated_capture() -> dict[str, object]:
             for item in capture_total_round_forecasts
         } <= quote_lines:
             raise CaptureError("a total forecast has no quote in the same capture")
+    if total_round_decision_contract:
+        if len(total_round_decisions) != int(
+            report.get("total_round_paper_decisions_total", -1)
+        ):
+            raise CaptureError("capture report total decision total differs from ledger")
+        if len(capture_total_round_decisions) != int(
+            report.get("total_round_paper_decisions_created", -1)
+        ):
+            raise CaptureError("capture report total decision count differs from ledger")
+        forecast_lines = {
+            (item.matchup_id, item.line) for item in capture_total_round_forecasts
+        }
+        if not {
+            (item.matchup_id, item.line) for item in capture_total_round_decisions
+        } <= forecast_lines:
+            raise CaptureError("a total decision has no forecast in the same capture")
     quote_matchups = {item.matchup_id for item in capture_quotes}
     forecast_matchups = {item.matchup_id for item in capture_forecasts}
     if not forecast_matchups <= quote_matchups:
@@ -1545,6 +1607,7 @@ def validate_generated_capture() -> dict[str, object]:
             capture_id=capture_id,
             total_round_quotes=total_rounds,
             total_round_forecasts=total_round_forecasts,
+            total_round_decisions=total_round_decisions,
             method_price_status=(
                 opportunities.get("prop_markets", {})
                 .get("method_of_victory", {})
@@ -1635,8 +1698,10 @@ def capture_market_snapshot() -> dict[str, object]:
 
     total_round_store: TotalRoundsQuoteStore | None = None
     total_round_forecast_store: TotalRoundsForecastStore | None = None
+    total_round_decision_store: TotalRoundsPaperDecisionStore | None = None
     total_round_quotes: tuple[TotalRoundsQuoteSnapshot, ...] = ()
     total_round_forecasts: tuple[TotalRoundsForecastCapture, ...] = ()
+    total_round_decision_build = None
     total_round_counters = {
         "total_round_source_rows": 0,
         "total_round_unmatched_source_rows": 0,
@@ -1653,7 +1718,17 @@ def capture_market_snapshot() -> dict[str, object]:
             TOTAL_ROUNDS_FORECAST_CSV_PATH,
             TOTAL_ROUNDS_FORECAST_JSONL_PATH,
         )
+        total_round_decision_store = TotalRoundsPaperDecisionStore(
+            TOTAL_ROUNDS_DECISION_CSV_PATH,
+            TOTAL_ROUNDS_DECISION_JSONL_PATH,
+        )
+        total_round_settlement_store = TotalRoundsPaperSettlementStore(
+            TOTAL_ROUNDS_SETTLEMENT_CSV_PATH,
+            TOTAL_ROUNDS_SETTLEMENT_JSONL_PATH,
+        )
         total_round_forecast_store.read()
+        existing_total_round_decisions = total_round_decision_store.read()
+        existing_total_round_settlements = total_round_settlement_store.read()
         existing_total_rounds = total_round_store.read()
         total_source_matches, total_unmatched = _map_total_round_rows(
             retrieved_odds.total_rounds_frame,
@@ -1678,6 +1753,12 @@ def capture_market_snapshot() -> dict[str, object]:
             total_round_quotes, outcome_publication
         )
         total_round_counters.update(forecast_counters)
+        total_round_decision_build = build_locked_total_round_decisions(
+            total_round_quotes,
+            total_round_forecasts,
+            existing_total_round_decisions,
+            existing_total_round_settlements,
+        )
 
     paper_build = build_locked_paper_decisions(
         quotes, forecasts, source_metadata, existing_decisions
@@ -1703,6 +1784,12 @@ def capture_market_snapshot() -> dict[str, object]:
         if total_round_store is not None
         else None
     )
+    total_round_decision_result = (
+        total_round_decision_store.append(total_round_decision_build.decisions)
+        if total_round_decision_store is not None
+        and total_round_decision_build is not None
+        else None
+    )
     final_quotes = quote_store.read()
     final_forecasts = forecast_store.read()
     final_metadata = metadata_store.read()
@@ -1715,6 +1802,11 @@ def capture_market_snapshot() -> dict[str, object]:
         if total_round_forecast_store is not None
         else ()
     )
+    final_total_round_decisions = (
+        total_round_decision_store.read()
+        if total_round_decision_store is not None
+        else ()
+    )
     current_opportunities = build_current_opportunities(
         final_quotes,
         final_forecasts,
@@ -1723,6 +1815,7 @@ def capture_market_snapshot() -> dict[str, object]:
         capture_id=capture_id,
         total_round_quotes=final_total_rounds,
         total_round_forecasts=final_total_round_forecasts,
+        total_round_decisions=final_total_round_decisions,
         method_price_status=(
             str(outcome_publication.get("method_price_status"))
             if outcome_publication is not None
@@ -1797,8 +1890,14 @@ def capture_market_snapshot() -> dict[str, object]:
         "publication_files_unchanged": True,
     }
     if total_round_result is not None:
-        if total_round_forecast_result is None:
-            raise CaptureError("total-round quotes require a forecast ledger result")
+        if (
+            total_round_forecast_result is None
+            or total_round_decision_result is None
+            or total_round_decision_build is None
+        ):
+            raise CaptureError(
+                "total-round quotes require forecast and decision ledger results"
+            )
         report_body.update(
             {
                 **total_round_counters,
@@ -1824,6 +1923,21 @@ def capture_market_snapshot() -> dict[str, object]:
                 "total_round_forecast_dataset_sha256": _dataset_hash(
                     final_total_round_forecasts
                 ),
+                "total_round_paper_decision_policy": (
+                    total_round_decision_build.to_mapping()
+                ),
+                "total_round_paper_decisions_created": len(
+                    total_round_decision_build.decisions
+                ),
+                "total_round_paper_decisions_added": len(
+                    total_round_decision_result.added_ids
+                ),
+                "total_round_paper_decisions_total": (
+                    total_round_decision_result.total_records
+                ),
+                "total_round_paper_decision_dataset_sha256": _dataset_hash(
+                    final_total_round_decisions
+                ),
             }
         )
 
@@ -1848,6 +1962,11 @@ def capture_market_snapshot() -> dict[str, object]:
             f"- Unrelated source rows skipped: {unmatched_source_rows}",
             f"- Two-sided book quotes: {len(quotes)}",
             f"- Full-fight total-round quotes: {len(total_round_quotes)}",
+            (
+                "- T-24 total-round decisions: "
+                f"{len(total_round_decision_build.decisions) if total_round_decision_build else 0} "
+                f"(`{BETTING_STATUS}`)"
+            ),
             (
                 "- Paper-evaluable matchups (4+ books): "
                 f"{counters['paper_evaluable_matchups']}"

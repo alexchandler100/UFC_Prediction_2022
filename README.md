@@ -91,6 +91,9 @@ The auditable artifacts are:
 - `src/content/data/market/quote_snapshots.jsonl`
 - `src/content/data/market/quote_source_metadata.jsonl`
 - `src/content/data/market/total_round_quote_snapshots.jsonl`
+- `src/content/data/market/total_round_forecast_captures.jsonl`
+- `src/content/data/market/total_round_paper_decisions.jsonl`
+- `src/content/data/market/total_round_paper_settlements.jsonl`
 - `src/content/data/market/paper_decisions.jsonl`
 - `src/content/data/market/paper_settlements.jsonl`
 - `src/content/data/market/performance_report.json`
@@ -143,6 +146,21 @@ For a quoted side, candidate prop EV is calculated as
 shown in the combined market opportunity list; the existing 5% paper threshold
 is also shown separately so a barely positive estimate is not mistaken for a
 strong signal. No staking or wager execution is enabled.
+
+Totals now also have a separate prospective T-24 decision and settlement
+loop. For each matchup/line, it selects one target book, excludes that book
+from a median consensus of at least two other fresh books, and freezes the
+market, independent-model, and market-residual probabilities. The residual is
+`logit(market) + weight * (logit(model) - logit(market))`. Its weight stays at
+zero until at least 100 settled lines across 10 events exist and an event-block
+bootstrap on the later 30% of cards shows at least a 0.002 log-loss improvement
+over market-only after selecting the weight on the earlier 70%. The
+predeclared 0%, 2.5%, 5%, 7.5%, and 10% EV thresholds are all reported in
+shadow mode; the official paper policy remains the 5% residual threshold.
+Settlements use UFCStats total fight time, void non-W/L outcomes and exact
+line-boundary finishes, and publish same-book/same-line closing-price movement,
+ROI, drawdown, calibration, and model-versus-market comparisons. These are
+paper records, not executable wagers.
 
 The prospective policy freezes at most one paper decision per matchup in a
 predeclared T-24 window (20 to 28 hours before the card). It uses only source
@@ -235,7 +253,8 @@ credit. Each run validates the frozen card/model publication, captures one
 fresh MMA moneyline plus available full-fight total-round response from The
 Odds API, appends separate validated quote/forecast/source-timing ledgers,
 freezes any eligible T-24 paper decisions, and publishes a
-bounded audit report, settles any newly completed prior decisions, and refreshes
+bounded audit report, settles any newly completed moneyline and totals
+decisions, and refreshes
 the return/CLV report before strict revalidation. The
 two publishing workflows share one concurrency group and exact path allowlists.
 The collector creates no live wager.

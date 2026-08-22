@@ -22,6 +22,12 @@ from market_tracker import (  # noqa: E402
     QuoteSnapshotStore,
     QuoteSourceMetadata,
     QuoteSourceMetadataStore,
+    TotalRoundsForecastCapture,
+    TotalRoundsPaperDecisionStore,
+    TotalRoundsPaperSettlementStore,
+    TotalRoundsQuoteSnapshot,
+    TotalRoundsQuoteStore,
+    build_locked_total_round_decisions,
     consensus_as_of,
 )
 from validate_data import validate_market_data  # noqa: E402
@@ -154,6 +160,12 @@ class MarketPerformanceTests(unittest.TestCase):
                 "DECISION_JSONL_PATH": market_root / "paper_decisions.jsonl",
                 "SETTLEMENT_CSV_PATH": market_root / "paper_settlements.csv",
                 "SETTLEMENT_JSONL_PATH": market_root / "paper_settlements.jsonl",
+                "TOTAL_ROUNDS_QUOTE_CSV_PATH": market_root / "total_round_quote_snapshots.csv",
+                "TOTAL_ROUNDS_QUOTE_JSONL_PATH": market_root / "total_round_quote_snapshots.jsonl",
+                "TOTAL_ROUNDS_DECISION_CSV_PATH": market_root / "total_round_paper_decisions.csv",
+                "TOTAL_ROUNDS_DECISION_JSONL_PATH": market_root / "total_round_paper_decisions.jsonl",
+                "TOTAL_ROUNDS_SETTLEMENT_CSV_PATH": market_root / "total_round_paper_settlements.csv",
+                "TOTAL_ROUNDS_SETTLEMENT_JSONL_PATH": market_root / "total_round_paper_settlements.jsonl",
                 "REPORT_PATH": market_root / "performance_report.json",
             }
             QuoteSnapshotStore(
@@ -214,8 +226,10 @@ class MarketPerformanceTests(unittest.TestCase):
             persisted = json.loads(paths["REPORT_PATH"].read_text(encoding="utf-8"))
             self.assertEqual(persisted, second)
             self.assertFalse(persisted["execution_enabled"])
-            self.assertEqual(persisted["schema_version"], 2)
+            self.assertEqual(persisted["schema_version"], 3)
             self.assertIn("entry_timing_experiment", persisted)
+            self.assertIn("total_rounds", persisted)
+            self.assertEqual(persisted["total_rounds"]["decisions"], 0)
             validation = validate_market_data(market_root, required=True)
             self.assertEqual(validation.errors, [], validation.errors)
 
@@ -231,6 +245,158 @@ class MarketPerformanceTests(unittest.TestCase):
             self.assertTrue(
                 any("metrics cannot be reproduced" in error for error in rejected.errors),
                 rejected.errors,
+            )
+
+    def test_total_round_decision_settles_with_same_book_clv(self):
+        def total_quote(
+            *, capture, observed, updated, book, book_key, over, under
+        ):
+            return TotalRoundsQuoteSnapshot.create(
+                capture_id=capture,
+                event_id="event-one",
+                fighter_id="fighter-a",
+                opponent_id="fighter-b",
+                fighter_name="Fighter A",
+                opponent_name="Fighter B",
+                event_date="2026-01-10",
+                timing_precision="timestamp",
+                event_start_utc="2026-01-10T12:00:00Z",
+                observed_at_utc=observed,
+                source="the-odds-api.com",
+                source_event_id="source-event-one",
+                source_book_key=book_key,
+                source_quote_updated_at_utc=updated,
+                source_commence_time_utc="2026-01-10T12:30:00Z",
+                book=book,
+                line=2.5,
+                over_moneyline=over,
+                under_moneyline=under,
+                source_payload={"capture": capture},
+            )
+
+        decision_quotes = (
+            total_quote(
+                capture="tc1", observed="2026-01-09T12:00:00Z",
+                updated="2026-01-09T11:59:30Z", book="Target",
+                book_key="target", over=120, under=-140,
+            ),
+            total_quote(
+                capture="tc1", observed="2026-01-09T12:00:00Z",
+                updated="2026-01-09T11:59:30Z", book="Book A",
+                book_key="book-a", over=-110, under=-110,
+            ),
+            total_quote(
+                capture="tc1", observed="2026-01-09T12:00:00Z",
+                updated="2026-01-09T11:59:30Z", book="Book B",
+                book_key="book-b", over=-110, under=-110,
+            ),
+        )
+        later_target = total_quote(
+            capture="tc2", observed="2026-01-10T10:00:00Z",
+            updated="2026-01-10T09:59:30Z", book="Target",
+            book_key="target", over=100, under=-120,
+        )
+        forecast = TotalRoundsForecastCapture.create(
+            capture_id="tc1",
+            event_id="event-one",
+            fighter_id="fighter-a",
+            opponent_id="fighter-b",
+            fighter_name="Fighter A",
+            opponent_name="Fighter B",
+            event_date="2026-01-10",
+            timing_precision="timestamp",
+            event_start_utc="2026-01-10T12:00:00Z",
+            forecast_issued_at_utc="2026-01-08T12:00:00Z",
+            scheduled_rounds=3,
+            schedule_basis="fixture",
+            line=2.5,
+            over_probability=0.70,
+            model_id="outcome-model",
+            model_version="candidate-v1",
+            model_trained_through="2026-01-03",
+            source_commit_sha="a" * 40,
+            source_publication_sha256="b" * 64,
+        )
+        decision = build_locked_total_round_decisions(
+            decision_quotes, (forecast,)
+        ).decisions[0]
+
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            market_root = root / "market"
+            market_root.mkdir()
+            raw_path = root / "raw.csv"
+            pd.DataFrame(
+                [
+                    {
+                        "event_url": "https://ufcstats.test/event-one",
+                        "fight_url": "https://ufcstats.test/fight-one",
+                        "fighter_url": "https://ufcstats.test/fighter-a",
+                        "opponent_url": "https://ufcstats.test/fighter-b",
+                        "result": "W",
+                        "total_fight_time": 800.0,
+                    },
+                    {
+                        "event_url": "https://ufcstats.test/event-one",
+                        "fight_url": "https://ufcstats.test/fight-one",
+                        "fighter_url": "https://ufcstats.test/fighter-b",
+                        "opponent_url": "https://ufcstats.test/fighter-a",
+                        "result": "L",
+                        "total_fight_time": 800.0,
+                    },
+                ]
+            ).to_csv(raw_path, index=False)
+            paths = {
+                "RAW_PATH": raw_path,
+                "QUOTE_CSV_PATH": market_root / "quote_snapshots.csv",
+                "QUOTE_JSONL_PATH": market_root / "quote_snapshots.jsonl",
+                "SOURCE_METADATA_CSV_PATH": market_root / "quote_source_metadata.csv",
+                "SOURCE_METADATA_JSONL_PATH": market_root / "quote_source_metadata.jsonl",
+                "DECISION_CSV_PATH": market_root / "paper_decisions.csv",
+                "DECISION_JSONL_PATH": market_root / "paper_decisions.jsonl",
+                "SETTLEMENT_CSV_PATH": market_root / "paper_settlements.csv",
+                "SETTLEMENT_JSONL_PATH": market_root / "paper_settlements.jsonl",
+                "TOTAL_ROUNDS_QUOTE_CSV_PATH": market_root / "total_round_quote_snapshots.csv",
+                "TOTAL_ROUNDS_QUOTE_JSONL_PATH": market_root / "total_round_quote_snapshots.jsonl",
+                "TOTAL_ROUNDS_DECISION_CSV_PATH": market_root / "total_round_paper_decisions.csv",
+                "TOTAL_ROUNDS_DECISION_JSONL_PATH": market_root / "total_round_paper_decisions.jsonl",
+                "TOTAL_ROUNDS_SETTLEMENT_CSV_PATH": market_root / "total_round_paper_settlements.csv",
+                "TOTAL_ROUNDS_SETTLEMENT_JSONL_PATH": market_root / "total_round_paper_settlements.jsonl",
+                "REPORT_PATH": market_root / "performance_report.json",
+            }
+            TotalRoundsQuoteStore(
+                paths["TOTAL_ROUNDS_QUOTE_CSV_PATH"],
+                paths["TOTAL_ROUNDS_QUOTE_JSONL_PATH"],
+            ).append((*decision_quotes, later_target))
+            TotalRoundsPaperDecisionStore(
+                paths["TOTAL_ROUNDS_DECISION_CSV_PATH"],
+                paths["TOTAL_ROUNDS_DECISION_JSONL_PATH"],
+            ).append((decision,))
+            patches = [patch.object(updater, key, value) for key, value in paths.items()]
+            for active in patches:
+                active.start()
+            try:
+                first = updater.update_market_performance()
+                second = updater.update_market_performance()
+            finally:
+                for active in reversed(patches):
+                    active.stop()
+
+            self.assertEqual(first, second)
+            settlements = TotalRoundsPaperSettlementStore(
+                paths["TOTAL_ROUNDS_SETTLEMENT_CSV_PATH"],
+                paths["TOTAL_ROUNDS_SETTLEMENT_JSONL_PATH"],
+            ).read()
+            self.assertEqual(len(settlements), 1)
+            self.assertEqual(settlements[0].settlement_status, "paper_win")
+            totals = first["total_rounds"]
+            self.assertEqual(totals["scored_forecasts"], 1)
+            self.assertAlmostEqual(
+                totals["official_strategy"]["hypothetical_roi"], 1.2
+            )
+            self.assertGreater(
+                totals["latest_available_price_clv"]["mean_probability_edge"],
+                0.0,
             )
 
 

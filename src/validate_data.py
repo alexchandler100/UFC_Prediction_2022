@@ -46,11 +46,19 @@ from market_tracker import (
     QuoteSnapshotStore,
     TotalRoundsQuoteStore,
     TotalRoundsForecastStore,
+    TotalRoundsPaperDecisionStore,
+    TotalRoundsPaperSettlementStore,
     QuoteSourceMetadataStore,
     StoreIntegrityError,
     TIMING_POLICY_VERSION,
+    TOTAL_DECISION_TARGET_LEAD_SECONDS,
+    TOTAL_DECISION_WINDOW_SECONDS,
+    TOTAL_MAX_SOURCE_QUOTE_AGE_SECONDS,
+    TOTAL_MIN_CONSENSUS_BOOKS,
     consensus_as_of,
     summarize_paper_settlements,
+    summarize_total_round_performance,
+    select_residual_weight,
     validate_current_opportunities,
 )
 from market_tracker._common import BETTING_STATUS, canonical_hash
@@ -1048,6 +1056,42 @@ def validate_market_data(
             report.errors.append(
                 f"total-round forecasts failed integrity validation: {error}"
             )
+    total_decision_csv = market_root / "total_round_paper_decisions.csv"
+    total_decision_jsonl = market_root / "total_round_paper_decisions.jsonl"
+    total_decision_exists = (
+        total_decision_csv.exists(),
+        total_decision_jsonl.exists(),
+    )
+    total_round_decisions = ()
+    if any(total_decision_exists) and not all(total_decision_exists):
+        report.errors.append("total-round paper decision mirrors are incomplete")
+    elif all(total_decision_exists):
+        try:
+            total_round_decisions = TotalRoundsPaperDecisionStore(
+                total_decision_csv, total_decision_jsonl
+            ).read()
+        except (OSError, UnicodeError, MarketDataError, StoreIntegrityError) as error:
+            report.errors.append(
+                f"total-round decisions failed integrity validation: {error}"
+            )
+    total_settlement_csv = market_root / "total_round_paper_settlements.csv"
+    total_settlement_jsonl = market_root / "total_round_paper_settlements.jsonl"
+    total_settlement_exists = (
+        total_settlement_csv.exists(),
+        total_settlement_jsonl.exists(),
+    )
+    total_round_settlements = ()
+    if any(total_settlement_exists) and not all(total_settlement_exists):
+        report.errors.append("total-round paper settlement mirrors are incomplete")
+    elif all(total_settlement_exists):
+        try:
+            total_round_settlements = TotalRoundsPaperSettlementStore(
+                total_settlement_csv, total_settlement_jsonl
+            ).read()
+        except (OSError, UnicodeError, MarketDataError, StoreIntegrityError) as error:
+            report.errors.append(
+                f"total-round settlements failed integrity validation: {error}"
+            )
 
     report.require(bool(quotes), "market quote ledger is empty")
     report.require(bool(forecasts), "market forecast ledger is empty")
@@ -1111,6 +1155,101 @@ def validate_market_data(
             )
             in total_quote_lines,
             "a total-round forecast lacks a same-capture quoted line",
+        )
+    total_quote_by_id = {item.quote_id: item for item in total_rounds}
+    total_forecast_by_id = {
+        item.forecast_capture_id: item for item in total_round_forecasts
+    }
+    report.require(
+        len({item.natural_key for item in total_round_decisions})
+        == len(total_round_decisions),
+        "more than one total-round decision was frozen for a matchup/line",
+    )
+    for total_decision in total_round_decisions:
+        reference = total_quote_by_id.get(total_decision.reference_quote_id)
+        prop_forecast = total_forecast_by_id.get(
+            total_decision.forecast_capture_id
+        )
+        report.require(
+            reference is not None,
+            "a total-round decision references an unknown quote",
+        )
+        report.require(
+            prop_forecast is not None,
+            "a total-round decision references an unknown forecast",
+        )
+        if reference is None or prop_forecast is None:
+            continue
+        if total_decision.timing_precision != "timestamp" or not total_decision.event_start_utc:
+            report.errors.append("a total-round paper decision lacks exact event timing")
+            continue
+        lead = (
+            pd.Timestamp(total_decision.event_start_utc)
+            - pd.Timestamp(total_decision.market_as_of_utc)
+        ).total_seconds()
+        report.require(
+            abs(lead - TOTAL_DECISION_TARGET_LEAD_SECONDS)
+            <= TOTAL_DECISION_WINDOW_SECONDS,
+            "a total-round paper decision is outside the locked T-24 window",
+        )
+        consensus_quotes = tuple(
+            item
+            for item in total_rounds
+            if item.capture_id == total_decision.capture_id
+            and item.matchup_id == total_decision.matchup_id
+            and float(item.line) == float(total_decision.line)
+            and item.source_book_key.casefold()
+            != total_decision.target_book_key.casefold()
+            and -300.0
+            <= item.source_quote_age_seconds
+            <= TOTAL_MAX_SOURCE_QUOTE_AGE_SECONDS
+        )
+        report.require(
+            len(consensus_quotes) >= TOTAL_MIN_CONSENSUS_BOOKS,
+            "a total-round decision lacks reconstructable consensus quotes",
+        )
+        prior_decisions = tuple(
+            item
+            for item in total_round_decisions
+            if item.decision_issued_at_utc < total_decision.decision_issued_at_utc
+        )
+        prior_ids = {item.decision_id for item in prior_decisions}
+        prior_settlements = tuple(
+            item
+            for item in total_round_settlements
+            if item.decision_id in prior_ids
+            and item.settled_at_utc <= total_decision.decision_issued_at_utc
+        )
+        residual_selection = select_residual_weight(
+            prior_decisions, prior_settlements
+        )
+        try:
+            rebuilt = type(total_decision).create(
+                reference,
+                consensus_quotes,
+                prop_forecast,
+                residual_selection,
+                decision_issued_at_utc=total_decision.decision_issued_at_utc,
+                minimum_expected_return=total_decision.minimum_expected_return,
+                maximum_source_quote_age_seconds=(
+                    total_decision.maximum_source_quote_age_seconds
+                ),
+            )
+            report.require(
+                rebuilt == total_decision,
+                "a total-round paper decision cannot be reproduced",
+            )
+        except (MarketDataError, StoreIntegrityError, ValueError) as error:
+            report.errors.append(
+                f"total-round decision cannot be reconstructed: {error}"
+            )
+    try:
+        summarize_total_round_performance(
+            total_round_decisions, total_round_settlements
+        )
+    except (MarketDataError, StoreIntegrityError, ValueError) as error:
+        report.errors.append(
+            f"total-round settlements failed reproducibility validation: {error}"
         )
 
     forecast_by_key: dict[tuple[str, str], list] = {}
@@ -1342,6 +1481,14 @@ def validate_market_data(
                 metadata,
                 decisions,
                 capture_id=capture_id,
+                total_round_quotes=total_rounds,
+                total_round_forecasts=total_round_forecasts,
+                total_round_decisions=total_round_decisions,
+                method_price_status=(
+                    opportunities.get("prop_markets", {})
+                    .get("method_of_victory", {})
+                    .get("price_status", "unavailable_from_configured_provider")
+                ),
             )
             report.require(
                 opportunities.get("betting_status") == BETTING_STATUS
@@ -1422,6 +1569,42 @@ def validate_market_data(
                     and timing.get("execution_enabled") is False,
                     "performance report timing experiment contract is invalid",
                 )
+            if int(performance.get("schema_version", 1)) >= 3:
+                total_performance = performance.get("total_rounds")
+                report.require(
+                    isinstance(total_performance, dict)
+                    and total_performance.get("paper_only") is True
+                    and total_performance.get("execution_enabled") is False,
+                    "total-round performance contract must remain paper-only",
+                )
+                if isinstance(total_performance, dict):
+                    report.require(
+                        total_performance.get("decision_dataset_sha256")
+                        == canonical_hash(
+                            [item.to_mapping() for item in total_round_decisions]
+                        ),
+                        "total-round performance decision hash is stale",
+                    )
+                    report.require(
+                        total_performance.get("settlement_dataset_sha256")
+                        == canonical_hash(
+                            [item.to_mapping() for item in total_round_settlements]
+                        ),
+                        "total-round performance settlement hash is stale",
+                    )
+                    report.require(
+                        total_performance.get("quote_dataset_sha256")
+                        == canonical_hash([item.to_mapping() for item in total_rounds]),
+                        "total-round performance quote hash is stale",
+                    )
+                    expected_total = summarize_total_round_performance(
+                        total_round_decisions, total_round_settlements
+                    )
+                    for key, value in expected_total.items():
+                        report.require(
+                            total_performance.get(key) == value,
+                            f"total-round performance {key} cannot be reproduced",
+                        )
             expected_metrics = summarize_paper_settlements(
                 decisions, settlements
             ).to_mapping()
@@ -1444,6 +1627,8 @@ def validate_market_data(
         f"{len(quotes):,} quotes / {len(forecasts):,} forecasts / "
         f"{len(total_rounds):,} total-round quotes / "
         f"{len(total_round_forecasts):,} total-round forecasts / "
+        f"{len(total_round_decisions):,} total decisions / "
+        f"{len(total_round_settlements):,} total settlements / "
         f"{len(capture_contracts):,} captures / {len(decisions):,} paper decisions / "
         f"{len(settlements):,} settlements"
     )

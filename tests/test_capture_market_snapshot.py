@@ -177,6 +177,10 @@ class CaptureMarketSnapshotTests(unittest.TestCase):
                 "TOTAL_ROUNDS_JSONL_PATH": market / "total_round_quote_snapshots.jsonl",
                 "TOTAL_ROUNDS_FORECAST_CSV_PATH": market / "total_round_forecast_captures.csv",
                 "TOTAL_ROUNDS_FORECAST_JSONL_PATH": market / "total_round_forecast_captures.jsonl",
+                "TOTAL_ROUNDS_DECISION_CSV_PATH": market / "total_round_paper_decisions.csv",
+                "TOTAL_ROUNDS_DECISION_JSONL_PATH": market / "total_round_paper_decisions.jsonl",
+                "TOTAL_ROUNDS_SETTLEMENT_CSV_PATH": market / "total_round_paper_settlements.csv",
+                "TOTAL_ROUNDS_SETTLEMENT_JSONL_PATH": market / "total_round_paper_settlements.jsonl",
                 "DECISION_CSV_PATH": market / "paper_decisions.csv",
                 "DECISION_JSONL_PATH": market / "paper_decisions.jsonl",
                 "REPORT_PATH": market / "capture_report.json",
@@ -570,6 +574,10 @@ class CaptureMarketSnapshotTests(unittest.TestCase):
             "total_round_quote_snapshots.jsonl",
             "total_round_forecast_captures.csv",
             "total_round_forecast_captures.jsonl",
+            "total_round_paper_decisions.csv",
+            "total_round_paper_decisions.jsonl",
+            "total_round_paper_settlements.csv",
+            "total_round_paper_settlements.jsonl",
             "paper_decisions.csv",
             "paper_decisions.jsonl",
             "paper_settlements.csv",
@@ -590,6 +598,7 @@ class CaptureMarketSnapshotTests(unittest.TestCase):
         ).read_text(encoding="utf-8")
         self.assertIn("python update_market_performance.py", updater_workflow)
         self.assertIn("paper_settlements.jsonl", updater_workflow)
+        self.assertIn("total_round_paper_settlements.jsonl", updater_workflow)
         self.assertIn("performance_report.json", updater_workflow)
         self.assertIn("outcome_model_evaluation.json", updater_workflow)
         self.assertIn("outcome_forecasts.json", updater_workflow)

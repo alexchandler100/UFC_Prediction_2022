@@ -8,6 +8,7 @@ from typing import Iterable
 
 from ._common import StoreIntegrityError
 from .props import TotalRoundsForecastCapture, TotalRoundsQuoteSnapshot
+from .prop_paper import TotalRoundsPaperDecision
 from .prospective import MAX_SOURCE_QUOTE_AGE_SECONDS
 
 
@@ -26,11 +27,18 @@ def build_prop_market_view(
     *,
     capture_id: str,
     method_price_status: str = "unavailable_from_configured_provider",
+    decisions: Iterable[TotalRoundsPaperDecision] = (),
 ) -> dict[str, object]:
     current_quotes = tuple(item for item in quotes if item.capture_id == capture_id)
     current_forecasts = tuple(
         item for item in forecasts if item.capture_id == capture_id
     )
+    decision_index: dict[tuple[str, float], TotalRoundsPaperDecision] = {}
+    for decision in decisions:
+        key = decision.matchup_id, float(decision.line)
+        if key in decision_index:
+            raise StoreIntegrityError("duplicate locked total decision for matchup/line")
+        decision_index[key] = decision
     forecast_index: dict[tuple[str, float], TotalRoundsForecastCapture] = {}
     for forecast in current_forecasts:
         key = forecast.matchup_id, forecast.line
@@ -53,6 +61,7 @@ def build_prop_market_view(
         )
         first = line_quotes[0]
         forecast = forecast_index.get((matchup_id, line))
+        locked = decision_index.get((matchup_id, line))
         eligible = tuple(
             item
             for item in line_quotes
@@ -150,6 +159,35 @@ def build_prop_market_view(
                     else "No frozen candidate duration forecast matched this line."
                 ),
                 "best_candidate": candidates[0] if candidates else None,
+                "locked_t24_decision": (
+                    {
+                        "decision_id": locked.decision_id,
+                        "captured_at_utc": locked.decision_issued_at_utc,
+                        "selection": (
+                            f"{locked.paper_action.title()} {line:g} rounds"
+                            if locked.paper_action != "pass"
+                            else None
+                        ),
+                        "paper_action": locked.paper_action,
+                        "target_book": locked.target_book,
+                        "offered_moneyline": locked.action_reference_moneyline,
+                        "market_over_probability": locked.market_over_probability,
+                        "model_over_probability": locked.model_over_probability,
+                        "residual_over_probability": locked.residual_over_probability,
+                        "selected_residual_weight": locked.selected_residual_weight,
+                        "residual_selection_status": locked.residual_selection_status,
+                        "estimated_expected_return": (
+                            max(
+                                locked.residual_over_expected_return,
+                                locked.residual_under_expected_return,
+                            )
+                        ),
+                        "minimum_expected_return": locked.minimum_expected_return,
+                        "consensus_book_count": locked.consensus_book_count,
+                    }
+                    if locked is not None
+                    else None
+                ),
                 "book_quotes": [
                     {
                         "book": quote.book,
@@ -186,6 +224,7 @@ def build_prop_market_view(
             "forecast_count": len(current_forecasts),
             "market_count": len(markets),
             "positive_candidate_count": len(positive),
+            "locked_decision_count": len(decision_index),
             "positive_candidates": positive[:50],
             "markets": markets,
         },

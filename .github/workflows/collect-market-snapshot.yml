@@ -114,7 +114,11 @@ jobs:
             src/content/data/market/total_round_quote_snapshots.csv \
             src/content/data/market/total_round_quote_snapshots.jsonl \
             src/content/data/market/total_round_forecast_captures.csv \
-            src/content/data/market/total_round_forecast_captures.jsonl
+            src/content/data/market/total_round_forecast_captures.jsonl \
+            src/content/data/market/total_round_paper_decisions.csv \
+            src/content/data/market/total_round_paper_decisions.jsonl \
+            src/content/data/market/total_round_paper_settlements.csv \
+            src/content/data/market/total_round_paper_settlements.jsonl
           do
             if [ -f "$optional_path" ]; then
               git add -- "$optional_path"
@@ -133,6 +137,10 @@ jobs:
               src/content/data/market/total_round_quote_snapshots.jsonl|\
               src/content/data/market/total_round_forecast_captures.csv|\
               src/content/data/market/total_round_forecast_captures.jsonl|\
+              src/content/data/market/total_round_paper_decisions.csv|\
+              src/content/data/market/total_round_paper_decisions.jsonl|\
+              src/content/data/market/total_round_paper_settlements.csv|\
+              src/content/data/market/total_round_paper_settlements.jsonl|\
               src/content/data/market/paper_decisions.csv|\
               src/content/data/market/paper_decisions.jsonl|\
               src/content/data/market/paper_settlements.csv|\

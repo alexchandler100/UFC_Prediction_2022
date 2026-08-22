@@ -61,6 +61,10 @@ class WebsiteExplorerContractTests(unittest.TestCase):
         self.assertIn("positive_candidates", script)
         self.assertIn("Candidate duration-model probability", script)
         self.assertIn("method EV is unavailable", script)
+        self.assertIn("Totals profitability and closing-line value", page)
+        self.assertIn("renderProfitabilityEvidence", script)
+        self.assertIn("Compare predeclared EV thresholds", script)
+        self.assertIn("Locked T-24 residual paper decision", script)
         self.assertIn("current_opportunities.json", workflow)
 
     def test_layout_has_explicit_mobile_breakpoints(self):

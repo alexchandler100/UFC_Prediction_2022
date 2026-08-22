@@ -22,10 +22,17 @@ from market_tracker import (
     QuoteSnapshot,
     QuoteSnapshotStore,
     QuoteSourceMetadataStore,
+    TotalRoundsPaperDecision,
+    TotalRoundsPaperDecisionStore,
+    TotalRoundsPaperSettlementStore,
+    TotalRoundsQuoteSnapshot,
+    TotalRoundsQuoteStore,
     evaluate_timing_policies,
     forecast_metrics,
     settle_paper_decision,
     summarize_paper_settlements,
+    settle_total_round_decision,
+    summarize_total_round_performance,
 )
 from market_tracker._common import canonical_hash, implied_probability
 
@@ -41,6 +48,12 @@ DECISION_CSV_PATH = MARKET_ROOT / "paper_decisions.csv"
 DECISION_JSONL_PATH = MARKET_ROOT / "paper_decisions.jsonl"
 SETTLEMENT_CSV_PATH = MARKET_ROOT / "paper_settlements.csv"
 SETTLEMENT_JSONL_PATH = MARKET_ROOT / "paper_settlements.jsonl"
+TOTAL_ROUNDS_QUOTE_CSV_PATH = MARKET_ROOT / "total_round_quote_snapshots.csv"
+TOTAL_ROUNDS_QUOTE_JSONL_PATH = MARKET_ROOT / "total_round_quote_snapshots.jsonl"
+TOTAL_ROUNDS_DECISION_CSV_PATH = MARKET_ROOT / "total_round_paper_decisions.csv"
+TOTAL_ROUNDS_DECISION_JSONL_PATH = MARKET_ROOT / "total_round_paper_decisions.jsonl"
+TOTAL_ROUNDS_SETTLEMENT_CSV_PATH = MARKET_ROOT / "total_round_paper_settlements.csv"
+TOTAL_ROUNDS_SETTLEMENT_JSONL_PATH = MARKET_ROOT / "total_round_paper_settlements.jsonl"
 REPORT_PATH = MARKET_ROOT / "performance_report.json"
 REPORT_SIZE_LIMIT = 64 * 1024
 
@@ -117,6 +130,61 @@ def _result_index(
     return outcomes, completed_events, ambiguous_matchups
 
 
+def _total_duration_index(
+    raw: pd.DataFrame,
+) -> tuple[
+    dict[tuple[str, str, str], tuple[float, str]],
+    set[tuple[str, str, str]],
+]:
+    """Index terminal W/L fight duration, quarantining same-card rematches."""
+
+    required = {
+        "event_url",
+        "fight_url",
+        "fighter_url",
+        "opponent_url",
+        "result",
+        "total_fight_time",
+    }
+    missing = sorted(required - set(raw.columns))
+    if missing:
+        raise ValueError(f"raw result data is missing total fields: {missing}")
+    durations: dict[tuple[str, str, str], tuple[float, str]] = {}
+    ambiguous: set[tuple[str, str, str]] = set()
+    for fight_url, group in raw.groupby("fight_url", sort=False, dropna=False):
+        if pd.isna(fight_url) or len(group) != 2:
+            continue
+        results = sorted(str(value).strip().upper() for value in group["result"])
+        if results != ["L", "W"]:
+            continue
+        event_ids = {_identity(value) for value in group["event_url"]}
+        fighters = {_identity(value) for value in group["fighter_url"]}
+        if len(event_ids) != 1 or len(fighters) != 2 or "" in fighters:
+            continue
+        duration_values = pd.to_numeric(
+            group["total_fight_time"], errors="coerce"
+        ).dropna()
+        if len(duration_values) != 2 or abs(
+            float(duration_values.iloc[0]) - float(duration_values.iloc[1])
+        ) > 1e-9:
+            continue
+        duration = float(duration_values.iloc[0])
+        if not math.isfinite(duration) or not 0.0 < duration <= 25.0 * 300.0:
+            continue
+        event_id = next(iter(event_ids))
+        fighter_id, opponent_id = sorted(fighters)
+        key = (event_id, fighter_id, opponent_id)
+        value = (duration, _identity(fight_url))
+        prior = durations.get(key)
+        if prior is not None and prior != value:
+            durations.pop(key, None)
+            ambiguous.add(key)
+            continue
+        if key not in ambiguous:
+            durations[key] = value
+    return durations, ambiguous
+
+
 def _dataset_hash(records: object) -> str:
     return canonical_hash([record.to_mapping() for record in records])
 
@@ -191,6 +259,77 @@ def _latest_available_clv(
         selected = [generator.choice(blocks) for _ in blocks]
         count = sum(value[1] for value in selected)
         samples.append(sum(value[0] for value in selected) / count)
+    samples.sort()
+    result.update(
+        {
+            "bootstrap_samples": len(samples),
+            "ci_95_lower": _quantile(samples, 0.025),
+            "ci_95_upper": _quantile(samples, 0.975),
+        }
+    )
+    return result
+
+
+def _latest_available_total_clv(
+    decisions: tuple[TotalRoundsPaperDecision, ...],
+    quotes: tuple[TotalRoundsQuoteSnapshot, ...],
+) -> dict[str, object]:
+    """Latest same-book, same-line price movement after each locked decision."""
+
+    observations: list[tuple[str, float]] = []
+    for decision in decisions:
+        if decision.paper_action == "pass":
+            continue
+        later = [
+            item
+            for item in quotes
+            if item.matchup_id == decision.matchup_id
+            and float(item.line) == float(decision.line)
+            and item.source_book_key.casefold() == decision.target_book_key.casefold()
+            and item.observed_at_utc > decision.market_as_of_utc
+        ]
+        if not later:
+            continue
+        closing_proxy = max(later, key=lambda item: (item.observed_at_utc, item.quote_id))
+        if decision.paper_action == "over":
+            later_probability = implied_probability(closing_proxy.over_moneyline)
+            decision_probability = decision.over_break_even_probability
+        else:
+            later_probability = implied_probability(closing_proxy.under_moneyline)
+            decision_probability = decision.under_break_even_probability
+        observations.append(
+            (decision.event_id, later_probability - float(decision_probability))
+        )
+    values = [value for _, value in observations]
+    grouped: dict[str, list[float]] = {}
+    for event_id, value in observations:
+        grouped.setdefault(event_id, []).append(value)
+    result: dict[str, object] = {
+        "definition": (
+            "latest available same-book, same-total-line implied probability "
+            "minus locked break-even probability; positive favors the paper price"
+        ),
+        "count": len(values),
+        "event_count": len(grouped),
+        "mean_probability_edge": sum(values) / len(values) if values else None,
+        "median_probability_edge": median(values) if values else None,
+        "positive_rate": (
+            sum(value > 0.0 for value in values) / len(values) if values else None
+        ),
+        "bootstrap_samples": 0,
+        "ci_95_lower": None,
+        "ci_95_upper": None,
+    }
+    if len(grouped) < 2:
+        return result
+    blocks = [grouped[key] for key in sorted(grouped)]
+    seed = canonical_hash({"total_clv_blocks": blocks})
+    generator = random.Random(int(seed[:16], 16))
+    samples: list[float] = []
+    for _ in range(10_000):
+        selected = [generator.choice(blocks) for _ in blocks]
+        sample = [value for block in selected for value in block]
+        samples.append(sum(sample) / len(sample))
     samples.sort()
     result.update(
         {
@@ -399,10 +538,22 @@ def update_market_performance() -> dict[str, object]:
     decisions = decision_store.read()
     existing_settlements = settlement_store.read()
     settled_ids = {item.decision_id for item in existing_settlements}
+    total_decision_contract = (
+        TOTAL_ROUNDS_DECISION_CSV_PATH.exists()
+        or TOTAL_ROUNDS_DECISION_JSONL_PATH.exists()
+    )
+    if total_decision_contract and not (
+        TOTAL_ROUNDS_DECISION_CSV_PATH.exists()
+        and TOTAL_ROUNDS_DECISION_JSONL_PATH.exists()
+    ):
+        raise ValueError("total-round paper decision mirrors are incomplete")
     raw_bytes = RAW_PATH.read_bytes()
     result_hash = sha256(raw_bytes).hexdigest()
     raw = pd.read_csv(RAW_PATH, low_memory=False)
     outcomes, completed_events, ambiguous_matchups = _result_index(raw)
+    total_durations, ambiguous_total_matchups = (
+        _total_duration_index(raw) if total_decision_contract else ({}, set())
+    )
     settled_at = datetime.now(timezone.utc).replace(microsecond=0)
     pending = []
     ambiguous_result_decisions = 0
@@ -428,6 +579,46 @@ def update_market_performance() -> dict[str, object]:
         )
     settlement_store.append(pending)
     settlements = settlement_store.read()
+
+    total_decisions = ()
+    total_settlements = ()
+    if total_decision_contract:
+        total_decision_store = TotalRoundsPaperDecisionStore(
+            TOTAL_ROUNDS_DECISION_CSV_PATH,
+            TOTAL_ROUNDS_DECISION_JSONL_PATH,
+        )
+        total_settlement_store = TotalRoundsPaperSettlementStore(
+            TOTAL_ROUNDS_SETTLEMENT_CSV_PATH,
+            TOTAL_ROUNDS_SETTLEMENT_JSONL_PATH,
+        )
+        total_decisions = total_decision_store.read()
+        existing_total_settlements = total_settlement_store.read()
+        settled_total_ids = {
+            item.decision_id for item in existing_total_settlements
+        }
+        total_pending = []
+        for decision in total_decisions:
+            if decision.decision_id in settled_total_ids:
+                continue
+            key = (decision.event_id, decision.fighter_id, decision.opponent_id)
+            if key in ambiguous_total_matchups:
+                continue
+            result = total_durations.get(key)
+            if result is None and decision.event_id not in completed_events:
+                continue
+            duration, fight_id = result if result is not None else (None, None)
+            total_pending.append(
+                settle_total_round_decision(
+                    decision,
+                    total_fight_seconds=duration,
+                    fight_id=fight_id,
+                    settled_at_utc=settled_at,
+                    result_source_sha256=result_hash,
+                )
+            )
+        total_settlement_store.append(total_pending)
+        total_settlements = total_settlement_store.read()
+
     metrics = summarize_paper_settlements(decisions, settlements)
     quotes = quote_store.read()
     source_metadata = metadata_store.read()
@@ -442,6 +633,70 @@ def update_market_performance() -> dict[str, object]:
     )
     return_interval = _event_block_return_interval(decisions, settlements)
     clv = _latest_available_clv(decisions, quotes)
+    total_quote_exists = (
+        TOTAL_ROUNDS_QUOTE_CSV_PATH.exists(),
+        TOTAL_ROUNDS_QUOTE_JSONL_PATH.exists(),
+    )
+    if any(total_quote_exists) and not all(total_quote_exists):
+        raise ValueError("total-round quote mirrors are incomplete")
+    total_quote_contract = all(total_quote_exists)
+    total_quotes = (
+        TotalRoundsQuoteStore(
+            TOTAL_ROUNDS_QUOTE_CSV_PATH,
+            TOTAL_ROUNDS_QUOTE_JSONL_PATH,
+        ).read()
+        if total_quote_contract
+        else ()
+    )
+    total_performance = summarize_total_round_performance(
+        total_decisions, total_settlements
+    )
+    total_clv = _latest_available_total_clv(total_decisions, total_quotes)
+    total_return_interval = _event_block_return_interval(
+        total_decisions, total_settlements
+    )
+    total_settled_ids = {item.decision_id for item in total_settlements}
+    total_settled_events = {
+        decision.event_id
+        for decision in total_decisions
+        if decision.decision_id in total_settled_ids
+    }
+    total_official = total_performance["official_strategy"]
+    total_residual_selection = total_performance["next_residual_weight_selection"]
+    total_performance["latest_available_price_clv"] = total_clv
+    total_performance["paper_return_interval"] = total_return_interval
+    total_performance["decision_dataset_sha256"] = _dataset_hash(total_decisions)
+    total_performance["settlement_dataset_sha256"] = _dataset_hash(total_settlements)
+    total_performance["quote_dataset_sha256"] = _dataset_hash(total_quotes)
+    total_performance["promotion_gate"] = {
+        "status": "collecting_prospective_evidence",
+        "minimum_scored_lines": 300,
+        "minimum_settled_events": 30,
+        "minimum_paper_selections": 100,
+        "scored_lines": total_performance["scored_forecasts"],
+        "settled_events": len(total_settled_events),
+        "paper_selections": total_official["selections"],
+        "count_requirements_met": (
+            int(total_performance["scored_forecasts"]) >= 300
+            and len(total_settled_events) >= 30
+            and int(total_official["selections"]) >= 100
+        ),
+        "residual_market_log_loss_requirement_met": (
+            total_residual_selection["selection_status"]
+            == "residual_weight_promoted"
+            and total_residual_selection["ci_95_upper"] is not None
+            and float(total_residual_selection["ci_95_upper"]) < 0.0
+        ),
+        "paper_return_requirement_met": (
+            total_return_interval["ci_95_lower"] is not None
+            and float(total_return_interval["ci_95_lower"]) > 0.0
+        ),
+        "positive_clv_requirement_met": (
+            total_clv["ci_95_lower"] is not None
+            and float(total_clv["ci_95_lower"]) > 0.0
+        ),
+        "execution_enabled": False,
+    }
     settled_decision_ids = {item.decision_id for item in settlements}
     settled_events = {
         decision.event_id
@@ -449,7 +704,7 @@ def update_market_performance() -> dict[str, object]:
         if decision.decision_id in settled_decision_ids
     }
     report_body: dict[str, object] = {
-        "schema_version": 2,
+        "schema_version": 3,
         "betting_status": BETTING_STATUS,
         "paper_only": True,
         "execution_enabled": False,
@@ -458,6 +713,9 @@ def update_market_performance() -> dict[str, object]:
                 *(item.settled_at_utc for item in settlements),
                 *(item.decision_issued_at_utc for item in decisions),
                 *(item.observed_at_utc for item in quotes),
+                *(item.settled_at_utc for item in total_settlements),
+                *(item.decision_issued_at_utc for item in total_decisions),
+                *(item.observed_at_utc for item in total_quotes),
             ],
             default=None,
         ),
@@ -509,6 +767,7 @@ def update_market_performance() -> dict[str, object]:
             ),
             "execution_enabled": False,
         },
+        "total_rounds": total_performance,
     }
     report_body["report_sha256"] = canonical_hash(report_body)
     _atomic_report(report_body)

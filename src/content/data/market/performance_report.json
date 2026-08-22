@@ -335,11 +335,208 @@
     "status": "collecting_prospective_evidence"
   },
   "quote_dataset_sha256": "6c8554ace8341619d6064415691030551258a7e911bd93ed956c20ee47c1fc68",
-  "report_sha256": "74b3dc496f5a087e5e3008ee04ab7569f134149349a5e8cfa18c6c05d0c94286",
-  "result_source_sha256": "4757b34e4d061bb7f98f698139af23def9c7806867a0ccbb7c18c1e293f32db7",
-  "schema_version": 2,
+  "report_sha256": "42085b6d4bd7330ace868f372b68a91b87a5a1c7e137b753cd8f8411e36e655f",
+  "result_source_sha256": "dbb98dcae91e5ba826a22947ec9792a123d667d34ad40e1a5ad0495408b7b492",
+  "schema_version": 3,
   "settlement_dataset_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
   "settlements_total": 0,
   "source_metadata_dataset_sha256": "4c1c703c19d772782b3d7370ad28a72e38571534f7f387b6c997b3d00eff2278",
+  "total_rounds": {
+    "betting_status": "disabled_paper_only_no_execution",
+    "decision_dataset_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "decisions": 0,
+    "execution_enabled": false,
+    "forecast_comparators": {
+      "count": 0,
+      "market": {
+        "brier_score": null,
+        "ece_5_bin": null,
+        "log_loss": null
+      },
+      "model": {
+        "brier_score": null,
+        "ece_5_bin": null,
+        "log_loss": null
+      },
+      "model_minus_market_log_loss": null,
+      "residual": {
+        "brier_score": null,
+        "ece_5_bin": null,
+        "log_loss": null
+      },
+      "residual_minus_market_log_loss": null
+    },
+    "latest_available_price_clv": {
+      "bootstrap_samples": 0,
+      "ci_95_lower": null,
+      "ci_95_upper": null,
+      "count": 0,
+      "definition": "latest available same-book, same-total-line implied probability minus locked break-even probability; positive favors the paper price",
+      "event_count": 0,
+      "mean_probability_edge": null,
+      "median_probability_edge": null,
+      "positive_rate": null
+    },
+    "next_residual_weight_selection": {
+      "ci_95_upper": null,
+      "market_log_loss": null,
+      "scored_lines": 0,
+      "selected_log_loss": null,
+      "selected_minus_market_log_loss": null,
+      "selected_weight": 0.0,
+      "selection_status": "market_only_insufficient_history",
+      "settled_events": 0,
+      "training_dataset_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "official_strategy": {
+      "hypothetical_max_drawdown_units": 0.0,
+      "hypothetical_profit_units": 0.0,
+      "hypothetical_risk_units": 0.0,
+      "hypothetical_roi": null,
+      "losses": 0,
+      "probability_source": "market_residual",
+      "selections": 0,
+      "threshold": 0.05,
+      "wins": 0
+    },
+    "paper_only": true,
+    "paper_return_interval": {
+      "bootstrap_samples": 0,
+      "ci_95_lower": null,
+      "ci_95_upper": null,
+      "definition": "paired whole-card bootstrap of profit per one-unit paper selection",
+      "event_count": 0,
+      "observed_profit_per_selection": null,
+      "selection_count": 0
+    },
+    "policy_version": "prospective-total-round-residual-v1",
+    "promotion_gate": {
+      "count_requirements_met": false,
+      "execution_enabled": false,
+      "minimum_paper_selections": 100,
+      "minimum_scored_lines": 300,
+      "minimum_settled_events": 30,
+      "paper_return_requirement_met": false,
+      "paper_selections": 0,
+      "positive_clv_requirement_met": false,
+      "residual_market_log_loss_requirement_met": false,
+      "scored_lines": 0,
+      "settled_events": 0,
+      "status": "collecting_prospective_evidence"
+    },
+    "quote_dataset_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "residual_selection_protocol": "select weight on earliest 70% of settled events; require at least 0.002 lower log loss and an event-block 95% upper confidence bound below zero on the latest 30%",
+    "scored_forecasts": 0,
+    "settlement_dataset_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "settlements": 0,
+    "shadow_threshold_strategies": {
+      "independent_model": {
+        "0.000": {
+          "hypothetical_max_drawdown_units": 0.0,
+          "hypothetical_profit_units": 0.0,
+          "hypothetical_risk_units": 0.0,
+          "hypothetical_roi": null,
+          "losses": 0,
+          "selections": 0,
+          "threshold": 0.0,
+          "wins": 0
+        },
+        "0.025": {
+          "hypothetical_max_drawdown_units": 0.0,
+          "hypothetical_profit_units": 0.0,
+          "hypothetical_risk_units": 0.0,
+          "hypothetical_roi": null,
+          "losses": 0,
+          "selections": 0,
+          "threshold": 0.025,
+          "wins": 0
+        },
+        "0.050": {
+          "hypothetical_max_drawdown_units": 0.0,
+          "hypothetical_profit_units": 0.0,
+          "hypothetical_risk_units": 0.0,
+          "hypothetical_roi": null,
+          "losses": 0,
+          "selections": 0,
+          "threshold": 0.05,
+          "wins": 0
+        },
+        "0.075": {
+          "hypothetical_max_drawdown_units": 0.0,
+          "hypothetical_profit_units": 0.0,
+          "hypothetical_risk_units": 0.0,
+          "hypothetical_roi": null,
+          "losses": 0,
+          "selections": 0,
+          "threshold": 0.075,
+          "wins": 0
+        },
+        "0.100": {
+          "hypothetical_max_drawdown_units": 0.0,
+          "hypothetical_profit_units": 0.0,
+          "hypothetical_risk_units": 0.0,
+          "hypothetical_roi": null,
+          "losses": 0,
+          "selections": 0,
+          "threshold": 0.1,
+          "wins": 0
+        }
+      },
+      "market_residual": {
+        "0.000": {
+          "hypothetical_max_drawdown_units": 0.0,
+          "hypothetical_profit_units": 0.0,
+          "hypothetical_risk_units": 0.0,
+          "hypothetical_roi": null,
+          "losses": 0,
+          "selections": 0,
+          "threshold": 0.0,
+          "wins": 0
+        },
+        "0.025": {
+          "hypothetical_max_drawdown_units": 0.0,
+          "hypothetical_profit_units": 0.0,
+          "hypothetical_risk_units": 0.0,
+          "hypothetical_roi": null,
+          "losses": 0,
+          "selections": 0,
+          "threshold": 0.025,
+          "wins": 0
+        },
+        "0.050": {
+          "hypothetical_max_drawdown_units": 0.0,
+          "hypothetical_profit_units": 0.0,
+          "hypothetical_risk_units": 0.0,
+          "hypothetical_roi": null,
+          "losses": 0,
+          "selections": 0,
+          "threshold": 0.05,
+          "wins": 0
+        },
+        "0.075": {
+          "hypothetical_max_drawdown_units": 0.0,
+          "hypothetical_profit_units": 0.0,
+          "hypothetical_risk_units": 0.0,
+          "hypothetical_roi": null,
+          "losses": 0,
+          "selections": 0,
+          "threshold": 0.075,
+          "wins": 0
+        },
+        "0.100": {
+          "hypothetical_max_drawdown_units": 0.0,
+          "hypothetical_profit_units": 0.0,
+          "hypothetical_risk_units": 0.0,
+          "hypothetical_roi": null,
+          "losses": 0,
+          "selections": 0,
+          "threshold": 0.1,
+          "wins": 0
+        }
+      }
+    },
+    "unsettled_decisions": 0,
+    "voids": 0
+  },
   "unsettled_decisions": 13
 }
