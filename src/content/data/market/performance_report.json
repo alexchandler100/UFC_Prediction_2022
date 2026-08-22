@@ -1,7 +1,7 @@
 {
   "ambiguous_historical_matchup_keys": 1,
   "ambiguous_result_decisions": 0,
-  "as_of_utc": "2026-08-22T14:27:53.288579Z",
+  "as_of_utc": "2026-08-22T17:27:07.796696Z",
   "betting_status": "disabled_paper_only_no_execution",
   "decision_dataset_sha256": "6dd9ab61e1a3b5115b937d0413bf68b4182c4a2c5210711f8bed691a4c792726",
   "decisions_total": 13,
@@ -10,88 +10,88 @@
       "matchups_classified_pickem": 0,
       "matchups_with_early_capture": 13,
       "matchups_with_eligible_capture": 13,
-      "matchups_with_late_capture": 0,
+      "matchups_with_late_capture": 13,
       "matchups_with_t24_capture": 13
     },
     "execution_enabled": false,
     "favorite_definition": "side above 50% in the full no-vig consensus at the first eligible capture; classification never changes after a line flip",
     "ledger_counts": {
-      "eligible_captures": 78,
+      "eligible_captures": 91,
       "frozen_classifications": 13,
-      "quotes": 995,
-      "source_metadata": 855
+      "quotes": 1140,
+      "source_metadata": 1000
     },
     "paper_only": true,
     "policy_version": "favorite-early-dog-late-v1",
     "price_timing_test": {
       "best_available_price": {
         "favorite_early_minus_late": {
-          "count": 0,
+          "count": 13,
           "definition": "late favorite break-even probability minus early; positive favors early",
           "event_block_interval": {
             "bootstrap_samples": 0,
             "ci_95_lower": null,
             "ci_95_upper": null,
             "definition": "late favorite break-even probability minus early; positive favors early",
-            "event_count": 0,
-            "observation_count": 0,
-            "point_estimate": null
+            "event_count": 1,
+            "observation_count": 13,
+            "point_estimate": 0.003640421869309279
           },
-          "heuristic_better_rate": null,
-          "mean_probability_price_advantage": null,
-          "median_probability_price_advantage": null
+          "heuristic_better_rate": 0.6153846153846154,
+          "mean_probability_price_advantage": 0.003640421869309279,
+          "median_probability_price_advantage": 0.003361344537815114
         },
         "underdog_late_minus_early": {
-          "count": 0,
+          "count": 13,
           "definition": "early underdog break-even probability minus late; positive favors late",
           "event_block_interval": {
             "bootstrap_samples": 0,
             "ci_95_lower": null,
             "ci_95_upper": null,
             "definition": "early underdog break-even probability minus late; positive favors late",
-            "event_count": 0,
-            "observation_count": 0,
-            "point_estimate": null
+            "event_count": 1,
+            "observation_count": 13,
+            "point_estimate": -8.191025551057124e-05
           },
-          "heuristic_better_rate": null,
-          "mean_probability_price_advantage": null,
-          "median_probability_price_advantage": null
+          "heuristic_better_rate": 0.46153846153846156,
+          "mean_probability_price_advantage": -8.191025551057124e-05,
+          "median_probability_price_advantage": 0.0
         }
       },
       "interpretation": "positive values favor early favorites or late underdogs",
-      "paired_matchups": 0,
+      "paired_matchups": 13,
       "same_book_price": {
         "favorite_early_minus_late": {
-          "count": 0,
+          "count": 13,
           "definition": "same-book late favorite break-even minus early; positive favors early",
           "event_block_interval": {
             "bootstrap_samples": 0,
             "ci_95_lower": null,
             "ci_95_upper": null,
             "definition": "same-book late favorite break-even minus early; positive favors early",
-            "event_count": 0,
-            "observation_count": 0,
-            "point_estimate": null
+            "event_count": 1,
+            "observation_count": 13,
+            "point_estimate": 0.0014430645966422607
           },
-          "heuristic_better_rate": null,
-          "mean_probability_price_advantage": null,
-          "median_probability_price_advantage": null
+          "heuristic_better_rate": 0.6153846153846154,
+          "mean_probability_price_advantage": 0.0014430645966422607,
+          "median_probability_price_advantage": 0.0010485869740566413
         },
         "underdog_late_minus_early": {
-          "count": 0,
+          "count": 13,
           "definition": "same-book early underdog break-even minus late; positive favors late",
           "event_block_interval": {
             "bootstrap_samples": 0,
             "ci_95_lower": null,
             "ci_95_upper": null,
             "definition": "same-book early underdog break-even minus late; positive favors late",
-            "event_count": 0,
-            "observation_count": 0,
-            "point_estimate": null
+            "event_count": 1,
+            "observation_count": 13,
+            "point_estimate": 0.0022099519800799806
           },
-          "heuristic_better_rate": null,
-          "mean_probability_price_advantage": null,
-          "median_probability_price_advantage": null
+          "heuristic_better_rate": 0.7692307692307693,
+          "mean_probability_price_advantage": 0.0022099519800799806,
+          "median_probability_price_advantage": 0.001999550453536311
         }
       }
     },
@@ -162,7 +162,7 @@
       },
       "favorite_early_underdog_late": {
         "action_counts": {
-          "fighter": 0,
+          "fighter": 2,
           "opponent": 0
         },
         "clv": {
@@ -183,13 +183,13 @@
         "entry_window_counts": {
           "early": 0,
           "fixed_t24": 0,
-          "late": 0,
+          "late": 2,
           "other": 0
         },
         "hypothetical_profit_units": 0,
         "hypothetical_roi": null,
         "losses": 0,
-        "mean_locked_expected_return": null,
+        "mean_locked_expected_return": 0.05747998553362116,
         "paper_only": true,
         "return_event_block_interval": {
           "bootstrap_samples": 0,
@@ -201,8 +201,8 @@
           "point_estimate": null
         },
         "scored_selection_count": 0,
-        "selection_count": 0,
-        "unscored_selection_count": 0,
+        "selection_count": 2,
+        "unscored_selection_count": 2,
         "wins": 0
       },
       "fixed_t24": {
@@ -220,9 +220,9 @@
             "definition": "whole-card bootstrap of latest same-book CLV probability edge",
             "event_count": 1,
             "observation_count": 2,
-            "point_estimate": 0.0
+            "point_estimate": -0.003952569169960479
           },
-          "mean_probability_edge": 0.0,
+          "mean_probability_edge": -0.003952569169960479,
           "positive_rate": 0.0
         },
         "entry_window_counts": {
@@ -269,8 +269,8 @@
     "count": 2,
     "definition": "latest available same-book implied probability minus the locked decision break-even probability; positive favors the paper price",
     "event_count": 1,
-    "mean_probability_edge": 0.0,
-    "median_probability_edge": 0.0,
+    "mean_probability_edge": -0.003952569169960479,
+    "median_probability_edge": -0.003952569169960479,
     "positive_rate": 0.0
   },
   "market_relative_log_loss_intervals": {
@@ -334,12 +334,12 @@
     "settled_events": 0,
     "status": "collecting_prospective_evidence"
   },
-  "quote_dataset_sha256": "ea0671722372ace5116967896c0751bf9e266ebe2f498c48c37e079f19994bfc",
-  "report_sha256": "c18a54a5224052544a19c2eab322c81075d9ce26de85418a797cc356a6eaf674",
+  "quote_dataset_sha256": "6c8554ace8341619d6064415691030551258a7e911bd93ed956c20ee47c1fc68",
+  "report_sha256": "74b3dc496f5a087e5e3008ee04ab7569f134149349a5e8cfa18c6c05d0c94286",
   "result_source_sha256": "4757b34e4d061bb7f98f698139af23def9c7806867a0ccbb7c18c1e293f32db7",
   "schema_version": 2,
   "settlement_dataset_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
   "settlements_total": 0,
-  "source_metadata_dataset_sha256": "ac6ff3b8d86a5b93489b18fe4cd688385888e801cf8fcd095faf54d2d5fec963",
+  "source_metadata_dataset_sha256": "4c1c703c19d772782b3d7370ad28a72e38571534f7f387b6c997b3d00eff2278",
   "unsettled_decisions": 13
 }
