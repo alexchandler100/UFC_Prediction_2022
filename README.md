@@ -3,7 +3,7 @@
 
 # UFC Prediction
 
-This project collects UFCStats fight data and publishes weekly winner forecasts at [alexchandler100.github.io/UFC_Prediction_2022](https://alexchandler100.github.io/UFC_Prediction_2022/). The repository also contains older method-prediction and browser-model experiments; the production weekly predictor is the Python point-in-time winner model described below.
+This project collects UFCStats fight data and publishes a searchable fighter and matchup research site at [alexchandler100.github.io/UFC_Prediction_2022](https://alexchandler100.github.io/UFC_Prediction_2022/). The site exposes complete fighter profiles, career rates and totals, every recorded bout, matchup-specific comparisons, current model context, and book-by-book market research. The production weekly predictor remains the Python point-in-time winner model described below.
 
 ## Production pipeline
 
@@ -14,7 +14,8 @@ The weekly job:
 3. Replays fights in causal bout order and builds one stable-ID feature row per physical W/L fight.
 4. Tunes and evaluates a regularized logistic model with nested chronological folds, adds pre-bout Elo/state features, applies symmetric temperature calibration, and refits on the full ten-year window.
 5. Saves and reloads a content-hashed JSON model artifact before forecasting the next card.
-6. Adds timestamped no-vig multi-book consensus from The Odds API when valid lines are available and publishes the website JSON.
+6. Builds a compact stable-ID fighter explorer publication with career summaries and complete fight logs.
+7. Adds timestamped no-vig multi-book consensus from The Odds API when valid lines are available and publishes the website JSON.
 
 The 82-feature model is antisymmetric: swapping the fighters produces the complementary probability. Historical features use only information available before that bout; appending future fights cannot change an existing training row. Split decisions are valid W/L labels, while draws and no-contests are retained as state/history events but are not binary training labels.
 
@@ -25,13 +26,15 @@ The auditable artifacts are:
 - `src/content/data/processed/ufc_fights_point_in_time.csv`
 - `src/content/data/external/winner_model.json`
 - `src/content/data/external/vegas_odds.json`
+- `src/content/data/external/fighter_explorer.json` (searchable career/profile index)
+- `src/content/data/external/fighter_fights_*.json` (lazy-loaded complete fight logs)
 - `src/content/data/market/quote_snapshots.jsonl`
 - `src/content/data/market/quote_source_metadata.jsonl`
 - `src/content/data/market/paper_decisions.jsonl`
 - `src/content/data/market/paper_settlements.jsonl`
 - `src/content/data/market/performance_report.json`
 
-When complete two-sided lines are available, the published primary forecast is the no-vig market consensus and the independent model probability remains visible. Betting recommendations are disabled until timestamped rolling tests demonstrate a repeatable market-relative edge.
+The website treats fighter history as its primary research surface. When complete two-sided lines are available, it shows the no-vig market consensus and the independent model probability as separate supporting context. Betting recommendations are disabled until timestamped rolling tests demonstrate a repeatable market-relative edge.
 
 ## Expected-return research
 
@@ -176,7 +179,7 @@ python -B src/update_market_performance.py
 
 Accuracy from a random split was misleading because it mixed old and recent eras. Evaluation now uses expanding chronological folds and reports log loss, Brier score, calibration, AUC, accuracy, and coverage. The model artifact contains the exact current results; [AUDIT.md](AUDIT.md) explains the original 59.6% / 0.706 chronological failure, the corrected evaluation, data-integrity findings, and remaining work.
 
-The browser fight simulator is clearly labeled experimental and is separate from the weekly artifact. Historical prediction records also span legacy model versions, so their aggregate accuracy is descriptive rather than a clean current-model backtest.
+Historical prediction records span legacy model versions, so their aggregate accuracy is descriptive rather than a clean current-model backtest. The current website does not run a second prediction model in the browser; it reads the validated weekly artifacts and keeps model forecasts distinct from market probabilities.
 
 To inspect the website locally:
 

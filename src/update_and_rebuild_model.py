@@ -8,6 +8,7 @@ from git import Repo
 # local imports
 from data_handler import DataHandler
 from data_handler.data_handler import atomic_to_csv
+from build_fighter_explorer import build_fighter_explorer, write_fighter_explorer
 from fight_predictor import PointInTimeDatasetBuilder, TemporalFightPredictor
 
 
@@ -99,6 +100,14 @@ predicted_odds_df['forecast source commit'] = _forecast_source_revision()
 # Merge available sportsbook odds from the configured market source.
 predicted_odds_df_with_vegas_odds = dh.save_fightoddsio_to_vegas_odds_json_and_merge_with_predictions_df(predicted_odds_df)
 dh.update_vegas_odds(predicted_odds_df_with_vegas_odds)
+print('Building compact fighter explorer publication')
+write_fighter_explorer(
+    build_fighter_explorer(
+        raw_fights,
+        fighter_stats,
+        predicted_odds_df_with_vegas_odds,
+    )
+)
 print('saving scraped fights and predictions to content/data/external/vegas_odds.json')
 print("###############################################################################################################")
 

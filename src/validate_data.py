@@ -21,6 +21,11 @@ import re
 import numpy as np
 import pandas as pd
 
+from build_fighter_explorer import SHARD_KEYS as FIGHTER_EXPLORER_SHARD_KEYS
+from build_fighter_explorer import SHARD_SIZE_LIMIT as FIGHTER_SHARD_SIZE_LIMIT
+from build_fighter_explorer import SIZE_LIMIT as FIGHTER_EXPLORER_SIZE_LIMIT
+from build_fighter_explorer import validate_fighter_explorer
+
 from fight_predictor.point_in_time import (
     MODEL_VERSION,
     REGULARIZATION_C_GRID,
@@ -708,10 +713,12 @@ def validate_publication(
     }
     required_json = {
         "card_info",
+        "fighter_explorer",
         "fighter_stats",
         "prediction_history",
         "ufc_fight_data_for_website",
         "vegas_odds",
+        *(f"fighter_fights_{key}" for key in FIGHTER_EXPLORER_SHARD_KEYS),
     }
     if require_model_artifact:
         required_json.add("winner_model")
@@ -738,6 +745,45 @@ def validate_publication(
             "website fight-data JSON row count differs from raw fights",
         )
 
+    vegas_object = objects["vegas_odds"]
+    try:
+        vegas = pd.DataFrame(vegas_object)
+    except (TypeError, ValueError) as error:
+        report.errors.append(f"vegas_odds cannot be loaded as a table: {error}")
+        vegas = pd.DataFrame()
+
+    explorer_path = external / "fighter_explorer.json"
+    explorer = objects["fighter_explorer"]
+    fight_shards = {
+        key: objects[f"fighter_fights_{key}"]
+        for key in FIGHTER_EXPLORER_SHARD_KEYS
+    }
+    try:
+        report.require(
+            explorer_path.stat().st_size <= FIGHTER_EXPLORER_SIZE_LIMIT,
+            "fighter explorer index exceeds its 8 MiB limit",
+        )
+        for key in FIGHTER_EXPLORER_SHARD_KEYS:
+            report.require(
+                (external / f"fighter_fights_{key}.json").stat().st_size
+                <= FIGHTER_SHARD_SIZE_LIMIT,
+                f"fighter explorer shard {key} exceeds its 4 MiB limit",
+            )
+        validated_explorer = validate_fighter_explorer(
+            explorer,
+            raw,
+            fighters,
+            vegas,
+            fight_shards,
+        )
+        report.facts.append(
+            "fighter explorer: "
+            f"{validated_explorer['counts']['fighters']:,} fighters / "
+            f"{validated_explorer['counts']['unique_fights']:,} fights"
+        )
+    except (OSError, TypeError, ValueError) as error:
+        report.errors.append(f"fighter explorer publication is invalid: {error}")
+
     card_info = objects["card_info"]
     report.require(isinstance(card_info, dict), "card_info must be a JSON object")
     card_date = pd.NaT
@@ -757,12 +803,6 @@ def validate_publication(
                     "card_info event_id does not match its UFCStats URL",
                 )
 
-    vegas_object = objects["vegas_odds"]
-    try:
-        vegas = pd.DataFrame(vegas_object)
-    except (TypeError, ValueError) as error:
-        report.errors.append(f"vegas_odds cannot be loaded as a table: {error}")
-        vegas = pd.DataFrame()
     if not vegas.empty:
         required = {"fighter name", "opponent name", "date"}
         if _require_columns(vegas, required, "vegas odds", report):

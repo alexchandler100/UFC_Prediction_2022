@@ -1,648 +1,123 @@
 <!doctype html>
-<html lang="en" class="no-js">
-
+<html lang="en">
 <head>
-  <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"> </script>
-  <link rel="icon" type="image/png" href="favicon.png" />
   <meta charset="utf-8">
-  <meta http-equiv="x-ua-compatible" content="ie=edge">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="canonical" href="https://html5-templates.com/" />
-  <title>Deep Learning UFC Prediction</title>
-  <meta name="description" content="A simple tool allowing the user to predict UFC fights using deep learning.">
-
-  <style>
-    /* Center the loader */
-    #loader {
-      position: absolute;
-      left: 51.7%;
-      top: 50%;
-      z-index: 1;
-      width: 60px;
-      height: 60px;
-      margin: -76px 0 0 -76px;
-      border: 16px solid #770f0f;
-      border-radius: 50%;
-      border-top: 16px solid #160f84;
-      -webkit-animation: spin 2s linear infinite;
-      animation: spin 2s linear infinite;
-    }
-
-    @-webkit-keyframes spin {
-      0% {
-        -webkit-transform: rotate(0deg);
-      }
-
-      100% {
-        -webkit-transform: rotate(360deg);
-      }
-    }
-
-    @keyframes spin {
-      0% {
-        transform: rotate(0deg);
-      }
-
-      100% {
-        transform: rotate(360deg);
-      }
-    }
-
-    /* Add animation to "page content" */
-    .animate-bottom {
-      position: relative;
-      -webkit-animation-name: animatebottom;
-      -webkit-animation-duration: 1s;
-      animation-name: animatebottom;
-      animation-duration: 1s
-    }
-
-    @-webkit-keyframes animatebottom {
-      from {
-        bottom: -100px;
-        opacity: 0
-      }
-
-      to {
-        bottom: 0px;
-        opacity: 1
-      }
-    }
-
-    @keyframes animatebottom {
-      from {
-        bottom: -100px;
-        opacity: 0
-      }
-
-      to {
-        bottom: 0;
-        opacity: 1
-      }
-    }
-
-    #myDiv {
-      display: none;
-      text-align: center;
-    }
-  </style>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Explore UFC fighter histories, matchup statistics, model forecasts, and book-by-book market data.">
+  <meta name="theme-color" content="#111b26">
+  <title>UFC Data Lab</title>
+  <link rel="icon" href="favicon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
 </head>
-
-<body onload="myLoader()">
-  <div class="bg"></div>
-  <div id="loader"></div>
-
-  <header>
-    <center>
-      <div style="font-family: Copperplate; font-size:50px" id="logo">
-        <!--
-    <img src="neural.png" />
-   -->
-        UFC Fight Predictor
-        <!--
-      <img style = "transform: rotate(180deg);" src="neural2.png"/>
-      -->
-      </div>
-    </center>
+<body>
+  <a class="skip-link" href="#main-content">Skip to content</a>
+  <header class="site-header">
+    <button class="brand" type="button" data-nav="matchups" aria-label="UFC Data Lab home">
+      <span class="brand-mark" aria-hidden="true">UD</span>
+      <span><strong>UFC Data Lab</strong><small>Fight research, clearly sourced</small></span>
+    </button>
+    <nav class="primary-nav" aria-label="Primary navigation">
+      <button class="nav-button is-active" type="button" data-nav="matchups">Matchups</button>
+      <button class="nav-button" type="button" data-nav="fighters">Fighters</button>
+      <button class="nav-button" type="button" data-nav="market">Market</button>
+      <button class="nav-button" type="button" data-nav="data">Model &amp; data</button>
+    </nav>
+    <div class="header-status" id="header-status" aria-live="polite"><span class="status-dot"></span>Loading data</div>
   </header>
 
-  <section id="fighterPictures">
-    <datalist id="fighters"> </datalist>
-    <main role="main">
-      <center>
-        <h1 id="rc" style="display:none;font-size: 40px;font-variant: small-caps; color: #212121;">
-          In the Red Corner
-        </h1>
+  <main id="main-content" tabindex="-1">
+    <div class="load-message" id="load-message" role="status"><span class="loader" aria-hidden="true"></span>Preparing fighter histories and matchup data…</div>
 
-        <article>
-          <!--
-          used to use colorize class but switched to CNN stylization
-          <img class="colorize" style='border: 10px solid #555' id=rcFighterPic src="" alt="" height="350" width="350">
-         -->
-          <img style='display:none; border: 10px solid #212121' id=rcFighterPic src="" alt="" height="350" width="350">
-        </article>
-
-      </center>
-    </main>
-
-    <aside>
-      <center>
-        <h1 id="bc" style="display:none;font-size: 40px; font-variant: small-caps;  color: #212121;">
-          In the Blue Corner
-        </h1>
-        <article>
-          <!--
-          used to use colorize class but switched to CNN stylization
-          <img class="colorize" style='border: 10px solid #555' id=rcFighterPic src="" alt="" height="350" width="350">
-         -->
-          <img style='display:none; border: 10px solid #212121' id=bcFighterPic src="" alt="" height="350" width="350">
-        </article>
-      </center>
-    </aside>
-  </section>
-
-  <section id="selectFighters">
-    <datalist id="months">
-      <option value="January">
-      <option value="February">
-      <option value="March">
-      <option value="April">
-      <option value="May">
-      <option value="June">
-      <option value="July">
-      <option value="August">
-      <option value="September">
-      <option value="October">
-      <option value="November">
-      <option value="December">
-    </datalist>
-    <datalist id="years">
-      <option value="2022">
-    </datalist>
-    <datalist id="fighters"> </datalist>
-    <main style="display:none" id="mainpart" role="main">
-      <center>
-        <article>
-          <p>
-            <input onfocus=this.value='' id=rcList type="text" list="fighters" value=""><br><br>
-            <input onfocus=this.value='' type="text2" id=selectMonth_rc list="months" value="March"> 
-            <input onfocus=this.value='' type="text3" id=selectYear_rc list="years" value=2022><br>
-          </p>
-          <button style="font-variant: small-caps; margin-top:.3cm" class="button button1"
-            onclick="selectFighterHighlightedInList('rc')"> Confirm Red Corner</button>
-        </article>
-      </center>
-    </main>
-
-    <aside style="display:none" id="asidepart">
-      <center>
-        <article>
-          <p>
-            <input onfocus=this.value='' id=bcList type="text" list="fighters" value=""><br><br>
-            <input onfocus=this.value='' type="text2" id=selectMonth_bc list="months" value="March"> <input
-              onfocus=this.value='' type="text3" id=selectYear_bc list="years" value=2022><br>
-          </p>
-          <button style="font-variant: small-caps; margin-top:.3cm" class="button button2"
-            onclick="selectFighterHighlightedInList('bc')"> Confirm Blue Corner</button>
-        </article>
-      </center>
-    </aside>
-  </section>
-
-  <section id="taleofthetape">
-
-    <div style="display:none" id="taletape" class="headers">
-      <h1>
-        Tale of the Tape
-      </h1>
-    </div>
-
-    <main id="month_rcselecter" style="display:none" role="main">
-      <center>
-        <p>
-          <span class="month_rc"></span> <span class="year_rc"></span>
-        </p>
-      </center>
-    </main>
-
-    <aside style="display:none" id="month_bcselecter">
-      <center>
-        <p>
-          <span class="month_bc"></span> <span class="year_bc"></span>
-        </p>
-      </center>
-    </aside>
-
-    <main style="display:none" id="table1display" role="main">
-      <center>
-        <table id="table_rc">
-          <tr style="color: #fff; font-size:30px;font-variant: small-caps;">
-            <td colspan="4"></td>
-          </tr>
-          <tr id="first row">
-            <td>Height</td>
-            <td>Reach</td>
-            <td>Age</td>
-            <td>Stance</td>
-          </tr>
-          <tr>
-            <td>??</td>
-            <td>??</td>
-            <td>??</td>
-            <td>??</td>
-          </tr>
-        </table>
-      </center>
-    </main>
-
-    <aside style="display:none" id="table2display">
-      <center>
-        <table id="table_bc">
-          <tr style="color: #fff; font-size:30px;font-variant: small-caps;">
-            <td colspan="4"></td>
-          </tr>
-          <tr id="first row">
-            <td>Height</td>
-            <td>Reach</td>
-            <td>Age</td>
-            <td>Stance</td>
-          </tr>
-          <tr>
-            <td>??</td>
-            <td>??</td>
-            <td>??</td>
-            <td>??</td>
-          </tr>
-        </table>
-      </center>
-    </aside>
-  </section>
-
-
-  <section id="last5fights" style="display:none">
-    <div class="headers">
-      <h1>
-        Last 5 Fights
-      </h1>
-    </div>
-    <main style="display:none" id="fighterl5y" role="main">
-      <center>
-        <table id="l5ytable_rc" style="width:80%;">
-          <thead>
-            <tr style="color: #fff; font-size:30px;">
-              <td colspan="4"></td>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <th>Opponent</th>
-              <th>Result</th>
-              <th>Method</th>
-              <th>Date</th>
-            </tr>
-            <tr>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-            </tr>
-            <tr>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-            </tr>
-            <tr>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-            </tr>
-            <tr>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-            </tr>
-            <tr>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-            </tr>
-          </tbody>
-        </table>
-      </center>
-    </main>
-
-    <aside style="display:none" id="opponentl5y">
-      <center>
-        <table id="l5ytable_bc" style="width:80%;">
-          <thead>
-            <tr style="color: #fff; font-size:30px;">
-              <td colspan="4"></td>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <th>Opponent</th>
-              <th>Result</th>
-              <th>Method</th>
-              <th>Date</th>
-            </tr>
-            <tr>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-            </tr>
-            <tr>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-            </tr>
-            <tr>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-            </tr>
-            <tr>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-            </tr>
-            <tr>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-            </tr>
-          </tbody>
-        </table>
-      </center>
-    </aside>
-  </section>
-
-
-  <section id="predict" style="display:none">
-    <div class="headers">
-      <h1>
-        Predict Outcome
-      </h1>
-    </div>
-    <center>
-      <strong>Experimental legacy calculator.</strong> This browser-only calculation is separate from
-      the weekly point-in-time forecast and does not use its model artifact. Weekly forecasts appear
-      only in the Upcoming Fights table below.
-    </center>
-    <div>
-      <center>
-        <button class="button button3"
-          onclick="predict('rc','bc','selectMonth_rc','selectYear_rc','selectMonth_bc','selectYear_bc',)">
-          Calculate </button>
-      </center>
-    </div>
-    <center>
-      <span style="font-size:30px;" class="fightoutcome"></span>
-    </center>
-
-    <center>
-      <table id="tableoutcome" style="margin-top:.5cm;">
-        <tr style="color: #ffffff; font-size:25px;font-variant: small-caps;">
-          <td colspan="3">Predicted Odds (no vig)</td>
-        </tr>
-        <tr id="odds">
-          <td style="color: #fff;font-size:15px;">Fair Odds</td>
-          <td style="color: #fff;font-size:15px;"></td>
-          <td style="color: #fff;font-size:15px;"></td>
-        </tr>
-      </table>
-    </center>
-  </section>
-
-  <section id="futurefights" style="display:none">
-    <div class="headers">
-      <h1>
-        Upcoming Fights
-      </h1>
-    </div>
-    <center>
-      The independent model and Vegas consensus are shown separately. The published forecast uses the
-      timestamped, no-vig market consensus from The Odds API when it is available; otherwise it falls back
-      to the point-in-time statistics model. This is why older versions of this table showed identical
-      "predicted" and Vegas values: the market-backed published forecast was mislabeled as a prediction.
-      <br>
-      <strong>Betting recommendations are disabled while prospective paper validation runs.</strong>
-      The project is tracking fixed-horizon prices, paper return, and line movement; these forecasts are not suggested wagers.
-      <p id="weekly-model-provenance" style="margin-top:.35cm;font-size:14px;">
-        Loading weekly model provenance...
-      </p>
-    </center>
-    <center>
-      <table id="upcoming" style="margin-top:.5cm; display: none">
-        <thead>
-          <tr id = "card-title-style" style="color: #fff; font-size:15px;font-variant: small-caps;">
-            <th id="card title and date" style="white-space: pre" colspan="6">Upcoming Fights</th>
-          </tr>
-          <tr>
-            <th style="color: #ffffff;background-color: #323232;font-size:15px;">Fighter</th>
-            <th style="color: #ffffff;background-color: #323232;font-size:15px;">Opponent</th>
-            <th style="color: #ffffff;background-color: #323232;font-size:15px;">Independent<br>Model Fair Odds</th>
-            <th style="color: #ffffff;background-color: #323232;font-size:15px;">Vegas Consensus<br>Fair Odds</th>
-            <th style="color: #ffffff;background-color: #323232;font-size:15px;">Published<br>Forecast</th>
-            <th style="color: #ffffff;background-color: #323232;font-size:15px;">Status &amp;<br>Provenance</th>
-          </tr>
-        </thead>
-        <tbody>
-        </tbody>
-      </table>
-    </center>
-
-    <div class="paper-market-dashboard">
-      <h2>Paper Betting Opportunities</h2>
-      <p>
-        This is the actionable audit view of the captured market, not a wager feed. For every
-        comparison, the target sportsbook is excluded; each remaining two-sided price is de-vigged,
-        and those probabilities are equally averaged. The target line is then compared with that
-        leave-one-book-out estimate. A signal requires at least 5%
-        estimated expected return. The statistics model is shown as a diagnostic but currently has
-        0% weight in the paper decision probability.
-      </p>
-      <p>
-        Sportsbook access, jurisdiction, limits, and whether a displayed line is still available are
-        not verified. Prices can move after capture. All decisions are hypothetical one-unit records;
-        betting execution remains disabled.
-      </p>
-      <p id="market-opportunity-status" class="market-opportunity-status">
-        Loading current sportsbook capture...
-      </p>
-      <div class="market-table-scroll">
-        <table id="market-opportunities" style="display:none">
-          <thead>
-            <tr>
-              <th>Matchup &amp;<br>Model Diagnostic</th>
-              <th>Locked T-24<br>Paper Decision</th>
-              <th>Current<br>Paper Signal</th>
-              <th>Target Price vs<br>LOO Fair Price</th>
-              <th>Estimated<br>Return</th>
-              <th>All Captured<br>Sportsbooks</th>
-            </tr>
-          </thead>
-          <tbody></tbody>
-        </table>
-      </div>
-    </div>
-  </section>
-
-  <section>
-    <center>
-    <h2>Standalone Kelly Criterion Calculator (Experimental)</h2>
-        This informational calculator is separate from the weekly forecast and does not enable betting recommendations.
-        You can manually input live odds from any bookie.
-        Live odds can be found at  <a href="https://fightodds.io/" target="_blank" rel="noopener noreferrer">fightodds.io</a>
-        <style>
-          #kelly-table {
-            border-collapse: collapse;
-            width: auto; /* prevents table from stretching */
-          }
-          
-          /* #kelly-table col.col-1 { width: 100px; }
-          #kelly-table col.col-2 { width: 200px; }
-          #kelly-table col.col-3 { width: 150px; } */
-          
-          #kelly-table th, #kelly-table td {
-            border: 1px solid #ccc;
-            padding: 8px;
-          }
-        </style>
-
-
-  <table id="kelly-table" style="margin-top:.5cm;">
-    <thead>
-      <tr>
-        <th style="color: #ffffff;background-color: #323232;font-size:15px;">Fighter<br>Predicted<br>Odds</th>
-        <th style="color: #ffffff;background-color: #323232;font-size:15px;">Opponent<br>Predicted<br>Odds</th>
-        <th style="color: #ffffff;background-color: #323232;font-size:15px;">Fighter<br>Vegas<br>Odds</th>
-        <th style="color: #ffffff;background-color: #323232;font-size:15px;">Opponent<br>Vegas<br>Odds</th>
-        <th style="color: #ffffff;background-color: #323232;font-size:15px;">Fighter<br>Kelly<br>Bankroll %</th>
-        <th style="color: #ffffff;background-color: #323232;font-size:15px;">Opponent<br>Kelly<br>Bankroll %</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td style="color: #ffffff;background-color: #323232;font-size:10px;"><input  type="text" inputmode="numeric" pattern="^-?\d*$" id="fighterPred"></td>
-        <td style="color: #ffffff;background-color: #323232;font-size:10px;"><input  type="text" inputmode="numeric" pattern="^-?\d*$" id="opponentPred"></td>
-        <td style="color: #ffffff;background-color: #323232;font-size:10px;"><input  type="text" inputmode="numeric" pattern="^-?\d*$" id="fighterVegas"></td>
-        <td style="color: #ffffff;background-color: #323232;font-size:10px;"><input  type="text" inputmode="numeric" pattern="^-?\d*$" id="opponentVegas"></td>
-        <td style="color: #ffffff;background-color: #323232;font-size:15px;" id="fighter kelly %">-</td>
-        <td style="color: #ffffff;background-color: #323232;font-size:15px;" id="opponent kelly %">-</td>
-      </tr>
-    </tbody>
-  </table>
-
-  <br>
-  <button onclick="computeKelly()">Compute</button>
-
-
-    </center>
-  </section>
-
-  <section id="pastfights" style="display:none">
-    <div class="headers">
-      <h1>
-        Past Fights (Recent)
-      </h1>
-    </div>
-
-    <center>
-      We started publishing fight forecasts on April 23, 2022. Below we show the history of forecasts
-      made
-      before each event.
-      For reference, available sportsbook prices are also shown. New records use a no-vig consensus in
-      probability space; older records may contain the site's legacy arithmetic odds average.
-      After each event, the table is automatically updated to indicate the winners in <span
-        style="color:gold">gold</span> and keep a running total of the prediction accuracy.
-      Correctly predicted fights are indicated in <span style="color:green">green</span> and incorrectly predicted
-      fights are shown in <span style="color:red">red</span>.
-      Historical accuracy is descriptive only: this table spans multiple model versions, and older rows may lack
-      stable fight IDs or complete provenance. It is not a betting-performance guarantee.
-    </center>
-
-    <center>
-      <table id="tablehistory" style="margin-top:.5cm;display:none">
-        <thead>
-          <tr style="color: #fff; font-size:15px;font-variant: small-caps;">
-            <th colspan="5">Fight Forecast History</th>
-          </tr>
-          <tr id="history">
-            <th style="color: #ffffff;background-color: #323232;font-size:15px;">Fighter vs Opponent</th>
-            <th style="color: #ffffff;background-color: #323232;font-size:15px;">Published<br>Forecast<br>Odds</th>
-            <th style="color: #ffffff;background-color: #323232;font-size:15px;">Best Bookie</th>
-            <th style="color: #ffffff;background-color: #323232;font-size:15px;">Kelly<br>Criterion<br>Bet</th>
-            <th style="color: #ffffff;background-color: #323232;font-size:15px;">Bankroll<br>After<br>Fight</th>
-          </tr>
-        </thead>
-        <tbody>
-        </tbody>
-      </table>
-    </center>
-
-    
-      <div>
-        <p style="font-size:16pt" class="stats"> The following statistics were compiled based on the model's performance
-          since April 23, 2022</p>
-          <center>
-            <p style="font-size:16pt" id="myaccuracy"> Forecast Accuracy</p>
-            <p style="font-size:16pt" id="bookieaccuracy"> Bookie Accuracy</p>
-          </center>
+    <section class="view is-active" id="view-matchups" data-view="matchups" aria-labelledby="matchups-title">
+      <div class="page-hero page-shell">
+        <div>
+          <p class="eyebrow">Matchup workspace</p>
+          <h1 id="matchups-title">Research the fight, not just the pick.</h1>
+          <p class="hero-copy">Compare pace, defense, grappling, physical traits, form, and every recorded UFC bout. Model and market numbers are supporting evidence—not the whole story.</p>
         </div>
-      
-  </section>
+        <div class="coverage-panel" id="coverage-summary" aria-label="Dataset coverage"></div>
+      </div>
 
-  <section style="display:none;" id="headers">
-    <div class="headers">
-      <p style="font-size:16pt">
-        The machine learning model implemented on this page will analyze all known fighter stats (scraped from <a
-          href="http://ufcstats.com/statistics/events/completed" target="_blank">ufcstats.com</a>)
-        and predict the most likely outcome if they were to fight exactly as they were on the specified dates.
-        Details on how these models were constructed can be found <a
-          href="https://github.com/alexchandler100/UFC_Prediction_2022" target="_blank">here</a> on our Github.
-        This experimental browser model is not the validated weekly model and has no current accuracy claim.
-        All photos are scraped from Google image search acted on by a convolutional neural network (CNN) for artistic
-        style transfer (8,964 photos total).
-        Weekly sportsbook prices are retrieved through The Odds API; the experimental calculator accepts manual inputs from any source.
-      </p>
-    </div>
-  </section>
+      <div class="page-shell page-stack">
+        <section class="panel current-card-panel" aria-labelledby="current-card-title">
+          <div class="section-heading">
+            <div><p class="eyebrow">This week</p><h2 id="current-card-title">Current fight card</h2><p class="section-note" id="current-card-meta">Loading the current card…</p></div>
+            <span class="research-badge">Research view</span>
+          </div>
+          <div class="matchup-card-grid" id="upcoming-matchups"></div>
+        </section>
 
-  <footer style="display:none" id="foot">
-    <center>
-      <p>We do not recommend you make financial decisions based on the outcomes of this program</p>
-      <address>
-        Contact: <a href="mailto:alexchandler100@gmail.com">questions/comments</a>
-      </address>
-    </center>
+        <section class="panel matchup-builder" aria-labelledby="builder-title">
+          <div class="section-heading">
+            <div><p class="eyebrow">Any two fighters</p><h2 id="builder-title">Build a matchup</h2><p class="section-note">Choose fighters from the full UFCStats dataset, including inactive fighters.</p></div>
+          </div>
+          <div class="matchup-selectors">
+            <div class="fighter-picker" data-picker="a">
+              <label for="matchup-fighter-a">Fighter A</label>
+              <input id="matchup-fighter-a" type="search" autocomplete="off" placeholder="Search by fighter name" aria-controls="matchup-results-a" aria-expanded="false">
+              <div class="search-results" id="matchup-results-a" role="listbox"></div>
+            </div>
+            <span class="versus-mark" aria-hidden="true">VS</span>
+            <div class="fighter-picker" data-picker="b">
+              <label for="matchup-fighter-b">Fighter B</label>
+              <input id="matchup-fighter-b" type="search" autocomplete="off" placeholder="Search by fighter name" aria-controls="matchup-results-b" aria-expanded="false">
+              <div class="search-results" id="matchup-results-b" role="listbox"></div>
+            </div>
+          </div>
+          <div class="builder-actions">
+            <button class="primary-button" id="analyze-matchup" type="button" disabled>Analyze matchup</button>
+            <button class="text-button" id="clear-matchup" type="button">Clear</button>
+          </div>
+        </section>
+        <section id="matchup-workbench" class="workbench" aria-live="polite"></section>
+      </div>
+    </section>
+
+    <section class="view" id="view-fighters" data-view="fighters" aria-labelledby="fighters-title">
+      <div class="compact-hero page-shell">
+        <p class="eyebrow">Fighter database</p><h1 id="fighters-title">Find anyone. Inspect everything.</h1>
+        <p>Search every fighter profile we have, then drill into career rates, raw totals, opponents, and complete fight logs.</p>
+      </div>
+      <div class="page-shell page-stack">
+        <section class="panel directory-controls" aria-label="Fighter filters">
+          <div class="directory-search"><label for="fighter-directory-search">Search fighters</label><input id="fighter-directory-search" type="search" autocomplete="off" placeholder="Name, division, or stance"></div>
+          <div class="filter-control"><label for="division-filter">Division</label><select id="division-filter"><option value="">All divisions</option></select></div>
+          <div class="filter-control"><label for="stance-filter">Stance</label><select id="stance-filter"><option value="">All stances</option></select></div>
+          <label class="check-control"><input type="checkbox" id="recorded-only" checked> Recorded UFC bouts only</label>
+        </section>
+        <section id="fighter-directory" aria-live="polite"></section>
+        <section id="fighter-profile" class="profile-view" aria-live="polite"></section>
+      </div>
+    </section>
+
+    <section class="view" id="view-market" data-view="market" aria-labelledby="market-title">
+      <div class="compact-hero page-shell">
+        <p class="eyebrow">Price research</p><h1 id="market-title">Consensus, best price, and paper decisions.</h1>
+        <p>See which book offered the best line, how that price compares with a leave-one-book-out fair probability, and why the system acted or passed.</p>
+      </div>
+      <div class="page-shell page-stack">
+        <section class="market-notice" id="market-notice"></section>
+        <section class="market-grid" id="market-matchups" aria-live="polite"></section>
+      </div>
+    </section>
+
+    <section class="view" id="view-data" data-view="data" aria-labelledby="data-title">
+      <div class="compact-hero page-shell">
+        <p class="eyebrow">Methodology &amp; provenance</p><h1 id="data-title">What the numbers mean.</h1>
+        <p>The prediction model, market policy, evaluation history, data coverage, and missing-data rules are separated so their roles are never ambiguous.</p>
+      </div>
+      <div class="page-shell page-stack" id="model-data-content"></div>
+    </section>
+  </main>
+
+  <footer class="site-footer page-shell">
+    <p>For research only. No bet execution. Statistics describe recorded UFC performance and do not guarantee future outcomes.</p>
+    <p id="publication-stamp"></p>
   </footer>
-
-  <script src="script.js"></script>
-
-  <script>
-    var myVar;
-
-    function myLoader() {
-      myVar = setTimeout(showPage, 2001);
-    }
-
-    function showPage() {
-      document.getElementById("loader").style.display = "none";
-      document.getElementById("headers").style.display = "block";
-      document.getElementById("tablehistory").style.display = "inline-block";
-      document.getElementById("upcoming").style.display = "inline-block";
-      document.getElementById("predict").style.display = "block";
-      document.getElementById("rc").style.display = "inline-block";
-      document.getElementById("bc").style.display = "inline-block";
-      document.getElementById("mainpart").style.display = "inline-block";
-      document.getElementById("asidepart").style.display = "inline-block";
-      document.getElementById("month_rcselecter").style.display = "block";
-      document.getElementById("month_bcselecter").style.display = "block";
-      document.getElementById("table1display").style.display = "inline-block";
-      document.getElementById("table2display").style.display = "inline-block";
-      document.getElementById("fighterl5y").style.display = "inline-block";
-      document.getElementById("opponentl5y").style.display = "inline-block";
-      document.getElementById("bcFighterPic").style.display = "inline";
-      document.getElementById("rcFighterPic").style.display = "inline";
-      document.getElementById("taletape").style.display = "block";
-      document.getElementById("last5fights").style.display = "block";
-      document.getElementById("futurefights").style.display = "block";
-      document.getElementById("pastfights").style.display = "block";
-      document.getElementById("foot").style.display = "block";
-    }
-  </script>
+  <noscript>This explorer requires JavaScript to search and compare the published dataset.</noscript>
+  <script src="script.js" defer></script>
 </body>
-<link rel="stylesheet" href="style.css">
-<link href="minimal-table.css" rel="stylesheet" type="text/css">
-
 </html>

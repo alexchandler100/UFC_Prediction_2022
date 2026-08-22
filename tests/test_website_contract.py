@@ -5,36 +5,59 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parents[1]
 
 
-class WebsiteForecastContractTests(unittest.TestCase):
-    def test_upcoming_table_separates_model_market_and_published_forecast(self):
+class WebsiteExplorerContractTests(unittest.TestCase):
+    def test_site_is_structured_around_matchup_and_fighter_research(self):
         page = (REPO_ROOT / "index.html").read_text(encoding="utf-8")
         script = (REPO_ROOT / "script.js").read_text(encoding="utf-8")
-        self.assertIn("Independent<br>Model Fair Odds", page)
-        self.assertIn("Vegas Consensus<br>Fair Odds", page)
-        self.assertIn("Published<br>Forecast", page)
-        self.assertIn("'predicted fighter odds'", script)
-        self.assertIn("'market no-vig fighter probability'", script)
-        self.assertIn("'forecast fighter odds'", script)
-        self.assertIn("probabilityToAmericanOdds", script)
 
-    def test_paper_market_view_names_the_book_line_consensus_and_ev(self):
+        self.assertIn("Research the fight, not just the pick", page)
+        self.assertIn("Fighter database", page)
+        self.assertIn("Build a matchup", page)
+        self.assertIn("Model &amp; data", page)
+        self.assertIn("fighter_explorer.json", script)
+        self.assertIn("ensureFighterFights", script)
+        self.assertIn("fight_shards", script)
+        self.assertIn("function renderFighterProfile", script)
+        self.assertIn("function renderMatchup", script)
+        self.assertIn("function renderFightHistory", script)
+        self.assertIn("data_dictionary.fight_stats", script)
+        self.assertNotIn("jquery", page.lower())
+        self.assertNotIn("fighterPictures", script)
+
+    def test_complete_data_is_reachable_without_rendering_it_all_up_front(self):
+        script = (REPO_ROOT / "script.js").read_text(encoding="utf-8")
+
+        self.assertIn("fight_columns", script)
+        self.assertIn("pairedFight", script)
+        self.assertIn("Career raw totals and opponent totals", script)
+        self.assertIn("Career dates, divisions, form, and streak metadata", script)
+        self.assertIn("Open official UFCStats fight page", script)
+        self.assertIn('details.addEventListener("toggle"', script)
+
+    def test_market_view_names_book_price_consensus_and_expected_return(self):
         page = (REPO_ROOT / "index.html").read_text(encoding="utf-8")
         script = (REPO_ROOT / "script.js").read_text(encoding="utf-8")
         workflow = (
             REPO_ROOT / ".github" / "workflows" / "collect-market-snapshot.yml"
         ).read_text(encoding="utf-8")
-        self.assertIn("Paper Betting Opportunities", page)
-        self.assertIn("Locked T-24", page)
-        self.assertIn("Target Price vs", page)
-        self.assertIn("All Captured", page)
+
+        self.assertIn("Consensus, best price, and paper decisions", page)
+        self.assertIn("automatic betting is intentionally off", script)
         self.assertIn("current_opportunities.json", script)
         self.assertIn("target_book", script)
         self.assertIn("offered_moneyline", script)
         self.assertIn("estimated_expected_return", script)
-        self.assertIn("consensus_books", script)
-        self.assertIn("target excluded", script)
-        self.assertIn("execution_enabled", script)
+        self.assertIn("book_quotes", script)
+        self.assertIn("locked_t24_decision", script)
+        self.assertIn("Leave-one-book-out fair line", script)
         self.assertIn("current_opportunities.json", workflow)
+
+    def test_layout_has_explicit_mobile_breakpoints(self):
+        style = (REPO_ROOT / "style.css").read_text(encoding="utf-8")
+        self.assertIn("@media (max-width: 900px)", style)
+        self.assertIn("@media (max-width: 600px)", style)
+        self.assertIn(".matchup-selectors", style)
+        self.assertIn(".fight-summary", style)
 
 
 if __name__ == "__main__":
