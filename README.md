@@ -21,9 +21,61 @@ The 82-feature model is antisymmetric: swapping the fighters produces the comple
 
 The regularization search includes `C=0.001` and `0.003`; an ablation found the old `0.01` lower boundary was masking stronger shrinkage. Recency weighting, decision-label weighting, and Glicko/RD were tested but remain unpromoted because their gains were small or inconsistent. Exact results are recorded in [AUDIT.md](AUDIT.md).
 
+## External promotion history
+
+The repository now has a source-attributed external-MMA collection layer for
+Bellator, ONE, PFL, and regional histories. External bouts are replayed only as
+fighter state: they may update overall Elo, record, activity, opponent strength,
+and recency, but they can never become UFC training labels. Missing external
+strike/takedown/control statistics remain unknown and do not become zeroes.
+
+The preferred current-data path is a licensed export or API agreement with
+[Combat Registry](https://www.combatreg.com/about/), the ABC's official MMA
+record keeper. The checked-in bootstrap is the publisher-declared CC0
+[All Pro MMA Fights](https://www.kaggle.com/datasets/binduvr/pro-mma-fights/versions/1)
+snapshot: 10,448 UFC/Bellator/ONE bouts through August 11, 2021. It is valuable
+for historical evaluation, not a current weekly feed. UFC rows in that snapshot
+are excluded from replay and used only to crosswalk 1,983 external identities
+from an exact date-and-matchup witness. Tapology and Sherdog are explicitly
+blocked as scraper targets by the source registry unless written permission is
+obtained; ONE's official site is reference-only under its current terms.
+
+The importer preserves the source license, retrieval time, payload SHA-256,
+stable source IDs, rejected-row audit, and canonical orientation. Raw provider
+files can be retained content-addressed in private local storage without being
+redistributed. The normalized ledger contains 10,448 bouts, and the candidate
+state replay contains 4,236 non-UFC bouts. Its chronological A/B test left the
+UFC label set unchanged and improved final-holdout log loss from `0.62284` to
+`0.62121` (accuracy `64.82%` to `65.43%`); multi-year walk-forward log loss
+improved from `0.63133` to `0.63071`. This is a small predictive gain, not
+evidence of positive betting return.
+
+Reproduce the collection and evaluation with:
+
+```console
+python -B src/collect_external_mma.py sources
+python -B src/collect_external_mma.py import-kaggle path/to/pro_mma_fights.csv
+python -B src/collect_external_mma.py crosswalk
+python -B src/collect_external_mma.py build-auxiliary
+python -B src/collect_external_mma.py validate
+python -B src/evaluate_external_mma.py
+```
+
+Production use is deliberately controlled by
+`src/content/data/external_mma/model_policy.json`. It remains disabled until an
+approved model publication pins the exact auxiliary CSV hash, preventing a data
+refresh from silently changing weekly forecasts. A future Combat Registry
+export can use `import-canonical --source-key combat_registry_export
+--license-confirmed`; its required columns and validation rules are enforced by
+the adapter.
+
 The auditable artifacts are:
 
 - `src/content/data/processed/ufc_fights_point_in_time.csv`
+- `src/content/data/processed/external_mma_auxiliary_doubled.csv`
+- `src/content/data/external_mma/bouts.jsonl`
+- `src/content/data/external_mma/snapshots.jsonl`
+- `src/content/data/external_mma/evaluation_report.json`
 - `src/content/data/external/winner_model.json`
 - `src/content/data/external/vegas_odds.json`
 - `src/content/data/external/fighter_explorer.json` (searchable career/profile index)

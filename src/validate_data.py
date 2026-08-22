@@ -32,6 +32,8 @@ from fight_predictor.point_in_time import (
     PointInTimeDatasetBuilder,
     training_fingerprint,
 )
+from external_mma import ExternalMmaStore, load_approved_auxiliary
+from external_mma.schema import ExternalDataError
 from market_tracker import (
     ForecastCaptureStore,
     MarketDataError,
@@ -553,6 +555,7 @@ def validate_model_artifact(
     raw: pd.DataFrame,
     fighters: pd.DataFrame,
     point_in_time: pd.DataFrame | None,
+    auxiliary_fights: pd.DataFrame | None = None,
 ) -> ValidationReport:
     report = ValidationReport()
     if not isinstance(artifact, dict):
@@ -635,14 +638,23 @@ def validate_model_artifact(
         report.require(supplied_model_id == expected_model_id, "winner model_id does not match artifact contents")
     except (TypeError, ValueError):
         report.errors.append("winner model cannot be encoded canonically")
+    state_max_timestamp = pd.to_datetime(raw["date"], errors="coerce").max()
+    if auxiliary_fights is not None and not auxiliary_fights.empty:
+        state_max_timestamp = max(
+            state_max_timestamp,
+            pd.to_datetime(auxiliary_fights["date"], errors="coerce").max(),
+        )
     raw_max = pd.to_datetime(raw["date"], errors="coerce").max().strftime("%Y-%m-%d")
-    report.require(artifact["data_through"] == raw_max, "winner model is not trained through latest raw date")
+    state_max = state_max_timestamp.strftime("%Y-%m-%d")
+    report.require(artifact["data_through"] == state_max, "winner model is not trained through latest replay state")
     report.require(
-        artifact["source_data_through"] == raw_max,
-        "winner model source cutoff differs from latest raw date",
+        artifact["source_data_through"] == state_max,
+        "winner model source cutoff differs from latest replay state",
     )
     try:
-        state_builder = PointInTimeDatasetBuilder(raw, fighters)
+        state_builder = PointInTimeDatasetBuilder(
+            raw, fighters, auxiliary_fights=auxiliary_fights
+        )
         prepared_raw = state_builder._validate_and_prepare_raw()
         expected_state_fingerprint = state_builder._state_source_fingerprint(
             prepared_raw
@@ -704,6 +716,7 @@ def validate_publication(
     *,
     allow_stale: bool = False,
     point_in_time: pd.DataFrame | None = None,
+    auxiliary_fights: pd.DataFrame | None = None,
     require_model_artifact: bool = False,
 ) -> ValidationReport:
     report = ValidationReport()
@@ -733,7 +746,7 @@ def validate_publication(
     if winner_model is not None and require_model_artifact:
         report.merge(
             validate_model_artifact(
-                winner_model, raw, fighters, point_in_time
+                winner_model, raw, fighters, point_in_time, auxiliary_fights
             )
         )
 
@@ -1360,8 +1373,28 @@ def validate_repository(
     point_in_time = (
         pd.read_csv(point_path, low_memory=False) if point_path.exists() else None
     )
-
     report = ValidationReport()
+    auxiliary_path = processed / "external_mma_auxiliary_doubled.csv"
+    try:
+        auxiliary_fights = load_approved_auxiliary(
+            auxiliary_path,
+            data_root / "external_mma" / "model_policy.json",
+        )
+    except (OSError, UnicodeError, json.JSONDecodeError, ValueError) as error:
+        auxiliary_fights = None
+        report.errors.append(f"external MMA model policy is invalid: {error}")
+
+    external_mma_root = data_root / "external_mma"
+    if external_mma_root.exists():
+        try:
+            external_report = ExternalMmaStore(external_mma_root).validate()
+            report.facts.append(
+                "external MMA: "
+                f"{external_report['observations']:,} bouts / "
+                f"{external_report['snapshots']:,} snapshots"
+            )
+        except (ExternalDataError, OSError, UnicodeError, ValueError) as error:
+            report.errors.append(f"external MMA ledger is invalid: {error}")
     report.merge(
         validate_market_data(
             data_root / "market", required=require_market_data
@@ -1391,6 +1424,7 @@ def validate_repository(
                 fighters,
                 allow_stale=allow_stale,
                 point_in_time=point_in_time,
+                auxiliary_fights=auxiliary_fights,
                 require_model_artifact=require_model_artifact,
             )
         )

@@ -9,6 +9,7 @@ from git import Repo
 from data_handler import DataHandler
 from data_handler.data_handler import atomic_to_csv
 from build_fighter_explorer import build_fighter_explorer, write_fighter_explorer
+from external_mma import load_approved_auxiliary
 from fight_predictor import PointInTimeDatasetBuilder, TemporalFightPredictor
 
 
@@ -39,8 +40,24 @@ dh.update_data_csvs_and_jsons()
 
 raw_fights = dh.get('ufc_fights_reported_doubled')
 fighter_stats = dh.get('fighter_stats')
+auxiliary_path = (
+    Path(__file__).resolve().parent
+    / 'content/data/processed/external_mma_auxiliary_doubled.csv'
+)
+auxiliary_policy_path = (
+    Path(__file__).resolve().parent
+    / 'content/data/external_mma/model_policy.json'
+)
+auxiliary_fights = load_approved_auxiliary(auxiliary_path, auxiliary_policy_path)
 print('Building stable-ID point-in-time training data')
-feature_builder = PointInTimeDatasetBuilder(raw_fights, fighter_stats)
+if auxiliary_fights is not None and not auxiliary_fights.empty:
+    print(
+        'Replaying state-only external MMA history: '
+        f'{auxiliary_fights["fight_url"].nunique():,} bouts'
+    )
+feature_builder = PointInTimeDatasetBuilder(
+    raw_fights, fighter_stats, auxiliary_fights=auxiliary_fights
+)
 point_in_time_fights = feature_builder.build()
 point_in_time_path = (
     Path(__file__).resolve().parent

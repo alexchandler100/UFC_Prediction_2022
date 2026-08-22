@@ -117,11 +117,19 @@ class FighterState:
 
 
 class PointInTimeDatasetBuilder:
-    """Build one pre-event feature row per physical UFC fight."""
+    """Build UFC labels while optionally replaying non-label external history."""
 
-    def __init__(self, raw_fights: pd.DataFrame, fighter_stats: pd.DataFrame):
+    def __init__(
+        self,
+        raw_fights: pd.DataFrame,
+        fighter_stats: pd.DataFrame,
+        auxiliary_fights: pd.DataFrame | None = None,
+    ):
         self.raw_fights = raw_fights.copy()
         self.fighter_stats = fighter_stats.copy()
+        self.auxiliary_fights = (
+            auxiliary_fights.copy() if auxiliary_fights is not None else None
+        )
         self.states: dict[str, FighterState] = {}
         self.training_data: pd.DataFrame | None = None
         self._replayed_through: pd.Timestamp | None = None
@@ -452,6 +460,11 @@ class PointInTimeDatasetBuilder:
             "result", "method", "division", "total_fight_time", "bout_order",
             *COUNT_STATS,
         ]
+        if (
+            "emit_training_target" in raw
+            and not raw["emit_training_target"].astype(bool).all()
+        ):
+            columns.insert(columns.index("bout_order") + 1, "emit_training_target")
         if "time_format" in raw:
             columns.insert(columns.index("total_fight_time"), "time_format")
         source_text = raw[columns].to_csv(
@@ -494,6 +507,26 @@ class PointInTimeDatasetBuilder:
         if missing:
             raise ValueError(f"raw fights are missing required columns: {sorted(missing)}")
         raw = self.raw_fights.copy()
+        if "emit_training_target" in raw:
+            supplied = raw["emit_training_target"].astype(str).str.casefold()
+            if not supplied.isin({"true", "1"}).all():
+                raise ValueError("primary UFC fights must emit training targets")
+        raw["emit_training_target"] = True
+        if self.auxiliary_fights is not None and not self.auxiliary_fights.empty:
+            auxiliary = self.auxiliary_fights.copy()
+            missing_auxiliary = required - set(auxiliary.columns)
+            if missing_auxiliary:
+                raise ValueError(
+                    "auxiliary fights are missing required columns: "
+                    f"{sorted(missing_auxiliary)}"
+                )
+            if "emit_training_target" not in auxiliary:
+                raise ValueError("auxiliary fights require emit_training_target=False")
+            supplied = auxiliary["emit_training_target"].astype(str).str.casefold()
+            if not supplied.isin({"false", "0"}).all():
+                raise ValueError("auxiliary fights must not emit training targets")
+            auxiliary["emit_training_target"] = False
+            raw = pd.concat([raw, auxiliary], ignore_index=True, sort=False)
         raw["_source_position"] = np.arange(len(raw))
         raw["date"] = pd.to_datetime(raw["date"], errors="raise").dt.normalize()
         raw["fighter_id"] = raw["fighter_url"].map(_identity_token)
@@ -527,8 +560,9 @@ class PointInTimeDatasetBuilder:
             )
         )
         rounds = pd.to_numeric(raw["round"], errors="coerce")
+        required_rounds = ~no_contest_rows & raw["emit_training_target"]
         if (
-            rounds[~no_contest_rows].isna().any()
+            rounds[required_rounds].isna().any()
             or (~np.isfinite(rounds.dropna().to_numpy(dtype=float))).any()
             or not rounds.dropna().between(1, 5).all()
             or not np.equal(rounds.dropna() % 1, 0).all()
@@ -804,7 +838,7 @@ class PointInTimeDatasetBuilder:
                 fighter, opponent = ordered.iloc[0], ordered.iloc[1]
                 fight_date = fighter["date"]
                 score = self._score_for(fighter, ordered)
-                if score in (0.0, 1.0) and (
+                if bool(fighter["emit_training_target"]) and score in (0.0, 1.0) and (
                     min_date is None or fight_date >= min_date
                 ):
                     feature_row = self._matchup_features_from_current_state(

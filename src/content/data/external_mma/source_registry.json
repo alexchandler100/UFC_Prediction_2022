@@ -1,0 +1,72 @@
+{
+  "schema_version": 1,
+  "policy": "Only entries marked manual_import or licensed_export may write the ledger. Reference and prohibited sources are documentation, never scraper targets.",
+  "sources": [
+    {
+      "key": "combat_registry_export",
+      "name": "Combat Registry",
+      "priority": 1,
+      "collection_status": "licensed_export",
+      "license": "Provider agreement required",
+      "source_page": "https://www.combatreg.com/about/",
+      "coverage": "Official ABC record keeper; worldwide professional MMA history",
+      "adapter": "canonical_csv",
+      "notes": "Preferred production source. Request a documented API or recurring export from support@combatreg.com before scheduling collection."
+    },
+    {
+      "key": "kaggle_pro_mma_fights_v1",
+      "name": "All Pro MMA Fights - UFC, Bellator, One",
+      "priority": 2,
+      "collection_status": "manual_import",
+      "license": "CC0: Public Domain (as declared by dataset publisher)",
+      "source_page": "https://www.kaggle.com/datasets/binduvr/pro-mma-fights/versions/1",
+      "coverage": "10,448 UFC, Bellator, and ONE bouts through 2021-08-11",
+      "adapter": "kaggle_pro_mma_v1",
+      "notes": "Bootstrap/backtest seed only. Stale, no weight class, and originally collected from Sherdog; do not treat it as a current weekly feed."
+    },
+    {
+      "key": "one_official_site",
+      "name": "ONE Championship athlete records",
+      "priority": 3,
+      "collection_status": "reference_only",
+      "license": "Official terms limit site use to personal, non-commercial access",
+      "source_page": "https://www.onefc.com/athletes/",
+      "coverage": "Official athlete histories with mixed MMA, Muay Thai, kickboxing, and grappling disciplines",
+      "adapter": "none",
+      "notes": "No automated collector until ONE grants permission or offers a licensed feed; discipline filtering would be mandatory."
+    },
+    {
+      "key": "sportradar_mma",
+      "name": "Sportradar MMA API",
+      "priority": 4,
+      "collection_status": "reference_only",
+      "license": "Commercial API agreement",
+      "source_page": "https://developer.sportradar.com/mma/reference/mma-overview",
+      "coverage": "Published MMA API documentation currently identifies UFC and Dana White's Contender Series",
+      "adapter": "none",
+      "notes": "Useful vendor, but its documented public MMA coverage does not solve Bellator/ONE/PFL history."
+    },
+    {
+      "key": "tapology",
+      "name": "Tapology",
+      "priority": 99,
+      "collection_status": "prohibited_without_permission",
+      "license": "Terms restrict unauthorized use and scraping/republication",
+      "source_page": "https://www.tapology.com/terms_of_use",
+      "coverage": "Broad fight records",
+      "adapter": "none",
+      "notes": "Never scrape from this framework without written permission and a registry change."
+    },
+    {
+      "key": "sherdog",
+      "name": "Sherdog",
+      "priority": 99,
+      "collection_status": "prohibited_without_permission",
+      "license": "Terms restrict automated requests and aggregation/collation",
+      "source_page": "https://www.sherdog.com/app-terms/terms-of-use/all/all",
+      "coverage": "Broad fight records",
+      "adapter": "none",
+      "notes": "The Kaggle seed is a separately published CC0 artifact; this project does not scrape Sherdog."
+    }
+  ]
+}

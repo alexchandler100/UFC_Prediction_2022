@@ -1,0 +1,57 @@
+{
+  "approval_note": "This gate tests predictive probability quality, not betting return. Keep betting disabled until timestamped odds yield enough settled bets.",
+  "auxiliary_physical_bouts": 4236,
+  "auxiliary_sha256": "b5038ab8c89fcd6f76ff6594d1070a364d06949fe9c1ac96e6b5b9bca75ae961",
+  "baseline": {
+    "holdout": {
+      "accuracy": 0.6482412060301508,
+      "auc": 0.7132218278471986,
+      "brier": 0.21669263156824878,
+      "ece_10_bin": 0.04774971592515975,
+      "fights": 995,
+      "log_loss": 0.6228362187720843
+    },
+    "holdout_end": "2026-08-15",
+    "holdout_start": "2024-09-14",
+    "walk_forward": {
+      "accuracy": 0.6405579399141631,
+      "auc": 0.6973696349085542,
+      "brier": 0.22067106032421538,
+      "ece_10_bin": 0.02579303571167332,
+      "fights": 1864,
+      "log_loss": 0.6313293492871507
+    }
+  },
+  "candidate_improved_both_log_loss_checks": true,
+  "created_at_utc": "2026-08-22T21:18:59+00:00",
+  "delta": {
+    "holdout_accuracy": 0.0060301507537687815,
+    "holdout_log_loss": -0.0016222620232902996,
+    "walk_forward_accuracy": 0.0042918454935622075,
+    "walk_forward_log_loss": -0.0006238137988997527
+  },
+  "external_history": {
+    "holdout": {
+      "accuracy": 0.6542713567839196,
+      "auc": 0.7149114276916095,
+      "brier": 0.21594240506432094,
+      "ece_10_bin": 0.04507552264872252,
+      "fights": 995,
+      "log_loss": 0.621213956748794
+    },
+    "holdout_end": "2026-08-15",
+    "holdout_start": "2024-09-14",
+    "walk_forward": {
+      "accuracy": 0.6448497854077253,
+      "auc": 0.6988537558523028,
+      "brier": 0.22035906780794576,
+      "ece_10_bin": 0.025235931530620412,
+      "fights": 1864,
+      "log_loss": 0.6307055354882509
+    }
+  },
+  "one_sided_ufc_histories_made_two_sided": 107,
+  "schema_version": 1,
+  "ufc_feature_rows_changed": 6408,
+  "ufc_training_labels_unchanged": true
+}
