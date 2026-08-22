@@ -1,4 +1,4 @@
-"""Small, strict client for The Odds API's MMA moneyline endpoint."""
+"""Small, strict client for The Odds API's MMA moneyline and totals endpoint."""
 
 from __future__ import annotations
 
@@ -26,6 +26,7 @@ class OddsApiResponse:
     requests_remaining: int | None
     requests_used: int | None
     request_cost: int | None
+    total_rounds_frame: pd.DataFrame | None = None
 
     def quota_mapping(self) -> dict[str, int | None]:
         return {
@@ -82,6 +83,20 @@ def _american_price(value: object, *, book: str, participant: str) -> int:
             f"The Odds API returned invalid {book!r} odds for {participant!r}"
         )
     return int(numeric)
+
+
+def _total_point(value: object, *, book: str) -> float:
+    try:
+        numeric = float(value)
+    except (TypeError, ValueError) as error:
+        raise OddsApiError(
+            f"The Odds API returned an invalid totals point for {book!r}"
+        ) from error
+    if not 0.0 < numeric <= 25.0 or round(numeric, 3) != numeric:
+        raise OddsApiError(
+            f"The Odds API returned an invalid totals point for {book!r}"
+        )
+    return numeric
 
 
 def _normalize_payload(payload: object) -> pd.DataFrame:
@@ -182,6 +197,132 @@ def _normalize_payload(payload: object) -> pd.DataFrame:
     return frame
 
 
+def _normalize_total_rounds_payload(payload: object) -> pd.DataFrame:
+    """Flatten complete full-fight Over/Under round pairs without imputing gaps."""
+
+    if not isinstance(payload, list):
+        raise OddsApiError("The Odds API response must be a JSON list")
+    rows: list[dict[str, object]] = []
+    seen_event_ids: set[str] = set()
+    for event in payload:
+        if not isinstance(event, dict):
+            raise OddsApiError("The Odds API response contains a non-object event")
+        event_id = _text(event.get("id"))
+        sport_key = _text(event.get("sport_key"))
+        fighter_name = _text(event.get("home_team"))
+        opponent_name = _text(event.get("away_team"))
+        commence_time = _iso_timestamp(event.get("commence_time"), "commence_time")
+        if not event_id or not fighter_name or not opponent_name:
+            raise OddsApiError("The Odds API event is missing ID, participants, or start time")
+        if sport_key != "mma_mixed_martial_arts":
+            raise OddsApiError("The Odds API response contains a non-MMA event")
+        if event_id in seen_event_ids:
+            raise OddsApiError(f"The Odds API repeated event ID {event_id}")
+        seen_event_ids.add(event_id)
+        if fighter_name.casefold() == opponent_name.casefold():
+            raise OddsApiError("The Odds API event contains the same participant twice")
+        bookmakers = event.get("bookmakers", [])
+        if not isinstance(bookmakers, list):
+            raise OddsApiError("The Odds API event bookmakers field is not a list")
+        seen_books: set[str] = set()
+        for bookmaker in bookmakers:
+            if not isinstance(bookmaker, dict):
+                raise OddsApiError("The Odds API contains a non-object bookmaker")
+            book_key = _text(bookmaker.get("key"))
+            book_title = _text(bookmaker.get("title")) or book_key
+            normalized_book = book_key.casefold()
+            if not book_key or not book_title:
+                raise OddsApiError("The Odds API bookmaker is missing its key or title")
+            if normalized_book in seen_books:
+                raise OddsApiError(
+                    f"The Odds API repeated bookmaker {book_title!r} for one event"
+                )
+            seen_books.add(normalized_book)
+            markets = bookmaker.get("markets", [])
+            if not isinstance(markets, list):
+                raise OddsApiError("The Odds API bookmaker markets field is not a list")
+            totals = [
+                market
+                for market in markets
+                if isinstance(market, dict) and _text(market.get("key")) == "totals"
+            ]
+            if len(totals) > 1:
+                raise OddsApiError(
+                    f"The Odds API repeated totals market for bookmaker {book_title!r}"
+                )
+            if not totals:
+                continue
+            outcomes = totals[0].get("outcomes", [])
+            if not isinstance(outcomes, list):
+                raise OddsApiError("The Odds API totals outcomes field is not a list")
+            by_point: dict[float, dict[str, int]] = {}
+            for outcome in outcomes:
+                if not isinstance(outcome, dict):
+                    raise OddsApiError("The Odds API contains a non-object outcome")
+                side = _text(outcome.get("name")).casefold()
+                if side not in {"over", "under"}:
+                    raise OddsApiError(
+                        f"The Odds API returned unsupported totals outcome {side!r}"
+                    )
+                point = _total_point(outcome.get("point"), book=book_title)
+                point_prices = by_point.setdefault(point, {})
+                if side in point_prices:
+                    raise OddsApiError(
+                        f"The Odds API repeated {side} {point:g} for {book_title!r}"
+                    )
+                point_prices[side] = _american_price(
+                    outcome.get("price"),
+                    book=book_title,
+                    participant=f"{side} {point:g}",
+                )
+            market_update = totals[0].get("last_update") or bookmaker.get("last_update")
+            if by_point and not _text(market_update):
+                raise OddsApiError(
+                    f"The Odds API omitted last_update for bookmaker {book_title!r}"
+                )
+            update = (
+                _iso_timestamp(market_update, "bookmaker last_update")
+                if by_point
+                else ""
+            )
+            for point, prices in sorted(by_point.items()):
+                if set(prices) != {"over", "under"}:
+                    continue
+                rows.append(
+                    {
+                        "source event id": event_id,
+                        "source commence time": commence_time,
+                        "fighter name": fighter_name,
+                        "opponent name": opponent_name,
+                        "book": book_title,
+                        "source book key": book_key,
+                        "source last update": update,
+                        "market": "total_rounds",
+                        "period": "full_fight",
+                        "line": point,
+                        "over moneyline": prices["over"],
+                        "under moneyline": prices["under"],
+                    }
+                )
+    return pd.DataFrame(
+        rows,
+        columns=[
+            "source event id",
+            "source commence time",
+            "fighter name",
+            "opponent name",
+            "book",
+            "source book key",
+            "source last update",
+            "market",
+            "period",
+            "line",
+            "over moneyline",
+            "under moneyline",
+        ],
+    )
+
+
 class TheOddsApiClient:
     """Fetch current UFC/MMA head-to-head prices without browser automation."""
 
@@ -194,6 +335,7 @@ class TheOddsApiClient:
         *,
         regions: str = "us,us2",
         timeout_seconds: float = 30.0,
+        include_total_rounds: bool = False,
     ) -> OddsApiResponse:
         key = _text(api_key)
         if not key:
@@ -212,7 +354,7 @@ class TheOddsApiClient:
                 params={
                     "apiKey": key,
                     "regions": normalized_regions,
-                    "markets": "h2h",
+                    "markets": "h2h,totals" if include_total_rounds else "h2h",
                     "oddsFormat": "american",
                     "dateFormat": "iso",
                 },
@@ -245,4 +387,9 @@ class TheOddsApiClient:
             ),
             requests_used=_header_integer(response.headers, "x-requests-used"),
             request_cost=_header_integer(response.headers, "x-requests-last"),
+            total_rounds_frame=(
+                _normalize_total_rounds_payload(payload)
+                if include_total_rounds
+                else None
+            ),
         )

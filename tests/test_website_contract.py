@@ -21,6 +21,9 @@ class WebsiteExplorerContractTests(unittest.TestCase):
         self.assertIn("function renderMatchup", script)
         self.assertIn("function renderFightHistory", script)
         self.assertIn("data_dictionary.fight_stats", script)
+        self.assertIn("Linked Bellator and ONE bouts", script)
+        self.assertIn("All recorded MMA bouts", script)
+        self.assertIn("promotionFilter", script)
         self.assertNotIn("jquery", page.lower())
         self.assertNotIn("fighterPictures", script)
 
@@ -32,6 +35,8 @@ class WebsiteExplorerContractTests(unittest.TestCase):
         self.assertIn("Career raw totals and opponent totals", script)
         self.assertIn("Career dates, divisions, form, and streak metadata", script)
         self.assertIn("Open official UFCStats fight page", script)
+        self.assertIn("Result metadata only", script)
+        self.assertIn("Open upstream event page", script)
         self.assertIn('details.addEventListener("toggle"', script)
 
     def test_market_view_names_book_price_consensus_and_expected_return(self):
@@ -42,6 +47,8 @@ class WebsiteExplorerContractTests(unittest.TestCase):
         ).read_text(encoding="utf-8")
 
         self.assertIn("Consensus, best price, and paper decisions", page)
+        self.assertIn("Potentially profitable prices", page)
+        self.assertIn("Total-round prices and model probabilities", page)
         self.assertIn("automatic betting is intentionally off", script)
         self.assertIn("current_opportunities.json", script)
         self.assertIn("target_book", script)
@@ -50,6 +57,10 @@ class WebsiteExplorerContractTests(unittest.TestCase):
         self.assertIn("book_quotes", script)
         self.assertIn("locked_t24_decision", script)
         self.assertIn("Leave-one-book-out fair line", script)
+        self.assertIn("outcome_forecasts.json", script)
+        self.assertIn("positive_candidates", script)
+        self.assertIn("Candidate duration-model probability", script)
+        self.assertIn("method EV is unavailable", script)
         self.assertIn("current_opportunities.json", workflow)
 
     def test_layout_has_explicit_mobile_breakpoints(self):

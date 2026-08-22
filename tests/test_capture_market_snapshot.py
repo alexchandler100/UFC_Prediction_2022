@@ -20,6 +20,7 @@ from market_tracker import (  # noqa: E402
     PaperDecisionStore,
     QuoteSnapshotStore,
     QuoteSourceMetadataStore,
+    TotalRoundsQuoteStore,
     matchup_id_for,
 )
 from odds_getter import OddsApiResponse  # noqa: E402
@@ -165,12 +166,17 @@ class CaptureMarketSnapshotTests(unittest.TestCase):
                 "CARD_PATH": card_path,
                 "VEGAS_PATH": vegas_path,
                 "MODEL_PATH": model_path,
+                "OUTCOME_FORECAST_PATH": external / "outcome_forecasts.json",
                 "QUOTE_CSV_PATH": market / "quote_snapshots.csv",
                 "QUOTE_JSONL_PATH": market / "quote_snapshots.jsonl",
                 "FORECAST_CSV_PATH": market / "forecast_captures.csv",
                 "FORECAST_JSONL_PATH": market / "forecast_captures.jsonl",
                 "SOURCE_METADATA_CSV_PATH": market / "quote_source_metadata.csv",
                 "SOURCE_METADATA_JSONL_PATH": market / "quote_source_metadata.jsonl",
+                "TOTAL_ROUNDS_CSV_PATH": market / "total_round_quote_snapshots.csv",
+                "TOTAL_ROUNDS_JSONL_PATH": market / "total_round_quote_snapshots.jsonl",
+                "TOTAL_ROUNDS_FORECAST_CSV_PATH": market / "total_round_forecast_captures.csv",
+                "TOTAL_ROUNDS_FORECAST_JSONL_PATH": market / "total_round_forecast_captures.jsonl",
                 "DECISION_CSV_PATH": market / "paper_decisions.csv",
                 "DECISION_JSONL_PATH": market / "paper_decisions.jsonl",
                 "REPORT_PATH": market / "capture_report.json",
@@ -190,13 +196,31 @@ class CaptureMarketSnapshotTests(unittest.TestCase):
                     ),
                     request_metadata={
                         "sport": "mma_mixed_martial_arts",
-                        "market": "h2h",
+                        "market": "h2h,totals",
                         "regions": "us,us2",
                         "odds_format": "american",
                         "requests_remaining": 499,
                         "requests_used": 1,
                         "request_cost": 2,
                     },
+                    total_rounds_frame=pd.DataFrame(
+                        [
+                            {
+                                "fighter name": "Alpha One",
+                                "opponent name": "Beta Two",
+                                "source event id": "api-event-fixture",
+                                "source commence time": "2026-08-16T17:00:00Z",
+                                "book": "BookA",
+                                "source book key": "book-a",
+                                "source last update": "2026-08-14T16:59:30Z",
+                                "market": "total_rounds",
+                                "period": "full_fight",
+                                "line": 2.5,
+                                "over moneyline": -110,
+                                "under moneyline": -105,
+                            }
+                        ]
+                    ),
                 )
 
             _CaptureClock.calls = 0
@@ -254,6 +278,14 @@ class CaptureMarketSnapshotTests(unittest.TestCase):
                 output_paths["SOURCE_METADATA_JSONL_PATH"],
             ).read()
             self.assertEqual(len(metadata), 4)
+            total_rounds = TotalRoundsQuoteStore(
+                output_paths["TOTAL_ROUNDS_CSV_PATH"],
+                output_paths["TOTAL_ROUNDS_JSONL_PATH"],
+            ).read()
+            self.assertEqual(len(total_rounds), 1)
+            self.assertEqual(total_rounds[0].line, 2.5)
+            self.assertEqual(report["total_round_records_in_capture"], 1)
+            self.assertEqual(report["total_round_matchups"], 1)
             self.assertEqual(
                 {item.source_quote_age_seconds for item in metadata}, {35.0}
             )
@@ -399,6 +431,87 @@ class CaptureMarketSnapshotTests(unittest.TestCase):
         self.assertEqual(retrieved.request_metadata["request_cost"], 2)
         self.assertNotIn("secret-fixture", json.dumps(retrieved.request_metadata))
         fetch.assert_called_once()
+        self.assertTrue(fetch.call_args.kwargs["include_total_rounds"])
+
+    def test_total_round_rows_map_to_stable_ids_and_build_prop_quotes(self):
+        matchup = _published_matchup(1)
+        frame = pd.DataFrame(
+            [
+                {
+                    "fighter name": matchup.opponent_name,
+                    "opponent name": matchup.fighter_name,
+                    "source event id": "api-event-one",
+                    "source commence time": "2026-08-16T18:00:00Z",
+                    "book": "DraftKings",
+                    "source book key": "draftkings",
+                    "source last update": "2026-08-14T16:59:30Z",
+                    "market": "total_rounds",
+                    "period": "full_fight",
+                    "line": 2.5,
+                    "over moneyline": -110,
+                    "under moneyline": -105,
+                }
+            ]
+        )
+        mapped, unmatched = collector._map_total_round_rows(
+            frame, (matchup,), event_day=EVENT_DATE
+        )
+        quotes, counters = collector._build_total_round_captures(
+            mapped,
+            (),
+            capture_id="capture-props",
+            event_id="event-card",
+            event_day=EVENT_DATE,
+            observed_at=CAPTURE_FINISHED,
+            source=collector.ODDS_API_SOURCE,
+            source_payload_sha256="a" * 64,
+            timing_precision="timestamp",
+            event_start_utc="2026-08-16T17:00:00Z",
+        )
+
+        self.assertEqual(unmatched, 0)
+        self.assertEqual(len(quotes), 1)
+        self.assertEqual(quotes[0].matchup_id, matchup.matchup_id)
+        self.assertEqual(quotes[0].line, 2.5)
+        self.assertEqual(quotes[0].over_moneyline, -110)
+        self.assertEqual(counters["total_round_matchups"], 1)
+
+    def test_totals_failure_falls_back_without_losing_moneylines(self):
+        frame = pd.DataFrame(
+            [{"fighter name": "A", "opponent name": "B", "fighter Book": -110, "opponent Book": -110}]
+        )
+        response = OddsApiResponse(
+            frame=frame,
+            payload=[{"id": "event"}],
+            requests_remaining=497,
+            requests_used=3,
+            request_cost=2,
+        )
+        with patch.dict(
+            os.environ,
+            {
+                "MARKET_ODDS_SOURCE": "the-odds-api",
+                "THE_ODDS_API_KEY": "secret-fixture",
+                "ODDS_API_REGIONS": "us,us2",
+            },
+        ), patch.object(
+            collector.TheOddsApiClient,
+            "fetch",
+            autospec=True,
+            side_effect=[collector.OddsApiError("HTTP 422"), response],
+        ) as fetch:
+            retrieved = collector._retrieve_market_odds()
+
+        self.assertTrue(retrieved.frame.equals(frame))
+        self.assertIsNone(retrieved.total_rounds_frame)
+        self.assertEqual(retrieved.request_metadata["market"], "h2h")
+        self.assertEqual(
+            retrieved.request_metadata["totals_status"],
+            "unavailable_fallback_h2h",
+        )
+        self.assertEqual(fetch.call_count, 2)
+        self.assertTrue(fetch.call_args_list[0].kwargs["include_total_rounds"])
+        self.assertFalse(fetch.call_args_list[1].kwargs["include_total_rounds"])
 
     def test_api_request_metadata_rejects_credentials(self):
         report = {
@@ -453,6 +566,10 @@ class CaptureMarketSnapshotTests(unittest.TestCase):
             "forecast_captures.jsonl",
             "quote_source_metadata.csv",
             "quote_source_metadata.jsonl",
+            "total_round_quote_snapshots.csv",
+            "total_round_quote_snapshots.jsonl",
+            "total_round_forecast_captures.csv",
+            "total_round_forecast_captures.jsonl",
             "paper_decisions.csv",
             "paper_decisions.jsonl",
             "paper_settlements.csv",
@@ -474,6 +591,8 @@ class CaptureMarketSnapshotTests(unittest.TestCase):
         self.assertIn("python update_market_performance.py", updater_workflow)
         self.assertIn("paper_settlements.jsonl", updater_workflow)
         self.assertIn("performance_report.json", updater_workflow)
+        self.assertIn("outcome_model_evaluation.json", updater_workflow)
+        self.assertIn("outcome_forecasts.json", updater_workflow)
         self.assertIn('cron: "33 21 * * 1,3"', updater_workflow)
 
 

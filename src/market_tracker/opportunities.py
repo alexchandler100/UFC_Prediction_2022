@@ -31,6 +31,8 @@ from .prospective import (
 )
 from .quotes import QuoteSnapshot, consensus_as_of
 from .source_metadata import QuoteSourceMetadata
+from .props import TotalRoundsForecastCapture, TotalRoundsQuoteSnapshot
+from .prop_opportunities import build_prop_market_view
 
 
 OPPORTUNITY_POLICY_VERSION = "leave-one-book-out-paper-v1"
@@ -172,6 +174,9 @@ def build_current_opportunities(
     decisions: Iterable[PaperDecision] = (),
     *,
     capture_id: str,
+    total_round_quotes: Iterable[TotalRoundsQuoteSnapshot] | None = None,
+    total_round_forecasts: Iterable[TotalRoundsForecastCapture] | None = None,
+    method_price_status: str = "unavailable_from_configured_provider",
 ) -> dict[str, object]:
     """Build a deterministic, bounded view for one immutable capture."""
 
@@ -381,8 +386,11 @@ def build_current_opportunities(
             }
         )
 
+    prop_contract = total_round_quotes is not None or total_round_forecasts is not None
+    if prop_contract and (total_round_quotes is None or total_round_forecasts is None):
+        raise ValueError("prop opportunity publication requires quotes and forecasts")
     body: dict[str, object] = {
-        "schema_version": 1,
+        "schema_version": 2 if prop_contract else 1,
         "policy_version": OPPORTUNITY_POLICY_VERSION,
         "betting_status": BETTING_STATUS,
         "paper_only": True,
@@ -405,6 +413,13 @@ def build_current_opportunities(
         "matchup_count": len(matchup_views),
         "matchups": matchup_views,
     }
+    if prop_contract:
+        body["prop_markets"] = build_prop_market_view(
+            total_round_quotes or (),
+            total_round_forecasts or (),
+            capture_id=capture_id,
+            method_price_status=method_price_status,
+        )
     body["publication_sha256"] = canonical_hash(body)
     return body
 
@@ -417,18 +432,36 @@ def validate_current_opportunities(
     decisions: Iterable[PaperDecision],
     *,
     capture_id: str,
+    total_round_quotes: Iterable[TotalRoundsQuoteSnapshot] = (),
+    total_round_forecasts: Iterable[TotalRoundsForecastCapture] = (),
+    method_price_status: str = "unavailable_from_configured_provider",
 ) -> dict[str, object]:
     """Rebuild the publication from ledgers and require an exact match."""
 
     if not isinstance(publication, dict):
         raise ValueError("current opportunity publication must be an object")
-    rebuilt = build_current_opportunities(
-        quotes,
-        forecasts,
-        source_metadata,
-        decisions,
-        capture_id=capture_id,
-    )
+    schema_version = publication.get("schema_version")
+    if schema_version == 1:
+        rebuilt = build_current_opportunities(
+            quotes,
+            forecasts,
+            source_metadata,
+            decisions,
+            capture_id=capture_id,
+        )
+    elif schema_version == 2:
+        rebuilt = build_current_opportunities(
+            quotes,
+            forecasts,
+            source_metadata,
+            decisions,
+            capture_id=capture_id,
+            total_round_quotes=total_round_quotes,
+            total_round_forecasts=total_round_forecasts,
+            method_price_status=method_price_status,
+        )
+    else:
+        raise ValueError("unsupported current opportunity schema version")
     if publication != rebuilt:
         raise StoreIntegrityError(
             "current opportunity publication cannot be reproduced from market ledgers"

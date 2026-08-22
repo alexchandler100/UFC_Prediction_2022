@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Explore UFC fighter histories, matchup statistics, model forecasts, and book-by-book market data.">
+  <meta name="description" content="Explore UFC fighter statistics, linked Bellator and ONE histories, model forecasts, and book-by-book market data.">
   <meta name="theme-color" content="#111b26">
   <title>UFC Data Lab</title>
   <link rel="icon" href="favicon.png">
@@ -79,14 +79,14 @@
     <section class="view" id="view-fighters" data-view="fighters" aria-labelledby="fighters-title">
       <div class="compact-hero page-shell">
         <p class="eyebrow">Fighter database</p><h1 id="fighters-title">Find anyone. Inspect everything.</h1>
-        <p>Search every fighter profile we have, then drill into career rates, raw totals, opponents, and complete fight logs.</p>
+        <p>Search every fighter profile we have, then inspect UFCStats performance plus linked Bellator and ONE fight histories.</p>
       </div>
       <div class="page-shell page-stack">
         <section class="panel directory-controls" aria-label="Fighter filters">
           <div class="directory-search"><label for="fighter-directory-search">Search fighters</label><input id="fighter-directory-search" type="search" autocomplete="off" placeholder="Name, division, or stance"></div>
           <div class="filter-control"><label for="division-filter">Division</label><select id="division-filter"><option value="">All divisions</option></select></div>
           <div class="filter-control"><label for="stance-filter">Stance</label><select id="stance-filter"><option value="">All stances</option></select></div>
-          <label class="check-control"><input type="checkbox" id="recorded-only" checked> Recorded UFC bouts only</label>
+          <label class="check-control"><input type="checkbox" id="recorded-only" checked> Recorded MMA bouts only</label>
         </section>
         <section id="fighter-directory" aria-live="polite"></section>
         <section id="fighter-profile" class="profile-view" aria-live="polite"></section>
@@ -100,6 +100,20 @@
       </div>
       <div class="page-shell page-stack">
         <section class="market-notice" id="market-notice"></section>
+        <section class="panel opportunity-panel" aria-labelledby="opportunity-title">
+          <div class="section-heading">
+            <div><p class="eyebrow">Ranked by estimated return</p><h2 id="opportunity-title">Potentially profitable prices</h2><p class="section-note" id="market-opportunity-status">Loading current prices...</p></div>
+            <span class="research-badge">Paper only</span>
+          </div>
+          <section class="opportunity-grid" id="market-opportunities" aria-live="polite"></section>
+        </section>
+        <section class="panel" aria-labelledby="prop-detail-title">
+          <div class="section-heading">
+            <div><p class="eyebrow">Finish-time research</p><h2 id="prop-detail-title">Total-round prices and model probabilities</h2><p class="section-note" id="prop-coverage-status">Checking prop-market coverage...</p></div>
+          </div>
+          <section class="market-grid" id="prop-market-details" aria-live="polite"></section>
+        </section>
+        <div class="section-heading"><div><p class="eyebrow">Moneyline audit</p><h2>Every matchup and book</h2></div></div>
         <section class="market-grid" id="market-matchups" aria-live="polite"></section>
       </div>
     </section>

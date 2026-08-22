@@ -6,7 +6,8 @@ on:
     # Fourteen observations cover the first post-publication price, midweek
     # movement, T-24, and the final hours. Together with the Monday/Wednesday
     # updater this is about 16 requests/week; at the configured two-region
-    # request cost that is roughly 140 credits in an average month.
+    # request cost across moneyline and totals that is roughly 280 credits in
+    # an average month, within the current 500-credit development allowance.
     # The collector exits successfully without using an API credit once a
     # previously timed card has commenced.
     - cron: "17 23 * * 1"
@@ -106,6 +107,20 @@ jobs:
             src/content/data/market/capture_report.json \
             src/content/data/market/current_opportunities.json
 
+          # Totals are optional provider enrichment. Stage the new mirrors
+          # when the combined API market was available, but do not fail a
+          # healthy moneyline capture when the provider fell back to h2h.
+          for optional_path in \
+            src/content/data/market/total_round_quote_snapshots.csv \
+            src/content/data/market/total_round_quote_snapshots.jsonl \
+            src/content/data/market/total_round_forecast_captures.csv \
+            src/content/data/market/total_round_forecast_captures.jsonl
+          do
+            if [ -f "$optional_path" ]; then
+              git add -- "$optional_path"
+            fi
+          done
+
           while IFS= read -r staged_path; do
             case "$staged_path" in
               src/content/data/market/quote_snapshots.csv|\
@@ -114,6 +129,10 @@ jobs:
               src/content/data/market/forecast_captures.jsonl|\
               src/content/data/market/quote_source_metadata.csv|\
               src/content/data/market/quote_source_metadata.jsonl|\
+              src/content/data/market/total_round_quote_snapshots.csv|\
+              src/content/data/market/total_round_quote_snapshots.jsonl|\
+              src/content/data/market/total_round_forecast_captures.csv|\
+              src/content/data/market/total_round_forecast_captures.jsonl|\
               src/content/data/market/paper_decisions.csv|\
               src/content/data/market/paper_decisions.jsonl|\
               src/content/data/market/paper_settlements.csv|\

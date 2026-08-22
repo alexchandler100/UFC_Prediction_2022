@@ -2,15 +2,27 @@
 from pathlib import Path
 import os
 from datetime import datetime, timezone
+from hashlib import sha256
+import json
 import pandas as pd
 from git import Repo
 
 # local imports
 from data_handler import DataHandler
 from data_handler.data_handler import atomic_to_csv
-from build_fighter_explorer import build_fighter_explorer, write_fighter_explorer
+from build_fighter_explorer import (
+    build_fighter_explorer,
+    load_external_history_inputs,
+    write_fighter_explorer,
+)
 from external_mma import load_approved_auxiliary
-from fight_predictor import PointInTimeDatasetBuilder, TemporalFightPredictor
+from fight_predictor import (
+    PointInTimeDatasetBuilder,
+    TemporalFightPredictor,
+    build_outcome_forecast_publication,
+    evaluate_outcome_model,
+    write_outcome_forecast_publication,
+)
 
 
 def _forecast_source_revision() -> str:
@@ -70,6 +82,32 @@ atomic_to_csv(point_in_time_fights, point_in_time_path, index=False)
 point_in_time_fights = pd.read_csv(point_in_time_path, low_memory=False)
 feature_builder.training_data = point_in_time_fights.copy()
 
+print('Training and evaluating the candidate outcome/finish-time model')
+outcome_feature_columns = tuple(
+    column for column in point_in_time_fights if column.endswith('_diff')
+)
+outcome_model, outcome_evaluation = evaluate_outcome_model(
+    point_in_time_fights, outcome_feature_columns
+)
+outcome_training_sha256 = sha256(point_in_time_path.read_bytes()).hexdigest()
+outcome_evaluation['training_input_sha256'] = outcome_training_sha256
+outcome_evaluation['feature_count'] = len(outcome_feature_columns)
+outcome_evaluation_path = (
+    Path(__file__).resolve().parent
+    / 'content/data/external/outcome_model_evaluation.json'
+)
+outcome_evaluation_path.write_text(
+    json.dumps(
+        outcome_evaluation,
+        indent=2,
+        sort_keys=True,
+        ensure_ascii=False,
+        allow_nan=False,
+    ) + '\n',
+    encoding='utf-8',
+    newline='',
+)
+
 print('Training and temporally evaluating the point-in-time winner model')
 candidate_predictor = TemporalFightPredictor(point_in_time_fights, feature_builder, dh)
 evaluation = candidate_predictor.train()
@@ -114,15 +152,39 @@ predicted_odds_df['forecast issued at'] = (
     datetime.now(timezone.utc).replace(microsecond=0).isoformat()
 )
 predicted_odds_df['forecast source commit'] = _forecast_source_revision()
+outcome_publication = build_outcome_forecast_publication(
+    outcome_model,
+    feature_builder,
+    predicted_odds_df,
+    {
+        'date': card_date,
+        'title': card_title,
+        'event_url': predicted_odds_df['event url'].iloc[0],
+        'event_id': predicted_odds_df['event id'].iloc[0],
+    },
+    selected_c=float(outcome_evaluation['selected_c']),
+    training_input_sha256=outcome_training_sha256,
+    model_trained_through=str(point_in_time_fights['date'].max()),
+    forecast_issued_at_utc=predicted_odds_df['forecast issued at'].iloc[0],
+    source_commit_sha=predicted_odds_df['forecast source commit'].iloc[0],
+)
+write_outcome_forecast_publication(
+    Path(__file__).resolve().parent
+    / 'content/data/external/outcome_forecasts.json',
+    outcome_publication,
+)
 # Merge available sportsbook odds from the configured market source.
 predicted_odds_df_with_vegas_odds = dh.save_fightoddsio_to_vegas_odds_json_and_merge_with_predictions_df(predicted_odds_df)
 dh.update_vegas_odds(predicted_odds_df_with_vegas_odds)
 print('Building compact fighter explorer publication')
+external_history, external_identity_map = load_external_history_inputs()
 write_fighter_explorer(
     build_fighter_explorer(
         raw_fights,
         fighter_stats,
         predicted_odds_df_with_vegas_odds,
+        external_history,
+        external_identity_map,
     )
 )
 print('saving scraped fights and predictions to content/data/external/vegas_odds.json')
@@ -163,6 +225,12 @@ if summary_path:
                 f'{walk_forward["log_loss"]:.4f} log loss'
             ),
             f'- Upcoming card: {card_title} ({card_date})',
+            (
+                '- Candidate outcome model: '
+                f'`{outcome_publication["model_id"]}`; '
+                f'{outcome_publication["forecast_matchup_count"]}/'
+                f'{outcome_publication["matchup_count"]} matchups forecast'
+            ),
             (
                 f'- Forecast coverage: {resolved_models}/'
                 f'{len(predicted_odds_df_with_vegas_odds)}'

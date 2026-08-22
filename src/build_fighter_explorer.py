@@ -10,7 +10,7 @@ import os
 from pathlib import Path
 import re
 import tempfile
-from typing import Iterable
+from typing import Iterable, Mapping
 
 import pandas as pd
 
@@ -20,7 +20,10 @@ RAW_PATH = ROOT / "content" / "data" / "processed" / "ufc_fights_reported_double
 FIGHTER_PATH = ROOT / "content" / "data" / "processed" / "fighter_stats.csv"
 OUTPUT_PATH = ROOT / "content" / "data" / "external" / "fighter_explorer.json"
 VEGAS_PATH = ROOT / "content" / "data" / "external" / "vegas_odds.json"
-SCHEMA_VERSION = 1
+EXTERNAL_MMA_ROOT = ROOT / "content" / "data" / "external_mma"
+EXTERNAL_BOUTS_PATH = EXTERNAL_MMA_ROOT / "bouts.jsonl"
+EXTERNAL_IDENTITY_PATH = EXTERNAL_MMA_ROOT / "identity_map.csv"
+SCHEMA_VERSION = 2
 SIZE_LIMIT = 8 * 1024 * 1024
 SHARD_SIZE_LIMIT = 4 * 1024 * 1024
 SHARD_KEYS = tuple("0123456789abcdefx")
@@ -56,6 +59,12 @@ FIGHT_COLUMNS = (
     "fight_url",
     "event_id",
     "event_url",
+    "event_name",
+    "promotion",
+    "source",
+    "source_label",
+    "source_url",
+    "stats_available",
     "result",
     "opponent_id",
     "opponent_name",
@@ -97,7 +106,7 @@ STAT_DEFINITIONS = {
 }
 
 CAREER_DEFINITIONS = {
-    "recorded_bouts": ("UFC bouts", "Record", "count", "higher"),
+    "recorded_bouts": ("UFCStats bouts", "Record", "count", "higher"),
     "wins": ("Wins", "Record", "count", "higher"),
     "losses": ("Losses", "Record", "count", "lower"),
     "draws": ("Draws", "Record", "count", "context"),
@@ -131,6 +140,11 @@ CAREER_DEFINITIONS = {
     "clinch_strike_share": ("Clinch strike share", "Style", "percentage", "context"),
     "ground_strike_share": ("Ground strike share", "Style", "percentage", "context"),
     "paired_opponent_stat_bouts": ("Bouts with paired opponent stats", "Data quality", "count", "higher"),
+}
+
+SOURCE_LABELS = {
+    "ufcstats": "UFCStats",
+    "kaggle_pro_mma_fights_v1": "All Pro MMA Fights v1 (CC0)",
 }
 
 
@@ -216,12 +230,28 @@ def _shard_key(fighter_id: str) -> str:
 
 
 def _fight_array(row: pd.Series) -> list[object]:
+    fight_url = _clean_text(row.get("fight_url"))
+    event_url = _clean_text(row.get("event_url"))
+    source = _clean_text(row.get("source")) or "ufcstats"
     values: dict[str, object] = {
         "date": _iso_date(row.get("date")),
-        "fight_id": _stable_id(row.get("fight_url")),
-        "fight_url": _clean_text(row.get("fight_url")),
-        "event_id": _stable_id(row.get("event_url")),
-        "event_url": _clean_text(row.get("event_url")),
+        "fight_id": _clean_text(row.get("fight_id")) or _stable_id(fight_url),
+        "fight_url": fight_url,
+        "event_id": _clean_text(row.get("event_id")) or _stable_id(event_url),
+        "event_url": event_url,
+        "event_name": _clean_text(row.get("event_name")),
+        "promotion": _clean_text(row.get("promotion")) or "UFC",
+        "source": source,
+        "source_label": (
+            _clean_text(row.get("source_label"))
+            or SOURCE_LABELS.get(source, source)
+        ),
+        "source_url": _clean_text(row.get("source_url")) or fight_url,
+        "stats_available": (
+            bool(row.get("stats_available"))
+            if row.get("stats_available") is not None
+            else True
+        ),
         "result": _clean_text(row.get("result")),
         "opponent_id": _stable_id(row.get("opponent_url")),
         "opponent_name": _clean_text(row.get("opponent")),
@@ -238,6 +268,195 @@ def _fight_array(row: pd.Series) -> list[object]:
     for field in STAT_FIELDS:
         values[field] = _number(row.get(field))
     return [values[column] for column in FIGHT_COLUMNS]
+
+
+def _record_summary(rows: list[pd.Series]) -> dict[str, object]:
+    """Summarize every linked result without implying detailed stat coverage."""
+
+    ordered = sorted(
+        rows,
+        key=lambda row: (
+            _iso_date(row.get("date")) or "",
+            float(_number(row.get("bout_order")) or -1),
+        ),
+        reverse=True,
+    )
+    results = [_clean_text(row.get("result")).upper() for row in ordered]
+    wins = results.count("W")
+    losses = results.count("L")
+    draws = results.count("D")
+    no_contests = len(results) - wins - losses - draws
+    win_methods = Counter(
+        _method_bucket(row.get("method"))
+        for row in ordered
+        if _clean_text(row.get("result")).upper() == "W"
+    )
+    finish_wins = win_methods["ko_tko"] + win_methods["submission"] + win_methods["other"]
+    promotions = Counter(_clean_text(row.get("promotion")) or "UFC" for row in ordered)
+    known_seconds = [
+        float(value)
+        for row in ordered
+        if (value := _number(row.get("total_fight_time"))) is not None
+    ]
+    current_streak_result = results[0] if results and results[0] in {"W", "L"} else None
+    current_streak = 0
+    if current_streak_result:
+        for result in results:
+            if result != current_streak_result:
+                break
+            current_streak += 1
+    return {
+        "recorded_bouts": len(ordered),
+        "wins": wins,
+        "losses": losses,
+        "draws": draws,
+        "no_contests": no_contests,
+        "win_rate": _ratio(wins, wins + losses + draws),
+        "finish_wins": finish_wins,
+        "finish_rate": _ratio(finish_wins, wins),
+        "ko_tko_wins": win_methods["ko_tko"],
+        "submission_wins": win_methods["submission"],
+        "decision_wins": win_methods["decision"],
+        "other_wins": win_methods["other"],
+        "recent_form": results[:5],
+        "current_streak_result": current_streak_result,
+        "current_streak": current_streak,
+        "last_fight_date": _iso_date(ordered[0].get("date")) if ordered else None,
+        "first_fight_date": _iso_date(ordered[-1].get("date")) if ordered else None,
+        "promotions": [
+            {"name": name, "bouts": count}
+            for name, count in sorted(promotions.items(), key=lambda item: (-item[1], item[0]))
+        ],
+        "detailed_stat_bouts": sum(bool(row.get("stats_available", True)) for row in ordered),
+        "metadata_only_bouts": sum(not bool(row.get("stats_available", True)) for row in ordered),
+        "bouts_with_duration": len(known_seconds),
+        "known_fight_minutes": round(sum(known_seconds) / 60.0, 4),
+    }
+
+
+def _external_value(observation: object, key: str) -> object:
+    if isinstance(observation, Mapping):
+        return observation.get(key)
+    return getattr(observation, key)
+
+
+def _external_fighter_id(source: str, source_fighter_id: str) -> str:
+    digest = sha256(f"{source}\0{source_fighter_id}".encode("utf-8")).hexdigest()[:24]
+    return f"external_{digest}"
+
+
+def _is_ufc_promotion(value: object) -> bool:
+    text = re.sub(r"[^a-z0-9]+", " ", _clean_text(value).casefold()).strip()
+    return text == "ufc" or "ultimate fighting championship" in text
+
+
+def _external_history_rows(
+    observations: Iterable[object],
+    identity_map: Mapping[tuple[str, str], str],
+) -> tuple[list[pd.Series], int]:
+    """Return linked, non-UFC history perspectives for public fighter profiles."""
+
+    output: list[pd.Series] = []
+    linked_observations = 0
+    for observation in observations:
+        if _is_ufc_promotion(_external_value(observation, "promotion")):
+            continue
+        source = _clean_text(_external_value(observation, "source"))
+        first_source_id = _clean_text(_external_value(observation, "fighter_source_id"))
+        second_source_id = _clean_text(_external_value(observation, "opponent_source_id"))
+        first_id = identity_map.get((source, first_source_id))
+        second_id = identity_map.get((source, second_source_id))
+        if first_id and second_id and first_id == second_id:
+            raise ValueError(
+                "external identity mapping collapses both participants in "
+                f"{_external_value(observation, 'observation_id')}"
+            )
+        if not first_id and not second_id:
+            continue
+        linked_observations += 1
+        observation_id = _clean_text(_external_value(observation, "observation_id"))
+        event_seed = (
+            f"{source}\0{_clean_text(_external_value(observation, 'source_event_id'))}"
+        )
+        event_id = f"external_{sha256(event_seed.encode('utf-8')).hexdigest()[:32]}"
+        fight_id = f"external_{observation_id[:32]}"
+        source_url = _clean_text(_external_value(observation, "source_url"))
+        finish_seconds = _number(_external_value(observation, "finish_clock_seconds"))
+        finish_clock = (
+            ""
+            if finish_seconds is None
+            else f"{int(finish_seconds) // 60}:{int(finish_seconds) % 60:02d}"
+        )
+        scheduled_rounds = _number(_external_value(observation, "scheduled_rounds"))
+        common = {
+            "date": _external_value(observation, "event_date"),
+            "fight_id": fight_id,
+            "fight_url": source_url,
+            "event_id": event_id,
+            "event_url": source_url,
+            "event_name": _external_value(observation, "event_name"),
+            "promotion": _external_value(observation, "promotion"),
+            "source": source,
+            "source_label": SOURCE_LABELS.get(source, source),
+            "source_url": source_url,
+            "stats_available": False,
+            "division": _external_value(observation, "division"),
+            "method": _external_value(observation, "method"),
+            "round": _external_value(observation, "finish_round"),
+            "time": finish_clock,
+            "total_fight_time": None,
+            "source_card_index": None,
+            "bout_order": _external_value(observation, "source_bout_order"),
+            "time_format": (
+                f"{int(scheduled_rounds)} scheduled rounds"
+                if scheduled_rounds is not None
+                else ""
+            ),
+            **dict.fromkeys(STAT_FIELDS, None),
+        }
+        participants = (
+            (
+                first_id,
+                first_source_id,
+                _external_value(observation, "fighter_name"),
+                second_id,
+                second_source_id,
+                _external_value(observation, "opponent_name"),
+                _clean_text(_external_value(observation, "result")).upper(),
+            ),
+            (
+                second_id,
+                second_source_id,
+                _external_value(observation, "opponent_name"),
+                first_id,
+                first_source_id,
+                _external_value(observation, "fighter_name"),
+                {"W": "L", "L": "W", "D": "D", "NC": "NC"}.get(
+                    _clean_text(_external_value(observation, "result")).upper(), "NC"
+                ),
+            ),
+        )
+        for fighter_id, fighter_source_id, fighter_name, opponent_id, opponent_source_id, opponent_name, result in participants:
+            if not fighter_id:
+                continue
+            resolved_opponent_id = opponent_id or _external_fighter_id(source, opponent_source_id)
+            output.append(
+                pd.Series(
+                    {
+                        **common,
+                        "fighter": fighter_name,
+                        "opponent": opponent_name,
+                        "fighter_url": f"http://ufcstats.com/fighter-details/{fighter_id}",
+                        "opponent_url": (
+                            f"http://ufcstats.com/fighter-details/{resolved_opponent_id}"
+                            if opponent_id
+                            else f"https://external-mma.invalid/fighter-details/{resolved_opponent_id}"
+                        ),
+                        "result": result,
+                    }
+                )
+            )
+    return output, linked_observations
 
 
 def _sum_stats(rows: Iterable[pd.Series]) -> dict[str, float]:
@@ -410,6 +629,8 @@ def build_fighter_explorer(
     raw_fights: pd.DataFrame,
     fighter_stats: pd.DataFrame,
     upcoming_fighters: pd.DataFrame | None = None,
+    external_bouts: Iterable[object] | None = None,
+    identity_map: Mapping[tuple[str, str], str] | None = None,
 ) -> dict[str, object]:
     required_raw = {
         "date",
@@ -460,6 +681,7 @@ def build_fighter_explorer(
             raise ValueError(f"conflicting fighter bio rows for {fighter_id}")
         profiles[fighter_id] = profile
 
+    ufc_rows_by_fighter: dict[str, list[pd.Series]] = defaultdict(list)
     rows_by_fighter: dict[str, list[pd.Series]] = defaultdict(list)
     row_by_fight_and_fighter: dict[tuple[str, str], pd.Series] = {}
     for _, row in raw_fights.iterrows():
@@ -470,6 +692,7 @@ def build_fighter_explorer(
         if key in row_by_fight_and_fighter:
             raise ValueError(f"duplicate fighter perspective for fight {fight_id}")
         row_by_fight_and_fighter[key] = row
+        ufc_rows_by_fighter[fighter_id].append(row)
         rows_by_fighter[fighter_id].append(row)
         for identity, name, url in (
             (fighter_id, row["fighter"], row["fighter_url"]),
@@ -491,6 +714,35 @@ def build_fighter_explorer(
                     "scheduled_division": "",
                 },
             )
+
+    external_rows, linked_external_fights = _external_history_rows(
+        external_bouts or [], identity_map or {}
+    )
+    for row in external_rows:
+        fighter_id = _stable_id(row["fighter_url"])
+        opponent_id = _stable_id(row["opponent_url"])
+        fight_id = _clean_text(row.get("fight_id"))
+        key = (fight_id, fighter_id)
+        if key in row_by_fight_and_fighter:
+            raise ValueError(f"duplicate fighter perspective for fight {fight_id}")
+        row_by_fight_and_fighter[key] = row
+        rows_by_fighter[fighter_id].append(row)
+        profiles.setdefault(
+            fighter_id,
+            {
+                "id": fighter_id,
+                "name": _clean_text(row.get("fighter")),
+                "url": _clean_text(row.get("fighter_url")),
+                "height": "",
+                "height_inches": None,
+                "reach": "",
+                "reach_inches": None,
+                "stance": "",
+                "dob": "",
+                "dob_iso": None,
+                "scheduled_division": "",
+            },
+        )
 
     scheduled_ids: set[str] = set()
     if upcoming_fighters is not None and not upcoming_fighters.empty:
@@ -541,9 +793,17 @@ def build_fighter_explorer(
 
     fighters: list[dict[str, object]] = []
     for fighter_id, profile in profiles.items():
-        rows = rows_by_fighter.get(fighter_id, [])
+        ufc_rows = ufc_rows_by_fighter.get(fighter_id, [])
+        ordered_ufc_rows = sorted(
+            ufc_rows,
+            key=lambda row: (
+                _iso_date(row.get("date")) or "",
+                float(_number(row.get("bout_order")) or -1),
+            ),
+            reverse=True,
+        )
         ordered_rows = sorted(
-            rows,
+            rows_by_fighter.get(fighter_id, []),
             key=lambda row: (
                 _iso_date(row.get("date")) or "",
                 float(_number(row.get("bout_order")) or -1),
@@ -551,19 +811,24 @@ def build_fighter_explorer(
             reverse=True,
         )
         opponent_rows: list[pd.Series] = []
-        for row in ordered_rows:
+        for row in ordered_ufc_rows:
+            fight_id = _clean_text(row.get("fight_id")) or _stable_id(row["fight_url"])
             paired = row_by_fight_and_fighter.get(
-                (_stable_id(row["fight_url"]), _stable_id(row["opponent_url"]))
+                (fight_id, _stable_id(row["opponent_url"]))
             )
             if paired is not None:
                 opponent_rows.append(paired)
-        fighters.append(
-            {
-                **profile,
-                "career": _career(ordered_rows, opponent_rows),
-                "fights": [_fight_array(row) for row in ordered_rows],
-            }
-        )
+        fighter = {
+            **profile,
+            "career": _career(ordered_ufc_rows, opponent_rows),
+            "fights": [_fight_array(row) for row in ordered_rows],
+        }
+        # Most profiles are UFC-only; their existing career object is already a
+        # complete record. Publish the additional all-promotion summary only
+        # where linked external history changes it, keeping the index scalable.
+        if len(ordered_rows) > len(ordered_ufc_rows):
+            fighter["record"] = _record_summary(ordered_rows)
+        fighters.append(fighter)
     fighters.sort(key=lambda item: (str(item["name"]).casefold(), str(item["id"])))
 
     body: dict[str, object] = {
@@ -575,11 +840,18 @@ def build_fighter_explorer(
         "counts": {
             "fighters": len(fighters),
             "fighters_with_recorded_bouts": sum(
+                int(item.get("record", item["career"])["recorded_bouts"] > 0)
+                for item in fighters
+            ),
+            "fighters_with_ufcstats_bouts": sum(
                 int(item["career"]["recorded_bouts"] > 0) for item in fighters
             ),
             "scheduled_fighters": len(scheduled_ids),
             "fighter_fight_rows": len(raw_fights),
             "unique_fights": int(raw_fights["fight_url"].nunique()),
+            "linked_external_fights": linked_external_fights,
+            "linked_external_fighter_rows": len(external_rows),
+            "published_fighter_fight_rows": len(raw_fights) + len(external_rows),
         },
         "fight_columns": list(FIGHT_COLUMNS),
         "data_dictionary": {
@@ -603,7 +875,8 @@ def build_fighter_explorer(
                 for key, value in STAT_DEFINITIONS.items()
             },
             "notes": [
-                "Career rates use the recorded UFC fight time in this dataset.",
+                "The all-promotion record includes linked Bellator and ONE result metadata; UFCStats career rates remain UFC-only.",
+                "The external bootstrap is a CC0 dataset through 2021-08-11 and is not a current weekly feed.",
                 "Absorbed and defensive statistics use the paired opponent row for the same stable fight ID.",
                 "Missing values are not treated as zero; derived rates are null when their denominator is unavailable.",
                 "Each fight is stored as an array in fight_columns order to keep the browser download compact.",
@@ -621,10 +894,18 @@ def validate_fighter_explorer(
     fighter_stats: pd.DataFrame,
     upcoming_fighters: pd.DataFrame | None = None,
     fight_shards: dict[str, object] | None = None,
+    external_bouts: Iterable[object] | None = None,
+    identity_map: Mapping[tuple[str, str], str] | None = None,
 ) -> dict[str, object]:
     if not isinstance(publication, dict):
         raise ValueError("fighter explorer publication must be an object")
-    rebuilt = build_fighter_explorer(raw_fights, fighter_stats, upcoming_fighters)
+    rebuilt = build_fighter_explorer(
+        raw_fights,
+        fighter_stats,
+        upcoming_fighters,
+        external_bouts,
+        identity_map,
+    )
     if fight_shards is None:
         expected_publication = rebuilt
         expected_shards = None
@@ -722,13 +1003,68 @@ def write_fighter_explorer(
     _atomic_write_json(index, destination, SIZE_LIMIT)
 
 
+def load_external_history_inputs(
+    bouts_path: str | Path = EXTERNAL_BOUTS_PATH,
+    identity_path: str | Path = EXTERNAL_IDENTITY_PATH,
+) -> tuple[list[dict[str, object]], dict[tuple[str, str], str]]:
+    """Load the already-validated external ledger and approved identity links."""
+
+    bouts_file = Path(bouts_path)
+    identity_file = Path(identity_path)
+    if not bouts_file.exists() and not identity_file.exists():
+        return [], {}
+    if not bouts_file.exists() or not identity_file.exists():
+        raise ValueError("external fighter history requires both bouts and identity map")
+    observations: list[dict[str, object]] = []
+    for line_number, line in enumerate(
+        bouts_file.read_text(encoding="utf-8").splitlines(), 1
+    ):
+        if not line.strip():
+            continue
+        value = json.loads(line)
+        if not isinstance(value, dict):
+            raise ValueError(
+                f"external bout at {bouts_file}:{line_number} is not an object"
+            )
+        observations.append(value)
+    identities = pd.read_csv(identity_file, dtype=object, keep_default_na=False)
+    required = {
+        "source",
+        "source_fighter_id",
+        "canonical_fighter_id",
+        "status",
+    }
+    missing = sorted(required - set(identities.columns))
+    if missing:
+        raise ValueError(f"external identity map is missing columns: {missing}")
+    approved = identities[
+        identities["status"].astype(str).str.casefold().eq("approved")
+    ]
+    mapping: dict[tuple[str, str], str] = {}
+    for row in approved.to_dict("records"):
+        key = (
+            _clean_text(row.get("source")),
+            _clean_text(row.get("source_fighter_id")),
+        )
+        canonical = _clean_text(row.get("canonical_fighter_id"))
+        if not all((*key, canonical)):
+            raise ValueError("approved external identity rows cannot contain blank IDs")
+        previous = mapping.setdefault(key, canonical)
+        if previous != canonical:
+            raise ValueError(f"conflicting approved external identity mapping for {key}")
+    return observations, mapping
+
+
 def main() -> int:
     raw = pd.read_csv(RAW_PATH, low_memory=False)
     fighters = pd.read_csv(FIGHTER_PATH, low_memory=False)
     upcoming = None
     if VEGAS_PATH.exists():
         upcoming = pd.DataFrame(json.loads(VEGAS_PATH.read_text(encoding="utf-8")))
-    publication = build_fighter_explorer(raw, fighters, upcoming)
+    external_bouts, identity_map = load_external_history_inputs()
+    publication = build_fighter_explorer(
+        raw, fighters, upcoming, external_bouts, identity_map
+    )
     write_fighter_explorer(publication)
     print(
         "Published fighter explorer: "

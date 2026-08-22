@@ -24,6 +24,7 @@ import pandas as pd
 from build_fighter_explorer import SHARD_KEYS as FIGHTER_EXPLORER_SHARD_KEYS
 from build_fighter_explorer import SHARD_SIZE_LIMIT as FIGHTER_SHARD_SIZE_LIMIT
 from build_fighter_explorer import SIZE_LIMIT as FIGHTER_EXPLORER_SIZE_LIMIT
+from build_fighter_explorer import load_external_history_inputs
 from build_fighter_explorer import validate_fighter_explorer
 
 from fight_predictor.point_in_time import (
@@ -31,6 +32,9 @@ from fight_predictor.point_in_time import (
     REGULARIZATION_C_GRID,
     PointInTimeDatasetBuilder,
     training_fingerprint,
+)
+from fight_predictor.outcome_publication import (
+    validate_outcome_forecast_publication,
 )
 from external_mma import ExternalMmaStore, load_approved_auxiliary
 from external_mma.schema import ExternalDataError
@@ -40,6 +44,8 @@ from market_tracker import (
     PaperDecisionStore,
     PaperSettlementStore,
     QuoteSnapshotStore,
+    TotalRoundsQuoteStore,
+    TotalRoundsForecastStore,
     QuoteSourceMetadataStore,
     StoreIntegrityError,
     TIMING_POLICY_VERSION,
@@ -758,6 +764,20 @@ def validate_publication(
             "website fight-data JSON row count differs from raw fights",
         )
 
+    outcome_forecasts = objects.get("outcome_forecasts")
+    if outcome_forecasts is not None:
+        try:
+            validated_outcomes = validate_outcome_forecast_publication(
+                outcome_forecasts
+            )
+            report.facts.append(
+                "candidate outcome forecasts: "
+                f"{validated_outcomes['forecast_matchup_count']:,}/"
+                f"{validated_outcomes['matchup_count']:,} matchups"
+            )
+        except (TypeError, ValueError) as error:
+            report.errors.append(f"outcome_forecasts.json is invalid: {error}")
+
     vegas_object = objects["vegas_odds"]
     try:
         vegas = pd.DataFrame(vegas_object)
@@ -772,6 +792,10 @@ def validate_publication(
         for key in FIGHTER_EXPLORER_SHARD_KEYS
     }
     try:
+        external_bouts, identity_map = load_external_history_inputs(
+            data_root / "external_mma" / "bouts.jsonl",
+            data_root / "external_mma" / "identity_map.csv",
+        )
         report.require(
             explorer_path.stat().st_size <= FIGHTER_EXPLORER_SIZE_LIMIT,
             "fighter explorer index exceeds its 8 MiB limit",
@@ -788,6 +812,8 @@ def validate_publication(
             fighters,
             vegas,
             fight_shards,
+            external_bouts,
+            identity_map,
         )
         report.facts.append(
             "fighter explorer: "
@@ -989,6 +1015,40 @@ def validate_market_data(
         report.errors.append(f"market ledgers failed integrity validation: {error}")
         return report
 
+    total_round_csv = market_root / "total_round_quote_snapshots.csv"
+    total_round_jsonl = market_root / "total_round_quote_snapshots.jsonl"
+    total_round_exists = (total_round_csv.exists(), total_round_jsonl.exists())
+    total_rounds = ()
+    if any(total_round_exists) and not all(total_round_exists):
+        report.errors.append("total-round quote mirrors are incomplete")
+    elif all(total_round_exists):
+        try:
+            total_rounds = TotalRoundsQuoteStore(
+                total_round_csv, total_round_jsonl
+            ).read()
+        except (OSError, UnicodeError, MarketDataError, StoreIntegrityError) as error:
+            report.errors.append(
+                f"total-round quotes failed integrity validation: {error}"
+            )
+    total_forecast_csv = market_root / "total_round_forecast_captures.csv"
+    total_forecast_jsonl = market_root / "total_round_forecast_captures.jsonl"
+    total_forecast_exists = (
+        total_forecast_csv.exists(),
+        total_forecast_jsonl.exists(),
+    )
+    total_round_forecasts = ()
+    if any(total_forecast_exists) and not all(total_forecast_exists):
+        report.errors.append("total-round forecast mirrors are incomplete")
+    elif all(total_forecast_exists):
+        try:
+            total_round_forecasts = TotalRoundsForecastStore(
+                total_forecast_csv, total_forecast_jsonl
+            ).read()
+        except (OSError, UnicodeError, MarketDataError, StoreIntegrityError) as error:
+            report.errors.append(
+                f"total-round forecasts failed integrity validation: {error}"
+            )
+
     report.require(bool(quotes), "market quote ledger is empty")
     report.require(bool(forecasts), "market forecast ledger is empty")
     if not quotes or not forecasts:
@@ -1017,6 +1077,41 @@ def validate_market_data(
         all(len(values) == 1 for values in capture_source_payloads.values()),
         "one market capture/source has multiple payload hashes",
     )
+    for prop in total_rounds:
+        contracts = capture_contracts.get(prop.capture_id, set())
+        report.require(
+            (
+                prop.event_id,
+                prop.event_date,
+                prop.timing_precision,
+                prop.event_start_utc,
+                prop.observed_at_utc,
+            )
+            in contracts,
+            "a total-round quote has no matching moneyline capture contract",
+        )
+        report.require(
+            any(
+                quote.capture_id == prop.capture_id
+                and quote.matchup_id == prop.matchup_id
+                and quote.source_payload_sha256 == prop.source_payload_sha256
+                for quote in quotes
+            ),
+            "a total-round quote lacks the same-capture matchup/payload moneyline",
+        )
+    total_quote_lines = {
+        (item.capture_id, item.matchup_id, item.line) for item in total_rounds
+    }
+    for prop_forecast in total_round_forecasts:
+        report.require(
+            (
+                prop_forecast.capture_id,
+                prop_forecast.matchup_id,
+                prop_forecast.line,
+            )
+            in total_quote_lines,
+            "a total-round forecast lacks a same-capture quoted line",
+        )
 
     forecast_by_key: dict[tuple[str, str], list] = {}
     for forecast in forecasts:
@@ -1347,6 +1442,8 @@ def validate_market_data(
     report.facts.append(
         "market ledger: "
         f"{len(quotes):,} quotes / {len(forecasts):,} forecasts / "
+        f"{len(total_rounds):,} total-round quotes / "
+        f"{len(total_round_forecasts):,} total-round forecasts / "
         f"{len(capture_contracts):,} captures / {len(decisions):,} paper decisions / "
         f"{len(settlements):,} settlements"
     )

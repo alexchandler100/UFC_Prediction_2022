@@ -14,7 +14,7 @@ The weekly job:
 3. Replays fights in causal bout order and builds one stable-ID feature row per physical W/L fight.
 4. Tunes and evaluates a regularized logistic model with nested chronological folds, adds pre-bout Elo/state features, applies symmetric temperature calibration, and refits on the full ten-year window.
 5. Saves and reloads a content-hashed JSON model artifact before forecasting the next card.
-6. Builds a compact stable-ID fighter explorer publication with career summaries and complete fight logs.
+6. Builds a compact stable-ID fighter explorer publication with UFCStats performance plus linked Bellator/ONE history.
 7. Adds timestamped no-vig multi-book consensus from The Odds API when valid lines are available and publishes the website JSON.
 
 The 82-feature model is antisymmetric: swapping the fighters produces the complementary probability. Historical features use only information available before that bout; appending future fights cannot change an existing training row. Split decisions are valid W/L labels, while draws and no-contests are retained as state/history events but are not binary training labels.
@@ -50,6 +50,14 @@ UFC label set unchanged and improved final-holdout log loss from `0.62284` to
 improved from `0.63133` to `0.63071`. This is a small predictive gain, not
 evidence of positive betting return.
 
+The fighter website publishes the 925 non-UFC bouts that can be linked safely
+to a UFCStats identity, covering 377 profiles. Each history row identifies its
+promotion, event, dataset, and upstream source page. Bellator/ONE result,
+method, round, and clock metadata contribute to the all-promotion record;
+detailed striking/grappling rates remain explicitly UFCStats-only. The site
+labels the 1,045 linked fighter perspectives with unavailable detailed stats
+as metadata-only rather than showing fabricated zeroes.
+
 Reproduce the collection and evaluation with:
 
 ```console
@@ -82,9 +90,11 @@ The auditable artifacts are:
 - `src/content/data/external/fighter_fights_*.json` (lazy-loaded complete fight logs)
 - `src/content/data/market/quote_snapshots.jsonl`
 - `src/content/data/market/quote_source_metadata.jsonl`
+- `src/content/data/market/total_round_quote_snapshots.jsonl`
 - `src/content/data/market/paper_decisions.jsonl`
 - `src/content/data/market/paper_settlements.jsonl`
 - `src/content/data/market/performance_report.json`
+- `src/content/data/external/outcome_model_evaluation.json` (candidate only)
 
 The website treats fighter history as its primary research surface. When complete two-sided lines are available, it shows the no-vig market consensus and the independent model probability as separate supporting context. Betting recommendations are disabled until timestamped rolling tests demonstrate a repeatable market-relative edge.
 
@@ -102,6 +112,37 @@ consensus and at least three other books are required.
 If more than one capture exists for a matchup, evaluation requires a
 predeclared per-event UTC cutoff and deterministically selects the latest
 capture at or before it; later snapshots cannot be chosen using outcomes.
+
+The same API response now requests full-fight total-round markets alongside
+moneylines. Complete Over/Under pairs are written to a separate immutable
+ledger with the round line, both prices, no-vig probability, first-seen time,
+source update time, stable matchup identity, and payload hash. Missing or
+one-sided totals are omitted; they never alter the moneyline ledger.
+
+A candidate discrete-time competing-risk model jointly predicts
+fighter/opponent win by KO/TKO, submission, decision, or other outcome and a
+coherent survival curve for round totals. On the untouched September
+2024–August 2026 holdout its winner log loss was `0.6243`; joint-outcome log
+loss was `1.6157` versus a `1.7200` development base-rate benchmark.
+Method-only log loss was `1.0261` versus `1.0271`, while Over 1.5 and Over 2.5
+improved their base-rate log loss by only about `0.009` each. These small gains
+do not establish positive EV, so the model remains candidate-only. The weekly
+update now freezes upcoming method and duration probabilities, and every odds
+capture freezes the matching total-round probability in a separate immutable
+forecast ledger. The website ranks positive estimated-return total prices with
+the exact book, line, model probability, break-even probability, and price
+timestamp, but labels them paper-only candidate signals rather than validated
+recommendations. Method-of-victory probabilities are visible, but method EV is
+not calculated without a real book-specific method price; the configured API
+currently documents UFC winner and fight-total coverage, not method markets.
+Reproduce the evaluation report with
+`python -B src/evaluate_outcome_model.py`.
+
+For a quoted side, candidate prop EV is calculated as
+`model probability / offered break-even probability - 1`. Positive values are
+shown in the combined market opportunity list; the existing 5% paper threshold
+is also shown separately so a barely positive estimate is not mistaken for a
+strong signal. No staking or wager execution is enabled.
 
 The prospective policy freezes at most one paper decision per matchup in a
 predeclared T-24 window (20 to 28 hours before the card). It uses only source
@@ -191,16 +232,17 @@ The old scripts `src/1-build_ufc_fights_reported_doubled.py` and `src/2-build_uf
 (America/Chicago). Once a previously timed card
 has commenced, a late retry exits successfully without spending another API
 credit. Each run validates the frozen card/model publication, captures one
-fresh MMA moneyline response from The Odds API, appends quote/forecast/source-
-timing ledgers, freezes any eligible T-24 paper decisions, and publishes a
+fresh MMA moneyline plus available full-fight total-round response from The
+Odds API, appends separate validated quote/forecast/source-timing ledgers,
+freezes any eligible T-24 paper decisions, and publishes a
 bounded audit report, settles any newly completed prior decisions, and refreshes
 the return/CLV report before strict revalidation. The
 two publishing workflows share one concurrency group and exact path allowlists.
 The collector creates no live wager.
 
 The source's free Starter tier currently includes 500 request credits per
-month. The configured `h2h` request across `us,us2` costs two credits, so the
-two updater runs plus the maximum fourteen scheduled captures use roughly 140 credits
+month. The configured `h2h,totals` request across `us,us2` costs up to four
+credits, so the two updater runs plus the maximum fourteen scheduled captures use roughly 280 credits
 in an average month (and post-commencement no-ops use none). Create a free key
 at [The Odds API](https://the-odds-api.com/), then add
 it to the repository under **Settings -> Secrets and variables -> Actions ->

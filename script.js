@@ -7,6 +7,7 @@ const DATA_PATHS = {
   model: "src/content/data/external/winner_model.json",
   market: "src/content/data/market/current_opportunities.json",
   performance: "src/content/data/market/performance_report.json",
+  outcomes: "src/content/data/external/outcome_forecasts.json",
 };
 
 const state = {
@@ -16,6 +17,7 @@ const state = {
   model: null,
   market: null,
   performance: null,
+  outcomes: null,
   fighters: [],
   fighterById: new Map(),
   fightColumn: new Map(),
@@ -98,10 +100,21 @@ function formatDuration(seconds) {
 
 function record(fighter) {
   if (!fighter) return "No recorded bouts";
-  const career = fighter.career;
-  let value = `${career.wins}-${career.losses}-${career.draws}`;
-  if (career.no_contests) value += ` (${career.no_contests} NC)`;
+  const results = fighter.record || fighter.career;
+  let value = `${results.wins}-${results.losses}-${results.draws}`;
+  if (results.no_contests) value += ` (${results.no_contests} NC)`;
   return value;
+}
+
+function fullRecord(fighter) {
+  const results = fighter?.record || fighter?.career;
+  if (!results) return { recorded_bouts: 0, promotions: [], metadata_only_bouts: 0 };
+  if (results.promotions) return results;
+  return { ...results, promotions: results.recorded_bouts ? [{ name: "UFC", bouts: results.recorded_bouts }] : [], metadata_only_bouts: 0, detailed_stat_bouts: results.recorded_bouts || 0 };
+}
+
+function promotionBouts(fighter, promotionPattern) {
+  return fullRecord(fighter).promotions?.filter((item) => promotionPattern.test(item.name)).reduce((sum, item) => sum + item.bouts, 0) || 0;
 }
 
 function fighterDivision(fighter) {
@@ -169,13 +182,14 @@ async function fetchJson(path, required = true) {
 }
 
 async function loadData() {
-  const [explorer, vegas, card, model, market, performance] = await Promise.all([
+  const [explorer, vegas, card, model, market, performance, outcomes] = await Promise.all([
     fetchJson(DATA_PATHS.explorer),
     fetchJson(DATA_PATHS.vegas, false),
     fetchJson(DATA_PATHS.card, false),
     fetchJson(DATA_PATHS.model, false),
     fetchJson(DATA_PATHS.market, false),
     fetchJson(DATA_PATHS.performance, false),
+    fetchJson(DATA_PATHS.outcomes, false),
   ]);
   state.explorer = explorer;
   state.vegas = vegas;
@@ -183,6 +197,7 @@ async function loadData() {
   state.model = model;
   state.market = market;
   state.performance = performance;
+  state.outcomes = outcomes;
   state.fighters = explorer.fighters;
   state.fighterById = new Map(state.fighters.map((fighter) => [fighter.id, fighter]));
   state.fightColumn = new Map(explorer.fight_columns.map((column, index) => [column, index]));
@@ -203,7 +218,7 @@ function findFighters(query, limit = 24) {
     .sort((left, right) => {
       const leftStarts = normalize(left.name).startsWith(terms.join(" ")) ? 1 : 0;
       const rightStarts = normalize(right.name).startsWith(terms.join(" ")) ? 1 : 0;
-      return rightStarts - leftStarts || right.career.recorded_bouts - left.career.recorded_bouts || left.name.localeCompare(right.name);
+      return rightStarts - leftStarts || fullRecord(right).recorded_bouts - fullRecord(left).recorded_bouts || left.name.localeCompare(right.name);
     })
     .slice(0, limit);
 }
@@ -246,8 +261,8 @@ function renderCoverage() {
   container.replaceChildren();
   const values = [
     [state.explorer.counts.fighters.toLocaleString(), "fighter profiles"],
-    [state.explorer.counts.unique_fights.toLocaleString(), "unique fights"],
-    [state.explorer.counts.fighter_fight_rows.toLocaleString(), "fighter stat lines"],
+    [state.explorer.counts.unique_fights.toLocaleString(), "UFCStats fights"],
+    [(state.explorer.counts.linked_external_fights || 0).toLocaleString(), "linked Bellator / ONE fights"],
     [formatDate(state.explorer.data_through), "data through"],
   ];
   values.forEach(([value, label]) => {
@@ -343,7 +358,7 @@ function renderCurrentCard() {
     const card = element("article", "matchup-card");
     const top = element("div", "matchup-card-top");
     appendText(top, "span", "", fighterDivision(fighter) || fighterDivision(opponent) || `Bout ${index + 1}`);
-    appendText(top, "span", "", `${Math.min(fighter?.career.recorded_bouts || 0, opponent?.career.recorded_bouts || 0)}-bout minimum sample`);
+    appendText(top, "span", "", `${Math.min(fullRecord(fighter).recorded_bouts || 0, fullRecord(opponent).recorded_bouts || 0)}-bout minimum history`);
     card.append(top);
 
     const pair = element("div", "matchup-pair");
@@ -394,8 +409,9 @@ const COMPARISON_GROUPS = [
     ["Height", (f) => f.height_inches, "inches", "context"],
     ["Reach", (f) => f.reach_inches, "inches", "context"],
     ["Age", (f) => ageOn(f, state.card?.date), "years", "context"],
-    ["Recorded UFC bouts", (f) => f.career.recorded_bouts, "integer", "higher"],
-    ["Average fight time", (f) => f.career.average_fight_minutes, "minutes", "context"],
+    ["Recorded MMA bouts", (f) => fullRecord(f).recorded_bouts, "integer", "higher"],
+    ["UFCStats bouts", (f) => f.career.recorded_bouts, "integer", "higher"],
+    ["Average UFC fight time", (f) => f.career.average_fight_minutes, "minutes", "context"],
   ]],
   ["Striking", [
     ["Sig. strikes landed / min", (f) => f.career.sig_strikes_landed_per_minute, "decimal", "higher"],
@@ -415,8 +431,8 @@ const COMPARISON_GROUPS = [
     ["Share of recorded control", (f) => f.career.control_share, "percentage", "higher"],
   ]],
   ["Results & style", [
-    ["Win rate", (f) => f.career.win_rate, "percentage", "higher"],
-    ["Finish rate in wins", (f) => f.career.finish_rate, "percentage", "context"],
+    ["All-promotion win rate", (f) => fullRecord(f).win_rate, "percentage", "higher"],
+    ["All-promotion finish rate", (f) => fullRecord(f).finish_rate, "percentage", "context"],
     ["Head strike share", (f) => f.career.head_strike_share, "percentage", "context"],
     ["Body strike share", (f) => f.career.body_strike_share, "percentage", "context"],
     ["Leg strike share", (f) => f.career.leg_strike_share, "percentage", "context"],
@@ -494,6 +510,7 @@ function strongerName(fighterA, valueA, fighterB, valueB, lower = false) {
 
 function matchupInsights(fighterA, fighterB) {
   const a = fighterA.career; const b = fighterB.career;
+  const allA = fullRecord(fighterA); const allB = fullRecord(fighterB);
   const insights = [];
   const minimumBouts = Math.min(a.recorded_bouts, b.recorded_bouts);
   if (minimumBouts < 3) {
@@ -517,12 +534,12 @@ function matchupInsights(fighterA, fighterB) {
   const pressure = strongerName(fighterA, aTakedownLook, fighterB, bTakedownLook);
   insights.push(["Grappling interaction", pressure ? `${pressure} has the stronger takedown-pressure marker` : "No clear takedown-pressure marker", `${fighterA.name}'s ${formatNumber(a.takedowns_landed_per_15)} TD/15 meets ${formatPercent(b.takedown_defense)} defense; ${fighterB.name}'s ${formatNumber(b.takedowns_landed_per_15)} meets ${formatPercent(a.takedown_defense)}. This is descriptive, not a forecast.`, false]);
 
-  const finishLeader = strongerName(fighterA, a.finish_rate, fighterB, b.finish_rate);
-  insights.push(["Finishing profile", finishLeader ? `${finishLeader} finishes a larger share of wins` : "Similar or incomplete finish rates", `${fighterA.name}: ${a.ko_tko_wins} KO/TKO, ${a.submission_wins} submissions. ${fighterB.name}: ${b.ko_tko_wins} KO/TKO, ${b.submission_wins} submissions.`, false]);
+  const finishLeader = strongerName(fighterA, allA.finish_rate, fighterB, allB.finish_rate);
+  insights.push(["Finishing profile", finishLeader ? `${finishLeader} finishes a larger share of recorded wins` : "Similar or incomplete finish rates", `${fighterA.name}: ${allA.ko_tko_wins} KO/TKO, ${allA.submission_wins} submissions. ${fighterB.name}: ${allB.ko_tko_wins} KO/TKO, ${allB.submission_wins} submissions across all linked promotions.`, false]);
 
-  const lastA = daysSince(a.last_fight_date); const lastB = daysSince(b.last_fight_date);
+  const lastA = daysSince(allA.last_fight_date); const lastB = daysSince(allB.last_fight_date);
   const activityLeader = strongerName(fighterA, lastA, fighterB, lastB, true);
-  insights.push(["Recency", activityLeader ? `${activityLeader} fought more recently` : "Similar or incomplete activity data", `${fighterA.name}: ${a.last_fight_date ? formatDate(a.last_fight_date) : "unknown"}. ${fighterB.name}: ${b.last_fight_date ? formatDate(b.last_fight_date) : "unknown"}.`, false]);
+  insights.push(["Recency", activityLeader ? `${activityLeader} fought more recently` : "Similar or incomplete activity data", `${fighterA.name}: ${allA.last_fight_date ? formatDate(allA.last_fight_date) : "unknown"}. ${fighterB.name}: ${allB.last_fight_date ? formatDate(allB.last_fight_date) : "unknown"}.`, false]);
   return insights;
 }
 
@@ -587,8 +604,8 @@ function filteredDirectoryFighters() {
     return (!terms.length || terms.every((term) => haystack.includes(term)))
       && (!division || fighter.scheduled_division === division || fighter.career.divisions.some((item) => item.name === division))
       && (!stance || fighter.stance === stance)
-      && (!recordedOnly || fighter.career.recorded_bouts > 0);
-  }).sort((a, b) => b.career.recorded_bouts - a.career.recorded_bouts || a.name.localeCompare(b.name));
+      && (!recordedOnly || fullRecord(fighter).recorded_bouts > 0);
+  }).sort((a, b) => fullRecord(b).recorded_bouts - fullRecord(a).recorded_bouts || a.name.localeCompare(b.name));
 }
 
 function showFighterDirectory() {
@@ -646,6 +663,20 @@ async function pairedFight(fight) {
 
 function renderFightDetails(body, fight, opponentFight, fighterName) {
   body.replaceChildren();
+  if (!fight.stats_available) {
+    const notice = element("div", "coverage-notice");
+    appendText(notice, "strong", "", "Result metadata only");
+    appendText(notice, "p", "", "This source provides the result, method, round, and clock, but not reliable bout-level striking or grappling statistics. Missing detail is intentionally shown as unavailable, not zero.");
+    body.append(notice);
+    const metadata = element("table", "data-table"); const rows = document.createElement("tbody");
+    [["Promotion", fight.promotion || "—"], ["Event", fight.event_name || "—"], ["Method", fight.method || "—"], ["Finish", `Round ${fight.round || "—"} · ${fight.time || "clock unavailable"}`], ["Scheduled format", fight.time_format || "—"], ["Dataset", fight.source_label || fight.source || "—"]].forEach(([label, value]) => { const row = document.createElement("tr"); appendText(row, "td", "", label); appendText(row, "td", "", value); rows.append(row); });
+    metadata.append(rows); body.append(metadata);
+    if (fight.source_url) {
+      const source = element("p", "fight-source", `${fight.event_name || fight.promotion || "Source event"}. `);
+      const link = element("a", "", "Open upstream event page"); link.href = fight.source_url; link.target = "_blank"; link.rel = "noreferrer"; source.append(link); body.append(source);
+    }
+    return;
+  }
   const grid = element("div", "fight-detail-grid");
   const groups = [...new Set(Object.values(state.explorer.data_dictionary.fight_stats).map((definition) => definition.group))];
   groups.forEach((group) => {
@@ -671,29 +702,39 @@ function renderFightDetails(body, fight, opponentFight, fighterName) {
 
 function renderFightHistory(fighter) {
   const panel = element("section", "panel");
-  const heading = element("div", "section-heading"); const copy = element("div"); appendText(copy, "p", "eyebrow", "Bout-level data"); appendText(copy, "h2", "", "Complete UFC fight log");
-  appendText(copy, "p", "section-note", "Expand any bout for all striking, target, position, grappling, timing, and source fields for both fighters."); heading.append(copy); panel.append(heading);
+  const heading = element("div", "section-heading"); const copy = element("div"); appendText(copy, "p", "eyebrow", "Bout-level data"); appendText(copy, "h2", "", "Recorded fight history");
+  appendText(copy, "p", "section-note", "UFCStats bouts include detailed performance data. Linked Bellator and ONE bouts include the result metadata actually available from the external source."); heading.append(copy);
+  const decoded = fighter.fights.map(decodeFight);
+  const promotions = [...new Set(decoded.map((fight) => fight.promotion).filter(Boolean))].sort();
+  const controls = element("div", "history-controls"); appendText(controls, "label", "", "Promotion");
+  const promotionFilter = document.createElement("select"); const allOption = element("option", "", "All promotions"); allOption.value = ""; promotionFilter.append(allOption);
+  promotions.forEach((promotion) => { const option = element("option", "", promotion); option.value = promotion; promotionFilter.append(option); }); controls.append(promotionFilter); heading.append(controls); panel.append(heading);
   const history = element("div", "fight-history");
-  if (!fighter.fights.length) history.append(element("div", "empty-state", "No UFC fight statistics are recorded for this fighter."));
-  fighter.fights.forEach((values) => {
-    const fight = decodeFight(values); const details = document.createElement("details");
+  const renderRows = () => {
+    history.replaceChildren();
+    const visible = decoded.filter((fight) => !promotionFilter.value || fight.promotion === promotionFilter.value);
+    if (!visible.length) history.append(element("div", "empty-state", "No recorded fights match this promotion filter."));
+    visible.forEach((fight) => {
+    const details = document.createElement("details");
     const summary = element("summary", "fight-summary"); appendText(summary, "time", "", formatDate(fight.date, { year: "numeric", month: "short", day: "numeric" }));
-    appendText(summary, "span", `result ${String(fight.result).toLowerCase() === "w" ? "win" : "loss"}`, fight.result || "—");
+    const resultKey = String(fight.result).toLowerCase(); appendText(summary, "span", `result ${resultKey === "w" ? "win" : resultKey === "l" ? "loss" : "neutral"}`, fight.result || "—");
     const opponentName = element("strong", "", fight.opponent_name); summary.append(opponentName);
     appendText(summary, "span", "", `${fight.method || "Method unavailable"} · R${fight.round || "—"} ${fight.time || ""}`);
-    appendText(summary, "small", "", fight.division || "Division unavailable"); details.append(summary);
-    const body = element("div", "details-body", "Open to load complete bout statistics."); details.append(body);
+    const context = element("small", "fight-context"); appendText(context, "span", "promotion-pill", fight.promotion || "Unknown promotion"); context.append(document.createTextNode(` ${fight.event_name || fight.division || "Event unavailable"}`)); summary.append(context); details.append(summary);
+    const body = element("div", "details-body", fight.stats_available ? "Open to load complete bout statistics." : "Open to inspect result metadata and source coverage."); details.append(body);
     let rendered = false; details.addEventListener("toggle", async () => {
       if (!details.open || rendered) return;
-      rendered = true; body.textContent = "Loading paired opponent statistics…";
+      rendered = true; body.textContent = fight.stats_available ? "Loading paired opponent statistics…" : "Loading source metadata…";
       try {
-        const opponentFight = await pairedFight(fight);
+        const opponentFight = fight.stats_available ? await pairedFight(fight) : null;
         renderFightDetails(body, fight, opponentFight, fighter.name);
       } catch (error) {
         body.textContent = `Could not load paired opponent statistics: ${error.message}`;
       }
     }); history.append(details);
-  });
+    });
+  };
+  promotionFilter.addEventListener("change", renderRows); renderRows();
   panel.append(history); return panel;
 }
 
@@ -713,21 +754,25 @@ async function renderFighterProfile(fighterId) {
   if (!fighter) { setRoute("fighters"); return; }
   $(".directory-controls").hidden = true; $("#fighter-directory").hidden = true;
   const container = $("#fighter-profile"); container.replaceChildren();
+  const allResults = fullRecord(fighter);
   const header = element("section", "profile-header"); const identity = element("div"); identity.append(actionButton("← Back to fighter directory", "back-button", () => setRoute("fighters")));
   appendText(identity, "p", "eyebrow", fighterDivision(fighter) || "Fighter profile"); appendText(identity, "h2", "", fighter.name);
-  appendText(identity, "p", "", `${record(fighter)} recorded UFC record · ${fighter.career.recorded_bouts} bouts · ${formatNumber(fighter.career.total_fight_minutes, 1)} recorded minutes`); header.append(identity);
+  appendText(identity, "p", "", `${record(fighter)} across linked promotions · ${allResults.recorded_bouts} bouts · ${fighter.career.recorded_bouts} with UFCStats detail`); header.append(identity);
   const sourceLink = element("a", "", "Open official UFCStats profile ↗"); sourceLink.href = fighter.url; sourceLink.target = "_blank"; sourceLink.rel = "noreferrer"; identity.append(sourceLink);
   const bio = element("div", "profile-bio");
   [[fighter.height || "—", "Height"], [fighter.reach || "—", "Reach"], [fighter.stance || "—", "Stance"], [ageOn(fighter, state.card?.date) ?? "—", "Age at current card"], [fighter.dob_iso ? formatDate(fighter.dob_iso) : fighter.dob || "—", "Date of birth"], [fighter.id, "Stable fighter ID"]].forEach(([value, label]) => bio.append(bioItem(value, label))); header.append(bio); container.append(header);
 
-  const keyStats = element("section", "stats-grid");
-  [[formatNumber(fighter.career.sig_strikes_landed_per_minute), "Sig. strikes landed / min", `${formatNumber(fighter.career.sig_strikes_absorbed_per_minute)} absorbed`], [formatMetric(fighter.career.significant_strike_differential_per_minute, "signed"), "Sig. strike differential / min", `${formatPercent(fighter.career.sig_strike_defense)} defense`], [formatNumber(fighter.career.takedowns_landed_per_15), "Takedowns / 15 min", `${formatPercent(fighter.career.takedown_accuracy)} accuracy`], [formatNumber(fighter.career.control_minutes_per_15), "Control min / 15", `${formatPercent(fighter.career.control_share)} control share`], [formatNumber(fighter.career.submission_attempts_per_15), "Sub attempts / 15", `${fighter.career.submission_wins} submission wins`], [formatNumber(fighter.career.knockdowns_per_15), "Knockdowns / 15", `${formatNumber(fighter.career.knockdowns_absorbed_per_15)} absorbed`], [formatPercent(fighter.career.finish_rate), "Finish rate in wins", `${fighter.career.ko_tko_wins} KO · ${fighter.career.submission_wins} SUB`], [fighter.career.recent_form.join(" · ") || "—", "Last five results", fighter.career.last_fight_date ? `Last fought ${formatDate(fighter.career.last_fight_date)}` : "No fight date"]].forEach(([value, label, note]) => keyStats.append(statTile(value, label, note))); container.append(keyStats);
+  const coverage = element("section", "panel coverage-panel"); const coverageHeading = element("div", "section-heading"); const coverageCopy = element("div"); appendText(coverageCopy, "p", "eyebrow", "Source coverage"); appendText(coverageCopy, "h2", "", "What is actually recorded"); appendText(coverageCopy, "p", "section-note", "All-promotion results and UFCStats performance detail are kept separate so missing external statistics cannot silently become zero."); coverageHeading.append(coverageCopy); coverage.append(coverageHeading);
+  const coverageStats = element("div", "stats-grid"); [[allResults.recorded_bouts, "All recorded MMA bouts", record(fighter)], [fighter.career.recorded_bouts, "UFCStats detail", "Striking and grappling available"], [promotionBouts(fighter, /bellator/i), "Bellator history", "Result metadata"], [promotionBouts(fighter, /one championship/i), "ONE history", "Result metadata"], [allResults.metadata_only_bouts || 0, "Metadata-only bouts", "Never included in UFC performance rates"]].forEach(([value, label, note]) => coverageStats.append(statTile(formatNumber(value, 0), label, note))); coverage.append(coverageStats); container.append(coverage);
 
-  const careerPanel = element("section", "panel"); const heading = element("div", "section-heading"); const copy = element("div"); appendText(copy, "p", "eyebrow", "Career rates"); appendText(copy, "h2", "", "All derived fighter statistics"); appendText(copy, "p", "section-note", "Rates use recorded UFC fight time. Missing denominators remain missing rather than becoming zero."); heading.append(copy); careerPanel.append(heading);
+  const keyStats = element("section", "stats-grid");
+  [[formatNumber(fighter.career.sig_strikes_landed_per_minute), "Sig. strikes landed / min", `${formatNumber(fighter.career.sig_strikes_absorbed_per_minute)} absorbed · UFC only`], [formatMetric(fighter.career.significant_strike_differential_per_minute, "signed"), "Sig. strike differential / min", `${formatPercent(fighter.career.sig_strike_defense)} defense · UFC only`], [formatNumber(fighter.career.takedowns_landed_per_15), "Takedowns / 15 min", `${formatPercent(fighter.career.takedown_accuracy)} accuracy · UFC only`], [formatNumber(fighter.career.control_minutes_per_15), "Control min / 15", `${formatPercent(fighter.career.control_share)} control share · UFC only`], [formatNumber(fighter.career.submission_attempts_per_15), "Sub attempts / 15", "UFCStats detail"], [formatNumber(fighter.career.knockdowns_per_15), "Knockdowns / 15", `${formatNumber(fighter.career.knockdowns_absorbed_per_15)} absorbed · UFC only`], [formatPercent(allResults.finish_rate), "Finish rate in wins", `${allResults.ko_tko_wins} KO · ${allResults.submission_wins} SUB · all promotions`], [allResults.recent_form.join(" · ") || "—", "Last five results", allResults.last_fight_date ? `Last fought ${formatDate(allResults.last_fight_date)}` : "No fight date"]].forEach(([value, label, note]) => keyStats.append(statTile(value, label, note))); container.append(keyStats);
+
+  const careerPanel = element("section", "panel"); const heading = element("div", "section-heading"); const copy = element("div"); appendText(copy, "p", "eyebrow", "UFCStats performance"); appendText(copy, "h2", "", "Detailed fighter statistics"); appendText(copy, "p", "section-note", "These rates use UFCStats fight time only. Bellator and ONE metadata affects the all-promotion record above, never these detailed rates."); heading.append(copy); careerPanel.append(heading);
   const careerColumns = element("div", "explain-grid"); ["Record", "Striking", "Grappling", "Style", "Data quality"].forEach((group) => careerColumns.append(renderCareerTable(fighter, group))); careerPanel.append(careerColumns);
   const metadata = document.createElement("details"); metadata.append(element("summary", "", "Career dates, divisions, form, and streak metadata")); const metadataBody = element("div", "details-body");
   const metadataTable = element("table", "data-table"); const metadataRows = document.createElement("tbody");
-  [["First recorded UFC fight", fighter.career.first_fight_date ? formatDate(fighter.career.first_fight_date) : "—"], ["Most recent UFC fight", fighter.career.last_fight_date ? formatDate(fighter.career.last_fight_date) : "—"], ["Recent form", fighter.career.recent_form.join(" · ") || "—"], ["Current W/L streak", fighter.career.current_streak_result ? `${fighter.career.current_streak} ${fighter.career.current_streak_result}` : "—"], ["Divisions", fighter.career.divisions.map((item) => `${item.name} (${item.bouts})`).join(", ") || "—"]].forEach(([label, value]) => { const row = document.createElement("tr"); appendText(row, "td", "", label); appendText(row, "td", "", value); metadataRows.append(row); });
+  [["First linked fight", allResults.first_fight_date ? formatDate(allResults.first_fight_date) : "—"], ["Most recent linked fight", allResults.last_fight_date ? formatDate(allResults.last_fight_date) : "—"], ["Recent form across promotions", allResults.recent_form.join(" · ") || "—"], ["Current W/L streak", allResults.current_streak_result ? `${allResults.current_streak} ${allResults.current_streak_result}` : "—"], ["Promotions", allResults.promotions.map((item) => `${item.name} (${item.bouts})`).join(", ") || "—"], ["UFC divisions", fighter.career.divisions.map((item) => `${item.name} (${item.bouts})`).join(", ") || "—"]].forEach(([label, value]) => { const row = document.createElement("tr"); appendText(row, "td", "", label); appendText(row, "td", "", value); metadataRows.append(row); });
   metadataTable.append(metadataRows); metadataBody.append(metadataTable); metadata.append(metadataBody); careerPanel.append(metadata, renderRawTotals(fighter)); container.append(careerPanel);
   const historyLoading = element("div", "empty-state", "Loading complete fight log…"); container.append(historyLoading);
   try {
@@ -739,11 +784,75 @@ async function renderFighterProfile(fighterId) {
 }
 
 function renderMarket() {
-  const notice = $("#market-notice"); const container = $("#market-matchups"); notice.replaceChildren(); container.replaceChildren();
+  const notice = $("#market-notice"); const container = $("#market-matchups"); const opportunityContainer = $("#market-opportunities"); const propContainer = $("#prop-market-details"); notice.replaceChildren(); container.replaceChildren(); opportunityContainer.replaceChildren(); propContainer.replaceChildren();
   const copy = element("div"); appendText(copy, "h2", "", "Paper research only—automatic betting is intentionally off.");
   appendText(copy, "p", "", state.market ? `Quotes captured ${formatTimestamp(state.market.observed_at_utc)}. The policy compares the best available price with a consensus that excludes that target book.` : "No current book-by-book market capture is published. Fighter and matchup research remains available.");
   notice.append(copy, element("span", "pill orange", state.market ? "Execution disabled" : "Capture unavailable"));
   const matchups = state.market?.matchups || [];
+  const propMarkets = state.market?.prop_markets;
+  const totalRounds = propMarkets?.total_rounds;
+  const methodMarket = propMarkets?.method_of_victory;
+  const ranked = [];
+  matchups.forEach((matchup) => {
+    const signal = matchup.current_signal;
+    const expectedReturn = finite(signal?.estimated_expected_return);
+    if (signal && expectedReturn !== null && expectedReturn > 0) ranked.push({
+      category: "Moneyline",
+      matchup: `${matchup.fighter_name} vs ${matchup.opponent_name}`,
+      selection: signal.best_candidate_name,
+      book: signal.target_book,
+      odds: signal.offered_moneyline,
+      probability: signal.market_probability,
+      expectedReturn,
+      thresholdMet: signal.paper_action !== "pass",
+      probabilityLabel: "Leave-one-book-out fair probability",
+      warning: "Market-relative estimate; the target book is excluded from consensus.",
+    });
+  });
+  (totalRounds?.positive_candidates || []).forEach((candidate) => ranked.push({
+    category: "Total rounds",
+    matchup: `${candidate.fighter_name} vs ${candidate.opponent_name}`,
+    selection: candidate.selection,
+    book: candidate.target_book,
+    odds: candidate.offered_moneyline,
+    probability: candidate.model_probability,
+    expectedReturn: candidate.estimated_expected_return,
+    thresholdMet: candidate.paper_threshold_met,
+    probabilityLabel: "Candidate duration-model probability",
+    warning: `Candidate model only - ${candidate.scheduled_rounds} scheduled rounds - ${String(candidate.schedule_basis).replaceAll("_", " ")}.`,
+  }));
+  ranked.sort((left, right) => right.expectedReturn - left.expectedReturn || left.matchup.localeCompare(right.matchup));
+  $("#market-opportunity-status").textContent = ranked.length
+    ? `${ranked.length} positive-EV price${ranked.length === 1 ? "" : "s"} in the latest synchronized capture, before limits, slippage, and model uncertainty.`
+    : "No positive-EV price is currently published. This is a valid result, not a data failure.";
+  if (!ranked.length) opportunityContainer.append(element("div", "empty-state", totalRounds ? "No current moneyline or total-round price has positive estimated value." : "Finish-time EV is awaiting the next successful totals capture; no current moneyline price is positive EV."));
+  ranked.forEach((candidate) => {
+    const card = element("article", "opportunity-card");
+    const meta = element("div", "opportunity-meta"); meta.append(element("span", "pill neutral", candidate.category), element("span", `pill ${candidate.thresholdMet ? "win" : "orange"}`, candidate.thresholdMet ? "Paper threshold met" : "+EV below threshold")); card.append(meta);
+    appendText(card, "h3", "", candidate.matchup); appendText(card, "p", "signal-reason", `${candidate.selection} at ${candidate.book}`);
+    const stats = element("div", "signal-line"); [[formatOdds(candidate.odds), "Offered price"], [formatPercent(candidate.probability), candidate.probabilityLabel], [formatPercent(candidate.expectedReturn), "Estimated return"]].forEach(([value, label]) => { const item = element("div", "signal-stat"); appendText(item, "strong", "", value); appendText(item, "span", "", label); stats.append(item); }); card.append(stats, element("div", "candidate-warning", candidate.warning)); opportunityContainer.append(card);
+  });
+
+  const totalStatus = totalRounds?.price_status === "available" ? `${totalRounds.quote_count} book/line quotes and ${totalRounds.forecast_count} frozen model probabilities.` : "Awaiting the next successful total-round odds capture.";
+  const methodStatus = methodMarket?.expected_value_status === "available" ? "Method-of-victory EV is available." : "Method probabilities exist, but method EV is unavailable because the configured provider supplies no method prices.";
+  $("#prop-coverage-status").textContent = `${totalStatus} ${methodStatus}`;
+  if (!(totalRounds?.markets || []).length) propContainer.append(element("div", "empty-state", "No synchronized total-round lines are published yet. The next market snapshot will populate this section when books expose totals."));
+  (totalRounds?.markets || []).forEach((market) => {
+    const card = element("article", "market-card"); const best = market.best_candidate;
+    appendText(card, "h3", "", `${market.fighter_name} vs ${market.opponent_name}`);
+    appendText(card, "p", "signal-reason", `Full fight total: ${formatNumber(market.line, 1)} rounds - ${market.eligible_quote_count}/${market.quote_count} fresh book lines`);
+    if (best) {
+      const stats = element("div", "signal-line"); [[best.selection, "Best side"], [`${formatOdds(best.offered_moneyline)} - ${best.target_book}`, "Best price"], [formatPercent(best.estimated_expected_return), "Candidate model EV"]].forEach(([value, label]) => { const item = element("div", "signal-stat"); appendText(item, "strong", "", value); appendText(item, "span", "", label); stats.append(item); }); card.append(stats);
+    } else appendText(card, "p", "signal-reason", market.forecast_unavailable_reason || "No valid candidate price.");
+    const details = document.createElement("details"); details.append(element("summary", "", `All ${market.book_quotes.length} total prices`)); const body = element("div", "details-body book-table-wrap"); const table = element("table", "data-table"); const head = document.createElement("thead"); const header = document.createElement("tr"); ["Book", "Over", "Under", "No-vig over", "Quote age"].forEach((value) => appendText(header, "th", "", value)); head.append(header); table.append(head); const tbody = document.createElement("tbody"); market.book_quotes.forEach((quote) => { const row = document.createElement("tr"); [quote.book, formatOdds(quote.over_moneyline), formatOdds(quote.under_moneyline), formatPercent(quote.no_vig_over_probability), `${formatNumber(quote.source_quote_age_seconds, 0)}s`].forEach((value) => appendText(row, "td", "", value)); tbody.append(row); }); table.append(tbody); body.append(table); details.append(body); card.append(details); propContainer.append(card);
+  });
+  const outcomeMatchups = (state.outcomes?.matchups || []).filter((item) => item.matchup_id && item.terminal_probabilities);
+  if (outcomeMatchups.length) {
+    const methodCard = element("article", "market-card wide-card"); appendText(methodCard, "h3", "", "Candidate method-of-victory probabilities"); appendText(methodCard, "p", "signal-reason", "These are model probabilities, not expected values. A book-specific method price is required before any row can enter the positive-EV list.");
+    const details = document.createElement("details"); details.append(element("summary", "", `View ${outcomeMatchups.length} matchup forecasts`)); const body = element("div", "details-body book-table-wrap"); const table = element("table", "data-table"); const head = document.createElement("thead"); const header = document.createElement("tr"); ["Matchup", "Exact outcome", "Model probability"].forEach((value) => appendText(header, "th", "", value)); head.append(header); table.append(head); const tbody = document.createElement("tbody");
+    outcomeMatchups.forEach((matchup) => Object.entries(matchup.terminal_probabilities).sort((left, right) => right[1] - left[1]).forEach(([outcome, probability]) => { const side = outcome.startsWith("fighter_") ? matchup.fighter_name : matchup.opponent_name; const method = outcome.replace(/^fighter_|^opponent_/, "").replaceAll("_", " ").replace("ko tko", "KO/TKO"); const row = document.createElement("tr"); [ `${matchup.fighter_name} vs ${matchup.opponent_name}`, `${side} by ${method}`, formatPercent(probability) ].forEach((value) => appendText(row, "td", "", value)); tbody.append(row); }));
+    table.append(tbody); body.append(table); details.append(body); methodCard.append(details); propContainer.append(methodCard);
+  }
   if (!matchups.length) { container.append(element("div", "empty-state", "Run a successful market snapshot to publish current book lines and paper decisions.")); return; }
   matchups.forEach((matchup) => {
     const signal = matchup.current_signal; const card = element("article", "market-card");

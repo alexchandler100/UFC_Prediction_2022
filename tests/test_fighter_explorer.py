@@ -151,9 +151,13 @@ class FighterExplorerTests(unittest.TestCase):
             {
                 "fighters": 3,
                 "fighters_with_recorded_bouts": 2,
+                "fighters_with_ufcstats_bouts": 2,
                 "scheduled_fighters": 0,
                 "fighter_fight_rows": 2,
                 "unique_fights": 1,
+                "linked_external_fights": 0,
+                "linked_external_fighter_rows": 0,
+                "published_fighter_fight_rows": 2,
             },
         )
         self.assertEqual(publication["data_through"], "2026-08-01")
@@ -165,6 +169,7 @@ class FighterExplorerTests(unittest.TestCase):
         self.assertEqual(alpha["height_inches"], 71)
         self.assertEqual(alpha["reach_inches"], 73)
         self.assertEqual(alpha["career"]["recorded_bouts"], 1)
+        self.assertNotIn("record", alpha)
         self.assertEqual(alpha["career"]["sig_strikes_landed_per_minute"], 2)
         self.assertEqual(alpha["career"]["sig_strikes_absorbed_per_minute"], 1)
         self.assertEqual(alpha["career"]["sig_strike_accuracy"], 0.5)
@@ -183,6 +188,7 @@ class FighterExplorerTests(unittest.TestCase):
             item for item in publication["fighters"] if item["id"] == "casey-id"
         )
         self.assertEqual(inactive["career"]["recorded_bouts"], 0)
+        self.assertNotIn("record", inactive)
         self.assertIsNone(inactive["career"]["sig_strikes_landed_per_minute"])
         self.assertEqual(inactive["fights"], [])
 
@@ -195,6 +201,68 @@ class FighterExplorerTests(unittest.TestCase):
         tampered["fighters"][0]["career"]["wins"] = 99
         with self.assertRaisesRegex(ValueError, "cannot be reproduced"):
             validate_fighter_explorer(tampered, fights, fighters)
+
+    def test_linked_external_history_is_visible_without_fabricated_stats(self) -> None:
+        fights, fighters = _inputs()
+        external = [
+            {
+                "observation_id": "a" * 64,
+                "source": "kaggle_pro_mma_fights_v1",
+                "source_bout_id": "external-bout",
+                "source_bout_order": 4,
+                "source_event_id": "bellator-100",
+                "source_url": "https://example.test/bellator-100",
+                "event_date": "2020-01-02",
+                "event_name": "Bellator 100",
+                "promotion": "Bellator MMA",
+                "fighter_source_id": "source-alpha",
+                "fighter_name": "Alex Alpha",
+                "opponent_source_id": "source-charlie",
+                "opponent_name": "Charlie Challenger",
+                "result": "W",
+                "method": "SUB",
+                "division": "Unknown",
+                "finish_round": 2,
+                "finish_clock_seconds": 73,
+                "scheduled_rounds": 3,
+            }
+        ]
+        identities = {
+            ("kaggle_pro_mma_fights_v1", "source-alpha"): "alpha-id"
+        }
+        publication = build_fighter_explorer(
+            fights, fighters, external_bouts=external, identity_map=identities
+        )
+        alpha = next(
+            item for item in publication["fighters"] if item["id"] == "alpha-id"
+        )
+
+        self.assertEqual(alpha["career"]["recorded_bouts"], 1)
+        self.assertEqual(alpha["record"]["recorded_bouts"], 2)
+        self.assertEqual(alpha["record"]["metadata_only_bouts"], 1)
+        self.assertEqual(
+            alpha["record"]["promotions"],
+            [{"name": "Bellator MMA", "bouts": 1}, {"name": "UFC", "bouts": 1}],
+        )
+        external_fight = next(
+            dict(zip(FIGHT_COLUMNS, values, strict=True))
+            for values in alpha["fights"]
+            if dict(zip(FIGHT_COLUMNS, values, strict=True))["promotion"]
+            == "Bellator MMA"
+        )
+        self.assertFalse(external_fight["stats_available"])
+        self.assertEqual(external_fight["event_name"], "Bellator 100")
+        self.assertEqual(external_fight["time"], "1:13")
+        self.assertIsNone(external_fight["sig_strikes_landed"])
+        self.assertEqual(publication["counts"]["linked_external_fights"], 1)
+        self.assertEqual(publication["counts"]["linked_external_fighter_rows"], 1)
+        validate_fighter_explorer(
+            publication,
+            fights,
+            fighters,
+            external_bouts=external,
+            identity_map=identities,
+        )
 
     def test_sharded_publication_keeps_complete_logs_out_of_the_index(self) -> None:
         fights, fighters = _inputs()

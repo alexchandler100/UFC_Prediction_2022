@@ -67,7 +67,15 @@ def _fixture_payload():
                                 {"name": "Beta Fighter", "price": 125},
                                 {"name": "Alpha Fighter", "price": -145},
                             ],
-                        }
+                        },
+                        {
+                            "key": "totals",
+                            "last_update": "2026-08-20T18:02:00Z",
+                            "outcomes": [
+                                {"name": "Over", "point": 2.5, "price": -110},
+                                {"name": "Under", "point": 2.5, "price": -105},
+                            ],
+                        },
                     ],
                 },
                 {
@@ -129,6 +137,25 @@ class TheOddsApiTests(unittest.TestCase):
             TheOddsApiClient(session).fetch("do-not-print-this")
         self.assertIn("authentication was rejected", str(caught.exception))
         self.assertNotIn("do-not-print-this", str(caught.exception))
+
+    def test_optionally_normalizes_full_fight_total_rounds(self):
+        session = _Session(_Response(_fixture_payload()))
+        result = TheOddsApiClient(session).fetch(
+            "fixture-key", include_total_rounds=True
+        )
+
+        self.assertIsNotNone(result.total_rounds_frame)
+        self.assertEqual(len(result.total_rounds_frame), 1)
+        row = result.total_rounds_frame.iloc[0]
+        self.assertEqual(row["market"], "total_rounds")
+        self.assertEqual(row["period"], "full_fight")
+        self.assertEqual(row["line"], 2.5)
+        self.assertEqual(row["over moneyline"], -110)
+        self.assertEqual(row["under moneyline"], -105)
+        self.assertEqual(row["source book key"], "draftkings")
+        self.assertEqual(row["source last update"], "2026-08-20T18:02:00Z")
+        _, kwargs = session.calls[0]
+        self.assertEqual(kwargs["params"]["markets"], "h2h,totals")
 
     def test_rejects_duplicate_event_ids(self):
         duplicate = _fixture_payload() * 2

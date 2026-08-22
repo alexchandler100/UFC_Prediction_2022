@@ -44,6 +44,12 @@ from .quotes import (
     consensus_as_of,
 )
 from .source_metadata import QuoteSourceMetadata, QuoteSourceMetadataStore
+from .props import (
+    TotalRoundsForecastCapture,
+    TotalRoundsForecastStore,
+    TotalRoundsQuoteSnapshot,
+    TotalRoundsQuoteStore,
+)
 from .prospective import (
     DECISION_TARGET_LEAD_SECONDS,
     DECISION_WINDOW_SECONDS,
@@ -58,6 +64,11 @@ from .opportunities import (
     OPPORTUNITY_POLICY_VERSION,
     build_current_opportunities,
     validate_current_opportunities,
+)
+from .prop_opportunities import (
+    MIN_PROP_EXPECTED_RETURN,
+    PROP_OPPORTUNITY_POLICY_VERSION,
+    build_prop_market_view,
 )
 
 
@@ -80,6 +91,8 @@ __all__ = (
     "MarketDataError",
     "NATIVE_PROBABILITY",
     "OPPORTUNITY_POLICY_VERSION",
+    "PROP_OPPORTUNITY_POLICY_VERSION",
+    "MIN_PROP_EXPECTED_RETURN",
     "MIN_EXPECTED_RETURN",
     "PaperDecisionBuild",
     "PaperDecision",
@@ -95,9 +108,14 @@ __all__ = (
     "SCHEMA_VERSION",
     "StoreIntegrityError",
     "TIMING_POLICY_VERSION",
+    "TotalRoundsQuoteSnapshot",
+    "TotalRoundsQuoteStore",
+    "TotalRoundsForecastCapture",
+    "TotalRoundsForecastStore",
     "consensus_as_of",
     "build_locked_paper_decisions",
     "build_current_opportunities",
+    "build_prop_market_view",
     "forecast_metrics",
     "evaluate_timing_policies",
     "matchup_id_for",
