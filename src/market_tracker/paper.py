@@ -14,6 +14,7 @@ import io
 import json
 import math
 from pathlib import Path
+from statistics import NormalDist
 from typing import ClassVar, Iterable, Mapping
 
 from ._common import (
@@ -37,6 +38,19 @@ from ._storage import atomic_write_text, exclusive_store_lock
 from .blend import ForecastMetrics, forecast_metrics, symmetric_logit_blend
 from .forecasts import ForecastCapture
 from .quotes import AppendResult, MarketConsensus, QuoteSnapshot
+
+
+BAYESIAN_FILTER_POLICY_VERSION = "bayesian-filtered-existing-moneyline-v1"
+BAYESIAN_FILTER_MINIMUM_MEAN_EV = 0.05
+BAYESIAN_FILTER_MINIMUM_PROBABILITY_POSITIVE_EV = 0.80
+_STANDARD_NORMAL = NormalDist()
+
+
+def _sigmoid(value: float) -> float:
+    if value >= 0.0:
+        return 1.0 / (1.0 + math.exp(-value))
+    exponential = math.exp(value)
+    return exponential / (1.0 + exponential)
 
 
 @dataclass(frozen=True)
@@ -487,6 +501,495 @@ class PaperDecision:
 
 
 @dataclass(frozen=True)
+class BayesianFilteredDecision:
+    """Immutable T-24 veto layered on one existing moneyline decision.
+
+    The filter never invents a different side.  A base paper selection survives
+    only when the Bayesian posterior also has at least the configured mean EV
+    and posterior probability of positive EV at the same frozen target price.
+    """
+
+    schema_version: int
+    filtered_decision_id: str
+    betting_status: str
+    paper_only: bool
+    execution_enabled: bool
+    policy_version: str
+    base_decision_id: str
+    capture_id: str
+    matchup_id: str
+    fight_id: str | None
+    event_id: str
+    fighter_id: str
+    opponent_id: str
+    event_date: str
+    decision_issued_at_utc: str
+    reference_quote_id: str
+    source_vegas_sha256: str
+    bayesian_artifact_sha256: str
+    bayesian_model_id: str
+    bayesian_status: str
+    credible_level: float
+    fighter_posterior_mean: float
+    fighter_posterior_median: float
+    fighter_probability_lower: float
+    fighter_probability_upper: float
+    fighter_calibrated_logit_location: float
+    calibrated_logit_scale: float
+    minimum_mean_expected_return: float
+    minimum_probability_positive_expected_return: float
+    base_paper_action: str
+    base_expected_return: float
+    candidate_moneyline: int | None
+    candidate_posterior_mean_probability: float | None
+    candidate_posterior_mean_expected_return: float | None
+    candidate_expected_return_lower: float | None
+    candidate_expected_return_upper: float | None
+    candidate_probability_positive_expected_return: float | None
+    filtered_paper_action: str
+    filter_status: str
+    hypothetical_risk_units: float
+
+    FIELDNAMES: ClassVar[tuple[str, ...]] = (
+        "schema_version",
+        "filtered_decision_id",
+        "betting_status",
+        "paper_only",
+        "execution_enabled",
+        "policy_version",
+        "base_decision_id",
+        "capture_id",
+        "matchup_id",
+        "fight_id",
+        "event_id",
+        "fighter_id",
+        "opponent_id",
+        "event_date",
+        "decision_issued_at_utc",
+        "reference_quote_id",
+        "source_vegas_sha256",
+        "bayesian_artifact_sha256",
+        "bayesian_model_id",
+        "bayesian_status",
+        "credible_level",
+        "fighter_posterior_mean",
+        "fighter_posterior_median",
+        "fighter_probability_lower",
+        "fighter_probability_upper",
+        "fighter_calibrated_logit_location",
+        "calibrated_logit_scale",
+        "minimum_mean_expected_return",
+        "minimum_probability_positive_expected_return",
+        "base_paper_action",
+        "base_expected_return",
+        "candidate_moneyline",
+        "candidate_posterior_mean_probability",
+        "candidate_posterior_mean_expected_return",
+        "candidate_expected_return_lower",
+        "candidate_expected_return_upper",
+        "candidate_probability_positive_expected_return",
+        "filtered_paper_action",
+        "filter_status",
+        "hypothetical_risk_units",
+    )
+
+    @staticmethod
+    def _candidate_values(
+        base: PaperDecision,
+        *,
+        fighter_mean: float,
+        fighter_lower: float,
+        fighter_upper: float,
+        fighter_logit_location: float,
+        logit_scale: float,
+    ) -> tuple[int, float, float, float, float, float]:
+        fighter_selected = base.paper_action == "fighter"
+        line = (
+            base.fighter_reference_moneyline
+            if fighter_selected
+            else base.opponent_reference_moneyline
+        )
+        mean_probability = fighter_mean if fighter_selected else 1.0 - fighter_mean
+        lower_probability = fighter_lower if fighter_selected else 1.0 - fighter_upper
+        upper_probability = fighter_upper if fighter_selected else 1.0 - fighter_lower
+        location = fighter_logit_location if fighter_selected else -fighter_logit_location
+        decimal_return = 1.0 + _profit_for_one_unit_risk(line)
+        mean_ev = decimal_return * mean_probability - 1.0
+        lower_ev = decimal_return * lower_probability - 1.0
+        upper_ev = decimal_return * upper_probability - 1.0
+        break_even = implied_probability(line)
+        if logit_scale == 0.0:
+            probability_positive = float(mean_probability > break_even)
+        else:
+            threshold_logit = math.log(break_even / (1.0 - break_even))
+            probability_positive = 1.0 - _STANDARD_NORMAL.cdf(
+                (threshold_logit - location) / logit_scale
+            )
+        return (
+            line,
+            mean_probability,
+            mean_ev,
+            lower_ev,
+            upper_ev,
+            probability_positive,
+        )
+
+    @classmethod
+    def create(
+        cls,
+        base: PaperDecision,
+        *,
+        source_vegas_sha256: object,
+        bayesian_artifact_sha256: object,
+        bayesian_model_id: object,
+        bayesian_status: object,
+        credible_level: object,
+        fighter_posterior_mean: object,
+        fighter_posterior_median: object,
+        fighter_probability_lower: object,
+        fighter_probability_upper: object,
+        fighter_calibrated_logit_location: object,
+        calibrated_logit_scale: object,
+        minimum_mean_expected_return: object = BAYESIAN_FILTER_MINIMUM_MEAN_EV,
+        minimum_probability_positive_expected_return: object = (
+            BAYESIAN_FILTER_MINIMUM_PROBABILITY_POSITIVE_EV
+        ),
+    ) -> "BayesianFilteredDecision":
+        if not isinstance(base, PaperDecision):
+            raise TypeError("base must be a PaperDecision")
+        base.validate_integrity()
+        try:
+            credible = float(credible_level)
+            fighter_mean = float(fighter_posterior_mean)
+            fighter_median = float(fighter_posterior_median)
+            fighter_lower = float(fighter_probability_lower)
+            fighter_upper = float(fighter_probability_upper)
+            fighter_location = float(fighter_calibrated_logit_location)
+            logit_scale = float(calibrated_logit_scale)
+            minimum_mean_ev = float(minimum_mean_expected_return)
+            minimum_probability = float(
+                minimum_probability_positive_expected_return
+            )
+        except (TypeError, ValueError) as error:
+            raise MarketDataError("Bayesian filter values must be numeric") from error
+        numeric = (
+            credible,
+            fighter_mean,
+            fighter_median,
+            fighter_lower,
+            fighter_upper,
+            fighter_location,
+            logit_scale,
+            minimum_mean_ev,
+            minimum_probability,
+        )
+        if any(not math.isfinite(value) for value in numeric):
+            raise MarketDataError("Bayesian filter values must be finite")
+        if not 0.0 < fighter_lower <= fighter_median <= fighter_upper < 1.0:
+            raise MarketDataError("Bayesian fighter probability interval is invalid")
+        if not 0.0 < fighter_mean < 1.0:
+            raise MarketDataError("Bayesian fighter posterior mean is invalid")
+        if not 0.0 < credible < 1.0 or logit_scale < 0.0:
+            raise MarketDataError("Bayesian credible level or logit scale is invalid")
+        if minimum_mean_ev < 0.0 or not 0.0 < minimum_probability <= 1.0:
+            raise MarketDataError("Bayesian filter thresholds are invalid")
+        status = " ".join(str(bayesian_status or "").split())
+        if not status:
+            raise MarketDataError("bayesian_status must be nonempty")
+        model_id = " ".join(str(bayesian_model_id or "").split())
+        if not model_id:
+            raise MarketDataError("bayesian_model_id must be nonempty")
+
+        base_expected_return = max(
+            base.fighter_expected_return, base.opponent_expected_return
+        )
+        candidate: tuple[int, float, float, float, float, float] | None = None
+        if base.paper_action in {"fighter", "opponent"}:
+            candidate = cls._candidate_values(
+                base,
+                fighter_mean=fighter_mean,
+                fighter_lower=fighter_lower,
+                fighter_upper=fighter_upper,
+                fighter_logit_location=fighter_location,
+                logit_scale=logit_scale,
+            )
+        if base.paper_action == "pass":
+            filtered_action = "pass"
+            filter_status = "base_policy_pass"
+        elif status != "paper_only_challenger":
+            filtered_action = "pass"
+            filter_status = "bayesian_status_veto"
+        elif candidate is not None and candidate[2] < minimum_mean_ev:
+            filtered_action = "pass"
+            filter_status = "bayesian_mean_ev_veto"
+        elif candidate is not None and candidate[5] < minimum_probability:
+            filtered_action = "pass"
+            filter_status = "bayesian_probability_veto"
+        else:
+            filtered_action = base.paper_action
+            filter_status = "qualified"
+        body: dict[str, object] = {
+            "schema_version": SCHEMA_VERSION,
+            "betting_status": BETTING_STATUS,
+            "paper_only": True,
+            "execution_enabled": False,
+            "policy_version": BAYESIAN_FILTER_POLICY_VERSION,
+            "base_decision_id": base.decision_id,
+            "capture_id": base.capture_id,
+            "matchup_id": base.matchup_id,
+            "fight_id": base.fight_id,
+            "event_id": base.event_id,
+            "fighter_id": base.fighter_id,
+            "opponent_id": base.opponent_id,
+            "event_date": base.event_date,
+            "decision_issued_at_utc": base.decision_issued_at_utc,
+            "reference_quote_id": base.reference_quote_id,
+            "source_vegas_sha256": validated_sha256(
+                source_vegas_sha256, "source_vegas_sha256"
+            ),
+            "bayesian_artifact_sha256": validated_sha256(
+                bayesian_artifact_sha256, "bayesian_artifact_sha256"
+            ),
+            "bayesian_model_id": model_id,
+            "bayesian_status": status,
+            "credible_level": credible,
+            "fighter_posterior_mean": fighter_mean,
+            "fighter_posterior_median": fighter_median,
+            "fighter_probability_lower": fighter_lower,
+            "fighter_probability_upper": fighter_upper,
+            "fighter_calibrated_logit_location": fighter_location,
+            "calibrated_logit_scale": logit_scale,
+            "minimum_mean_expected_return": minimum_mean_ev,
+            "minimum_probability_positive_expected_return": minimum_probability,
+            "base_paper_action": base.paper_action,
+            "base_expected_return": base_expected_return,
+            "candidate_moneyline": candidate[0] if candidate else None,
+            "candidate_posterior_mean_probability": (
+                candidate[1] if candidate else None
+            ),
+            "candidate_posterior_mean_expected_return": (
+                candidate[2] if candidate else None
+            ),
+            "candidate_expected_return_lower": candidate[3] if candidate else None,
+            "candidate_expected_return_upper": candidate[4] if candidate else None,
+            "candidate_probability_positive_expected_return": (
+                candidate[5] if candidate else None
+            ),
+            "filtered_paper_action": filtered_action,
+            "filter_status": filter_status,
+            "hypothetical_risk_units": 1.0 if filter_status == "qualified" else 0.0,
+        }
+        return cls(filtered_decision_id=canonical_hash(body), **body)
+
+    @classmethod
+    def from_mapping(cls, record: Mapping[str, object]) -> "BayesianFilteredDecision":
+        missing = sorted(set(cls.FIELDNAMES) - set(record))
+        extra = sorted(str(key) for key in set(record) - set(cls.FIELDNAMES))
+        if missing or extra:
+            raise MarketDataError(
+                "Bayesian filtered decision schema mismatch; "
+                f"missing={missing}, extra={extra}"
+            )
+        try:
+            decision = cls(**{field: record[field] for field in cls.FIELDNAMES})
+        except TypeError as error:
+            raise MarketDataError("invalid Bayesian filtered decision fields") from error
+        decision.validate_integrity()
+        return decision
+
+    @property
+    def natural_key(self) -> tuple[str]:
+        return (self.base_decision_id,)
+
+    def validate_integrity(self) -> None:
+        if self.schema_version != SCHEMA_VERSION:
+            raise MarketDataError("unsupported Bayesian filtered decision schema")
+        if (
+            self.betting_status != BETTING_STATUS
+            or self.paper_only is not True
+            or self.execution_enabled is not False
+        ):
+            raise StoreIntegrityError("Bayesian filter must remain paper-only")
+        if self.policy_version != BAYESIAN_FILTER_POLICY_VERSION:
+            raise MarketDataError("unsupported Bayesian filtered decision policy")
+        validated_sha256(self.source_vegas_sha256, "source_vegas_sha256")
+        validated_sha256(
+            self.bayesian_artifact_sha256, "bayesian_artifact_sha256"
+        )
+        if not str(self.bayesian_model_id).strip() or not str(
+            self.bayesian_status
+        ).strip():
+            raise MarketDataError("Bayesian filter model ID/status is blank")
+        numeric = (
+            self.credible_level,
+            self.fighter_posterior_mean,
+            self.fighter_posterior_median,
+            self.fighter_probability_lower,
+            self.fighter_probability_upper,
+            self.fighter_calibrated_logit_location,
+            self.calibrated_logit_scale,
+            self.minimum_mean_expected_return,
+            self.minimum_probability_positive_expected_return,
+            self.base_expected_return,
+            self.hypothetical_risk_units,
+        )
+        if any(not math.isfinite(float(value)) for value in numeric):
+            raise MarketDataError("Bayesian filtered decision has non-finite values")
+        if not (
+            0.0 < float(self.fighter_probability_lower)
+            <= float(self.fighter_posterior_median)
+            <= float(self.fighter_probability_upper)
+            < 1.0
+            and 0.0 < float(self.fighter_posterior_mean) < 1.0
+            and 0.0 < float(self.credible_level) < 1.0
+            and float(self.calibrated_logit_scale) >= 0.0
+            and float(self.minimum_mean_expected_return) >= 0.0
+            and 0.0
+            < float(self.minimum_probability_positive_expected_return)
+            <= 1.0
+        ):
+            raise MarketDataError("Bayesian filtered probability contract is invalid")
+        median_from_logit = _sigmoid(
+            float(self.fighter_calibrated_logit_location)
+        )
+        tail = (1.0 - float(self.credible_level)) / 2.0
+        z_value = _STANDARD_NORMAL.inv_cdf(1.0 - tail)
+        lower_from_logit = _sigmoid(
+            float(self.fighter_calibrated_logit_location)
+            - z_value * float(self.calibrated_logit_scale)
+        )
+        upper_from_logit = _sigmoid(
+            float(self.fighter_calibrated_logit_location)
+            + z_value * float(self.calibrated_logit_scale)
+        )
+        if any(
+            # vegas_odds.json is a compact pandas publication and rounds
+            # floating values to ten decimal places before the T-24 capture.
+            abs(float(supplied) - expected) > 1e-8
+            for supplied, expected in (
+                (self.fighter_posterior_median, median_from_logit),
+                (self.fighter_probability_lower, lower_from_logit),
+                (self.fighter_probability_upper, upper_from_logit),
+            )
+        ):
+            raise StoreIntegrityError(
+                "Bayesian posterior interval disagrees with its logit distribution"
+            )
+        body = self.to_mapping()
+        body.pop("filtered_decision_id")
+        if self.filtered_decision_id != canonical_hash(body):
+            raise StoreIntegrityError(
+                "filtered_decision_id does not match canonical contents"
+            )
+        if self.filtered_paper_action not in {"fighter", "opponent", "pass"}:
+            raise MarketDataError("unsupported Bayesian filtered paper action")
+        if self.base_paper_action not in {"fighter", "opponent", "pass"}:
+            raise MarketDataError("unsupported base paper action")
+        if self.filter_status not in {
+            "base_policy_pass",
+            "bayesian_status_veto",
+            "bayesian_mean_ev_veto",
+            "bayesian_probability_veto",
+            "qualified",
+        }:
+            raise MarketDataError("unsupported Bayesian filter status")
+        if self.filter_status == "qualified":
+            if (
+                self.filtered_paper_action != self.base_paper_action
+                or self.base_paper_action == "pass"
+                or float(self.hypothetical_risk_units) != 1.0
+            ):
+                raise StoreIntegrityError("qualified Bayesian filter changed its base action")
+        elif (
+            self.filtered_paper_action != "pass"
+            or float(self.hypothetical_risk_units) != 0.0
+        ):
+            raise StoreIntegrityError("Bayesian filter veto carries hypothetical risk")
+        candidate_fields = (
+            self.candidate_moneyline,
+            self.candidate_posterior_mean_probability,
+            self.candidate_posterior_mean_expected_return,
+            self.candidate_expected_return_lower,
+            self.candidate_expected_return_upper,
+            self.candidate_probability_positive_expected_return,
+        )
+        if self.base_paper_action == "pass":
+            if any(value is not None for value in candidate_fields) or self.filter_status != "base_policy_pass":
+                raise StoreIntegrityError(
+                    "base-policy pass contains a Bayesian price candidate"
+                )
+            return
+        if any(value is None for value in candidate_fields):
+            raise StoreIntegrityError(
+                "base-policy selection lacks Bayesian candidate values"
+            )
+        line = moneyline(self.candidate_moneyline, "candidate_moneyline")
+        fighter_selected = self.base_paper_action == "fighter"
+        mean_probability = (
+            float(self.fighter_posterior_mean)
+            if fighter_selected
+            else 1.0 - float(self.fighter_posterior_mean)
+        )
+        lower_probability = (
+            float(self.fighter_probability_lower)
+            if fighter_selected
+            else 1.0 - float(self.fighter_probability_upper)
+        )
+        upper_probability = (
+            float(self.fighter_probability_upper)
+            if fighter_selected
+            else 1.0 - float(self.fighter_probability_lower)
+        )
+        location = (
+            float(self.fighter_calibrated_logit_location)
+            if fighter_selected
+            else -float(self.fighter_calibrated_logit_location)
+        )
+        decimal_return = 1.0 + _profit_for_one_unit_risk(line)
+        break_even = implied_probability(line)
+        if float(self.calibrated_logit_scale) == 0.0:
+            probability_positive = float(mean_probability > break_even)
+        else:
+            threshold_logit = math.log(break_even / (1.0 - break_even))
+            probability_positive = 1.0 - _STANDARD_NORMAL.cdf(
+                (threshold_logit - location)
+                / float(self.calibrated_logit_scale)
+            )
+        expected_values = (
+            mean_probability,
+            decimal_return * mean_probability - 1.0,
+            decimal_return * lower_probability - 1.0,
+            decimal_return * upper_probability - 1.0,
+            probability_positive,
+        )
+        supplied_values = candidate_fields[1:]
+        if any(
+            abs(float(supplied) - expected) > 1e-12
+            for supplied, expected in zip(supplied_values, expected_values)
+        ):
+            raise StoreIntegrityError(
+                "Bayesian candidate values are not reproducible"
+            )
+        if self.bayesian_status != "paper_only_challenger":
+            expected_status = "bayesian_status_veto"
+        elif expected_values[1] < float(self.minimum_mean_expected_return):
+            expected_status = "bayesian_mean_ev_veto"
+        elif expected_values[4] < float(
+            self.minimum_probability_positive_expected_return
+        ):
+            expected_status = "bayesian_probability_veto"
+        else:
+            expected_status = "qualified"
+        if self.filter_status != expected_status:
+            raise StoreIntegrityError(
+                "Bayesian filter status does not follow its frozen thresholds"
+            )
+
+    def to_mapping(self) -> dict[str, object]:
+        return {field: getattr(self, field) for field in self.FIELDNAMES}
+
+
+@dataclass(frozen=True)
 class PaperSettlement:
     schema_version: int
     settlement_id: str
@@ -835,7 +1338,11 @@ class _PaperRecordStore:
         csv_path: str | Path,
         jsonl_path: str | Path,
         *,
-        record_type: type[PaperDecision] | type[PaperSettlement],
+        record_type: (
+            type[PaperDecision]
+            | type[PaperSettlement]
+            | type[BayesianFilteredDecision]
+        ),
         id_field: str,
         time_field: str,
     ) -> None:
@@ -850,8 +1357,10 @@ class _PaperRecordStore:
 
     def _validate_records(
         self, records: Iterable[PaperDecision | PaperSettlement]
-    ) -> dict[str, PaperDecision | PaperSettlement]:
-        indexed: dict[str, PaperDecision | PaperSettlement] = {}
+    ) -> dict[str, PaperDecision | PaperSettlement | BayesianFilteredDecision]:
+        indexed: dict[
+            str, PaperDecision | PaperSettlement | BayesianFilteredDecision
+        ] = {}
         natural: dict[tuple, str] = {}
         for record in records:
             if not isinstance(record, self.record_type):
@@ -870,10 +1379,12 @@ class _PaperRecordStore:
             natural[record.natural_key] = record_id
         return indexed
 
-    def _read_jsonl(self) -> list[PaperDecision | PaperSettlement]:
+    def _read_jsonl(
+        self,
+    ) -> list[PaperDecision | PaperSettlement | BayesianFilteredDecision]:
         if not self.jsonl_path.exists():
             return []
-        records: list[PaperDecision | PaperSettlement] = []
+        records: list[PaperDecision | PaperSettlement | BayesianFilteredDecision] = []
         with self.jsonl_path.open("r", encoding="utf-8") as source:
             for line_number, line in enumerate(source, start=1):
                 if not line.strip():
@@ -904,12 +1415,14 @@ class _PaperRecordStore:
             return list(reader)
 
     def _render_jsonl(
-        self, records: Iterable[PaperDecision | PaperSettlement]
+        self,
+        records: Iterable[PaperDecision | PaperSettlement | BayesianFilteredDecision],
     ) -> str:
         return "".join(f"{canonical_json(record.to_mapping())}\n" for record in records)
 
     def _render_csv(
-        self, records: Iterable[PaperDecision | PaperSettlement]
+        self,
+        records: Iterable[PaperDecision | PaperSettlement | BayesianFilteredDecision],
     ) -> str:
         output = io.StringIO(newline="")
         writer = csv.DictWriter(output, fieldnames=self.fieldnames, lineterminator="\n")
@@ -936,7 +1449,10 @@ class _PaperRecordStore:
         return tuple(records)
 
     def append(
-        self, pending_records: Iterable[PaperDecision | PaperSettlement]
+        self,
+        pending_records: Iterable[
+            PaperDecision | PaperSettlement | BayesianFilteredDecision
+        ],
     ) -> AppendResult:
         pending = tuple(pending_records)
         lock_path = self.jsonl_path.with_name(f".{self.jsonl_path.name}.lock")
@@ -947,7 +1463,9 @@ class _PaperRecordStore:
                 record.natural_key: getattr(record, self.id_field)
                 for record in existing
             }
-            additions: list[PaperDecision | PaperSettlement] = []
+            additions: list[
+                PaperDecision | PaperSettlement | BayesianFilteredDecision
+            ] = []
             duplicates: list[str] = []
             for record in pending:
                 if not isinstance(record, self.record_type):
@@ -1015,4 +1533,20 @@ class PaperSettlementStore(_PaperRecordStore):
         )
 
     def read(self) -> tuple[PaperSettlement, ...]:
+        return tuple(super().read())  # type: ignore[return-value]
+
+
+class BayesianFilteredDecisionStore(_PaperRecordStore):
+    """Append-only T-24 ledger for the Bayesian veto policy."""
+
+    def __init__(self, csv_path: str | Path, jsonl_path: str | Path):
+        super().__init__(
+            csv_path,
+            jsonl_path,
+            record_type=BayesianFilteredDecision,
+            id_field="filtered_decision_id",
+            time_field="decision_issued_at_utc",
+        )
+
+    def read(self) -> tuple[BayesianFilteredDecision, ...]:
         return tuple(super().read())  # type: ignore[return-value]

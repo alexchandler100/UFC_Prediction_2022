@@ -8,6 +8,8 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO_ROOT / "src"))
 
 from market_tracker import (  # noqa: E402
+    BayesianFilteredDecision,
+    BayesianFilteredDecisionStore,
     BlendObservation,
     ForecastCapture,
     ForecastCaptureStore,
@@ -608,6 +610,74 @@ class MarketTrackerTests(unittest.TestCase):
             settlements.append([settlement])
             self.assertEqual(decisions.read(), (decision,))
             self.assertEqual(settlements.read(), (settlement,))
+
+    def test_bayesian_filter_only_vetoes_an_existing_paper_selection(self):
+        quotes = [
+            make_quote("BookA", -110, -110),
+            make_quote("BookB", -105, -115),
+            make_quote("BookC", -115, -105),
+            make_quote("Target", +200, -250),
+        ]
+        market = consensus_as_of(
+            quotes,
+            capture_id="capture-one",
+            matchup_id=quotes[0].matchup_id,
+            as_of_utc=OBSERVED,
+            min_books=3,
+            exclude_books=["Target"],
+        )
+        base = PaperDecision.create(
+            market,
+            quotes[-1],
+            make_forecast(),
+            selected_gamma=0.0,
+            decision_issued_at_utc=OBSERVED,
+        )
+        common = {
+            "source_vegas_sha256": "b" * 64,
+            "bayesian_artifact_sha256": "c" * 64,
+            "bayesian_model_id": "bayes-one",
+            "bayesian_status": "paper_only_challenger",
+            "credible_level": 0.9,
+            "fighter_posterior_median": 0.55,
+            "fighter_probability_lower": 0.5254727972575093,
+            "fighter_probability_upper": 0.5742865237557964,
+            "fighter_calibrated_logit_location": 0.2006706954621514,
+            "calibrated_logit_scale": 0.06,
+        }
+        qualified = BayesianFilteredDecision.create(
+            base, fighter_posterior_mean=0.55, **common
+        )
+        self.assertEqual(base.paper_action, "fighter")
+        self.assertEqual(qualified.filtered_paper_action, "fighter")
+        self.assertEqual(qualified.filter_status, "qualified")
+        self.assertEqual(qualified.candidate_moneyline, +200)
+
+        probability_veto = BayesianFilteredDecision.create(
+            base,
+            fighter_posterior_mean=0.40,
+            **{
+                **common,
+                "fighter_posterior_median": 0.40,
+                "fighter_probability_lower": 0.15169761297117634,
+                "fighter_probability_upper": 0.7130856486067625,
+                "fighter_calibrated_logit_location": -0.4054651081081643,
+                "calibrated_logit_scale": 0.8,
+            },
+        )
+        self.assertEqual(probability_veto.filtered_paper_action, "pass")
+        self.assertEqual(
+            probability_veto.filter_status, "bayesian_probability_veto"
+        )
+        self.assertEqual(probability_veto.base_paper_action, "fighter")
+
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            store = BayesianFilteredDecisionStore(
+                root / "filtered.csv", root / "filtered.jsonl"
+            )
+            store.append([qualified])
+            self.assertEqual(store.read(), (qualified,))
 
     def test_source_timing_metadata_round_trips_and_rejects_tampering(self):
         quote = self._timestamped_quote("BookA", -110, -110)

@@ -16,6 +16,7 @@ sys.path.insert(0, str(REPO_ROOT / "src"))
 
 import capture_market_snapshot as collector  # noqa: E402
 from market_tracker import (  # noqa: E402
+    BayesianFilteredDecisionStore,
     ForecastCaptureStore,
     PaperDecisionStore,
     QuoteSnapshotStore,
@@ -58,6 +59,15 @@ def _published_matchup(index: int) -> collector.PublishedMatchup:
         model_status="model",
         forecast_issued_at_utc=FORECAST_ISSUED,
         forecast_source_commit=SOURCE_COMMIT,
+        bayesian_model_id="bayesian-fixture",
+        bayesian_status="paper_only_challenger",
+        bayesian_credible_level=0.9,
+        bayesian_posterior_mean=0.55,
+        bayesian_posterior_median=0.55,
+        bayesian_probability_lower=0.45,
+        bayesian_probability_upper=0.65,
+        bayesian_calibrated_logit_location=0.2006706954621514,
+        bayesian_calibrated_logit_scale=0.12,
     )
 
 
@@ -76,6 +86,12 @@ class CaptureMarketSnapshotTests(unittest.TestCase):
                 "model_id": "winner-model-fixture",
                 "model_version": "2",
                 "data_through": "2026-08-08",
+            }
+            bayesian_artifact = {
+                "model_id": "bayesian-model-fixture",
+                "base_model_id": artifact["model_id"],
+                "paper_only": True,
+                "execution_enabled": False,
             }
             card = {
                 "date": EVENT_DATE,
@@ -105,6 +121,15 @@ class CaptureMarketSnapshotTests(unittest.TestCase):
                         "betting status": (
                             "disabled_pending_market_relative_validation"
                         ),
+                        "bayesian model id": bayesian_artifact["model_id"],
+                        "bayesian status": "paper_only_challenger",
+                        "bayesian credible level": 0.9,
+                        "bayesian posterior mean": 0.60,
+                        "bayesian posterior median": 0.61,
+                        "bayesian probability lower": 0.50,
+                        "bayesian probability upper": 0.70,
+                        "bayesian calibrated logit location": 0.44731221804366483,
+                        "bayesian calibrated logit scale": 0.12,
                     }
                 ]
             )
@@ -113,10 +138,16 @@ class CaptureMarketSnapshotTests(unittest.TestCase):
             card_path = external / "card_info.json"
             vegas_path = external / "vegas_odds.json"
             model_path = external / "winner_model.json"
+            bayesian_model_path = external / "bayesian_winner_challenger.json"
             card_path.write_text(json.dumps(card), encoding="utf-8")
             vegas_path.write_text(vegas.to_json(), encoding="utf-8")
             model_path.write_text(json.dumps(artifact), encoding="utf-8")
-            publication_paths = (card_path, vegas_path, model_path)
+            bayesian_model_path.write_text(
+                json.dumps(bayesian_artifact), encoding="utf-8"
+            )
+            publication_paths = (
+                card_path, vegas_path, model_path, bayesian_model_path
+            )
             publication_before = {
                 path: path.read_bytes() for path in publication_paths
             }
@@ -166,6 +197,7 @@ class CaptureMarketSnapshotTests(unittest.TestCase):
                 "CARD_PATH": card_path,
                 "VEGAS_PATH": vegas_path,
                 "MODEL_PATH": model_path,
+                "BAYESIAN_MODEL_PATH": bayesian_model_path,
                 "OUTCOME_FORECAST_PATH": external / "outcome_forecasts.json",
                 "QUOTE_CSV_PATH": market / "quote_snapshots.csv",
                 "QUOTE_JSONL_PATH": market / "quote_snapshots.jsonl",
@@ -183,6 +215,8 @@ class CaptureMarketSnapshotTests(unittest.TestCase):
                 "TOTAL_ROUNDS_SETTLEMENT_JSONL_PATH": market / "total_round_paper_settlements.jsonl",
                 "DECISION_CSV_PATH": market / "paper_decisions.csv",
                 "DECISION_JSONL_PATH": market / "paper_decisions.jsonl",
+                "BAYESIAN_FILTER_DECISION_CSV_PATH": market / "bayesian_filtered_paper_decisions.csv",
+                "BAYESIAN_FILTER_DECISION_JSONL_PATH": market / "bayesian_filtered_paper_decisions.jsonl",
                 "REPORT_PATH": market / "capture_report.json",
                 "CURRENT_OPPORTUNITIES_PATH": market / "current_opportunities.json",
             }
@@ -300,6 +334,14 @@ class CaptureMarketSnapshotTests(unittest.TestCase):
                 ).read(),
                 (),
             )
+            self.assertEqual(
+                BayesianFilteredDecisionStore(
+                    output_paths["BAYESIAN_FILTER_DECISION_CSV_PATH"],
+                    output_paths["BAYESIAN_FILTER_DECISION_JSONL_PATH"],
+                ).read(),
+                (),
+            )
+            self.assertEqual(report["bayesian_filtered_decisions_created"], 0)
             self.assertEqual(
                 {quote.observed_at_utc for quote in quotes},
                 {report["captured_at_utc"]},
@@ -580,6 +622,8 @@ class CaptureMarketSnapshotTests(unittest.TestCase):
             "total_round_paper_settlements.jsonl",
             "paper_decisions.csv",
             "paper_decisions.jsonl",
+            "bayesian_filtered_paper_decisions.csv",
+            "bayesian_filtered_paper_decisions.jsonl",
             "paper_settlements.csv",
             "paper_settlements.jsonl",
             "performance_report.json",

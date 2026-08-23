@@ -47,6 +47,9 @@ from fight_predictor.outcome_publication import (
 from external_mma import ExternalMmaStore, load_approved_auxiliary
 from external_mma.schema import ExternalDataError
 from market_tracker import (
+    BAYESIAN_FILTER_POLICY_VERSION,
+    BayesianFilteredDecision,
+    BayesianFilteredDecisionStore,
     ForecastCaptureStore,
     MarketDataError,
     PaperDecisionStore,
@@ -76,7 +79,10 @@ from market_tracker.prospective import (
     MAX_SOURCE_QUOTE_AGE_SECONDS,
     MIN_CONSENSUS_BOOKS,
 )
-from update_market_performance import _bayesian_prediction_history_performance
+from update_market_performance import (
+    _bayesian_filtered_policy_performance,
+    _bayesian_prediction_history_performance,
+)
 
 
 RAW_REQUIRED_COLUMNS = {
@@ -1757,6 +1763,25 @@ def validate_market_data(
         except (OSError, UnicodeError, MarketDataError, StoreIntegrityError) as error:
             report.errors.append(f"paper decisions failed integrity validation: {error}")
 
+    bayesian_filter_csv = market_root / "bayesian_filtered_paper_decisions.csv"
+    bayesian_filter_jsonl = market_root / "bayesian_filtered_paper_decisions.jsonl"
+    bayesian_filter_exists = (
+        bayesian_filter_csv.exists(),
+        bayesian_filter_jsonl.exists(),
+    )
+    bayesian_filtered_decisions = ()
+    if any(bayesian_filter_exists) and not all(bayesian_filter_exists):
+        report.errors.append("Bayesian filtered decision mirrors are incomplete")
+    elif all(bayesian_filter_exists):
+        try:
+            bayesian_filtered_decisions = BayesianFilteredDecisionStore(
+                bayesian_filter_csv, bayesian_filter_jsonl
+            ).read()
+        except (OSError, UnicodeError, MarketDataError, StoreIntegrityError) as error:
+            report.errors.append(
+                f"Bayesian filtered decisions failed integrity validation: {error}"
+            )
+
     report.require(
         len({item.matchup_id for item in decisions}) == len(decisions),
         "prospective policy froze more than one decision for a matchup",
@@ -1819,6 +1844,52 @@ def validate_market_data(
                 f"paper decision cannot be reconstructed: {error}"
             )
 
+    base_decision_by_id = {item.decision_id: item for item in decisions}
+    report.require(
+        len({item.base_decision_id for item in bayesian_filtered_decisions})
+        == len(bayesian_filtered_decisions),
+        "Bayesian filter froze more than one row for a base decision",
+    )
+    for filtered in bayesian_filtered_decisions:
+        base = base_decision_by_id.get(filtered.base_decision_id)
+        report.require(
+            base is not None,
+            "Bayesian filter references an unknown base moneyline decision",
+        )
+        if base is None:
+            continue
+        try:
+            rebuilt = BayesianFilteredDecision.create(
+                base,
+                source_vegas_sha256=filtered.source_vegas_sha256,
+                bayesian_artifact_sha256=filtered.bayesian_artifact_sha256,
+                bayesian_model_id=filtered.bayesian_model_id,
+                bayesian_status=filtered.bayesian_status,
+                credible_level=filtered.credible_level,
+                fighter_posterior_mean=filtered.fighter_posterior_mean,
+                fighter_posterior_median=filtered.fighter_posterior_median,
+                fighter_probability_lower=filtered.fighter_probability_lower,
+                fighter_probability_upper=filtered.fighter_probability_upper,
+                fighter_calibrated_logit_location=(
+                    filtered.fighter_calibrated_logit_location
+                ),
+                calibrated_logit_scale=filtered.calibrated_logit_scale,
+                minimum_mean_expected_return=(
+                    filtered.minimum_mean_expected_return
+                ),
+                minimum_probability_positive_expected_return=(
+                    filtered.minimum_probability_positive_expected_return
+                ),
+            )
+            report.require(
+                rebuilt == filtered,
+                "Bayesian filter cannot be reproduced from its frozen inputs",
+            )
+        except (MarketDataError, StoreIntegrityError, ValueError) as error:
+            report.errors.append(
+                f"Bayesian filtered decision cannot be reconstructed: {error}"
+            )
+
     opportunities_path = market_root / "current_opportunities.json"
     if opportunities_path.exists():
         try:
@@ -1842,6 +1913,7 @@ def validate_market_data(
                 total_round_quotes=total_rounds,
                 total_round_forecasts=total_round_forecasts,
                 total_round_decisions=total_round_decisions,
+                bayesian_filtered_decisions=bayesian_filtered_decisions,
                 method_price_status=(
                     opportunities.get("prop_markets", {})
                     .get("method_of_victory", {})
@@ -1985,6 +2057,28 @@ def validate_market_data(
                     == _bayesian_prediction_history_performance(history),
                     "Bayesian performance report cannot be reproduced",
                 )
+                bayesian_filtered_performance = performance.get(
+                    "bayesian_filtered_moneyline_policy"
+                )
+                report.require(
+                    isinstance(bayesian_filtered_performance, dict)
+                    and bayesian_filtered_performance.get("policy_version")
+                    == BAYESIAN_FILTER_POLICY_VERSION
+                    and bayesian_filtered_performance.get("paper_only") is True
+                    and bayesian_filtered_performance.get("execution_enabled")
+                    is False,
+                    "Bayesian filtered performance contract must remain paper-only",
+                )
+                report.require(
+                    bayesian_filtered_performance
+                    == _bayesian_filtered_policy_performance(
+                        bayesian_filtered_decisions,
+                        decisions,
+                        settlements,
+                        quotes,
+                    ),
+                    "Bayesian filtered performance report cannot be reproduced",
+                )
             expected_metrics = summarize_paper_settlements(
                 decisions, settlements
             ).to_mapping()
@@ -2010,7 +2104,8 @@ def validate_market_data(
         f"{len(total_round_decisions):,} total decisions / "
         f"{len(total_round_settlements):,} total settlements / "
         f"{len(capture_contracts):,} captures / {len(decisions):,} paper decisions / "
-        f"{len(settlements):,} settlements"
+        f"{len(settlements):,} settlements / "
+        f"{len(bayesian_filtered_decisions):,} Bayesian-filtered decisions"
     )
     unmatched = len(quote_keys - forecast_keys)
     if unmatched:

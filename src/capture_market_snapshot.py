@@ -1,8 +1,9 @@
 """Capture one frozen-model sportsbook observation and refresh its web view.
 
 This command is intentionally separate from the authoritative UFCStats/model
-update.  It treats ``card_info.json``, ``vegas_odds.json`` and
-``winner_model.json`` as immutable inputs, maps source display names only when
+update.  It treats ``card_info.json``, ``vegas_odds.json``,
+``winner_model.json``, and ``bayesian_winner_challenger.json`` as immutable
+inputs, maps source display names only when
 they identify one published stable-ID matchup, and appends validated quote and
 forecast captures to the market-tracker ledgers.  It never creates a wager;
 the only website file it writes is a bounded paper-only view reproduced from
@@ -32,6 +33,11 @@ from fight_predictor.outcome_publication import (
 )
 from market_tracker import (
     BETTING_STATUS,
+    BAYESIAN_FILTER_MINIMUM_MEAN_EV,
+    BAYESIAN_FILTER_MINIMUM_PROBABILITY_POSITIVE_EV,
+    BAYESIAN_FILTER_POLICY_VERSION,
+    BayesianFilteredDecision,
+    BayesianFilteredDecisionStore,
     ForecastCapture,
     ForecastCaptureStore,
     MarketDataError,
@@ -63,6 +69,7 @@ MARKET_ROOT = ROOT / "content" / "data" / "market"
 CARD_PATH = EXTERNAL_ROOT / "card_info.json"
 VEGAS_PATH = EXTERNAL_ROOT / "vegas_odds.json"
 MODEL_PATH = EXTERNAL_ROOT / "winner_model.json"
+BAYESIAN_MODEL_PATH = EXTERNAL_ROOT / "bayesian_winner_challenger.json"
 OUTCOME_FORECAST_PATH = EXTERNAL_ROOT / "outcome_forecasts.json"
 QUOTE_CSV_PATH = MARKET_ROOT / "quote_snapshots.csv"
 QUOTE_JSONL_PATH = MARKET_ROOT / "quote_snapshots.jsonl"
@@ -80,6 +87,12 @@ TOTAL_ROUNDS_SETTLEMENT_CSV_PATH = MARKET_ROOT / "total_round_paper_settlements.
 TOTAL_ROUNDS_SETTLEMENT_JSONL_PATH = MARKET_ROOT / "total_round_paper_settlements.jsonl"
 DECISION_CSV_PATH = MARKET_ROOT / "paper_decisions.csv"
 DECISION_JSONL_PATH = MARKET_ROOT / "paper_decisions.jsonl"
+BAYESIAN_FILTER_DECISION_CSV_PATH = (
+    MARKET_ROOT / "bayesian_filtered_paper_decisions.csv"
+)
+BAYESIAN_FILTER_DECISION_JSONL_PATH = (
+    MARKET_ROOT / "bayesian_filtered_paper_decisions.jsonl"
+)
 REPORT_PATH = MARKET_ROOT / "capture_report.json"
 CURRENT_OPPORTUNITIES_PATH = MARKET_ROOT / "current_opportunities.json"
 REPORT_SIZE_LIMIT = 64 * 1024
@@ -108,6 +121,15 @@ class PublishedMatchup:
     model_status: str
     forecast_issued_at_utc: str
     forecast_source_commit: str
+    bayesian_model_id: str
+    bayesian_status: str
+    bayesian_credible_level: float
+    bayesian_posterior_mean: float
+    bayesian_posterior_median: float
+    bayesian_probability_lower: float
+    bayesian_probability_upper: float
+    bayesian_calibrated_logit_location: float
+    bayesian_calibrated_logit_scale: float
 
 
 @dataclass(frozen=True)
@@ -196,7 +218,7 @@ def _json_object(payload: bytes, path: Path) -> dict[str, object]:
 def _publication_payloads() -> dict[Path, bytes]:
     payloads = {
         path: _read_bytes(path)
-        for path in (CARD_PATH, VEGAS_PATH, MODEL_PATH)
+        for path in (CARD_PATH, VEGAS_PATH, MODEL_PATH, BAYESIAN_MODEL_PATH)
     }
     if OUTCOME_FORECAST_PATH.is_file():
         payloads[OUTCOME_FORECAST_PATH] = _read_bytes(OUTCOME_FORECAST_PATH)
@@ -274,6 +296,7 @@ def _published_matchups(
     vegas: pd.DataFrame,
     card: dict[str, object],
     artifact: dict[str, object],
+    bayesian_artifact: dict[str, object],
     observed_at: datetime,
 ) -> tuple[str, str, str, str, str, tuple[PublishedMatchup, ...]]:
     required = {
@@ -292,6 +315,15 @@ def _published_matchups(
         "forecast issued at",
         "forecast source commit",
         "betting status",
+        "bayesian model id",
+        "bayesian status",
+        "bayesian credible level",
+        "bayesian posterior mean",
+        "bayesian posterior median",
+        "bayesian probability lower",
+        "bayesian probability upper",
+        "bayesian calibrated logit location",
+        "bayesian calibrated logit scale",
     }
     _require_columns(vegas, required)
     if vegas.empty:
@@ -311,6 +343,17 @@ def _published_matchups(
     trained_through = _text(artifact.get("data_through"))
     if not model_version or not trained_through:
         raise CaptureError("winner model metadata is incomplete")
+    bayesian_model_id = _stable_token(
+        bayesian_artifact.get("model_id"), "Bayesian model_id"
+    )
+    if (
+        _text(bayesian_artifact.get("base_model_id")) != model_id
+        or bayesian_artifact.get("paper_only") is not True
+        or bayesian_artifact.get("execution_enabled") is not False
+    ):
+        raise CaptureError(
+            "Bayesian challenger is not bound paper-only to the winner model"
+        )
 
     vegas_dates = pd.to_datetime(vegas["date"], errors="coerce")
     if vegas_dates.isna().any() or not vegas_dates.dt.date.map(
@@ -375,6 +418,46 @@ def _published_matchups(
                 raise CaptureError(
                     "resolved matchup model probability must be strictly between zero and one"
                 )
+        bayesian_status = _text(row.get("bayesian status"))
+        row_bayesian_model_id = _text(row.get("bayesian model id"))
+        if matchup_id is not None and row_bayesian_model_id != bayesian_model_id:
+            raise CaptureError(
+                "resolved matchup Bayesian model ID does not match its artifact"
+            )
+        bayesian_values: list[float] = []
+        if matchup_id is not None:
+            try:
+                bayesian_values = [
+                    float(row.get("bayesian credible level")),
+                    float(row.get("bayesian posterior mean")),
+                    float(row.get("bayesian posterior median")),
+                    float(row.get("bayesian probability lower")),
+                    float(row.get("bayesian probability upper")),
+                    float(row.get("bayesian calibrated logit location")),
+                    float(row.get("bayesian calibrated logit scale")),
+                ]
+            except (TypeError, ValueError) as error:
+                raise CaptureError(
+                    "resolved matchup Bayesian posterior is not numeric"
+                ) from error
+            if not all(math.isfinite(value) for value in bayesian_values):
+                raise CaptureError(
+                    "resolved matchup Bayesian posterior must be finite"
+                )
+            credible, mean, median, lower, upper, _, scale = bayesian_values
+            if not (
+                0.0 < credible < 1.0
+                and 0.0 < lower <= median <= upper < 1.0
+                and 0.0 < mean < 1.0
+                and scale >= 0.0
+            ):
+                raise CaptureError(
+                    "resolved matchup Bayesian posterior contract is invalid"
+                )
+            if not bayesian_status:
+                raise CaptureError("resolved matchup Bayesian status is blank")
+        else:
+            bayesian_values = [math.nan] * 7
         matchups.append(
             PublishedMatchup(
                 fighter_name=fighter_name,
@@ -387,6 +470,15 @@ def _published_matchups(
                 model_status=status,
                 forecast_issued_at_utc=forecast_issued,
                 forecast_source_commit=forecast_commit,
+                bayesian_model_id=row_bayesian_model_id,
+                bayesian_status=bayesian_status,
+                bayesian_credible_level=bayesian_values[0],
+                bayesian_posterior_mean=bayesian_values[1],
+                bayesian_posterior_median=bayesian_values[2],
+                bayesian_probability_lower=bayesian_values[3],
+                bayesian_probability_upper=bayesian_values[4],
+                bayesian_calibrated_logit_location=bayesian_values[5],
+                bayesian_calibrated_logit_scale=bayesian_values[6],
             )
         )
     return (
@@ -1146,6 +1238,50 @@ def _build_captures(
     return tuple(quotes), tuple(forecasts), tuple(source_metadata), counters
 
 
+def _build_bayesian_filtered_decisions(
+    base_decisions: tuple,
+    published: tuple[PublishedMatchup, ...],
+    *,
+    source_vegas_sha256: str,
+    bayesian_artifact_sha256: str,
+) -> tuple[BayesianFilteredDecision, ...]:
+    """Apply the Bayesian veto only to newly frozen T-24 base decisions."""
+
+    published_by_matchup = {
+        item.matchup_id: item for item in published if item.matchup_id is not None
+    }
+    filtered: list[BayesianFilteredDecision] = []
+    for base in base_decisions:
+        matchup = published_by_matchup.get(base.matchup_id)
+        if matchup is None:
+            raise CaptureError(
+                "a new base paper decision has no frozen Bayesian matchup"
+            )
+        filtered.append(
+            BayesianFilteredDecision.create(
+                base,
+                source_vegas_sha256=source_vegas_sha256,
+                bayesian_artifact_sha256=bayesian_artifact_sha256,
+                bayesian_model_id=matchup.bayesian_model_id,
+                bayesian_status=matchup.bayesian_status,
+                credible_level=matchup.bayesian_credible_level,
+                fighter_posterior_mean=matchup.bayesian_posterior_mean,
+                fighter_posterior_median=matchup.bayesian_posterior_median,
+                fighter_probability_lower=matchup.bayesian_probability_lower,
+                fighter_probability_upper=matchup.bayesian_probability_upper,
+                fighter_calibrated_logit_location=(
+                    matchup.bayesian_calibrated_logit_location
+                ),
+                calibrated_logit_scale=matchup.bayesian_calibrated_logit_scale,
+                minimum_mean_expected_return=BAYESIAN_FILTER_MINIMUM_MEAN_EV,
+                minimum_probability_positive_expected_return=(
+                    BAYESIAN_FILTER_MINIMUM_PROBABILITY_POSITIVE_EV
+                ),
+            )
+        )
+    return tuple(filtered)
+
+
 def _atomic_write_report(report: dict[str, object]) -> None:
     REPORT_PATH.parent.mkdir(parents=True, exist_ok=True)
     encoded = (json.dumps(report, indent=2, sort_keys=True, allow_nan=False) + "\n")
@@ -1267,6 +1403,33 @@ def validate_generated_capture() -> dict[str, object]:
         raise CaptureError("capture report has a partial enhanced market contract")
     enhanced_contract = enhanced_fields <= set(report)
     opportunity_contract = "opportunity_publication_sha256" in report
+    bayesian_filter_fields = {
+        "bayesian_model_id",
+        "bayesian_filtered_decision_dataset_sha256",
+        "bayesian_filtered_policy",
+        "bayesian_filtered_decisions_created",
+        "bayesian_filtered_decisions_added",
+        "bayesian_filtered_decisions_total",
+    }
+    present_bayesian_filter_fields = bayesian_filter_fields & set(report)
+    if (
+        present_bayesian_filter_fields
+        and present_bayesian_filter_fields != bayesian_filter_fields
+    ):
+        raise CaptureError("capture report has a partial Bayesian filter contract")
+    bayesian_filter_contract = bayesian_filter_fields <= set(report)
+    if bayesian_filter_contract and not enhanced_contract:
+        raise CaptureError("Bayesian filtered decisions require the base decision contract")
+    if bayesian_filter_contract and report.get("bayesian_filtered_policy") != {
+        "policy_version": BAYESIAN_FILTER_POLICY_VERSION,
+        "minimum_mean_expected_return": BAYESIAN_FILTER_MINIMUM_MEAN_EV,
+        "minimum_probability_positive_expected_return": (
+            BAYESIAN_FILTER_MINIMUM_PROBABILITY_POSITIVE_EV
+        ),
+        "paper_only": True,
+        "execution_enabled": False,
+    }:
+        raise CaptureError("capture report Bayesian filter policy is invalid")
     total_round_fields = {
         "total_round_source_rows",
         "total_round_unmatched_source_rows",
@@ -1334,6 +1497,16 @@ def validate_generated_capture() -> dict[str, object]:
             > CURRENT_OPPORTUNITIES_SIZE_LIMIT
         ):
             raise CaptureError("current opportunity publication is not bounded")
+    if bayesian_filter_contract:
+        filtered_paths = (
+            BAYESIAN_FILTER_DECISION_CSV_PATH,
+            BAYESIAN_FILTER_DECISION_JSONL_PATH,
+        )
+        missing = [str(path) for path in filtered_paths if not path.is_file()]
+        if missing:
+            raise CaptureError(
+                f"Bayesian filtered decision outputs are missing: {missing}"
+            )
     if total_round_contract:
         total_paths = (
             TOTAL_ROUNDS_CSV_PATH,
@@ -1395,6 +1568,14 @@ def validate_generated_capture() -> dict[str, object]:
         if enhanced_contract
         else ()
     )
+    bayesian_filtered_decisions = (
+        BayesianFilteredDecisionStore(
+            BAYESIAN_FILTER_DECISION_CSV_PATH,
+            BAYESIAN_FILTER_DECISION_JSONL_PATH,
+        ).read()
+        if bayesian_filter_contract
+        else ()
+    )
     total_rounds = (
         TotalRoundsQuoteStore(
             TOTAL_ROUNDS_CSV_PATH, TOTAL_ROUNDS_JSONL_PATH
@@ -1426,6 +1607,12 @@ def validate_generated_capture() -> dict[str, object]:
         raise CaptureError("source metadata fingerprint differs from capture report")
     if enhanced_contract and _dataset_hash(decisions) != report.get("paper_decision_dataset_sha256"):
         raise CaptureError("paper decision fingerprint differs from capture report")
+    if bayesian_filter_contract and _dataset_hash(
+        bayesian_filtered_decisions
+    ) != report.get("bayesian_filtered_decision_dataset_sha256"):
+        raise CaptureError(
+            "Bayesian filtered decision fingerprint differs from capture report"
+        )
     if total_round_contract and _dataset_hash(total_rounds) != report.get(
         "total_round_dataset_sha256"
     ):
@@ -1447,6 +1634,11 @@ def validate_generated_capture() -> dict[str, object]:
     capture_decisions = tuple(
         item for item in decisions if item.capture_id == capture_id
     )
+    capture_bayesian_filtered_decisions = tuple(
+        item
+        for item in bayesian_filtered_decisions
+        if item.capture_id == capture_id
+    )
     capture_total_rounds = tuple(
         item for item in total_rounds if item.capture_id == capture_id
     )
@@ -1466,6 +1658,39 @@ def validate_generated_capture() -> dict[str, object]:
         raise CaptureError("capture report metadata count differs from the metadata ledger")
     if len(capture_decisions) != paper_decisions_created:
         raise CaptureError("capture report paper count differs from the decision ledger")
+    if bayesian_filter_contract:
+        if len(bayesian_filtered_decisions) != int(
+            report.get("bayesian_filtered_decisions_total", -1)
+        ):
+            raise CaptureError(
+                "capture report Bayesian filtered total differs from the ledger"
+            )
+        if len(capture_bayesian_filtered_decisions) != int(
+            report.get("bayesian_filtered_decisions_created", -1)
+        ):
+            raise CaptureError(
+                "capture report Bayesian filtered count differs from the ledger"
+            )
+        base_ids = {item.decision_id for item in capture_decisions}
+        if {
+            item.base_decision_id for item in capture_bayesian_filtered_decisions
+        } != base_ids:
+            raise CaptureError(
+                "capture Bayesian filter does not exactly cover new base decisions"
+            )
+        input_hashes = report.get("input_sha256")
+        if not isinstance(input_hashes, dict):
+            raise CaptureError("capture report input_sha256 must be an object")
+        if any(
+            item.bayesian_model_id != report.get("bayesian_model_id")
+            or item.source_vegas_sha256 != input_hashes.get(VEGAS_PATH.name)
+            or item.bayesian_artifact_sha256
+            != input_hashes.get(BAYESIAN_MODEL_PATH.name)
+            for item in capture_bayesian_filtered_decisions
+        ):
+            raise CaptureError(
+                "capture Bayesian filter disagrees with frozen publication lineage"
+            )
     if total_round_contract:
         if len(total_rounds) != int(report.get("total_round_records_total", -1)):
             raise CaptureError("capture report total-round total differs from ledger")
@@ -1608,6 +1833,7 @@ def validate_generated_capture() -> dict[str, object]:
             total_round_quotes=total_rounds,
             total_round_forecasts=total_round_forecasts,
             total_round_decisions=total_round_decisions,
+            bayesian_filtered_decisions=bayesian_filtered_decisions,
             method_price_status=(
                 opportunities.get("prop_markets", {})
                 .get("method_of_victory", {})
@@ -1631,6 +1857,9 @@ def capture_market_snapshot() -> dict[str, object]:
     input_hashes = _publication_hashes(payloads)
     card = _json_object(payloads[CARD_PATH], CARD_PATH)
     artifact = _json_object(payloads[MODEL_PATH], MODEL_PATH)
+    bayesian_artifact = _json_object(
+        payloads[BAYESIAN_MODEL_PATH], BAYESIAN_MODEL_PATH
+    )
     outcome_publication = (
         _json_object(payloads[OUTCOME_FORECAST_PATH], OUTCOME_FORECAST_PATH)
         if OUTCOME_FORECAST_PATH in payloads
@@ -1660,7 +1889,9 @@ def capture_market_snapshot() -> dict[str, object]:
         title,
         model_version,
         published,
-    ) = _published_matchups(vegas, card, artifact, observed_at)
+    ) = _published_matchups(
+        vegas, card, artifact, bayesian_artifact, observed_at
+    )
     source_matches, unmatched_source_rows = _map_source_rows(
         fresh_odds, published, event_day=event_day
     )
@@ -1676,11 +1907,16 @@ def capture_market_snapshot() -> dict[str, object]:
         SOURCE_METADATA_CSV_PATH, SOURCE_METADATA_JSONL_PATH
     )
     decision_store = PaperDecisionStore(DECISION_CSV_PATH, DECISION_JSONL_PATH)
+    bayesian_filter_store = BayesianFilteredDecisionStore(
+        BAYESIAN_FILTER_DECISION_CSV_PATH,
+        BAYESIAN_FILTER_DECISION_JSONL_PATH,
+    )
     existing_quotes = quote_store.read()
     # Fail closed on either mirror before constructing any new records.
     forecast_store.read()
     existing_metadata = metadata_store.read()
     existing_decisions = decision_store.read()
+    bayesian_filter_store.read()
     quotes, forecasts, source_metadata, counters = _build_captures(
         source_matches,
         books,
@@ -1763,6 +1999,12 @@ def capture_market_snapshot() -> dict[str, object]:
     paper_build = build_locked_paper_decisions(
         quotes, forecasts, source_metadata, existing_decisions
     )
+    bayesian_filtered_decisions = _build_bayesian_filtered_decisions(
+        paper_build.decisions,
+        published,
+        source_vegas_sha256=input_hashes[VEGAS_PATH.name],
+        bayesian_artifact_sha256=input_hashes[BAYESIAN_MODEL_PATH.name],
+    )
 
     if _publication_payloads() != payloads:
         raise CaptureError("a frozen publication input changed before ledger append")
@@ -1774,6 +2016,9 @@ def capture_market_snapshot() -> dict[str, object]:
     quote_result = quote_store.append(quotes)
     metadata_result = metadata_store.append(source_metadata)
     decision_result = decision_store.append(paper_build.decisions)
+    bayesian_filter_result = bayesian_filter_store.append(
+        bayesian_filtered_decisions
+    )
     total_round_forecast_result = (
         total_round_forecast_store.append(total_round_forecasts)
         if total_round_forecast_store is not None
@@ -1794,6 +2039,7 @@ def capture_market_snapshot() -> dict[str, object]:
     final_forecasts = forecast_store.read()
     final_metadata = metadata_store.read()
     final_decisions = decision_store.read()
+    final_bayesian_filtered_decisions = bayesian_filter_store.read()
     final_total_rounds = (
         total_round_store.read() if total_round_store is not None else ()
     )
@@ -1816,6 +2062,7 @@ def capture_market_snapshot() -> dict[str, object]:
         total_round_quotes=final_total_rounds,
         total_round_forecasts=final_total_round_forecasts,
         total_round_decisions=final_total_round_decisions,
+        bayesian_filtered_decisions=final_bayesian_filtered_decisions,
         method_price_status=(
             str(outcome_publication.get("method_price_status"))
             if outcome_publication is not None
@@ -1850,6 +2097,7 @@ def capture_market_snapshot() -> dict[str, object]:
         "model_id": _text(artifact.get("model_id")),
         "model_version": model_version,
         "model_trained_through": _text(artifact.get("data_through")),
+        "bayesian_model_id": _text(bayesian_artifact.get("model_id")),
         "forecast_issued_at_utc": forecasts[0].forecast_issued_at_utc,
         "forecast_source_commit_sha": forecasts[0].source_commit_sha,
         "publication_commit_sha": _text(os.environ.get("GITHUB_SHA")) or "local",
@@ -1878,6 +2126,9 @@ def capture_market_snapshot() -> dict[str, object]:
         "forecast_dataset_sha256": _dataset_hash(final_forecasts),
         "source_metadata_dataset_sha256": _dataset_hash(final_metadata),
         "paper_decision_dataset_sha256": _dataset_hash(final_decisions),
+        "bayesian_filtered_decision_dataset_sha256": _dataset_hash(
+            final_bayesian_filtered_decisions
+        ),
         "opportunity_publication_sha256": current_opportunities[
             "publication_sha256"
         ],
@@ -1886,6 +2137,24 @@ def capture_market_snapshot() -> dict[str, object]:
         "paper_decisions_created": len(paper_build.decisions),
         "paper_decisions_added": len(decision_result.added_ids),
         "paper_decisions_total": decision_result.total_records,
+        "bayesian_filtered_policy": {
+            "policy_version": BAYESIAN_FILTER_POLICY_VERSION,
+            "minimum_mean_expected_return": BAYESIAN_FILTER_MINIMUM_MEAN_EV,
+            "minimum_probability_positive_expected_return": (
+                BAYESIAN_FILTER_MINIMUM_PROBABILITY_POSITIVE_EV
+            ),
+            "paper_only": True,
+            "execution_enabled": False,
+        },
+        "bayesian_filtered_decisions_created": len(
+            bayesian_filtered_decisions
+        ),
+        "bayesian_filtered_decisions_added": len(
+            bayesian_filter_result.added_ids
+        ),
+        "bayesian_filtered_decisions_total": (
+            bayesian_filter_result.total_records
+        ),
         "betting_status": BETTING_STATUS,
         "publication_files_unchanged": True,
     }
@@ -1977,6 +2246,10 @@ def capture_market_snapshot() -> dict[str, object]:
             (
                 f"- T-24 paper decisions: {len(paper_build.decisions)} "
                 f"(`{BETTING_STATUS}`)"
+            ),
+            (
+                "- Bayesian-filtered T-24 decisions: "
+                f"{len(bayesian_filtered_decisions)} (`{BETTING_STATUS}`)"
             ),
             "- Website opportunity view: refreshed from this capture",
             (

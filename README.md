@@ -46,6 +46,19 @@ score, flat-unit return, and whole-card bootstrap interval. This first-pass
 monitor is timestamped but is not yet the immutable T-24/CLV ledger, so it can
 never by itself enable execution.
 
+A second policy now tests the Bayesian model as a conservative veto on the
+existing moneyline policy rather than as an independent pick generator. At the
+same immutable T-24 capture, the base leave-one-book-out policy first chooses
+its target book, side, and price. The Bayesian filter may keep that exact side
+only when posterior-mean EV is at least 5% and the posterior probability of
+positive EV is at least 80%; otherwise it records a pass and never switches to
+the opponent. The source Vegas publication hash, Bayesian artifact hash,
+posterior, base decision ID, price, and filter reason are frozen in a separate
+append-only ledger. Performance reporting compares base and filtered ROI on
+the identical post-deployment cohort with a paired whole-card bootstrap and
+separate filtered CLV. It remains paper-only until sample, positive-return,
+positive-CLV, and improvement-over-base gates all pass.
+
 Rebuild this challenger without network access using:
 
 ```console
@@ -127,6 +140,7 @@ The auditable artifacts are:
 - `src/content/data/market/total_round_paper_decisions.jsonl`
 - `src/content/data/market/total_round_paper_settlements.jsonl`
 - `src/content/data/market/paper_decisions.jsonl`
+- `src/content/data/market/bayesian_filtered_paper_decisions.jsonl`
 - `src/content/data/market/paper_settlements.jsonl`
 - `src/content/data/market/performance_report.json`
 - `src/content/data/external/outcome_model_evaluation.json` (candidate only)
@@ -203,6 +217,14 @@ weekly updater later settles these immutable records from stable UFCStats IDs
 and publishes paper ROI, drawdown, forecast scores, coverage, and a latest-
 available same-book CLV proxy. This remains research only; no order, account,
 bankroll, or wager-execution code exists.
+
+The Bayesian-filtered moneyline challenger is evaluated only on new immutable
+T-24 decisions made after its deployment; older paper decisions are not
+retroactively labeled. Its promotion gate requires at least 500 paired settled
+decisions across 40 events and 100 surviving selections, then requires the
+95% whole-card bootstrap lower bounds for filtered return, filtered CLV, and
+filtered-minus-base ROI to be positive. These requirements are deliberately
+stricter than merely observing a higher point-estimate ROI.
 
 A separate timing challenger now tests the handicapper rule "favorites early,
 underdogs late" without enabling bets. The favorite is frozen from the first

@@ -2,6 +2,85 @@
   "ambiguous_historical_matchup_keys": 1,
   "ambiguous_result_decisions": 0,
   "as_of_utc": "2026-08-22T17:27:07.796696Z",
+  "bayesian_filtered_moneyline_policy": {
+    "base_policy_on_same_cohort": {
+      "hypothetical_profit_units": 0,
+      "hypothetical_risk_units": 0,
+      "hypothetical_roi": null,
+      "losses": 0,
+      "selections": 0,
+      "wins": 0
+    },
+    "bayesian_filtered_policy": {
+      "hypothetical_profit_units": 0,
+      "hypothetical_risk_units": 0,
+      "hypothetical_roi": null,
+      "losses": 0,
+      "selections": 0,
+      "wins": 0
+    },
+    "decision_count": 0,
+    "decision_dataset_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "execution_enabled": false,
+    "filtered_return_interval": {
+      "bootstrap_samples": 0,
+      "ci_95_lower": null,
+      "ci_95_upper": null,
+      "definition": "paired whole-card bootstrap of profit per one-unit paper selection",
+      "event_count": 0,
+      "observed_profit_per_selection": null,
+      "selection_count": 0
+    },
+    "latest_available_price_clv": {
+      "bootstrap_samples": 0,
+      "ci_95_lower": null,
+      "ci_95_upper": null,
+      "count": 0,
+      "definition": "latest available same-book implied probability minus the locked decision break-even probability; positive favors the paper price",
+      "event_count": 0,
+      "mean_probability_edge": null,
+      "median_probability_edge": null,
+      "positive_rate": null
+    },
+    "paired_roi_difference": {
+      "base_roi": null,
+      "base_selection_count": 0,
+      "bootstrap_samples": 0,
+      "ci_95_lower": null,
+      "ci_95_upper": null,
+      "definition": "paired whole-card bootstrap of filtered ROI minus the existing moneyline policy ROI on the post-deployment cohort",
+      "event_count": 0,
+      "filtered_roi": null,
+      "filtered_selection_count": 0,
+      "point_difference": null
+    },
+    "paired_settled_decisions": 0,
+    "paper_only": true,
+    "policy_version": "bayesian-filtered-existing-moneyline-v1",
+    "promotion_gate": {
+      "count_requirements_met": false,
+      "execution_enabled": false,
+      "filtered_selections": 0,
+      "improves_base_policy_roi_requirement_met": false,
+      "minimum_filtered_selections": 100,
+      "minimum_paired_settled_decisions": 500,
+      "minimum_settled_events": 40,
+      "paired_settled_decisions": 0,
+      "positive_clv_requirement_met": false,
+      "positive_filtered_return_requirement_met": false,
+      "settled_events": 0,
+      "status": "collecting_prospective_evidence"
+    },
+    "settled_events": 0,
+    "source": "immutable_t24_decision_ledger",
+    "veto_counts": {
+      "base_policy_pass": 0,
+      "bayesian_mean_ev_veto": 0,
+      "bayesian_probability_veto": 0,
+      "bayesian_status_veto": 0,
+      "qualified": 0
+    }
+  },
   "bayesian_moneyline_challenger": {
     "dataset_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
     "execution_enabled": false,
@@ -367,7 +446,7 @@
     "status": "collecting_prospective_evidence"
   },
   "quote_dataset_sha256": "6c8554ace8341619d6064415691030551258a7e911bd93ed956c20ee47c1fc68",
-  "report_sha256": "b63810e1a4837908d70df08117191ce07fd80d10681d41085bae3c5d9cf5b03a",
+  "report_sha256": "ecde53452b839da1c7b5c472feacfdf955ec52a393a2900721d67ccc9266d316",
   "result_source_sha256": "dbb98dcae91e5ba826a22947ec9792a123d667d34ad40e1a5ad0495408b7b492",
   "schema_version": 3,
   "settlement_dataset_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",

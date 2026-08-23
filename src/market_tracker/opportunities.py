@@ -18,7 +18,7 @@ from ._common import (
     canonical_hash,
 )
 from .forecasts import ForecastCapture
-from .paper import PaperDecision
+from .paper import BayesianFilteredDecision, PaperDecision
 from .prospective import (
     DECISION_TARGET_LEAD_SECONDS,
     DECISION_WINDOW_SECONDS,
@@ -178,6 +178,7 @@ def build_current_opportunities(
     total_round_quotes: Iterable[TotalRoundsQuoteSnapshot] | None = None,
     total_round_forecasts: Iterable[TotalRoundsForecastCapture] | None = None,
     total_round_decisions: Iterable[TotalRoundsPaperDecision] | None = None,
+    bayesian_filtered_decisions: Iterable[BayesianFilteredDecision] | None = None,
     method_price_status: str = "unavailable_from_configured_provider",
 ) -> dict[str, object]:
     """Build a deterministic, bounded view for one immutable capture."""
@@ -222,6 +223,15 @@ def build_current_opportunities(
         if decision.matchup_id in decisions_by_matchup:
             raise StoreIntegrityError("more than one locked decision exists for a matchup")
         decisions_by_matchup[decision.matchup_id] = decision
+    filtered_by_matchup: dict[str, BayesianFilteredDecision] = {}
+    for filtered in bayesian_filtered_decisions or ():
+        if filtered.event_id != event_id:
+            continue
+        if filtered.matchup_id in filtered_by_matchup:
+            raise StoreIntegrityError(
+                "more than one Bayesian filtered decision exists for a matchup"
+            )
+        filtered_by_matchup[filtered.matchup_id] = filtered
     quote_by_id = {item.quote_id: item for item in all_quotes}
     display_books = {item.book.casefold(): item.book for item in current_quotes}
 
@@ -369,8 +379,7 @@ def build_current_opportunities(
                 for key in locked_consensus.included_book_keys
             ]
 
-        matchup_views.append(
-            {
+        matchup_view: dict[str, object] = {
                 "matchup_id": matchup_id,
                 "fighter_id": first.fighter_id,
                 "opponent_id": first.opponent_id,
@@ -386,7 +395,46 @@ def build_current_opportunities(
                 "locked_t24_decision": locked_view,
                 "book_quotes": book_quotes,
             }
-        )
+        if bayesian_filtered_decisions is not None:
+            filtered = filtered_by_matchup.get(matchup_id)
+            matchup_view["locked_t24_bayesian_filter"] = (
+                {
+                        "filtered_decision_id": filtered.filtered_decision_id,
+                        "base_decision_id": filtered.base_decision_id,
+                        "policy_version": filtered.policy_version,
+                        "bayesian_model_id": filtered.bayesian_model_id,
+                        "base_paper_action": filtered.base_paper_action,
+                        "filtered_paper_action": filtered.filtered_paper_action,
+                        "filter_status": filtered.filter_status,
+                        "candidate_moneyline": filtered.candidate_moneyline,
+                        "candidate_posterior_mean_probability": (
+                            filtered.candidate_posterior_mean_probability
+                        ),
+                        "candidate_posterior_mean_expected_return": (
+                            filtered.candidate_posterior_mean_expected_return
+                        ),
+                        "candidate_expected_return_lower": (
+                            filtered.candidate_expected_return_lower
+                        ),
+                        "candidate_expected_return_upper": (
+                            filtered.candidate_expected_return_upper
+                        ),
+                        "candidate_probability_positive_expected_return": (
+                            filtered.candidate_probability_positive_expected_return
+                        ),
+                        "minimum_mean_expected_return": (
+                            filtered.minimum_mean_expected_return
+                        ),
+                        "minimum_probability_positive_expected_return": (
+                            filtered.minimum_probability_positive_expected_return
+                        ),
+                        "paper_only": filtered.paper_only,
+                        "execution_enabled": filtered.execution_enabled,
+                }
+                if filtered is not None
+                else None
+            )
+        matchup_views.append(matchup_view)
 
     prop_contract = (
         total_round_quotes is not None
@@ -397,7 +445,13 @@ def build_current_opportunities(
         raise ValueError("prop opportunity publication requires quotes and forecasts")
     body: dict[str, object] = {
         "schema_version": (
-            3 if total_round_decisions is not None else 2 if prop_contract else 1
+            4
+            if bayesian_filtered_decisions is not None
+            else 3
+            if total_round_decisions is not None
+            else 2
+            if prop_contract
+            else 1
         ),
         "policy_version": OPPORTUNITY_POLICY_VERSION,
         "betting_status": BETTING_STATUS,
@@ -444,6 +498,7 @@ def validate_current_opportunities(
     total_round_quotes: Iterable[TotalRoundsQuoteSnapshot] = (),
     total_round_forecasts: Iterable[TotalRoundsForecastCapture] = (),
     total_round_decisions: Iterable[TotalRoundsPaperDecision] = (),
+    bayesian_filtered_decisions: Iterable[BayesianFilteredDecision] = (),
     method_price_status: str = "unavailable_from_configured_provider",
 ) -> dict[str, object]:
     """Rebuild the publication from ledgers and require an exact match."""
@@ -480,6 +535,19 @@ def validate_current_opportunities(
             total_round_quotes=total_round_quotes,
             total_round_forecasts=total_round_forecasts,
             total_round_decisions=total_round_decisions,
+            method_price_status=method_price_status,
+        )
+    elif schema_version == 4:
+        rebuilt = build_current_opportunities(
+            quotes,
+            forecasts,
+            source_metadata,
+            decisions,
+            capture_id=capture_id,
+            total_round_quotes=total_round_quotes,
+            total_round_forecasts=total_round_forecasts,
+            total_round_decisions=total_round_decisions,
+            bayesian_filtered_decisions=bayesian_filtered_decisions,
             method_price_status=method_price_status,
         )
     else:

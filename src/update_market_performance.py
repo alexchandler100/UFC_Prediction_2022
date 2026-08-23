@@ -15,7 +15,10 @@ import tempfile
 import pandas as pd
 
 from market_tracker import (
+    BAYESIAN_FILTER_POLICY_VERSION,
     BETTING_STATUS,
+    BayesianFilteredDecision,
+    BayesianFilteredDecisionStore,
     PaperDecision,
     PaperDecisionStore,
     PaperSettlementStore,
@@ -47,6 +50,12 @@ SOURCE_METADATA_CSV_PATH = MARKET_ROOT / "quote_source_metadata.csv"
 SOURCE_METADATA_JSONL_PATH = MARKET_ROOT / "quote_source_metadata.jsonl"
 DECISION_CSV_PATH = MARKET_ROOT / "paper_decisions.csv"
 DECISION_JSONL_PATH = MARKET_ROOT / "paper_decisions.jsonl"
+BAYESIAN_FILTER_DECISION_CSV_PATH = (
+    MARKET_ROOT / "bayesian_filtered_paper_decisions.csv"
+)
+BAYESIAN_FILTER_DECISION_JSONL_PATH = (
+    MARKET_ROOT / "bayesian_filtered_paper_decisions.jsonl"
+)
 SETTLEMENT_CSV_PATH = MARKET_ROOT / "paper_settlements.csv"
 SETTLEMENT_JSONL_PATH = MARKET_ROOT / "paper_settlements.jsonl"
 TOTAL_ROUNDS_QUOTE_CSV_PATH = MARKET_ROOT / "total_round_quote_snapshots.csv"
@@ -601,6 +610,203 @@ def _event_block_return_interval(
     return result
 
 
+def _paired_bayesian_filter_return_interval(
+    rows: list[tuple[BayesianFilteredDecision, PaperDecision, object]],
+) -> dict[str, object]:
+    """Compare base and filtered ROI with paired whole-card resampling."""
+
+    grouped: dict[str, list[float]] = {}
+    for filtered, base, settlement in rows:
+        values = grouped.setdefault(base.event_id, [0.0, 0.0, 0.0, 0.0])
+        base_risk = float(settlement.hypothetical_risk_units)
+        base_profit = float(settlement.hypothetical_profit_units)
+        values[0] += base_profit
+        values[1] += base_risk
+        if filtered.filter_status == "qualified":
+            values[2] += base_profit
+            values[3] += base_risk
+    base_profit = sum(values[0] for values in grouped.values())
+    base_risk = sum(values[1] for values in grouped.values())
+    filtered_profit = sum(values[2] for values in grouped.values())
+    filtered_risk = sum(values[3] for values in grouped.values())
+    base_roi = base_profit / base_risk if base_risk else None
+    filtered_roi = filtered_profit / filtered_risk if filtered_risk else None
+    result: dict[str, object] = {
+        "definition": (
+            "paired whole-card bootstrap of filtered ROI minus the existing "
+            "moneyline policy ROI on the post-deployment cohort"
+        ),
+        "event_count": len(grouped),
+        "base_selection_count": int(base_risk),
+        "filtered_selection_count": int(filtered_risk),
+        "base_roi": base_roi,
+        "filtered_roi": filtered_roi,
+        "point_difference": (
+            filtered_roi - base_roi
+            if filtered_roi is not None and base_roi is not None
+            else None
+        ),
+        "bootstrap_samples": 0,
+        "ci_95_lower": None,
+        "ci_95_upper": None,
+    }
+    if len(grouped) < 2 or base_risk == 0.0 or filtered_risk == 0.0:
+        return result
+    blocks = [grouped[key] for key in sorted(grouped)]
+    seed = canonical_hash(
+        [
+            {
+                "filtered_decision_id": filtered.filtered_decision_id,
+                "settlement_id": settlement.settlement_id,
+            }
+            for filtered, _, settlement in sorted(
+                rows, key=lambda item: item[0].filtered_decision_id
+            )
+        ]
+    )
+    generator = random.Random(int(seed[:16], 16))
+    samples: list[float] = []
+    for _ in range(10_000):
+        selected = [generator.choice(blocks) for _ in blocks]
+        sampled_base_risk = sum(value[1] for value in selected)
+        sampled_filtered_risk = sum(value[3] for value in selected)
+        if sampled_base_risk and sampled_filtered_risk:
+            samples.append(
+                sum(value[2] for value in selected) / sampled_filtered_risk
+                - sum(value[0] for value in selected) / sampled_base_risk
+            )
+    samples.sort()
+    if samples:
+        result.update(
+            {
+                "bootstrap_samples": len(samples),
+                "ci_95_lower": _quantile(samples, 0.025),
+                "ci_95_upper": _quantile(samples, 0.975),
+            }
+        )
+    return result
+
+
+def _bayesian_filtered_policy_performance(
+    filtered_decisions: tuple[BayesianFilteredDecision, ...],
+    base_decisions: tuple[PaperDecision, ...],
+    settlements: tuple,
+    quotes: tuple[QuoteSnapshot, ...],
+) -> dict[str, object]:
+    """Score the Bayesian veto and its unchanged-policy comparison cohort."""
+
+    base_by_id = {item.decision_id: item for item in base_decisions}
+    settlement_by_id = {item.decision_id: item for item in settlements}
+    if len(base_by_id) != len(base_decisions):
+        raise ValueError("base moneyline decision IDs are not unique")
+    if len(settlement_by_id) != len(settlements):
+        raise ValueError("moneyline settlement decision IDs are not unique")
+    if len({item.base_decision_id for item in filtered_decisions}) != len(
+        filtered_decisions
+    ):
+        raise ValueError("Bayesian filter contains duplicate base decisions")
+    rows: list[tuple[BayesianFilteredDecision, PaperDecision, object]] = []
+    for filtered in filtered_decisions:
+        base = base_by_id.get(filtered.base_decision_id)
+        if base is None:
+            raise ValueError("Bayesian filter references an unknown base decision")
+        settlement = settlement_by_id.get(base.decision_id)
+        if settlement is not None:
+            rows.append((filtered, base, settlement))
+
+    def strategy_summary(*, filtered: bool) -> dict[str, object]:
+        selected: list[object] = []
+        for filter_decision, _, settlement in rows:
+            if filtered and filter_decision.filter_status != "qualified":
+                continue
+            if float(settlement.hypothetical_risk_units) > 0.0:
+                selected.append(settlement)
+        profit = sum(float(item.hypothetical_profit_units) for item in selected)
+        risk = sum(float(item.hypothetical_risk_units) for item in selected)
+        return {
+            "selections": len(selected),
+            "wins": sum(float(item.hypothetical_profit_units) > 0.0 for item in selected),
+            "losses": sum(float(item.hypothetical_profit_units) < 0.0 for item in selected),
+            "hypothetical_profit_units": profit,
+            "hypothetical_risk_units": risk,
+            "hypothetical_roi": profit / risk if risk else None,
+        }
+
+    base_summary = strategy_summary(filtered=False)
+    filtered_summary = strategy_summary(filtered=True)
+    qualified_ids = {
+        item.base_decision_id
+        for item in filtered_decisions
+        if item.filter_status == "qualified"
+    }
+    qualified_base = tuple(
+        item for item in base_decisions if item.decision_id in qualified_ids
+    )
+    qualified_settlements = tuple(
+        item for item in settlements if item.decision_id in qualified_ids
+    )
+    filtered_return = _event_block_return_interval(
+        qualified_base, qualified_settlements
+    )
+    paired_return = _paired_bayesian_filter_return_interval(rows)
+    filtered_clv = _latest_available_clv(qualified_base, quotes)
+    settled_events = len({base.event_id for _, base, _ in rows})
+    veto_counts = {
+        status: sum(item.filter_status == status for item in filtered_decisions)
+        for status in (
+            "base_policy_pass",
+            "bayesian_status_veto",
+            "bayesian_mean_ev_veto",
+            "bayesian_probability_veto",
+            "qualified",
+        )
+    }
+    count_requirements_met = (
+        len(rows) >= 500
+        and settled_events >= 40
+        and int(filtered_summary["selections"]) >= 100
+    )
+    return {
+        "policy_version": BAYESIAN_FILTER_POLICY_VERSION,
+        "paper_only": True,
+        "execution_enabled": False,
+        "source": "immutable_t24_decision_ledger",
+        "decision_count": len(filtered_decisions),
+        "paired_settled_decisions": len(rows),
+        "settled_events": settled_events,
+        "veto_counts": veto_counts,
+        "base_policy_on_same_cohort": base_summary,
+        "bayesian_filtered_policy": filtered_summary,
+        "filtered_return_interval": filtered_return,
+        "paired_roi_difference": paired_return,
+        "latest_available_price_clv": filtered_clv,
+        "decision_dataset_sha256": _dataset_hash(filtered_decisions),
+        "promotion_gate": {
+            "status": "collecting_prospective_evidence",
+            "minimum_paired_settled_decisions": 500,
+            "minimum_settled_events": 40,
+            "minimum_filtered_selections": 100,
+            "paired_settled_decisions": len(rows),
+            "settled_events": settled_events,
+            "filtered_selections": filtered_summary["selections"],
+            "count_requirements_met": count_requirements_met,
+            "positive_filtered_return_requirement_met": (
+                filtered_return["ci_95_lower"] is not None
+                and float(filtered_return["ci_95_lower"]) > 0.0
+            ),
+            "improves_base_policy_roi_requirement_met": (
+                paired_return["ci_95_lower"] is not None
+                and float(paired_return["ci_95_lower"]) > 0.0
+            ),
+            "positive_clv_requirement_met": (
+                filtered_clv["ci_95_lower"] is not None
+                and float(filtered_clv["ci_95_lower"]) > 0.0
+            ),
+            "execution_enabled": False,
+        },
+    }
+
+
 def _forecast_comparators(
     decisions: tuple[PaperDecision, ...], settlements: tuple
 ) -> dict[str, object]:
@@ -732,6 +938,20 @@ def update_market_performance() -> dict[str, object]:
         SOURCE_METADATA_CSV_PATH, SOURCE_METADATA_JSONL_PATH
     )
     decisions = decision_store.read()
+    bayesian_filter_exists = (
+        BAYESIAN_FILTER_DECISION_CSV_PATH.exists(),
+        BAYESIAN_FILTER_DECISION_JSONL_PATH.exists(),
+    )
+    if any(bayesian_filter_exists) and not all(bayesian_filter_exists):
+        raise ValueError("Bayesian filtered decision mirrors are incomplete")
+    bayesian_filtered_decisions = (
+        BayesianFilteredDecisionStore(
+            BAYESIAN_FILTER_DECISION_CSV_PATH,
+            BAYESIAN_FILTER_DECISION_JSONL_PATH,
+        ).read()
+        if all(bayesian_filter_exists)
+        else ()
+    )
     existing_settlements = settlement_store.read()
     settled_ids = {item.decision_id for item in existing_settlements}
     total_decision_contract = (
@@ -837,6 +1057,12 @@ def update_market_performance() -> dict[str, object]:
     )
     return_interval = _event_block_return_interval(decisions, settlements)
     clv = _latest_available_clv(decisions, quotes)
+    bayesian_filtered_performance = _bayesian_filtered_policy_performance(
+        bayesian_filtered_decisions,
+        decisions,
+        settlements,
+        quotes,
+    )
     total_quote_exists = (
         TOTAL_ROUNDS_QUOTE_CSV_PATH.exists(),
         TOTAL_ROUNDS_QUOTE_JSONL_PATH.exists(),
@@ -920,6 +1146,10 @@ def update_market_performance() -> dict[str, object]:
                 *(item.settled_at_utc for item in total_settlements),
                 *(item.decision_issued_at_utc for item in total_decisions),
                 *(item.observed_at_utc for item in total_quotes),
+                *(
+                    item.decision_issued_at_utc
+                    for item in bayesian_filtered_decisions
+                ),
             ],
             default=None,
         ),
@@ -943,6 +1173,7 @@ def update_market_performance() -> dict[str, object]:
         "latest_available_price_clv": clv,
         "entry_timing_experiment": timing_experiment,
         "bayesian_moneyline_challenger": bayesian_performance,
+        "bayesian_filtered_moneyline_policy": bayesian_filtered_performance,
         "promotion_gate": {
             "status": "collecting_prospective_evidence",
             "minimum_scored_fights": 500,

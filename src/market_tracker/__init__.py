@@ -28,6 +28,11 @@ from .forecasts import (
     ForecastCaptureStore,
 )
 from .paper import (
+    BAYESIAN_FILTER_MINIMUM_MEAN_EV,
+    BAYESIAN_FILTER_MINIMUM_PROBABILITY_POSITIVE_EV,
+    BAYESIAN_FILTER_POLICY_VERSION,
+    BayesianFilteredDecision,
+    BayesianFilteredDecisionStore,
     PaperDecision,
     PaperDecisionStore,
     PaperMetrics,
@@ -97,7 +102,12 @@ from .prop_paper import (
 
 __all__ = (
     "AppendResult",
+    "BAYESIAN_FILTER_MINIMUM_MEAN_EV",
+    "BAYESIAN_FILTER_MINIMUM_PROBABILITY_POSITIVE_EV",
+    "BAYESIAN_FILTER_POLICY_VERSION",
     "BETTING_STATUS",
+    "BayesianFilteredDecision",
+    "BayesianFilteredDecisionStore",
     "BlendEvaluation",
     "BlendObservation",
     "BlendPrediction",

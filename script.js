@@ -457,6 +457,33 @@ function bestBayesianCandidate(matchup) {
   return candidates[0] || null;
 }
 
+function bayesianFilteredCandidate(matchup) {
+  const signal = matchup?.current_signal;
+  if (!signal || !["fighter", "opponent"].includes(signal.paper_action)) return null;
+  const forecast = bayesianForMatchup(matchup);
+  if (!forecast) return null;
+  const distribution = bayesianSide(forecast, signal.paper_action);
+  const expected = bayesianExpectedReturn(distribution, signal.offered_moneyline);
+  if (!expected) return null;
+  const policy = state.bayesian?.decision_policy || {};
+  const minimumMean = Number(policy.minimum_mean_expected_return ?? 0.05);
+  const minimumProbability = Number(policy.minimum_probability_positive_expected_return ?? 0.80);
+  let status = "qualified";
+  if (forecast.status !== "paper_only_challenger") status = "bayesian_status_veto";
+  else if (expected.mean < minimumMean) status = "bayesian_mean_ev_veto";
+  else if (expected.probability_positive < minimumProbability) status = "bayesian_probability_veto";
+  return {
+    side: signal.paper_action,
+    name: signal.action_name || signal.best_candidate_name,
+    book: signal.target_book,
+    odds: signal.offered_moneyline,
+    distribution,
+    status,
+    qualified: status === "qualified",
+    ...expected,
+  };
+}
+
 function renderCurrentCard() {
   const container = $("#upcoming-matchups");
   container.replaceChildren();
@@ -936,6 +963,22 @@ function renderProfitabilityEvidence() {
   appendText(container, "p", "section-note", gate.count_requirements_met
     ? "The sample-count gate is met; calibration, return, and closing-line confidence requirements must also pass before policy promotion. Execution remains disabled."
     : `Evidence collection remains active: ${formatNumber(gate.settled_events, 0)} / ${formatNumber(gate.minimum_settled_events, 0)} events and ${formatNumber(gate.paper_selections, 0)} / ${formatNumber(gate.minimum_paper_selections, 0)} paper selections.`);
+  const filtered = state.performance?.bayesian_filtered_moneyline_policy;
+  if (filtered) {
+    const base = filtered.base_policy_on_same_cohort || {};
+    const bayes = filtered.bayesian_filtered_policy || {};
+    const paired = filtered.paired_roi_difference || {};
+    appendText(container, "h3", "", "Bayesian filter versus the existing moneyline policy");
+    const filterMetrics = element("div", "stats-grid");
+    [
+      [formatNumber(filtered.paired_settled_decisions, 0), "Paired settled decisions", "Same post-deployment cohort"],
+      [formatNumber(base.selections, 0), "Existing-policy selections", `${formatPercent(base.hypothetical_roi)} ROI`],
+      [formatNumber(bayes.selections, 0), "Selections surviving filter", `${formatPercent(bayes.hypothetical_roi)} ROI`],
+      [formatPercent(paired.point_difference), "Filtered minus base ROI", paired.ci_95_lower === null || paired.ci_95_lower === undefined ? "Awaiting multiple settled cards" : `95% interval ${formatPercent(paired.ci_95_lower)} to ${formatPercent(paired.ci_95_upper)}`],
+    ].forEach(([value, label, note]) => filterMetrics.append(statTile(value, label, note)));
+    container.append(filterMetrics);
+    appendText(container, "p", "section-note", "This comparison begins only with immutable T-24 decisions captured after deployment. The filter may veto an existing selection, but it never changes to the opposite fighter. Execution remains disabled.");
+  }
   const strategies = totals.shadow_threshold_strategies || {};
   const thresholds = Object.keys(strategies.market_residual || {});
   if (!thresholds.length) return;
@@ -978,20 +1021,19 @@ function renderMarket() {
       probabilityLabel: "Leave-one-book-out fair probability",
       warning: "Market-relative estimate; the target book is excluded from consensus.",
     });
-    const bayesianCandidate = bestBayesianCandidate(matchup);
+    const bayesianCandidate = bayesianFilteredCandidate(matchup);
     if (bayesianCandidate && bayesianCandidate.mean > 0) {
-      const policy = state.bayesian?.decision_policy || {};
-      const thresholdMet = bayesianCandidate.mean >= Number(policy.minimum_mean_expected_return ?? 0.05)
-        && bayesianCandidate.probability_positive >= Number(policy.minimum_probability_positive_expected_return ?? 0.80);
       ranked.push({
-        category: "Bayesian moneyline shadow",
+        category: "Bayesian-filtered moneyline",
         matchup: `${matchup.fighter_name} vs ${matchup.opponent_name}`,
         selection: bayesianCandidate.name,
         book: bayesianCandidate.book,
         odds: bayesianCandidate.odds,
         probability: bayesianCandidate.distribution.mean,
         expectedReturn: bayesianCandidate.mean,
-        thresholdMet,
+        thresholdMet: bayesianCandidate.qualified,
+        decisionLabel: bayesianCandidate.qualified ? "Filter keeps bet" : "Filter vetoes bet",
+        filterStatus: bayesianCandidate.status,
         probabilityPositive: bayesianCandidate.probability_positive,
         expectedReturnLower: bayesianCandidate.lower,
         expectedReturnUpper: bayesianCandidate.upper,
@@ -1014,16 +1056,18 @@ function renderMarket() {
   }));
   ranked.sort((left, right) => right.expectedReturn - left.expectedReturn || left.matchup.localeCompare(right.matchup));
   $("#market-opportunity-status").textContent = ranked.length
-    ? `${ranked.length} positive-EV price${ranked.length === 1 ? "" : "s"} in the latest synchronized capture. Bayesian shadow rows include parameter uncertainty; all rows remain paper-only.`
+    ? `${ranked.length} positive-EV price${ranked.length === 1 ? "" : "s"} in the latest synchronized capture. Bayesian-filtered rows begin with an existing-policy selection and may only keep or veto it; all rows remain paper-only.`
     : "No positive-EV price is currently published. This is a valid result, not a data failure.";
   if (!ranked.length) opportunityContainer.append(element("div", "empty-state", totalRounds ? "No current moneyline or total-round price has positive estimated value." : "Finish-time EV is awaiting the next successful totals capture; no current moneyline price is positive EV."));
   ranked.forEach((candidate) => {
     const card = element("article", "opportunity-card");
-    const meta = element("div", "opportunity-meta"); meta.append(element("span", "pill neutral", candidate.category), element("span", `pill ${candidate.thresholdMet ? "win" : "orange"}`, candidate.thresholdMet ? "Paper threshold met" : "+EV below threshold")); card.append(meta);
+    const meta = element("div", "opportunity-meta"); meta.append(element("span", "pill neutral", candidate.category), element("span", `pill ${candidate.thresholdMet ? "win" : "orange"}`, candidate.decisionLabel || (candidate.thresholdMet ? "Paper threshold met" : "+EV below threshold"))); card.append(meta);
     appendText(card, "h3", "", candidate.matchup); appendText(card, "p", "signal-reason", `${candidate.selection} at ${candidate.book}`);
     const stats = element("div", "signal-line"); const candidateStats = [[formatOdds(candidate.odds), "Offered price"], [formatPercent(candidate.probability), candidate.probabilityLabel], [formatPercent(candidate.expectedReturn), "Estimated return"]];
     if (finite(candidate.probabilityPositive) !== null) candidateStats.push([formatPercent(candidate.probabilityPositive), "Probability EV is positive"]);
-    candidateStats.forEach(([value, label]) => { const item = element("div", "signal-stat"); appendText(item, "strong", "", value); appendText(item, "span", "", label); stats.append(item); }); card.append(stats, element("div", "candidate-warning", candidate.warning)); opportunityContainer.append(card);
+    candidateStats.forEach(([value, label]) => { const item = element("div", "signal-stat"); appendText(item, "strong", "", value); appendText(item, "span", "", label); stats.append(item); });
+    const warning = candidate.filterStatus ? `The existing policy selected this same side and price. Bayesian filter: ${String(candidate.filterStatus).replaceAll("_", " ")}. ${candidate.warning}` : candidate.warning;
+    card.append(stats, element("div", "candidate-warning", warning)); opportunityContainer.append(card);
   });
 
   const totalStatus = totalRounds?.price_status === "available" ? `${totalRounds.quote_count} book/line quotes and ${totalRounds.forecast_count} frozen model probabilities.` : "Awaiting the next successful total-round odds capture.";
@@ -1064,7 +1108,7 @@ function renderMarket() {
       appendText(card, "p", "signal-reason", signal.reason);
       appendText(card, "p", "signal-reason", `Consensus: ${signal.consensus_book_count} books · ${formatPercent(signal.market_probability)} fair probability · model weight ${formatPercent(signal.model_weight)}.`);
     } else appendText(card, "p", "signal-reason", matchup.current_signal_unavailable_reason || "No evaluable paper signal for this matchup.");
-    const bayesianForecast = bayesianForMatchup(matchup); const bayesianCandidate = bestBayesianCandidate(matchup);
+    const bayesianForecast = bayesianForMatchup(matchup); const bayesianCandidate = bestBayesianCandidate(matchup); const bayesianFiltered = bayesianFilteredCandidate(matchup);
     if (bayesianForecast) {
       const bayesianDetails = document.createElement("details"); bayesianDetails.append(element("summary", "", "Bayesian model and expected-return uncertainty"));
       const bayesianBody = element("div", "details-body"); const bayesianTable = element("table", "data-table"); const bayesianRows = document.createElement("tbody");
@@ -1079,6 +1123,12 @@ function renderMarket() {
         ["Credible EV interval", `${formatPercent(bayesianCandidate.lower)} to ${formatPercent(bayesianCandidate.upper)}`],
         ["Probability EV is positive", formatPercent(bayesianCandidate.probability_positive)],
       );
+      if (bayesianFiltered) posteriorRows.push(
+        ["Existing-policy candidate", `${bayesianFiltered.name} ${formatOdds(bayesianFiltered.odds)} at ${bayesianFiltered.book}`],
+        ["Bayesian-filtered action", bayesianFiltered.qualified ? `Keep ${bayesianFiltered.name}` : `Veto · ${String(bayesianFiltered.status).replaceAll("_", " ")}`],
+        ["Bayesian EV at existing price", formatPercent(bayesianFiltered.mean)],
+        ["Probability EV is positive at existing price", formatPercent(bayesianFiltered.probability_positive)],
+      );
       posteriorRows.forEach(([label, value]) => { const posteriorRow = document.createElement("tr"); appendText(posteriorRow, "td", "", label); appendText(posteriorRow, "td", "", value); bayesianRows.append(posteriorRow); });
       bayesianTable.append(bayesianRows); bayesianBody.append(bayesianTable); bayesianDetails.append(bayesianBody); card.append(bayesianDetails);
     }
@@ -1091,6 +1141,12 @@ function renderMarket() {
       const lockedBody = element("div", "details-body"); const lockedTable = element("table", "data-table"); const lockedRows = document.createElement("tbody");
       [["Captured", formatTimestamp(locked.observed_at_utc)], ["Candidate", locked.best_candidate_name || "—"], ["Target book", locked.target_book || "—"], ["Offered line", formatOdds(locked.offered_moneyline)], ["Leave-one-book-out fair line", formatOdds(locked.market_fair_moneyline)], ["Estimated return", formatPercent(locked.estimated_expected_return)], ["Paper action", locked.paper_action], ["Reason", locked.reason]].forEach(([label, value]) => { const lockedRow = document.createElement("tr"); appendText(lockedRow, "td", "", label); appendText(lockedRow, "td", "", value); lockedRows.append(lockedRow); });
       lockedTable.append(lockedRows); lockedBody.append(lockedTable); lockedDetails.append(lockedBody); card.append(lockedDetails);
+    }
+    if (matchup.locked_t24_bayesian_filter) {
+      const filtered = matchup.locked_t24_bayesian_filter; const filteredDetails = document.createElement("details"); filteredDetails.append(element("summary", "", "Locked T-24 Bayesian filter"));
+      const filteredBody = element("div", "details-body"); const filteredTable = element("table", "data-table"); const filteredRows = document.createElement("tbody");
+      [["Base paper action", filtered.base_paper_action], ["Filtered action", filtered.filtered_paper_action], ["Filter result", String(filtered.filter_status).replaceAll("_", " ")], ["Same frozen price", formatOdds(filtered.candidate_moneyline)], ["Posterior mean probability", formatPercent(filtered.candidate_posterior_mean_probability)], ["Posterior mean EV", formatPercent(filtered.candidate_posterior_mean_expected_return)], ["Credible EV interval", `${formatPercent(filtered.candidate_expected_return_lower)} to ${formatPercent(filtered.candidate_expected_return_upper)}`], ["Probability EV is positive", formatPercent(filtered.candidate_probability_positive_expected_return)]].forEach(([label, value]) => { const filteredRow = document.createElement("tr"); appendText(filteredRow, "td", "", label); appendText(filteredRow, "td", "", value); filteredRows.append(filteredRow); });
+      filteredTable.append(filteredRows); filteredBody.append(filteredTable); filteredDetails.append(filteredBody); card.append(filteredDetails);
     }
     const fighter = state.fighterById.get(matchup.fighter_id); const opponent = state.fighterById.get(matchup.opponent_id);
     if (fighter && opponent) card.append(actionButton("Research fighter matchup", "secondary-button", () => setRoute(`matchups/${fighter.id}/${opponent.id}`))); container.append(card);
@@ -1107,10 +1163,11 @@ function renderModelData() {
   const modelCard = explainCard("The prediction model", model ? `Yes—the current predictor is ${String(model.model_type || "logistic regression").replaceAll("_", " ")}. It uses ${model.feature_columns?.length || 0} point-in-time features trained only on information available before each fight. Calibration adjusts the raw probabilities before publication.` : "The model artifact is not currently published.");
   if (evaluation) { const metrics = element("div", "metric-row"); [[formatPercent(evaluation.accuracy), "holdout accuracy"], [formatNumber(evaluation.log_loss, 3), "holdout log loss"], [formatNumber(evaluation.auc, 3), "holdout AUC"]].forEach(([value, label]) => { const stat = element("div", "mini-stat"); appendText(stat, "strong", "", value); appendText(stat, "span", "", label); metrics.append(stat); }); modelCard.append(metrics); }
   grid.append(modelCard);
-  const bayesianEvaluation = state.bayesian?.temporal_evaluation; const bayesianWalk = bayesianEvaluation?.walk_forward?.aggregate; const bayesianComparison = bayesianEvaluation?.comparison_to_point_model; const bayesianGate = bayesianEvaluation?.evidence_gate; const bayesianProspective = state.performance?.bayesian_moneyline_challenger;
+  const bayesianEvaluation = state.bayesian?.temporal_evaluation; const bayesianWalk = bayesianEvaluation?.walk_forward?.aggregate; const bayesianComparison = bayesianEvaluation?.comparison_to_point_model; const bayesianGate = bayesianEvaluation?.evidence_gate; const bayesianProspective = state.performance?.bayesian_moneyline_challenger; const bayesianFilter = state.performance?.bayesian_filtered_moneyline_policy;
   const bayesianCard = explainCard("Bayesian logistic challenger", state.bayesian ? "The challenger places a Gaussian posterior around the regularized logistic coefficients using a Laplace approximation. Each fight receives a posterior probability interval and a distribution of expected return at the offered price. It remains paper-only." : "The Bayesian challenger artifact is not currently published.");
   if (bayesianWalk) { const bayesianMetrics = element("div", "metric-row"); [[formatNumber(bayesianWalk.log_loss, 3), "walk-forward log loss"], [formatNumber(bayesianWalk.brier, 3), "walk-forward Brier"], [formatPercent(bayesianWalk.mean_90_probability_interval_width), "mean 90% interval width"], [formatNumber(bayesianComparison?.walk_forward_log_loss_delta_vs_point, 4), "log-loss delta vs point model"]].forEach(([value, label]) => { const stat = element("div", "mini-stat"); appendText(stat, "strong", "", value); appendText(stat, "span", "", label); bayesianMetrics.append(stat); }); bayesianCard.append(bayesianMetrics); }
   if (bayesianProspective) { const prospectiveMetrics = element("div", "metric-row"); [[formatNumber(bayesianProspective.scored_forecasts, 0), "prospectively scored fights"], [formatNumber(bayesianProspective.settled_shadow_selections, 0), "settled shadow selections"], [formatPercent(bayesianProspective.hypothetical_roi), "shadow ROI"], [`${bayesianProspective.wins || 0}-${bayesianProspective.losses || 0}`, "shadow record"]].forEach(([value, label]) => { const stat = element("div", "mini-stat"); appendText(stat, "strong", "", value); appendText(stat, "span", "", label); prospectiveMetrics.append(stat); }); bayesianCard.append(prospectiveMetrics); appendText(bayesianCard, "p", "section-note", bayesianProspective.source_limit); }
+  if (bayesianFilter) { const filteredMetrics = element("div", "metric-row"); [[formatNumber(bayesianFilter.paired_settled_decisions, 0), "immutable paired decisions"], [formatNumber(bayesianFilter.bayesian_filtered_policy?.selections, 0), "selections surviving veto"], [formatPercent(bayesianFilter.bayesian_filtered_policy?.hypothetical_roi), "filtered ROI"], [formatPercent(bayesianFilter.paired_roi_difference?.point_difference), "ROI delta vs existing policy"]].forEach(([value, label]) => { const stat = element("div", "mini-stat"); appendText(stat, "strong", "", value); appendText(stat, "span", "", label); filteredMetrics.append(stat); }); bayesianCard.append(filteredMetrics); appendText(bayesianCard, "p", "section-note", "The immutable T-24 filter starts with an existing-policy selection and only keeps or vetoes that same side and price."); }
   if (bayesianGate) appendText(bayesianCard, "p", "section-note", `Evidence gate: ${String(bayesianGate.status).replaceAll("_", " ")}. Prospective CLV and return requirements are not met; execution is disabled.`);
   grid.append(bayesianCard);
   const marketWeight = finite(state.market?.model_weight);

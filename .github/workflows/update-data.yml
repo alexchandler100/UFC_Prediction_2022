@@ -106,6 +106,8 @@ jobs:
             src/content/data/market/performance_report.json
 
           for optional_path in \
+            src/content/data/market/bayesian_filtered_paper_decisions.csv \
+            src/content/data/market/bayesian_filtered_paper_decisions.jsonl \
             src/content/data/market/total_round_paper_settlements.csv \
             src/content/data/market/total_round_paper_settlements.jsonl
           do

@@ -13,6 +13,8 @@ sys.path.insert(0, str(REPO_ROOT / "src"))
 
 import update_market_performance as updater  # noqa: E402
 from market_tracker import (  # noqa: E402
+    BayesianFilteredDecision,
+    BayesianFilteredDecisionStore,
     ForecastCapture,
     ForecastCaptureStore,
     PaperDecision,
@@ -136,6 +138,20 @@ class MarketPerformanceTests(unittest.TestCase):
             selected_gamma=0.0,
             decision_issued_at_utc="2026-01-09T12:00:00Z",
         )
+        filtered_decision = BayesianFilteredDecision.create(
+            decision,
+            source_vegas_sha256="b" * 64,
+            bayesian_artifact_sha256="c" * 64,
+            bayesian_model_id="bayes-one",
+            bayesian_status="paper_only_challenger",
+            credible_level=0.9,
+            fighter_posterior_mean=0.55,
+            fighter_posterior_median=0.55,
+            fighter_probability_lower=0.5254727972575093,
+            fighter_probability_upper=0.5742865237557964,
+            fighter_calibrated_logit_location=0.2006706954621514,
+            calibrated_logit_scale=0.06,
+        )
 
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
@@ -201,6 +217,8 @@ class MarketPerformanceTests(unittest.TestCase):
                 "SOURCE_METADATA_JSONL_PATH": market_root / "quote_source_metadata.jsonl",
                 "DECISION_CSV_PATH": market_root / "paper_decisions.csv",
                 "DECISION_JSONL_PATH": market_root / "paper_decisions.jsonl",
+                "BAYESIAN_FILTER_DECISION_CSV_PATH": market_root / "bayesian_filtered_paper_decisions.csv",
+                "BAYESIAN_FILTER_DECISION_JSONL_PATH": market_root / "bayesian_filtered_paper_decisions.jsonl",
                 "SETTLEMENT_CSV_PATH": market_root / "paper_settlements.csv",
                 "SETTLEMENT_JSONL_PATH": market_root / "paper_settlements.jsonl",
                 "TOTAL_ROUNDS_QUOTE_CSV_PATH": market_root / "total_round_quote_snapshots.csv",
@@ -217,6 +235,10 @@ class MarketPerformanceTests(unittest.TestCase):
             PaperDecisionStore(
                 paths["DECISION_CSV_PATH"], paths["DECISION_JSONL_PATH"]
             ).append([decision])
+            BayesianFilteredDecisionStore(
+                paths["BAYESIAN_FILTER_DECISION_CSV_PATH"],
+                paths["BAYESIAN_FILTER_DECISION_JSONL_PATH"],
+            ).append([filtered_decision])
             ForecastCaptureStore(
                 market_root / "forecast_captures.csv",
                 market_root / "forecast_captures.jsonl",
@@ -272,6 +294,16 @@ class MarketPerformanceTests(unittest.TestCase):
             self.assertEqual(persisted["schema_version"], 3)
             self.assertIn("entry_timing_experiment", persisted)
             self.assertIn("total_rounds", persisted)
+            self.assertEqual(
+                persisted["bayesian_filtered_moneyline_policy"]
+                ["bayesian_filtered_policy"]["selections"],
+                1,
+            )
+            self.assertEqual(
+                persisted["bayesian_filtered_moneyline_policy"]
+                ["bayesian_filtered_policy"]["hypothetical_roi"],
+                2.0,
+            )
             self.assertEqual(persisted["total_rounds"]["decisions"], 0)
             validation = validate_market_data(market_root, required=True)
             self.assertEqual(validation.errors, [], validation.errors)
@@ -402,6 +434,8 @@ class MarketPerformanceTests(unittest.TestCase):
                 "SOURCE_METADATA_JSONL_PATH": market_root / "quote_source_metadata.jsonl",
                 "DECISION_CSV_PATH": market_root / "paper_decisions.csv",
                 "DECISION_JSONL_PATH": market_root / "paper_decisions.jsonl",
+                "BAYESIAN_FILTER_DECISION_CSV_PATH": market_root / "bayesian_filtered_paper_decisions.csv",
+                "BAYESIAN_FILTER_DECISION_JSONL_PATH": market_root / "bayesian_filtered_paper_decisions.jsonl",
                 "SETTLEMENT_CSV_PATH": market_root / "paper_settlements.csv",
                 "SETTLEMENT_JSONL_PATH": market_root / "paper_settlements.jsonl",
                 "TOTAL_ROUNDS_QUOTE_CSV_PATH": market_root / "total_round_quote_snapshots.csv",
