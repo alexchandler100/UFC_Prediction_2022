@@ -33,6 +33,14 @@ from fight_predictor.point_in_time import (
     PointInTimeDatasetBuilder,
     training_fingerprint,
 )
+from fight_predictor.bayesian import (
+    BAYESIAN_CREDIBLE_LEVEL,
+    BAYESIAN_MINIMUM_MEAN_EV,
+    BAYESIAN_MINIMUM_PROBABILITY_POSITIVE_EV,
+    BAYESIAN_MODEL_VERSION,
+    BayesianLogisticChallenger,
+    laplace_covariance,
+)
 from fight_predictor.outcome_publication import (
     validate_outcome_forecast_publication,
 )
@@ -68,6 +76,7 @@ from market_tracker.prospective import (
     MAX_SOURCE_QUOTE_AGE_SECONDS,
     MIN_CONSENSUS_BOOKS,
 )
+from update_market_performance import _bayesian_prediction_history_performance
 
 
 RAW_REQUIRED_COLUMNS = {
@@ -715,6 +724,159 @@ def validate_model_artifact(
     return report
 
 
+def validate_bayesian_artifact(
+    artifact: object,
+    winner_model: object,
+    point_in_time: pd.DataFrame | None,
+) -> ValidationReport:
+    """Validate the paper-only Laplace posterior against its base model."""
+
+    report = ValidationReport()
+    if not isinstance(artifact, dict):
+        report.errors.append(
+            "bayesian_winner_challenger.json must contain a JSON object"
+        )
+        return report
+    if not isinstance(winner_model, dict):
+        report.errors.append("Bayesian challenger requires winner_model.json")
+        return report
+    required = {
+        "schema_version", "model_version", "model_id", "model_type",
+        "paper_only", "execution_enabled", "base_model_id",
+        "base_model_version", "data_through", "training_labels_through",
+        "training_fights", "training_fingerprint_sha256",
+        "state_fingerprint_sha256", "feature_columns", "scaler_scale",
+        "coefficient_location", "posterior_cholesky_lower", "selected_c",
+        "coefficient_prior", "posterior_approximation", "calibration_slope",
+        "calibration_uncertainty", "credible_level", "temporal_evaluation",
+        "decision_policy",
+    }
+    missing = sorted(required - set(artifact))
+    report.require(
+        not missing,
+        f"Bayesian challenger artifact is missing fields: {missing}",
+    )
+    if missing:
+        return report
+    report.require(
+        artifact["schema_version"] == 1,
+        "Bayesian challenger schema version must be 1",
+    )
+    report.require(
+        artifact["model_version"] == BAYESIAN_MODEL_VERSION,
+        "Bayesian challenger model version is unsupported",
+    )
+    report.require(
+        artifact["paper_only"] is True and artifact["execution_enabled"] is False,
+        "Bayesian challenger must remain paper-only with execution disabled",
+    )
+    base_contract = {
+        "base_model_id": winner_model.get("model_id"),
+        "base_model_version": winner_model.get("model_version"),
+        "data_through": winner_model.get("data_through"),
+        "training_labels_through": winner_model.get("training_labels_through"),
+        "training_fights": winner_model.get("training_fights"),
+        "training_fingerprint_sha256": winner_model.get(
+            "training_fingerprint_sha256"
+        ),
+        "state_fingerprint_sha256": winner_model.get("state_fingerprint_sha256"),
+        "feature_columns": winner_model.get("feature_columns"),
+        "scaler_scale": winner_model.get("scaler_scale"),
+        "coefficient_location": winner_model.get("coefficients"),
+        "selected_c": winner_model.get("selected_c"),
+        "calibration_slope": winner_model.get("calibration_slope"),
+    }
+    for key, expected in base_contract.items():
+        report.require(
+            artifact.get(key) == expected,
+            f"Bayesian challenger {key} differs from winner_model.json",
+        )
+    unhashed = dict(artifact)
+    supplied_model_id = unhashed.pop("model_id", None)
+    try:
+        canonical = json.dumps(
+            unhashed, sort_keys=True, separators=(",", ":"), allow_nan=False
+        )
+        expected_model_id = sha256(canonical.encode("utf-8")).hexdigest()[:20]
+        report.require(
+            supplied_model_id == expected_model_id,
+            "Bayesian challenger model_id does not match artifact contents",
+        )
+    except (TypeError, ValueError):
+        report.errors.append("Bayesian challenger cannot be encoded canonically")
+    features = artifact.get("feature_columns")
+    if not isinstance(features, list) or not features:
+        report.errors.append("Bayesian challenger features must be a nonempty list")
+        return report
+    try:
+        factor = BayesianLogisticChallenger._expand_lower(
+            artifact["posterior_cholesky_lower"], len(features)
+        )
+        covariance = factor @ factor.T
+    except (TypeError, ValueError) as error:
+        report.errors.append(f"Bayesian challenger posterior is invalid: {error}")
+        return report
+    report.require(
+        float(artifact["credible_level"]) == BAYESIAN_CREDIBLE_LEVEL,
+        "Bayesian challenger credible level differs from policy",
+    )
+    policy = artifact.get("decision_policy")
+    report.require(
+        isinstance(policy, dict)
+        and policy.get("execution_enabled") is False,
+        "Bayesian challenger decision policy must keep execution disabled",
+    )
+    evaluation = artifact.get("temporal_evaluation")
+    report.require(
+        isinstance(evaluation, dict)
+        and evaluation.get("status") == "evaluated_chronologically",
+        "Bayesian challenger requires chronological evaluation",
+    )
+    if isinstance(evaluation, dict):
+        gate = evaluation.get("evidence_gate")
+        report.require(
+            isinstance(gate, dict) and gate.get("execution_enabled") is False,
+            "Bayesian evidence gate must keep execution disabled",
+        )
+    if point_in_time is not None:
+        try:
+            dates = pd.to_datetime(point_in_time["date"], errors="raise")
+            training_start = pd.to_datetime(
+                winner_model["training_window_start"], errors="raise"
+            )
+            training = point_in_time.loc[dates >= training_start].reset_index(drop=True)
+            design = (
+                training[features]
+                .apply(pd.to_numeric, errors="coerce")
+                .fillna(0.0)
+                .to_numpy(dtype=float)
+                / np.asarray(artifact["scaler_scale"], dtype=float)
+            )
+            expected_covariance = laplace_covariance(
+                design,
+                np.asarray(artifact["coefficient_location"], dtype=float),
+                float(artifact["selected_c"]),
+            )
+            report.require(
+                np.allclose(
+                    covariance,
+                    expected_covariance,
+                    rtol=1e-10,
+                    atol=1e-12,
+                ),
+                "Bayesian posterior covariance is not reproducible from the training matrix",
+            )
+        except (KeyError, TypeError, ValueError, np.linalg.LinAlgError) as error:
+            report.errors.append(
+                f"Bayesian posterior covariance could not be verified: {error}"
+            )
+    report.facts.append(
+        "Bayesian winner challenger: "
+        f"{len(features):,} coefficients / {BAYESIAN_CREDIBLE_LEVEL:.0%} interval"
+    )
+    return report
+
+
 def _load_json(path: Path, report: ValidationReport):
     try:
         return json.loads(path.read_text(encoding="utf-8"))
@@ -748,7 +910,7 @@ def validate_publication(
         *(f"fighter_fights_{key}" for key in FIGHTER_EXPLORER_SHARD_KEYS),
     }
     if require_model_artifact:
-        required_json.add("winner_model")
+        required_json.update({"winner_model", "bayesian_winner_challenger"})
     report.require(
         required_json.issubset(objects),
         f"missing publication JSON files: {sorted(required_json - set(objects))}",
@@ -761,6 +923,13 @@ def validate_publication(
         report.merge(
             validate_model_artifact(
                 winner_model, raw, fighters, point_in_time, auxiliary_fights
+            )
+        )
+        report.merge(
+            validate_bayesian_artifact(
+                objects.get("bayesian_winner_challenger"),
+                winner_model,
+                point_in_time,
             )
         )
 
@@ -853,7 +1022,16 @@ def validate_publication(
     if not vegas.empty:
         required = {"fighter name", "opponent name", "date"}
         if _require_columns(vegas, required, "vegas odds", report):
-            vegas_dates = pd.to_datetime(vegas["date"], errors="coerce")
+            vegas_date_values = vegas["date"]
+            if pd.api.types.is_numeric_dtype(vegas_date_values):
+                # pandas' default JSON encoding stores datetimes as Unix
+                # milliseconds.  pd.to_datetime otherwise assumes nanoseconds
+                # when the JSON is loaded through json.loads/DataFrame.
+                vegas_dates = pd.to_datetime(
+                    vegas_date_values, unit="ms", errors="coerce"
+                )
+            else:
+                vegas_dates = pd.to_datetime(vegas_date_values, errors="coerce")
             report.require(vegas_dates.notna().all(), "vegas odds contains invalid dates")
             report.require(vegas["fighter name"].astype(bool).all(), "vegas odds has blank fighters")
             report.require(vegas["opponent name"].astype(bool).all(), "vegas odds has blank opponents")
@@ -975,6 +1153,186 @@ def validate_publication(
                         ).all(),
                         "betting must remain disabled until market-relative validation",
                     )
+                    bayesian_artifact = objects.get(
+                        "bayesian_winner_challenger"
+                    )
+                    bayesian_columns = {
+                        "bayesian model id", "bayesian model version",
+                        "bayesian posterior mean", "bayesian posterior median",
+                        "bayesian probability lower", "bayesian probability upper",
+                        "bayesian credible level",
+                        "bayesian calibrated logit location",
+                        "bayesian calibrated logit scale", "bayesian status",
+                        "fighter prior fights", "opponent prior fights",
+                        "bayesian decision policy",
+                        "bayesian candidate selection",
+                        "bayesian candidate book", "bayesian candidate odds",
+                        "bayesian posterior mean ev", "bayesian ev lower",
+                        "bayesian ev upper",
+                        "bayesian probability positive ev",
+                        "bayesian paper action",
+                        "bayesian paper threshold met",
+                        "bayesian decision status",
+                    }
+                    if _require_columns(
+                        vegas,
+                        bayesian_columns,
+                        "vegas odds Bayesian challenger",
+                        report,
+                    ) and isinstance(bayesian_artifact, dict):
+                        report.require(
+                            vegas.loc[resolved, "bayesian model id"]
+                            .astype(str)
+                            .eq(str(bayesian_artifact.get("model_id")))
+                            .all(),
+                            "resolved Bayesian IDs do not match the challenger artifact",
+                        )
+                        report.require(
+                            vegas["bayesian model version"]
+                            .astype(str)
+                            .eq(BAYESIAN_MODEL_VERSION)
+                            .all(),
+                            "Bayesian versions do not match the challenger artifact",
+                        )
+                        bayesian_numeric = {
+                            column: pd.to_numeric(vegas[column], errors="coerce")
+                            for column in (
+                                "bayesian posterior mean",
+                                "bayesian posterior median",
+                                "bayesian probability lower",
+                                "bayesian probability upper",
+                                "bayesian credible level",
+                                "bayesian calibrated logit location",
+                                "bayesian calibrated logit scale",
+                            )
+                        }
+                        for column in (
+                            "bayesian posterior mean",
+                            "bayesian posterior median",
+                            "bayesian probability lower",
+                            "bayesian probability upper",
+                        ):
+                            report.require(
+                                bayesian_numeric[column][resolved].between(
+                                    0, 1, inclusive="neither"
+                                ).all(),
+                                f"resolved {column} values must be strictly bounded",
+                            )
+                        report.require(
+                            (
+                                bayesian_numeric["bayesian probability lower"][resolved]
+                                <= bayesian_numeric["bayesian posterior median"][resolved]
+                            ).all()
+                            and (
+                                bayesian_numeric["bayesian posterior median"][resolved]
+                                <= bayesian_numeric["bayesian probability upper"][resolved]
+                            ).all(),
+                            "Bayesian probability intervals are unordered",
+                        )
+                        report.require(
+                            bayesian_numeric["bayesian credible level"][resolved]
+                            .eq(BAYESIAN_CREDIBLE_LEVEL)
+                            .all(),
+                            "Bayesian credible levels differ from policy",
+                        )
+                        report.require(
+                            np.isfinite(
+                                bayesian_numeric[
+                                    "bayesian calibrated logit location"
+                                ][resolved]
+                            ).all()
+                            and (
+                                bayesian_numeric[
+                                    "bayesian calibrated logit scale"
+                                ][resolved]
+                                >= 0.0
+                            ).all(),
+                            "Bayesian calibrated logit parameters are invalid",
+                        )
+                        fighter_history = pd.to_numeric(
+                            vegas["fighter prior fights"], errors="coerce"
+                        )
+                        opponent_history = pd.to_numeric(
+                            vegas["opponent prior fights"], errors="coerce"
+                        )
+                        history_eligible = (
+                            resolved
+                            & fighter_history.ge(2)
+                            & opponent_history.ge(2)
+                            & bayesian_numeric[
+                                "bayesian calibrated logit scale"
+                            ].gt(0.0)
+                        )
+                        report.require(
+                            vegas.loc[history_eligible, "bayesian status"]
+                            .eq("paper_only_challenger")
+                            .all()
+                            and vegas.loc[
+                                resolved & ~history_eligible, "bayesian status"
+                            ]
+                            .eq("abstain_low_history_uncertainty")
+                            .all(),
+                            "Bayesian history eligibility/status contract is invalid",
+                        )
+                        report.require(
+                            vegas["bayesian decision policy"]
+                            .eq("bayesian-moneyline-shadow-v1")
+                            .all(),
+                            "Bayesian decision policy version is invalid",
+                        )
+                        candidate_rows = (
+                            vegas["bayesian candidate selection"]
+                            .astype(str)
+                            .str.strip()
+                            .ne("")
+                        )
+                        mean_ev = pd.to_numeric(
+                            vegas["bayesian posterior mean ev"], errors="coerce"
+                        )
+                        probability_positive_ev = pd.to_numeric(
+                            vegas["bayesian probability positive ev"],
+                            errors="coerce",
+                        )
+                        ev_lower = pd.to_numeric(
+                            vegas["bayesian ev lower"], errors="coerce"
+                        )
+                        ev_upper = pd.to_numeric(
+                            vegas["bayesian ev upper"], errors="coerce"
+                        )
+                        report.require(
+                            np.isfinite(mean_ev[candidate_rows]).all()
+                            and np.isfinite(ev_lower[candidate_rows]).all()
+                            and np.isfinite(ev_upper[candidate_rows]).all()
+                            and probability_positive_ev[candidate_rows]
+                            .between(0, 1, inclusive="both")
+                            .all(),
+                            "Bayesian candidate EV summaries are invalid",
+                        )
+                        expected_threshold = (
+                            candidate_rows
+                            & mean_ev.ge(BAYESIAN_MINIMUM_MEAN_EV)
+                            & probability_positive_ev.ge(
+                                BAYESIAN_MINIMUM_PROBABILITY_POSITIVE_EV
+                            )
+                        )
+                        supplied_threshold = vegas[
+                            "bayesian paper threshold met"
+                        ].astype(bool)
+                        report.require(
+                            supplied_threshold.eq(expected_threshold).all(),
+                            "Bayesian paper threshold does not follow policy",
+                        )
+                        report.require(
+                            vegas.loc[~supplied_threshold, "bayesian paper action"]
+                            .eq("pass")
+                            .all()
+                            and vegas.loc[
+                                supplied_threshold, "bayesian paper action"
+                            ]
+                            .isin(["fighter", "opponent"])
+                            .all(),
+                            "Bayesian paper action does not follow its threshold",
+                        )
 
     completed_max = pd.to_datetime(raw["date"], errors="coerce").max()
     completed_age = (pd.Timestamp.today().normalize() - completed_max.normalize()).days
@@ -1605,6 +1963,28 @@ def validate_market_data(
                             total_performance.get(key) == value,
                             f"total-round performance {key} cannot be reproduced",
                         )
+                bayesian_performance = performance.get(
+                    "bayesian_moneyline_challenger"
+                )
+                report.require(
+                    isinstance(bayesian_performance, dict)
+                    and bayesian_performance.get("paper_only") is True
+                    and bayesian_performance.get("execution_enabled") is False,
+                    "Bayesian performance contract must remain paper-only",
+                )
+                history_path = (
+                    market_root.parent / "external" / "prediction_history.json"
+                )
+                history = (
+                    pd.read_json(history_path)
+                    if history_path.exists()
+                    else pd.DataFrame()
+                )
+                report.require(
+                    bayesian_performance
+                    == _bayesian_prediction_history_performance(history),
+                    "Bayesian performance report cannot be reproduced",
+                )
             expected_metrics = summarize_paper_settlements(
                 decisions, settlements
             ).to_mapping()

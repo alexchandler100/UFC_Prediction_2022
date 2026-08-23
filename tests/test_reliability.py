@@ -19,7 +19,9 @@ from odds_getter import OddsGetter
 from data_handler import DataHandler
 from data_handler.data_handler import validate_scraped_event_integrity
 from fight_predictor import (
+    BayesianLogisticChallenger,
     FightPredictor,
+    LogitNormalPrediction,
     PointInTimeDatasetBuilder,
     TemporalFightPredictor,
 )
@@ -657,6 +659,122 @@ class PointInTimeFeatureTests(unittest.TestCase):
         metrics = _metrics(np.ones(3, dtype=int), np.array([0.6, 0.7, 0.8]))
         self.assertIsNone(metrics["auc"])
         json.dumps(metrics, allow_nan=False)
+
+    def test_bayesian_challenger_round_trip_preserves_posterior_symmetry(self):
+        raw = pd.DataFrame(
+            self.make_fight("f1", "e1", "2020-01-01", "a", "b", "W")
+            + self.make_fight("f2", "e2", "2021-01-01", "a", "b", "L")
+        )
+        builder = PointInTimeDatasetBuilder(raw, self.make_profiles("a", "b"))
+        template = builder.build()
+        rows = []
+        rng = np.random.default_rng(81)
+        for index in range(140):
+            row = template.iloc[index % len(template)].copy()
+            row["date"] = pd.Timestamp("2020-01-01") + pd.Timedelta(days=index)
+            row["fight_id"] = f"bayesian-{index}"
+            row["target"] = index % 2
+            row[list(builder.feature_columns)] = rng.normal(
+                size=len(builder.feature_columns)
+            )
+            rows.append(row)
+        training = pd.DataFrame(rows).reset_index(drop=True)
+        builder.training_data = training.copy()
+        predictor = TemporalFightPredictor(training, builder)
+        predictor.imputer, predictor.scaler, predictor.model = predictor._fit_pipeline(
+            training[list(builder.feature_columns)], training["target"], 0.03
+        )
+        predictor._artifact_scale = predictor.scaler.scale_.copy()
+        predictor._artifact_coefficients = predictor.model.coef_[0].copy()
+        predictor.best_c = 0.03
+        predictor.calibration_slope = 1.05
+        predictor.evaluation = {"fixture": True}
+
+        challenger = BayesianLogisticChallenger.fit(predictor, evaluate=False)
+        sample = training.loc[[3], list(builder.feature_columns)]
+        prediction = challenger.prediction(sample)
+        inverse = challenger.prediction(-sample)
+        self.assertAlmostEqual(
+            prediction.posterior_mean_probability
+            + inverse.posterior_mean_probability,
+            1.0,
+            12,
+        )
+        self.assertAlmostEqual(
+            prediction.lower_probability + inverse.upper_probability,
+            1.0,
+            12,
+        )
+        self.assertGreater(prediction.calibrated_logit_scale, 0.0)
+        ev = prediction.expected_return(+150)
+        self.assertTrue(0.0 <= ev["probability_positive_expected_return"] <= 1.0)
+        price_frame = pd.DataFrame(
+            [
+                {
+                    "fighter name": "A",
+                    "opponent name": "B",
+                    "bayesian status": "paper_only_challenger",
+                    "bayesian posterior mean": prediction.posterior_mean_probability,
+                    "bayesian posterior median": prediction.posterior_median_probability,
+                    "bayesian probability lower": prediction.lower_probability,
+                    "bayesian probability upper": prediction.upper_probability,
+                    "bayesian credible level": prediction.credible_level,
+                    "bayesian calibrated logit location": prediction.calibrated_logit_location,
+                    "bayesian calibrated logit scale": prediction.calibrated_logit_scale,
+                    "fighter TestBook": +200,
+                    "opponent TestBook": -220,
+                }
+            ]
+        )
+        priced = challenger.annotate_best_price_expected_returns(
+            price_frame, ["TestBook"]
+        )
+        self.assertEqual(priced.loc[0, "bayesian decision policy"], "bayesian-moneyline-shadow-v1")
+        self.assertIn(
+            priced.loc[0, "bayesian paper action"],
+            {"fighter", "opponent", "pass"},
+        )
+        self.assertTrue(
+            np.isfinite(priced.loc[0, "bayesian posterior mean ev"])
+        )
+
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "bayesian.json"
+            challenger.save_artifact(path)
+            loaded = BayesianLogisticChallenger.load_artifact(
+                path,
+                builder=builder,
+                base_artifact=predictor.artifact(),
+            )
+            loaded_prediction = loaded.prediction(sample)
+            self.assertAlmostEqual(
+                prediction.posterior_mean_probability,
+                loaded_prediction.posterior_mean_probability,
+                14,
+            )
+            tampered = json.loads(path.read_text(encoding="utf-8"))
+            tampered["posterior_cholesky_lower"][0] *= 2
+            path.write_text(json.dumps(tampered), encoding="utf-8")
+            with self.assertRaisesRegex(ValueError, "model_id"):
+                BayesianLogisticChallenger.load_artifact(
+                    path,
+                    builder=builder,
+                    base_artifact=predictor.artifact(),
+                )
+
+    def test_logit_normal_expected_return_is_an_affine_probability_transform(self):
+        prediction = LogitNormalPrediction(
+            posterior_mean_probability=0.60,
+            posterior_median_probability=0.60,
+            lower_probability=0.50,
+            upper_probability=0.70,
+            calibrated_logit_location=np.log(1.5),
+            calibrated_logit_scale=0.20,
+        )
+        expected = prediction.expected_return(+100)
+        self.assertAlmostEqual(expected["posterior_mean_expected_return"], 0.20)
+        self.assertAlmostEqual(expected["lower_expected_return"], 0.0)
+        self.assertAlmostEqual(expected["upper_expected_return"], 0.40)
 
 
 class PredictionHistoryTests(unittest.TestCase):

@@ -16,3 +16,13 @@ from .outcome_publication import (
     validate_outcome_forecast_publication,
     write_outcome_forecast_publication,
 )
+from .bayesian import (
+    BAYESIAN_CREDIBLE_LEVEL,
+    BAYESIAN_MINIMUM_MEAN_EV,
+    BAYESIAN_MINIMUM_PROBABILITY_POSITIVE_EV,
+    BAYESIAN_MODEL_VERSION,
+    BayesianLogisticChallenger,
+    LogitNormalPrediction,
+    american_to_decimal,
+    laplace_covariance,
+)

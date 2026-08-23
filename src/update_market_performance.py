@@ -40,6 +40,7 @@ from market_tracker._common import canonical_hash, implied_probability
 ROOT = Path(__file__).resolve().parent
 MARKET_ROOT = ROOT / "content" / "data" / "market"
 RAW_PATH = ROOT / "content" / "data" / "processed" / "ufc_fights_reported_doubled.csv"
+PREDICTION_HISTORY_PATH = ROOT / "content" / "data" / "external" / "prediction_history.json"
 QUOTE_CSV_PATH = MARKET_ROOT / "quote_snapshots.csv"
 QUOTE_JSONL_PATH = MARKET_ROOT / "quote_snapshots.jsonl"
 SOURCE_METADATA_CSV_PATH = MARKET_ROOT / "quote_source_metadata.csv"
@@ -351,6 +352,201 @@ def _quantile(sorted_values: list[float], probability: float) -> float:
     return sorted_values[lower] * (1.0 - fraction) + sorted_values[upper] * fraction
 
 
+def _bayesian_prediction_history_performance(
+    history: pd.DataFrame,
+) -> dict[str, object]:
+    """Score frozen weekly Bayesian shadow rows after outcomes become known.
+
+    This is a bounded first-pass monitor. The weekly publication retains the
+    offered book/price and posterior before the result, but it is not yet the
+    immutable T-24 ledger used by the market policy, so it cannot satisfy the
+    CLV or execution promotion requirements.
+    """
+
+    policy_version = "bayesian-moneyline-shadow-v1"
+    required = {
+        "bayesian decision policy", "bayesian model id",
+        "bayesian posterior mean", "bayesian paper action",
+        "bayesian paper threshold met", "bayesian candidate odds",
+        "bayesian candidate book", "bayesian candidate selection",
+        "bayesian probability positive ev", "bayesian posterior mean ev",
+        "bayesian ev lower", "bayesian ev upper", "forecast status",
+        "actual result", "fighter id", "opponent id", "event id", "fight id",
+    }
+    if history.empty or not required.issubset(history.columns):
+        return {
+            "policy_version": policy_version,
+            "paper_only": True,
+            "execution_enabled": False,
+            "source": "weekly_prediction_history",
+            "source_limit": (
+                "awaiting the first completed challenger forecast; not an immutable T-24 ledger"
+            ),
+            "scored_forecasts": 0,
+            "settled_shadow_selections": 0,
+            "wins": 0,
+            "losses": 0,
+            "hypothetical_profit_units": 0.0,
+            "hypothetical_risk_units": 0.0,
+            "hypothetical_roi": None,
+            "forecast_metrics": None,
+            "return_interval": {
+                "event_count": 0,
+                "bootstrap_samples": 0,
+                "ci_95_lower": None,
+                "ci_95_upper": None,
+            },
+            "dataset_sha256": canonical_hash([]),
+            "promotion_gate": {
+                "status": "collecting_prospective_evidence",
+                "minimum_scored_fights": 500,
+                "minimum_settled_events": 40,
+                "minimum_shadow_selections": 100,
+                "immutable_t24_ledger_requirement_met": False,
+                "positive_clv_requirement_met": False,
+                "positive_return_requirement_met": False,
+                "execution_enabled": False,
+            },
+        }
+    policy_rows = history[
+        history["bayesian decision policy"].astype(str).eq(policy_version)
+        & history["bayesian model id"].astype(str).str.strip().ne("")
+    ].copy()
+    scored = policy_rows[
+        policy_rows["forecast status"].astype(str).eq("completed")
+        & policy_rows["actual result"].astype(str).isin(["W", "L"])
+    ].copy()
+    probabilities = pd.to_numeric(
+        scored.get("bayesian posterior mean"), errors="coerce"
+    )
+    valid_probability = probabilities.between(0, 1, inclusive="neither")
+    scored = scored.loc[valid_probability].copy()
+    probabilities = probabilities.loc[valid_probability]
+    targets = scored["actual result"].astype(str).eq("W").astype(int)
+    metrics = (
+        forecast_metrics(probabilities.tolist(), targets.tolist()).to_mapping()
+        if len(scored)
+        else None
+    )
+
+    selected = scored[
+        scored["bayesian paper threshold met"].astype(bool)
+        & scored["bayesian paper action"].astype(str).isin(["fighter", "opponent"])
+    ].copy()
+    profits: list[float] = []
+    event_profits: dict[str, list[float]] = {}
+    audit_rows: list[dict[str, object]] = []
+    wins = 0
+    for _, row in selected.iterrows():
+        try:
+            line = int(float(row["bayesian candidate odds"]))
+        except (TypeError, ValueError) as error:
+            raise ValueError("Bayesian shadow selection has an invalid price") from error
+        if abs(line) < 100 or line == 0:
+            raise ValueError("Bayesian shadow selection has an invalid American price")
+        fighter_won = str(row["actual result"]) == "W"
+        selected_fighter = str(row["bayesian paper action"]) == "fighter"
+        won = fighter_won == selected_fighter
+        profit = (line / 100.0 if line > 0 else 100.0 / abs(line)) if won else -1.0
+        wins += int(won)
+        profits.append(float(profit))
+        event_key = str(row.get("event id") or row.get("date") or "unknown")
+        event_profits.setdefault(event_key, []).append(float(profit))
+        audit_rows.append(
+            {
+                "fight_id": str(row.get("fight id") or ""),
+                "event_id": str(row.get("event id") or ""),
+                "fighter_id": str(row.get("fighter id") or ""),
+                "opponent_id": str(row.get("opponent id") or ""),
+                "model_id": str(row.get("bayesian model id") or ""),
+                "action": str(row["bayesian paper action"]),
+                "book": str(row["bayesian candidate book"]),
+                "moneyline": line,
+                "posterior_mean": float(row["bayesian posterior mean"]),
+                "posterior_mean_ev": float(row["bayesian posterior mean ev"]),
+                "probability_positive_ev": float(
+                    row["bayesian probability positive ev"]
+                ),
+                "target": int(fighter_won),
+                "profit_units": float(profit),
+            }
+        )
+    interval: dict[str, object] = {
+        "definition": "whole-card bootstrap of one-unit Bayesian shadow selections",
+        "event_count": len(event_profits),
+        "bootstrap_samples": 0,
+        "ci_95_lower": None,
+        "ci_95_upper": None,
+    }
+    if len(event_profits) >= 2 and profits:
+        blocks = [event_profits[key] for key in sorted(event_profits)]
+        generator = random.Random(
+            int(canonical_hash({"bayesian_blocks": blocks})[:16], 16)
+        )
+        samples = []
+        for _ in range(10_000):
+            chosen = [generator.choice(blocks) for _ in blocks]
+            flattened = [value for block in chosen for value in block]
+            samples.append(sum(flattened) / len(flattened))
+        samples.sort()
+        interval.update(
+            {
+                "bootstrap_samples": len(samples),
+                "ci_95_lower": _quantile(samples, 0.025),
+                "ci_95_upper": _quantile(samples, 0.975),
+            }
+        )
+    risk = float(len(profits))
+    profit_total = float(sum(profits))
+    settled_events = len(
+        {
+            str(row.get("event id") or row.get("date") or "unknown")
+            for _, row in scored.iterrows()
+        }
+    )
+    return {
+        "policy_version": policy_version,
+        "paper_only": True,
+        "execution_enabled": False,
+        "source": "weekly_prediction_history",
+        "source_limit": (
+            "timestamped weekly publication; not yet an immutable T-24 decision/CLV ledger"
+        ),
+        "scored_forecasts": len(scored),
+        "settled_events": settled_events,
+        "settled_shadow_selections": len(profits),
+        "wins": wins,
+        "losses": len(profits) - wins,
+        "hypothetical_profit_units": profit_total,
+        "hypothetical_risk_units": risk,
+        "hypothetical_roi": profit_total / risk if risk else None,
+        "forecast_metrics": metrics,
+        "return_interval": interval,
+        "dataset_sha256": canonical_hash(audit_rows),
+        "promotion_gate": {
+            "status": "collecting_prospective_evidence",
+            "minimum_scored_fights": 500,
+            "minimum_settled_events": 40,
+            "minimum_shadow_selections": 100,
+            "scored_fights": len(scored),
+            "settled_events": settled_events,
+            "shadow_selections": len(profits),
+            "count_requirements_met": (
+                len(scored) >= 500
+                and settled_events >= 40
+                and len(profits) >= 100
+            ),
+            "immutable_t24_ledger_requirement_met": False,
+            "positive_clv_requirement_met": False,
+            "positive_return_requirement_met": (
+                interval["ci_95_lower"] is not None
+                and float(interval["ci_95_lower"]) > 0.0
+            ),
+            "execution_enabled": False,
+        },
+    }
+
+
 def _event_block_return_interval(
     decisions: tuple[PaperDecision, ...], settlements: tuple
 ) -> dict[str, object]:
@@ -550,6 +746,14 @@ def update_market_performance() -> dict[str, object]:
     raw_bytes = RAW_PATH.read_bytes()
     result_hash = sha256(raw_bytes).hexdigest()
     raw = pd.read_csv(RAW_PATH, low_memory=False)
+    prediction_history = (
+        pd.read_json(PREDICTION_HISTORY_PATH)
+        if PREDICTION_HISTORY_PATH.exists()
+        else pd.DataFrame()
+    )
+    bayesian_performance = _bayesian_prediction_history_performance(
+        prediction_history
+    )
     outcomes, completed_events, ambiguous_matchups = _result_index(raw)
     total_durations, ambiguous_total_matchups = (
         _total_duration_index(raw) if total_decision_contract else ({}, set())
@@ -738,6 +942,7 @@ def update_market_performance() -> dict[str, object]:
         "paper_return_interval": return_interval,
         "latest_available_price_clv": clv,
         "entry_timing_experiment": timing_experiment,
+        "bayesian_moneyline_challenger": bayesian_performance,
         "promotion_gate": {
             "status": "collecting_prospective_evidence",
             "minimum_scored_fights": 500,

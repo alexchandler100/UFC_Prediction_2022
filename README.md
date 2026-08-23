@@ -14,12 +14,43 @@ The weekly job:
 3. Replays fights in causal bout order and builds one stable-ID feature row per physical W/L fight.
 4. Tunes and evaluates a regularized logistic model with nested chronological folds, adds pre-bout Elo/state features, applies symmetric temperature calibration, and refits on the full ten-year window.
 5. Saves and reloads a content-hashed JSON model artifact before forecasting the next card.
-6. Builds a compact stable-ID fighter explorer publication with UFCStats performance plus linked Bellator/ONE history.
-7. Adds timestamped no-vig multi-book consensus from The Odds API when valid lines are available and publishes the website JSON.
+6. Builds a paper-only Bayesian logistic challenger around the same MAP coefficients, evaluates its posterior mean chronologically, and publishes probability intervals.
+7. Builds a compact stable-ID fighter explorer publication with UFCStats performance plus linked Bellator/ONE history.
+8. Adds timestamped no-vig multi-book consensus from The Odds API when valid lines are available and publishes the website JSON.
 
 The 82-feature model is antisymmetric: swapping the fighters produces the complementary probability. Historical features use only information available before that bout; appending future fights cannot change an existing training row. Split decisions are valid W/L labels, while draws and no-contests are retained as state/history events but are not binary training labels.
 
 The regularization search includes `C=0.001` and `0.003`; an ablation found the old `0.01` lower boundary was masking stronger shrinkage. Recency weighting, decision-label weighting, and Glicko/RD were tested but remain unpromoted because their gains were small or inconsistent. Exact results are recorded in [AUDIT.md](AUDIT.md).
+
+The Bayesian challenger does not replace that production probability. The L2
+solution is treated as the MAP estimate under independent zero-mean Gaussian
+coefficient priors, and the inverse penalized-likelihood Hessian supplies a
+deterministic Laplace posterior. Each matchup therefore has a normal posterior
+on its calibrated logit and a logit-normal posterior on win probability. The
+site reports the posterior mean, 90% credible interval, expected-return
+interval at the current best price, and posterior probability that EV is
+positive. Calibration-slope, feature-measurement, and model-form uncertainty
+are not included, so the interval is explicitly labeled a challenger estimate.
+If either fighter has fewer than two prior bouts, the site may show the
+coefficient-only interval for research but refuses to calculate a Bayesian EV
+candidate; a zero feature vector must never appear falsely certain.
+The predeclared shadow gate requires at least 5% posterior-mean EV and an 80%
+posterior probability of positive EV; execution remains disabled pending
+prospective CLV and return evidence.
+
+The weekly publication also freezes the best available displayed book/price,
+mean EV, 90% EV interval, probability of positive EV, and shadow pass/selection
+under `bayesian-moneyline-shadow-v1`. After the card, those rows move into
+prediction history and the performance report scores their log loss, Brier
+score, flat-unit return, and whole-card bootstrap interval. This first-pass
+monitor is timestamped but is not yet the immutable T-24/CLV ledger, so it can
+never by itself enable execution.
+
+Rebuild this challenger without network access using:
+
+```console
+python -B src/rebuild_bayesian_challenger.py
+```
 
 ## External promotion history
 
@@ -85,6 +116,7 @@ The auditable artifacts are:
 - `src/content/data/external_mma/snapshots.jsonl`
 - `src/content/data/external_mma/evaluation_report.json`
 - `src/content/data/external/winner_model.json`
+- `src/content/data/external/bayesian_winner_challenger.json` (paper-only Laplace posterior)
 - `src/content/data/external/vegas_odds.json`
 - `src/content/data/external/fighter_explorer.json` (searchable career/profile index)
 - `src/content/data/external/fighter_fights_*.json` (lazy-loaded complete fight logs)

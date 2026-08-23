@@ -45,6 +45,9 @@ class WebsiteExplorerContractTests(unittest.TestCase):
         workflow = (
             REPO_ROOT / ".github" / "workflows" / "collect-market-snapshot.yml"
         ).read_text(encoding="utf-8")
+        update_workflow = (
+            REPO_ROOT / ".github" / "workflows" / "update-data.yml"
+        ).read_text(encoding="utf-8")
 
         self.assertIn("Consensus, best price, and paper decisions", page)
         self.assertIn("Potentially profitable prices", page)
@@ -65,6 +68,11 @@ class WebsiteExplorerContractTests(unittest.TestCase):
         self.assertIn("renderProfitabilityEvidence", script)
         self.assertIn("Compare predeclared EV thresholds", script)
         self.assertIn("Locked T-24 residual paper decision", script)
+        self.assertIn("bayesian_winner_challenger.json", script)
+        self.assertIn("Bayesian moneyline shadow", script)
+        self.assertIn("Probability EV is positive", script)
+        self.assertIn("Bayesian model and expected-return uncertainty", script)
+        self.assertIn("bayesian_winner_challenger.json", update_workflow)
         self.assertIn("current_opportunities.json", workflow)
 
     def test_layout_has_explicit_mobile_breakpoints(self):

@@ -2,6 +2,38 @@
   "ambiguous_historical_matchup_keys": 1,
   "ambiguous_result_decisions": 0,
   "as_of_utc": "2026-08-22T17:27:07.796696Z",
+  "bayesian_moneyline_challenger": {
+    "dataset_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "execution_enabled": false,
+    "forecast_metrics": null,
+    "hypothetical_profit_units": 0.0,
+    "hypothetical_risk_units": 0.0,
+    "hypothetical_roi": null,
+    "losses": 0,
+    "paper_only": true,
+    "policy_version": "bayesian-moneyline-shadow-v1",
+    "promotion_gate": {
+      "execution_enabled": false,
+      "immutable_t24_ledger_requirement_met": false,
+      "minimum_scored_fights": 500,
+      "minimum_settled_events": 40,
+      "minimum_shadow_selections": 100,
+      "positive_clv_requirement_met": false,
+      "positive_return_requirement_met": false,
+      "status": "collecting_prospective_evidence"
+    },
+    "return_interval": {
+      "bootstrap_samples": 0,
+      "ci_95_lower": null,
+      "ci_95_upper": null,
+      "event_count": 0
+    },
+    "scored_forecasts": 0,
+    "settled_shadow_selections": 0,
+    "source": "weekly_prediction_history",
+    "source_limit": "awaiting the first completed challenger forecast; not an immutable T-24 ledger",
+    "wins": 0
+  },
   "betting_status": "disabled_paper_only_no_execution",
   "decision_dataset_sha256": "6dd9ab61e1a3b5115b937d0413bf68b4182c4a2c5210711f8bed691a4c792726",
   "decisions_total": 13,
@@ -335,7 +367,7 @@
     "status": "collecting_prospective_evidence"
   },
   "quote_dataset_sha256": "6c8554ace8341619d6064415691030551258a7e911bd93ed956c20ee47c1fc68",
-  "report_sha256": "42085b6d4bd7330ace868f372b68a91b87a5a1c7e137b753cd8f8411e36e655f",
+  "report_sha256": "b63810e1a4837908d70df08117191ce07fd80d10681d41085bae3c5d9cf5b03a",
   "result_source_sha256": "dbb98dcae91e5ba826a22947ec9792a123d667d34ad40e1a5ad0495408b7b492",
   "schema_version": 3,
   "settlement_dataset_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",

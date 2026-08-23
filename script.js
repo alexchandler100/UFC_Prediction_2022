@@ -5,6 +5,7 @@ const DATA_PATHS = {
   vegas: "src/content/data/external/vegas_odds.json",
   card: "src/content/data/external/card_info.json",
   model: "src/content/data/external/winner_model.json",
+  bayesian: "src/content/data/external/bayesian_winner_challenger.json",
   market: "src/content/data/market/current_opportunities.json",
   performance: "src/content/data/market/performance_report.json",
   outcomes: "src/content/data/external/outcome_forecasts.json",
@@ -15,11 +16,13 @@ const state = {
   vegas: null,
   card: null,
   model: null,
+  bayesian: null,
   market: null,
   performance: null,
   outcomes: null,
   fighters: [],
   fighterById: new Map(),
+  bayesianByPair: new Map(),
   fightColumn: new Map(),
   shardCache: new Map(),
   selected: { a: null, b: null },
@@ -77,6 +80,28 @@ function formatOdds(value) {
   const number = finite(value);
   if (number === null) return "—";
   return number > 0 ? `+${Math.round(number)}` : `${Math.round(number)}`;
+}
+
+function decimalOdds(value) {
+  const odds = finite(value);
+  if (odds === null || odds === 0 || Math.abs(odds) < 100) return null;
+  return odds > 0 ? 1 + odds / 100 : 1 + 100 / Math.abs(odds);
+}
+
+function normalCdf(value) {
+  const x = Number(value);
+  if (!Number.isFinite(x)) return x > 0 ? 1 : 0;
+  const sign = x < 0 ? -1 : 1;
+  const absolute = Math.abs(x) / Math.sqrt(2);
+  const t = 1 / (1 + 0.3275911 * absolute);
+  const erf = sign * (1 - (((((1.061405429 * t - 1.453152027) * t) + 1.421413741) * t - 0.284496736) * t + 0.254829592) * t * Math.exp(-absolute * absolute));
+  return (1 + erf) / 2;
+}
+
+function probabilityLogit(value) {
+  const probability = finite(value);
+  if (probability === null || probability <= 0 || probability >= 1) return null;
+  return Math.log(probability / (1 - probability));
 }
 
 function formatDate(value, options = { year: "numeric", month: "short", day: "numeric" }) {
@@ -182,11 +207,12 @@ async function fetchJson(path, required = true) {
 }
 
 async function loadData() {
-  const [explorer, vegas, card, model, market, performance, outcomes] = await Promise.all([
+  const [explorer, vegas, card, model, bayesian, market, performance, outcomes] = await Promise.all([
     fetchJson(DATA_PATHS.explorer),
     fetchJson(DATA_PATHS.vegas, false),
     fetchJson(DATA_PATHS.card, false),
     fetchJson(DATA_PATHS.model, false),
+    fetchJson(DATA_PATHS.bayesian, false),
     fetchJson(DATA_PATHS.market, false),
     fetchJson(DATA_PATHS.performance, false),
     fetchJson(DATA_PATHS.outcomes, false),
@@ -195,12 +221,33 @@ async function loadData() {
   state.vegas = vegas;
   state.card = card;
   state.model = model;
+  state.bayesian = bayesian;
   state.market = market;
   state.performance = performance;
   state.outcomes = outcomes;
   state.fighters = explorer.fighters;
   state.fighterById = new Map(state.fighters.map((fighter) => [fighter.id, fighter]));
   state.fightColumn = new Map(explorer.fight_columns.map((column, index) => [column, index]));
+  state.bayesianByPair = new Map();
+  if (vegas?.["fighter id"]) Object.keys(vegas["fighter id"]).forEach((index) => {
+    const fighterId = String(vegas["fighter id"]?.[index] || "");
+    const opponentId = String(vegas["opponent id"]?.[index] || "");
+    if (!fighterId || !opponentId || !vegas["bayesian model id"]?.[index]) return;
+    const key = [fighterId, opponentId].sort().join("|");
+    state.bayesianByPair.set(key, {
+      fighter_id: fighterId,
+      opponent_id: opponentId,
+      model_id: vegas["bayesian model id"]?.[index],
+      mean: finite(vegas["bayesian posterior mean"]?.[index]),
+      median: finite(vegas["bayesian posterior median"]?.[index]),
+      lower: finite(vegas["bayesian probability lower"]?.[index]),
+      upper: finite(vegas["bayesian probability upper"]?.[index]),
+      credible_level: finite(vegas["bayesian credible level"]?.[index]),
+      logit_location: finite(vegas["bayesian calibrated logit location"]?.[index]),
+      logit_scale: finite(vegas["bayesian calibrated logit scale"]?.[index]),
+      status: vegas["bayesian status"]?.[index],
+    });
+  });
 }
 
 function fighterByName(name) {
@@ -342,6 +389,74 @@ function currentMatchups() {
   return state.market?.matchups?.length ? state.market.matchups : legacyRows();
 }
 
+function bayesianForMatchup(matchup) {
+  const fighterId = String(matchup?.fighter_id || "");
+  const opponentId = String(matchup?.opponent_id || "");
+  if (!fighterId || !opponentId) return null;
+  const source = state.bayesianByPair.get([fighterId, opponentId].sort().join("|"));
+  if (!source || source.mean === null || source.lower === null || source.upper === null || source.logit_location === null || source.logit_scale === null) return null;
+  if (source.fighter_id === fighterId) return source;
+  return {
+    ...source,
+    fighter_id: fighterId,
+    opponent_id: opponentId,
+    mean: 1 - source.mean,
+    median: source.median === null ? null : 1 - source.median,
+    lower: 1 - source.upper,
+    upper: 1 - source.lower,
+    logit_location: -source.logit_location,
+  };
+}
+
+function bayesianSide(forecast, side) {
+  if (!forecast) return null;
+  if (side === "fighter") return forecast;
+  return {
+    ...forecast,
+    mean: 1 - forecast.mean,
+    median: forecast.median === null ? null : 1 - forecast.median,
+    lower: 1 - forecast.upper,
+    upper: 1 - forecast.lower,
+    logit_location: -forecast.logit_location,
+  };
+}
+
+function bayesianExpectedReturn(distribution, odds) {
+  const decimal = decimalOdds(odds);
+  if (!distribution || decimal === null) return null;
+  const breakEven = 1 / decimal;
+  const thresholdLogit = probabilityLogit(breakEven);
+  let probabilityPositive = null;
+  if (thresholdLogit !== null) {
+    probabilityPositive = distribution.logit_scale === 0
+      ? Number(distribution.mean > breakEven)
+      : 1 - normalCdf((thresholdLogit - distribution.logit_location) / distribution.logit_scale);
+  }
+  return {
+    mean: decimal * distribution.mean - 1,
+    lower: decimal * distribution.lower - 1,
+    upper: decimal * distribution.upper - 1,
+    probability_positive: probabilityPositive,
+    break_even_probability: breakEven,
+  };
+}
+
+function bestBayesianCandidate(matchup) {
+  const forecast = bayesianForMatchup(matchup);
+  if (!forecast || forecast.status !== "paper_only_challenger") return null;
+  const candidates = [];
+  (matchup.book_quotes || []).filter((quote) => quote.eligible_for_consensus !== false).forEach((quote) => {
+    [["fighter", matchup.fighter_name, quote.fighter_moneyline], ["opponent", matchup.opponent_name, quote.opponent_moneyline]].forEach(([side, name, odds]) => {
+      const distribution = bayesianSide(forecast, side);
+      const expected = bayesianExpectedReturn(distribution, odds);
+      if (!expected) return;
+      candidates.push({ side, name, book: quote.book, odds, distribution, ...expected });
+    });
+  });
+  candidates.sort((left, right) => right.mean - left.mean || right.probability_positive - left.probability_positive || left.book.localeCompare(right.book));
+  return candidates[0] || null;
+}
+
 function renderCurrentCard() {
   const container = $("#upcoming-matchups");
   container.replaceChildren();
@@ -384,6 +499,19 @@ function renderCurrentCard() {
     appendText(right, "span", "", " model");
     market.append(left, right);
     card.append(market);
+
+    const bayesian = bayesianForMatchup(matchup);
+    if (bayesian) {
+      const posterior = element("div", "matchup-market");
+      const posteriorValue = element("span");
+      appendText(posteriorValue, "strong", "", formatPercent(bayesian.mean));
+      appendText(posteriorValue, "span", "", ` posterior mean for ${matchup.fighter_name}`);
+      const posteriorRange = element("span");
+      appendText(posteriorRange, "strong", "", `${formatPercent(bayesian.lower)}-${formatPercent(bayesian.upper)}`);
+      appendText(posteriorRange, "span", "", bayesian.status === "paper_only_challenger" ? ` ${formatPercent(bayesian.credible_level, 0)} credible interval` : " parameter interval · EV abstains for low history");
+      posterior.append(posteriorValue, posteriorRange);
+      card.append(posterior);
+    }
 
     const actions = element("div", "card-actions");
     const analyze = actionButton("Research matchup", "primary-button small-button", () => {
@@ -850,6 +978,27 @@ function renderMarket() {
       probabilityLabel: "Leave-one-book-out fair probability",
       warning: "Market-relative estimate; the target book is excluded from consensus.",
     });
+    const bayesianCandidate = bestBayesianCandidate(matchup);
+    if (bayesianCandidate && bayesianCandidate.mean > 0) {
+      const policy = state.bayesian?.decision_policy || {};
+      const thresholdMet = bayesianCandidate.mean >= Number(policy.minimum_mean_expected_return ?? 0.05)
+        && bayesianCandidate.probability_positive >= Number(policy.minimum_probability_positive_expected_return ?? 0.80);
+      ranked.push({
+        category: "Bayesian moneyline shadow",
+        matchup: `${matchup.fighter_name} vs ${matchup.opponent_name}`,
+        selection: bayesianCandidate.name,
+        book: bayesianCandidate.book,
+        odds: bayesianCandidate.odds,
+        probability: bayesianCandidate.distribution.mean,
+        expectedReturn: bayesianCandidate.mean,
+        thresholdMet,
+        probabilityPositive: bayesianCandidate.probability_positive,
+        expectedReturnLower: bayesianCandidate.lower,
+        expectedReturnUpper: bayesianCandidate.upper,
+        probabilityLabel: "Posterior-mean model probability",
+        warning: `${formatPercent(bayesianCandidate.probability_positive)} posterior probability of positive EV; ${formatPercent(bayesianCandidate.lower)} to ${formatPercent(bayesianCandidate.upper)} credible EV interval. Challenger only—no execution.`,
+      });
+    }
   });
   (totalRounds?.positive_candidates || []).forEach((candidate) => ranked.push({
     category: "Total rounds",
@@ -865,14 +1014,16 @@ function renderMarket() {
   }));
   ranked.sort((left, right) => right.expectedReturn - left.expectedReturn || left.matchup.localeCompare(right.matchup));
   $("#market-opportunity-status").textContent = ranked.length
-    ? `${ranked.length} positive-EV price${ranked.length === 1 ? "" : "s"} in the latest synchronized capture, before limits, slippage, and model uncertainty.`
+    ? `${ranked.length} positive-EV price${ranked.length === 1 ? "" : "s"} in the latest synchronized capture. Bayesian shadow rows include parameter uncertainty; all rows remain paper-only.`
     : "No positive-EV price is currently published. This is a valid result, not a data failure.";
   if (!ranked.length) opportunityContainer.append(element("div", "empty-state", totalRounds ? "No current moneyline or total-round price has positive estimated value." : "Finish-time EV is awaiting the next successful totals capture; no current moneyline price is positive EV."));
   ranked.forEach((candidate) => {
     const card = element("article", "opportunity-card");
     const meta = element("div", "opportunity-meta"); meta.append(element("span", "pill neutral", candidate.category), element("span", `pill ${candidate.thresholdMet ? "win" : "orange"}`, candidate.thresholdMet ? "Paper threshold met" : "+EV below threshold")); card.append(meta);
     appendText(card, "h3", "", candidate.matchup); appendText(card, "p", "signal-reason", `${candidate.selection} at ${candidate.book}`);
-    const stats = element("div", "signal-line"); [[formatOdds(candidate.odds), "Offered price"], [formatPercent(candidate.probability), candidate.probabilityLabel], [formatPercent(candidate.expectedReturn), "Estimated return"]].forEach(([value, label]) => { const item = element("div", "signal-stat"); appendText(item, "strong", "", value); appendText(item, "span", "", label); stats.append(item); }); card.append(stats, element("div", "candidate-warning", candidate.warning)); opportunityContainer.append(card);
+    const stats = element("div", "signal-line"); const candidateStats = [[formatOdds(candidate.odds), "Offered price"], [formatPercent(candidate.probability), candidate.probabilityLabel], [formatPercent(candidate.expectedReturn), "Estimated return"]];
+    if (finite(candidate.probabilityPositive) !== null) candidateStats.push([formatPercent(candidate.probabilityPositive), "Probability EV is positive"]);
+    candidateStats.forEach(([value, label]) => { const item = element("div", "signal-stat"); appendText(item, "strong", "", value); appendText(item, "span", "", label); stats.append(item); }); card.append(stats, element("div", "candidate-warning", candidate.warning)); opportunityContainer.append(card);
   });
 
   const totalStatus = totalRounds?.price_status === "available" ? `${totalRounds.quote_count} book/line quotes and ${totalRounds.forecast_count} frozen model probabilities.` : "Awaiting the next successful total-round odds capture.";
@@ -913,6 +1064,24 @@ function renderMarket() {
       appendText(card, "p", "signal-reason", signal.reason);
       appendText(card, "p", "signal-reason", `Consensus: ${signal.consensus_book_count} books · ${formatPercent(signal.market_probability)} fair probability · model weight ${formatPercent(signal.model_weight)}.`);
     } else appendText(card, "p", "signal-reason", matchup.current_signal_unavailable_reason || "No evaluable paper signal for this matchup.");
+    const bayesianForecast = bayesianForMatchup(matchup); const bayesianCandidate = bestBayesianCandidate(matchup);
+    if (bayesianForecast) {
+      const bayesianDetails = document.createElement("details"); bayesianDetails.append(element("summary", "", "Bayesian model and expected-return uncertainty"));
+      const bayesianBody = element("div", "details-body"); const bayesianTable = element("table", "data-table"); const bayesianRows = document.createElement("tbody");
+      const posteriorRows = [
+        ["Posterior mean", `${matchup.fighter_name} ${formatPercent(bayesianForecast.mean)} / ${matchup.opponent_name} ${formatPercent(1 - bayesianForecast.mean)}`],
+        [`${formatPercent(bayesianForecast.credible_level, 0)} credible interval`, `${matchup.fighter_name} ${formatPercent(bayesianForecast.lower)}-${formatPercent(bayesianForecast.upper)}`],
+        ["Model status", bayesianForecast.status === "paper_only_challenger" ? "Paper-only Laplace challenger; calibration uncertainty is not included" : "EV abstention: insufficient fighter history to represent input uncertainty"],
+      ];
+      if (bayesianCandidate) posteriorRows.push(
+        ["Best current model-priced side", `${bayesianCandidate.name} ${formatOdds(bayesianCandidate.odds)} at ${bayesianCandidate.book}`],
+        ["Posterior mean EV", formatPercent(bayesianCandidate.mean)],
+        ["Credible EV interval", `${formatPercent(bayesianCandidate.lower)} to ${formatPercent(bayesianCandidate.upper)}`],
+        ["Probability EV is positive", formatPercent(bayesianCandidate.probability_positive)],
+      );
+      posteriorRows.forEach(([label, value]) => { const posteriorRow = document.createElement("tr"); appendText(posteriorRow, "td", "", label); appendText(posteriorRow, "td", "", value); bayesianRows.append(posteriorRow); });
+      bayesianTable.append(bayesianRows); bayesianBody.append(bayesianTable); bayesianDetails.append(bayesianBody); card.append(bayesianDetails);
+    }
     const details = document.createElement("details"); details.append(element("summary", "", `All ${matchup.book_quotes.length} book lines`));
     const body = element("div", "details-body book-table-wrap"); const table = element("table", "data-table");
     const head = document.createElement("thead"); const header = document.createElement("tr"); ["Book", matchup.fighter_name, matchup.opponent_name, "Quote age", "Consensus"].forEach((value) => appendText(header, "th", "", value)); head.append(header); table.append(head);
@@ -938,6 +1107,12 @@ function renderModelData() {
   const modelCard = explainCard("The prediction model", model ? `Yes—the current predictor is ${String(model.model_type || "logistic regression").replaceAll("_", " ")}. It uses ${model.feature_columns?.length || 0} point-in-time features trained only on information available before each fight. Calibration adjusts the raw probabilities before publication.` : "The model artifact is not currently published.");
   if (evaluation) { const metrics = element("div", "metric-row"); [[formatPercent(evaluation.accuracy), "holdout accuracy"], [formatNumber(evaluation.log_loss, 3), "holdout log loss"], [formatNumber(evaluation.auc, 3), "holdout AUC"]].forEach(([value, label]) => { const stat = element("div", "mini-stat"); appendText(stat, "strong", "", value); appendText(stat, "span", "", label); metrics.append(stat); }); modelCard.append(metrics); }
   grid.append(modelCard);
+  const bayesianEvaluation = state.bayesian?.temporal_evaluation; const bayesianWalk = bayesianEvaluation?.walk_forward?.aggregate; const bayesianComparison = bayesianEvaluation?.comparison_to_point_model; const bayesianGate = bayesianEvaluation?.evidence_gate; const bayesianProspective = state.performance?.bayesian_moneyline_challenger;
+  const bayesianCard = explainCard("Bayesian logistic challenger", state.bayesian ? "The challenger places a Gaussian posterior around the regularized logistic coefficients using a Laplace approximation. Each fight receives a posterior probability interval and a distribution of expected return at the offered price. It remains paper-only." : "The Bayesian challenger artifact is not currently published.");
+  if (bayesianWalk) { const bayesianMetrics = element("div", "metric-row"); [[formatNumber(bayesianWalk.log_loss, 3), "walk-forward log loss"], [formatNumber(bayesianWalk.brier, 3), "walk-forward Brier"], [formatPercent(bayesianWalk.mean_90_probability_interval_width), "mean 90% interval width"], [formatNumber(bayesianComparison?.walk_forward_log_loss_delta_vs_point, 4), "log-loss delta vs point model"]].forEach(([value, label]) => { const stat = element("div", "mini-stat"); appendText(stat, "strong", "", value); appendText(stat, "span", "", label); bayesianMetrics.append(stat); }); bayesianCard.append(bayesianMetrics); }
+  if (bayesianProspective) { const prospectiveMetrics = element("div", "metric-row"); [[formatNumber(bayesianProspective.scored_forecasts, 0), "prospectively scored fights"], [formatNumber(bayesianProspective.settled_shadow_selections, 0), "settled shadow selections"], [formatPercent(bayesianProspective.hypothetical_roi), "shadow ROI"], [`${bayesianProspective.wins || 0}-${bayesianProspective.losses || 0}`, "shadow record"]].forEach(([value, label]) => { const stat = element("div", "mini-stat"); appendText(stat, "strong", "", value); appendText(stat, "span", "", label); prospectiveMetrics.append(stat); }); bayesianCard.append(prospectiveMetrics); appendText(bayesianCard, "p", "section-note", bayesianProspective.source_limit); }
+  if (bayesianGate) appendText(bayesianCard, "p", "section-note", `Evidence gate: ${String(bayesianGate.status).replaceAll("_", " ")}. Prospective CLV and return requirements are not met; execution is disabled.`);
+  grid.append(bayesianCard);
   const marketWeight = finite(state.market?.model_weight);
   const marketCard = explainCard("How bets are informed", state.market ? `The price policy finds the best offered line, then estimates fair probability from the other eligible books. The target book is excluded to avoid grading its price against itself. The model currently receives ${formatPercent(marketWeight)} weight${marketWeight === 0 ? " because prospective market-relative evidence is still being collected" : " in the blended estimate"}.` : "Current market policy output is unavailable, so no live paper signal is shown.");
   if (state.performance?.promotion_gate) appendText(marketCard, "p", "section-note", `Promotion gate: ${String(state.performance.promotion_gate.status).replaceAll("_", " ")} · ${state.performance.promotion_gate.paper_selections} / ${state.performance.promotion_gate.minimum_paper_selections} minimum paper selections.`); grid.append(marketCard);
@@ -949,7 +1124,7 @@ function renderModelData() {
   const dictionary = element("section", "panel"); const heading = element("div", "section-heading"); const headingCopy = element("div"); appendText(headingCopy, "p", "eyebrow", "Definitions"); appendText(headingCopy, "h2", "", "Published data dictionary"); appendText(headingCopy, "p", "section-note", "Every career and bout-level statistic exposed by the explorer."); heading.append(headingCopy); dictionary.append(heading);
   const columns = element("div", "data-columns");
   [["Career statistics", state.explorer.data_dictionary.career], ["Per-fight statistics", state.explorer.data_dictionary.fight_stats]].forEach(([title, definitions]) => { const section = element("div"); appendText(section, "h3", "", title); const table = element("table", "data-table"); const tbody = document.createElement("tbody"); Object.entries(definitions).forEach(([key, definition]) => { const row = document.createElement("tr"); appendText(row, "td", "", definition.label); appendText(row, "td", "", definition.group); appendText(row, "td", "", definition.format || definition.unit); tbody.append(row); }); table.append(tbody); section.append(table); columns.append(section); }); dictionary.append(columns);
-  const provenance = document.createElement("details"); provenance.append(element("summary", "", "Publication identity and integrity metadata")); const body = element("div", "details-body"); appendText(body, "p", "", `Identity contract: ${state.explorer.identity_contract}`); appendText(body, "p", "hash", `SHA-256: ${state.explorer.publication_sha256}`); if (model?.model_id) appendText(body, "p", "hash", `Model ID: ${model.model_id} · trained through ${model.training_labels_through || model.data_through}`); provenance.append(body); dictionary.append(provenance); container.append(dictionary);
+  const provenance = document.createElement("details"); provenance.append(element("summary", "", "Publication identity and integrity metadata")); const body = element("div", "details-body"); appendText(body, "p", "", `Identity contract: ${state.explorer.identity_contract}`); appendText(body, "p", "hash", `SHA-256: ${state.explorer.publication_sha256}`); if (model?.model_id) appendText(body, "p", "hash", `Model ID: ${model.model_id} · trained through ${model.training_labels_through || model.data_through}`); if (state.bayesian?.model_id) appendText(body, "p", "hash", `Bayesian challenger ID: ${state.bayesian.model_id} · base model ${state.bayesian.base_model_id}`); provenance.append(body); dictionary.append(provenance); container.append(dictionary);
 }
 
 function bindEvents() {

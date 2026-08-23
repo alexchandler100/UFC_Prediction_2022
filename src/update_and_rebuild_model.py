@@ -17,6 +17,7 @@ from build_fighter_explorer import (
 )
 from external_mma import load_approved_auxiliary
 from fight_predictor import (
+    BayesianLogisticChallenger,
     PointInTimeDatasetBuilder,
     TemporalFightPredictor,
     build_outcome_forecast_publication,
@@ -135,6 +136,21 @@ fight_predictor = TemporalFightPredictor.load_artifact(
     artifact_path, feature_builder, dh
 )
 
+print('Building and chronologically evaluating the Bayesian winner challenger')
+bayesian_challenger = BayesianLogisticChallenger.fit(candidate_predictor)
+bayesian_artifact_path = (
+    Path(__file__).resolve().parent
+    / 'content/data/external/bayesian_winner_challenger.json'
+)
+bayesian_challenger.save_artifact(bayesian_artifact_path)
+# As with the point model, all published posterior summaries must come from
+# the just-written portable artifact rather than an in-memory-only fit.
+bayesian_challenger = BayesianLogisticChallenger.load_artifact(
+    bayesian_artifact_path,
+    builder=feature_builder,
+    base_artifact=fight_predictor.artifact(),
+)
+
 print('Saving results of previous card to prediction_history.json')
 # now that the previous card which we made predictions for has happened, we can add the results to the prediction history
 # vegas odds is always a week ahead of the prediction history, so we can use it to update the prediction history by comparing vegas_odds and ufc_fights_crap which contains the results from last week
@@ -145,6 +161,9 @@ print("#########################################################################
 card_date, card_title, fights_list = dh.update_card_info()
 prediction_history = dh.get('prediction_history', filetype='json')
 predicted_odds_df = fight_predictor.predict_upcoming_fights(prediction_history, fighter_stats, fights_list, card_date)
+predicted_odds_df = bayesian_challenger.annotate_upcoming_fights(
+    predicted_odds_df, card_date
+)
 # Freeze when this exact model/card forecast was issued. Market collectors run
 # independently later and must never confuse their retrieval time with the
 # timestamp of the stats probability they are evaluating.
@@ -175,6 +194,12 @@ write_outcome_forecast_publication(
 )
 # Merge available sportsbook odds from the configured market source.
 predicted_odds_df_with_vegas_odds = dh.save_fightoddsio_to_vegas_odds_json_and_merge_with_predictions_df(predicted_odds_df)
+predicted_odds_df_with_vegas_odds = (
+    bayesian_challenger.annotate_best_price_expected_returns(
+        predicted_odds_df_with_vegas_odds,
+        dh.bookies,
+    )
+)
 dh.update_vegas_odds(predicted_odds_df_with_vegas_odds)
 print('Building compact fighter explorer publication')
 external_history, external_identity_map = load_external_history_inputs()
@@ -207,6 +232,12 @@ if summary_path:
             ).pipe(pd.to_numeric, errors='coerce').notna().sum()
         )
         artifact = fight_predictor.artifact()
+        bayesian_artifact = bayesian_challenger.artifact()
+        bayesian_walk = (
+            bayesian_artifact.get('temporal_evaluation', {})
+            .get('walk_forward', {})
+            .get('aggregate', {})
+        )
         odds_source = getattr(dh.odds_getter, 'last_source', '') or 'unavailable'
         odds_request = getattr(dh.odds_getter, 'last_request_metadata', {})
         summary_lines = [
@@ -223,6 +254,12 @@ if summary_path:
                 '- Walk-forward: '
                 f'{walk_forward["accuracy"]:.1%} accuracy, '
                 f'{walk_forward["log_loss"]:.4f} log loss'
+            ),
+            (
+                '- Bayesian challenger: '
+                f'`{bayesian_artifact["model_id"]}`; '
+                f'{bayesian_walk.get("log_loss", float("nan")):.4f} '
+                'posterior-mean walk-forward log loss; execution disabled'
             ),
             f'- Upcoming card: {card_title} ({card_date})',
             (

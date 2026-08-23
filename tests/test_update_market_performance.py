@@ -55,6 +55,44 @@ class MarketPerformanceTests(unittest.TestCase):
             source_payload={"capture": capture},
         )
 
+    def test_bayesian_shadow_history_is_scored_without_enabling_execution(self):
+        rows = []
+        for index, action in enumerate(("fighter", "opponent"), start=1):
+            rows.append(
+                {
+                    "bayesian decision policy": "bayesian-moneyline-shadow-v1",
+                    "bayesian model id": f"model-{index}",
+                    "bayesian posterior mean": 0.60,
+                    "bayesian paper action": action,
+                    "bayesian paper threshold met": True,
+                    "bayesian candidate odds": +150,
+                    "bayesian candidate book": "BookA",
+                    "bayesian candidate selection": f"Selection {index}",
+                    "bayesian probability positive ev": 0.85,
+                    "bayesian posterior mean ev": 0.50,
+                    "bayesian ev lower": -0.10,
+                    "bayesian ev upper": 1.00,
+                    "forecast status": "completed",
+                    "actual result": "W",
+                    "fighter id": f"fighter-{index}",
+                    "opponent id": f"opponent-{index}",
+                    "event id": f"event-{index}",
+                    "fight id": f"fight-{index}",
+                }
+            )
+        report = updater._bayesian_prediction_history_performance(
+            pd.DataFrame(rows)
+        )
+        self.assertEqual(report["scored_forecasts"], 2)
+        self.assertEqual(report["settled_shadow_selections"], 2)
+        self.assertEqual(report["wins"], 1)
+        self.assertEqual(report["losses"], 1)
+        self.assertAlmostEqual(report["hypothetical_profit_units"], 0.5)
+        self.assertFalse(report["execution_enabled"])
+        self.assertFalse(
+            report["promotion_gate"]["immutable_t24_ledger_requirement_met"]
+        )
+
     def test_settles_once_and_publishes_reproducible_return_report(self):
         decision_quotes = [
             self._quote("BookA", -110, -110, capture="c1", observed="2026-01-09T12:00:00Z"),
@@ -103,6 +141,10 @@ class MarketPerformanceTests(unittest.TestCase):
             root = Path(directory)
             market_root = root / "market"
             market_root.mkdir()
+            external_root = root / "external"
+            external_root.mkdir()
+            prediction_history_path = external_root / "prediction_history.json"
+            pd.DataFrame().to_json(prediction_history_path)
             raw_path = root / "raw.csv"
             pd.DataFrame(
                 [
@@ -152,6 +194,7 @@ class MarketPerformanceTests(unittest.TestCase):
             ).to_csv(raw_path, index=False)
             paths = {
                 "RAW_PATH": raw_path,
+                "PREDICTION_HISTORY_PATH": prediction_history_path,
                 "QUOTE_CSV_PATH": market_root / "quote_snapshots.csv",
                 "QUOTE_JSONL_PATH": market_root / "quote_snapshots.jsonl",
                 "SOURCE_METADATA_CSV_PATH": market_root / "quote_source_metadata.csv",
@@ -325,6 +368,10 @@ class MarketPerformanceTests(unittest.TestCase):
             root = Path(directory)
             market_root = root / "market"
             market_root.mkdir()
+            external_root = root / "external"
+            external_root.mkdir()
+            prediction_history_path = external_root / "prediction_history.json"
+            pd.DataFrame().to_json(prediction_history_path)
             raw_path = root / "raw.csv"
             pd.DataFrame(
                 [
@@ -348,6 +395,7 @@ class MarketPerformanceTests(unittest.TestCase):
             ).to_csv(raw_path, index=False)
             paths = {
                 "RAW_PATH": raw_path,
+                "PREDICTION_HISTORY_PATH": prediction_history_path,
                 "QUOTE_CSV_PATH": market_root / "quote_snapshots.csv",
                 "QUOTE_JSONL_PATH": market_root / "quote_snapshots.jsonl",
                 "SOURCE_METADATA_CSV_PATH": market_root / "quote_source_metadata.csv",
