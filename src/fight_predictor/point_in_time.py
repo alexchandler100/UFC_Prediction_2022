@@ -119,6 +119,15 @@ class FighterState:
 class PointInTimeDatasetBuilder:
     """Build UFC labels while optionally replaying non-label external history."""
 
+    # Challenger builders may retain additional historical counters while the
+    # production builder keeps its frozen 82-feature contract unchanged.
+    STATE_COUNT_STATS = COUNT_STATS
+    LANDED_ATTEMPTED_PAIRS = (
+        ("sig_strikes_landed", "sig_strikes_attempts"),
+        ("total_strikes_landed", "total_strikes_attempts"),
+        ("takedowns_landed", "takedowns_attempts"),
+    )
+
     def __init__(
         self,
         raw_fights: pd.DataFrame,
@@ -130,6 +139,8 @@ class PointInTimeDatasetBuilder:
         self.auxiliary_fights = (
             auxiliary_fights.copy() if auxiliary_fights is not None else None
         )
+        self.state_count_stats = tuple(self.STATE_COUNT_STATS)
+        self.landed_attempted_pairs = tuple(self.LANDED_ATTEMPTED_PAIRS)
         self.states: dict[str, FighterState] = {}
         self.training_data: pd.DataFrame | None = None
         self._replayed_through: pd.Timestamp | None = None
@@ -458,7 +469,7 @@ class PointInTimeDatasetBuilder:
         columns = [
             "date", "event_id", "fight_id", "fighter_id", "opponent_id",
             "result", "method", "division", "total_fight_time", "bout_order",
-            *COUNT_STATS,
+            *self.state_count_stats,
         ]
         if (
             "emit_training_target" in raw
@@ -501,7 +512,7 @@ class PointInTimeDatasetBuilder:
             "date", "fight_url", "event_url", "fighter_url", "opponent_url",
             "fighter", "opponent", "result", "method", "division", "round",
             "total_fight_time",
-            *COUNT_STATS,
+            *self.state_count_stats,
         }
         missing = required - set(self.raw_fights.columns)
         if missing:
@@ -541,7 +552,7 @@ class PointInTimeDatasetBuilder:
         if raw["fighter_id"].eq(raw["opponent_id"]).any():
             raise ValueError("raw fights contain a self-match or collapsed fighter ID")
 
-        numeric_columns = ("total_fight_time", *COUNT_STATS)
+        numeric_columns = ("total_fight_time", *self.state_count_stats)
         for column in numeric_columns:
             source = raw[column]
             parsed = pd.to_numeric(source, errors="coerce")
@@ -576,11 +587,7 @@ class PointInTimeDatasetBuilder:
             raise ValueError(
                 "raw total_fight_time must be between 1 and 7200 seconds when known"
             )
-        for landed, attempted in (
-            ("sig_strikes_landed", "sig_strikes_attempts"),
-            ("total_strikes_landed", "total_strikes_attempts"),
-            ("takedowns_landed", "takedowns_attempts"),
-        ):
+        for landed, attempted in self.landed_attempted_pairs:
             invalid = raw[landed].notna() & raw[attempted].notna() & (
                 raw[landed] > raw[attempted]
             )
@@ -778,8 +785,11 @@ class PointInTimeDatasetBuilder:
 
         def stats(row: pd.Series) -> dict[str, float]:
             if pd.isna(row["total_fight_time"]):
-                return dict.fromkeys(COUNT_STATS, math.nan)
-            return {column: _optional_number(row[column]) for column in COUNT_STATS}
+                return dict.fromkeys(self.state_count_stats, math.nan)
+            return {
+                column: _optional_number(row[column])
+                for column in self.state_count_stats
+            }
 
         fight_date = first["date"]
         seconds = max(_safe_number(first["total_fight_time"]), 0.0)

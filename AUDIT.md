@@ -226,6 +226,47 @@ missing. The immutable report and 503-row detail table are
 `current_model_market_replay.json` and `current_model_market_replay.csv` under
 `src/content/data/market_history_backfill/`.
 
+### Style-matchup feature challenger
+
+A single feature group was frozen before evaluation rather than selecting
+individual features from test outcomes. It adds 30 columns to the unchanged
+82-feature baseline: smoothed career attempt shares for head/body/leg and
+distance/clinch/ground (offense and absorption), 12 nonlinear career/recent
+striking, takedown, control, and power matchup terms, and six granular
+offense-versus-absorption terms. Every addition is pre-bout and antisymmetric.
+The challenger builder requires finite nonnegative granular counters, enforces
+landed <= attempted, and verifies that both target and position partitions sum
+exactly to the reported significant-strike totals. The current 17,622 raw rows
+had zero missing granular cells and zero partition violations.
+
+Both contracts were retuned and calibrated independently inside the same
+nested whole-year folds. The baseline submatrix was also reproduced from raw
+data before scoring, preventing an unnoticed data or feature-contract change:
+
+| 2022, 2023, 2025, 2026 walk-forward | Fights | Accuracy | Log loss | Brier | AUC |
+|---|---:|---:|---:|---:|---:|
+| Current 82-feature baseline | 1,857 | 63.70% | 0.63632 | 0.22309 | 0.68799 |
+| 112-feature style challenger | 1,857 | 64.08% | 0.63590 | 0.22271 | 0.69088 |
+
+The challenger-minus-baseline log-loss point difference was `-0.00042`; its
+154-card 95% interval was `[-0.00336, +0.00247]`. On the 503 fights with market
+history, the baseline, challenger, and market log losses were `0.62356`,
+`0.61838`, and `0.60152`, respectively. The challenger's `-0.00518` improvement
+over baseline had a 58-card interval of `[-0.01153, +0.00108]`, while it still
+trailed market by `+0.01686` log loss.
+
+After the prior-card warmup, the style/market blend scored `0.59891`, compared
+with `0.59926` for the baseline blend and `0.59937` for market-only. The style
+blend's differences versus baseline blend and market were `-0.00035`
+(`[-0.00214, +0.00118]`) and `-0.00046`
+(`[-0.00245, +0.00141]`). Neither interval excludes zero. The selector also
+used style weights as high as 20%, making untouched prospective confirmation
+especially important. The feature group is therefore retained, unchanged, as
+a paper challenger; it does not replace the production artifact or enable
+recommendations. Its immutable report/detail files are
+`style_matchup_challenger.json` and `style_matchup_challenger.csv` beside the
+baseline market replay.
+
 The exploratory return policy excluded each target book from its consensus,
 required three other books and predicted EV of at least 5%, selected one best
 listed price per fight, and risked a hypothetical flat 1 unit. It made 26
@@ -256,7 +297,7 @@ Immutable outputs and all caveats are recorded under
 1. Rebuild the full legacy prediction history from immutable fight facts. Of 1,093 matched dated records, 51 stored `correct?` values disagreed with raw outcomes, and 397 of 1,491 rows have no date. New rows are fixed, but the legacy backfill still needs cancellation/rematch/alias review.
 2. Remove the custom browser calculator or implement the exact artifact feature/scaler/calibration contract in a service or browser-compatible runtime. Do not maintain two user-facing models indefinitely.
 3. Let the expanded Monday-Saturday collector accumulate native, timestamped multi-book snapshots. Evaluate market-only versus market-plus-stats and the locked early-favorite/late-underdog challenger on untouched future cards; report coverage, price movement, paper return, and CLV separately.
-4. Preserve global Glicko rating/RD as a fixed challenger and reassess it only after genuinely new events accumulate. Test scheduled rounds/title status, weight-class changes, stance interactions, and line movement one at a time; the dataset is too small for complexity by default.
+4. Preserve both the style-matchup v1 group and global Glicko rating/RD as fixed challengers, and reassess them only after genuinely new events accumulate. Test scheduled rounds/title status, weight-class changes, stance interactions, and line movement one at a time; the dataset is too small for complexity by default.
 5. Add a slower periodic deep reconciliation beyond the recent-event window for very late overturns/corrections, and a bounded refresh cadence for inactive profiles.
 6. Move large immutable datasets/model archives to releases, object storage, or Git LFS if desired. Removing generated files shrinks future checkouts, but the existing `.git` pack remains about 1 GiB unless history is deliberately rewritten.
 7. Keep betting disabled until at least 500 eligible prospective fights across 40+ cards are settled, the blend beats timestamp-aligned market-only with a paired card-block interval below zero, and a predeclared paper policy has positive lower-bound return/price-quality evidence.

@@ -255,6 +255,20 @@ scored `0.59926` versus `0.59937` for market-only on 399 fights. That apparent
 `[-0.00060, +0.00040]` crosses zero. The selected model weight was zero on 278
 of 399 fights and never exceeded 10%.
 
+A frozen style-matchup challenger now adds 30 causal features without changing
+the production contract: head/body/leg and distance/clinch/ground attempt-share
+differences, plus antisymmetric striking, takedown, control, power, and
+offense-versus-vulnerability interactions. Across all 1,857 walk-forward fights
+in the four market years, log loss moved from `0.63632` to `0.63590`; the
+event-block 95% interval for the `-0.00042` change was
+`[-0.00336, +0.00247]`. On the 503 market-matched fights, the challenger
+improved the baseline from `0.62356` to `0.61838`, but consensus remained much
+better at `0.60152`. The style/market blend scored `0.59891` on the 399 warmed-up
+fights versus `0.59926` for the baseline blend and `0.59937` for market-only.
+Neither paired interval excluded zero. This is a useful challenger signal, not
+a promotion result; the weekly artifact remains the validated 82-feature model
+and betting remains disabled.
+
 This replay closes the old-model comparability gap, but remains development
 evidence rather than a historical forecast record: feature engineering used
 some evaluation-era outcomes, current reconciled source/profile corrections
@@ -280,6 +294,8 @@ python -B src/backfill_market_history.py --dry-run
 python -B src/backfill_market_history.py
 python -B src/evaluate_current_model_vs_market.py --dry-run
 python -B src/evaluate_current_model_vs_market.py
+python -B src/evaluate_style_matchup_challenger.py --dry-run
+python -B src/evaluate_style_matchup_challenger.py
 ```
 
 The audit and ledgers are in `src/content/data/market_history_backfill/`.

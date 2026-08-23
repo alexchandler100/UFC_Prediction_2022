@@ -4,6 +4,7 @@ from .point_in_time import (
     PointInTimeDatasetBuilder,
     TemporalFightPredictor,
 )
+from .style_matchup import StyleMatchupDatasetBuilder
 from .outcome_model import (
     CompetingRiskPrediction,
     DiscreteTimeOutcomeModel,
