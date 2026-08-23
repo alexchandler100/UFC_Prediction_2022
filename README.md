@@ -244,6 +244,23 @@ On those 119 fights, market-only log loss was `0.58713`, the legacy model was
 `0.61856`, and the prior-card-selected blend was `0.58836`. The blend did not
 beat the market.
 
+A separate replay now compares the **current** 82-feature algorithm with the
+market on all 503 recovered W/L fights. Each model probability is a nested,
+whole-year out-of-fold prediction trained only on prior years; the fully fitted
+current artifact is never applied backward. Consensus still won: market log
+loss was `0.60152` versus `0.62356` for the model (accuracy `67.79%` versus
+`65.61%`). After the 12-card/100-fight warmup, a prior-card-selected logit blend
+scored `0.59926` versus `0.59937` for market-only on 399 fights. That apparent
+`-0.00011` improvement is negligible and its event-block 95% interval
+`[-0.00060, +0.00040]` crosses zero. The selected model weight was zero on 278
+of 399 fights and never exceeded 10%.
+
+This replay closes the old-model comparability gap, but remains development
+evidence rather than a historical forecast record: feature engineering used
+some evaluation-era outcomes, current reconciled source/profile corrections
+can postdate a fight, Git timestamps are not provider quote timestamps, and
+2024 odds are absent.
+
 The locked exploratory paper rule required at least 5% predicted EV, used the
 best listed core-book price, risked a hypothetical flat 1 unit, and never used
 the target book in its own probability. It made 26 selections and finished
@@ -261,6 +278,8 @@ outputs with:
 ```console
 python -B src/backfill_market_history.py --dry-run
 python -B src/backfill_market_history.py
+python -B src/evaluate_current_model_vs_market.py --dry-run
+python -B src/evaluate_current_model_vs_market.py
 ```
 
 The audit and ledgers are in `src/content/data/market_history_backfill/`.

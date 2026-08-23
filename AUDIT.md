@@ -1,6 +1,6 @@
 # UFC Prediction Codebase Audit
 
-Audit and implementation date: 2026-08-20
+Audit and implementation date: 2026-08-20 (research updated 2026-08-22)
 
 ## Executive conclusion
 
@@ -192,6 +192,39 @@ leaving 119 untouched predictions:
 The blend-minus-market log-loss difference was `+0.00123`; its card-block 95%
 interval was `[-0.00690, +0.00903]`. The blend therefore did not establish any
 incremental signal over market-only.
+
+### Current-algorithm market replay
+
+The legacy comparison did not answer whether the corrected production
+algorithm adds information to consensus. A new stable-ID replay now generates
+unrounded probabilities for the current 82-feature contract using nested
+whole-year folds. Every test year uses a ten-year training window ending before
+January 1, and regularization and symmetric calibration are selected within
+that earlier window. Market orientation is reconciled by fighter IDs rather
+than names.
+
+All 503 recovered W/L market fights paired with an out-of-fold model forecast:
+
+| Forecast on identical fights | Accuracy | Log loss | Brier | AUC |
+|---|---:|---:|---:|---:|
+| No-vig market | 67.79% | 0.60152 | 0.20760 | 0.73672 |
+| Current model algorithm | 65.61% | 0.62356 | 0.21716 | 0.71087 |
+
+Model-minus-market log loss was `+0.02204`; its 58-card bootstrap 95% interval
+was `[-0.00139, +0.04453]`. The market remains the stronger point estimate.
+After the same 12-card/100-fight warmup used for prior-card weight selection,
+399 fights remained. Their market log loss was `0.59937`; the selected blend
+scored `0.59926`. The tiny `-0.00011` difference had a 42-card 95% interval of
+`[-0.00060, +0.00040]`. Gamma was zero for 278 fights, 5% for 99, and 10% for
+22; it never exceeded 10%. This does not establish incremental model signal.
+
+The replay is stricter than applying today's artifact to old fights, but is
+still development-only. The feature contract was designed with knowledge of
+some evaluation-era outcomes, current reconciled facts/profile corrections can
+postdate a fight, legacy commit time is not a provider timestamp, and 2024 is
+missing. The immutable report and 503-row detail table are
+`current_model_market_replay.json` and `current_model_market_replay.csv` under
+`src/content/data/market_history_backfill/`.
 
 The exploratory return policy excluded each target book from its consensus,
 required three other books and predicted EV of at least 5%, selected one best

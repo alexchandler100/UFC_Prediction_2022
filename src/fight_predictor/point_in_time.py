@@ -1128,14 +1128,40 @@ class TemporalFightPredictor:
         years: tuple[int, ...] | None = None,
     ) -> dict[str, object]:
         """Nested expanding-year evaluation without consulting a future fold."""
+        predictions, folds = self._walk_forward_predictions_and_folds(years)
+        aggregate = _metrics(
+            predictions["target"],
+            predictions["model_probability"].to_numpy(dtype=float),
+        )
+        return {"folds": folds, "aggregate": aggregate}
+
+    def walk_forward_predictions(
+        self,
+        years: tuple[int, ...] | None = None,
+    ) -> pd.DataFrame:
+        """Return lineage-bearing out-of-fold probabilities for whole years.
+
+        Every probability is produced by a model whose training window ends
+        before January 1 of that row's calendar year. Hyperparameter and
+        calibration selection are nested inside that earlier window. This is
+        the safe bridge for joining the current algorithm to historical market
+        captures without applying today's fully fitted artifact retroactively.
+        """
+
+        predictions, _folds = self._walk_forward_predictions_and_folds(years)
+        return predictions.copy()
+
+    def _walk_forward_predictions_and_folds(
+        self,
+        years: tuple[int, ...] | None,
+    ) -> tuple[pd.DataFrame, dict[str, object]]:
         c_grid = REGULARIZATION_C_GRID
         frame = self.point_in_time_data.copy()
         frame["date"] = pd.to_datetime(frame["date"], errors="raise")
         available_years = sorted(frame["date"].dt.year.unique())
         if years is None:
             years = tuple(available_years[-4:])
-        all_truth: list[np.ndarray] = []
-        all_probability: list[np.ndarray] = []
+        prediction_frames: list[pd.DataFrame] = []
         folds: dict[str, object] = {}
         for year in years:
             test_start = pd.Timestamp(year=year, month=1, day=1)
@@ -1159,18 +1185,41 @@ class TemporalFightPredictor:
             probability = self._calibrate(
                 self._pipeline_probability(pipeline, test[self.feature_columns]), slope
             )
-            all_truth.append(test["target"].to_numpy())
-            all_probability.append(probability)
+            lineage_columns = [
+                "date",
+                "event_id",
+                "fight_id",
+                "fighter_id",
+                "opponent_id",
+                "fighter",
+                "opponent",
+                "target",
+            ]
+            prediction_frame = test[lineage_columns].copy()
+            prediction_frame["evaluation_year"] = int(year)
+            prediction_frame["training_start"] = train["date"].min().strftime(
+                "%Y-%m-%d"
+            )
+            prediction_frame["training_through"] = train["date"].max().strftime(
+                "%Y-%m-%d"
+            )
+            prediction_frame["selected_c"] = float(selected_c)
+            prediction_frame["calibration_slope"] = float(slope)
+            prediction_frame["model_probability"] = probability
+            prediction_frames.append(prediction_frame)
             folds[str(year)] = {
                 "train_fights": int(len(train)),
                 "selected_c": float(selected_c),
                 "calibration_slope": float(slope),
                 **_metrics(test["target"], probability),
             }
-        if not all_truth:
+        if not prediction_frames:
             raise ValueError("No eligible calendar-year folds for walk-forward evaluation")
-        aggregate = _metrics(np.concatenate(all_truth), np.concatenate(all_probability))
-        return {"folds": folds, "aggregate": aggregate}
+        predictions = pd.concat(prediction_frames, ignore_index=True)
+        predictions = predictions.sort_values(
+            ["date", "event_id", "fight_id"], kind="stable"
+        ).reset_index(drop=True)
+        return predictions, folds
 
     def probability(self, diff_row: pd.DataFrame) -> float:
         if self._artifact_scale is None or self._artifact_coefficients is None:

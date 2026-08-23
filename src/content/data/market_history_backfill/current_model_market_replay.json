@@ -1,0 +1,311 @@
+{
+  "algorithm_version": 1,
+  "input_contract_sha256": "9f4096ee14f62a239c12c35d5afee641b235d982c45a7251ce6145c01a00df2f",
+  "market_contract": {
+    "minimum_distinct_books": 3,
+    "probability": "mean of per-book two-sided no-vig probabilities",
+    "selection": "latest eligible pre-event capture per stable fight ID"
+  },
+  "model_contract": {
+    "feature_count": 82,
+    "folds": {
+      "2022": {
+        "calibration_slope": 1.1399017307069284,
+        "predicted_fights": 506,
+        "selected_c": 0.003,
+        "training_start": "2012-01-14",
+        "training_through": "2021-12-18"
+      },
+      "2023": {
+        "calibration_slope": 1.0989438022772215,
+        "predicted_fights": 504,
+        "selected_c": 0.003,
+        "training_start": "2013-01-19",
+        "training_through": "2022-12-17"
+      },
+      "2025": {
+        "calibration_slope": 1.0952841651359873,
+        "predicted_fights": 514,
+        "selected_c": 0.01,
+        "training_start": "2015-01-03",
+        "training_through": "2024-12-14"
+      },
+      "2026": {
+        "calibration_slope": 1.1096757737995653,
+        "predicted_fights": 333,
+        "selected_c": 0.01,
+        "training_start": "2016-01-02",
+        "training_through": "2025-12-13"
+      }
+    },
+    "model_version": "point-in-time-elo-logistic-v2",
+    "probability_provenance": "retrospective whole-year out-of-fold current algorithm; not the fully fitted production artifact applied backwards",
+    "production_artifact_id": "ff04994f509057072ee9",
+    "regularization_grid": [
+      0.001,
+      0.003,
+      0.01,
+      0.03,
+      0.1
+    ]
+  },
+  "non_promotable_flags": [
+    "retrospective_current_algorithm_not_historical_frozen_forecast",
+    "legacy_commit_timestamp_not_source_quote_timestamp",
+    "current_reconciled_raw_not_as_of_snapshot",
+    "profile_and_source_corrections_may_postdate_fight",
+    "feature_contract_was_developed_using_some_evaluation_years",
+    "missing_2024_market_history",
+    "unverified_execution_and_closing_price",
+    "development_only"
+  ],
+  "paired_all_fights": {
+    "current_model_algorithm": {
+      "accuracy": 0.6560636182902585,
+      "brier_score": 0.21715924654670726,
+      "count": 503,
+      "expected_calibration_error": 0.0459786830887086,
+      "log_loss": 0.6235597118203904,
+      "positive_rate": 0.5009940357852882,
+      "roc_auc": 0.7108708025042686
+    },
+    "market": {
+      "accuracy": 0.6779324055666004,
+      "brier_score": 0.2075978522348569,
+      "count": 503,
+      "expected_calibration_error": 0.02734751785347141,
+      "log_loss": 0.6015220676228911,
+      "positive_rate": 0.5009940357852882,
+      "roc_auc": 0.7367197875166003
+    },
+    "model_minus_market_log_loss_interval": {
+      "bootstrap_samples": 10000,
+      "ci_95_lower": -0.0013897993553489913,
+      "ci_95_upper": 0.044534417002436516,
+      "definition": "candidate minus market paired log loss; negative favors candidate",
+      "event_count": 58,
+      "fight_count": 503,
+      "method": "nonparametric whole-event block bootstrap",
+      "point_difference": 0.022037644197498946,
+      "seed": 20260822
+    }
+  },
+  "paper_only": true,
+  "per_year": {
+    "2022": {
+      "blend": null,
+      "fights": 104,
+      "market": {
+        "accuracy": 0.6875,
+        "brier_score": 0.20996076629113739,
+        "count": 104,
+        "expected_calibration_error": 0.07602418246256255,
+        "log_loss": 0.6097942789985545,
+        "positive_rate": 0.5673076923076923,
+        "roc_auc": 0.7370998116760829
+      },
+      "model": {
+        "accuracy": 0.6346153846153846,
+        "brier_score": 0.21726894989663778,
+        "count": 104,
+        "expected_calibration_error": 0.09632153489273151,
+        "log_loss": 0.624319134166245,
+        "positive_rate": 0.5673076923076923,
+        "roc_auc": 0.7133709981167609
+      }
+    },
+    "2023": {
+      "blend": {
+        "accuracy": 0.6074380165289256,
+        "brier_score": 0.2182889275075597,
+        "count": 121,
+        "expected_calibration_error": 0.0798048112405017,
+        "log_loss": 0.6240073554610032,
+        "positive_rate": 0.49586776859504134,
+        "roc_auc": 0.6975409836065574
+      },
+      "fights": 121,
+      "market": {
+        "accuracy": 0.6074380165289256,
+        "brier_score": 0.2182889275075597,
+        "count": 121,
+        "expected_calibration_error": 0.07980481124050168,
+        "log_loss": 0.6240073554610032,
+        "positive_rate": 0.49586776859504134,
+        "roc_auc": 0.6975409836065574
+      },
+      "model": {
+        "accuracy": 0.6198347107438017,
+        "brier_score": 0.22276012257150368,
+        "count": 121,
+        "expected_calibration_error": 0.050867849569530305,
+        "log_loss": 0.6343228299508485,
+        "positive_rate": 0.49586776859504134,
+        "roc_auc": 0.6833333333333333
+      }
+    },
+    "2025": {
+      "blend": {
+        "accuracy": 0.7087378640776699,
+        "brier_score": 0.20627715069880134,
+        "count": 206,
+        "expected_calibration_error": 0.06176059723250074,
+        "log_loss": 0.5995335526406953,
+        "positive_rate": 0.47572815533980584,
+        "roc_auc": 0.7389455782312925
+      },
+      "fights": 206,
+      "market": {
+        "accuracy": 0.7087378640776699,
+        "brier_score": 0.20642884999670527,
+        "count": 206,
+        "expected_calibration_error": 0.05749259846278026,
+        "log_loss": 0.5998169571984288,
+        "positive_rate": 0.47572815533980584,
+        "roc_auc": 0.7383786848072562
+      },
+      "model": {
+        "accuracy": 0.6796116504854369,
+        "brier_score": 0.21606984024906653,
+        "count": 206,
+        "expected_calibration_error": 0.08923174572385564,
+        "log_loss": 0.6226238464251075,
+        "positive_rate": 0.47572815533980584,
+        "roc_auc": 0.7150415721844293
+      }
+    },
+    "2026": {
+      "blend": {
+        "accuracy": 0.6944444444444444,
+        "brier_score": 0.1896075952903254,
+        "count": 72,
+        "expected_calibration_error": 0.08303088969261276,
+        "log_loss": 0.5568856599264246,
+        "positive_rate": 0.4861111111111111,
+        "roc_auc": 0.7861003861003861
+      },
+      "fights": 72,
+      "market": {
+        "accuracy": 0.6944444444444444,
+        "brier_score": 0.18956245350164824,
+        "count": 72,
+        "expected_calibration_error": 0.08294325008712618,
+        "log_loss": 0.556664052844541,
+        "positive_rate": 0.4861111111111111,
+        "roc_auc": 0.7876447876447876
+      },
+      "model": {
+        "accuracy": 0.6805555555555556,
+        "brier_score": 0.21070511529560706,
+        "count": 72,
+        "expected_calibration_error": 0.14114319779885923,
+        "log_loss": 0.6070523653436385,
+        "positive_rate": 0.4861111111111111,
+        "roc_auc": 0.722007722007722
+      }
+    }
+  },
+  "prior_card_selected_blend": {
+    "blend": {
+      "accuracy": 0.6754385964912281,
+      "brier_score": 0.20691177978263467,
+      "count": 399,
+      "expected_calibration_error": 0.028781011820462388,
+      "log_loss": 0.5992595723545544,
+      "positive_rate": 0.48370927318295737,
+      "roc_auc": 0.7381155993762262
+    },
+    "blend_minus_market_log_loss_interval": {
+      "bootstrap_samples": 10000,
+      "ci_95_lower": -0.0006036939107856799,
+      "ci_95_upper": 0.0003978012300163752,
+      "definition": "candidate minus market paired log loss; negative favors candidate",
+      "event_count": 42,
+      "fight_count": 399,
+      "method": "nonparametric whole-event block bootstrap",
+      "point_difference": -0.00010632989723656154,
+      "seed": 20260822
+    },
+    "current_model_algorithm": {
+      "accuracy": 0.6616541353383458,
+      "brier_score": 0.2171306521898329,
+      "count": 399,
+      "expected_calibration_error": 0.042865486401641464,
+      "log_loss": 0.6233617671487885,
+      "positive_rate": 0.48370927318295737,
+      "roc_auc": 0.7088636249308315
+    },
+    "evaluated_fights": 399,
+    "gamma_grid": [
+      0.0,
+      0.05,
+      0.1,
+      0.15,
+      0.2,
+      0.25,
+      0.3,
+      0.35,
+      0.4,
+      0.45,
+      0.5,
+      0.55,
+      0.6,
+      0.65,
+      0.7,
+      0.75,
+      0.8,
+      0.85,
+      0.9,
+      0.95,
+      1.0
+    ],
+    "lookback_cards": 52,
+    "market": {
+      "accuracy": 0.6754385964912281,
+      "brier_score": 0.2069819548367286,
+      "count": 399,
+      "expected_calibration_error": 0.029662132543673777,
+      "log_loss": 0.599365902251791,
+      "positive_rate": 0.48370927318295737,
+      "roc_auc": 0.7379395341817999
+    },
+    "minimum_prior_cards": 12,
+    "minimum_prior_fights": 100,
+    "selected_gamma_distribution": {
+      "evaluated_cards_by_gamma": {
+        "0.00": 31,
+        "0.05": 9,
+        "0.10": 2
+      },
+      "evaluated_fights_by_gamma": {
+        "0.00": 278,
+        "0.05": 99,
+        "0.10": 22
+      }
+    },
+    "selection_rule": "completed cards on strictly earlier event dates only",
+    "skipped_warmup_fights": 104
+  },
+  "promotable": false,
+  "report_schema_version": 1,
+  "sample": {
+    "historical_quotes": 3718,
+    "latest_eligible_market_fights_including_non_w_l": 512,
+    "market_fights_without_binary_out_of_fold_prediction": 9,
+    "paired_events": 58,
+    "paired_w_l_fights": 503,
+    "years": [
+      2022,
+      2023,
+      2025,
+      2026
+    ]
+  },
+  "source_dataset_sha256": {
+    "detail_csv": "ae533b317079019a86ab2b8de9ff79ac411b376b9e1f9531d0b7127691604bcb",
+    "market_quote_csv": "8e2df2567f497a881b5149f35565cad5d8082d25f97da85d2d4e22572b1ac91f",
+    "market_quote_jsonl": "2a200b7ea925fcb3fd0a40b8bbd6296484f4a993580f3bef3436f34171fea2e8",
+    "model_artifact": "df663de95c0471c3415a502ff76fc370fe5fc7295d2f101506b317af15a77b1f",
+    "point_in_time": "d96fc34e3313b3b3bf3d65ac461e4fd7d289591bf11a838e43184ce9dbc26123"
+  }
+}
