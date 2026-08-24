@@ -8,6 +8,7 @@ separate from any decision that was actually frozen in the T-24 window.
 
 from __future__ import annotations
 
+import math
 from collections import defaultdict
 from typing import Iterable
 
@@ -37,6 +38,62 @@ from .prop_paper import TotalRoundsPaperDecision
 
 
 OPPORTUNITY_POLICY_VERSION = "leave-one-book-out-paper-v1"
+PUBLICATION_FLOAT_REL_TOLERANCE = 1e-12
+PUBLICATION_FLOAT_ABS_TOLERANCE = 1e-12
+
+
+def _first_publication_difference(
+    published: object,
+    rebuilt: object,
+    *,
+    path: str = "$",
+) -> str | None:
+    """Return the first material difference in two publication bodies.
+
+    Opportunity publications can be produced on Windows and later validated on
+    a Linux runner. Derived IEEE-754 values may differ by a final bit across
+    those environments, so floats use a deliberately tiny tolerance while all
+    identifiers, prices, policy fields, collection shapes, and text remain
+    exact.
+    """
+
+    if isinstance(published, dict) and isinstance(rebuilt, dict):
+        if published.keys() != rebuilt.keys():
+            missing = sorted(str(key) for key in rebuilt.keys() - published.keys())
+            extra = sorted(str(key) for key in published.keys() - rebuilt.keys())
+            return f"{path} keys (missing={missing}, extra={extra})"
+        for key in published:
+            difference = _first_publication_difference(
+                published[key],
+                rebuilt[key],
+                path=f"{path}.{key}",
+            )
+            if difference is not None:
+                return difference
+        return None
+    if isinstance(published, list) and isinstance(rebuilt, list):
+        if len(published) != len(rebuilt):
+            return f"{path} length"
+        for index, (published_item, rebuilt_item) in enumerate(
+            zip(published, rebuilt, strict=True)
+        ):
+            difference = _first_publication_difference(
+                published_item,
+                rebuilt_item,
+                path=f"{path}[{index}]",
+            )
+            if difference is not None:
+                return difference
+        return None
+    if isinstance(published, float) and isinstance(rebuilt, float):
+        if math.isclose(
+            published,
+            rebuilt,
+            rel_tol=PUBLICATION_FLOAT_REL_TOLERANCE,
+            abs_tol=PUBLICATION_FLOAT_ABS_TOLERANCE,
+        ):
+            return None
+    return None if published == rebuilt else path
 
 
 def _american_odds(probability: float) -> int:
@@ -552,8 +609,18 @@ def validate_current_opportunities(
         )
     else:
         raise ValueError("unsupported current opportunity schema version")
-    if publication != rebuilt:
+    published_body = dict(publication)
+    published_fingerprint = published_body.pop("publication_sha256", None)
+    if published_fingerprint != canonical_hash(published_body):
         raise StoreIntegrityError(
-            "current opportunity publication cannot be reproduced from market ledgers"
+            "current opportunity publication fingerprint does not match its contents"
+        )
+    rebuilt_body = dict(rebuilt)
+    rebuilt_body.pop("publication_sha256", None)
+    difference = _first_publication_difference(published_body, rebuilt_body)
+    if difference is not None:
+        raise StoreIntegrityError(
+            "current opportunity publication cannot be reproduced from market ledgers "
+            f"at {difference}"
         )
     return rebuilt

@@ -1,5 +1,7 @@
+import math
 import sys
 import unittest
+from copy import deepcopy
 from pathlib import Path
 
 
@@ -14,6 +16,7 @@ from market_tracker import (  # noqa: E402
     build_current_opportunities,
     validate_current_opportunities,
 )
+from market_tracker._common import canonical_hash  # noqa: E402
 
 
 SOURCE_SHA = "a" * 64
@@ -142,8 +145,75 @@ class CurrentOpportunityPublicationTests(unittest.TestCase):
             metadata,
             capture_id="capture-opportunity",
         )
+        tampered = deepcopy(publication)
+        tampered["matchups"][0]["current_signal"]["offered_moneyline"] = 999
+        tampered_body = dict(tampered)
+        tampered_body.pop("publication_sha256")
+        tampered["publication_sha256"] = canonical_hash(tampered_body)
+        with self.assertRaisesRegex(
+            StoreIntegrityError,
+            r"cannot be reproduced.*\.offered_moneyline",
+        ):
+            validate_current_opportunities(
+                tampered,
+                quotes,
+                forecasts,
+                metadata,
+                (),
+                capture_id="capture-opportunity",
+            )
+
+    def test_validation_accepts_cross_platform_float_roundoff(self):
+        quotes, forecasts, metadata = _fixture(
+            [
+                ("BookA", -110, -110),
+                ("BookB", -110, -110),
+                ("BookC", -110, -110),
+                ("BookD", -110, -110),
+            ]
+        )
+        publication = build_current_opportunities(
+            quotes,
+            forecasts,
+            metadata,
+            capture_id="capture-opportunity",
+        )
+        probability = publication["matchups"][0]["full_market_consensus"][
+            "fighter_probability"
+        ]
+        publication["matchups"][0]["full_market_consensus"][
+            "fighter_probability"
+        ] = math.nextafter(probability, math.inf)
+        publication_body = dict(publication)
+        publication_body.pop("publication_sha256")
+        publication["publication_sha256"] = canonical_hash(publication_body)
+
+        validate_current_opportunities(
+            publication,
+            quotes,
+            forecasts,
+            metadata,
+            (),
+            capture_id="capture-opportunity",
+        )
+
+    def test_validation_rejects_a_tampered_publication_fingerprint(self):
+        quotes, forecasts, metadata = _fixture(
+            [
+                ("BookA", -110, -110),
+                ("BookB", -110, -110),
+                ("BookC", -110, -110),
+                ("BookD", -110, -110),
+            ]
+        )
+        publication = build_current_opportunities(
+            quotes,
+            forecasts,
+            metadata,
+            capture_id="capture-opportunity",
+        )
         publication["matchups"][0]["current_signal"]["offered_moneyline"] = 999
-        with self.assertRaisesRegex(StoreIntegrityError, "cannot be reproduced"):
+        with self.assertRaisesRegex(StoreIntegrityError, "fingerprint"):
             validate_current_opportunities(
                 publication,
                 quotes,
