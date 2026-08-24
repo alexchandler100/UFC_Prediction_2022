@@ -331,7 +331,14 @@ The old scripts `src/1-build_ufc_fights_reported_doubled.py` and `src/2-build_uf
 
 ## Weekly automation
 
-`.github/workflows/update-data.yml` runs Monday and Wednesday at 9:33 PM America/Chicago and can also be started manually. Monday publishes the next card early enough to observe fight-week movement; Wednesday is a bounded refresh/retry before T-24. It uses pinned dependencies, tests before mutation, strict post-build validation, a shallow checkout, scoped staging, a no-op commit guard, and a starting-commit check so artifacts built from stale code are never rebased onto newer code.
+`.github/workflows/update-data.yml` runs Sunday at 9:33 AM and 8:33 PM and
+Wednesday at 9:33 PM America/Chicago, and can also be started manually. Sunday
+morning publishes the next card after the prior event, Sunday evening retries
+when UFCStats was not ready, and Wednesday is the bounded midweek refresh
+before T-24. It uses pinned dependencies, tests before mutation, strict
+post-build validation, a shallow checkout, scoped staging, a no-op commit
+guard, and a starting-commit check so artifacts built from stale code are
+never rebased onto newer code.
 
 `.github/workflows/collect-market-snapshot.yml` runs separately Monday at
 11:17 PM; Tuesday through Thursday at 12:17 PM and 6:17 PM; Friday at 12:17 PM,
@@ -350,7 +357,7 @@ The collector creates no live wager.
 
 The source's free Starter tier currently includes 500 request credits per
 month. The configured `h2h,totals` request across `us,us2` costs up to four
-credits, so the two updater runs plus the maximum fourteen scheduled captures use roughly 280 credits
+credits, so the three updater runs plus the maximum fourteen scheduled captures use roughly 295 credits
 in an average month (and post-commencement no-ops use none). Create a free key
 at [The Odds API](https://the-odds-api.com/), then add
 it to the repository under **Settings -> Secrets and variables -> Actions ->

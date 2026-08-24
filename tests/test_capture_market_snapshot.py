@@ -646,7 +646,8 @@ class CaptureMarketSnapshotTests(unittest.TestCase):
         self.assertIn("performance_report.json", updater_workflow)
         self.assertIn("outcome_model_evaluation.json", updater_workflow)
         self.assertIn("outcome_forecasts.json", updater_workflow)
-        self.assertIn('cron: "33 21 * * 1,3"', updater_workflow)
+        self.assertIn('cron: "33 9,20 * * 0"', updater_workflow)
+        self.assertIn('cron: "33 21 * * 3"', updater_workflow)
 
 
 if __name__ == "__main__":

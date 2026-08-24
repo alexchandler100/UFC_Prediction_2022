@@ -4,9 +4,12 @@ on:
   workflow_dispatch:
   schedule:
     # Avoid the top-of-hour traffic spike and follow Chicago daylight saving time.
-    # Monday publishes the card/model early enough for fight-week price
-    # tracking. Wednesday is a bounded refresh/retry before the T-24 policy.
-    - cron: "33 21 * * 1,3"
+    # Sunday morning publishes the next card as soon as the prior event is
+    # complete; Sunday evening retries if UFCStats was not ready. Wednesday is
+    # the bounded midweek refresh before the T-24 policy.
+    - cron: "33 9,20 * * 0"
+      timezone: "America/Chicago"
+    - cron: "33 21 * * 3"
       timezone: "America/Chicago"
 
 permissions:
