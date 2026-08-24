@@ -276,6 +276,27 @@ function setRoute(route) {
   else window.location.hash = hash;
 }
 
+function clearMarketMatchupFocus() {
+  document.querySelectorAll("#market-matchups .is-route-target").forEach((card) => card.classList.remove("is-route-target"));
+}
+
+function focusMarketMatchup(fighterId, opponentId) {
+  clearMarketMatchupFocus();
+  const target = Array.from(document.querySelectorAll("#market-matchups [data-market-fighter-id][data-market-opponent-id]")).find((card) => {
+    const cardFighter = card.dataset.marketFighterId;
+    const cardOpponent = card.dataset.marketOpponentId;
+    return (cardFighter === fighterId && cardOpponent === opponentId)
+      || (cardFighter === opponentId && cardOpponent === fighterId);
+  });
+  if (!target) return false;
+  target.classList.add("is-route-target");
+  const prices = target.querySelector('details[data-book-lines="moneyline"]');
+  if (prices) prices.open = true;
+  target.focus({ preventScroll: true });
+  target.scrollIntoView({ behavior: "smooth", block: "start" });
+  return true;
+}
+
 function showView(name) {
   document.querySelectorAll("[data-view]").forEach((view) => view.classList.toggle("is-active", view.dataset.view === name));
   document.querySelectorAll("[data-nav]").forEach((button) => button.classList.toggle("is-active", button.dataset.nav === name));
@@ -298,7 +319,12 @@ function applyRoute() {
       selectMatchupFighter("a", fighterA);
       selectMatchupFighter("b", fighterB);
       renderMatchup(fighterA, fighterB);
+      return;
     }
+  }
+  if (view === "market") {
+    if (parts[1] && parts[2] && focusMarketMatchup(parts[1], parts[2])) return;
+    clearMarketMatchupFocus();
   }
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
@@ -545,7 +571,17 @@ function renderCurrentCard() {
       if (fighter && opponent) setRoute(`matchups/${fighter.id}/${opponent.id}`);
     });
     analyze.disabled = !fighter || !opponent;
-    const marketButton = actionButton("View prices", "text-button small-button", () => setRoute("market"));
+    const quoteCount = Array.isArray(matchup.book_quotes) ? matchup.book_quotes.length : 0;
+    const hasCurrentPrices = Boolean(matchup.fighter_id && matchup.opponent_id && quoteCount);
+    const marketButton = actionButton(
+      hasCurrentPrices ? `View ${quoteCount} book prices` : "Prices unavailable",
+      "text-button small-button",
+      () => {
+        if (hasCurrentPrices) setRoute(`market/${matchup.fighter_id}/${matchup.opponent_id}`);
+      },
+    );
+    marketButton.disabled = !hasCurrentPrices;
+    if (!hasCurrentPrices) marketButton.title = "No current book-price capture is published for this matchup.";
     actions.append(analyze, marketButton);
     card.append(actions);
     container.append(card);
@@ -1099,6 +1135,9 @@ function renderMarket() {
   if (!matchups.length) { container.append(element("div", "empty-state", "Run a successful market snapshot to publish current book lines and paper decisions.")); return; }
   matchups.forEach((matchup) => {
     const signal = matchup.current_signal; const card = element("article", "market-card");
+    card.dataset.marketFighterId = String(matchup.fighter_id || "");
+    card.dataset.marketOpponentId = String(matchup.opponent_id || "");
+    card.tabIndex = -1;
     const row = element("div", "fighter-row"); appendText(row, "h3", "", `${matchup.fighter_name} vs ${matchup.opponent_name}`);
     const hasSelection = signal && signal.paper_action !== "pass";
     row.append(element("span", `pill ${hasSelection ? "win" : "neutral"}`, hasSelection ? "Paper bet" : "Pass")); card.append(row);
@@ -1132,7 +1171,7 @@ function renderMarket() {
       posteriorRows.forEach(([label, value]) => { const posteriorRow = document.createElement("tr"); appendText(posteriorRow, "td", "", label); appendText(posteriorRow, "td", "", value); bayesianRows.append(posteriorRow); });
       bayesianTable.append(bayesianRows); bayesianBody.append(bayesianTable); bayesianDetails.append(bayesianBody); card.append(bayesianDetails);
     }
-    const details = document.createElement("details"); details.append(element("summary", "", `All ${matchup.book_quotes.length} book lines`));
+    const details = document.createElement("details"); details.dataset.bookLines = "moneyline"; details.append(element("summary", "", `All ${matchup.book_quotes.length} book lines`));
     const body = element("div", "details-body book-table-wrap"); const table = element("table", "data-table");
     const head = document.createElement("thead"); const header = document.createElement("tr"); ["Book", matchup.fighter_name, matchup.opponent_name, "Quote age", "Consensus"].forEach((value) => appendText(header, "th", "", value)); head.append(header); table.append(head);
     const tbody = document.createElement("tbody"); matchup.book_quotes.forEach((quote) => { const quoteRow = document.createElement("tr"); appendText(quoteRow, "td", "", quote.book); appendText(quoteRow, "td", "", formatOdds(quote.fighter_moneyline)); appendText(quoteRow, "td", "", formatOdds(quote.opponent_moneyline)); appendText(quoteRow, "td", "", `${formatNumber(quote.source_quote_age_seconds, 0)}s`); appendText(quoteRow, "td", "", quote.eligible_for_consensus ? "Yes" : "No"); tbody.append(quoteRow); }); table.append(tbody); body.append(table); details.append(body); card.append(details);

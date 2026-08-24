@@ -85,6 +85,22 @@ class WebsiteExplorerContractTests(unittest.TestCase):
         self.assertIn(".matchup-selectors", style)
         self.assertIn(".fight-summary", style)
 
+    def test_current_card_actions_open_the_selected_research_content(self):
+        script = (REPO_ROOT / "script.js").read_text(encoding="utf-8")
+        style = (REPO_ROOT / "style.css").read_text(encoding="utf-8")
+
+        self.assertIn("function focusMarketMatchup", script)
+        self.assertIn(
+            'setRoute(`market/${matchup.fighter_id}/${matchup.opponent_id}`)',
+            script,
+        )
+        self.assertIn('details[data-book-lines="moneyline"]', script)
+        self.assertIn("if (prices) prices.open = true", script)
+        self.assertIn("marketButton.disabled = !hasCurrentPrices", script)
+        self.assertIn("renderMatchup(fighterA, fighterB);\n      return;", script)
+        self.assertIn(".market-card.is-route-target", style)
+        self.assertIn("scroll-margin-top: 96px", style)
+
 
 if __name__ == "__main__":
     unittest.main()
