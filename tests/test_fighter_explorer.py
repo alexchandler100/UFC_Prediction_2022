@@ -202,6 +202,62 @@ class FighterExplorerTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "cannot be reproduced"):
             validate_fighter_explorer(tampered, fights, fighters)
 
+    def test_rates_exclude_rows_without_the_required_stat_or_duration(self) -> None:
+        fights, fighters = _inputs()
+        unknown_duration = fights.copy(deep=True)
+        unknown_duration["fight_url"] = (
+            "http://ufcstats.com/fight-details/fight-unknown-duration"
+        )
+        unknown_duration["date"] = "2026-08-02"
+        unknown_duration["total_fight_time"] = None
+        unknown_duration.loc[0, "sig_strikes_landed"] = 300
+        unknown_duration.loc[0, "sig_strikes_attempts"] = 400
+        unknown_duration.loc[0, "control"] = 600
+
+        missing_control = fights.copy(deep=True)
+        missing_control["fight_url"] = (
+            "http://ufcstats.com/fight-details/fight-missing-control"
+        )
+        missing_control["date"] = "2026-08-03"
+        missing_control.loc[0, "control"] = None
+
+        publication = build_fighter_explorer(
+            pd.concat(
+                [fights, unknown_duration, missing_control], ignore_index=True
+            ),
+            fighters,
+        )
+        alpha = next(
+            item for item in publication["fighters"] if item["id"] == "alpha-id"
+        )
+        career = alpha["career"]
+
+        self.assertEqual(publication["schema_version"], 3)
+        self.assertEqual(career["recorded_bouts"], 3)
+        self.assertEqual(career["bouts_with_duration"], 2)
+        self.assertEqual(career["control_stat_bouts"], 1)
+        self.assertEqual(career["control_share_stat_bouts"], 2)
+        self.assertEqual(career["average_fight_minutes"], 15)
+        self.assertEqual(career["sig_strikes_landed_per_minute"], 2)
+        self.assertEqual(career["sig_strikes_absorbed_per_minute"], 1)
+        self.assertEqual(career["control_minutes_per_15"], 3)
+        self.assertEqual(career["totals"]["sig_strikes_landed"], 360)
+        self.assertEqual(career["totals"]["control"], 780)
+
+    def test_wholly_missing_totals_remain_null_instead_of_becoming_zero(self) -> None:
+        fights, fighters = _inputs()
+        fights["control"] = None
+        publication = build_fighter_explorer(fights, fighters)
+        alpha = next(
+            item for item in publication["fighters"] if item["id"] == "alpha-id"
+        )
+
+        self.assertIsNone(alpha["career"]["totals"]["control"])
+        self.assertIsNone(alpha["career"]["opponent_totals"]["control"])
+        self.assertIsNone(alpha["career"]["control_minutes_per_15"])
+        self.assertIsNone(alpha["career"]["control_share"])
+        self.assertEqual(alpha["career"]["control_share_stat_bouts"], 0)
+
     def test_linked_external_history_is_visible_without_fabricated_stats(self) -> None:
         fights, fighters = _inputs()
         external = [

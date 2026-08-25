@@ -23,7 +23,7 @@ VEGAS_PATH = ROOT / "content" / "data" / "external" / "vegas_odds.json"
 EXTERNAL_MMA_ROOT = ROOT / "content" / "data" / "external_mma"
 EXTERNAL_BOUTS_PATH = EXTERNAL_MMA_ROOT / "bouts.jsonl"
 EXTERNAL_IDENTITY_PATH = EXTERNAL_MMA_ROOT / "identity_map.csv"
-SCHEMA_VERSION = 2
+SCHEMA_VERSION = 3
 SIZE_LIMIT = 8 * 1024 * 1024
 SHARD_SIZE_LIMIT = 4 * 1024 * 1024
 SHARD_KEYS = tuple("0123456789abcdefx")
@@ -120,6 +120,7 @@ CAREER_DEFINITIONS = {
     "other_wins": ("Other finish wins", "Record", "count", "context"),
     "total_fight_minutes": ("Total fight time", "Record", "minutes", "context"),
     "average_fight_minutes": ("Average fight time", "Record", "minutes", "context"),
+    "bouts_with_duration": ("Bouts with known duration", "Data quality", "count", "higher"),
     "sig_strikes_landed_per_minute": ("Sig. strikes landed / min", "Striking", "decimal", "higher"),
     "sig_strikes_absorbed_per_minute": ("Sig. strikes absorbed / min", "Striking", "decimal", "lower"),
     "significant_strike_differential_per_minute": ("Sig. strike differential / min", "Striking", "decimal", "higher"),
@@ -140,6 +141,8 @@ CAREER_DEFINITIONS = {
     "clinch_strike_share": ("Clinch strike share", "Style", "percentage", "context"),
     "ground_strike_share": ("Ground strike share", "Style", "percentage", "context"),
     "paired_opponent_stat_bouts": ("Bouts with paired opponent stats", "Data quality", "count", "higher"),
+    "control_stat_bouts": ("Bouts supporting control rate", "Data quality", "count", "higher"),
+    "control_share_stat_bouts": ("Bouts supporting control share", "Data quality", "count", "higher"),
 }
 
 SOURCE_LABELS = {
@@ -459,13 +462,122 @@ def _external_history_rows(
     return output, linked_observations
 
 
-def _sum_stats(rows: Iterable[pd.Series]) -> dict[str, float]:
-    totals = {field: 0.0 for field in STAT_FIELDS}
+def _sum_stats(rows: Iterable[pd.Series]) -> dict[str, float | None]:
+    """Sum observed values without representing wholly missing fields as zero."""
+
+    observed = {field: [] for field in STAT_FIELDS}
     for row in rows:
         for field in STAT_FIELDS:
             value = _number(row.get(field))
-            totals[field] += float(value or 0.0)
-    return totals
+            if value is not None:
+                observed[field].append(float(value))
+    return {
+        field: (sum(values) if values else None)
+        for field, values in observed.items()
+    }
+
+
+def _field_rate(
+    rows: Iterable[pd.Series],
+    field: str,
+    scale_seconds: float,
+) -> float | None:
+    """Return a rate using only bouts with both the statistic and exposure."""
+
+    total = 0.0
+    seconds = 0.0
+    for row in rows:
+        value = _number(row.get(field))
+        duration = _number(row.get("total_fight_time"))
+        if value is None or duration is None or duration <= 0:
+            continue
+        total += float(value)
+        seconds += float(duration)
+    return _rate(total, seconds, scale_seconds)
+
+
+def _field_ratio(
+    rows: Iterable[pd.Series],
+    numerator_field: str,
+    denominator_field: str,
+) -> float | None:
+    """Return a ratio from rows where both components were observed."""
+
+    numerator = 0.0
+    denominator = 0.0
+    observed = False
+    for row in rows:
+        numerator_value = _number(row.get(numerator_field))
+        denominator_value = _number(row.get(denominator_field))
+        if numerator_value is None or denominator_value is None:
+            continue
+        observed = True
+        numerator += float(numerator_value)
+        denominator += float(denominator_value)
+    return _ratio(numerator, denominator) if observed else None
+
+
+def _fight_key(row: pd.Series) -> str:
+    fight_id = _clean_text(row.get("fight_id"))
+    return fight_id or _stable_id(row.get("fight_url"))
+
+
+def _paired_rate(
+    rows: Iterable[pd.Series],
+    opponent_rows: Iterable[pd.Series],
+    field: str,
+    scale_seconds: float,
+    *,
+    differential: bool = False,
+) -> float | None:
+    """Return an absorbed or differential rate from complete fight pairs."""
+
+    opponents = {_fight_key(row): row for row in opponent_rows}
+    total = 0.0
+    seconds = 0.0
+    for row in rows:
+        opponent = opponents.get(_fight_key(row))
+        own_value = _number(row.get(field))
+        opponent_value = _number(opponent.get(field)) if opponent is not None else None
+        duration = _number(row.get("total_fight_time"))
+        if opponent_value is None or duration is None or duration <= 0:
+            continue
+        if differential and own_value is None:
+            continue
+        total += (
+            float(own_value) - float(opponent_value)
+            if differential
+            else float(opponent_value)
+        )
+        seconds += float(duration)
+    return _rate(total, seconds, scale_seconds)
+
+
+def _paired_control_share(
+    rows: Iterable[pd.Series], opponent_rows: Iterable[pd.Series]
+) -> float | None:
+    opponents = {_fight_key(row): row for row in opponent_rows}
+    own_total = 0.0
+    combined_total = 0.0
+    observed = False
+    for row in rows:
+        opponent = opponents.get(_fight_key(row))
+        own_control = _number(row.get("control"))
+        opponent_control = (
+            _number(opponent.get("control")) if opponent is not None else None
+        )
+        if own_control is None or opponent_control is None:
+            continue
+        observed = True
+        own_total += float(own_control)
+        combined_total += float(own_control) + float(opponent_control)
+    return _ratio(own_total, combined_total) if observed else None
+
+
+def _published_total(value: float | None) -> int | float | None:
+    if value is None:
+        return None
+    return int(value) if value.is_integer() else round(value, 6)
 
 
 def _career(
@@ -492,13 +604,14 @@ def _career(
     )
     totals = _sum_stats(ordered)
     opponent_totals = _sum_stats(opponent_rows)
-    total_seconds = sum(
-        float(_number(row.get("total_fight_time")) or 0.0) for row in ordered
-    )
-    paired_seconds = sum(
-        float(_number(row.get("total_fight_time")) or 0.0)
-        for row in opponent_rows
-    )
+    opponents_by_fight = {_fight_key(row): row for row in opponent_rows}
+    known_durations = [
+        float(duration)
+        for row in ordered
+        if (duration := _number(row.get("total_fight_time"))) is not None
+        and duration > 0
+    ]
+    total_seconds = sum(known_durations)
     finish_wins = win_methods["ko_tko"] + win_methods["submission"] + win_methods["other"]
     divisions = Counter(_clean_text(row.get("division")) for row in ordered)
     divisions.pop("", None)
@@ -529,77 +642,74 @@ def _career(
         "decision_wins": win_methods["decision"],
         "other_wins": win_methods["other"],
         "total_fight_minutes": round(total_seconds / 60.0, 4),
-        "average_fight_minutes": _ratio(total_seconds / 60.0, len(ordered)),
-        "sig_strikes_landed_per_minute": _rate(
-            totals["sig_strikes_landed"], total_seconds, 60.0
+        "average_fight_minutes": _ratio(
+            total_seconds / 60.0, len(known_durations)
         ),
-        "sig_strikes_absorbed_per_minute": _rate(
-            opponent_totals["sig_strikes_landed"], paired_seconds, 60.0
+        "bouts_with_duration": len(known_durations),
+        "sig_strikes_landed_per_minute": _field_rate(
+            ordered, "sig_strikes_landed", 60.0
         ),
-        "significant_strike_differential_per_minute": _rate(
-            totals["sig_strikes_landed"] - opponent_totals["sig_strikes_landed"],
-            paired_seconds,
+        "sig_strikes_absorbed_per_minute": _paired_rate(
+            ordered, opponent_rows, "sig_strikes_landed", 60.0
+        ),
+        "significant_strike_differential_per_minute": _paired_rate(
+            ordered,
+            opponent_rows,
+            "sig_strikes_landed",
             60.0,
+            differential=True,
         ),
-        "sig_strike_accuracy": _ratio(
-            totals["sig_strikes_landed"], totals["sig_strikes_attempts"]
+        "sig_strike_accuracy": _field_ratio(
+            ordered, "sig_strikes_landed", "sig_strikes_attempts"
         ),
         "sig_strike_defense": (
             None
-            if opponent_totals["sig_strikes_attempts"] <= 0
-            else round(
-                1.0
-                - opponent_totals["sig_strikes_landed"]
-                / opponent_totals["sig_strikes_attempts"],
-                6,
-            )
+            if (absorbed_accuracy := _field_ratio(
+                opponent_rows, "sig_strikes_landed", "sig_strikes_attempts"
+            )) is None
+            else round(1.0 - absorbed_accuracy, 6)
         ),
-        "knockdowns_per_15": _rate(totals["knockdowns"], total_seconds, 900.0),
-        "knockdowns_absorbed_per_15": _rate(
-            opponent_totals["knockdowns"], paired_seconds, 900.0
+        "knockdowns_per_15": _field_rate(ordered, "knockdowns", 900.0),
+        "knockdowns_absorbed_per_15": _paired_rate(
+            ordered, opponent_rows, "knockdowns", 900.0
         ),
-        "takedowns_landed_per_15": _rate(
-            totals["takedowns_landed"], total_seconds, 900.0
+        "takedowns_landed_per_15": _field_rate(
+            ordered, "takedowns_landed", 900.0
         ),
-        "takedown_accuracy": _ratio(
-            totals["takedowns_landed"], totals["takedowns_attempts"]
+        "takedown_accuracy": _field_ratio(
+            ordered, "takedowns_landed", "takedowns_attempts"
         ),
         "takedown_defense": (
             None
-            if opponent_totals["takedowns_attempts"] <= 0
-            else round(
-                1.0
-                - opponent_totals["takedowns_landed"]
-                / opponent_totals["takedowns_attempts"],
-                6,
-            )
+            if (absorbed_takedown_accuracy := _field_ratio(
+                opponent_rows, "takedowns_landed", "takedowns_attempts"
+            )) is None
+            else round(1.0 - absorbed_takedown_accuracy, 6)
         ),
-        "submission_attempts_per_15": _rate(
-            totals["sub_attempts"], total_seconds, 900.0
+        "submission_attempts_per_15": _field_rate(
+            ordered, "sub_attempts", 900.0
         ),
-        "control_minutes_per_15": _rate(
-            totals["control"] / 60.0, total_seconds, 900.0
+        "control_minutes_per_15": _field_rate(
+            ordered, "control", 15.0
         ),
-        "control_share": _ratio(
-            totals["control"], totals["control"] + opponent_totals["control"]
+        "control_share": _paired_control_share(ordered, opponent_rows),
+        "head_strike_share": _field_ratio(
+            ordered, "head_strikes_landed", "sig_strikes_landed"
         ),
-        "head_strike_share": _ratio(
-            totals["head_strikes_landed"], totals["sig_strikes_landed"]
+        "body_strike_share": _field_ratio(
+            ordered, "body_strikes_landed", "sig_strikes_landed"
         ),
-        "body_strike_share": _ratio(
-            totals["body_strikes_landed"], totals["sig_strikes_landed"]
+        "leg_strike_share": _field_ratio(
+            ordered, "leg_strikes_landed", "sig_strikes_landed"
         ),
-        "leg_strike_share": _ratio(
-            totals["leg_strikes_landed"], totals["sig_strikes_landed"]
+        "distance_strike_share": _field_ratio(
+            ordered, "distance_strikes_landed", "sig_strikes_landed"
         ),
-        "distance_strike_share": _ratio(
-            totals["distance_strikes_landed"], totals["sig_strikes_landed"]
+        "clinch_strike_share": _field_ratio(
+            ordered, "clinch_strikes_landed", "sig_strikes_landed"
         ),
-        "clinch_strike_share": _ratio(
-            totals["clinch_strikes_landed"], totals["sig_strikes_landed"]
-        ),
-        "ground_strike_share": _ratio(
-            totals["ground_strikes_landed"], totals["sig_strikes_landed"]
+        "ground_strike_share": _field_ratio(
+            ordered, "ground_strikes_landed", "sig_strikes_landed"
         ),
         "recent_form": results[:5],
         "current_streak_result": current_streak_result,
@@ -614,12 +724,26 @@ def _career(
             )
         ],
         "paired_opponent_stat_bouts": len(opponent_rows),
+        "control_stat_bouts": sum(
+            _number(row.get("control")) is not None
+            and (_number(row.get("total_fight_time")) or 0) > 0
+            for row in ordered
+        ),
+        "control_share_stat_bouts": sum(
+            _number(row.get("control")) is not None
+            and _number(opponent.get("control")) is not None
+            for row, opponent in (
+                (row, opponents_by_fight.get(_fight_key(row)))
+                for row in ordered
+            )
+            if opponent is not None
+        ),
         "totals": {
-            key: int(value) if value.is_integer() else round(value, 6)
+            key: _published_total(value)
             for key, value in totals.items()
         },
         "opponent_totals": {
-            key: int(value) if value.is_integer() else round(value, 6)
+            key: _published_total(value)
             for key, value in opponent_totals.items()
         },
     }
@@ -878,7 +1002,8 @@ def build_fighter_explorer(
                 "The all-promotion record includes linked Bellator and ONE result metadata; UFCStats career rates remain UFC-only.",
                 "The external bootstrap is a CC0 dataset through 2021-08-11 and is not a current weekly feed.",
                 "Absorbed and defensive statistics use the paired opponent row for the same stable fight ID.",
-                "Missing values are not treated as zero; derived rates are null when their denominator is unavailable.",
+                "Each rate uses only bouts where both its statistic and fight duration are known; bouts with unknown duration never contribute a numerator without exposure.",
+                "Wholly missing statistics remain null rather than becoming zero, and coverage counts show how many bouts support duration and control-time rates.",
                 "Each fight is stored as an array in fight_columns order to keep the browser download compact.",
             ],
         },

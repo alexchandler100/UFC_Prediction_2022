@@ -20,6 +20,14 @@ The weekly job:
 
 The 82-feature model is antisymmetric: swapping the fighters produces the complementary probability. Historical features use only information available before that bout; appending future fights cannot change an existing training row. Split decisions are valid W/L labels, while draws and no-contests are retained as state/history events but are not binary training labels.
 
+Strict validation now rebuilds the full point-in-time matrix from raw fights and
+fighter profiles and compares every one of its feature cells. The formula
+contract, missing-data behavior, source invariants, and known coverage limits
+are recorded in [DERIVED_DATA_AUDIT.md](DERIVED_DATA_AUDIT.md). The old
+326-column `ufc_fights_reported_derived_doubled.csv` is retained only for
+notebook compatibility; its overlapping composite scores and undefined-rate
+handling are not used by the production model or website.
+
 The regularization search includes `C=0.001` and `0.003`; an ablation found the old `0.01` lower boundary was masking stronger shrinkage. Recency weighting, decision-label weighting, and Glicko/RD were tested but remain unpromoted because their gains were small or inconsistent. Exact results are recorded in [AUDIT.md](AUDIT.md).
 
 The Bayesian challenger does not replace that production probability. The L2

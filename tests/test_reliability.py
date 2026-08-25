@@ -1,5 +1,6 @@
 import sys
 import json
+import math
 import tempfile
 import unittest
 from pathlib import Path
@@ -26,6 +27,9 @@ from fight_predictor import (
     TemporalFightPredictor,
 )
 from fight_predictor.point_in_time import (
+    ELO_K_FACTORS,
+    ELO_NAMES,
+    FightRecord,
     REGULARIZATION_C_GRID,
     _metrics,
     training_fingerprint,
@@ -248,6 +252,25 @@ class RawValidationTests(unittest.TestCase):
         errors = validate_raw_fights(raw).errors
         self.assertTrue(any("fighter IDs" in error for error in errors))
         self.assertTrue(any("exceeds" in error for error in errors))
+
+    def test_rejects_inconsistent_strike_partitions_and_pair_control(self):
+        raw = self.make_raw()
+        for column in (
+            "head_strikes_landed", "body_strikes_landed", "leg_strikes_landed",
+            "distance_strikes_landed", "clinch_strikes_landed", "ground_strikes_landed",
+        ):
+            raw[column] = 0
+        raw["total_strikes_landed"] = raw["sig_strikes_landed"]
+        raw["control"] = [500, 500]
+        raw.loc[0, "head_strikes_landed"] = 19
+        raw.loc[1, "head_strikes_landed"] = 10
+        raw.loc[0, "total_strikes_landed"] = 18
+
+        errors = validate_raw_fights(raw).errors
+
+        self.assertTrue(any("target landed partition" in error for error in errors))
+        self.assertTrue(any("exceeds total_strikes_landed" in error for error in errors))
+        self.assertTrue(any("combined mirrored control" in error for error in errors))
 
 
 class PointInTimeFeatureTests(unittest.TestCase):
@@ -567,6 +590,135 @@ class PointInTimeFeatureTests(unittest.TestCase):
         self.assertTrue(any("exact set" in error for error in errors))
         self.assertTrue(any("target disagrees" in error for error in errors))
         self.assertTrue(any("fighter_url disagrees" in error for error in errors))
+
+    def test_point_in_time_validator_recomputes_every_feature(self):
+        raw = pd.DataFrame(
+            self.make_fight("f1", "e1", "2020-01-01", "a", "b", "W", fighter_sig=20)
+            + self.make_fight("f2", "e2", "2021-01-01", "a", "c", "L", fighter_sig=10)
+        )
+        profiles = self.make_profiles("a", "b", "c")
+        point = PointInTimeDatasetBuilder(raw, profiles).build()
+        corrupt = point.copy(deep=True)
+        corrupt.loc[1, "career_sig_landed_per15_diff"] += 0.25
+
+        report = validate_point_in_time(raw, corrupt, profiles)
+
+        self.assertTrue(
+            any("feature values differ from a full source replay" in error for error in report.errors)
+        )
+
+    def test_production_feature_contract_and_formula_families(self):
+        raw = pd.DataFrame(
+            self.make_fight("f1", "e1", "2020-01-01", "a", "b", "W")
+        )
+        builder = PointInTimeDatasetBuilder(raw, self.make_profiles("a", "b"))
+        expected_base = [
+            *ELO_NAMES,
+            *(f"division_{name}" for name in ELO_NAMES),
+            "elo_medium_reliable",
+            "rating_uncertainty",
+            "average_opponent_elo",
+            "days_since_fight_log",
+            "has_history",
+            "age",
+            "age_squared",
+            "age_known",
+            "height",
+            "height_known",
+            "reach",
+            "reach_known",
+        ]
+        record_suffixes = (
+            "fights_log", "wins_log", "losses_log", "win_rate",
+            "finish_win_rate", "ko_win_rate", "sub_win_rate", "finish_loss_rate",
+        )
+        performance_suffixes = (
+            "sig_landed_per15", "sig_absorbed_per15", "sig_accuracy", "sig_defence",
+            "total_landed_per15", "total_absorbed_per15", "td_landed_per15",
+            "td_absorbed_per15", "td_accuracy", "td_defence", "control_per15",
+            "control_absorbed_per15", "knockdowns_per15",
+            "knockdowns_absorbed_per15", "sub_attempts_per15", "reversals_per15",
+        )
+        expected = [
+            *expected_base,
+            *(f"{scope}_{suffix}" for scope in ("career", "recent_1y", "recent_3y", "division") for suffix in record_suffixes),
+            *(f"{scope}_{suffix}" for scope in ("career", "recent_3y") for suffix in performance_suffixes),
+        ]
+        self.assertEqual(list(builder.side_feature_names), expected)
+        self.assertEqual(len(builder.feature_columns), 82)
+        self.assertEqual(
+            list(builder.feature_columns), [f"{name}_diff" for name in expected]
+        )
+
+        records = [
+            FightRecord(
+                date=pd.Timestamp("2024-01-01"), result=1.0, method="KO/TKO",
+                division="Lightweight", opponent_rating=1600.0, seconds=900.0,
+                own_stats={
+                    "sig_strikes_landed": 30.0, "sig_strikes_attempts": 60.0,
+                    "total_strikes_landed": 45.0, "total_strikes_attempts": 80.0,
+                    "takedowns_landed": 2.0, "takedowns_attempts": 5.0,
+                    "control": 180.0, "knockdowns": 1.0, "sub_attempts": 0.0,
+                    "reversals": 1.0,
+                },
+                opponent_stats={
+                    "sig_strikes_landed": 20.0, "sig_strikes_attempts": 50.0,
+                    "total_strikes_landed": 25.0, "total_strikes_attempts": 65.0,
+                    "takedowns_landed": 1.0, "takedowns_attempts": 4.0,
+                    "control": 90.0, "knockdowns": 0.0, "sub_attempts": 1.0,
+                    "reversals": 0.0,
+                },
+            ),
+            FightRecord(
+                date=pd.Timestamp("2024-06-01"), result=0.0, method="SUB",
+                division="Lightweight", opponent_rating=1500.0, seconds=450.0,
+                own_stats={
+                    "sig_strikes_landed": 10.0, "sig_strikes_attempts": 20.0,
+                    "total_strikes_landed": 12.0, "total_strikes_attempts": 25.0,
+                    "takedowns_landed": 0.0, "takedowns_attempts": 1.0,
+                    "control": math.nan, "knockdowns": 0.0, "sub_attempts": 1.0,
+                    "reversals": 0.0,
+                },
+                opponent_stats={
+                    "sig_strikes_landed": 15.0, "sig_strikes_attempts": 25.0,
+                    "total_strikes_landed": 18.0, "total_strikes_attempts": 30.0,
+                    "takedowns_landed": 1.0, "takedowns_attempts": 1.0,
+                    "control": 120.0, "knockdowns": 0.0, "sub_attempts": 2.0,
+                    "reversals": 0.0,
+                },
+            ),
+            FightRecord(
+                date=pd.Timestamp("2024-07-01"), result=0.5, method="DRAW",
+                division="Lightweight", opponent_rating=1400.0, seconds=900.0,
+                own_stats=dict.fromkeys(builder.state_count_stats, math.nan),
+                opponent_stats=dict.fromkeys(builder.state_count_stats, math.nan),
+            ),
+        ]
+        record = builder._record_features(records, "x")
+        self.assertAlmostEqual(record["x_fights_log"], math.log1p(3))
+        self.assertAlmostEqual(record["x_wins_log"], math.log(2))
+        self.assertAlmostEqual(record["x_losses_log"], math.log(2))
+        self.assertAlmostEqual(record["x_win_rate"], 0.5)
+        self.assertAlmostEqual(record["x_finish_win_rate"], 2 / 6)
+        self.assertAlmostEqual(record["x_ko_win_rate"], 1.75 / 6)
+        self.assertAlmostEqual(record["x_sub_win_rate"], 0.75 / 6)
+        self.assertAlmostEqual(record["x_finish_loss_rate"], 2 / 6)
+
+        performance = builder._performance_features(records, "x")
+        self.assertAlmostEqual(performance["x_sig_landed_per15"], 40 / 2.5)
+        self.assertAlmostEqual(performance["x_sig_absorbed_per15"], 35 / 2.5)
+        self.assertAlmostEqual(performance["x_sig_accuracy"], (40 + 18) / (80 + 40))
+        self.assertAlmostEqual(performance["x_sig_defence"], 1 - (35 + 18) / (75 + 40))
+        self.assertAlmostEqual(performance["x_td_accuracy"], (2 + 2.8) / (6 + 8))
+        self.assertAlmostEqual(performance["x_td_defence"], 1 - (2 + 2.8) / (5 + 8))
+        self.assertAlmostEqual(performance["x_control_per15"], 180 / 2)
+        self.assertAlmostEqual(performance["x_control_absorbed_per15"], 210 / 2.5)
+        self.assertAlmostEqual(builder._rating_probability(1500, 1500), 0.5)
+        self.assertAlmostEqual(
+            builder._decayed_rating(1600, pd.Timestamp("2020-01-01"), pd.Timestamp("2021-01-01")),
+            1500 + 100 * (0.92 ** (366 / 365.25)),
+        )
+        self.assertEqual(ELO_K_FACTORS, (32.0, 64.0, 128.0))
 
     def test_duplicate_display_names_are_ambiguous_without_a_url(self):
         profiles = self.make_profiles("bruno-one", "bruno-two")

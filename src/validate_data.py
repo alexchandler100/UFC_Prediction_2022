@@ -134,6 +134,37 @@ LANDED_ATTEMPTED_PAIRS = (
     ("ground_strikes_landed", "ground_strikes_attempts"),
 )
 
+SIGNIFICANT_STRIKE_PARTITIONS = (
+    (
+        "target landed",
+        ("head_strikes_landed", "body_strikes_landed", "leg_strikes_landed"),
+        "sig_strikes_landed",
+    ),
+    (
+        "target attempted",
+        ("head_strikes_attempts", "body_strikes_attempts", "leg_strikes_attempts"),
+        "sig_strikes_attempts",
+    ),
+    (
+        "position landed",
+        (
+            "distance_strikes_landed",
+            "clinch_strikes_landed",
+            "ground_strikes_landed",
+        ),
+        "sig_strikes_landed",
+    ),
+    (
+        "position attempted",
+        (
+            "distance_strikes_attempts",
+            "clinch_strikes_attempts",
+            "ground_strikes_attempts",
+        ),
+        "sig_strikes_attempts",
+    ),
+)
+
 
 @dataclass
 class ValidationReport:
@@ -314,6 +345,42 @@ def validate_raw_fights(raw: pd.DataFrame) -> ValidationReport:
             f"{landed_column} exceeds {attempted_column}",
         )
 
+    for label, partition_columns, total_column in SIGNIFICANT_STRIKE_PARTITIONS:
+        required = {*partition_columns, total_column}
+        if not required <= set(raw.columns):
+            continue
+        values = raw[[*partition_columns, total_column]].apply(
+            pd.to_numeric, errors="coerce"
+        )
+        complete = values.notna().all(axis=1)
+        partition_total = values[list(partition_columns)].sum(axis=1)
+        report.require(
+            (partition_total[complete] == values.loc[complete, total_column]).all(),
+            f"raw significant-strike {label} partition does not equal {total_column}",
+        )
+
+    for significant, total in (
+        ("sig_strikes_landed", "total_strikes_landed"),
+        ("sig_strikes_attempts", "total_strikes_attempts"),
+    ):
+        if {significant, total} <= set(raw.columns):
+            significant_values = pd.to_numeric(raw[significant], errors="coerce")
+            total_values = pd.to_numeric(raw[total], errors="coerce")
+            report.require(
+                not (significant_values > total_values).fillna(False).any(),
+                f"raw {significant} exceeds {total}",
+            )
+
+    if {"control", "total_fight_time"} <= set(raw.columns):
+        left_control = pd.to_numeric(left["control"], errors="coerce")
+        right_control = pd.to_numeric(right["control"], errors="coerce")
+        pair_duration = pd.to_numeric(left["total_fight_time"], errors="coerce")
+        complete = left_control.notna() & right_control.notna() & pair_duration.notna()
+        report.require(
+            ((left_control + right_control)[complete] <= pair_duration[complete]).all(),
+            "combined mirrored control time exceeds total fight time",
+        )
+
     report.facts.append(
         f"raw fights: {len(raw):,} rows / {raw['fight_url'].nunique():,} fights"
     )
@@ -416,7 +483,12 @@ def validate_fighters(fighters: pd.DataFrame) -> ValidationReport:
     return report
 
 
-def validate_point_in_time(raw: pd.DataFrame, point_in_time: pd.DataFrame) -> ValidationReport:
+def validate_point_in_time(
+    raw: pd.DataFrame,
+    point_in_time: pd.DataFrame,
+    fighter_stats: pd.DataFrame | None = None,
+    auxiliary_fights: pd.DataFrame | None = None,
+) -> ValidationReport:
     report = ValidationReport()
     if not _require_columns(
         point_in_time,
@@ -573,6 +645,54 @@ def validate_point_in_time(raw: pd.DataFrame, point_in_time: pd.DataFrame) -> Va
         raw_max == point_max,
         "latest terminal raw W/L and point-in-time label dates differ",
     )
+    if fighter_stats is not None:
+        try:
+            rebuilt = PointInTimeDatasetBuilder(
+                raw,
+                fighter_stats,
+                auxiliary_fights=auxiliary_fights,
+            ).build()
+            report.require(
+                list(rebuilt.columns) == list(point_in_time.columns),
+                "point-in-time columns differ from a full source replay",
+            )
+            report.require(
+                rebuilt["fight_id"].astype(str).tolist()
+                == point_in_time["fight_id"].astype(str).tolist(),
+                "point-in-time fight order differs from a full source replay",
+            )
+            replay_features = [
+                column for column in rebuilt if column.endswith("_diff")
+            ]
+            if (
+                list(rebuilt.columns) == list(point_in_time.columns)
+                and len(rebuilt) == len(point_in_time)
+                and replay_features
+            ):
+                supplied_values = point_in_time[replay_features].apply(
+                    pd.to_numeric, errors="coerce"
+                ).to_numpy(dtype=float)
+                rebuilt_values = rebuilt[replay_features].to_numpy(dtype=float)
+                matching = np.isclose(
+                    supplied_values,
+                    rebuilt_values,
+                    rtol=0.0,
+                    atol=1e-12,
+                    equal_nan=False,
+                )
+                report.require(
+                    matching.all(),
+                    "point-in-time feature values differ from a full source replay",
+                )
+                if matching.all():
+                    report.facts.append(
+                        "point-in-time replay: "
+                        f"{matching.size:,} feature cells reproduced"
+                    )
+        except (KeyError, TypeError, ValueError) as error:
+            report.errors.append(
+                f"point-in-time source replay could not be completed: {error}"
+            )
     report.facts.append(
         f"point-in-time fights: {len(point_in_time):,} rows / {len(feature_columns):,} features"
     )
@@ -2159,6 +2279,14 @@ def validate_repository(
     )
     report.merge(validate_raw_fights(raw))
     report.merge(validate_fighters(fighters))
+    legacy_derived_path = processed / "ufc_fights_reported_derived_doubled.csv"
+    if legacy_derived_path.exists():
+        report.warnings.append(
+            "legacy ufc_fights_reported_derived_doubled.csv is an unsupported "
+            "notebook-era artifact; it is excluded from the production model and "
+            "website because its historical composite formulas are not valid "
+            "production features"
+        )
     raw_schema_valid = RAW_REQUIRED_COLUMNS <= set(raw.columns)
     if require_model_artifact:
         report.require(
@@ -2167,7 +2295,14 @@ def validate_repository(
         )
     if raw_schema_valid:
         if point_in_time is not None and require_model_artifact:
-            report.merge(validate_point_in_time(raw, point_in_time))
+            report.merge(
+                validate_point_in_time(
+                    raw,
+                    point_in_time,
+                    fighters,
+                    auxiliary_fights,
+                )
+            )
         elif require_model_artifact:
             report.errors.append("ufc_fights_point_in_time.csv is missing")
         elif point_in_time is not None:
