@@ -314,6 +314,7 @@ async function ensureFightGraphData() {
 function fightGraphEmpty(message) {
   const canvas = $("#fight-graph-canvas");
   canvas.replaceChildren(element("div", "empty-state", message));
+  renderFightGraphColorLegend();
   state.fightGraphViewport?.resizeObserver?.disconnect();
   state.fightGraphViewport = null;
   updateFightGraphViewportControls();
@@ -516,6 +517,25 @@ function configureFightGraphViewport(svg, width, height) {
     state.fightGraphViewport.resizeObserver = new ResizeObserver(() => resizeFightGraphViewport());
     state.fightGraphViewport.resizeObserver.observe(canvas);
   }
+}
+
+function renderFightGraphColorLegend(fighterAId = null, fighterBId = null) {
+  const legend = $("#fight-graph-color-legend");
+  legend.replaceChildren();
+  const fighters = [["a", state.fighterById.get(fighterAId)], ["b", state.fighterById.get(fighterBId)]];
+  if (fighters.some(([, fighter]) => !fighter)) { legend.hidden = true; return; }
+  fighters.forEach(([branch, fighter]) => {
+    const item = element("div", "fight-graph-color-fighter");
+    appendText(item, "strong", "", fighter.name);
+    [["win", "Wins"], ["loss", "Losses"]].forEach(([result, label]) => {
+      const key = element("span", "fight-graph-color-key");
+      const swatch = element("i", `fight-graph-color-swatch is-branch-${branch} is-branch-${result}`); swatch.setAttribute("aria-hidden", "true");
+      key.append(swatch, document.createTextNode(label)); item.append(key);
+    });
+    item.title = `${fighter.name}'s colors also apply to opponents reached through that fighter's depth branch.`;
+    legend.append(item);
+  });
+  legend.hidden = false;
 }
 
 function resetFightGraphDetails() {
@@ -749,7 +769,7 @@ function layoutMatchupFightGraph(nodeList, fighterDepths) {
   return { nodesById: new Map(nodeList.map((node) => [node.id, node])), width, height };
 }
 
-function renderFightGraph(edges, counts, { fighterDepths = null, seedIds = new Set() } = {}) {
+function renderFightGraph(edges, counts, { fighterDepths = null, seedIds = new Set(), edgeContexts = new Map() } = {}) {
   const canvas = $("#fight-graph-canvas"); canvas.replaceChildren();
   const nodeIds = [...new Set([...seedIds, ...edges.flatMap((edge) => [edge.winnerId, edge.loserId])])]; const wins = new Map();
   edges.forEach((edge) => wins.set(edge.winnerId, (wins.get(edge.winnerId) || 0) + 1));
@@ -767,10 +787,12 @@ function renderFightGraph(edges, counts, { fighterDepths = null, seedIds = new S
   svg.setAttribute("role", "img"); svg.setAttribute("aria-label", `Directed graph of ${nodeList.length} fighters and ${edges.length} decisive fights`);
   const defs = document.createElementNS(SVG_NAMESPACE, "defs"); const marker = document.createElementNS(SVG_NAMESPACE, "marker");
   marker.setAttribute("id", "fight-graph-arrow"); marker.setAttribute("viewBox", "0 0 10 10"); marker.setAttribute("refX", "8"); marker.setAttribute("refY", "5"); marker.setAttribute("markerWidth", "7"); marker.setAttribute("markerHeight", "7"); marker.setAttribute("orient", "auto-start-reverse");
-  const arrow = document.createElementNS(SVG_NAMESPACE, "path"); arrow.setAttribute("d", "M 0 0 L 10 5 L 0 10 z"); marker.append(arrow); defs.append(marker); svg.append(defs);
+  const arrow = document.createElementNS(SVG_NAMESPACE, "path"); arrow.setAttribute("d", "M 0 0 L 10 5 L 0 10 z"); arrow.setAttribute("fill", "context-stroke"); marker.append(arrow); defs.append(marker); svg.append(defs);
   const edgeLayer = document.createElementNS(SVG_NAMESPACE, "g"); edgeLayer.classList.add("fight-graph-edges");
   edges.forEach((edge) => {
     const group = document.createElementNS(SVG_NAMESPACE, "g"); group.classList.add("fight-graph-edge"); group.dataset.edgeId = edge.id;
+    const context = edgeContexts.get(edge.id);
+    if (context) { group.classList.add(`is-branch-${context.branch}`, `is-branch-${context.result}`); group.dataset.branch = context.branch; group.dataset.branchResult = context.result; group.dataset.branchFighterId = context.fighterId; }
     const pathValue = graphPath(edge, nodesById, pairIndexes); const visible = document.createElementNS(SVG_NAMESPACE, "path");
     visible.classList.add("fight-graph-edge-line"); visible.setAttribute("d", pathValue); visible.setAttribute("marker-end", "url(#fight-graph-arrow)");
     const hit = document.createElementNS(SVG_NAMESPACE, "path"); hit.classList.add("fight-graph-edge-hit"); hit.setAttribute("d", pathValue); hit.setAttribute("tabindex", "0"); hit.setAttribute("role", "button");
@@ -783,7 +805,7 @@ function renderFightGraph(edges, counts, { fighterDepths = null, seedIds = new S
   });
   svg.append(edgeLayer); const nodeLayer = document.createElementNS(SVG_NAMESPACE, "g"); nodeLayer.classList.add("fight-graph-nodes");
   nodeList.forEach((node) => {
-    const group = document.createElementNS(SVG_NAMESPACE, "g"); group.classList.add("fight-graph-node"); if (seedIds.has(node.id)) group.classList.add("is-seed"); group.dataset.depth = String(node.depth ?? ""); group.setAttribute("transform", `translate(${node.x.toFixed(1)} ${node.y.toFixed(1)})`);
+    const group = document.createElementNS(SVG_NAMESPACE, "g"); group.classList.add("fight-graph-node"); if (seedIds.has(node.id)) group.classList.add("is-seed"); group.dataset.fighterId = node.id; group.dataset.depth = String(node.depth ?? ""); group.setAttribute("transform", `translate(${node.x.toFixed(1)} ${node.y.toFixed(1)})`);
     const title = document.createElementNS(SVG_NAMESPACE, "title"); title.textContent = `${node.name}${seedIds.has(node.id) ? " (seed fighter)" : node.depth ? ` (depth ${node.depth})` : ""}: ${node.wins} wins shown in ${node.appearances} fights`;
     const circle = document.createElementNS(SVG_NAMESPACE, "circle"); circle.setAttribute("r", (node.radius + (seedIds.has(node.id) ? 4 : 0)).toFixed(1)); const label = document.createElementNS(SVG_NAMESPACE, "text");
     label.setAttribute("y", String(node.radius + 14)); label.textContent = node.name.length > 22 ? `${node.name.slice(0, 20)}…` : node.name; group.append(title, circle, label); nodeLayer.append(group);
@@ -884,6 +906,7 @@ function setGraphFilterMode(mode) {
   $("#graph-matchup-filters").hidden = !matchup;
   $(".fight-graph-controls").classList.toggle("is-matchup-mode", matchup);
   $("#graph-filter-title").textContent = matchup ? "Choose two fighters and a depth" : "Choose who appears";
+  if (!matchup) renderFightGraphColorLegend();
   [["#graph-mode-simple", !advanced && !matchup], ["#graph-mode-advanced", advanced], ["#graph-mode-matchup", matchup]].forEach(([selector, active]) => {
     const button = $(selector); button.classList.toggle("is-active", active); button.setAttribute("aria-pressed", String(active));
   });
@@ -1063,27 +1086,43 @@ function filteredMatchupFightGraph() {
   });
   const fighterDepths = new Map([[fighterAId, 0], [fighterBId, 0]]);
   const selectedEdgeIds = new Set();
-  let frontier = new Set([fighterAId, fighterBId]);
-  for (let level = 0; level < depth && frontier.size; level += 1) {
-    const next = new Set();
-    frontier.forEach((fighterId) => (adjacency.get(fighterId) || []).forEach((edge) => {
-      selectedEdgeIds.add(edge.id);
-      [edge.winnerId, edge.loserId].forEach((connectedId) => {
-        if (!fighterDepths.has(connectedId)) {
-          fighterDepths.set(connectedId, level + 1);
-          next.add(connectedId);
-        }
-      });
-    }));
-    frontier = next;
-  }
+  const contextCandidates = new Map();
+  [[fighterAId, "a"], [fighterBId, "b"]].forEach(([seedId, branch]) => {
+    const visited = new Set([seedId]);
+    let frontier = new Set([seedId]);
+    for (let level = 0; level < depth && frontier.size; level += 1) {
+      const next = new Set();
+      frontier.forEach((fighterId) => (adjacency.get(fighterId) || []).forEach((edge) => {
+        selectedEdgeIds.add(edge.id);
+        if (!contextCandidates.has(edge.id)) contextCandidates.set(edge.id, []);
+        contextCandidates.get(edge.id).push({ branch, result: edge.winnerId === fighterId ? "win" : "loss", fighterId, level });
+        [edge.winnerId, edge.loserId].forEach((connectedId) => {
+          const knownDepth = fighterDepths.get(connectedId);
+          if (knownDepth === undefined || level + 1 < knownDepth) fighterDepths.set(connectedId, level + 1);
+          if (!visited.has(connectedId)) { visited.add(connectedId); next.add(connectedId); }
+        });
+      }));
+      frontier = next;
+    }
+  });
   const edges = availableEdges.filter((edge) => selectedEdgeIds.has(edge.id));
+  const seedBranches = new Map([[fighterAId, "a"], [fighterBId, "b"]]);
+  const edgeContexts = new Map();
+  edges.forEach((edge) => {
+    if (seedBranches.has(edge.winnerId) && seedBranches.has(edge.loserId)) {
+      edgeContexts.set(edge.id, { branch: seedBranches.get(edge.winnerId), result: "win", fighterId: edge.winnerId, level: 0 });
+      return;
+    }
+    const candidates = contextCandidates.get(edge.id) || [];
+    candidates.sort((left, right) => left.level - right.level || (left.result === right.result ? 0 : left.result === "win" ? -1 : 1) || left.branch.localeCompare(right.branch));
+    if (candidates[0]) edgeContexts.set(edge.id, candidates[0]);
+  });
   const counts = new Map();
   edges.forEach((edge) => {
     counts.set(edge.winnerId, (counts.get(edge.winnerId) || 0) + 1);
     counts.set(edge.loserId, (counts.get(edge.loserId) || 0) + 1);
   });
-  return { edges, counts, fighterDepths, depth, seedIds: new Set([fighterAId, fighterBId]) };
+  return { edges, counts, fighterDepths, edgeContexts, depth, seedIds: new Set([fighterAId, fighterBId]) };
 }
 
 async function drawFightGraph() {
@@ -1099,13 +1138,14 @@ async function drawFightGraph() {
   try {
     await ensureFightGraphData();
     const result = matchupMode ? filteredMatchupFightGraph() : filteredFightGraph();
-    const { edges, counts, matchingFighterCount = 0, rules = [], aggregates = new Map(), advancedFilterCount = 0, fighterDepths = null, depth = null, seedIds = new Set() } = result;
+    const { edges, counts, matchingFighterCount = 0, rules = [], aggregates = new Map(), advancedFilterCount = 0, fighterDepths = null, edgeContexts = new Map(), depth = null, seedIds = new Set() } = result;
     const fighterCount = new Set([...seedIds, ...edges.flatMap((edge) => [edge.winnerId, edge.loserId])]).size;
     state.fightGraphPinnedId = null; resetFightGraphDetails();
     if (!edges.length) { fightGraphEmpty(matchupMode ? "No decisive fights involving this pair were found in the selected weight, promotion, and date window." : "No decisive fights connect fighters matching these filters. Try a wider date range, a lower minimum, fewer advanced rules, or include matching fighters' opponents."); resetFightGraphEdgeTable("No decisive fights match these filters."); status.textContent = advancedFilterCount ? `${matchingFighterCount.toLocaleString()} fighters satisfy the fighter rules, but no connections match every advanced constraint.` : "No matching decisive fights."; return; }
     renderFightGraphEdgeTable(edges, rules, aggregates);
     if (!matchupMode && fighterCount > FIGHT_GRAPH_MAX_FIGHTERS) { fightGraphEmpty(`${fighterCount.toLocaleString()} fighters match. Narrow the dates or fighter name, or increase the minimum fights to draw a readable graph.`); status.textContent = `${edges.length.toLocaleString()} fights connect ${fighterCount.toLocaleString()} fighters; the drawing limit is ${FIGHT_GRAPH_MAX_FIGHTERS}.`; return; }
-    renderFightGraph(edges, counts, { fighterDepths, seedIds });
+    renderFightGraphColorLegend(matchupMode ? fighterAId : null, matchupMode ? fighterBId : null);
+    renderFightGraph(edges, counts, { fighterDepths, seedIds, edgeContexts });
     status.textContent = matchupMode
       ? `Depth ${depth} includes ${edges.length.toLocaleString()} decisive fight${edges.length === 1 ? "" : "s"} connecting ${fighterCount.toLocaleString()} fighter${fighterCount === 1 ? "" : "s"} from ${state.fighterById.get(fighterAId)?.name} and ${state.fighterById.get(fighterBId)?.name}. Arrows point from winner to loser.`
       : `${edges.length.toLocaleString()} decisive fight${edges.length === 1 ? "" : "s"} connect ${fighterCount.toLocaleString()} fighter${fighterCount === 1 ? "" : "s"}.${advancedFilterCount ? ` ${matchingFighterCount.toLocaleString()} fighters satisfy the fighter rules; ${advancedFilterCount} advanced filter${advancedFilterCount === 1 ? "" : "s"} active.` : ""} Arrows point from winner to loser.`;

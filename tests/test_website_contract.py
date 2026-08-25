@@ -234,6 +234,30 @@ class WebsiteExplorerContractTests(unittest.TestCase):
         self.assertIn("configureGraphMatchup(parts[1], parts[2], 1)", script)
         self.assertIn(".fight-graph-node.is-seed", style)
 
+    def test_matchup_graph_colors_each_fighter_branch_by_result(self):
+        page = (REPO_ROOT / "index.html").read_text(encoding="utf-8")
+        script = (REPO_ROOT / "script.js").read_text(encoding="utf-8")
+        style = (REPO_ROOT / "style.css").read_text(encoding="utf-8")
+
+        self.assertIn('id="fight-graph-color-legend"', page)
+        self.assertIn("function renderFightGraphColorLegend", script)
+        self.assertIn("const contextCandidates = new Map()", script)
+        self.assertIn("const seedBranches = new Map", script)
+        self.assertIn("branch: seedBranches.get(edge.winnerId)", script)
+        self.assertIn('result: edge.winnerId === fighterId ? "win" : "loss"', script)
+        self.assertIn('group.classList.add(`is-branch-${context.branch}`, `is-branch-${context.result}`)', script)
+        self.assertIn('arrow.setAttribute("fill", "context-stroke")', script)
+        self.assertIn("group.dataset.fighterId = node.id", script)
+        for color in ("--graph-a-win", "--graph-b-win", "--graph-a-loss", "--graph-b-loss"):
+            self.assertIn(color, style)
+        for selector in (
+            ".fight-graph-edge.is-branch-a.is-branch-win",
+            ".fight-graph-edge.is-branch-b.is-branch-win",
+            ".fight-graph-edge.is-branch-a.is-branch-loss",
+            ".fight-graph-edge.is-branch-b.is-branch-loss",
+        ):
+            self.assertIn(selector, style)
+
 
 if __name__ == "__main__":
     unittest.main()
