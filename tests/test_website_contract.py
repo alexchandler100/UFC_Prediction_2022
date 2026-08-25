@@ -132,6 +132,18 @@ class WebsiteExplorerContractTests(unittest.TestCase):
         self.assertIn("ArrowRight", script)
         self.assertIn("touch-action: none", style)
 
+    def test_fight_graph_lists_edges_with_expandable_statistics(self):
+        page = (REPO_ROOT / "index.html").read_text(encoding="utf-8")
+        script = (REPO_ROOT / "script.js").read_text(encoding="utf-8")
+        style = (REPO_ROOT / "style.css").read_text(encoding="utf-8")
+
+        self.assertIn('id="fight-graph-edge-rows"', page)
+        self.assertIn("Winner / result", page)
+        self.assertIn("function renderFightGraphEdgeTable", script)
+        self.assertIn("View stats", script)
+        self.assertIn("renderFightDetails(body, edge, opponentFight", script)
+        self.assertIn(".fight-graph-edge-table", style)
+
 
 if __name__ == "__main__":
     unittest.main()

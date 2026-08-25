@@ -13,6 +13,7 @@ body { margin: 0; min-width: 320px; background: var(--cream); color: var(--ink);
 button, input, select { font: inherit; }
 button { color: inherit; }
 a { color: var(--blue); }
+.visually-hidden { position: absolute !important; width: 1px !important; height: 1px !important; padding: 0 !important; margin: -1px !important; overflow: hidden !important; clip: rect(0, 0, 0, 0) !important; white-space: nowrap !important; border: 0 !important; }
 .skip-link { position: fixed; z-index: 100; left: 12px; top: -60px; padding: 10px 14px; background: white; border-radius: 8px; }
 .skip-link:focus { top: 12px; }
 .site-header { position: sticky; z-index: 30; top: 0; display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 28px; min-height: 76px; padding: 10px max(20px, calc((100vw - 1180px) / 2)); color: white; background: rgba(17, 27, 38, 0.97); border-bottom: 1px solid rgba(255,255,255,.08); backdrop-filter: blur(14px); }
@@ -219,6 +220,32 @@ details[open] summary { border-bottom: 1px solid var(--line); }
 .fight-graph-detail-list dd { margin: 0; font-weight: 700; text-align: right; overflow-wrap: anywhere; }
 .fight-graph-links { display: grid; gap: 5px; justify-items: start; }
 .fight-graph-source { font-size: 12px; font-weight: 700; }
+.fight-graph-edge-ledger { margin-top: 24px; padding-top: 22px; border-top: 1px solid var(--line); }
+.fight-graph-edge-ledger-heading { display: flex; align-items: end; justify-content: space-between; gap: 16px; margin-bottom: 10px; }
+.fight-graph-edge-ledger-heading h3 { margin: 3px 0 0; font-family: "Manrope", sans-serif; font-size: 21px; }
+.fight-graph-edge-ledger-heading > span { color: var(--ink-soft); font-size: 12px; font-weight: 700; }
+.fight-graph-edge-table-wrap { max-height: 520px; overflow: auto; border: 1px solid var(--line); border-radius: 12px; background: white; }
+.fight-graph-edge-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+.fight-graph-edge-table thead { position: sticky; z-index: 2; top: 0; background: #f2f0e9; }
+.fight-graph-edge-table th { padding: 8px 10px; color: var(--ink-soft); font-size: 10px; letter-spacing: .06em; text-align: left; text-transform: uppercase; white-space: nowrap; }
+.fight-graph-edge-table td { height: 35px; padding: 4px 10px; border-top: 1px solid #ece9e1; white-space: nowrap; }
+.fight-graph-edge-summary-row:hover, .fight-graph-edge-summary-row.is-open { background: #fff6ef; }
+.fight-graph-edge-date { width: 112px; color: var(--ink-soft); }
+.fight-graph-edge-matchup { min-width: 230px; }
+.fight-graph-edge-matchup strong { color: #146a51; }
+.fight-graph-edge-result { min-width: 180px; }
+.fight-graph-edge-result .pill { margin-right: 7px; padding: 3px 6px; font-size: 9px; vertical-align: middle; }
+.fight-graph-edge-result strong { vertical-align: middle; }
+.fight-graph-edge-finish { color: var(--ink-soft); }
+.fight-graph-edge-action { width: 92px; text-align: right; }
+.fight-graph-edge-action .text-button { min-height: 30px; padding: 4px 7px; }
+.fight-graph-edge-detail-row[hidden] { display: none; }
+.fight-graph-edge-detail-row > td { height: auto; padding: 0; white-space: normal; background: #faf8f2; }
+.fight-graph-row-details { padding: 18px; border-top: 2px solid var(--orange); }
+.fight-graph-row-details .fight-detail-grid { gap: 12px 22px; }
+.fight-graph-row-details h3 { margin: 0 0 7px; font-size: 14px; }
+.fight-graph-row-details .data-table th, .fight-graph-row-details .data-table td { height: auto; padding: 6px; white-space: normal; }
+.fight-graph-edge-table-empty { padding: 25px !important; color: var(--ink-soft); text-align: center; white-space: normal !important; }
 .market-notice { display: grid; grid-template-columns: 1fr auto; gap: 22px; align-items: center; padding: 21px; border: 1px solid #dfc37d; border-radius: var(--radius-md); background: #fff7df; }
 .market-notice h2 { margin: 0 0 4px; font-family: "Manrope", sans-serif; font-size: 20px; }
 .market-notice p { margin: 0; color: #6c6043; }

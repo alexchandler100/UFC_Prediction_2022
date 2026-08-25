@@ -381,6 +381,81 @@ function resetFightGraphDetails() {
   appendText(details, "p", "", "Hover, focus, or click any arrow to inspect its event, date, weight class, method, round, and time.");
 }
 
+function resetFightGraphEdgeTable(message = "Draw a graph to list its fights.") {
+  const rows = $("#fight-graph-edge-rows");
+  rows.replaceChildren();
+  const row = document.createElement("tr");
+  const cell = appendText(row, "td", "fight-graph-edge-table-empty", message);
+  cell.colSpan = 5;
+  rows.append(row);
+  $("#fight-graph-edge-count").textContent = "0 fights";
+}
+
+function pinFightGraphEdge(edge) {
+  state.fightGraphPinnedId = edge.id;
+  document.querySelectorAll(".fight-graph-edge.is-pinned").forEach((item) => item.classList.remove("is-pinned"));
+  document.querySelectorAll(".fight-graph-edge").forEach((item) => {
+    if (item.dataset.edgeId === edge.id) item.classList.add("is-pinned");
+  });
+  renderFightGraphDetails(edge);
+}
+
+function renderFightGraphEdgeTable(edges) {
+  const rows = $("#fight-graph-edge-rows");
+  rows.replaceChildren();
+  $("#fight-graph-edge-count").textContent = `${edges.length.toLocaleString()} fight${edges.length === 1 ? "" : "s"}`;
+  edges.forEach((edge, index) => {
+    const summaryRow = document.createElement("tr");
+    summaryRow.className = "fight-graph-edge-summary-row";
+    appendText(summaryRow, "td", "fight-graph-edge-date", formatDate(edge.date, { year: "numeric", month: "short", day: "numeric" }));
+    const matchup = element("td", "fight-graph-edge-matchup");
+    appendText(matchup, "strong", "", edge.winnerName);
+    matchup.append(document.createTextNode(" vs "));
+    appendText(matchup, "span", "", edge.loserName);
+    summaryRow.append(matchup);
+    const result = element("td", "fight-graph-edge-result");
+    appendText(result, "span", "pill win", "W");
+    appendText(result, "strong", "", edge.winnerName);
+    summaryRow.append(result);
+    appendText(summaryRow, "td", "fight-graph-edge-finish", `${edge.method || "Method unavailable"} · R${edge.round || "—"} ${edge.time || ""}`);
+    const action = element("td", "fight-graph-edge-action");
+    const detailId = `fight-graph-row-detail-${index}`;
+    const button = element("button", "text-button small-button", "View stats");
+    button.type = "button";
+    button.setAttribute("aria-expanded", "false");
+    button.setAttribute("aria-controls", detailId);
+    action.append(button); summaryRow.append(action);
+
+    const detailRow = document.createElement("tr");
+    detailRow.className = "fight-graph-edge-detail-row";
+    detailRow.hidden = true;
+    const detailCell = element("td"); detailCell.colSpan = 5;
+    const body = element("div", "fight-graph-row-details", "Open to load complete fight statistics.");
+    body.id = detailId; detailCell.append(body); detailRow.append(detailCell);
+    let rendered = false;
+    button.addEventListener("click", async () => {
+      const opening = detailRow.hidden;
+      detailRow.hidden = !opening;
+      summaryRow.classList.toggle("is-open", opening);
+      button.textContent = opening ? "Hide stats" : "View stats";
+      button.setAttribute("aria-expanded", String(opening));
+      if (!opening) return;
+      pinFightGraphEdge(edge);
+      if (rendered) return;
+      rendered = true;
+      body.textContent = edge.stats_available ? "Loading paired fight statistics…" : "Loading source details…";
+      try {
+        const opponentFight = await pairedFight(edge);
+        renderFightDetails(body, edge, opponentFight, edge.winnerName);
+      } catch (error) {
+        console.error(error);
+        body.textContent = "Detailed fight statistics could not be loaded.";
+      }
+    });
+    rows.append(summaryRow, detailRow);
+  });
+}
+
 function renderFightGraphDetails(edge) {
   const details = $("#fight-graph-details");
   details.replaceChildren();
@@ -510,11 +585,12 @@ async function drawFightGraph() {
   const startDate = $("#graph-start-date").value; const endDate = $("#graph-end-date").value;
   if (!division) { status.textContent = "Choose a weight class before drawing the graph."; $("#graph-division").focus(); return; }
   if (startDate && endDate && startDate > endDate) { status.textContent = "Start date must be on or before the end date."; return; }
-  button.disabled = true; status.textContent = state.fightGraphEdges.length ? "Filtering recorded fights…" : "Loading historical fight data…"; fightGraphEmpty("Loading the fight network…");
+  button.disabled = true; status.textContent = state.fightGraphEdges.length ? "Filtering recorded fights…" : "Loading historical fight data…"; fightGraphEmpty("Loading the fight network…"); resetFightGraphEdgeTable("Loading matching fights…");
   try {
     await ensureFightGraphData(); const { edges, counts } = filteredFightGraph(); const fighterCount = new Set(edges.flatMap((edge) => [edge.winnerId, edge.loserId])).size;
     state.fightGraphPinnedId = null; resetFightGraphDetails();
-    if (!edges.length) { fightGraphEmpty("No decisive fights match these filters. Try a wider date range, a lower minimum, or another weight class."); status.textContent = "No matching decisive fights."; return; }
+    if (!edges.length) { fightGraphEmpty("No decisive fights match these filters. Try a wider date range, a lower minimum, or another weight class."); resetFightGraphEdgeTable("No decisive fights match these filters."); status.textContent = "No matching decisive fights."; return; }
+    renderFightGraphEdgeTable(edges);
     if (fighterCount > FIGHT_GRAPH_MAX_FIGHTERS) { fightGraphEmpty(`${fighterCount.toLocaleString()} fighters match. Narrow the dates or fighter name, or increase the minimum fights to draw a readable graph.`); status.textContent = `${edges.length.toLocaleString()} fights connect ${fighterCount.toLocaleString()} fighters; the drawing limit is ${FIGHT_GRAPH_MAX_FIGHTERS}.`; return; }
     renderFightGraph(edges, counts); status.textContent = `${edges.length.toLocaleString()} decisive fight${edges.length === 1 ? "" : "s"} connect ${fighterCount.toLocaleString()} fighter${fighterCount === 1 ? "" : "s"}. Arrows point from winner to loser.`;
   } catch (error) { console.error(error); fightGraphEmpty("The historical fight data could not be loaded. Try again."); status.textContent = error.message; }
@@ -535,7 +611,7 @@ async function prepareFightGraph() {
 
 function resetFightGraph() {
   $("#graph-division").value = ""; $("#graph-promotion").value = ""; $("#graph-start-date").value = ""; $("#graph-end-date").value = ""; $("#graph-fighter-search").value = ""; $("#graph-min-fights").value = "1";
-  state.fightGraphPinnedId = null; fightGraphEmpty("Choose filters to draw the fight network."); resetFightGraphDetails(); $("#fight-graph-status").textContent = "Choose a weight class, then draw the graph.";
+  state.fightGraphPinnedId = null; fightGraphEmpty("Choose filters to draw the fight network."); resetFightGraphDetails(); resetFightGraphEdgeTable(); $("#fight-graph-status").textContent = "Choose a weight class, then draw the graph.";
 }
 
 async function fetchJson(path, required = true) {
