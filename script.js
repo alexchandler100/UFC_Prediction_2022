@@ -622,16 +622,53 @@ function layoutFightGraph(nodeList, edges, width, height) {
   return nodesById;
 }
 
-function renderFightGraph(edges, counts) {
+function layoutMatchupFightGraph(nodeList, fighterDepths) {
+  const layers = new Map();
+  nodeList.forEach((node) => {
+    node.depth = fighterDepths.get(node.id) ?? 0;
+    if (!layers.has(node.depth)) layers.set(node.depth, []);
+    layers.get(node.depth).push(node);
+  });
+  layers.forEach((nodes) => nodes.sort((left, right) => right.appearances - left.appearances || left.name.localeCompare(right.name)));
+  let outerRadius = 270;
+  layers.forEach((nodes, depth) => {
+    if (depth > 0) outerRadius = Math.max(outerRadius, depth * 250, nodes.length * 42 / (Math.PI * 2));
+  });
+  const width = Math.max(1120, Math.ceil(outerRadius * 2 + 260));
+  const height = Math.max(680, width);
+  const centerX = width / 2; const centerY = height / 2;
+  (layers.get(0) || []).forEach((node, index, seeds) => {
+    node.x = centerX + (index - (seeds.length - 1) / 2) * 145;
+    node.y = centerY;
+  });
+  const maximumDepth = Math.max(...layers.keys());
+  for (let depth = 1; depth <= maximumDepth; depth += 1) {
+    const nodes = layers.get(depth) || [];
+    if (!nodes.length) continue;
+    const radius = Math.max(depth * 250, nodes.length * 42 / (Math.PI * 2));
+    const offset = depth % 2 ? -Math.PI / 2 : -Math.PI / 2 + Math.PI / Math.max(nodes.length, 2);
+    nodes.forEach((node, index) => {
+      const angle = offset + index * Math.PI * 2 / nodes.length;
+      node.x = centerX + Math.cos(angle) * radius;
+      node.y = centerY + Math.sin(angle) * radius;
+    });
+  }
+  return { nodesById: new Map(nodeList.map((node) => [node.id, node])), width, height };
+}
+
+function renderFightGraph(edges, counts, { fighterDepths = null, seedIds = new Set() } = {}) {
   const canvas = $("#fight-graph-canvas"); canvas.replaceChildren();
-  const nodeIds = [...new Set(edges.flatMap((edge) => [edge.winnerId, edge.loserId]))]; const wins = new Map();
+  const nodeIds = [...new Set([...seedIds, ...edges.flatMap((edge) => [edge.winnerId, edge.loserId])])]; const wins = new Map();
   edges.forEach((edge) => wins.set(edge.winnerId, (wins.get(edge.winnerId) || 0) + 1));
   const nodeList = nodeIds.map((id) => {
-    const fighter = state.fighterById.get(id); const appearances = counts.get(id) || 1;
-    return { id, name: fighter?.name || id, appearances, wins: wins.get(id) || 0, radius: Math.min(18, 8 + Math.sqrt(appearances) * 2.1) };
+    const fighter = state.fighterById.get(id); const appearances = counts.get(id) || 0;
+    return { id, name: fighter?.name || id, appearances, wins: wins.get(id) || 0, radius: Math.min(18, 8 + Math.sqrt(Math.max(appearances, 1)) * 2.1) };
   }).sort((left, right) => right.appearances - left.appearances || left.name.localeCompare(right.name));
-  const width = 1120; const height = Math.max(640, Math.min(940, 560 + nodeList.length * 2.6));
-  const nodesById = layoutFightGraph(nodeList, edges, width, height); const pairIndexes = new Map();
+  let width = 1120; let height = Math.max(640, Math.min(940, 560 + nodeList.length * 2.6)); let nodesById;
+  if (fighterDepths) {
+    const layout = layoutMatchupFightGraph(nodeList, fighterDepths); width = layout.width; height = layout.height; nodesById = layout.nodesById;
+  } else nodesById = layoutFightGraph(nodeList, edges, width, height);
+  const pairIndexes = new Map();
   edges.forEach((edge) => { const pair = [edge.winnerId, edge.loserId].sort().join("|"); if (!pairIndexes.has(pair)) pairIndexes.set(pair, []); pairIndexes.get(pair).push(edge.id); });
   const svg = document.createElementNS(SVG_NAMESPACE, "svg"); svg.classList.add("fight-graph-svg"); svg.setAttribute("viewBox", `0 0 ${width} ${height}`);
   svg.setAttribute("role", "img"); svg.setAttribute("aria-label", `Directed graph of ${nodeList.length} fighters and ${edges.length} decisive fights`);
@@ -653,9 +690,9 @@ function renderFightGraph(edges, counts) {
   });
   svg.append(edgeLayer); const nodeLayer = document.createElementNS(SVG_NAMESPACE, "g"); nodeLayer.classList.add("fight-graph-nodes");
   nodeList.forEach((node) => {
-    const group = document.createElementNS(SVG_NAMESPACE, "g"); group.classList.add("fight-graph-node"); group.setAttribute("transform", `translate(${node.x.toFixed(1)} ${node.y.toFixed(1)})`);
-    const title = document.createElementNS(SVG_NAMESPACE, "title"); title.textContent = `${node.name}: ${node.wins} wins shown in ${node.appearances} fights`;
-    const circle = document.createElementNS(SVG_NAMESPACE, "circle"); circle.setAttribute("r", node.radius.toFixed(1)); const label = document.createElementNS(SVG_NAMESPACE, "text");
+    const group = document.createElementNS(SVG_NAMESPACE, "g"); group.classList.add("fight-graph-node"); if (seedIds.has(node.id)) group.classList.add("is-seed"); group.dataset.depth = String(node.depth ?? ""); group.setAttribute("transform", `translate(${node.x.toFixed(1)} ${node.y.toFixed(1)})`);
+    const title = document.createElementNS(SVG_NAMESPACE, "title"); title.textContent = `${node.name}${seedIds.has(node.id) ? " (seed fighter)" : node.depth ? ` (depth ${node.depth})` : ""}: ${node.wins} wins shown in ${node.appearances} fights`;
+    const circle = document.createElementNS(SVG_NAMESPACE, "circle"); circle.setAttribute("r", (node.radius + (seedIds.has(node.id) ? 4 : 0)).toFixed(1)); const label = document.createElementNS(SVG_NAMESPACE, "text");
     label.setAttribute("y", String(node.radius + 14)); label.textContent = node.name.length > 22 ? `${node.name.slice(0, 20)}…` : node.name; group.append(title, circle, label); nodeLayer.append(group);
   });
   svg.append(nodeLayer); canvas.append(svg); configureFightGraphViewport(svg, width, height);
@@ -748,11 +785,16 @@ function applyGraphFilterPreset(name) {
 
 function setGraphFilterMode(mode) {
   const advanced = mode === "advanced";
-  state.fightGraphFilterMode = advanced ? "advanced" : "simple";
+  const matchup = mode === "matchup";
+  state.fightGraphFilterMode = matchup ? "matchup" : advanced ? "advanced" : "simple";
   $("#graph-advanced-filters").hidden = !advanced;
-  [["#graph-mode-simple", !advanced], ["#graph-mode-advanced", advanced]].forEach(([selector, active]) => {
+  $("#graph-matchup-filters").hidden = !matchup;
+  $(".fight-graph-controls").classList.toggle("is-matchup-mode", matchup);
+  $("#graph-filter-title").textContent = matchup ? "Choose two fighters and a depth" : "Choose who appears";
+  [["#graph-mode-simple", !advanced && !matchup], ["#graph-mode-advanced", advanced], ["#graph-mode-matchup", matchup]].forEach(([selector, active]) => {
     const button = $(selector); button.classList.toggle("is-active", active); button.setAttribute("aria-pressed", String(active));
   });
+  if (matchup && !$("#graph-division").value) $("#graph-division").value = "*";
   markGraphFiltersDirty();
 }
 
@@ -913,19 +955,67 @@ function filteredFightGraph() {
   return { edges, counts, matchingFighterCount: matching.size, rules, aggregates, advancedFilterCount };
 }
 
+function filteredMatchupFightGraph() {
+  const fighterAId = $("#graph-matchup-fighter-a").value;
+  const fighterBId = $("#graph-matchup-fighter-b").value;
+  const depth = Math.max(1, Math.min(2, Number($("#graph-matchup-depth").value) || 1));
+  const filters = graphWindowFilters();
+  const availableEdges = state.fightGraphEdges.filter((edge) => fightMatchesGraphWindow(edge, filters));
+  const adjacency = new Map();
+  availableEdges.forEach((edge) => {
+    [edge.winnerId, edge.loserId].forEach((fighterId) => {
+      if (!adjacency.has(fighterId)) adjacency.set(fighterId, []);
+      adjacency.get(fighterId).push(edge);
+    });
+  });
+  const fighterDepths = new Map([[fighterAId, 0], [fighterBId, 0]]);
+  const selectedEdgeIds = new Set();
+  let frontier = new Set([fighterAId, fighterBId]);
+  for (let level = 0; level < depth && frontier.size; level += 1) {
+    const next = new Set();
+    frontier.forEach((fighterId) => (adjacency.get(fighterId) || []).forEach((edge) => {
+      selectedEdgeIds.add(edge.id);
+      [edge.winnerId, edge.loserId].forEach((connectedId) => {
+        if (!fighterDepths.has(connectedId)) {
+          fighterDepths.set(connectedId, level + 1);
+          next.add(connectedId);
+        }
+      });
+    }));
+    frontier = next;
+  }
+  const edges = availableEdges.filter((edge) => selectedEdgeIds.has(edge.id));
+  const counts = new Map();
+  edges.forEach((edge) => {
+    counts.set(edge.winnerId, (counts.get(edge.winnerId) || 0) + 1);
+    counts.set(edge.loserId, (counts.get(edge.loserId) || 0) + 1);
+  });
+  return { edges, counts, fighterDepths, depth, seedIds: new Set([fighterAId, fighterBId]) };
+}
+
 async function drawFightGraph() {
   const status = $("#fight-graph-status"); const button = $("#graph-apply"); const division = $("#graph-division").value;
   const startDate = $("#graph-start-date").value; const endDate = $("#graph-end-date").value;
-  if (!division) { status.textContent = "Choose a weight class before drawing the graph."; $("#graph-division").focus(); return; }
+  const matchupMode = state.fightGraphFilterMode === "matchup";
+  const fighterAId = $("#graph-matchup-fighter-a").value; const fighterBId = $("#graph-matchup-fighter-b").value;
+  if (matchupMode && (!fighterAId || !fighterBId)) { status.textContent = "Choose two fighters before drawing the graph."; $(fighterAId ? "#graph-matchup-fighter-b" : "#graph-matchup-fighter-a").focus(); return; }
+  if (matchupMode && fighterAId === fighterBId) { status.textContent = "Choose two different fighters."; $("#graph-matchup-fighter-b").focus(); return; }
+  if (!matchupMode && !division) { status.textContent = "Choose a weight class before drawing the graph."; $("#graph-division").focus(); return; }
   if (startDate && endDate && startDate > endDate) { status.textContent = "Start date must be on or before the end date."; return; }
   button.disabled = true; status.textContent = state.fightGraphEdges.length ? "Filtering recorded fights…" : "Loading historical fight data…"; fightGraphEmpty("Loading the fight network…"); resetFightGraphEdgeTable("Loading matching fights…");
   try {
-    await ensureFightGraphData(); const { edges, counts, matchingFighterCount, rules, aggregates, advancedFilterCount } = filteredFightGraph(); const fighterCount = new Set(edges.flatMap((edge) => [edge.winnerId, edge.loserId])).size;
+    await ensureFightGraphData();
+    const result = matchupMode ? filteredMatchupFightGraph() : filteredFightGraph();
+    const { edges, counts, matchingFighterCount = 0, rules = [], aggregates = new Map(), advancedFilterCount = 0, fighterDepths = null, depth = null, seedIds = new Set() } = result;
+    const fighterCount = new Set([...seedIds, ...edges.flatMap((edge) => [edge.winnerId, edge.loserId])]).size;
     state.fightGraphPinnedId = null; resetFightGraphDetails();
-    if (!edges.length) { fightGraphEmpty("No decisive fights connect fighters matching these filters. Try a wider date range, a lower minimum, fewer advanced rules, or include matching fighters' opponents."); resetFightGraphEdgeTable("No decisive fights match these filters."); status.textContent = advancedFilterCount ? `${matchingFighterCount.toLocaleString()} fighters satisfy the fighter rules, but no connections match every advanced constraint.` : "No matching decisive fights."; return; }
+    if (!edges.length) { fightGraphEmpty(matchupMode ? "No decisive fights involving this pair were found in the selected weight, promotion, and date window." : "No decisive fights connect fighters matching these filters. Try a wider date range, a lower minimum, fewer advanced rules, or include matching fighters' opponents."); resetFightGraphEdgeTable("No decisive fights match these filters."); status.textContent = advancedFilterCount ? `${matchingFighterCount.toLocaleString()} fighters satisfy the fighter rules, but no connections match every advanced constraint.` : "No matching decisive fights."; return; }
     renderFightGraphEdgeTable(edges, rules, aggregates);
-    if (fighterCount > FIGHT_GRAPH_MAX_FIGHTERS) { fightGraphEmpty(`${fighterCount.toLocaleString()} fighters match. Narrow the dates or fighter name, or increase the minimum fights to draw a readable graph.`); status.textContent = `${edges.length.toLocaleString()} fights connect ${fighterCount.toLocaleString()} fighters; the drawing limit is ${FIGHT_GRAPH_MAX_FIGHTERS}.`; return; }
-    renderFightGraph(edges, counts); status.textContent = `${edges.length.toLocaleString()} decisive fight${edges.length === 1 ? "" : "s"} connect ${fighterCount.toLocaleString()} fighter${fighterCount === 1 ? "" : "s"}.${advancedFilterCount ? ` ${matchingFighterCount.toLocaleString()} fighters satisfy the fighter rules; ${advancedFilterCount} advanced filter${advancedFilterCount === 1 ? "" : "s"} active.` : ""} Arrows point from winner to loser.`;
+    if (!matchupMode && fighterCount > FIGHT_GRAPH_MAX_FIGHTERS) { fightGraphEmpty(`${fighterCount.toLocaleString()} fighters match. Narrow the dates or fighter name, or increase the minimum fights to draw a readable graph.`); status.textContent = `${edges.length.toLocaleString()} fights connect ${fighterCount.toLocaleString()} fighters; the drawing limit is ${FIGHT_GRAPH_MAX_FIGHTERS}.`; return; }
+    renderFightGraph(edges, counts, { fighterDepths, seedIds });
+    status.textContent = matchupMode
+      ? `Depth ${depth} includes ${edges.length.toLocaleString()} decisive fight${edges.length === 1 ? "" : "s"} connecting ${fighterCount.toLocaleString()} fighter${fighterCount === 1 ? "" : "s"} from ${state.fighterById.get(fighterAId)?.name} and ${state.fighterById.get(fighterBId)?.name}. Arrows point from winner to loser.`
+      : `${edges.length.toLocaleString()} decisive fight${edges.length === 1 ? "" : "s"} connect ${fighterCount.toLocaleString()} fighter${fighterCount === 1 ? "" : "s"}.${advancedFilterCount ? ` ${matchingFighterCount.toLocaleString()} fighters satisfy the fighter rules; ${advancedFilterCount} advanced filter${advancedFilterCount === 1 ? "" : "s"} active.` : ""} Arrows point from winner to loser.`;
   } catch (error) { console.error(error); fightGraphEmpty("The historical fight data could not be loaded. Try again."); status.textContent = error.message; }
   finally { button.disabled = false; }
 }
@@ -937,13 +1027,14 @@ async function prepareFightGraph() {
     const edges = await ensureFightGraphData(); const promotions = [...new Set(edges.map((edge) => edge.promotion).filter(Boolean))].sort(); const promotionSelect = $("#graph-promotion");
     if (promotionSelect.options.length === 1) promotions.forEach((value) => { const option = element("option", "", value); option.value = value; promotionSelect.append(option); });
     const dates = edges.map((edge) => edge.date).filter(Boolean).sort(); [$("#graph-start-date"), $("#graph-end-date")].forEach((input) => { input.min = dates[0] || ""; input.max = dates[dates.length - 1] || state.explorer.data_through; });
-    status.textContent = "Choose a weight class, then draw the graph.";
+    status.textContent = state.fightGraphFilterMode === "matchup" ? "Choose two fighters and a depth, then draw the graph." : "Choose a weight class, then draw the graph.";
   } catch (error) { console.error(error); status.textContent = `Fight graph unavailable: ${error.message}`; }
   finally { button.disabled = false; }
 }
 
 function resetFightGraph() {
   $("#graph-division").value = ""; $("#graph-promotion").value = ""; $("#graph-start-date").value = ""; $("#graph-end-date").value = ""; $("#graph-fighter-search").value = ""; $("#graph-min-fights").value = "1";
+  $("#graph-matchup-fighter-a").value = ""; $("#graph-matchup-fighter-b").value = ""; $("#graph-matchup-depth").value = "1";
   selectGraphQuickRange("all");
   $("#graph-rule-join").value = "all"; $("#graph-rule-scope").value = "both"; $("#graph-rule-stance").value = "";
   $("#graph-fight-method").value = ""; $("#graph-fight-round").value = ""; $("#graph-fight-detail").value = ""; clearGraphRules(); setGraphFilterMode("simple");
@@ -1031,6 +1122,20 @@ function setRoute(route) {
   else window.location.hash = hash;
 }
 
+function configureGraphMatchup(fighterAId, fighterBId, depth = 1) {
+  if (!state.fighterById.has(fighterAId) || !state.fighterById.has(fighterBId) || fighterAId === fighterBId) return false;
+  setGraphFilterMode("matchup");
+  $("#graph-matchup-fighter-a").value = fighterAId;
+  $("#graph-matchup-fighter-b").value = fighterBId;
+  $("#graph-matchup-depth").value = String(Math.max(1, Math.min(2, Number(depth) || 1)));
+  $("#graph-division").value = "*";
+  $("#graph-promotion").value = "";
+  $("#graph-start-date").value = "";
+  $("#graph-end-date").value = "";
+  selectGraphQuickRange("all");
+  return true;
+}
+
 function clearMarketMatchupFocus() {
   document.querySelectorAll("#market-matchups .is-route-target").forEach((card) => card.classList.remove("is-route-target"));
 }
@@ -1064,7 +1169,15 @@ function applyRoute() {
   const view = ["matchups", "fighters", "graph", "market", "data"].includes(parts[0]) ? parts[0] : "matchups";
   showView(view);
 
-  if (view === "graph") prepareFightGraph();
+  if (view === "graph") {
+    const preparation = prepareFightGraph();
+    if (parts[1] && parts[2] && configureGraphMatchup(parts[1], parts[2], 1)) {
+      const expectedHash = `#graph/${parts[1]}/${parts[2]}`;
+      Promise.resolve(preparation).then(() => {
+        if (window.location.hash === expectedHash && state.fightGraphFilterMode === "matchup") drawFightGraph();
+      });
+    }
+  }
 
   if (view === "fighters" && parts[1]) renderFighterProfile(parts[1]);
   else if (view === "fighters") showFighterDirectory();
@@ -1353,6 +1466,11 @@ function renderCurrentCard() {
       if (fighter && opponent) setRoute(`matchups/${fighter.id}/${opponent.id}`);
     });
     analyze.disabled = !fighter || !opponent;
+    const graphButton = actionButton("View fight graph", "secondary-button small-button", () => {
+      if (fighter && opponent) setRoute(`graph/${fighter.id}/${opponent.id}`);
+    });
+    graphButton.disabled = !fighter || !opponent;
+    if (!fighter || !opponent) graphButton.title = "Both fighters need linked profiles to build their fight graph.";
     const quoteCount = Array.isArray(matchup.book_quotes) ? matchup.book_quotes.length : 0;
     const hasCurrentPrices = Boolean(matchup.fighter_id && matchup.opponent_id && quoteCount);
     const marketButton = actionButton(
@@ -1364,7 +1482,7 @@ function renderCurrentCard() {
     );
     marketButton.disabled = !hasCurrentPrices;
     if (!hasCurrentPrices) marketButton.title = "No current book-price capture is published for this matchup.";
-    actions.append(analyze, marketButton);
+    actions.append(analyze, graphButton, marketButton);
     card.append(actions);
     container.append(card);
   });
@@ -1565,6 +1683,12 @@ function populateFilters() {
   divisions.forEach((value) => { const option = element("option", "", value); option.value = value; $("#division-filter").append(option); });
   divisions.forEach((value) => { const option = element("option", "", value); option.value = value; $("#graph-division").append(option); });
   stances.forEach((value) => { const option = element("option", "", value); option.value = value; $("#stance-filter").append(option); });
+  const graphFighters = [...state.fighters].sort((left, right) => left.name.localeCompare(right.name));
+  [$("#graph-matchup-fighter-a"), $("#graph-matchup-fighter-b")].forEach((select) => {
+    const fragment = document.createDocumentFragment();
+    graphFighters.forEach((fighter) => { const option = element("option", "", fighter.name); option.value = fighter.id; fragment.append(option); });
+    select.append(fragment);
+  });
 }
 
 function filteredDirectoryFighters() {
@@ -2023,6 +2147,7 @@ function bindEvents() {
   $("#graph-reset").addEventListener("click", resetFightGraph);
   $("#graph-mode-simple").addEventListener("click", () => setGraphFilterMode("simple"));
   $("#graph-mode-advanced").addEventListener("click", () => setGraphFilterMode("advanced"));
+  $("#graph-mode-matchup").addEventListener("click", () => setGraphFilterMode("matchup"));
   document.querySelectorAll("[data-graph-years]").forEach((button) => button.addEventListener("click", () => applyGraphQuickRange(button.dataset.graphYears)));
   $("#graph-apply-custom-years").addEventListener("click", () => applyGraphQuickRange($("#graph-custom-years").value, true));
   $("#graph-custom-years").addEventListener("keydown", (event) => { if (event.key === "Enter") applyGraphQuickRange(event.currentTarget.value, true); });
@@ -2030,7 +2155,7 @@ function bindEvents() {
   $("#graph-add-rule").addEventListener("click", () => { addGraphRule(); markGraphFiltersDirty(); });
   $("#graph-clear-rules").addEventListener("click", clearGraphRules);
   document.querySelectorAll("[data-graph-preset]").forEach((button) => button.addEventListener("click", () => applyGraphFilterPreset(button.dataset.graphPreset)));
-  ["#graph-division", "#graph-promotion", "#graph-start-date", "#graph-end-date", "#graph-min-fights", "#graph-rule-join", "#graph-rule-scope", "#graph-rule-stance", "#graph-fight-method", "#graph-fight-round", "#graph-fight-detail"].forEach((selector) => $(selector).addEventListener("change", markGraphFiltersDirty));
+  ["#graph-division", "#graph-promotion", "#graph-start-date", "#graph-end-date", "#graph-min-fights", "#graph-rule-join", "#graph-rule-scope", "#graph-rule-stance", "#graph-fight-method", "#graph-fight-round", "#graph-fight-detail", "#graph-matchup-fighter-a", "#graph-matchup-fighter-b", "#graph-matchup-depth"].forEach((selector) => $(selector).addEventListener("change", markGraphFiltersDirty));
   $("#graph-fighter-search").addEventListener("input", markGraphFiltersDirty);
   $("#graph-zoom-out").addEventListener("click", () => zoomFightGraph(1.25));
   $("#graph-zoom-in").addEventListener("click", () => zoomFightGraph(0.8));

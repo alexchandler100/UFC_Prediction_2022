@@ -201,6 +201,23 @@ class WebsiteExplorerContractTests(unittest.TestCase):
         self.assertIn('"Winner / loser"', script)
         self.assertIn(".fight-graph-edge-metric", style)
 
+    def test_matchup_graph_expands_two_fighters_by_depth(self):
+        page = (REPO_ROOT / "index.html").read_text(encoding="utf-8")
+        script = (REPO_ROOT / "script.js").read_text(encoding="utf-8")
+        style = (REPO_ROOT / "style.css").read_text(encoding="utf-8")
+
+        self.assertIn('id="graph-mode-matchup"', page)
+        self.assertIn('id="graph-matchup-fighter-a"', page)
+        self.assertIn('id="graph-matchup-fighter-b"', page)
+        self.assertIn('id="graph-matchup-depth"', page)
+        self.assertIn("function filteredMatchupFightGraph", script)
+        self.assertIn("for (let level = 0; level < depth", script)
+        self.assertIn("function layoutMatchupFightGraph", script)
+        self.assertIn('setRoute(`graph/${fighter.id}/${opponent.id}`)', script)
+        self.assertIn('actionButton("View fight graph"', script)
+        self.assertIn("configureGraphMatchup(parts[1], parts[2], 1)", script)
+        self.assertIn(".fight-graph-node.is-seed", style)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -104,13 +104,27 @@
           <div class="graph-filter-modebar">
             <div>
               <p class="eyebrow">Graph filters</p>
-              <h2>Choose who appears</h2>
+              <h2 id="graph-filter-title">Choose who appears</h2>
             </div>
-            <div class="graph-mode-switch" role="group" aria-label="Filter mode">
+            <div class="graph-mode-switch" role="group" aria-label="Graph mode">
               <button class="is-active" id="graph-mode-simple" type="button" aria-pressed="true">Simple</button>
               <button id="graph-mode-advanced" type="button" aria-pressed="false">Advanced</button>
+              <button id="graph-mode-matchup" type="button" aria-pressed="false">Two fighters</button>
             </div>
           </div>
+          <section class="graph-matchup-filters" id="graph-matchup-filters" aria-labelledby="graph-matchup-title" hidden>
+            <div class="graph-matchup-heading">
+              <h3 id="graph-matchup-title">Build from a matchup</h3>
+              <p>Depth 1 shows every fight involving either seed fighter. Depth 2 also expands every opponent discovered at depth 1.</p>
+            </div>
+            <div class="filter-control"><label for="graph-matchup-fighter-a">Fighter A</label><select id="graph-matchup-fighter-a"><option value="">Choose Fighter A</option></select></div>
+            <span class="graph-matchup-versus" aria-hidden="true">VS</span>
+            <div class="filter-control"><label for="graph-matchup-fighter-b">Fighter B</label><select id="graph-matchup-fighter-b"><option value="">Choose Fighter B</option></select></div>
+            <div class="filter-control graph-depth-control">
+              <label for="graph-matchup-depth">Graph depth</label>
+              <select id="graph-matchup-depth"><option value="1">Depth 1</option><option value="2">Depth 2</option></select>
+            </div>
+          </section>
           <div class="fight-graph-basic-grid">
             <div class="filter-control">
               <label for="graph-division">Weight class</label>
@@ -151,7 +165,7 @@
               <label for="graph-fighter-search">Fighter</label>
               <input id="graph-fighter-search" type="search" autocomplete="off" placeholder="Optional name filter">
             </div>
-            <div class="filter-control">
+            <div class="filter-control graph-min-fights-filter">
               <label for="graph-min-fights">Minimum fights</label>
               <select id="graph-min-fights">
                 <option value="1">1 fight</option>
