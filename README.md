@@ -364,6 +364,29 @@ python -B src/capture_market_snapshot.py --validate-only
 This consumes Odds API credits and appends a new timestamped observation. It
 does not place a wager.
 
+From PowerShell, the equivalent current-card refresh is:
+
+```powershell
+cd C:\Users\Alex\Projects\GitHub\UFC_Prediction_2022
+.\.venv\Scripts\Activate.ps1
+
+$secureKey = Read-Host "The Odds API key" -AsSecureString
+$env:THE_ODDS_API_KEY = [System.Net.NetworkCredential]::new("", $secureKey).Password
+$env:MARKET_ODDS_SOURCE = "the-odds-api"
+$env:ODDS_API_REGIONS = "us,us2"
+
+python -B src/capture_market_snapshot.py
+python -B src/update_market_performance.py
+python -B src/capture_market_snapshot.py --validate-only
+python -B src/validate_data.py --require-model-artifact --require-market-data
+
+Remove-Item Env:THE_ODDS_API_KEY
+```
+
+The refresh updates the local market ledgers and website publication. It uses
+API credits and does not update the hosted site until the generated files are
+committed and pushed. Do not paste the API key into an issue, commit, or chat.
+
 ### Preview the website locally
 
 ```bash
@@ -385,10 +408,10 @@ post-build validation, a shallow checkout, scoped staging, a no-op commit
 guard, and a starting-commit check so artifacts built from stale code are
 never rebased onto newer code.
 
-`.github/workflows/collect-market-snapshot.yml` runs separately Monday at
-11:17 PM; Tuesday through Thursday at 12:17 PM and 6:17 PM; Friday at 12:17 PM,
-6:17 PM, and 11:17 PM; and Saturday at 9:17 AM, 12:17 PM, 3:17 PM, and 6:17 PM
-(America/Chicago). Once a previously timed card
+`.github/workflows/collect-market-snapshot.yml` runs separately Sunday at
+10:17 AM and 9:17 PM; Monday at 11:17 PM; Tuesday through Thursday at 12:17 PM
+and 6:17 PM; Friday at 12:17 PM, 6:17 PM, and 11:17 PM; and Saturday at 9:17 AM,
+12:17 PM, 3:17 PM, and 6:17 PM (America/Chicago). Once a previously timed card
 has commenced, a late retry exits successfully without spending another API
 credit. Each run validates the frozen card/model publication, captures one
 fresh MMA moneyline plus available full-fight total-round response from The

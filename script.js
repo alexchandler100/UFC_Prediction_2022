@@ -25,9 +25,16 @@ const state = {
   bayesianByPair: new Map(),
   fightColumn: new Map(),
   shardCache: new Map(),
+  fightGraphPromise: null,
+  fightGraphEdges: [],
+  fightGraphPinnedId: null,
+  fightGraphRenderToken: 0,
   selected: { a: null, b: null },
   directoryLimit: 48,
 };
+
+const FIGHT_GRAPH_MAX_FIGHTERS = 140;
+const SVG_NAMESPACE = "http://www.w3.org/2000/svg";
 
 const $ = (selector, parent = document) => parent.querySelector(selector);
 
@@ -206,6 +213,221 @@ async function ensureFighterFights(fighter) {
   return fighter.fights;
 }
 
+function graphFightId(fight, winnerId, loserId) {
+  return [fight.source || fight.promotion || "fight", fight.fight_id || `${fight.date}-${winnerId}-${loserId}`].join(":");
+}
+
+async function ensureFightGraphData() {
+  if (state.fightGraphPromise) return state.fightGraphPromise;
+  state.fightGraphPromise = (async () => {
+    const shardEntries = Object.entries(state.explorer.fight_shards || {});
+    const shards = await Promise.all(shardEntries.map(async ([shardKey, metadata]) => {
+      let shardPromise = state.shardCache.get(shardKey);
+      if (!shardPromise) {
+        shardPromise = fetchJson(`src/content/data/external/${metadata.path}`).then((shard) => {
+          if (shard.publication_sha256 !== metadata.publication_sha256) throw new Error(`Fight-log shard ${shardKey} does not match the explorer index`);
+          Object.entries(shard.fighters || {}).forEach(([fighterId, fights]) => {
+            const profile = state.fighterById.get(fighterId);
+            if (profile) profile.fights = Array.isArray(fights) ? fights : [];
+          });
+          return shard;
+        });
+        state.shardCache.set(shardKey, shardPromise);
+      }
+      return shardPromise;
+    }));
+    const seen = new Set();
+    const edges = [];
+    shards.forEach((shard) => Object.entries(shard.fighters || {}).forEach(([fighterId, rows]) => {
+      const winner = state.fighterById.get(fighterId);
+      if (!winner || !Array.isArray(rows)) return;
+      rows.forEach((values) => {
+        const fight = decodeFight(values);
+        if (String(fight.result || "").toUpperCase() !== "W" || !fight.opponent_id) return;
+        const loser = state.fighterById.get(String(fight.opponent_id));
+        if (!loser) return;
+        const id = graphFightId(fight, winner.id, loser.id);
+        if (seen.has(id)) return;
+        seen.add(id);
+        edges.push({ id, winnerId: winner.id, winnerName: winner.name, loserId: loser.id, loserName: loser.name, ...fight });
+      });
+    }));
+    state.fightGraphEdges = edges.sort((left, right) => String(right.date).localeCompare(String(left.date)) || left.id.localeCompare(right.id));
+    return state.fightGraphEdges;
+  })().catch((error) => { state.fightGraphPromise = null; throw error; });
+  return state.fightGraphPromise;
+}
+
+function fightGraphEmpty(message) {
+  const canvas = $("#fight-graph-canvas");
+  canvas.replaceChildren(element("div", "empty-state", message));
+}
+
+function resetFightGraphDetails() {
+  const details = $("#fight-graph-details");
+  details.replaceChildren();
+  appendText(details, "p", "eyebrow", "Fight details");
+  appendText(details, "h3", "", "Select an arrow");
+  appendText(details, "p", "", "Hover, focus, or click any arrow to inspect its event, date, weight class, method, round, and time.");
+}
+
+function renderFightGraphDetails(edge) {
+  const details = $("#fight-graph-details");
+  details.replaceChildren();
+  appendText(details, "p", "eyebrow", edge.promotion || edge.source_label || "Recorded fight");
+  appendText(details, "h3", "", `${edge.winnerName} defeated ${edge.loserName}`);
+  appendText(details, "p", "fight-graph-detail-result", `${edge.method || "Method unavailable"} · Round ${edge.round || "—"}, ${edge.time || "clock unavailable"}`);
+  const list = element("dl", "fight-graph-detail-list");
+  [
+    ["Date", formatDate(edge.date)],
+    ["Event", edge.event_name || (edge.event_id ? `${edge.promotion || edge.source_label || "Recorded"} event` : "Event unavailable")],
+    ["Weight class", edge.division || "Unknown"],
+    ["Promotion", edge.promotion || "Unknown"],
+    ["Source", edge.source_label || edge.source || "Unknown"],
+  ].forEach(([label, value]) => { appendText(list, "dt", "", label); appendText(list, "dd", "", value); });
+  details.append(list);
+  const links = element("div", "fight-graph-links");
+  const sourceUrl = edge.fight_url || edge.source_url || edge.event_url;
+  if (sourceUrl) {
+    const link = element("a", "fight-graph-source", edge.stats_available ? "Open official fight page" : "Open source page");
+    link.href = sourceUrl; link.target = "_blank"; link.rel = "noreferrer"; links.append(link);
+  }
+  if (edge.event_url && edge.event_url !== sourceUrl) {
+    const eventLink = element("a", "fight-graph-source", "Open official event page");
+    eventLink.href = edge.event_url; eventLink.target = "_blank"; eventLink.rel = "noreferrer"; links.append(eventLink);
+  }
+  if (links.childElementCount) details.append(links);
+}
+
+function graphPath(edge, nodesById, pairIndexes) {
+  const source = nodesById.get(edge.winnerId); const target = nodesById.get(edge.loserId);
+  const deltaX = target.x - source.x; const deltaY = target.y - source.y;
+  const distance = Math.max(1, Math.hypot(deltaX, deltaY)); const unitX = deltaX / distance; const unitY = deltaY / distance;
+  const startX = source.x + unitX * (source.radius + 3); const startY = source.y + unitY * (source.radius + 3);
+  const endX = target.x - unitX * (target.radius + 9); const endY = target.y - unitY * (target.radius + 9);
+  const pair = [edge.winnerId, edge.loserId].sort().join("|"); const siblings = pairIndexes.get(pair) || [];
+  const index = siblings.indexOf(edge.id); const offset = (index - (siblings.length - 1) / 2) * 22;
+  if (Math.abs(offset) < 1) return `M ${startX.toFixed(1)} ${startY.toFixed(1)} L ${endX.toFixed(1)} ${endY.toFixed(1)}`;
+  const direction = edge.winnerId < edge.loserId ? 1 : -1;
+  const controlX = (startX + endX) / 2 - unitY * offset * direction; const controlY = (startY + endY) / 2 + unitX * offset * direction;
+  return `M ${startX.toFixed(1)} ${startY.toFixed(1)} Q ${controlX.toFixed(1)} ${controlY.toFixed(1)} ${endX.toFixed(1)} ${endY.toFixed(1)}`;
+}
+
+function layoutFightGraph(nodeList, edges, width, height) {
+  const goldenAngle = Math.PI * (3 - Math.sqrt(5)); const centerX = width / 2; const centerY = height / 2;
+  nodeList.forEach((node, index) => {
+    const radius = Math.sqrt((index + 0.5) / nodeList.length) * Math.min(width, height) * 0.42; const angle = index * goldenAngle;
+    node.x = centerX + Math.cos(angle) * radius; node.y = centerY + Math.sin(angle) * radius; node.vx = 0; node.vy = 0;
+  });
+  const nodesById = new Map(nodeList.map((node) => [node.id, node]));
+  for (let iteration = 0; iteration < 110; iteration += 1) {
+    const cooling = 1 - iteration / 130;
+    for (let leftIndex = 0; leftIndex < nodeList.length; leftIndex += 1) {
+      const left = nodeList[leftIndex];
+      for (let rightIndex = leftIndex + 1; rightIndex < nodeList.length; rightIndex += 1) {
+        const right = nodeList[rightIndex]; let deltaX = right.x - left.x; let deltaY = right.y - left.y; let distanceSquared = deltaX * deltaX + deltaY * deltaY;
+        if (distanceSquared < 1) { deltaX = 1; deltaY = 0; distanceSquared = 1; }
+        const distance = Math.sqrt(distanceSquared); const force = Math.min(7, 4200 / distanceSquared) * cooling;
+        const forceX = deltaX / distance * force; const forceY = deltaY / distance * force;
+        left.vx -= forceX; left.vy -= forceY; right.vx += forceX; right.vy += forceY;
+      }
+    }
+    edges.forEach((edge) => {
+      const source = nodesById.get(edge.winnerId); const target = nodesById.get(edge.loserId); if (!source || !target) return;
+      const deltaX = target.x - source.x; const deltaY = target.y - source.y; const distance = Math.max(1, Math.hypot(deltaX, deltaY));
+      const force = (distance - 125) * 0.014 * cooling; const forceX = deltaX / distance * force; const forceY = deltaY / distance * force;
+      source.vx += forceX; source.vy += forceY; target.vx -= forceX; target.vy -= forceY;
+    });
+    nodeList.forEach((node) => {
+      node.vx += (centerX - node.x) * 0.0025; node.vy += (centerY - node.y) * 0.0025; node.vx *= 0.72; node.vy *= 0.72;
+      node.x = Math.max(46, Math.min(width - 46, node.x + node.vx)); node.y = Math.max(46, Math.min(height - 58, node.y + node.vy));
+    });
+  }
+  return nodesById;
+}
+
+function renderFightGraph(edges, counts) {
+  const canvas = $("#fight-graph-canvas"); canvas.replaceChildren();
+  const nodeIds = [...new Set(edges.flatMap((edge) => [edge.winnerId, edge.loserId]))]; const wins = new Map();
+  edges.forEach((edge) => wins.set(edge.winnerId, (wins.get(edge.winnerId) || 0) + 1));
+  const nodeList = nodeIds.map((id) => {
+    const fighter = state.fighterById.get(id); const appearances = counts.get(id) || 1;
+    return { id, name: fighter?.name || id, appearances, wins: wins.get(id) || 0, radius: Math.min(18, 8 + Math.sqrt(appearances) * 2.1) };
+  }).sort((left, right) => right.appearances - left.appearances || left.name.localeCompare(right.name));
+  const width = 1120; const height = Math.max(640, Math.min(940, 560 + nodeList.length * 2.6));
+  const nodesById = layoutFightGraph(nodeList, edges, width, height); const pairIndexes = new Map();
+  edges.forEach((edge) => { const pair = [edge.winnerId, edge.loserId].sort().join("|"); if (!pairIndexes.has(pair)) pairIndexes.set(pair, []); pairIndexes.get(pair).push(edge.id); });
+  const svg = document.createElementNS(SVG_NAMESPACE, "svg"); svg.classList.add("fight-graph-svg"); svg.setAttribute("viewBox", `0 0 ${width} ${height}`);
+  svg.setAttribute("role", "img"); svg.setAttribute("aria-label", `Directed graph of ${nodeList.length} fighters and ${edges.length} decisive fights`);
+  const defs = document.createElementNS(SVG_NAMESPACE, "defs"); const marker = document.createElementNS(SVG_NAMESPACE, "marker");
+  marker.setAttribute("id", "fight-graph-arrow"); marker.setAttribute("viewBox", "0 0 10 10"); marker.setAttribute("refX", "8"); marker.setAttribute("refY", "5"); marker.setAttribute("markerWidth", "7"); marker.setAttribute("markerHeight", "7"); marker.setAttribute("orient", "auto-start-reverse");
+  const arrow = document.createElementNS(SVG_NAMESPACE, "path"); arrow.setAttribute("d", "M 0 0 L 10 5 L 0 10 z"); marker.append(arrow); defs.append(marker); svg.append(defs);
+  const edgeLayer = document.createElementNS(SVG_NAMESPACE, "g"); edgeLayer.classList.add("fight-graph-edges");
+  edges.forEach((edge) => {
+    const group = document.createElementNS(SVG_NAMESPACE, "g"); group.classList.add("fight-graph-edge"); group.dataset.edgeId = edge.id;
+    const pathValue = graphPath(edge, nodesById, pairIndexes); const visible = document.createElementNS(SVG_NAMESPACE, "path");
+    visible.classList.add("fight-graph-edge-line"); visible.setAttribute("d", pathValue); visible.setAttribute("marker-end", "url(#fight-graph-arrow)");
+    const hit = document.createElementNS(SVG_NAMESPACE, "path"); hit.classList.add("fight-graph-edge-hit"); hit.setAttribute("d", pathValue); hit.setAttribute("tabindex", "0"); hit.setAttribute("role", "button");
+    hit.setAttribute("aria-label", `${edge.winnerName} defeated ${edge.loserName} on ${formatDate(edge.date)} by ${edge.method || "unknown method"}`);
+    const preview = () => { document.querySelectorAll(".fight-graph-edge.is-preview").forEach((item) => item.classList.remove("is-preview")); group.classList.add("is-preview"); renderFightGraphDetails(edge); };
+    const restore = () => { group.classList.remove("is-preview"); const pinned = edges.find((item) => item.id === state.fightGraphPinnedId); if (pinned) renderFightGraphDetails(pinned); else resetFightGraphDetails(); };
+    hit.addEventListener("mouseenter", preview); hit.addEventListener("focus", preview); hit.addEventListener("mouseleave", restore); hit.addEventListener("blur", restore);
+    hit.addEventListener("click", () => { state.fightGraphPinnedId = state.fightGraphPinnedId === edge.id ? null : edge.id; document.querySelectorAll(".fight-graph-edge.is-pinned").forEach((item) => item.classList.remove("is-pinned")); if (state.fightGraphPinnedId) group.classList.add("is-pinned"); renderFightGraphDetails(edge); });
+    group.append(visible, hit); edgeLayer.append(group);
+  });
+  svg.append(edgeLayer); const nodeLayer = document.createElementNS(SVG_NAMESPACE, "g"); nodeLayer.classList.add("fight-graph-nodes");
+  nodeList.forEach((node) => {
+    const group = document.createElementNS(SVG_NAMESPACE, "g"); group.classList.add("fight-graph-node"); group.setAttribute("transform", `translate(${node.x.toFixed(1)} ${node.y.toFixed(1)})`);
+    const title = document.createElementNS(SVG_NAMESPACE, "title"); title.textContent = `${node.name}: ${node.wins} wins shown in ${node.appearances} fights`;
+    const circle = document.createElementNS(SVG_NAMESPACE, "circle"); circle.setAttribute("r", node.radius.toFixed(1)); const label = document.createElementNS(SVG_NAMESPACE, "text");
+    label.setAttribute("y", String(node.radius + 14)); label.textContent = node.name.length > 22 ? `${node.name.slice(0, 20)}…` : node.name; group.append(title, circle, label); nodeLayer.append(group);
+  });
+  svg.append(nodeLayer); canvas.append(svg);
+}
+
+function filteredFightGraph() {
+  const division = $("#graph-division").value; const promotion = $("#graph-promotion").value; const startDate = $("#graph-start-date").value; const endDate = $("#graph-end-date").value;
+  const queryTerms = normalize($("#graph-fighter-search").value).split(" ").filter(Boolean); const minimum = Number($("#graph-min-fights").value) || 1;
+  const baseEdges = state.fightGraphEdges.filter((edge) => !(division && division !== "*" && edge.division !== division) && !(promotion && edge.promotion !== promotion) && !(startDate && edge.date < startDate) && !(endDate && edge.date > endDate));
+  const counts = new Map(); baseEdges.forEach((edge) => { counts.set(edge.winnerId, (counts.get(edge.winnerId) || 0) + 1); counts.set(edge.loserId, (counts.get(edge.loserId) || 0) + 1); });
+  const eligible = new Set([...counts].filter(([, count]) => count >= minimum).map(([id]) => id));
+  const edges = baseEdges.filter((edge) => eligible.has(edge.winnerId) && eligible.has(edge.loserId) && (!queryTerms.length || queryTerms.every((term) => normalize(`${edge.winnerName} ${edge.loserName}`).includes(term))));
+  return { edges, counts };
+}
+
+async function drawFightGraph() {
+  const status = $("#fight-graph-status"); const button = $("#graph-apply"); const division = $("#graph-division").value;
+  const startDate = $("#graph-start-date").value; const endDate = $("#graph-end-date").value;
+  if (!division) { status.textContent = "Choose a weight class before drawing the graph."; $("#graph-division").focus(); return; }
+  if (startDate && endDate && startDate > endDate) { status.textContent = "Start date must be on or before the end date."; return; }
+  button.disabled = true; status.textContent = state.fightGraphEdges.length ? "Filtering recorded fights…" : "Loading historical fight data…"; fightGraphEmpty("Loading the fight network…");
+  try {
+    await ensureFightGraphData(); const { edges, counts } = filteredFightGraph(); const fighterCount = new Set(edges.flatMap((edge) => [edge.winnerId, edge.loserId])).size;
+    state.fightGraphPinnedId = null; resetFightGraphDetails();
+    if (!edges.length) { fightGraphEmpty("No decisive fights match these filters. Try a wider date range, a lower minimum, or another weight class."); status.textContent = "No matching decisive fights."; return; }
+    if (fighterCount > FIGHT_GRAPH_MAX_FIGHTERS) { fightGraphEmpty(`${fighterCount.toLocaleString()} fighters match. Narrow the dates or fighter name, or increase the minimum fights to draw a readable graph.`); status.textContent = `${edges.length.toLocaleString()} fights connect ${fighterCount.toLocaleString()} fighters; the drawing limit is ${FIGHT_GRAPH_MAX_FIGHTERS}.`; return; }
+    renderFightGraph(edges, counts); status.textContent = `${edges.length.toLocaleString()} decisive fight${edges.length === 1 ? "" : "s"} connect ${fighterCount.toLocaleString()} fighter${fighterCount === 1 ? "" : "s"}. Arrows point from winner to loser.`;
+  } catch (error) { console.error(error); fightGraphEmpty("The historical fight data could not be loaded. Try again."); status.textContent = error.message; }
+  finally { button.disabled = false; }
+}
+
+async function prepareFightGraph() {
+  if (state.fightGraphEdges.length || $("#graph-apply").disabled) return;
+  const button = $("#graph-apply"); const status = $("#fight-graph-status"); button.disabled = true; status.textContent = "Loading historical fight filters…";
+  try {
+    const edges = await ensureFightGraphData(); const promotions = [...new Set(edges.map((edge) => edge.promotion).filter(Boolean))].sort(); const promotionSelect = $("#graph-promotion");
+    if (promotionSelect.options.length === 1) promotions.forEach((value) => { const option = element("option", "", value); option.value = value; promotionSelect.append(option); });
+    const dates = edges.map((edge) => edge.date).filter(Boolean).sort(); [$("#graph-start-date"), $("#graph-end-date")].forEach((input) => { input.min = dates[0] || ""; input.max = dates[dates.length - 1] || state.explorer.data_through; });
+    status.textContent = "Choose a weight class, then draw the graph.";
+  } catch (error) { console.error(error); status.textContent = `Fight graph unavailable: ${error.message}`; }
+  finally { button.disabled = false; }
+}
+
+function resetFightGraph() {
+  $("#graph-division").value = ""; $("#graph-promotion").value = ""; $("#graph-start-date").value = ""; $("#graph-end-date").value = ""; $("#graph-fighter-search").value = ""; $("#graph-min-fights").value = "1";
+  state.fightGraphPinnedId = null; fightGraphEmpty("Choose filters to draw the fight network."); resetFightGraphDetails(); $("#fight-graph-status").textContent = "Choose a weight class, then draw the graph.";
+}
+
 async function fetchJson(path, required = true) {
   try {
     const response = await fetch(path, { cache: "no-store" });
@@ -311,14 +533,16 @@ function focusMarketMatchup(fighterId, opponentId) {
 function showView(name) {
   document.querySelectorAll("[data-view]").forEach((view) => view.classList.toggle("is-active", view.dataset.view === name));
   document.querySelectorAll("[data-nav]").forEach((button) => button.classList.toggle("is-active", button.dataset.nav === name));
-  document.title = `${name === "matchups" ? "Matchups" : name === "fighters" ? "Fighters" : name === "market" ? "Market" : "Model & data"} · UFC Data Lab`;
+  document.title = `${name === "matchups" ? "Matchups" : name === "fighters" ? "Fighters" : name === "graph" ? "Fight graph" : name === "market" ? "Market" : "Model & data"} · UFC Data Lab`;
 }
 
 function applyRoute() {
   if (!state.explorer) return;
   const parts = window.location.hash.replace(/^#\/?/, "").split("/").filter(Boolean);
-  const view = ["matchups", "fighters", "market", "data"].includes(parts[0]) ? parts[0] : "matchups";
+  const view = ["matchups", "fighters", "graph", "market", "data"].includes(parts[0]) ? parts[0] : "matchups";
   showView(view);
+
+  if (view === "graph") prepareFightGraph();
 
   if (view === "fighters" && parts[1]) renderFighterProfile(parts[1]);
   else if (view === "fighters") showFighterDirectory();
@@ -817,6 +1041,7 @@ function populateFilters() {
   const divisions = [...new Set(state.fighters.flatMap((fighter) => [fighter.scheduled_division, ...fighter.career.divisions.map((division) => division.name)]).filter(Boolean))].sort();
   const stances = [...new Set(state.fighters.map((fighter) => fighter.stance).filter(Boolean))].sort();
   divisions.forEach((value) => { const option = element("option", "", value); option.value = value; $("#division-filter").append(option); });
+  divisions.forEach((value) => { const option = element("option", "", value); option.value = value; $("#graph-division").append(option); });
   stances.forEach((value) => { const option = element("option", "", value); option.value = value; $("#stance-filter").append(option); });
 }
 
@@ -1272,6 +1497,9 @@ function bindEvents() {
   makeAutocomplete($("#matchup-fighter-a"), $("#matchup-results-a"), "a"); makeAutocomplete($("#matchup-fighter-b"), $("#matchup-results-b"), "b");
   $("#analyze-matchup").addEventListener("click", () => { if (state.selected.a && state.selected.b) setRoute(`matchups/${state.selected.a.id}/${state.selected.b.id}`); });
   $("#clear-matchup").addEventListener("click", clearMatchup);
+  $("#graph-apply").addEventListener("click", drawFightGraph);
+  $("#graph-reset").addEventListener("click", resetFightGraph);
+  $("#graph-fighter-search").addEventListener("keydown", (event) => { if (event.key === "Enter") drawFightGraph(); });
   ["#fighter-directory-search", "#division-filter", "#stance-filter", "#recorded-only"].forEach((selector) => { const input = $(selector); input.addEventListener(input.tagName === "INPUT" && input.type === "search" ? "input" : "change", () => { state.directoryLimit = 48; renderFighterDirectory(); }); });
   document.addEventListener("click", (event) => { ["a", "b"].forEach((side) => { const picker = $(`[data-picker="${side}"]`); if (!picker.contains(event.target)) closeAutocomplete($(`#matchup-fighter-${side}`), $(`#matchup-results-${side}`)); }); });
   window.addEventListener("hashchange", applyRoute);

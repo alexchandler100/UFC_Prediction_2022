@@ -178,6 +178,37 @@ details[open] summary { border-bottom: 1px solid var(--line); }
 .coverage-notice p { margin: 5px 0 0; color: #6c6043; font-size: 13px; }
 .fight-detail-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 18px; }
 .fight-source { margin-top: 14px; color: var(--ink-soft); font-size: 12px; }
+.fight-graph-controls { display: grid; grid-template-columns: repeat(4, minmax(140px, 1fr)); gap: 15px; align-items: end; }
+.fight-graph-controls label { display: block; margin-bottom: 7px; font-size: 12px; font-weight: 800; }
+.fight-graph-controls input[type="date"] { width: 100%; height: 48px; padding: 0 14px; border: 1px solid #c9c5bb; border-radius: 11px; outline: 0; color: var(--ink); background: white; box-sizing: border-box; }
+.fight-graph-controls input[type="date"]:focus { border-color: var(--teal); box-shadow: 0 0 0 3px rgba(32,124,120,.13); }
+.graph-fighter-filter { grid-column: span 2; }
+.graph-filter-actions { display: flex; gap: 8px; align-items: center; min-height: 48px; }
+.graph-filter-status { grid-column: 1 / -1; margin: 1px 0 0; color: var(--ink-soft); font-size: 13px; }
+.fight-graph-panel { overflow: hidden; }
+.fight-graph-legend { display: inline-flex; align-items: center; gap: 8px; padding: 7px 11px; border-radius: 999px; color: #4f5b65; background: #edf0f2; font-size: 11px; font-weight: 800; white-space: nowrap; }
+.fight-graph-legend b { color: var(--orange); font-size: 18px; line-height: 1; }
+.fight-graph-layout { display: grid; grid-template-columns: minmax(0, 1fr) 290px; gap: 18px; align-items: start; }
+.fight-graph-canvas { min-height: 640px; overflow: auto; border: 1px solid #263746; border-radius: var(--radius-md); background: #111b26; }
+.fight-graph-canvas > .empty-state { min-height: 570px; display: grid; place-items: center; border: 0; color: #aeb9c3; }
+.fight-graph-svg { display: block; width: 100%; min-width: 760px; height: auto; min-height: 640px; }
+.fight-graph-edge-line { fill: none; stroke: #8ea0ad; stroke-width: 1.2; stroke-opacity: .42; transition: stroke .15s, stroke-opacity .15s, stroke-width .15s; }
+.fight-graph-edge-hit { fill: none; stroke: transparent; stroke-width: 15; cursor: pointer; outline: none; }
+.fight-graph-edge marker path { fill: #8ea0ad; }
+.fight-graph-edge.is-preview .fight-graph-edge-line, .fight-graph-edge.is-pinned .fight-graph-edge-line { stroke: #ff7950; stroke-width: 2.7; stroke-opacity: 1; }
+.fight-graph-edge.is-preview marker path, .fight-graph-edge.is-pinned marker path { fill: #ff7950; }
+.fight-graph-node { pointer-events: none; }
+.fight-graph-node circle { fill: #f7f3e9; stroke: #df5b32; stroke-width: 2; }
+.fight-graph-node text { fill: #eef3f6; font-family: "DM Sans", system-ui, sans-serif; font-size: 10px; font-weight: 700; text-anchor: middle; paint-order: stroke; stroke: #111b26; stroke-width: 3px; stroke-linejoin: round; }
+.fight-graph-details { position: sticky; top: 104px; min-height: 220px; padding: 19px; border: 1px solid var(--line); border-radius: var(--radius-md); background: #faf8f2; }
+.fight-graph-details h3 { margin: 6px 0 8px; font-family: "Manrope", sans-serif; font-size: 20px; line-height: 1.25; }
+.fight-graph-details > p:not(.eyebrow) { margin: 0; color: var(--ink-soft); font-size: 13px; }
+.fight-graph-detail-result { padding-bottom: 15px; border-bottom: 1px solid var(--line); }
+.fight-graph-detail-list { display: grid; grid-template-columns: auto 1fr; gap: 7px 12px; margin: 15px 0; font-size: 12px; }
+.fight-graph-detail-list dt { color: var(--ink-soft); }
+.fight-graph-detail-list dd { margin: 0; font-weight: 700; text-align: right; overflow-wrap: anywhere; }
+.fight-graph-links { display: grid; gap: 5px; justify-items: start; }
+.fight-graph-source { font-size: 12px; font-weight: 700; }
 .market-notice { display: grid; grid-template-columns: 1fr auto; gap: 22px; align-items: center; padding: 21px; border: 1px solid #dfc37d; border-radius: var(--radius-md); background: #fff7df; }
 .market-notice h2 { margin: 0 0 4px; font-family: "Manrope", sans-serif; font-size: 20px; }
 .market-notice p { margin: 0; color: #6c6043; }
@@ -222,6 +253,9 @@ details[open] summary { border-bottom: 1px solid var(--line); }
   .profile-header { grid-template-columns: 1fr; }
   .stats-grid { grid-template-columns: repeat(2, 1fr); }
   .data-columns { grid-template-columns: 1fr; }
+  .fight-graph-controls { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .fight-graph-layout { grid-template-columns: 1fr; }
+  .fight-graph-details { position: static; }
 }
 @media (max-width: 600px) {
   :root { --shell: calc(100% - 20px); --radius-lg: 18px; }
@@ -253,6 +287,10 @@ details[open] summary { border-bottom: 1px solid var(--line); }
   .fight-summary { grid-template-columns: 74px 34px 1fr; }
   .fight-summary > :nth-child(4), .fight-summary > :nth-child(5) { grid-column: 3; }
   .fight-detail-grid { grid-template-columns: 1fr; }
+  .fight-graph-controls { grid-template-columns: 1fr; }
+  .graph-fighter-filter { grid-column: auto; }
+  .fight-graph-canvas { min-height: 540px; }
+  .fight-graph-svg { min-height: 540px; }
   .market-notice { grid-template-columns: 1fr; }
   .signal-line, .metric-row { grid-template-columns: 1fr; }
   .site-footer { display: grid; }

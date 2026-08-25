@@ -22,6 +22,7 @@
     <nav class="primary-nav" aria-label="Primary navigation">
       <button class="nav-button is-active" type="button" data-nav="matchups">Matchups</button>
       <button class="nav-button" type="button" data-nav="fighters">Fighters</button>
+      <button class="nav-button" type="button" data-nav="graph">Fight graph</button>
       <button class="nav-button" type="button" data-nav="market">Market</button>
       <button class="nav-button" type="button" data-nav="data">Model &amp; data</button>
     </nav>
@@ -90,6 +91,75 @@
         </section>
         <section id="fighter-directory" aria-live="polite"></section>
         <section id="fighter-profile" class="profile-view" aria-live="polite"></section>
+      </div>
+    </section>
+
+    <section class="view" id="view-graph" data-view="graph" aria-labelledby="graph-title">
+      <div class="compact-hero page-shell">
+        <p class="eyebrow">Fight network</p><h1 id="graph-title">Follow the wins.</h1>
+        <p>Explore recorded fight history as a directed graph. Every arrow runs from the winner to the loser; hover, focus, or click an arrow for the fight details.</p>
+      </div>
+      <div class="page-shell page-stack">
+        <section class="panel fight-graph-controls" aria-label="Fight graph filters">
+          <div class="filter-control">
+            <label for="graph-division">Weight class</label>
+            <select id="graph-division">
+              <option value="">Choose a weight class</option>
+              <option value="*">All weight classes</option>
+            </select>
+          </div>
+          <div class="filter-control">
+            <label for="graph-promotion">Promotion</label>
+            <select id="graph-promotion"><option value="">All promotions</option></select>
+          </div>
+          <div class="filter-control">
+            <label for="graph-start-date">Start date</label>
+            <input id="graph-start-date" type="date">
+          </div>
+          <div class="filter-control">
+            <label for="graph-end-date">End date</label>
+            <input id="graph-end-date" type="date">
+          </div>
+          <div class="filter-control graph-fighter-filter">
+            <label for="graph-fighter-search">Fighter</label>
+            <input id="graph-fighter-search" type="search" autocomplete="off" placeholder="Optional name filter">
+          </div>
+          <div class="filter-control">
+            <label for="graph-min-fights">Minimum fights</label>
+            <select id="graph-min-fights">
+              <option value="1">1 fight</option>
+              <option value="2">2 fights</option>
+              <option value="3">3 fights</option>
+              <option value="5">5 fights</option>
+            </select>
+          </div>
+          <div class="graph-filter-actions">
+            <button class="primary-button" id="graph-apply" type="button">Draw graph</button>
+            <button class="text-button" id="graph-reset" type="button">Reset</button>
+          </div>
+          <p class="graph-filter-status" id="fight-graph-status" role="status" aria-live="polite">Choose a weight class, then draw the graph.</p>
+        </section>
+
+        <section class="panel fight-graph-panel" aria-labelledby="fight-graph-heading">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">Winner to loser</p>
+              <h2 id="fight-graph-heading">Recorded fight graph</h2>
+              <p class="section-note">The graph loads the historical fight shards only when you open this tab.</p>
+            </div>
+            <span class="fight-graph-legend"><span aria-hidden="true">Winner</span><b aria-hidden="true">&#8594;</b><span aria-hidden="true">Loser</span></span>
+          </div>
+          <div class="fight-graph-layout">
+            <div class="fight-graph-canvas" id="fight-graph-canvas" aria-live="polite">
+              <div class="empty-state">Choose filters to draw the fight network.</div>
+            </div>
+            <aside class="fight-graph-details" id="fight-graph-details" aria-live="polite">
+              <p class="eyebrow">Fight details</p>
+              <h3>Select an arrow</h3>
+              <p>Hover, focus, or click any arrow to inspect its event, date, weight class, method, round, and time.</p>
+            </aside>
+          </div>
+        </section>
       </div>
     </section>
 
