@@ -42,6 +42,14 @@ PUBLICATION_FLOAT_REL_TOLERANCE = 1e-12
 PUBLICATION_FLOAT_ABS_TOLERANCE = 1e-12
 
 
+def _is_sha256(value: object) -> bool:
+    return (
+        isinstance(value, str)
+        and len(value) == 64
+        and all(character in "0123456789abcdef" for character in value)
+    )
+
+
 def _first_publication_difference(
     published: object,
     rebuilt: object,
@@ -54,9 +62,14 @@ def _first_publication_difference(
     a Linux runner. Derived IEEE-754 values may differ by a final bit across
     those environments, so floats use a deliberately tiny tolerance while all
     identifiers, prices, policy fields, collection shapes, and text remain
-    exact.
+    exact. The sole identifier exception is the unlocked ``current_signal``
+    decision hash: it fingerprints those same derived floats, so an immaterial
+    final-bit difference necessarily produces an unrelated SHA-256 value. Its
+    displayed fields are still compared below and both IDs must be valid hashes.
     """
 
+    if path.endswith(".current_signal.decision_id"):
+        return None if _is_sha256(published) and _is_sha256(rebuilt) else path
     if isinstance(published, dict) and isinstance(rebuilt, dict):
         if published.keys() != rebuilt.keys():
             missing = sorted(str(key) for key in rebuilt.keys() - published.keys())

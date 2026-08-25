@@ -184,6 +184,7 @@ class CurrentOpportunityPublicationTests(unittest.TestCase):
         publication["matchups"][0]["full_market_consensus"][
             "fighter_probability"
         ] = math.nextafter(probability, math.inf)
+        publication["matchups"][0]["current_signal"]["decision_id"] = "c" * 64
         publication_body = dict(publication)
         publication_body.pop("publication_sha256")
         publication["publication_sha256"] = canonical_hash(publication_body)
@@ -196,6 +197,23 @@ class CurrentOpportunityPublicationTests(unittest.TestCase):
             (),
             capture_id="capture-opportunity",
         )
+
+        publication["matchups"][0]["current_signal"]["decision_id"] = "invalid"
+        publication_body = dict(publication)
+        publication_body.pop("publication_sha256")
+        publication["publication_sha256"] = canonical_hash(publication_body)
+        with self.assertRaisesRegex(
+            StoreIntegrityError,
+            r"cannot be reproduced.*\.current_signal\.decision_id",
+        ):
+            validate_current_opportunities(
+                publication,
+                quotes,
+                forecasts,
+                metadata,
+                (),
+                capture_id="capture-opportunity",
+            )
 
     def test_validation_rejects_a_tampered_publication_fingerprint(self):
         quotes, forecasts, metadata = _fixture(
