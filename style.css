@@ -265,6 +265,8 @@ details[open] summary { border-bottom: 1px solid var(--line); }
 .fight-graph-edge-table { width: 100%; border-collapse: collapse; font-size: 12px; }
 .fight-graph-edge-table thead { position: sticky; z-index: 2; top: 0; background: #f2f0e9; }
 .fight-graph-edge-table th { padding: 8px 10px; color: var(--ink-soft); font-size: 10px; letter-spacing: .06em; text-align: left; text-transform: uppercase; white-space: nowrap; }
+.fight-graph-edge-metric-heading { min-width: 126px; }
+.fight-graph-edge-metric-heading small { display: block; margin-top: 1px; color: #7f909c; font-size: 8px; letter-spacing: .04em; }
 .fight-graph-edge-table td { height: 35px; padding: 4px 10px; border-top: 1px solid #ece9e1; white-space: nowrap; }
 .fight-graph-edge-summary-row:hover, .fight-graph-edge-summary-row.is-open { background: #fff6ef; }
 .fight-graph-edge-date { width: 112px; color: var(--ink-soft); }
@@ -274,6 +276,9 @@ details[open] summary { border-bottom: 1px solid var(--line); }
 .fight-graph-edge-result .pill { margin-right: 7px; padding: 3px 6px; font-size: 9px; vertical-align: middle; }
 .fight-graph-edge-result strong { vertical-align: middle; }
 .fight-graph-edge-finish { color: var(--ink-soft); }
+.fight-graph-edge-metric { min-width: 126px; font-variant-numeric: tabular-nums; }
+.fight-graph-edge-metric strong { color: #8ce0c5; }
+.fight-graph-edge-metric span { margin-left: 6px; color: var(--ink-soft); }
 .fight-graph-edge-action { width: 92px; text-align: right; }
 .fight-graph-edge-action .text-button { min-height: 30px; padding: 4px 7px; }
 .fight-graph-edge-detail-row[hidden] { display: none; }

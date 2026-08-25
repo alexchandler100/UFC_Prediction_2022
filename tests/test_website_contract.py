@@ -187,6 +187,20 @@ class WebsiteExplorerContractTests(unittest.TestCase):
         self.assertIn("setUTCFullYear", script)
         self.assertIn(".graph-date-shortcuts", style)
 
+    def test_fight_table_shows_values_for_advanced_numeric_rules(self):
+        page = (REPO_ROOT / "index.html").read_text(encoding="utf-8")
+        script = (REPO_ROOT / "script.js").read_text(encoding="utf-8")
+        style = (REPO_ROOT / "style.css").read_text(encoding="utf-8")
+
+        self.assertIn('id="fight-graph-edge-headings"', page)
+        self.assertIn("function fightGraphTableMetrics", script)
+        self.assertIn("function renderFightGraphEdgeHeadings", script)
+        self.assertIn("function formatGraphTableMetric", script)
+        self.assertIn("aggregates.get(edge.winnerId)", script)
+        self.assertIn("aggregates.get(edge.loserId)", script)
+        self.assertIn('"Winner / loser"', script)
+        self.assertIn(".fight-graph-edge-metric", style)
+
 
 if __name__ == "__main__":
     unittest.main()
