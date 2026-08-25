@@ -29,6 +29,7 @@ const state = {
   fightGraphEdges: [],
   fightGraphPinnedId: null,
   fightGraphRenderToken: 0,
+  fightGraphViewport: null,
   selected: { a: null, b: null },
   directoryLimit: 48,
 };
@@ -261,6 +262,115 @@ async function ensureFightGraphData() {
 function fightGraphEmpty(message) {
   const canvas = $("#fight-graph-canvas");
   canvas.replaceChildren(element("div", "empty-state", message));
+  state.fightGraphViewport = null;
+  updateFightGraphViewportControls();
+}
+
+function updateFightGraphViewportControls() {
+  const viewport = state.fightGraphViewport;
+  const enabled = Boolean(viewport?.svg?.isConnected);
+  ["#graph-zoom-out", "#graph-zoom-in", "#graph-zoom-fit"].forEach((selector) => { $(selector).disabled = !enabled; });
+  $("#graph-zoom-level").value = enabled ? `${Math.round(viewport.fullWidth / viewport.box.width * 100)}%` : "100%";
+}
+
+function applyFightGraphViewport() {
+  const viewport = state.fightGraphViewport;
+  if (!viewport?.svg?.isConnected) return;
+  const box = viewport.box;
+  if (box.width >= viewport.fullWidth) box.x = (viewport.fullWidth - box.width) / 2;
+  else box.x = Math.max(-box.width * 0.06, Math.min(viewport.fullWidth - box.width * 0.94, box.x));
+  if (box.height >= viewport.fullHeight) box.y = (viewport.fullHeight - box.height) / 2;
+  else box.y = Math.max(-box.height * 0.06, Math.min(viewport.fullHeight - box.height * 0.94, box.y));
+  viewport.svg.setAttribute("viewBox", `${box.x.toFixed(2)} ${box.y.toFixed(2)} ${box.width.toFixed(2)} ${box.height.toFixed(2)}`);
+  updateFightGraphViewportControls();
+}
+
+function zoomFightGraph(factor, anchorX = 0.5, anchorY = 0.5) {
+  const viewport = state.fightGraphViewport;
+  if (!viewport) return;
+  const current = viewport.box;
+  const minimumWidth = viewport.fullWidth / 8;
+  const maximumWidth = viewport.fullWidth * 2;
+  const nextWidth = Math.max(minimumWidth, Math.min(maximumWidth, current.width * factor));
+  const nextHeight = nextWidth * viewport.fullHeight / viewport.fullWidth;
+  const focusX = current.x + current.width * anchorX;
+  const focusY = current.y + current.height * anchorY;
+  current.x = focusX - nextWidth * anchorX;
+  current.y = focusY - nextHeight * anchorY;
+  current.width = nextWidth;
+  current.height = nextHeight;
+  applyFightGraphViewport();
+}
+
+function panFightGraph(horizontal, vertical) {
+  const viewport = state.fightGraphViewport;
+  if (!viewport) return;
+  viewport.box.x += horizontal;
+  viewport.box.y += vertical;
+  applyFightGraphViewport();
+}
+
+function fitFightGraph() {
+  const viewport = state.fightGraphViewport;
+  if (!viewport) return;
+  viewport.box = { x: 0, y: 0, width: viewport.fullWidth, height: viewport.fullHeight };
+  applyFightGraphViewport();
+}
+
+function configureFightGraphViewport(svg, width, height) {
+  state.fightGraphViewport = { svg, fullWidth: width, fullHeight: height, box: { x: 0, y: 0, width, height } };
+  svg.setAttribute("tabindex", "0");
+  svg.setAttribute("aria-description", "Use the mouse wheel or zoom buttons to zoom. Drag the empty background or use arrow keys to pan. Press 0 to fit the graph.");
+  let drag = null;
+  svg.addEventListener("wheel", (event) => {
+    event.preventDefault();
+    const bounds = svg.getBoundingClientRect();
+    const anchorX = Math.max(0, Math.min(1, (event.clientX - bounds.left) / bounds.width));
+    const anchorY = Math.max(0, Math.min(1, (event.clientY - bounds.top) / bounds.height));
+    zoomFightGraph(event.deltaY < 0 ? 0.82 : 1.22, anchorX, anchorY);
+  }, { passive: false });
+  svg.addEventListener("pointerdown", (event) => {
+    if (event.button !== 0 || event.target.closest?.(".fight-graph-edge-hit")) return;
+    drag = { pointerId: event.pointerId, x: event.clientX, y: event.clientY, boxX: state.fightGraphViewport.box.x, boxY: state.fightGraphViewport.box.y };
+    try { svg.setPointerCapture?.(event.pointerId); } catch {}
+    svg.classList.add("is-panning");
+    event.preventDefault();
+  });
+  svg.addEventListener("pointermove", (event) => {
+    if (!drag || event.pointerId !== drag.pointerId) return;
+    const bounds = svg.getBoundingClientRect();
+    const viewport = state.fightGraphViewport;
+    viewport.box.x = drag.boxX - (event.clientX - drag.x) / bounds.width * viewport.box.width;
+    viewport.box.y = drag.boxY - (event.clientY - drag.y) / bounds.height * viewport.box.height;
+    applyFightGraphViewport();
+  });
+  const endPan = (event) => {
+    if (!drag || event.pointerId !== drag.pointerId) return;
+    try { svg.releasePointerCapture?.(event.pointerId); } catch {}
+    drag = null;
+    svg.classList.remove("is-panning");
+  };
+  svg.addEventListener("pointerup", endPan);
+  svg.addEventListener("pointercancel", endPan);
+  svg.addEventListener("keydown", (event) => {
+    if (event.target !== svg) return;
+    const stepX = state.fightGraphViewport.box.width * 0.08;
+    const stepY = state.fightGraphViewport.box.height * 0.08;
+    const actions = {
+      ArrowLeft: () => panFightGraph(-stepX, 0),
+      ArrowRight: () => panFightGraph(stepX, 0),
+      ArrowUp: () => panFightGraph(0, -stepY),
+      ArrowDown: () => panFightGraph(0, stepY),
+      "+": () => zoomFightGraph(0.8),
+      "=": () => zoomFightGraph(0.8),
+      "-": () => zoomFightGraph(1.25),
+      "0": fitFightGraph,
+    };
+    if (!actions[event.key]) return;
+    event.preventDefault();
+    actions[event.key]();
+  });
+  applyFightGraphViewport();
 }
 
 function resetFightGraphDetails() {
@@ -382,7 +492,7 @@ function renderFightGraph(edges, counts) {
     const circle = document.createElementNS(SVG_NAMESPACE, "circle"); circle.setAttribute("r", node.radius.toFixed(1)); const label = document.createElementNS(SVG_NAMESPACE, "text");
     label.setAttribute("y", String(node.radius + 14)); label.textContent = node.name.length > 22 ? `${node.name.slice(0, 20)}…` : node.name; group.append(title, circle, label); nodeLayer.append(group);
   });
-  svg.append(nodeLayer); canvas.append(svg);
+  svg.append(nodeLayer); canvas.append(svg); configureFightGraphViewport(svg, width, height);
 }
 
 function filteredFightGraph() {
@@ -1499,6 +1609,9 @@ function bindEvents() {
   $("#clear-matchup").addEventListener("click", clearMatchup);
   $("#graph-apply").addEventListener("click", drawFightGraph);
   $("#graph-reset").addEventListener("click", resetFightGraph);
+  $("#graph-zoom-out").addEventListener("click", () => zoomFightGraph(1.25));
+  $("#graph-zoom-in").addEventListener("click", () => zoomFightGraph(0.8));
+  $("#graph-zoom-fit").addEventListener("click", fitFightGraph);
   $("#graph-fighter-search").addEventListener("keydown", (event) => { if (event.key === "Enter") drawFightGraph(); });
   ["#fighter-directory-search", "#division-filter", "#stance-filter", "#recorded-only"].forEach((selector) => { const input = $(selector); input.addEventListener(input.tagName === "INPUT" && input.type === "search" ? "input" : "change", () => { state.directoryLimit = 48; renderFighterDirectory(); }); });
   document.addEventListener("click", (event) => { ["a", "b"].forEach((side) => { const picker = $(`[data-picker="${side}"]`); if (!picker.contains(event.target)) closeAutocomplete($(`#matchup-fighter-${side}`), $(`#matchup-results-${side}`)); }); });

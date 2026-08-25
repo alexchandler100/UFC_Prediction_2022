@@ -118,6 +118,20 @@ class WebsiteExplorerContractTests(unittest.TestCase):
             script,
         )
 
+    def test_fight_graph_has_zoom_and_pan_navigation(self):
+        page = (REPO_ROOT / "index.html").read_text(encoding="utf-8")
+        script = (REPO_ROOT / "script.js").read_text(encoding="utf-8")
+        style = (REPO_ROOT / "style.css").read_text(encoding="utf-8")
+
+        self.assertIn('id="graph-zoom-in"', page)
+        self.assertIn('id="graph-zoom-out"', page)
+        self.assertIn('id="graph-zoom-fit"', page)
+        self.assertIn("function configureFightGraphViewport", script)
+        self.assertIn('svg.addEventListener("wheel"', script)
+        self.assertIn('svg.addEventListener("pointerdown"', script)
+        self.assertIn("ArrowRight", script)
+        self.assertIn("touch-action: none", style)
+
 
 if __name__ == "__main__":
     unittest.main()

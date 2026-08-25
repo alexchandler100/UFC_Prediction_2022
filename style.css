@@ -186,13 +186,23 @@ details[open] summary { border-bottom: 1px solid var(--line); }
 .graph-filter-actions { display: flex; gap: 8px; align-items: center; min-height: 48px; }
 .graph-filter-status { grid-column: 1 / -1; margin: 1px 0 0; color: var(--ink-soft); font-size: 13px; }
 .fight-graph-panel { overflow: hidden; }
+.fight-graph-heading-tools { display: grid; gap: 9px; justify-items: end; }
 .fight-graph-legend { display: inline-flex; align-items: center; gap: 8px; padding: 7px 11px; border-radius: 999px; color: #4f5b65; background: #edf0f2; font-size: 11px; font-weight: 800; white-space: nowrap; }
 .fight-graph-legend b { color: var(--orange); font-size: 18px; line-height: 1; }
+.fight-graph-viewport-controls { display: inline-grid; grid-template-columns: 38px 56px 38px 48px; align-items: center; overflow: hidden; border: 1px solid var(--line); border-radius: 10px; background: white; box-shadow: 0 5px 14px rgba(20,33,45,.08); }
+.fight-graph-viewport-controls button { height: 38px; padding: 0; border: 0; border-right: 1px solid var(--line); background: white; cursor: pointer; font-size: 19px; font-weight: 800; }
+.fight-graph-viewport-controls button:hover:not(:disabled), .fight-graph-viewport-controls button:focus-visible { color: white; background: var(--navy); }
+.fight-graph-viewport-controls button:disabled { cursor: not-allowed; opacity: .35; }
+.fight-graph-viewport-controls output { color: var(--ink-soft); font-size: 11px; font-weight: 800; text-align: center; }
+.fight-graph-viewport-controls .graph-zoom-fit { border-right: 0; font-size: 11px; text-transform: uppercase; }
 .fight-graph-layout { display: grid; grid-template-columns: minmax(0, 1fr) 290px; gap: 18px; align-items: start; }
 .fight-graph-canvas { min-height: 640px; overflow: auto; border: 1px solid #263746; border-radius: var(--radius-md); background: #111b26; }
 .fight-graph-canvas > .empty-state { min-height: 570px; display: grid; place-items: center; border: 0; color: #aeb9c3; }
-.fight-graph-svg { display: block; width: 100%; min-width: 760px; height: auto; min-height: 640px; }
+.fight-graph-svg { display: block; width: 100%; min-width: 760px; height: auto; min-height: 640px; cursor: grab; touch-action: none; user-select: none; }
+.fight-graph-svg.is-panning { cursor: grabbing; }
+.fight-graph-svg:focus-visible { outline: 3px solid #ff7950; outline-offset: -4px; }
 .fight-graph-edge-line { fill: none; stroke: #8ea0ad; stroke-width: 1.2; stroke-opacity: .42; transition: stroke .15s, stroke-opacity .15s, stroke-width .15s; }
+.fight-graph-edge-line { pointer-events: none; }
 .fight-graph-edge-hit { fill: none; stroke: transparent; stroke-width: 15; cursor: pointer; outline: none; }
 .fight-graph-edge marker path { fill: #8ea0ad; }
 .fight-graph-edge.is-preview .fight-graph-edge-line, .fight-graph-edge.is-pinned .fight-graph-edge-line { stroke: #ff7950; stroke-width: 2.7; stroke-opacity: 1; }
