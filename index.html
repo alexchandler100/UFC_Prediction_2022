@@ -101,42 +101,98 @@
       </div>
       <div class="page-shell page-stack">
         <section class="panel fight-graph-controls" aria-label="Fight graph filters">
-          <div class="filter-control">
-            <label for="graph-division">Weight class</label>
-            <select id="graph-division">
-              <option value="">Choose a weight class</option>
-              <option value="*">All weight classes</option>
-            </select>
+          <div class="graph-filter-modebar">
+            <div>
+              <p class="eyebrow">Graph filters</p>
+              <h2>Choose who appears</h2>
+            </div>
+            <div class="graph-mode-switch" role="group" aria-label="Filter mode">
+              <button class="is-active" id="graph-mode-simple" type="button" aria-pressed="true">Simple</button>
+              <button id="graph-mode-advanced" type="button" aria-pressed="false">Advanced</button>
+            </div>
           </div>
-          <div class="filter-control">
-            <label for="graph-promotion">Promotion</label>
-            <select id="graph-promotion"><option value="">All promotions</option></select>
+          <div class="fight-graph-basic-grid">
+            <div class="filter-control">
+              <label for="graph-division">Weight class</label>
+              <select id="graph-division">
+                <option value="">Choose a weight class</option>
+                <option value="*">All weight classes</option>
+              </select>
+            </div>
+            <div class="filter-control">
+              <label for="graph-promotion">Promotion</label>
+              <select id="graph-promotion"><option value="">All promotions</option></select>
+            </div>
+            <div class="filter-control">
+              <label for="graph-start-date">Start date</label>
+              <input id="graph-start-date" type="date">
+            </div>
+            <div class="filter-control">
+              <label for="graph-end-date">End date</label>
+              <input id="graph-end-date" type="date">
+            </div>
+            <div class="graph-date-shortcuts">
+              <span>Quick time range</span>
+              <div class="graph-date-preset-buttons" role="group" aria-label="Quick time range">
+                <button class="is-active" type="button" data-graph-years="all">All time</button>
+                <button type="button" data-graph-years="1">1Y</button>
+                <button type="button" data-graph-years="3">3Y</button>
+                <button type="button" data-graph-years="5">5Y</button>
+                <button type="button" data-graph-years="10">10Y</button>
+              </div>
+              <div class="graph-custom-years">
+                <label for="graph-custom-years">Last</label>
+                <input id="graph-custom-years" type="number" min="1" max="100" step="1" value="7" inputmode="numeric" aria-label="Number of years">
+                <span>years</span>
+                <button id="graph-apply-custom-years" type="button">Use</button>
+              </div>
+            </div>
+            <div class="filter-control graph-fighter-filter">
+              <label for="graph-fighter-search">Fighter</label>
+              <input id="graph-fighter-search" type="search" autocomplete="off" placeholder="Optional name filter">
+            </div>
+            <div class="filter-control">
+              <label for="graph-min-fights">Minimum fights</label>
+              <select id="graph-min-fights">
+                <option value="1">1 fight</option>
+                <option value="2">2 fights</option>
+                <option value="3">3 fights</option>
+                <option value="5">5 fights</option>
+              </select>
+            </div>
+            <div class="graph-filter-actions">
+              <button class="primary-button" id="graph-apply" type="button">Draw graph</button>
+              <button class="text-button" id="graph-reset" type="button">Reset</button>
+            </div>
           </div>
-          <div class="filter-control">
-            <label for="graph-start-date">Start date</label>
-            <input id="graph-start-date" type="date">
-          </div>
-          <div class="filter-control">
-            <label for="graph-end-date">End date</label>
-            <input id="graph-end-date" type="date">
-          </div>
-          <div class="filter-control graph-fighter-filter">
-            <label for="graph-fighter-search">Fighter</label>
-            <input id="graph-fighter-search" type="search" autocomplete="off" placeholder="Optional name filter">
-          </div>
-          <div class="filter-control">
-            <label for="graph-min-fights">Minimum fights</label>
-            <select id="graph-min-fights">
-              <option value="1">1 fight</option>
-              <option value="2">2 fights</option>
-              <option value="3">3 fights</option>
-              <option value="5">5 fights</option>
-            </select>
-          </div>
-          <div class="graph-filter-actions">
-            <button class="primary-button" id="graph-apply" type="button">Draw graph</button>
-            <button class="text-button" id="graph-reset" type="button">Reset</button>
-          </div>
+          <section class="graph-advanced-filters" id="graph-advanced-filters" aria-labelledby="graph-advanced-title" hidden>
+            <div class="graph-advanced-heading">
+              <div><h3 id="graph-advanced-title">Advanced fighter rules</h3><p>Calculate each fighter’s results and performance inside the weight, promotion, and date window above.</p></div>
+              <button class="text-button small-button" id="graph-clear-rules" type="button">Clear rules</button>
+            </div>
+            <div class="graph-rule-settings">
+              <div class="filter-control"><label for="graph-rule-join">Fighter must match</label><select id="graph-rule-join"><option value="all">All rules</option><option value="any">Any rule</option></select></div>
+              <div class="filter-control"><label for="graph-rule-scope">Connections shown</label><select id="graph-rule-scope"><option value="both">Matching fighters only</option><option value="either">Matching fighters and their opponents</option></select></div>
+              <div class="filter-control"><label for="graph-rule-stance">Fighter stance</label><select id="graph-rule-stance"><option value="">Any stance</option><option value="Orthodox">Orthodox</option><option value="Southpaw">Southpaw</option><option value="Switch">Switch</option><option value="Open Stance">Open stance</option><option value="Sideways">Sideways</option></select></div>
+            </div>
+            <div class="graph-filter-presets" aria-label="Advanced filter presets">
+              <span>Start with</span>
+              <button type="button" data-graph-preset="proven-winners">Proven winners</button>
+              <button type="button" data-graph-preset="five-round-winners">Five-round winners</button>
+              <button type="button" data-graph-preset="finishers">Finishers</button>
+              <button type="button" data-graph-preset="volume-strikers">Volume strikers</button>
+              <button type="button" data-graph-preset="wrestlers">Wrestlers</button>
+            </div>
+            <div class="graph-rule-list" id="graph-rule-list" aria-live="polite"></div>
+            <button class="secondary-button small-button graph-add-rule" id="graph-add-rule" type="button">+ Add condition</button>
+            <fieldset class="graph-fight-constraints">
+              <legend>Fight rows shown</legend>
+              <div class="filter-control"><label for="graph-fight-method">Winning method</label><select id="graph-fight-method"><option value="">Any method</option><option value="ko">KO / TKO</option><option value="submission">Submission</option><option value="decision">Decision</option><option value="other">Other</option></select></div>
+              <div class="filter-control"><label for="graph-fight-round">Finish round</label><select id="graph-fight-round"><option value="">Any round</option><option value="1">Round 1</option><option value="2">Round 2</option><option value="3">Round 3</option><option value="4">Round 4</option><option value="5">Round 5+</option></select></div>
+              <div class="filter-control"><label for="graph-fight-detail">Statistics</label><select id="graph-fight-detail"><option value="">Any coverage</option><option value="detailed">Detailed statistics available</option><option value="metadata">Result metadata only</option></select></div>
+            </fieldset>
+            <p class="graph-rule-note">Five-round classification uses the published schedule plus modern UFC headliner position. It includes title fights and non-title main events because the history does not preserve a separate championship flag. Statistics without detailed round data are excluded from rate calculations.</p>
+          </section>
           <p class="graph-filter-status" id="fight-graph-status" role="status" aria-live="polite">Choose a weight class, then draw the graph.</p>
         </section>
 

@@ -27,6 +27,9 @@ const state = {
   shardCache: new Map(),
   fightGraphPromise: null,
   fightGraphEdges: [],
+  fightGraphFighterRows: new Map(),
+  fightGraphFilterMode: "simple",
+  fightGraphRuleSequence: 0,
   fightGraphPinnedId: null,
   fightGraphRenderToken: 0,
   fightGraphViewport: null,
@@ -36,6 +39,52 @@ const state = {
 
 const FIGHT_GRAPH_MAX_FIGHTERS = 140;
 const SVG_NAMESPACE = "http://www.w3.org/2000/svg";
+const GRAPH_RULE_METRICS = [
+  { key: "fights", label: "Fights", group: "Results", description: "All recorded bouts in the selected period." },
+  { key: "wins", label: "Wins", group: "Results", description: "Recorded wins in the selected period." },
+  { key: "losses", label: "Losses", group: "Results", description: "Recorded losses in the selected period." },
+  { key: "draws_nc", label: "Draws / no contests", group: "Results", description: "Draws and no contests in the selected period." },
+  { key: "win_rate", label: "Win rate (%)", group: "Results", description: "Wins divided by wins plus losses." },
+  { key: "win_streak", label: "Latest win streak", group: "Results", description: "Consecutive wins from the fighter's latest bout in the selected period." },
+  { key: "unique_opponents", label: "Unique opponents", group: "Results", description: "Distinct opponents faced in the selected period." },
+  { key: "finish_wins", label: "Finish wins", group: "Wins by type", description: "Wins that did not end by decision." },
+  { key: "ko_wins", label: "KO / TKO wins", group: "Wins by type", description: "Wins recorded as KO or TKO." },
+  { key: "submission_wins", label: "Submission wins", group: "Wins by type", description: "Wins recorded as submissions." },
+  { key: "decision_wins", label: "Decision wins", group: "Wins by type", description: "Unanimous, split, majority, or other decision wins." },
+  { key: "five_round_wins", label: "Five-round wins (title/main event)", group: "Wins by type", description: "Known five-round wins using published schedules and modern UFC headliner position; title status is not separate." },
+  { key: "total_knockdowns", label: "Knockdowns", group: "Striking", description: "Total knockdowns recorded for the fighter." },
+  { key: "avg_sig_landed", label: "Avg. significant strikes landed", group: "Striking", description: "Average per bout with detailed statistics.", step: "0.1" },
+  { key: "sig_landed_per_minute", label: "Significant strikes landed / minute", group: "Striking", description: "Significant strikes landed divided by recorded fight time.", step: "0.1" },
+  { key: "sig_accuracy", label: "Significant-strike accuracy (%)", group: "Striking", description: "Total significant strikes landed divided by attempted.", step: "0.1" },
+  { key: "head_landed", label: "Head strikes landed", group: "Striking", description: "Total significant head strikes landed." },
+  { key: "body_landed", label: "Body strikes landed", group: "Striking", description: "Total significant body strikes landed." },
+  { key: "leg_landed", label: "Leg strikes landed", group: "Striking", description: "Total significant leg strikes landed." },
+  { key: "total_takedowns", label: "Takedowns landed", group: "Grappling", description: "Total takedowns landed." },
+  { key: "takedown_accuracy", label: "Takedown accuracy (%)", group: "Grappling", description: "Total takedowns landed divided by attempted.", step: "0.1" },
+  { key: "submission_attempts", label: "Submission attempts", group: "Grappling", description: "Total submission attempts." },
+  { key: "control_minutes", label: "Control time (minutes)", group: "Grappling", description: "Total recorded control time.", step: "0.1" },
+  { key: "avg_fight_minutes", label: "Avg. fight duration (minutes)", group: "Pace & duration", description: "Average duration of bouts with a known duration.", step: "0.1" },
+  { key: "total_fight_minutes", label: "Total fight time (minutes)", group: "Pace & duration", description: "Combined known fight duration.", step: "0.1" },
+  { key: "fastest_win_minutes", label: "Fastest win (minutes)", group: "Pace & duration", description: "Elapsed time of the fighter's fastest recorded win.", step: "0.1" },
+  { key: "stats_coverage", label: "Detailed-stat coverage (%)", group: "Data quality", description: "Share of selected bouts with detailed statistics.", step: "0.1" },
+  { key: "avg_opponent_wins", label: "Avg. opponent career wins", group: "Opponent quality", description: "Average published career wins of opponents faced in the period.", step: "0.1" },
+  { key: "avg_opponent_win_rate", label: "Avg. opponent career win rate (%)", group: "Opponent quality", description: "Average published career win rate of opponents faced in the period.", step: "0.1" },
+  { key: "age", label: "Age at period end", group: "Profile", description: "Age at the selected end date or dataset date." },
+  { key: "height", label: "Height (inches)", group: "Profile", description: "Published fighter height." },
+  { key: "reach", label: "Reach (inches)", group: "Profile", description: "Published fighter reach." },
+  { key: "career_wins", label: "Career wins (all data)", group: "Career profile", description: "Career wins across the complete published history." },
+  { key: "career_fights", label: "Career fights (all data)", group: "Career profile", description: "Career recorded bouts across the complete published history." },
+];
+const GRAPH_RULE_OPERATORS = [
+  ["gt", "more than"], ["gte", "at least"], ["eq", "exactly"], ["lte", "at most"], ["lt", "less than"], ["between", "between"],
+];
+const GRAPH_FILTER_PRESETS = {
+  "proven-winners": [{ metric: "wins", operator: "gt", value: 5 }],
+  "five-round-winners": [{ metric: "five_round_wins", operator: "gte", value: 3 }],
+  finishers: [{ metric: "finish_wins", operator: "gte", value: 3 }, { metric: "win_rate", operator: "gte", value: 60 }],
+  "volume-strikers": [{ metric: "sig_landed_per_minute", operator: "gte", value: 4 }, { metric: "sig_accuracy", operator: "gte", value: 45 }],
+  wrestlers: [{ metric: "total_takedowns", operator: "gte", value: 8 }, { metric: "takedown_accuracy", operator: "gte", value: 40 }],
+};
 
 const $ = (selector, parent = document) => parent.querySelector(selector);
 
@@ -239,20 +288,23 @@ async function ensureFightGraphData() {
     }));
     const seen = new Set();
     const edges = [];
+    const fighterRows = new Map();
     shards.forEach((shard) => Object.entries(shard.fighters || {}).forEach(([fighterId, rows]) => {
-      const winner = state.fighterById.get(fighterId);
-      if (!winner || !Array.isArray(rows)) return;
-      rows.forEach((values) => {
-        const fight = decodeFight(values);
+      const fighter = state.fighterById.get(fighterId);
+      if (!fighter || !Array.isArray(rows)) return;
+      const decodedRows = rows.map(decodeFight);
+      fighterRows.set(fighterId, decodedRows);
+      decodedRows.forEach((fight) => {
         if (String(fight.result || "").toUpperCase() !== "W" || !fight.opponent_id) return;
         const loser = state.fighterById.get(String(fight.opponent_id));
         if (!loser) return;
-        const id = graphFightId(fight, winner.id, loser.id);
+        const id = graphFightId(fight, fighter.id, loser.id);
         if (seen.has(id)) return;
         seen.add(id);
-        edges.push({ id, winnerId: winner.id, winnerName: winner.name, loserId: loser.id, loserName: loser.name, ...fight });
+        edges.push({ id, winnerId: fighter.id, winnerName: fighter.name, loserId: loser.id, loserName: loser.name, ...fight });
       });
     }));
+    state.fightGraphFighterRows = fighterRows;
     state.fightGraphEdges = edges.sort((left, right) => String(right.date).localeCompare(String(left.date)) || left.id.localeCompare(right.id));
     return state.fightGraphEdges;
   })().catch((error) => { state.fightGraphPromise = null; throw error; });
@@ -570,14 +622,254 @@ function renderFightGraph(edges, counts) {
   svg.append(nodeLayer); canvas.append(svg); configureFightGraphViewport(svg, width, height);
 }
 
+function graphMetricDefinition(key) {
+  return GRAPH_RULE_METRICS.find((metric) => metric.key === key) || GRAPH_RULE_METRICS[0];
+}
+
+function markGraphFiltersDirty() {
+  const status = $("#fight-graph-status");
+  if (status) status.textContent = "Filters changed — select Draw graph to apply them.";
+}
+
+function selectGraphQuickRange(value) {
+  document.querySelectorAll("[data-graph-years]").forEach((button) => button.classList.toggle("is-active", button.dataset.graphYears === String(value)));
+  $("#graph-apply-custom-years").classList.toggle("is-active", value === "custom");
+}
+
+function applyGraphQuickRange(value, custom = false) {
+  const start = $("#graph-start-date");
+  const end = $("#graph-end-date");
+  if (value === "all") {
+    start.value = ""; end.value = ""; selectGraphQuickRange("all"); markGraphFiltersDirty(); return;
+  }
+  const years = Math.round(Number(value));
+  if (!Number.isFinite(years) || years < 1 || years > 100) {
+    $("#fight-graph-status").textContent = "Choose a number of years from 1 to 100.";
+    $("#graph-custom-years").focus(); return;
+  }
+  const latest = end.max || state.explorer?.data_through || dateKey(new Date());
+  const startDate = new Date(`${latest}T12:00:00Z`);
+  startDate.setUTCFullYear(startDate.getUTCFullYear() - years);
+  start.value = dateKey(startDate); end.value = latest;
+  selectGraphQuickRange(custom ? "custom" : String(years));
+  markGraphFiltersDirty();
+}
+
+function updateGraphRuleRow(row) {
+  const metric = graphMetricDefinition($(".graph-rule-metric", row).value);
+  const operator = $(".graph-rule-operator", row).value;
+  const firstValue = $(".graph-rule-value", row);
+  const secondValue = $(".graph-rule-value-max", row);
+  firstValue.step = metric.step || "1";
+  secondValue.step = metric.step || "1";
+  secondValue.hidden = operator !== "between";
+  $(".graph-rule-and", row).hidden = operator !== "between";
+  $(".graph-rule-description", row).textContent = metric.description;
+}
+
+function addGraphRule(values = {}) {
+  const list = $("#graph-rule-list");
+  const row = element("div", "graph-rule-row");
+  row.dataset.ruleId = String(++state.fightGraphRuleSequence);
+  const metricSelect = element("select", "graph-rule-metric");
+  metricSelect.setAttribute("aria-label", "Fighter metric");
+  const groups = new Map();
+  GRAPH_RULE_METRICS.forEach((metric) => {
+    if (!groups.has(metric.group)) {
+      const group = document.createElement("optgroup"); group.label = metric.group; metricSelect.append(group); groups.set(metric.group, group);
+    }
+    const option = element("option", "", metric.label); option.value = metric.key; groups.get(metric.group).append(option);
+  });
+  metricSelect.value = values.metric || "wins";
+  const operatorSelect = element("select", "graph-rule-operator");
+  operatorSelect.setAttribute("aria-label", "Comparison");
+  GRAPH_RULE_OPERATORS.forEach(([value, label]) => { const option = element("option", "", label); option.value = value; operatorSelect.append(option); });
+  operatorSelect.value = values.operator || "gte";
+  const firstValue = element("input", "graph-rule-value"); firstValue.type = "number"; firstValue.value = values.value ?? 1; firstValue.setAttribute("aria-label", "Rule value");
+  const and = element("span", "graph-rule-and", "and");
+  const secondValue = element("input", "graph-rule-value-max"); secondValue.type = "number"; secondValue.value = values.max ?? values.value ?? 1; secondValue.setAttribute("aria-label", "Maximum rule value");
+  const remove = actionButton("Remove", "text-button small-button graph-remove-rule", () => { row.remove(); markGraphFiltersDirty(); }); remove.setAttribute("aria-label", "Remove condition");
+  const description = element("small", "graph-rule-description");
+  row.append(metricSelect, operatorSelect, firstValue, and, secondValue, remove, description);
+  [metricSelect, operatorSelect].forEach((input) => input.addEventListener("change", () => { updateGraphRuleRow(row); markGraphFiltersDirty(); }));
+  [firstValue, secondValue].forEach((input) => input.addEventListener("input", markGraphFiltersDirty));
+  list.append(row); updateGraphRuleRow(row);
+  return row;
+}
+
+function clearGraphRules() {
+  $("#graph-rule-list").replaceChildren();
+  markGraphFiltersDirty();
+}
+
+function applyGraphFilterPreset(name) {
+  clearGraphRules();
+  (GRAPH_FILTER_PRESETS[name] || []).forEach(addGraphRule);
+}
+
+function setGraphFilterMode(mode) {
+  const advanced = mode === "advanced";
+  state.fightGraphFilterMode = advanced ? "advanced" : "simple";
+  $("#graph-advanced-filters").hidden = !advanced;
+  [["#graph-mode-simple", !advanced], ["#graph-mode-advanced", advanced]].forEach(([selector, active]) => {
+    const button = $(selector); button.classList.toggle("is-active", active); button.setAttribute("aria-pressed", String(active));
+  });
+  markGraphFiltersDirty();
+}
+
+function readGraphRules() {
+  if (state.fightGraphFilterMode !== "advanced") return [];
+  return [...document.querySelectorAll(".graph-rule-row")].map((row) => {
+    const value = finite($(".graph-rule-value", row).value);
+    const maximum = finite($(".graph-rule-value-max", row).value);
+    return { metric: $(".graph-rule-metric", row).value, operator: $(".graph-rule-operator", row).value, value, maximum };
+  }).filter((rule) => rule.value !== null && (rule.operator !== "between" || rule.maximum !== null));
+}
+
+function graphWindowFilters() {
+  return {
+    division: $("#graph-division").value,
+    promotion: $("#graph-promotion").value,
+    startDate: $("#graph-start-date").value,
+    endDate: $("#graph-end-date").value,
+  };
+}
+
+function fightMatchesGraphWindow(fight, filters) {
+  return !(filters.division && filters.division !== "*" && fight.division !== filters.division)
+    && !(filters.promotion && fight.promotion !== filters.promotion)
+    && !(filters.startDate && fight.date < filters.startDate)
+    && !(filters.endDate && fight.date > filters.endDate);
+}
+
+function isFiveRoundFight(fight) {
+  const format = normalize(fight.time_format);
+  const modernUfcHeadliner = fight.promotion === "UFC" && Number(fight.source_card_index) === 0 && String(fight.date || "") >= "2011-11-05";
+  return /(^| )5 (rnd|scheduled rounds?)( |$)/.test(format) || Number(fight.round) > 3 || modernUfcHeadliner;
+}
+
+function sumFightMetric(rows, key) {
+  return rows.reduce((total, fight) => total + (finite(fight[key]) ?? 0), 0);
+}
+
+function aggregateGraphFighter(fighterId, rows, filters) {
+  const fighter = state.fighterById.get(fighterId);
+  const ordered = rows.filter((fight) => fightMatchesGraphWindow(fight, filters)).sort((left, right) => String(right.date).localeCompare(String(left.date)));
+  const wins = ordered.filter((fight) => String(fight.result).toUpperCase() === "W");
+  const losses = ordered.filter((fight) => String(fight.result).toUpperCase() === "L");
+  const detailed = ordered.filter((fight) => fight.stats_available);
+  const knownDuration = ordered.filter((fight) => finite(fight.total_fight_time) !== null);
+  const knownWins = wins.map((fight) => finite(fight.total_fight_time)).filter((value) => value !== null);
+  let winStreak = 0;
+  for (const fight of ordered) { if (String(fight.result).toUpperCase() !== "W") break; winStreak += 1; }
+  const sigAttempts = sumFightMetric(detailed, "sig_strikes_attempts");
+  const sigLanded = sumFightMetric(detailed, "sig_strikes_landed");
+  const takedownAttempts = sumFightMetric(detailed, "takedowns_attempts");
+  const takedowns = sumFightMetric(detailed, "takedowns_landed");
+  const totalSeconds = sumFightMetric(knownDuration, "total_fight_time");
+  const finishWins = wins.filter((fight) => !/DEC/i.test(String(fight.method || "")));
+  const opponents = ordered.map((fight) => state.fighterById.get(String(fight.opponent_id))).filter(Boolean);
+  const opponentWins = opponents.map((opponent) => finite(opponent.career?.wins)).filter((value) => value !== null);
+  const opponentWinRates = opponents.map((opponent) => finite(opponent.career?.win_rate)).filter((value) => value !== null);
+  const results = wins.length + losses.length;
+  const asOf = filters.endDate || state.explorer.data_through;
+  return {
+    fights: ordered.length,
+    wins: wins.length,
+    losses: losses.length,
+    draws_nc: ordered.length - results,
+    win_rate: results ? wins.length / results * 100 : null,
+    win_streak: winStreak,
+    unique_opponents: new Set(ordered.map((fight) => fight.opponent_id).filter(Boolean)).size,
+    finish_wins: finishWins.length,
+    ko_wins: wins.filter((fight) => /KO|TKO/i.test(String(fight.method || ""))).length,
+    submission_wins: wins.filter((fight) => /SUB/i.test(String(fight.method || ""))).length,
+    decision_wins: wins.filter((fight) => /DEC/i.test(String(fight.method || ""))).length,
+    five_round_wins: wins.filter(isFiveRoundFight).length,
+    total_knockdowns: sumFightMetric(detailed, "knockdowns"),
+    avg_sig_landed: detailed.length ? sigLanded / detailed.length : null,
+    sig_landed_per_minute: totalSeconds ? sigLanded / (totalSeconds / 60) : null,
+    sig_accuracy: sigAttempts ? sigLanded / sigAttempts * 100 : null,
+    head_landed: sumFightMetric(detailed, "head_strikes_landed"),
+    body_landed: sumFightMetric(detailed, "body_strikes_landed"),
+    leg_landed: sumFightMetric(detailed, "leg_strikes_landed"),
+    total_takedowns: takedowns,
+    takedown_accuracy: takedownAttempts ? takedowns / takedownAttempts * 100 : null,
+    submission_attempts: sumFightMetric(detailed, "sub_attempts"),
+    control_minutes: sumFightMetric(detailed, "control") / 60,
+    avg_fight_minutes: knownDuration.length ? totalSeconds / knownDuration.length / 60 : null,
+    total_fight_minutes: totalSeconds / 60,
+    fastest_win_minutes: knownWins.length ? Math.min(...knownWins) / 60 : null,
+    stats_coverage: ordered.length ? detailed.length / ordered.length * 100 : null,
+    avg_opponent_wins: opponentWins.length ? opponentWins.reduce((sum, value) => sum + value, 0) / opponentWins.length : null,
+    avg_opponent_win_rate: opponentWinRates.length ? opponentWinRates.reduce((sum, value) => sum + value, 0) / opponentWinRates.length * 100 : null,
+    age: ageOn(fighter, asOf),
+    height: finite(fighter?.height_inches),
+    reach: finite(fighter?.reach_inches),
+    career_wins: finite(fighter?.career?.wins),
+    career_fights: finite(fighter?.career?.recorded_bouts),
+  };
+}
+
+function graphRuleMatches(value, rule) {
+  if (value === null || value === undefined || !Number.isFinite(value)) return false;
+  if (rule.operator === "gt") return value > rule.value;
+  if (rule.operator === "gte") return value >= rule.value;
+  if (rule.operator === "eq") return Math.abs(value - rule.value) < 0.000001;
+  if (rule.operator === "lte") return value <= rule.value;
+  if (rule.operator === "lt") return value < rule.value;
+  if (rule.operator === "between") return value >= Math.min(rule.value, rule.maximum) && value <= Math.max(rule.value, rule.maximum);
+  return false;
+}
+
+function fightMatchesAdvancedConstraints(edge) {
+  const method = $("#graph-fight-method").value;
+  const round = $("#graph-fight-round").value;
+  const detail = $("#graph-fight-detail").value;
+  const methodText = String(edge.method || "");
+  if (method === "ko" && !/KO|TKO/i.test(methodText)) return false;
+  if (method === "submission" && !/SUB/i.test(methodText)) return false;
+  if (method === "decision" && !/DEC/i.test(methodText)) return false;
+  if (method === "other" && /KO|TKO|SUB|DEC/i.test(methodText)) return false;
+  if (round && (round === "5" ? Number(edge.round) < 5 : Number(edge.round) !== Number(round))) return false;
+  if (detail === "detailed" && !edge.stats_available) return false;
+  if (detail === "metadata" && edge.stats_available) return false;
+  return true;
+}
+
 function filteredFightGraph() {
-  const division = $("#graph-division").value; const promotion = $("#graph-promotion").value; const startDate = $("#graph-start-date").value; const endDate = $("#graph-end-date").value;
+  const filters = graphWindowFilters();
   const queryTerms = normalize($("#graph-fighter-search").value).split(" ").filter(Boolean); const minimum = Number($("#graph-min-fights").value) || 1;
-  const baseEdges = state.fightGraphEdges.filter((edge) => !(division && division !== "*" && edge.division !== division) && !(promotion && edge.promotion !== promotion) && !(startDate && edge.date < startDate) && !(endDate && edge.date > endDate));
-  const counts = new Map(); baseEdges.forEach((edge) => { counts.set(edge.winnerId, (counts.get(edge.winnerId) || 0) + 1); counts.set(edge.loserId, (counts.get(edge.loserId) || 0) + 1); });
-  const eligible = new Set([...counts].filter(([, count]) => count >= minimum).map(([id]) => id));
-  const edges = baseEdges.filter((edge) => eligible.has(edge.winnerId) && eligible.has(edge.loserId) && (!queryTerms.length || queryTerms.every((term) => normalize(`${edge.winnerName} ${edge.loserName}`).includes(term))));
-  return { edges, counts };
+  const baseEdges = state.fightGraphEdges.filter((edge) => fightMatchesGraphWindow(edge, filters));
+  const baseCounts = new Map(); baseEdges.forEach((edge) => { baseCounts.set(edge.winnerId, (baseCounts.get(edge.winnerId) || 0) + 1); baseCounts.set(edge.loserId, (baseCounts.get(edge.loserId) || 0) + 1); });
+  const eligible = new Set([...baseCounts].filter(([, count]) => count >= minimum).map(([id]) => id));
+  const rules = readGraphRules();
+  const join = $("#graph-rule-join").value;
+  const scope = $("#graph-rule-scope").value;
+  const stance = $("#graph-rule-stance").value;
+  const matching = new Set();
+  eligible.forEach((fighterId) => {
+    const fighter = state.fighterById.get(fighterId);
+    if (stance && fighter?.stance !== stance) return;
+    if (rules.length) {
+      const values = aggregateGraphFighter(fighterId, state.fightGraphFighterRows.get(fighterId) || [], filters);
+      const results = rules.map((rule) => graphRuleMatches(values[rule.metric], rule));
+      if ((join === "any" && results.some(Boolean)) || (join !== "any" && results.every(Boolean))) matching.add(fighterId);
+    } else matching.add(fighterId);
+  });
+  const advancedMode = state.fightGraphFilterMode === "advanced";
+  const advancedFighterFilter = advancedMode && (rules.length || stance);
+  const constraintValues = [$("#graph-fight-method").value, $("#graph-fight-round").value, $("#graph-fight-detail").value];
+  const advancedFilterCount = rules.length + (stance ? 1 : 0) + constraintValues.filter(Boolean).length;
+  const edges = baseEdges.filter((edge) => {
+    if (!eligible.has(edge.winnerId) || !eligible.has(edge.loserId)) return false;
+    if (queryTerms.length && !queryTerms.every((term) => normalize(`${edge.winnerName} ${edge.loserName}`).includes(term))) return false;
+    if (advancedMode && !fightMatchesAdvancedConstraints(edge)) return false;
+    if (!advancedFighterFilter) return true;
+    return scope === "either" ? matching.has(edge.winnerId) || matching.has(edge.loserId) : matching.has(edge.winnerId) && matching.has(edge.loserId);
+  });
+  const counts = new Map(); edges.forEach((edge) => { counts.set(edge.winnerId, (counts.get(edge.winnerId) || 0) + 1); counts.set(edge.loserId, (counts.get(edge.loserId) || 0) + 1); });
+  return { edges, counts, matchingFighterCount: matching.size, rules, advancedFilterCount };
 }
 
 async function drawFightGraph() {
@@ -587,12 +879,12 @@ async function drawFightGraph() {
   if (startDate && endDate && startDate > endDate) { status.textContent = "Start date must be on or before the end date."; return; }
   button.disabled = true; status.textContent = state.fightGraphEdges.length ? "Filtering recorded fights…" : "Loading historical fight data…"; fightGraphEmpty("Loading the fight network…"); resetFightGraphEdgeTable("Loading matching fights…");
   try {
-    await ensureFightGraphData(); const { edges, counts } = filteredFightGraph(); const fighterCount = new Set(edges.flatMap((edge) => [edge.winnerId, edge.loserId])).size;
+    await ensureFightGraphData(); const { edges, counts, matchingFighterCount, rules, advancedFilterCount } = filteredFightGraph(); const fighterCount = new Set(edges.flatMap((edge) => [edge.winnerId, edge.loserId])).size;
     state.fightGraphPinnedId = null; resetFightGraphDetails();
-    if (!edges.length) { fightGraphEmpty("No decisive fights match these filters. Try a wider date range, a lower minimum, or another weight class."); resetFightGraphEdgeTable("No decisive fights match these filters."); status.textContent = "No matching decisive fights."; return; }
+    if (!edges.length) { fightGraphEmpty("No decisive fights connect fighters matching these filters. Try a wider date range, a lower minimum, fewer advanced rules, or include matching fighters' opponents."); resetFightGraphEdgeTable("No decisive fights match these filters."); status.textContent = advancedFilterCount ? `${matchingFighterCount.toLocaleString()} fighters satisfy the fighter rules, but no connections match every advanced constraint.` : "No matching decisive fights."; return; }
     renderFightGraphEdgeTable(edges);
     if (fighterCount > FIGHT_GRAPH_MAX_FIGHTERS) { fightGraphEmpty(`${fighterCount.toLocaleString()} fighters match. Narrow the dates or fighter name, or increase the minimum fights to draw a readable graph.`); status.textContent = `${edges.length.toLocaleString()} fights connect ${fighterCount.toLocaleString()} fighters; the drawing limit is ${FIGHT_GRAPH_MAX_FIGHTERS}.`; return; }
-    renderFightGraph(edges, counts); status.textContent = `${edges.length.toLocaleString()} decisive fight${edges.length === 1 ? "" : "s"} connect ${fighterCount.toLocaleString()} fighter${fighterCount === 1 ? "" : "s"}. Arrows point from winner to loser.`;
+    renderFightGraph(edges, counts); status.textContent = `${edges.length.toLocaleString()} decisive fight${edges.length === 1 ? "" : "s"} connect ${fighterCount.toLocaleString()} fighter${fighterCount === 1 ? "" : "s"}.${advancedFilterCount ? ` ${matchingFighterCount.toLocaleString()} fighters satisfy the fighter rules; ${advancedFilterCount} advanced filter${advancedFilterCount === 1 ? "" : "s"} active.` : ""} Arrows point from winner to loser.`;
   } catch (error) { console.error(error); fightGraphEmpty("The historical fight data could not be loaded. Try again."); status.textContent = error.message; }
   finally { button.disabled = false; }
 }
@@ -611,6 +903,9 @@ async function prepareFightGraph() {
 
 function resetFightGraph() {
   $("#graph-division").value = ""; $("#graph-promotion").value = ""; $("#graph-start-date").value = ""; $("#graph-end-date").value = ""; $("#graph-fighter-search").value = ""; $("#graph-min-fights").value = "1";
+  selectGraphQuickRange("all");
+  $("#graph-rule-join").value = "all"; $("#graph-rule-scope").value = "both"; $("#graph-rule-stance").value = "";
+  $("#graph-fight-method").value = ""; $("#graph-fight-round").value = ""; $("#graph-fight-detail").value = ""; clearGraphRules(); setGraphFilterMode("simple");
   state.fightGraphPinnedId = null; fightGraphEmpty("Choose filters to draw the fight network."); resetFightGraphDetails(); resetFightGraphEdgeTable(); $("#fight-graph-status").textContent = "Choose a weight class, then draw the graph.";
 }
 
@@ -1685,6 +1980,17 @@ function bindEvents() {
   $("#clear-matchup").addEventListener("click", clearMatchup);
   $("#graph-apply").addEventListener("click", drawFightGraph);
   $("#graph-reset").addEventListener("click", resetFightGraph);
+  $("#graph-mode-simple").addEventListener("click", () => setGraphFilterMode("simple"));
+  $("#graph-mode-advanced").addEventListener("click", () => setGraphFilterMode("advanced"));
+  document.querySelectorAll("[data-graph-years]").forEach((button) => button.addEventListener("click", () => applyGraphQuickRange(button.dataset.graphYears)));
+  $("#graph-apply-custom-years").addEventListener("click", () => applyGraphQuickRange($("#graph-custom-years").value, true));
+  $("#graph-custom-years").addEventListener("keydown", (event) => { if (event.key === "Enter") applyGraphQuickRange(event.currentTarget.value, true); });
+  ["#graph-start-date", "#graph-end-date"].forEach((selector) => $(selector).addEventListener("change", () => selectGraphQuickRange("")));
+  $("#graph-add-rule").addEventListener("click", () => { addGraphRule(); markGraphFiltersDirty(); });
+  $("#graph-clear-rules").addEventListener("click", clearGraphRules);
+  document.querySelectorAll("[data-graph-preset]").forEach((button) => button.addEventListener("click", () => applyGraphFilterPreset(button.dataset.graphPreset)));
+  ["#graph-division", "#graph-promotion", "#graph-start-date", "#graph-end-date", "#graph-min-fights", "#graph-rule-join", "#graph-rule-scope", "#graph-rule-stance", "#graph-fight-method", "#graph-fight-round", "#graph-fight-detail"].forEach((selector) => $(selector).addEventListener("change", markGraphFiltersDirty));
+  $("#graph-fighter-search").addEventListener("input", markGraphFiltersDirty);
   $("#graph-zoom-out").addEventListener("click", () => zoomFightGraph(1.25));
   $("#graph-zoom-in").addEventListener("click", () => zoomFightGraph(0.8));
   $("#graph-zoom-fit").addEventListener("click", fitFightGraph);

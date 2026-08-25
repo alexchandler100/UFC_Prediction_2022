@@ -144,6 +144,49 @@ class WebsiteExplorerContractTests(unittest.TestCase):
         self.assertIn("renderFightDetails(body, edge, opponentFight", script)
         self.assertIn(".fight-graph-edge-table", style)
 
+    def test_fight_graph_has_simple_and_advanced_fighter_filtering(self):
+        page = (REPO_ROOT / "index.html").read_text(encoding="utf-8")
+        script = (REPO_ROOT / "script.js").read_text(encoding="utf-8")
+        style = (REPO_ROOT / "style.css").read_text(encoding="utf-8")
+
+        self.assertIn('id="graph-mode-simple"', page)
+        self.assertIn('id="graph-mode-advanced"', page)
+        self.assertIn('id="graph-rule-list"', page)
+        self.assertIn("Five-round wins (title/main event)", script)
+        self.assertIn("function aggregateGraphFighter", script)
+        self.assertIn("function graphRuleMatches", script)
+        self.assertIn("GRAPH_FILTER_PRESETS", script)
+        self.assertIn("Matching fighters and their opponents", page)
+        self.assertIn('id="graph-rule-stance"', page)
+        self.assertIn('id="graph-fight-method"', page)
+        self.assertIn('id="graph-fight-round"', page)
+        self.assertIn('id="graph-fight-detail"', page)
+        self.assertIn("function fightMatchesAdvancedConstraints", script)
+        self.assertIn("avg_opponent_win_rate", script)
+        self.assertIn(".graph-rule-row", style)
+
+    def test_dark_mode_is_the_default_theme(self):
+        style = (REPO_ROOT / "style.css").read_text(encoding="utf-8")
+
+        self.assertIn("color-scheme: dark", style)
+        self.assertIn("--cream: #0b1118", style)
+        self.assertIn("Dark is the default presentation", style)
+
+    def test_fight_graph_has_quick_time_ranges_and_custom_years(self):
+        page = (REPO_ROOT / "index.html").read_text(encoding="utf-8")
+        script = (REPO_ROOT / "script.js").read_text(encoding="utf-8")
+        style = (REPO_ROOT / "style.css").read_text(encoding="utf-8")
+
+        self.assertIn('data-graph-years="all"', page)
+        self.assertIn('data-graph-years="1"', page)
+        self.assertIn('data-graph-years="3"', page)
+        self.assertIn('data-graph-years="5"', page)
+        self.assertIn('data-graph-years="10"', page)
+        self.assertIn('id="graph-custom-years"', page)
+        self.assertIn("function applyGraphQuickRange", script)
+        self.assertIn("setUTCFullYear", script)
+        self.assertIn(".graph-date-shortcuts", style)
+
 
 if __name__ == "__main__":
     unittest.main()
