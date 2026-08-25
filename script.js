@@ -110,6 +110,17 @@ function formatDate(value, options = { year: "numeric", month: "short", day: "nu
   return Number.isNaN(date.getTime()) ? String(value) : date.toLocaleDateString(undefined, { ...options, timeZone: "UTC" });
 }
 
+function dateKey(value) {
+  if (value === null || value === undefined || value === "") return "";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "";
+  return [
+    date.getUTCFullYear(),
+    String(date.getUTCMonth() + 1).padStart(2, "0"),
+    String(date.getUTCDate()).padStart(2, "0"),
+  ].join("-");
+}
+
 function formatTimestamp(value) {
   if (!value) return "Unknown";
   const date = new Date(value);
@@ -396,7 +407,7 @@ function clearMatchup() {
 }
 
 function legacyRows() {
-  if (!state.vegas?.["fighter name"]) return [];
+  if (!vegasMatchesCurrentCard() || !state.vegas?.["fighter name"]) return [];
   return Object.keys(state.vegas["fighter name"]).map((index) => ({
     fighter_id: state.vegas["fighter id"]?.[index],
     fighter_name: state.vegas["fighter name"]?.[index],
@@ -411,8 +422,33 @@ function legacyRows() {
   }));
 }
 
+function publicationMatchesCurrentCard(eventDate, eventId = "") {
+  const cardDate = dateKey(state.card?.date);
+  if (!cardDate || dateKey(eventDate) !== cardDate) return false;
+  const cardEventId = String(state.card?.event_id || "").trim();
+  const publicationEventId = String(eventId || "").trim();
+  return !cardEventId || !publicationEventId || cardEventId === publicationEventId;
+}
+
+function vegasMatchesCurrentCard() {
+  const dates = Object.values(state.vegas?.date || {}).map(dateKey).filter(Boolean);
+  if (!dates.length || dates.some((date) => date !== dateKey(state.card?.date))) return false;
+  const eventIds = Object.values(state.vegas?.["event id"] || {}).map((value) => String(value || "").trim()).filter(Boolean);
+  const cardEventId = String(state.card?.event_id || "").trim();
+  return !cardEventId || !eventIds.length || eventIds.every((eventId) => eventId === cardEventId);
+}
+
+function currentMarket() {
+  return publicationMatchesCurrentCard(state.market?.event_date, state.market?.event_id) ? state.market : null;
+}
+
+function currentOutcomes() {
+  return publicationMatchesCurrentCard(state.outcomes?.event_date, state.outcomes?.event_id) ? state.outcomes : null;
+}
+
 function currentMatchups() {
-  return state.market?.matchups?.length ? state.market.matchups : legacyRows();
+  const market = currentMarket();
+  return market?.matchups?.length ? market.matchups : legacyRows();
 }
 
 function bayesianForMatchup(matchup) {
@@ -1034,11 +1070,18 @@ function renderProfitabilityEvidence() {
 
 function renderMarket() {
   const notice = $("#market-notice"); const container = $("#market-matchups"); const opportunityContainer = $("#market-opportunities"); const propContainer = $("#prop-market-details"); notice.replaceChildren(); container.replaceChildren(); opportunityContainer.replaceChildren(); propContainer.replaceChildren(); renderProfitabilityEvidence();
+  const market = currentMarket();
+  const outcomes = currentOutcomes();
   const copy = element("div"); appendText(copy, "h2", "", "Paper research only—automatic betting is intentionally off.");
-  appendText(copy, "p", "", state.market ? `Quotes captured ${formatTimestamp(state.market.observed_at_utc)}. The policy compares the best available price with a consensus that excludes that target book.` : "No current book-by-book market capture is published. Fighter and matchup research remains available.");
-  notice.append(copy, element("span", "pill orange", state.market ? "Execution disabled" : "Capture unavailable"));
-  const matchups = state.market?.matchups || [];
-  const propMarkets = state.market?.prop_markets;
+  const marketNotice = market
+    ? `Quotes captured ${formatTimestamp(market.observed_at_utc)}. The policy compares the best available price with a consensus that excludes that target book.`
+    : state.market
+      ? `The latest stored quotes are for ${formatDate(state.market.event_date)}, not the current ${state.card?.date || "fight card"}. Current-card prices will appear after the next synchronized market snapshot.`
+      : "No current book-by-book market capture is published. Fighter and matchup research remains available.";
+  appendText(copy, "p", "", marketNotice);
+  notice.append(copy, element("span", "pill orange", market ? "Execution disabled" : "Current prices unavailable"));
+  const matchups = market?.matchups || [];
+  const propMarkets = market?.prop_markets;
   const totalRounds = propMarkets?.total_rounds;
   const methodMarket = propMarkets?.method_of_victory;
   const ranked = [];
@@ -1125,7 +1168,7 @@ function renderMarket() {
     }
     const details = document.createElement("details"); details.append(element("summary", "", `All ${market.book_quotes.length} total prices`)); const body = element("div", "details-body book-table-wrap"); const table = element("table", "data-table"); const head = document.createElement("thead"); const header = document.createElement("tr"); ["Book", "Over", "Under", "No-vig over", "Quote age"].forEach((value) => appendText(header, "th", "", value)); head.append(header); table.append(head); const tbody = document.createElement("tbody"); market.book_quotes.forEach((quote) => { const row = document.createElement("tr"); [quote.book, formatOdds(quote.over_moneyline), formatOdds(quote.under_moneyline), formatPercent(quote.no_vig_over_probability), `${formatNumber(quote.source_quote_age_seconds, 0)}s`].forEach((value) => appendText(row, "td", "", value)); tbody.append(row); }); table.append(tbody); body.append(table); details.append(body); card.append(details); propContainer.append(card);
   });
-  const outcomeMatchups = (state.outcomes?.matchups || []).filter((item) => item.matchup_id && item.terminal_probabilities);
+  const outcomeMatchups = (outcomes?.matchups || []).filter((item) => item.matchup_id && item.terminal_probabilities);
   if (outcomeMatchups.length) {
     const methodCard = element("article", "market-card wide-card"); appendText(methodCard, "h3", "", "Candidate method-of-victory probabilities"); appendText(methodCard, "p", "signal-reason", "These are model probabilities, not expected values. A book-specific method price is required before any row can enter the positive-EV list.");
     const details = document.createElement("details"); details.append(element("summary", "", `View ${outcomeMatchups.length} matchup forecasts`)); const body = element("div", "details-body book-table-wrap"); const table = element("table", "data-table"); const head = document.createElement("thead"); const header = document.createElement("tr"); ["Matchup", "Exact outcome", "Model probability"].forEach((value) => appendText(header, "th", "", value)); head.append(header); table.append(head); const tbody = document.createElement("tbody");
@@ -1209,8 +1252,9 @@ function renderModelData() {
   if (bayesianFilter) { const filteredMetrics = element("div", "metric-row"); [[formatNumber(bayesianFilter.paired_settled_decisions, 0), "immutable paired decisions"], [formatNumber(bayesianFilter.bayesian_filtered_policy?.selections, 0), "selections surviving veto"], [formatPercent(bayesianFilter.bayesian_filtered_policy?.hypothetical_roi), "filtered ROI"], [formatPercent(bayesianFilter.paired_roi_difference?.point_difference), "ROI delta vs existing policy"]].forEach(([value, label]) => { const stat = element("div", "mini-stat"); appendText(stat, "strong", "", value); appendText(stat, "span", "", label); filteredMetrics.append(stat); }); bayesianCard.append(filteredMetrics); appendText(bayesianCard, "p", "section-note", "The immutable T-24 filter starts with an existing-policy selection and only keeps or vetoes that same side and price."); }
   if (bayesianGate) appendText(bayesianCard, "p", "section-note", `Evidence gate: ${String(bayesianGate.status).replaceAll("_", " ")}. Prospective CLV and return requirements are not met; execution is disabled.`);
   grid.append(bayesianCard);
-  const marketWeight = finite(state.market?.model_weight);
-  const marketCard = explainCard("How bets are informed", state.market ? `The price policy finds the best offered line, then estimates fair probability from the other eligible books. The target book is excluded to avoid grading its price against itself. The model currently receives ${formatPercent(marketWeight)} weight${marketWeight === 0 ? " because prospective market-relative evidence is still being collected" : " in the blended estimate"}.` : "Current market policy output is unavailable, so no live paper signal is shown.");
+  const market = currentMarket();
+  const marketWeight = finite(market?.model_weight);
+  const marketCard = explainCard("How bets are informed", market ? `The price policy finds the best offered line, then estimates fair probability from the other eligible books. The target book is excluded to avoid grading its price against itself. The model currently receives ${formatPercent(marketWeight)} weight${marketWeight === 0 ? " because prospective market-relative evidence is still being collected" : " in the blended estimate"}.` : "Current-card market policy output is unavailable, so no live paper signal is shown.");
   if (state.performance?.promotion_gate) appendText(marketCard, "p", "section-note", `Promotion gate: ${String(state.performance.promotion_gate.status).replaceAll("_", " ")} · ${state.performance.promotion_gate.paper_selections} / ${state.performance.promotion_gate.minimum_paper_selections} minimum paper selections.`); grid.append(marketCard);
   const dataCard = explainCard("Dataset coverage", `${state.explorer.counts.fighters.toLocaleString()} profiles and ${state.explorer.counts.unique_fights.toLocaleString()} unique fights are published through ${formatDate(state.explorer.data_through)}. Stable UFCStats URL IDs join fighters, opponents, fights, and events; display names are not used as identity keys.`);
   const dataMetrics = element("div", "metric-row"); [[state.explorer.counts.fighters_with_recorded_bouts.toLocaleString(), "profiles with bouts"], [state.explorer.counts.fighter_fight_rows.toLocaleString(), "fighter stat rows"], [state.explorer.fight_columns.length.toLocaleString(), "fields per fight"]].forEach(([value, label]) => { const stat = element("div", "mini-stat"); appendText(stat, "strong", "", value); appendText(stat, "span", "", label); dataMetrics.append(stat); }); dataCard.append(dataMetrics); grid.append(dataCard);

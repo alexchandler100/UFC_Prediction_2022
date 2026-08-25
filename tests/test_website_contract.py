@@ -101,6 +101,23 @@ class WebsiteExplorerContractTests(unittest.TestCase):
         self.assertIn(".market-card.is-route-target", style)
         self.assertIn("scroll-margin-top: 96px", style)
 
+    def test_stale_market_capture_cannot_replace_the_current_card(self):
+        script = (REPO_ROOT / "script.js").read_text(encoding="utf-8")
+
+        self.assertIn("function publicationMatchesCurrentCard", script)
+        self.assertIn("function vegasMatchesCurrentCard", script)
+        self.assertIn("function currentMarket()", script)
+        self.assertIn("if (!vegasMatchesCurrentCard()", script)
+        self.assertIn(
+            "const market = currentMarket();\n  return market?.matchups?.length ? market.matchups : legacyRows();",
+            script,
+        )
+        self.assertIn("not the current ${state.card?.date", script)
+        self.assertNotIn(
+            "return state.market?.matchups?.length ? state.market.matchups : legacyRows();",
+            script,
+        )
+
 
 if __name__ == "__main__":
     unittest.main()

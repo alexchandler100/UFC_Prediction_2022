@@ -300,34 +300,79 @@ python -B src/evaluate_style_matchup_challenger.py
 
 The audit and ledgers are in `src/content/data/market_history_backfill/`.
 
-## Local setup and verification
+## Running scripts locally from VS Code (Bash)
 
-Use Python 3.11, matching GitHub Actions:
+In VS Code, open **Terminal -> New Terminal** and select **Git Bash**.
 
-```console
-python -m pip install --upgrade pip
+### One-time setup
+
+```bash
+cd /c/Users/Alex/Projects/GitHub/UFC_Prediction_2022
+python -m venv .venv
+source .venv/Scripts/activate
 python -m pip install -r requirements.txt
-python -m pip check
+```
+
+### Update UFC data now
+
+Copy this entire block into Git Bash. It prompts for the Odds API key without
+showing or saving it. The GitHub repository secret is not available locally.
+
+```bash
+cd /c/Users/Alex/Projects/GitHub/UFC_Prediction_2022
+source .venv/Scripts/activate
+
+read -rsp "The Odds API key: " THE_ODDS_API_KEY && echo
+export THE_ODDS_API_KEY
+export MARKET_ODDS_SOURCE="the-odds-api"
+export ODDS_API_REGIONS="us,us2"
+
+python -B src/update_and_rebuild_model.py
+python -B src/update_market_performance.py
+python -B src/validate_data.py --require-model-artifact --require-market-data
+```
+
+The first Python command is the actual data/model updater. The second settles
+paper results, and the third verifies the completed update. These commands
+modify generated data files and retrieve sportsbook odds.
+
+After it succeeds, inspect the files that changed:
+
+```bash
+git status --short
+git diff --stat
+```
+
+### Test or validate without updating
+
+```bash
 python -B -m unittest discover -s tests -v
 python -B src/validate_data.py --allow-stale
 node --check script.js
 ```
 
-The checked-in snapshot can legitimately be stale before an update, which is why the preflight command uses `--allow-stale`.
+### Capture one market snapshot manually
 
-To perform the networked update manually:
+After setting the API variables shown above, run:
 
-```console
-cd src
-python -B update_and_rebuild_model.py
-python -B update_market_performance.py
-cd ..
-python -B src/validate_data.py --require-model-artifact --require-market-data
+```bash
+python -B src/capture_market_snapshot.py
+python -B src/update_market_performance.py
+python -B src/capture_market_snapshot.py --validate-only
 ```
 
-The final command verifies raw data, point-in-time lineage, model/state fingerprints, artifact dimensions, training cutoffs, and publication files together.
+This consumes Odds API credits and appends a new timestamped observation. It
+does not place a wager.
 
-The old scripts `src/1-build_ufc_fights_reported_doubled.py` and `src/2-build_ufc_fights_reported_derived_doubled.py` remain for notebook compatibility. The weekly production path does not load or rebuild the 68 MB legacy derived table.
+### Preview the website locally
+
+```bash
+python -m http.server 8000
+```
+
+Open `http://localhost:8000`; press `Ctrl+C` to stop the server. For less common
+research/import commands, run the relevant script with `--help` or use the
+commands in the research section above.
 
 ## Weekly automation
 
@@ -375,25 +420,12 @@ publishes model-only forecasts with an explicit status instead of discarding a
 valid UFCStats/model rebuild. FightOdds remains available only as an explicit
 local browser fallback; GitHub Actions does not depend on it.
 
-After the first successful market capture, its files can be checked locally
-with:
-
-```console
-python -B src/capture_market_snapshot.py --validate-only
-python -B src/validate_data.py --allow-stale --require-market-data
-python -B src/update_market_performance.py
-```
+After the first successful market capture, use the read-only and settlement
+commands under [Capture one market snapshot manually](#capture-one-market-snapshot-manually)
+to inspect its files locally.
 
 ## Evaluation and limitations
 
 Accuracy from a random split was misleading because it mixed old and recent eras. Evaluation now uses expanding chronological folds and reports log loss, Brier score, calibration, AUC, accuracy, and coverage. The model artifact contains the exact current results; [AUDIT.md](AUDIT.md) explains the original 59.6% / 0.706 chronological failure, the corrected evaluation, data-integrity findings, and remaining work.
 
-Historical prediction records span legacy model versions, so their aggregate accuracy is descriptive rather than a clean current-model backtest. The current website does not run a second prediction model in the browser; it reads the validated weekly artifacts and keeps model forecasts distinct from market probabilities.
-
-To inspect the website locally:
-
-```console
-python -m http.server 8000
-```
-
-Then open `http://localhost:8000`.
+Historical prediction records span legacy model versions, so their aggregate accuracy is descriptive rather than a clean current-model backtest. The current website does not run a second prediction model in the browser; it reads the validated weekly artifacts and keeps model forecasts distinct from market probabilities. Follow [Preview the website locally](#preview-the-website-locally) to inspect those artifacts in a browser.
