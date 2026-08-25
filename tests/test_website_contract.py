@@ -132,6 +132,22 @@ class WebsiteExplorerContractTests(unittest.TestCase):
         self.assertIn("ArrowRight", script)
         self.assertIn("touch-action: none", style)
 
+    def test_fight_graph_viewport_is_responsive_and_touch_enabled(self):
+        script = (REPO_ROOT / "script.js").read_text(encoding="utf-8")
+        style = (REPO_ROOT / "style.css").read_text(encoding="utf-8")
+
+        self.assertIn("function fightGraphFitBox", script)
+        self.assertIn("function resizeFightGraphViewport", script)
+        self.assertIn("const pointers = new Map()", script)
+        self.assertIn("const beginPinch", script)
+        self.assertIn('event.pointerType === "mouse"', script)
+        self.assertIn('canvas.addEventListener("touchmove"', script)
+        self.assertIn("new ResizeObserver", script)
+        self.assertIn("overscroll-behavior: contain", style)
+        self.assertIn("height: clamp(440px, 68svh, 620px)", style)
+        self.assertIn("min-width: 0", style)
+        self.assertNotIn("min-width: 760px", style)
+
     def test_fight_graph_lists_edges_with_expandable_statistics(self):
         page = (REPO_ROOT / "index.html").read_text(encoding="utf-8")
         script = (REPO_ROOT / "script.js").read_text(encoding="utf-8")

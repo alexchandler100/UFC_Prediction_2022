@@ -314,6 +314,7 @@ async function ensureFightGraphData() {
 function fightGraphEmpty(message) {
   const canvas = $("#fight-graph-canvas");
   canvas.replaceChildren(element("div", "empty-state", message));
+  state.fightGraphViewport?.resizeObserver?.disconnect();
   state.fightGraphViewport = null;
   updateFightGraphViewportControls();
 }
@@ -322,7 +323,16 @@ function updateFightGraphViewportControls() {
   const viewport = state.fightGraphViewport;
   const enabled = Boolean(viewport?.svg?.isConnected);
   ["#graph-zoom-out", "#graph-zoom-in", "#graph-zoom-fit"].forEach((selector) => { $(selector).disabled = !enabled; });
-  $("#graph-zoom-level").value = enabled ? `${Math.round(viewport.fullWidth / viewport.box.width * 100)}%` : "100%";
+  $("#graph-zoom-level").value = enabled ? `${Math.round((viewport.fitBox?.width || viewport.fullWidth) / viewport.box.width * 100)}%` : "100%";
+}
+
+function fightGraphFitBox(viewport) {
+  const bounds = viewport.svg.getBoundingClientRect();
+  const aspect = bounds.width > 0 && bounds.height > 0 ? bounds.width / bounds.height : viewport.fullWidth / viewport.fullHeight;
+  let width = viewport.fullWidth; let height = viewport.fullHeight;
+  if (width / height > aspect) height = width / aspect;
+  else width = height * aspect;
+  return { x: (viewport.fullWidth - width) / 2, y: (viewport.fullHeight - height) / 2, width, height, aspect };
 }
 
 function applyFightGraphViewport() {
@@ -341,16 +351,18 @@ function zoomFightGraph(factor, anchorX = 0.5, anchorY = 0.5) {
   const viewport = state.fightGraphViewport;
   if (!viewport) return;
   const current = viewport.box;
-  const minimumWidth = viewport.fullWidth / 8;
-  const maximumWidth = viewport.fullWidth * 2;
+  const baselineWidth = viewport.fitBox?.width || viewport.fullWidth;
+  const minimumWidth = baselineWidth / 10;
+  const maximumWidth = baselineWidth * 2;
   const nextWidth = Math.max(minimumWidth, Math.min(maximumWidth, current.width * factor));
-  const nextHeight = nextWidth * viewport.fullHeight / viewport.fullWidth;
+  const nextHeight = nextWidth / (viewport.aspect || viewport.fullWidth / viewport.fullHeight);
   const focusX = current.x + current.width * anchorX;
   const focusY = current.y + current.height * anchorY;
   current.x = focusX - nextWidth * anchorX;
   current.y = focusY - nextHeight * anchorY;
   current.width = nextWidth;
   current.height = nextHeight;
+  viewport.isFitted = false;
   applyFightGraphViewport();
 }
 
@@ -359,21 +371,71 @@ function panFightGraph(horizontal, vertical) {
   if (!viewport) return;
   viewport.box.x += horizontal;
   viewport.box.y += vertical;
+  viewport.isFitted = false;
   applyFightGraphViewport();
 }
 
 function fitFightGraph() {
   const viewport = state.fightGraphViewport;
   if (!viewport) return;
-  viewport.box = { x: 0, y: 0, width: viewport.fullWidth, height: viewport.fullHeight };
+  const fit = fightGraphFitBox(viewport);
+  viewport.aspect = fit.aspect;
+  viewport.fitBox = { x: fit.x, y: fit.y, width: fit.width, height: fit.height };
+  viewport.box = { ...viewport.fitBox };
+  viewport.isFitted = true;
+  applyFightGraphViewport();
+}
+
+function resizeFightGraphViewport() {
+  const viewport = state.fightGraphViewport;
+  if (!viewport?.svg?.isConnected) return;
+  const centerX = viewport.box.x + viewport.box.width / 2;
+  const centerY = viewport.box.y + viewport.box.height / 2;
+  const zoom = viewport.fitBox?.width ? viewport.fitBox.width / viewport.box.width : 1;
+  const wasFitted = viewport.isFitted;
+  const fit = fightGraphFitBox(viewport);
+  viewport.aspect = fit.aspect;
+  viewport.fitBox = { x: fit.x, y: fit.y, width: fit.width, height: fit.height };
+  if (wasFitted) viewport.box = { ...viewport.fitBox };
+  else {
+    viewport.box.width = viewport.fitBox.width / zoom;
+    viewport.box.height = viewport.box.width / viewport.aspect;
+    viewport.box.x = centerX - viewport.box.width / 2;
+    viewport.box.y = centerY - viewport.box.height / 2;
+  }
   applyFightGraphViewport();
 }
 
 function configureFightGraphViewport(svg, width, height) {
-  state.fightGraphViewport = { svg, fullWidth: width, fullHeight: height, box: { x: 0, y: 0, width, height } };
+  state.fightGraphViewport?.resizeObserver?.disconnect();
+  state.fightGraphViewport = { svg, fullWidth: width, fullHeight: height, aspect: width / height, fitBox: null, box: { x: 0, y: 0, width, height }, isFitted: true, suppressEdgeClickUntil: 0, resizeObserver: null };
+  const canvas = svg.parentElement;
+  if (!canvas.fightGraphTouchGuard) {
+    const preventTouchScroll = (event) => event.preventDefault();
+    canvas.addEventListener("touchstart", preventTouchScroll, { passive: false });
+    canvas.addEventListener("touchmove", preventTouchScroll, { passive: false });
+    canvas.fightGraphTouchGuard = true;
+  }
   svg.setAttribute("tabindex", "0");
-  svg.setAttribute("aria-description", "Use the mouse wheel or zoom buttons to zoom. Drag the empty background or use arrow keys to pan. Press 0 to fit the graph.");
-  let drag = null;
+  svg.setAttribute("aria-description", "Use the mouse wheel, pinch gesture, or zoom buttons to zoom. Drag with a mouse or one finger to pan. Press 0 to fit the graph.");
+  const pointers = new Map();
+  let drag = null; let pinch = null;
+  const beginDrag = (point) => {
+    const viewport = state.fightGraphViewport;
+    drag = { pointerId: point.pointerId, x: point.x, y: point.y, boxX: viewport.box.x, boxY: viewport.box.y, moved: false };
+  };
+  const beginPinch = () => {
+    const points = [...pointers.values()].slice(0, 2);
+    if (points.length < 2) return;
+    const bounds = svg.getBoundingClientRect();
+    const midpointX = (points[0].x + points[1].x) / 2;
+    const midpointY = (points[0].y + points[1].y) / 2;
+    const box = { ...state.fightGraphViewport.box };
+    const anchorX = Math.max(0, Math.min(1, (midpointX - bounds.left) / bounds.width));
+    const anchorY = Math.max(0, Math.min(1, (midpointY - bounds.top) / bounds.height));
+    pinch = { distance: Math.max(1, Math.hypot(points[1].x - points[0].x, points[1].y - points[0].y)), focusX: box.x + box.width * anchorX, focusY: box.y + box.height * anchorY, box };
+    drag = null;
+  };
   svg.addEventListener("wheel", (event) => {
     event.preventDefault();
     const bounds = svg.getBoundingClientRect();
@@ -382,25 +444,52 @@ function configureFightGraphViewport(svg, width, height) {
     zoomFightGraph(event.deltaY < 0 ? 0.82 : 1.22, anchorX, anchorY);
   }, { passive: false });
   svg.addEventListener("pointerdown", (event) => {
-    if (event.button !== 0 || event.target.closest?.(".fight-graph-edge-hit")) return;
-    drag = { pointerId: event.pointerId, x: event.clientX, y: event.clientY, boxX: state.fightGraphViewport.box.x, boxY: state.fightGraphViewport.box.y };
+    if (event.button !== 0 || (event.pointerType === "mouse" && event.target.closest?.(".fight-graph-edge-hit"))) return;
+    const point = { pointerId: event.pointerId, x: event.clientX, y: event.clientY };
+    pointers.set(event.pointerId, point);
     try { svg.setPointerCapture?.(event.pointerId); } catch {}
     svg.classList.add("is-panning");
+    if (pointers.size === 1) beginDrag(point);
+    else if (pointers.size === 2) beginPinch();
     event.preventDefault();
   });
   svg.addEventListener("pointermove", (event) => {
-    if (!drag || event.pointerId !== drag.pointerId) return;
+    if (!pointers.has(event.pointerId)) return;
+    pointers.set(event.pointerId, { pointerId: event.pointerId, x: event.clientX, y: event.clientY });
     const bounds = svg.getBoundingClientRect();
     const viewport = state.fightGraphViewport;
-    viewport.box.x = drag.boxX - (event.clientX - drag.x) / bounds.width * viewport.box.width;
-    viewport.box.y = drag.boxY - (event.clientY - drag.y) / bounds.height * viewport.box.height;
+    if (pointers.size >= 2 && pinch) {
+      const points = [...pointers.values()].slice(0, 2);
+      const distance = Math.max(1, Math.hypot(points[1].x - points[0].x, points[1].y - points[0].y));
+      const midpointX = (points[0].x + points[1].x) / 2;
+      const midpointY = (points[0].y + points[1].y) / 2;
+      const anchorX = Math.max(0, Math.min(1, (midpointX - bounds.left) / bounds.width));
+      const anchorY = Math.max(0, Math.min(1, (midpointY - bounds.top) / bounds.height));
+      const minimumWidth = viewport.fitBox.width / 10; const maximumWidth = viewport.fitBox.width * 2;
+      viewport.box.width = Math.max(minimumWidth, Math.min(maximumWidth, pinch.box.width * pinch.distance / distance));
+      viewport.box.height = viewport.box.width / viewport.aspect;
+      viewport.box.x = pinch.focusX - viewport.box.width * anchorX;
+      viewport.box.y = pinch.focusY - viewport.box.height * anchorY;
+      viewport.isFitted = false;
+      viewport.suppressEdgeClickUntil = Date.now() + 300;
+    } else if (drag && event.pointerId === drag.pointerId) {
+      const deltaX = event.clientX - drag.x; const deltaY = event.clientY - drag.y;
+      drag.moved ||= Math.hypot(deltaX, deltaY) > 5;
+      viewport.box.x = drag.boxX - deltaX / bounds.width * viewport.box.width;
+      viewport.box.y = drag.boxY - deltaY / bounds.height * viewport.box.height;
+      viewport.isFitted = false;
+      if (drag.moved) viewport.suppressEdgeClickUntil = Date.now() + 300;
+    }
     applyFightGraphViewport();
+    event.preventDefault();
   });
   const endPan = (event) => {
-    if (!drag || event.pointerId !== drag.pointerId) return;
+    if (!pointers.has(event.pointerId)) return;
+    pointers.delete(event.pointerId);
     try { svg.releasePointerCapture?.(event.pointerId); } catch {}
-    drag = null;
-    svg.classList.remove("is-panning");
+    pinch = null;
+    if (pointers.size === 1) beginDrag([...pointers.values()][0]);
+    else { drag = null; svg.classList.remove("is-panning"); }
   };
   svg.addEventListener("pointerup", endPan);
   svg.addEventListener("pointercancel", endPan);
@@ -422,7 +511,11 @@ function configureFightGraphViewport(svg, width, height) {
     event.preventDefault();
     actions[event.key]();
   });
-  applyFightGraphViewport();
+  fitFightGraph();
+  if (typeof ResizeObserver !== "undefined") {
+    state.fightGraphViewport.resizeObserver = new ResizeObserver(() => resizeFightGraphViewport());
+    state.fightGraphViewport.resizeObserver.observe(canvas);
+  }
 }
 
 function resetFightGraphDetails() {
@@ -685,7 +778,7 @@ function renderFightGraph(edges, counts, { fighterDepths = null, seedIds = new S
     const preview = () => { document.querySelectorAll(".fight-graph-edge.is-preview").forEach((item) => item.classList.remove("is-preview")); group.classList.add("is-preview"); renderFightGraphDetails(edge); };
     const restore = () => { group.classList.remove("is-preview"); const pinned = edges.find((item) => item.id === state.fightGraphPinnedId); if (pinned) renderFightGraphDetails(pinned); else resetFightGraphDetails(); };
     hit.addEventListener("mouseenter", preview); hit.addEventListener("focus", preview); hit.addEventListener("mouseleave", restore); hit.addEventListener("blur", restore);
-    hit.addEventListener("click", () => { state.fightGraphPinnedId = state.fightGraphPinnedId === edge.id ? null : edge.id; document.querySelectorAll(".fight-graph-edge.is-pinned").forEach((item) => item.classList.remove("is-pinned")); if (state.fightGraphPinnedId) group.classList.add("is-pinned"); renderFightGraphDetails(edge); });
+    hit.addEventListener("click", (event) => { if ((state.fightGraphViewport?.suppressEdgeClickUntil || 0) > Date.now()) { event.preventDefault(); return; } state.fightGraphPinnedId = state.fightGraphPinnedId === edge.id ? null : edge.id; document.querySelectorAll(".fight-graph-edge.is-pinned").forEach((item) => item.classList.remove("is-pinned")); if (state.fightGraphPinnedId) group.classList.add("is-pinned"); renderFightGraphDetails(edge); });
     group.append(visible, hit); edgeLayer.append(group);
   });
   svg.append(edgeLayer); const nodeLayer = document.createElementNS(SVG_NAMESPACE, "g"); nodeLayer.classList.add("fight-graph-nodes");

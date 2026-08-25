@@ -242,10 +242,10 @@ details[open] summary { border-bottom: 1px solid var(--line); }
 .fight-graph-viewport-controls button:disabled { cursor: not-allowed; opacity: .35; }
 .fight-graph-viewport-controls output { color: var(--ink-soft); font-size: 11px; font-weight: 800; text-align: center; }
 .fight-graph-viewport-controls .graph-zoom-fit { border-right: 0; font-size: 11px; text-transform: uppercase; }
-.fight-graph-layout { display: grid; grid-template-columns: minmax(0, 1fr) 290px; gap: 18px; align-items: start; }
-.fight-graph-canvas { min-height: 640px; overflow: auto; border: 1px solid #263746; border-radius: var(--radius-md); background: #111b26; }
-.fight-graph-canvas > .empty-state { min-height: 570px; display: grid; place-items: center; border: 0; color: #aeb9c3; }
-.fight-graph-svg { display: block; width: 100%; min-width: 760px; height: auto; min-height: 640px; cursor: grab; touch-action: none; user-select: none; }
+.fight-graph-layout { display: grid; grid-template-columns: minmax(0, 1fr) 290px; gap: 18px; min-width: 0; align-items: start; }
+.fight-graph-canvas { position: relative; width: 100%; min-width: 0; height: 640px; overflow: hidden; border: 1px solid #263746; border-radius: var(--radius-md); background: #111b26; overscroll-behavior: contain; touch-action: none; }
+.fight-graph-canvas > .empty-state { height: 100%; min-height: 0; display: grid; place-items: center; border: 0; color: #aeb9c3; }
+.fight-graph-svg { display: block; width: 100%; min-width: 0; height: 100%; min-height: 0; cursor: grab; touch-action: none; user-select: none; -webkit-user-select: none; }
 .fight-graph-svg.is-panning { cursor: grabbing; }
 .fight-graph-svg:focus-visible { outline: 3px solid #ff7950; outline-offset: -4px; }
 .fight-graph-edge-line { fill: none; stroke: #8ea0ad; stroke-width: 1.2; stroke-opacity: .42; transition: stroke .15s, stroke-opacity .15s, stroke-width .15s; }
@@ -426,8 +426,9 @@ input[type="search"]:focus, select:focus { border-color: var(--teal); box-shadow
   .graph-rule-settings, .graph-rule-row, .graph-fight-constraints { grid-template-columns: 1fr; }
   .graph-rule-and { display: none; }
   .graph-rule-row .graph-rule-description { grid-column: auto; }
-  .fight-graph-canvas { min-height: 540px; }
-  .fight-graph-svg { min-height: 540px; }
+  .fight-graph-heading-tools { justify-items: start; margin-top: 14px; }
+  .fight-graph-viewport-controls button { min-width: 44px; height: 44px; }
+  .fight-graph-canvas { height: clamp(440px, 68svh, 620px); min-height: 0; }
   .market-notice { grid-template-columns: 1fr; }
   .signal-line, .metric-row { grid-template-columns: 1fr; }
   .site-footer { display: grid; }
