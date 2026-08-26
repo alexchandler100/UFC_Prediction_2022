@@ -24,6 +24,7 @@ from .research import (
     execute_replay,
     execute_run,
 )
+from .posterior_predictive import validate_completed_fight, write_validation_report
 
 
 def _bounded_integer(lower: int, upper: int):
@@ -147,6 +148,11 @@ def build_parser() -> argparse.ArgumentParser:
             "flag only specs/convergence diagnostics are retained"
         ),
     )
+    run.add_argument(
+        "--launch-gui",
+        action="store_true",
+        help="Open the optional local desktop explorer after the run completes",
+    )
 
     backtest = commands.add_parser(
         "backtest", help="Run bounded, strictly chronological fit/simulation folds"
@@ -167,6 +173,18 @@ def build_parser() -> argparse.ArgumentParser:
     backtest.add_argument("--max-fights", type=_bounded_integer(1, 500), default=200)
     backtest.add_argument(
         "--min-training-fights", type=_bounded_integer(1, 100000), default=500
+    )
+    backtest.add_argument(
+        "--stack-min-training-fights",
+        type=_bounded_integer(1, 100000),
+        default=100,
+        help="Earlier out-of-fold fights required before evaluating the winner stack",
+    )
+    backtest.add_argument(
+        "--stack-l2-penalty",
+        type=_nonnegative_float,
+        default=0.01,
+        help="Regularization toward incumbent-only stack weights (1, 0)",
     )
     backtest.add_argument("--random-seed", type=int, default=2903)
     backtest.add_argument(
@@ -239,6 +257,25 @@ def build_parser() -> argparse.ArgumentParser:
     )
     analyze.add_argument("--output")
     analyze.add_argument("--title")
+
+    validate_fight = commands.add_parser(
+        "validate-fight",
+        help="Compare one completed run with observed UFCStats bout totals",
+    )
+    validate_fight.add_argument("run", help="Completed simulation run directory")
+    validate_fight.add_argument("--fight-id", required=True)
+    validate_fight.add_argument(
+        "--observed",
+        default=str(DEFAULT_RAW_FIGHTS),
+        help="Mirrored observed bout-total CSV",
+    )
+    validate_fight.add_argument("--json-output")
+    validate_fight.add_argument("--html-output")
+
+    gui = commands.add_parser(
+        "gui", help="Open the optional local desktop explorer for a completed run"
+    )
+    gui.add_argument("run", help="Completed simulation run directory")
     return parser
 
 
@@ -306,6 +343,10 @@ def main(argv: list[str] | None = None) -> int:
                     "total_paths": result.forecast.total_paths,
                 }
             )
+            if args.launch_gui:
+                from .gui import launch_gui
+
+                return launch_gui(destination)
         elif args.command == "backtest":
             if args.first_test_year > args.last_test_year:
                 raise ValueError("first-test-year must not exceed last-test-year")
@@ -329,11 +370,19 @@ def main(argv: list[str] | None = None) -> int:
                 include_baselines=not args.skip_baselines,
                 seed_repeats=args.seed_repeats,
                 skip_borderline_rerun=args.skip_borderline_rerun,
+                stack_min_training_fights=args.stack_min_training_fights,
+                stack_l2_penalty=args.stack_l2_penalty,
             )
             _print(
                 {
                     "report_sha256": report.report_sha256,
                     "scored_fights": len(ledger),
+                    "winner_stack_status": dict(
+                        report.comparisons.get("production_simulation_stack") or {}
+                    ).get("status", "unavailable"),
+                    "winner_stack_candidate_freeze_recommended": dict(
+                        report.comparisons.get("production_simulation_stack") or {}
+                    ).get("candidate_freeze_recommended", False),
                     "output": str(Path(args.output).resolve()),
                 }
             )
@@ -358,6 +407,33 @@ def main(argv: list[str] | None = None) -> int:
         elif args.command == "analyze":
             output = execute_analyze(args.input, output=args.output, title=args.title)
             _print({"output": str(output)})
+        elif args.command == "validate-fight":
+            run = Path(args.run)
+            report = validate_completed_fight(
+                run,
+                observed_path=args.observed,
+                fight_id=args.fight_id,
+            )
+            json_output = Path(args.json_output) if args.json_output else run / "validation.json"
+            html_output = Path(args.html_output) if args.html_output else run / "validation.html"
+            written_json, written_html = write_validation_report(
+                report,
+                json_path=json_output,
+                html_path=html_output,
+            )
+            _print(
+                {
+                    "actual_outcome": report["actual_outcome"],
+                    "actual_outcome_probability": report["actual_outcome_probability"],
+                    "html_output": str(written_html.resolve()),
+                    "json_output": str(written_json.resolve()),
+                    "scored_marginals": report["summary"]["scored_marginals"],
+                }
+            )
+        elif args.command == "gui":
+            from .gui import launch_gui
+
+            return launch_gui(args.run)
         else:  # pragma: no cover - argparse enforces the command set
             parser.error(f"unsupported command: {args.command}")
     except NonConvergedSimulationError as error:

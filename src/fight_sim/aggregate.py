@@ -56,10 +56,32 @@ def _stat_summary(name: str, values: Iterable[float]) -> StatisticSummary:
 STATISTIC_EXTRACTORS: tuple[tuple[str, Callable[[SimulationPath], float]], ...] = (
     ("red_significant_strikes", lambda path: float(path.red_stats.significant_strikes_landed)),
     ("blue_significant_strikes", lambda path: float(path.blue_stats.significant_strikes_landed)),
+    ("red_significant_strike_attempts", lambda path: float(path.red_stats.significant_strike_attempts)),
+    ("blue_significant_strike_attempts", lambda path: float(path.blue_stats.significant_strike_attempts)),
+    ("red_head_strikes_landed", lambda path: float(path.red_stats.head_landed)),
+    ("blue_head_strikes_landed", lambda path: float(path.blue_stats.head_landed)),
+    ("red_body_strikes_landed", lambda path: float(path.red_stats.body_landed)),
+    ("blue_body_strikes_landed", lambda path: float(path.blue_stats.body_landed)),
+    ("red_leg_strikes_landed", lambda path: float(path.red_stats.leg_landed)),
+    ("blue_leg_strikes_landed", lambda path: float(path.blue_stats.leg_landed)),
+    ("red_distance_strikes_landed", lambda path: float(path.red_stats.distance_landed)),
+    ("blue_distance_strikes_landed", lambda path: float(path.blue_stats.distance_landed)),
+    ("red_distance_strike_attempts", lambda path: float(path.red_stats.distance_attempts)),
+    ("blue_distance_strike_attempts", lambda path: float(path.blue_stats.distance_attempts)),
+    ("red_clinch_strikes_landed", lambda path: float(path.red_stats.clinch_landed)),
+    ("blue_clinch_strikes_landed", lambda path: float(path.blue_stats.clinch_landed)),
+    ("red_clinch_strike_attempts", lambda path: float(path.red_stats.clinch_attempts)),
+    ("blue_clinch_strike_attempts", lambda path: float(path.blue_stats.clinch_attempts)),
+    ("red_ground_strikes_landed", lambda path: float(path.red_stats.ground_landed)),
+    ("blue_ground_strikes_landed", lambda path: float(path.blue_stats.ground_landed)),
+    ("red_ground_strike_attempts", lambda path: float(path.red_stats.ground_attempts)),
+    ("blue_ground_strike_attempts", lambda path: float(path.blue_stats.ground_attempts)),
     ("red_knockdowns", lambda path: float(path.red_stats.knockdowns)),
     ("blue_knockdowns", lambda path: float(path.blue_stats.knockdowns)),
     ("red_takedowns", lambda path: float(path.red_stats.takedowns_landed)),
     ("blue_takedowns", lambda path: float(path.blue_stats.takedowns_landed)),
+    ("red_takedown_attempts", lambda path: float(path.red_stats.takedown_attempts)),
+    ("blue_takedown_attempts", lambda path: float(path.blue_stats.takedown_attempts)),
     ("red_submission_attempts", lambda path: float(path.red_stats.submission_attempts)),
     ("blue_submission_attempts", lambda path: float(path.blue_stats.submission_attempts)),
     # UFCStats exposes control at whole-second resolution.  Rounding simulated
@@ -67,6 +89,10 @@ STATISTIC_EXTRACTORS: tuple[tuple[str, Callable[[SimulationPath], float]], ...] 
     # directly comparable to its observed target.
     ("red_control_seconds", lambda path: float(round(path.red_stats.control_time_us / 1_000_000.0))),
     ("blue_control_seconds", lambda path: float(round(path.blue_stats.control_time_us / 1_000_000.0))),
+    ("distance_time_seconds", lambda path: float(round(path.phase_duration_us("distance") / 1_000_000.0))),
+    ("clinch_time_seconds", lambda path: float(round(path.phase_duration_us("clinch") / 1_000_000.0))),
+    ("ground_time_seconds", lambda path: float(round(path.phase_duration_us("ground") / 1_000_000.0))),
+    ("scramble_time_seconds", lambda path: float(round(path.phase_duration_us("scramble") / 1_000_000.0))),
 )
 
 

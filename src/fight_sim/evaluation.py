@@ -18,13 +18,14 @@ from typing import Callable, Iterable, Mapping, Sequence
 
 import numpy as np
 import pandas as pd
+from scipy.optimize import minimize
 from sklearn.linear_model import LogisticRegression
 
 from .parameters import canonical_json, canonical_sha256
 
 
 EVALUATION_SCHEMA_VERSION = 1
-EVALUATION_VERSION = "fight-sim-chronological-evaluation-v1"
+EVALUATION_VERSION = "fight-sim-chronological-evaluation-v2"
 DEFAULT_OUTCOMES = (
     "red_ko_tko",
     "red_submission",
@@ -47,12 +48,18 @@ class BacktestConfig:
     min_training_fights: int = 500
     card_bootstrap_replicates: int = 2000
     random_seed: int = 2903
+    stack_min_training_fights: int = 100
+    stack_l2_penalty: float = 0.01
 
     def __post_init__(self) -> None:
         if self.min_training_fights <= 0:
             raise ValueError("min_training_fights must be positive")
         if self.card_bootstrap_replicates <= 0:
             raise ValueError("card_bootstrap_replicates must be positive")
+        if self.stack_min_training_fights <= 0:
+            raise ValueError("stack_min_training_fights must be positive")
+        if not math.isfinite(self.stack_l2_penalty) or self.stack_l2_penalty < 0:
+            raise ValueError("stack_l2_penalty must be finite and nonnegative")
         if (
             self.first_test_year is not None
             and self.last_test_year is not None
@@ -796,21 +803,287 @@ def event_card_paired_interval(
         truth.to_numpy() * np.log(baseline)
         + (1 - truth.to_numpy()) * np.log1p(-baseline)
     )
-    cards = [group["_loss_difference"].to_numpy(float) for _, group in rows.groupby("event_id", sort=True)]
+    rows["_brier_difference"] = (challenger - truth.to_numpy()) ** 2 - (
+        baseline - truth.to_numpy()
+    ) ** 2
+    cards = [
+        group[["_loss_difference", "_brier_difference"]].to_numpy(float)
+        for _, group in rows.groupby("event_id", sort=True)
+    ]
     rng = np.random.Generator(np.random.PCG64DXSM(random_seed))
-    estimates = np.empty(replicates, dtype=float)
+    estimates = np.empty((replicates, 2), dtype=float)
     for index in range(replicates):
         selected = rng.integers(0, len(cards), size=len(cards))
         sample = np.concatenate([cards[item] for item in selected])
-        estimates[index] = sample.mean()
+        estimates[index] = sample.mean(axis=0)
     return {
         "n_fights": int(len(rows)),
         "n_events": len(cards),
         "challenger_minus_baseline_log_loss": float(rows["_loss_difference"].mean()),
-        "interval_p025": float(np.quantile(estimates, 0.025)),
-        "interval_p975": float(np.quantile(estimates, 0.975)),
+        "interval_p025": float(np.quantile(estimates[:, 0], 0.025)),
+        "interval_p975": float(np.quantile(estimates[:, 0], 0.975)),
+        "challenger_minus_baseline_brier": float(rows["_brier_difference"].mean()),
+        "brier_interval_p025": float(np.quantile(estimates[:, 1], 0.025)),
+        "brier_interval_p975": float(np.quantile(estimates[:, 1], 0.975)),
         "bootstrap_replicates": replicates,
     }
+
+
+def _probability_logit(values: Sequence[float], *, clip: float = 1e-6) -> np.ndarray:
+    probabilities = np.asarray(values, dtype=float)
+    if probabilities.ndim != 1:
+        raise ValueError("stack probabilities must be one-dimensional")
+    if np.any(~np.isfinite(probabilities)) or np.any(
+        (probabilities < 0.0) | (probabilities > 1.0)
+    ):
+        raise ValueError("stack probabilities must be finite and in [0, 1]")
+    bounded = np.clip(probabilities, clip, 1.0 - clip)
+    return np.log(bounded) - np.log1p(-bounded)
+
+
+def _sigmoid(values: np.ndarray) -> np.ndarray:
+    return np.exp(-np.logaddexp(0.0, -values))
+
+
+def fit_nonnegative_logit_stack(
+    model_probability: Sequence[float],
+    simulation_probability: Sequence[float],
+    truth: Sequence[int],
+    *,
+    l2_penalty: float = 0.01,
+) -> dict[str, object]:
+    """Fit the predeclared zero-intercept, nonnegative winner stack.
+
+    Regularization is centered on ``(beta_model=1, beta_sim=0)`` so weak or
+    redundant simulation evidence shrinks back toward the incumbent rather
+    than toward an uncalibrated 50/50 prediction.
+    """
+
+    if not math.isfinite(l2_penalty) or l2_penalty < 0:
+        raise ValueError("stack l2_penalty must be finite and nonnegative")
+    model_logit = _probability_logit(model_probability)
+    simulation_logit = _probability_logit(simulation_probability)
+    y = np.asarray(truth, dtype=float)
+    if y.ndim != 1 or len(y) != len(model_logit) or len(y) != len(simulation_logit):
+        raise ValueError("stack inputs must have equal one-dimensional lengths")
+    if len(y) == 0 or np.any(~np.isfinite(y)) or np.any((y != 0.0) & (y != 1.0)):
+        raise ValueError("stack truth must contain binary outcomes")
+    if len(np.unique(y)) != 2:
+        raise ValueError("stack fitting requires both winner classes")
+    design = np.column_stack((model_logit, simulation_logit))
+    center = np.asarray([1.0, 0.0], dtype=float)
+
+    def objective(beta: np.ndarray) -> tuple[float, np.ndarray]:
+        combined_logit = design @ beta
+        probability = _sigmoid(combined_logit)
+        penalty_delta = beta - center
+        value = float(
+            np.mean(np.logaddexp(0.0, combined_logit) - y * combined_logit)
+            + 0.5 * l2_penalty * float(penalty_delta @ penalty_delta)
+        )
+        gradient = (
+            design.T @ (probability - y) / len(y)
+            + l2_penalty * penalty_delta
+        )
+        return value, gradient
+
+    optimized = minimize(
+        objective,
+        center,
+        method="L-BFGS-B",
+        jac=True,
+        bounds=((0.0, None), (0.0, None)),
+        options={"ftol": 1e-12, "gtol": 1e-9, "maxiter": 2000},
+    )
+    if not optimized.success or np.any(~np.isfinite(optimized.x)):
+        raise RuntimeError(f"winner stack optimization failed: {optimized.message}")
+    beta = np.maximum(np.asarray(optimized.x, dtype=float), 0.0)
+    return {
+        "beta_model": float(beta[0]),
+        "beta_sim": float(beta[1]),
+        "intercept": 0.0,
+        "l2_penalty": float(l2_penalty),
+        "training_fights": int(len(y)),
+        "objective": float(optimized.fun),
+        "optimizer_iterations": int(optimized.nit),
+    }
+
+
+def stacked_win_probability(
+    model_probability: Sequence[float],
+    simulation_probability: Sequence[float],
+    *,
+    beta_model: float,
+    beta_sim: float,
+) -> np.ndarray:
+    if any(
+        not math.isfinite(value) or value < 0.0
+        for value in (beta_model, beta_sim)
+    ):
+        raise ValueError("stack coefficients must be finite and nonnegative")
+    model_logit = _probability_logit(model_probability)
+    simulation_logit = _probability_logit(simulation_probability)
+    if len(model_logit) != len(simulation_logit):
+        raise ValueError("stack probability inputs must have equal lengths")
+    return _sigmoid(beta_model * model_logit + beta_sim * simulation_logit)
+
+
+def evaluate_chronological_winner_stack(
+    frame: pd.DataFrame,
+    *,
+    min_training_fights: int = 100,
+    l2_penalty: float = 0.01,
+    card_bootstrap_replicates: int = 2000,
+    random_seed: int = 2903,
+) -> tuple[pd.DataFrame, dict[str, object]]:
+    """Cross-fit stack weights using only earlier out-of-fold predictions."""
+
+    required = {
+        "date",
+        "event_id",
+        "fight_id",
+        "actual_outcome",
+        "production_red_win_probability",
+        "simulation_red_win_probability",
+    }
+    missing = sorted(required - set(frame.columns))
+    if missing:
+        raise ValueError(f"winner stack ledger is missing columns: {missing}")
+    if min_training_fights <= 0:
+        raise ValueError("stack min_training_fights must be positive")
+    result = frame.copy()
+    result["date"] = pd.to_datetime(result["date"], errors="raise", utc=True)
+    result["stack_red_win_probability"] = np.nan
+    decisive = result["actual_outcome"].astype(str).str.startswith(("red_", "blue_"))
+    jointly_covered = (
+        decisive
+        & result["production_red_win_probability"].notna()
+        & result["simulation_red_win_probability"].notna()
+    )
+    folds: list[dict[str, object]] = []
+    for year in sorted(result.loc[jointly_covered, "date"].dt.year.unique()):
+        cutoff = pd.Timestamp(f"{int(year)}-01-01", tz="UTC")
+        train = result.loc[jointly_covered & result["date"].lt(cutoff)]
+        test_index = result.index[
+            jointly_covered & result["date"].dt.year.eq(int(year))
+        ]
+        fold: dict[str, object] = {
+            "test_year": int(year),
+            "cutoff_utc": cutoff.isoformat(),
+            "training_fights": int(len(train)),
+            "test_fights": int(len(test_index)),
+        }
+        truth = train["actual_outcome"].astype(str).str.startswith("red_").astype(int)
+        if len(train) < min_training_fights or truth.nunique() < 2:
+            fold["status"] = "warmup_insufficient_prior_oof_fights"
+            folds.append(fold)
+            continue
+        fitted = fit_nonnegative_logit_stack(
+            pd.to_numeric(train["production_red_win_probability"], errors="raise"),
+            pd.to_numeric(train["simulation_red_win_probability"], errors="raise"),
+            truth,
+            l2_penalty=l2_penalty,
+        )
+        result.loc[test_index, "stack_red_win_probability"] = stacked_win_probability(
+            pd.to_numeric(
+                result.loc[test_index, "production_red_win_probability"],
+                errors="raise",
+            ),
+            pd.to_numeric(
+                result.loc[test_index, "simulation_red_win_probability"],
+                errors="raise",
+            ),
+            beta_model=float(fitted["beta_model"]),
+            beta_sim=float(fitted["beta_sim"]),
+        )
+        fold.update({"status": "evaluated", **fitted})
+        folds.append(fold)
+
+    covered = jointly_covered & result["stack_red_win_probability"].notna()
+    comparison: dict[str, object] = {
+        "metric": "winner_log_loss_brier_and_calibration",
+        "candidate_only": True,
+        "production_enabled": False,
+        "execution_enabled": False,
+        "model": "zero_intercept_nonnegative_logit_stack",
+        "config": {
+            "min_training_fights": int(min_training_fights),
+            "l2_penalty": float(l2_penalty),
+            "regularization_center": {"beta_model": 1.0, "beta_sim": 0.0},
+            "fit_scope": "strictly_earlier_out_of_fold_calendar_years",
+        },
+        "n_eligible": int(jointly_covered.sum()),
+        "n_covered": int(covered.sum()),
+        "coverage": float(covered.sum() / jointly_covered.sum())
+        if jointly_covered.any()
+        else 0.0,
+        "folds": folds,
+    }
+    if not covered.any():
+        comparison.update(
+            {
+                "status": "insufficient_prior_out_of_fold_history",
+                "stack": _binary_metrics([], []),
+                "production_same_fights": _binary_metrics([], []),
+                "simulation_same_fights": _binary_metrics([], []),
+                "candidate_freeze_recommended": False,
+            }
+        )
+        return result, comparison
+
+    rows = result.loc[covered]
+    comparison.update(
+        {
+            "status": "evaluated",
+            "stack": _baseline_metrics(rows, "stack_red_win_probability"),
+            "production_same_fights": _baseline_metrics(
+                rows, "production_red_win_probability"
+            ),
+            "simulation_same_fights": _baseline_metrics(
+                rows, "simulation_red_win_probability"
+            ),
+            "paired_event_card_interval_vs_production": event_card_paired_interval(
+                rows,
+                "stack_red_win_probability",
+                "production_red_win_probability",
+                replicates=card_bootstrap_replicates,
+                random_seed=random_seed,
+            ),
+            "paired_event_card_interval_vs_simulation": event_card_paired_interval(
+                rows,
+                "stack_red_win_probability",
+                "simulation_red_win_probability",
+                replicates=card_bootstrap_replicates,
+                random_seed=random_seed + 1,
+            ),
+        }
+    )
+    paired = dict(comparison["paired_event_card_interval_vs_production"])
+    stack_metrics = dict(comparison["stack"])
+    production_metrics = dict(comparison["production_same_fights"])
+    intercept = stack_metrics.get("calibration_intercept")
+    slope = stack_metrics.get("calibration_slope")
+    checks = {
+        "paired_log_loss_interval_below_zero": float(paired["interval_p975"]) < 0.0,
+        "brier_not_worse": (
+            stack_metrics.get("brier") is not None
+            and production_metrics.get("brier") is not None
+            and float(stack_metrics["brier"]) <= float(production_metrics["brier"])
+        ),
+        "calibration_intercept_within_0_05": (
+            intercept is not None and abs(float(intercept)) <= 0.05
+        ),
+        "calibration_slope_within_0_85_1_15": (
+            slope is not None and 0.85 <= float(slope) <= 1.15
+        ),
+        "at_least_three_evaluated_folds": sum(
+            fold.get("status") == "evaluated" for fold in folds
+        )
+        >= 3,
+    }
+    comparison["retrospective_checks"] = checks
+    comparison["candidate_freeze_recommended"] = all(checks.values())
+    return result, comparison
 
 
 def _market_total_comparison_rows(
@@ -937,7 +1210,9 @@ def _total_event_card_paired_interval(
     }
 
 
-def _add_forecast_probability_columns(frame: pd.DataFrame) -> pd.DataFrame:
+def add_simulation_win_probability_column(frame: pd.DataFrame) -> pd.DataFrame:
+    """Derive the decisive red-win view from each coherent simulation forecast."""
+
     result = frame.copy()
     result["simulation_red_win_probability"] = [
         _red_win_probability(_outcome_probabilities(value)) for value in result["forecast"]
@@ -1046,8 +1321,22 @@ def run_chronological_backtest(
     if not ledgers:
         raise ValueError("chronological backtest produced no eligible folds")
     ledger = pd.concat(ledgers, ignore_index=True)
-    ledger = _add_forecast_probability_columns(ledger)
+    ledger = add_simulation_win_probability_column(ledger)
     comparisons: dict[str, object] = {}
+    stack_warning: str | None = None
+    if "production_red_win_probability" in ledger:
+        ledger, stack_comparison = evaluate_chronological_winner_stack(
+            ledger,
+            min_training_fights=config.stack_min_training_fights,
+            l2_penalty=config.stack_l2_penalty,
+            card_bootstrap_replicates=config.card_bootstrap_replicates,
+            random_seed=config.random_seed,
+        )
+        comparisons["production_simulation_stack"] = stack_comparison
+        if stack_comparison.get("status") != "evaluated":
+            stack_warning = "winner_stack_insufficient_prior_out_of_fold_history"
+    else:
+        stack_warning = "winner_stack_unavailable_without_production_baseline"
     for name, column in (
         ("production_winner", "production_red_win_probability"),
         ("competing_risk", "outcome_model_red_win_probability"),
@@ -1156,6 +1445,8 @@ def run_chronological_backtest(
         warnings.append("fewer_than_three_eligible_calendar_year_folds")
     if "market_red_win_probability" not in ledger or ledger["market_red_win_probability"].notna().mean() < 0.5:
         warnings.append("timestamped_market_coverage_below_half")
+    if stack_warning is not None:
+        warnings.append(stack_warning)
     body: dict[str, object] = {
         "schema_version": EVALUATION_SCHEMA_VERSION,
         "evaluation_version": EVALUATION_VERSION,

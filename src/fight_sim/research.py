@@ -28,6 +28,8 @@ from .domain import BoutConfig, SimulationRunSpec
 from .evaluation import (
     BacktestConfig,
     BacktestReport,
+    add_simulation_win_probability_column,
+    evaluate_chronological_winner_stack,
     repeated_seed_summary,
     run_chronological_backtest,
     write_backtest_report,
@@ -526,6 +528,13 @@ def physical_backtest_frame(raw: pd.DataFrame) -> pd.DataFrame:
                     )
                     for target, source in (
                         ("significant_strikes", "sig_strikes_landed"),
+                        ("significant_strike_attempts", "sig_strikes_attempts"),
+                        ("distance_strikes_landed", "distance_strikes_landed"),
+                        ("distance_strike_attempts", "distance_strikes_attempts"),
+                        ("clinch_strikes_landed", "clinch_strikes_landed"),
+                        ("clinch_strike_attempts", "clinch_strikes_attempts"),
+                        ("ground_strikes_landed", "ground_strikes_landed"),
+                        ("ground_strike_attempts", "ground_strikes_attempts"),
                         ("knockdowns", "knockdowns"),
                         ("takedowns", "takedowns_landed"),
                         ("submission_attempts", "sub_attempts"),
@@ -538,6 +547,13 @@ def physical_backtest_frame(raw: pd.DataFrame) -> pd.DataFrame:
                     )
                     for target, source in (
                         ("significant_strikes", "sig_strikes_landed"),
+                        ("significant_strike_attempts", "sig_strikes_attempts"),
+                        ("distance_strikes_landed", "distance_strikes_landed"),
+                        ("distance_strike_attempts", "distance_strikes_attempts"),
+                        ("clinch_strikes_landed", "clinch_strikes_landed"),
+                        ("clinch_strike_attempts", "clinch_strikes_attempts"),
+                        ("ground_strikes_landed", "ground_strikes_landed"),
+                        ("ground_strike_attempts", "ground_strikes_attempts"),
                         ("knockdowns", "knockdowns"),
                         ("takedowns", "takedowns_landed"),
                         ("submission_attempts", "sub_attempts"),
@@ -1285,6 +1301,7 @@ def _simulation_noise_summary(
     *,
     paths_per_matchup: int,
     random_seed: int,
+    stack_comparisons: Sequence[Mapping[str, object]] = (),
 ) -> dict[str, object]:
     summary = repeated_seed_summary(ledgers)
     summary.update(
@@ -1302,6 +1319,22 @@ def _simulation_noise_summary(
             ],
         }
     )
+    evaluated_stacks = [
+        value for value in stack_comparisons if value.get("status") == "evaluated"
+    ]
+    if evaluated_stacks:
+        stack_losses = [
+            float(dict(value["stack"])["log_loss"]) for value in evaluated_stacks
+        ]
+        summary["winner_stack"] = {
+            "evaluated_repeats": len(evaluated_stacks),
+            "winner_log_loss_by_repeat": stack_losses,
+            "winner_log_loss_range": float(max(stack_losses) - min(stack_losses)),
+            "fold_coefficients_sha256_by_repeat": [
+                canonical_sha256(value.get("folds") or [])
+                for value in evaluated_stacks
+            ],
+        }
     return summary
 
 
@@ -1415,6 +1448,8 @@ def execute_backtest(
     include_baselines: bool = True,
     seed_repeats: int = 2,
     skip_borderline_rerun: bool = False,
+    stack_min_training_fights: int = 100,
+    stack_l2_penalty: float = 0.01,
 ) -> tuple[pd.DataFrame, BacktestReport]:
     if paths_per_matchup % bootstrap_members:
         raise ValueError("paths_per_matchup must be divisible by bootstrap_members")
@@ -1472,6 +1507,8 @@ def execute_backtest(
         min_training_fights=min_training_fights,
         card_bootstrap_replicates=2000,
         random_seed=random_seed,
+        stack_min_training_fights=stack_min_training_fights,
+        stack_l2_penalty=stack_l2_penalty,
     )
 
     def fitted_fold(
@@ -1577,6 +1614,7 @@ def execute_backtest(
             test_filter_column="_backtest_selected",
         )
         repeat_ledgers: list[pd.DataFrame] = []
+        repeat_stack_comparisons: list[dict[str, object]] = []
         for repeat_index, forecasts in enumerate(repeat_forecasts, start=1):
             missing = set(authoritative_ledger["fight_id"].astype(str)) - set(
                 forecasts
@@ -1589,11 +1627,22 @@ def execute_backtest(
             repeated["forecast"] = [
                 forecasts[str(fight_id)] for fight_id in repeated["fight_id"]
             ]
+            repeated = add_simulation_win_probability_column(repeated)
+            if "production_red_win_probability" in repeated:
+                repeated, stack_comparison = evaluate_chronological_winner_stack(
+                    repeated,
+                    min_training_fights=backtest_config.stack_min_training_fights,
+                    l2_penalty=backtest_config.stack_l2_penalty,
+                    card_bootstrap_replicates=backtest_config.card_bootstrap_replicates,
+                    random_seed=backtest_config.random_seed,
+                )
+                repeat_stack_comparisons.append(stack_comparison)
             repeat_ledgers.append(repeated)
         noise = _simulation_noise_summary(
             repeat_ledgers,
             paths_per_matchup=total_paths_per_matchup,
             random_seed=random_seed,
+            stack_comparisons=repeat_stack_comparisons,
         )
         return authoritative_ledger, precision_report, noise
 

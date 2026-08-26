@@ -333,6 +333,8 @@ python -m fight_sim replay --help
 python -m fight_sim reduce --help
 python -m fight_sim diff --help
 python -m fight_sim analyze --help
+python -m fight_sim validate-fight --help
+python -m fight_sim gui --help
 ```
 
 For example, these bounded commands checkpoint at most 25 UFCStats fight pages,
@@ -355,6 +357,8 @@ python -m fight_sim backtest \
   --first-test-year 2017 \
   --last-test-year 2026 \
   --max-fights 200 \
+  --stack-min-training-fights 100 \
+  --stack-l2-penalty 0.01 \
   --workers 2 \
   --chunk-size 64 \
   --output artifacts/simulations/local/backtest_report.json
@@ -374,7 +378,15 @@ survivor-selected, and V1 does not claim to correct that selection.
 `--paths-per-matchup` is the total nested path count per independent seed and
 must be divisible by the bootstrap-member count. Backtests use two independent
 inner-process seeds by default, retain the first forecast as authoritative, and
-hash their log-loss variation into `simulation_noise`. For the exact default
+hash their log-loss variation into `simulation_noise`. When the causal
+production winner baseline is available, the backtest also evaluates a
+zero-intercept, nonnegative logit stack of model and simulator probabilities.
+Every test-year weight pair uses only earlier out-of-fold fights. The first 100
+jointly covered fights are warmup, and fixed L2 regularization of 0.01 shrinks
+unsupported simulation signal toward incumbent-only weights `(1, 0)`. Reports
+include per-fold weights, same-fight log loss/Brier/calibration, event-card
+paired intervals, and independent-seed stack stability. This remains candidate
+research and cannot alter a production probability. For the exact default
 repository study, a competing-risk, population, or division joint paired
 interval that crosses zero automatically triggers one nonrecursive
 16,384-path rerun using the same fitted fold artifacts.
@@ -394,6 +406,63 @@ and HTML report. `--allow-nonconverged-research` is available only for an
 explicitly labeled local diagnostic; such output is not eligible for a shadow
 publication. `replay`, `reduce`, and `diff` verify stored or regenerated event
 streams, while `analyze` rebuilds a self-contained local report.
+
+`validate-fight` compares one completed run with the mirrored official totals
+for a physical fight and writes `validation.json` plus a self-contained
+dark-mode `validation.html` beside the run. For every statistic available in
+both the simulator and UFCStats it reports the observed value, simulated mean
+and central intervals, discrete probability-integral-transform percentile,
+inclusive two-sided predictive tail probability, standardized residual,
+predictive point mass, and CRPS. Attempt-by-phase telemetry distinguishes
+distance, clinch, and ground significant strikes. UFCStats does not distinguish
+standing punches from kicks, and its control field is broader than the
+simulator's ground top-position clock; both limitations are labeled rather
+than silently treated as exact matches.
+
+```bash
+python -m fight_sim validate-fight \
+  artifacts/simulations/<run-directory> \
+  --fight-id <ufcstats-fight-id>
+```
+
+The single-fight report scores marginal distributions. It does not multiply
+them into a false joint likelihood. Population parameter tuning must aggregate
+strictly out-of-sample CRPS, interval coverage, and PIT calibration across
+chronological fights rather than optimize one showcase bout.
+
+### Local simulation desktop explorer
+
+The optional Qt desktop explorer reads a completed run directory directly. It
+does not start a server, change website files, or require a paid service. Its
+tabs cover winner/outcome summaries, every exact statistic PMF (including
+duration, phase-specific strike attempts/landings, control, takedowns,
+submissions, and knockdowns), totals and method-by-round markets, convergence
+and uncertainty, plus selected single-path timelines and their event ledgers.
+When `validation.json` is beside the aggregate, observed values and predictive
+percentiles are overlaid automatically. Every plot has pan, zoom, reset, and
+PNG export controls.
+
+Install the optional desktop packages once, then open any completed run:
+
+```powershell
+python -m pip install -r requirements-gui.txt
+$env:PYTHONPATH = "src"
+python -m fight_sim gui artifacts/simulations/<run-directory>
+```
+
+To run a matchup and open it immediately, add `--launch-gui` to the normal
+`fight_sim run` command. Keep `--max-traces` above zero (up to 32) when you want
+the individual Monte Carlo trace explorer; aggregate plots do not depend on
+full trace capture.
+
+```powershell
+python -m fight_sim run `
+  --red-fighter-id <stable-id> `
+  --blue-fighter-id <stable-id> `
+  --division Lightweight `
+  --max-traces 32 `
+  --launch-gui
+```
 
 High-volume nested runs stream exact counters instead of retaining every path.
 Detailed ledgers, traces, and local HTML reports belong under the ignored

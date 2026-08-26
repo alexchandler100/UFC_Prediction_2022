@@ -222,6 +222,8 @@ jobs:
             --first-test-year "$FIRST_TEST_YEAR" \
             --last-test-year "$LAST_TEST_YEAR" \
             --max-fights "$MAX_FIGHTS" \
+            --stack-min-training-fights 100 \
+            --stack-l2-penalty 0.01 \
             --workers "$WORKERS" \
             --chunk-size 64 \
             --output "$RESEARCH_OUTPUT_DIR/backtest_report.json"

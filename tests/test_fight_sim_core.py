@@ -168,7 +168,7 @@ class FightSimDeterminismTests(unittest.TestCase):
         )
         self.assertEqual(
             trace_digest(traced),
-            "12c0789e7ef309742c9e857f0d6b2c8a8285b526c98db3526b617718c544cdc6",
+            "1c3b265931b5b973867b7957384405c6c34970e7903c1868cf6406c46cae11ac",
         )
         replayed = stochastic_replay(spec, 17, expected=traced)
         self.assertEqual(trace_digest(replayed), trace_digest(traced))

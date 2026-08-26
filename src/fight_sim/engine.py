@@ -176,6 +176,7 @@ class _Runtime:
         )
         self.events: list[SimulationEvent] = []
         self.previous_event_hash = GENESIS_EVENT_HASH
+        self.phase_time_us = {phase: 0 for phase in Phase}
 
     def emit(
         self,
@@ -187,6 +188,10 @@ class _Runtime:
         action: str = "",
         payload: dict[str, object] | None = None,
     ) -> None:
+        if delta.fight_time_us is not None:
+            elapsed_us = int(delta.fight_time_us) - int(self.state.fight_time_us)
+            if elapsed_us > 0:
+                self.phase_time_us[self.state.phase] += elapsed_us
         draws = self.rng.drain()
         if self.telemetry is TelemetryLevel.FULL:
             self.state, event = make_event(
@@ -449,8 +454,11 @@ def _strike_stats(
         head_landed=head,
         body_landed=body,
         leg_landed=leg,
+        distance_attempts=attempts if phase is Phase.DISTANCE else 0,
         distance_landed=landed if phase is Phase.DISTANCE else 0,
+        clinch_attempts=attempts if phase is Phase.CLINCH else 0,
         clinch_landed=landed if phase is Phase.CLINCH else 0,
+        ground_attempts=attempts if phase is Phase.GROUND else 0,
         ground_landed=landed if phase is Phase.GROUND else 0,
     )
 
@@ -866,6 +874,9 @@ def _simulate_fight_once(
         red_stats=final_state.red_stats,
         blue_stats=final_state.blue_stats,
         final_state_hash=state_hash(final_state),
+        phase_time_us=tuple(
+            (phase.value, int(runtime.phase_time_us[phase])) for phase in Phase
+        ),
         events=tuple(runtime.events),
     )
 

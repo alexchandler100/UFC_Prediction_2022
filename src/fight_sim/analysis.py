@@ -321,6 +321,69 @@ def render_analysis_report(
             _flatten_metric_rows(comparisons, category="baseline comparison")
         )
 
+    stack_rows: list[list[object]] = []
+    stack_fold_rows: list[list[object]] = []
+    stack = (
+        comparisons.get("production_simulation_stack")
+        if isinstance(comparisons, Mapping)
+        else None
+    )
+    if isinstance(stack, Mapping):
+        stack_metrics = stack.get("stack")
+        production_metrics = stack.get("production_same_fights")
+        paired = stack.get("paired_event_card_interval_vs_production")
+        stack_metrics = stack_metrics if isinstance(stack_metrics, Mapping) else {}
+        production_metrics = (
+            production_metrics if isinstance(production_metrics, Mapping) else {}
+        )
+        paired = paired if isinstance(paired, Mapping) else {}
+        stack_rows = [
+            ["Status", stack.get("status")],
+            ["Covered fights", stack.get("n_covered")],
+            ["Stack log loss", stack_metrics.get("log_loss")],
+            ["Production log loss (same fights)", production_metrics.get("log_loss")],
+            ["Stack Brier", stack_metrics.get("brier")],
+            ["Production Brier (same fights)", production_metrics.get("brier")],
+            ["Paired log-loss difference", paired.get("challenger_minus_baseline_log_loss")],
+            ["Paired interval 2.5%", paired.get("interval_p025")],
+            ["Paired interval 97.5%", paired.get("interval_p975")],
+            ["Candidate freeze recommended", stack.get("candidate_freeze_recommended")],
+        ]
+        for fold in stack.get("folds", []):
+            if not isinstance(fold, Mapping):
+                continue
+            stack_fold_rows.append(
+                [
+                    fold.get("test_year"),
+                    fold.get("status"),
+                    fold.get("training_fights"),
+                    fold.get("test_fights"),
+                    fold.get("beta_model"),
+                    fold.get("beta_sim"),
+                ]
+            )
+    stack_section = ""
+    if stack_rows:
+        stack_section = (
+            '<section class="panel"><h2>Production + simulation winner stack</h2>'
+            '<p class="muted">Weights are zero-intercept, nonnegative, and fitted '
+            "only on earlier out-of-fold fights. Negative paired differences favor "
+            "the stack.</p>"
+            + _table(("Measure", "Value"), stack_rows)
+            + _table(
+                (
+                    "Test year",
+                    "Status",
+                    "Prior OOF fights",
+                    "Test fights",
+                    "Model weight",
+                    "Simulation weight",
+                ),
+                stack_fold_rows,
+            )
+            + "</section>"
+        )
+
     warnings = []
     for source in (spec_map, aggregate_map, evaluation_map):
         values = source.get("warnings", source.get("coverage_warnings", []))
@@ -403,6 +466,7 @@ code {{ color:#a9d4ff; }}
 <section class="panel"><h2>Convergence</h2>{_table(("Batch","Paths/member","Total paths","Winner MCSE","Split difference","Parameter quantile shift","MCSE gate","Batch gate","Parameter gate"), convergence_rows)}</section>
 <section class="panel"><h2>Full-fight totals</h2>{_table(("Line","Threshold seconds","Over","Under","Push","No action"), total_rows)}</section>
 <section class="panel"><h2>Projected fight statistics</h2>{_table(("Statistic","Mean","P05","Median","P95","Process MCSE of mean","Parameter/model 2.5%","Parameter/model median","Parameter/model 97.5%"), statistic_rows)}</section>
+{stack_section}
 <section class="panel"><h2>Evaluation and baselines</h2>{_table(("Category","Metric","Value"), baseline_rows)}</section>
 <section class="panel"><h2>Selected deterministic traces</h2>{_trace_sections(traces)}</section>
 <section class="panel"><h2>Audit payload</h2><p class="muted">The exact aggregate, run specification, and evaluation payload are embedded below.</p><details><summary>Show canonical report data</summary><pre id="audit-data">{escape(json.dumps(embedded, indent=2, sort_keys=True, ensure_ascii=False, allow_nan=False))}</pre></details></section>

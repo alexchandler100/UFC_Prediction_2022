@@ -111,7 +111,32 @@ class FightSimulationAnalysisTests(unittest.TestCase):
                                     "interval_p025": -0.03,
                                     "interval_p975": 0.01,
                                 },
-                            }
+                            },
+                            "production_simulation_stack": {
+                                "status": "evaluated",
+                                "n_covered": 120,
+                                "candidate_freeze_recommended": False,
+                                "stack": {"log_loss": 0.61, "brier": 0.21},
+                                "production_same_fights": {
+                                    "log_loss": 0.64,
+                                    "brier": 0.22,
+                                },
+                                "paired_event_card_interval_vs_production": {
+                                    "challenger_minus_baseline_log_loss": -0.03,
+                                    "interval_p025": -0.05,
+                                    "interval_p975": -0.01,
+                                },
+                                "folds": [
+                                    {
+                                        "test_year": 2025,
+                                        "status": "evaluated",
+                                        "training_fights": 100,
+                                        "test_fights": 20,
+                                        "beta_model": 0.9,
+                                        "beta_sim": 0.3,
+                                    }
+                                ],
+                            },
                         },
                         "coverage_warnings": ["timestamped_market_coverage_below_half"],
                     }
@@ -125,6 +150,8 @@ class FightSimulationAnalysisTests(unittest.TestCase):
             self.assertIn("winner.calibration_slope", html)
             self.assertIn("population_joint.coverage", html)
             self.assertIn("timestamped_market_coverage_below_half", html)
+            self.assertIn("Production + simulation winner stack", html)
+            self.assertIn("Simulation weight", html)
 
 
 if __name__ == "__main__":

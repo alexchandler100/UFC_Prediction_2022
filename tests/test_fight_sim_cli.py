@@ -107,6 +107,8 @@ class FightSimulationCliTests(unittest.TestCase):
             "reduce",
             "diff",
             "analyze",
+            "validate-fight",
+            "gui",
         ):
             self.assertIn(command, parser._subparsers._group_actions[0].choices)
         parsed = parser.parse_args(
@@ -131,6 +133,21 @@ class FightSimulationCliTests(unittest.TestCase):
         self.assertIsNone(parsed.ledger_output)
         self.assertEqual(parsed.seed_repeats, 2)
         self.assertFalse(parsed.skip_borderline_rerun)
+        self.assertEqual(parser.parse_args(["gui", "run-dir"]).run, "run-dir")
+
+        run_parser = parser.parse_args(
+            [
+                "run",
+                "--red-fighter-id",
+                "red",
+                "--blue-fighter-id",
+                "blue",
+                "--division",
+                "Lightweight",
+                "--launch-gui",
+            ]
+        )
+        self.assertTrue(run_parser.launch_gui)
 
     def test_fit_run_trace_diagnostics_and_analysis_end_to_end(self):
         with tempfile.TemporaryDirectory() as directory:

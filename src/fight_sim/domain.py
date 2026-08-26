@@ -375,8 +375,11 @@ class FighterStats:
     head_landed: int = 0
     body_landed: int = 0
     leg_landed: int = 0
+    distance_attempts: int = 0
     distance_landed: int = 0
+    clinch_attempts: int = 0
     clinch_landed: int = 0
+    ground_attempts: int = 0
     ground_landed: int = 0
     knockdowns: int = 0
     takedown_attempts: int = 0
@@ -399,8 +402,22 @@ class FighterStats:
             raise ValueError("takedowns landed cannot exceed attempts")
         if self.head_landed + self.body_landed + self.leg_landed != self.significant_strikes_landed:
             raise ValueError("target strike partitions must equal significant strikes landed")
+        position_attempts = (
+            self.distance_attempts + self.clinch_attempts + self.ground_attempts
+        )
+        # A zero partition remains readable for legacy v1 traces written before
+        # attempt-by-phase telemetry was added. Newly generated strike deltas
+        # always populate the complete partition.
+        if position_attempts and position_attempts != self.significant_strike_attempts:
+            raise ValueError("position strike attempt partitions must equal significant strike attempts")
         if self.distance_landed + self.clinch_landed + self.ground_landed != self.significant_strikes_landed:
             raise ValueError("position strike partitions must equal significant strikes landed")
+        if position_attempts and (
+            self.distance_landed > self.distance_attempts
+            or self.clinch_landed > self.clinch_attempts
+            or self.ground_landed > self.ground_attempts
+        ):
+            raise ValueError("position strikes landed cannot exceed attempts")
 
     def add(self, other: "FighterStats") -> "FighterStats":
         return FighterStats(**{
@@ -623,12 +640,32 @@ class SimulationPath:
     red_stats: FighterStats
     blue_stats: FighterStats
     final_state_hash: str
+    phase_time_us: tuple[tuple[str, int], ...] = ()
     events: tuple[SimulationEvent, ...] = ()
     invariant_failures: tuple[str, ...] = ()
+
+    def __post_init__(self) -> None:
+        seen: set[str] = set()
+        total = 0
+        for phase, duration_us in self.phase_time_us:
+            if phase in seen:
+                raise ValueError("phase_time_us must contain each phase at most once")
+            if phase not in {item.value for item in Phase}:
+                raise ValueError(f"unknown phase in phase_time_us: {phase}")
+            if int(duration_us) < 0:
+                raise ValueError("phase durations must be nonnegative")
+            seen.add(phase)
+            total += int(duration_us)
+        if self.phase_time_us and total != self.result.fight_time_us:
+            raise ValueError("phase durations must sum to fight duration")
 
     @property
     def outcome_key(self) -> str:
         return self.result.outcome_key
+
+    def phase_duration_us(self, phase: Phase | str) -> int:
+        key = phase.value if isinstance(phase, Phase) else str(phase)
+        return next((int(value) for name, value in self.phase_time_us if name == key), 0)
 
 
 @dataclass(frozen=True, slots=True)

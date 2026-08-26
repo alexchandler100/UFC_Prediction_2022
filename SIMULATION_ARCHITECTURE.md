@@ -179,6 +179,32 @@ population, or local authority file is retained as a paid workflow artifact.
 
 ## Evaluation and promotion
 
+### Posterior-predictive fight validation
+
+`python -m fight_sim validate-fight` compares one completed, causally fitted
+simulation run with the repository's mirrored UFCStats bout totals. Exact
+Monte Carlo count distributions are authoritative. Each aligned marginal
+reports central interval coverage, a discrete PIT interval and midpoint,
+inclusive one- and two-sided predictive tail probabilities, standardized
+residual, predictive point mass, and CRPS. The simulator preserves significant
+strike attempts and landed strikes by distance, clinch, and ground phase for
+this purpose.
+
+The observability boundary is explicit: UFCStats distance strikes combine
+punches and kicks, while UFCStats control is broader than simulated ground
+top-position time. These comparisons remain labeled as partial rather than
+being silently treated as identical measurements. Marginal tail probabilities
+are not multiplied into a pseudo joint likelihood because the current
+streaming ledger does not retain the full correlated statistic vector.
+
+Scaling this diagnostic must use chronological out-of-sample fights and score
+predeclared families of statistics with aggregate CRPS, PIT calibration,
+central-interval coverage, and event-card block uncertainty. Parameter or
+mechanic changes are selected on training folds and retained only when they
+improve held-out predictive checks without harming the primary side-by-method
+metric. A single well-matched historical fight is never a tuning target by
+itself.
+
 Outer evaluation uses expanding chronological calendar-year folds. The default
 repository command is a bounded 200-fight screen distributed across 2017--2026,
 not a claim of full incumbent-horizon coverage. Each fold refits its own causal
@@ -217,7 +243,16 @@ logit(p_stack) = beta_model * logit(p_model)
 ```
 
 The intercept is zero and both regularized coefficients are nonnegative. This
-preserves complementary probabilities when fighter sides are swapped.
+preserves complementary probabilities when fighter sides are swapped. The
+implemented evaluator cross-fits weights by calendar year: only earlier
+out-of-fold simulator and production-model predictions may train each test-year
+stack. It requires 100 prior jointly covered fights and uses a predeclared L2
+penalty of 0.01 centered on incumbent-only weights `(1, 0)`, so unsupported
+simulation signal shrinks toward the existing model. Reports retain every
+fold's coefficients, same-fight log loss/Brier/calibration, event-card block
+intervals, and sensitivity to independent simulation seeds. A favorable
+retrospective flag can freeze a research candidate only; it cannot enable
+production or execution.
 
 Production promotion requires at least 200 prospectively settled physical
 fights across 20 events. At a predeclared checkpoint, the event-block 95%
@@ -247,7 +282,19 @@ python -m fight_sim replay (--trace TRACE | --spec SPECS ...)
 python -m fight_sim reduce TRACE
 python -m fight_sim diff EXPECTED ACTUAL
 python -m fight_sim analyze RUN_DIRECTORY_OR_AGGREGATE
+python -m fight_sim validate-fight RUN_DIRECTORY --fight-id UFCSTATS_FIGHT_ID
+python -m fight_sim gui RUN_DIRECTORY
 ```
+
+The `gui` command is a local-only Qt/Matplotlib desktop explorer installed via
+the separate `requirements-gui.txt`; ordinary fitting, backtests, shadow jobs,
+and production updates do not install or import those dependencies. It consumes
+the same exact aggregate counts, convergence records, validation diagnostics,
+and bounded deterministic trace selection as the CLI/HTML tools. Thus charts
+are views of the authoritative artifact rather than a second analysis
+calculation. `run --launch-gui` is the convenience path for simulation followed
+by interactive inspection. Pan/zoom and local image export are supplied by the
+embedded Matplotlib navigation toolbar.
 
 The checked-in research/publication contract is deliberately separate from the
 ignored working tree:

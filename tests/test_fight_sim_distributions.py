@@ -84,6 +84,12 @@ def _path(
             control_seconds=5 * red_significant_strikes,
         ),
         final_state_hash="0" * 64,
+        phase_time_us=(
+            ("distance", 600_000_000),
+            ("clinch", 100_000_000),
+            ("ground", 150_000_000),
+            ("scramble", 50_000_000),
+        ),
     )
 
 
@@ -112,6 +118,15 @@ class StatisticDistributionAggregationTests(unittest.TestCase):
         self.assertEqual(
             [(item.value, item.count) for item in red.counts],
             [(1.0, 1), (3.0, 1), (5.0, 1), (7.0, 1)],
+        )
+        distance_time = next(
+            item
+            for item in forecast.statistic_distributions
+            if item.statistic == "distance_time_seconds"
+        )
+        self.assertEqual(
+            [(item.value, item.count) for item in distance_time.counts],
+            [(600.0, 4)],
         )
         member_zero = next(
             item

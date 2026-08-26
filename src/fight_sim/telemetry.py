@@ -157,6 +157,7 @@ def trace_to_dict(path: SimulationPath) -> dict[str, object]:
         "result": path.result.to_dict(),
         "red_stats": path.red_stats.to_dict(),
         "blue_stats": path.blue_stats.to_dict(),
+        "phase_time_us": dict(path.phase_time_us),
         "final_state_hash": path.final_state_hash,
         "trace_hash": trace_digest(path),
         "events": [event_to_dict(event) for event in path.events],
@@ -183,6 +184,24 @@ def _result_from_dict(value: dict[str, object] | None) -> FightResult | None:
             else None
         ),
     )
+
+
+def _phase_times_from_dict(value: object) -> tuple[tuple[str, int], ...]:
+    if value is None:
+        return ()
+    if not isinstance(value, dict):
+        raise ValueError("phase_time_us must be an object")
+    known = tuple(
+        (phase.value, int(value[phase.value]))
+        for phase in Phase
+        if phase.value in value
+    )
+    unknown = tuple(
+        (str(key), int(item))
+        for key, item in value.items()
+        if str(key) not in {phase.value for phase in Phase}
+    )
+    return known + unknown
 
 
 def _round_score_from_dict(value: dict[str, object] | None) -> JudgeRoundScore | None:
@@ -276,6 +295,7 @@ def trace_from_dict(value: dict[str, object], *, verify: bool = True) -> Simulat
         red_stats=_stats_from_dict(value["red_stats"]),  # type: ignore[arg-type]
         blue_stats=_stats_from_dict(value["blue_stats"]),  # type: ignore[arg-type]
         final_state_hash=str(value["final_state_hash"]),
+        phase_time_us=_phase_times_from_dict(value.get("phase_time_us")),
         events=events,
     )
     if path.result is None or path.red_stats is None or path.blue_stats is None:
