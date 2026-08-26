@@ -109,14 +109,33 @@ class WebsiteExplorerContractTests(unittest.TestCase):
         self.assertIn("function currentMarket()", script)
         self.assertIn("if (!vegasMatchesCurrentCard()", script)
         self.assertIn(
-            "const market = currentMarket();\n  return market?.matchups?.length ? market.matchups : legacyRows();",
+            "const market = currentMarket();\n  return orderedCardMatchups(market?.matchups?.length ? market.matchups : legacyRows());",
             script,
         )
+        self.assertIn("function authoritativeBoutOrderMap", script)
+        self.assertIn("function orderedCardMatchups", script)
         self.assertIn("not the current ${state.card?.date", script)
         self.assertNotIn(
             "return state.market?.matchups?.length ? state.market.matchups : legacyRows();",
             script,
         )
+
+    def test_fight_views_use_ordered_rows_distributions_and_comparison_histories(self):
+        page = (REPO_ROOT / "index.html").read_text(encoding="utf-8")
+        script = (REPO_ROOT / "script.js").read_text(encoding="utf-8")
+        style = (REPO_ROOT / "style.css").read_text(encoding="utf-8")
+
+        self.assertIn('id="simulation-card-list"', page)
+        self.assertIn("Card order · main event first", page)
+        self.assertIn("function boutOrderLabel", script)
+        self.assertIn("function renderSimulationCardList", script)
+        self.assertIn("function simulationMiniDuration", script)
+        self.assertIn("function simulationStatisticGrid", script)
+        self.assertIn("matchup-history-columns", script)
+        self.assertIn("ensureFighterFights(fighter).then", script)
+        self.assertIn("grid-template-columns: minmax(0, 1fr);", style)
+        self.assertIn(".simulation-card-row", style)
+        self.assertIn(".matchup-history-columns", style)
 
     def test_fight_graph_has_zoom_and_pan_navigation(self):
         page = (REPO_ROOT / "index.html").read_text(encoding="utf-8")

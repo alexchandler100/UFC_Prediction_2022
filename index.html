@@ -266,11 +266,12 @@
       <div class="page-shell page-stack">
         <section class="panel simulation-picker-panel" aria-labelledby="simulation-picker-title">
           <div class="section-heading">
-            <div><p class="eyebrow">Upcoming card</p><h2 id="simulation-picker-title">Choose a matchup</h2><p class="section-note" id="simulation-publication-status">Simulation forecasts load when this tab opens.</p></div>
+            <div><p class="eyebrow">Upcoming card</p><h2 id="simulation-picker-title">Fight-by-fight distributions</h2><p class="section-note" id="simulation-publication-status">Simulation forecasts load when this tab opens.</p></div>
             <span class="research-badge">Paper only</span>
           </div>
-          <label for="simulation-matchup-select">Fight</label>
-          <select id="simulation-matchup-select"><option value="">Loading upcoming simulations...</option></select>
+          <div id="simulation-card-list" class="simulation-card-list" aria-live="polite">
+            <div class="empty-state">Loading upcoming simulations...</div>
+          </div>
         </section>
         <section id="simulation-results" class="simulation-results" aria-live="polite">
           <div class="empty-state">Choose an upcoming matchup to inspect its simulated distributions.</div>
@@ -294,7 +295,7 @@
         </section>
         <section class="panel opportunity-panel" aria-labelledby="opportunity-title">
           <div class="section-heading">
-            <div><p class="eyebrow">Ranked by estimated return</p><h2 id="opportunity-title">Potentially profitable prices</h2><p class="section-note" id="market-opportunity-status">Loading current prices...</p></div>
+            <div><p class="eyebrow">Card order · main event first</p><h2 id="opportunity-title">Potentially profitable prices</h2><p class="section-note" id="market-opportunity-status">Loading current prices...</p></div>
             <span class="research-badge">Paper only</span>
           </div>
           <section class="opportunity-grid" id="market-opportunities" aria-live="polite"></section>
