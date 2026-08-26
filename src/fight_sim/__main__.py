@@ -7,6 +7,7 @@ import json
 from pathlib import Path
 import sys
 
+from .domain import SimulatorConfig
 from .research import (
     DEFAULT_ARTIFACT_ROOT,
     DEFAULT_FIGHTER_PROFILES,
@@ -20,11 +21,20 @@ from .research import (
     execute_backtest,
     execute_diff,
     execute_fit,
+    execute_posterior_backtest,
     execute_reduce,
     execute_replay,
     execute_run,
 )
 from .posterior_predictive import validate_completed_fight, write_validation_report
+from .tuning import (
+    derive_mechanics_profile,
+    select_finish_profile,
+    select_mechanics_profile,
+    validate_finish_profile,
+    validate_mechanics_holdout,
+)
+from .upcoming import execute_upcoming_card
 
 
 def _bounded_integer(lower: int, upper: int):
@@ -74,6 +84,18 @@ def _input_arguments(parser: argparse.ArgumentParser) -> None:
     )
 
 
+def _load_simulator_config(path: str | None) -> SimulatorConfig | None:
+    if path is None:
+        return None
+    payload = json.loads(Path(path).read_text(encoding="utf-8"))
+    if not isinstance(payload, dict):
+        raise ValueError("simulator config must contain a JSON object")
+    values = payload.get("simulator_config", payload)
+    if not isinstance(values, dict):
+        raise ValueError("simulator_config must be a JSON object")
+    return SimulatorConfig(**values)
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="python -m fight_sim",
@@ -117,6 +139,10 @@ def build_parser() -> argparse.ArgumentParser:
     )
     _input_arguments(run)
     run.add_argument("--parameters", default=str(DEFAULT_PARAMETER_ARTIFACT))
+    run.add_argument(
+        "--simulator-config",
+        help="Optional JSON file containing global research mechanics multipliers",
+    )
     run.add_argument("--red-fighter-id", required=True)
     run.add_argument("--blue-fighter-id", required=True)
     run.add_argument("--division", required=True)
@@ -222,6 +248,183 @@ def build_parser() -> argparse.ArgumentParser:
     backtest.add_argument(
         "--ledger-output",
         help="Optional detailed JSONL ledger; omitted by the manual workflow",
+    )
+
+    posterior = commands.add_parser(
+        "posterior-backtest",
+        help="Run causal posterior-predictive checks on recent complete events",
+    )
+    _input_arguments(posterior)
+    posterior.add_argument("--last-events", type=_bounded_integer(1, 100), default=20)
+    posterior.add_argument(
+        "--skip-latest-events",
+        type=_bounded_integer(0, 99),
+        default=0,
+        help="Reserve this many newest complete events after the selected window",
+    )
+    posterior.add_argument(
+        "--min-prior-ufc-fights", type=_bounded_integer(0, 100), default=3
+    )
+    posterior.add_argument(
+        "--bootstrap-members", type=_bounded_integer(1, 64), default=64
+    )
+    posterior.add_argument(
+        "--paths-per-matchup", type=_bounded_integer(1, 16384), default=4096
+    )
+    posterior.add_argument("--seed-repeats", type=_bounded_integer(2, 4), default=2)
+    posterior.add_argument(
+        "--min-training-fights", type=_bounded_integer(1, 100000), default=500
+    )
+    posterior.add_argument("--random-seed", type=int, default=2903)
+    posterior.add_argument(
+        "--simulator-config",
+        help="Optional JSON file containing global research mechanics multipliers",
+    )
+    posterior.add_argument("--workers", type=_bounded_integer(1, 64), default=1)
+    posterior.add_argument("--chunk-size", type=_bounded_integer(1, 4096), default=64)
+    posterior.add_argument(
+        "--output-dir",
+        default=str(DEFAULT_ARTIFACT_ROOT / "posterior-backtest-recent"),
+    )
+
+    upcoming = commands.add_parser(
+        "upcoming-card",
+        help=(
+            "Fit once and precompute candidate-only distributions for the current "
+            "website card"
+        ),
+    )
+    _input_arguments(upcoming)
+    upcoming.add_argument(
+        "--card",
+        default="src/content/data/external/card_info.json",
+        help="Current card metadata JSON",
+    )
+    upcoming.add_argument(
+        "--outcomes",
+        default="src/content/data/external/outcome_forecasts.json",
+        help="Current outcome-forecast card/matchup JSON",
+    )
+    upcoming.add_argument(
+        "--simulator-config",
+        help="Validated mechanics-profile JSON selected from held-out evaluation",
+    )
+    upcoming.add_argument(
+        "--parameter-artifact",
+        help="Reuse a validated same-card pre-event artifact when no fights were added",
+    )
+    upcoming.add_argument(
+        "--minimum-prior-ufc-fights", type=_bounded_integer(0, 100), default=3
+    )
+    upcoming.add_argument(
+        "--bootstrap-members", type=_bounded_integer(1, 200), default=200
+    )
+    upcoming.add_argument(
+        "--initial-paths-per-member", type=_bounded_integer(2, 8192), default=512
+    )
+    upcoming.add_argument(
+        "--max-paths-per-member", type=_bounded_integer(2, 8192), default=2048
+    )
+    upcoming.add_argument("--random-seed", type=int, default=81173)
+    upcoming.add_argument("--workers", type=_bounded_integer(1, 64), default=1)
+    upcoming.add_argument("--chunk-size", type=_bounded_integer(1, 4096), default=64)
+    upcoming.add_argument(
+        "--output-dir",
+        default=str(DEFAULT_ARTIFACT_ROOT / "upcoming-card"),
+    )
+    upcoming.add_argument(
+        "--website-output",
+        default="src/content/data/external/simulation_forecasts.json",
+    )
+
+    tune = commands.add_parser(
+        "derive-mechanics",
+        help=(
+            "Derive one conservative global mechanics profile from development "
+            "events while reserving the newest events as holdout"
+        ),
+    )
+    tune.add_argument(
+        "population_run",
+        help="Posterior-backtest directory or its forecast-ledger.jsonl.gz",
+    )
+    tune.add_argument(
+        "--holdout-latest-events", type=_bounded_integer(1, 99), default=5
+    )
+    tune.add_argument(
+        "--prior-strength-events", type=_nonnegative_float, default=20.0
+    )
+    tune.add_argument(
+        "--output",
+        default=str(DEFAULT_ARTIFACT_ROOT / "mechanics-profile.json"),
+    )
+
+    select_tune = commands.add_parser(
+        "select-mechanics",
+        help="Select predeclared mechanics candidates on an intermediate event window",
+    )
+    select_tune.add_argument(
+        "baseline_population_run",
+        help="20-event neutral posterior-backtest directory or ledger",
+    )
+    select_tune.add_argument(
+        "--candidate",
+        action="append",
+        required=True,
+        metavar="LABEL=REPORT",
+        help="Candidate label and population-summary path; repeat for each profile",
+    )
+    select_tune.add_argument(
+        "--selection-events", type=_bounded_integer(1, 99), default=5
+    )
+    select_tune.add_argument(
+        "--skip-latest-events", type=_bounded_integer(0, 99), default=5
+    )
+    select_tune.add_argument(
+        "--output",
+        default=str(DEFAULT_ARTIFACT_ROOT / "selected-mechanics-profile.json"),
+    )
+
+    select_finish = commands.add_parser(
+        "select-finishing",
+        help="Select finish-conversion candidates on one intermediate cohort",
+    )
+    select_finish.add_argument("baseline_population_run")
+    select_finish.add_argument(
+        "--candidate",
+        action="append",
+        required=True,
+        metavar="LABEL=REPORT",
+        help="Candidate label and population-summary path; repeat for each profile",
+    )
+    select_finish.add_argument(
+        "--output",
+        default=str(DEFAULT_ARTIFACT_ROOT / "selected-finish-profile.json"),
+    )
+
+    validate_tune = commands.add_parser(
+        "validate-mechanics",
+        help="Retain or reject selected mechanics on the untouched newest events",
+    )
+    validate_tune.add_argument("baseline_population_run")
+    validate_tune.add_argument("tuned_population_run")
+    validate_tune.add_argument(
+        "--holdout-latest-events", type=_bounded_integer(1, 99), default=5
+    )
+    validate_tune.add_argument(
+        "--output",
+        default=str(DEFAULT_ARTIFACT_ROOT / "validated-mechanics-profile.json"),
+    )
+
+    validate_finish = commands.add_parser(
+        "validate-finishing",
+        help="Retain or reject finish conversion on its untouched holdout",
+    )
+    validate_finish.add_argument("baseline_holdout_run")
+    validate_finish.add_argument("candidate_holdout_run")
+    validate_finish.add_argument(
+        "--output",
+        default=str(DEFAULT_ARTIFACT_ROOT / "validated-finish-profile.json"),
     )
 
     replay = commands.add_parser(
@@ -335,6 +538,7 @@ def main(argv: list[str] | None = None) -> int:
                 winner_mcse_target=args.winner_mcse_target,
                 parameter_quantile_tolerance=args.parameter_quantile_tolerance,
                 allow_nonconverged_research=args.allow_nonconverged_research,
+                simulator_config=_load_simulator_config(args.simulator_config),
             )
             _print(
                 {
@@ -384,6 +588,155 @@ def main(argv: list[str] | None = None) -> int:
                         report.comparisons.get("production_simulation_stack") or {}
                     ).get("candidate_freeze_recommended", False),
                     "output": str(Path(args.output).resolve()),
+                }
+            )
+        elif args.command == "posterior-backtest":
+            destination, report = execute_posterior_backtest(
+                raw_path=args.raw,
+                profiles_path=args.profiles,
+                round_path=args.round_stats,
+                output_dir=args.output_dir,
+                last_events=args.last_events,
+                skip_latest_events=args.skip_latest_events,
+                min_prior_ufc_fights=args.min_prior_ufc_fights,
+                bootstrap_members=args.bootstrap_members,
+                paths_per_matchup=args.paths_per_matchup,
+                seed_repeats=args.seed_repeats,
+                min_training_fights=args.min_training_fights,
+                random_seed=args.random_seed,
+                workers=args.workers,
+                chunk_size=args.chunk_size,
+                progress=lambda message: print(message, file=sys.stderr, flush=True),
+                simulator_config=_load_simulator_config(args.simulator_config),
+            )
+            _print(
+                {
+                    "eligible_fights": report["selection"]["eligible_fights"],
+                    "elapsed_seconds": report["runtime"]["elapsed_seconds"],
+                    "output_dir": str(destination.resolve()),
+                    "report_sha256": report["report_sha256"],
+                    "total_paths": report["runtime"]["total_paths"],
+                }
+            )
+        elif args.command == "upcoming-card":
+            website_path, publication = execute_upcoming_card(
+                card_path=args.card,
+                outcome_path=args.outcomes,
+                raw_path=args.raw,
+                profiles_path=args.profiles,
+                round_path=args.round_stats,
+                output_dir=args.output_dir,
+                website_output=args.website_output,
+                minimum_prior_ufc_fights=args.minimum_prior_ufc_fights,
+                bootstrap_members=args.bootstrap_members,
+                initial_paths_per_member=args.initial_paths_per_member,
+                max_paths_per_member=args.max_paths_per_member,
+                random_seed=args.random_seed,
+                workers=args.workers,
+                chunk_size=args.chunk_size,
+                simulator_config=_load_simulator_config(args.simulator_config),
+                parameter_artifact_path=args.parameter_artifact,
+                progress=lambda message: print(message, file=sys.stderr, flush=True),
+            )
+            _print(
+                {
+                    "available_matchups": publication["available_matchups"],
+                    "excluded_matchups": publication["excluded_matchups"],
+                    "publication_sha256": publication["publication_sha256"],
+                    "website_output": str(website_path.resolve()),
+                }
+            )
+        elif args.command == "derive-mechanics":
+            profile = derive_mechanics_profile(
+                args.population_run,
+                output=args.output,
+                holdout_latest_events=args.holdout_latest_events,
+                prior_strength_events=args.prior_strength_events,
+            )
+            _print(
+                {
+                    "development_fights": profile["development_fight_count"],
+                    "held_out_events": profile["held_out_event_count"],
+                    "mechanics_profile_id": profile["mechanics_profile_id"],
+                    "output": str(Path(args.output).resolve()),
+                    "profile_sha256": profile["profile_sha256"],
+                }
+            )
+        elif args.command == "select-mechanics":
+            candidates = {}
+            for value in args.candidate:
+                label, separator, path = value.partition("=")
+                if not separator or not label.strip() or not path.strip():
+                    raise ValueError("candidate must use LABEL=REPORT")
+                if label in candidates:
+                    raise ValueError(f"duplicate candidate label: {label}")
+                candidates[label] = path
+            selection = select_mechanics_profile(
+                args.baseline_population_run,
+                candidates,
+                output=args.output,
+                selection_events=args.selection_events,
+                skip_latest_events=args.skip_latest_events,
+            )
+            _print(
+                {
+                    "mechanics_profile_id": selection["mechanics_profile_id"],
+                    "output": str(Path(args.output).resolve()),
+                    "selected_label": selection["selected_label"],
+                    "selection_sha256": selection["selection_sha256"],
+                    "selection_status": selection["selection_status"],
+                }
+            )
+        elif args.command == "validate-mechanics":
+            validation = validate_mechanics_holdout(
+                args.baseline_population_run,
+                args.tuned_population_run,
+                output=args.output,
+                holdout_latest_events=args.holdout_latest_events,
+            )
+            _print(
+                {
+                    "mechanics_profile_id": validation["mechanics_profile_id"],
+                    "output": str(Path(args.output).resolve()),
+                    "validation_sha256": validation["validation_sha256"],
+                    "validation_status": validation["validation_status"],
+                }
+            )
+        elif args.command == "select-finishing":
+            candidates = {}
+            for value in args.candidate:
+                label, separator, path = value.partition("=")
+                if not separator or not label.strip() or not path.strip():
+                    raise ValueError("candidate must use LABEL=REPORT")
+                if label in candidates:
+                    raise ValueError(f"duplicate candidate label: {label}")
+                candidates[label] = path
+            selection = select_finish_profile(
+                args.baseline_population_run,
+                candidates,
+                output=args.output,
+            )
+            _print(
+                {
+                    "mechanics_profile_id": selection["mechanics_profile_id"],
+                    "output": str(Path(args.output).resolve()),
+                    "selected_label": selection["selected_label"],
+                    "selection_sha256": selection["selection_sha256"],
+                    "selection_status": selection["selection_status"],
+                }
+            )
+        elif args.command == "validate-finishing":
+            validation = validate_finish_profile(
+                args.baseline_holdout_run,
+                args.candidate_holdout_run,
+                output=args.output,
+            )
+            _print(
+                {
+                    "mechanics_profile_id": validation["mechanics_profile_id"],
+                    "output": str(Path(args.output).resolve()),
+                    "validation_sha256": validation["validation_sha256"],
+                    "validation_status": validation["validation_status"],
                 }
             )
         elif args.command == "replay":

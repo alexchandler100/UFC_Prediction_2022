@@ -293,6 +293,17 @@ class SimulatorConfig:
     max_hazard_per_minute: float = 100.0
     no_contest_rate_per_minute: float = 0.0
     other_finish_rate_per_minute: float = 0.0
+    distance_strike_hazard_multiplier: float = 1.0
+    clinch_strike_hazard_multiplier: float = 1.0
+    ground_strike_hazard_multiplier: float = 1.0
+    takedown_hazard_multiplier: float = 1.0
+    submission_hazard_multiplier: float = 1.0
+    clinch_entry_hazard_multiplier: float = 1.0
+    clinch_exit_hazard_multiplier: float = 1.0
+    escape_hazard_multiplier: float = 1.0
+    knockdown_probability_multiplier: float = 1.0
+    ko_tko_finish_probability_multiplier: float = 1.0
+    submission_finish_probability_multiplier: float = 1.0
     schema_version: str = SCHEMA_VERSION
 
     def __post_init__(self) -> None:
@@ -304,6 +315,20 @@ class SimulatorConfig:
         _nonnegative("min_hazard_per_minute", self.min_hazard_per_minute)
         _nonnegative("no_contest_rate_per_minute", self.no_contest_rate_per_minute)
         _nonnegative("other_finish_rate_per_minute", self.other_finish_rate_per_minute)
+        for name in (
+            "distance_strike_hazard_multiplier",
+            "clinch_strike_hazard_multiplier",
+            "ground_strike_hazard_multiplier",
+            "takedown_hazard_multiplier",
+            "submission_hazard_multiplier",
+            "clinch_entry_hazard_multiplier",
+            "clinch_exit_hazard_multiplier",
+            "escape_hazard_multiplier",
+            "knockdown_probability_multiplier",
+            "ko_tko_finish_probability_multiplier",
+            "submission_finish_probability_multiplier",
+        ):
+            _nonnegative(name, float(getattr(self, name)))
         if self.max_hazard_per_minute <= self.min_hazard_per_minute:
             raise ValueError("max_hazard_per_minute must exceed minimum")
 

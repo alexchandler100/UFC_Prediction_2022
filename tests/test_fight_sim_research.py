@@ -39,6 +39,7 @@ from fight_sim.research import (  # noqa: E402
     BASELINE_WARNINGS_ATTR,
     _borderline_joint_comparisons,
     _compact_evaluation_forecast,
+    _recent_complete_event_selection,
     attach_chronological_model_baselines,
     attach_timestamped_market_baselines,
     causal_joint_baseline_forecasts,
@@ -202,6 +203,55 @@ def _forecast(matchup_id: str, red_count: int, blue_count: int) -> dict[str, obj
 
 
 class FightSimulationResearchTests(unittest.TestCase):
+    def test_recent_event_selection_keeps_whole_cards_then_excludes_low_exposure(self):
+        physical = pd.DataFrame(
+            [
+                {
+                    "date": pd.Timestamp(date, tz="UTC"),
+                    "event_id": event,
+                    "fight_id": fight,
+                    "red_prior_ufc_fights": red,
+                    "blue_prior_ufc_fights": blue,
+                }
+                for date, event, fight, red, blue in (
+                    ("2026-01-01", "old", "old-1", 10, 10),
+                    ("2026-02-01", "middle", "middle-1", 3, 3),
+                    ("2026-02-01", "middle", "middle-2", 2, 9),
+                    ("2026-03-01", "new", "new-1", 5, 4),
+                    ("2026-03-01", "new", "new-2", 0, 0),
+                )
+            ]
+        )
+
+        selected, manifest, counts = _recent_complete_event_selection(
+            physical, last_events=2, min_prior_ufc_fights=3
+        )
+
+        self.assertEqual(selected["fight_id"].tolist(), ["middle-1", "new-1"])
+        self.assertEqual([item["event_id"] for item in manifest], ["middle", "new"])
+        self.assertEqual(
+            [(item["card_fights"], item["eligible_fights"]) for item in manifest],
+            [(2, 1), (2, 1)],
+        )
+        self.assertEqual(
+            counts,
+            {
+                "selected_card_fights": 4,
+                "eligible_fights": 2,
+                "excluded_low_exposure": 2,
+            },
+        )
+        reserved, reserved_manifest, _ = _recent_complete_event_selection(
+            physical,
+            last_events=1,
+            min_prior_ufc_fights=3,
+            skip_latest_events=1,
+        )
+        self.assertEqual(reserved["fight_id"].tolist(), ["middle-1"])
+        self.assertEqual(
+            [item["event_id"] for item in reserved_manifest], ["middle"]
+        )
+
     def test_experience_band_uses_only_strictly_earlier_fights(self):
         baseline = physical_backtest_frame(_raw()).set_index("fight_id")
         self.assertEqual(baseline.loc["fight-1", "red_prior_ufc_fights"], 0)

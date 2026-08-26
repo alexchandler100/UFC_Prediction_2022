@@ -291,21 +291,76 @@ def _hazards(runtime: _Runtime) -> tuple[_Hazard, ...]:
     for side in (Side.RED, Side.BLUE):
         params = _runtime_parameters(runtime, side)
         if state.phase is Phase.DISTANCE:
-            add("strike", side, params.strike_rate_distance / STRIKES_PER_EXCHANGE)
-            add("clinch_entry", side, params.clinch_entry_rate)
-            add("takedown", side, params.takedown_attempt_rate, 0.60)
+            add(
+                "strike",
+                side,
+                params.strike_rate_distance / STRIKES_PER_EXCHANGE,
+                spec.simulator.distance_strike_hazard_multiplier,
+            )
+            add(
+                "clinch_entry",
+                side,
+                params.clinch_entry_rate,
+                spec.simulator.clinch_entry_hazard_multiplier,
+            )
+            add(
+                "takedown",
+                side,
+                params.takedown_attempt_rate,
+                0.60 * spec.simulator.takedown_hazard_multiplier,
+            )
         elif state.phase is Phase.CLINCH:
-            add("strike", side, params.strike_rate_clinch / STRIKES_PER_EXCHANGE)
-            add("takedown", side, params.takedown_attempt_rate, 1.25)
-            add("clinch_exit", side, params.clinch_exit_rate)
+            add(
+                "strike",
+                side,
+                params.strike_rate_clinch / STRIKES_PER_EXCHANGE,
+                spec.simulator.clinch_strike_hazard_multiplier,
+            )
+            add(
+                "takedown",
+                side,
+                params.takedown_attempt_rate,
+                1.25 * spec.simulator.takedown_hazard_multiplier,
+            )
+            add(
+                "clinch_exit",
+                side,
+                params.clinch_exit_rate,
+                spec.simulator.clinch_exit_hazard_multiplier,
+            )
         elif state.phase is Phase.GROUND:
             if state.top_position is side:
-                add("strike", side, params.strike_rate_ground / STRIKES_PER_EXCHANGE)
-                add("submission", side, params.submission_attempt_rate)
+                add(
+                    "strike",
+                    side,
+                    params.strike_rate_ground / STRIKES_PER_EXCHANGE,
+                    spec.simulator.ground_strike_hazard_multiplier,
+                )
+                add(
+                    "submission",
+                    side,
+                    params.submission_attempt_rate,
+                    spec.simulator.submission_hazard_multiplier,
+                )
             else:
-                add("strike", side, params.strike_rate_ground / STRIKES_PER_EXCHANGE, 0.18)
-                add("submission", side, params.submission_attempt_rate, 0.55)
-                add("escape", side, params.escape_rate)
+                add(
+                    "strike",
+                    side,
+                    params.strike_rate_ground / STRIKES_PER_EXCHANGE,
+                    0.18 * spec.simulator.ground_strike_hazard_multiplier,
+                )
+                add(
+                    "submission",
+                    side,
+                    params.submission_attempt_rate,
+                    0.55 * spec.simulator.submission_hazard_multiplier,
+                )
+                add(
+                    "escape",
+                    side,
+                    params.escape_rate,
+                    spec.simulator.escape_hazard_multiplier,
+                )
         else:
             add("scramble_ground", side, 2.0 + params.ground_control_rate)
             add("scramble_distance", side, 1.6 + params.escape_rate)
@@ -409,7 +464,10 @@ def _transition_probability(runtime: _Runtime, action: str, actor: Side) -> floa
         base = actor_params.takedown_accuracy * (1.0 + 0.75 * (0.50 - target_params.takedown_defense))
         return _clip(base * (0.75 + 0.25 * _stamina(state, actor)), 0.03, 0.92)
     if action == "submission":
-        base = actor_params.submission_finish_probability
+        base = (
+            actor_params.submission_finish_probability
+            * runtime.spec.simulator.submission_finish_probability_multiplier
+        )
         defense = 1.0 + 1.1 * (0.50 - target_params.submission_defense)
         position = 1.20 if state.top_position is actor else 0.72
         vulnerability = 1.0 + 0.65 * _hurt(state, actor.opponent) + 0.35 * (1.0 - _stamina(state, actor.opponent))
@@ -510,6 +568,12 @@ def _strike_consequence(runtime: _Runtime, actor: Side, landed: int) -> None:
         0.0,
         0.75,
     )
+    knockdown_probability_per_landed = _clip(
+        knockdown_probability_per_landed
+        * runtime.spec.simulator.knockdown_probability_multiplier,
+        0.0,
+        0.75,
+    )
     knockdowns = runtime.rng.binomial("strike.knockdown", landed, knockdown_probability_per_landed)
     stats = FighterStats(knockdowns=knockdowns)
     effectiveness = landed * (1.0 + 1.75 * severity) + 4.0 * knockdowns
@@ -539,11 +603,13 @@ def _strike_consequence(runtime: _Runtime, actor: Side, landed: int) -> None:
         },
     )
     if knockdowns:
+        finish_multiplier = runtime.spec.simulator.ko_tko_finish_probability_multiplier
         finish_probability_per_knockdown = _clip(
             actor_params.finish_after_knockdown
             * (1.30 - 0.65 * target_params.ko_resistance)
-            * (1.0 + 0.45 * target_hurt + 0.12 * target_damage),
-            0.01,
+            * (1.0 + 0.45 * target_hurt + 0.12 * target_damage)
+            * finish_multiplier,
+            0.01 if finish_multiplier > 0.0 else 0.0,
             0.95,
         )
         finish_probability = 1.0 - (1.0 - finish_probability_per_knockdown) ** knockdowns

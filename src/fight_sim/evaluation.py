@@ -9,6 +9,7 @@ strictly before the test year and must return forecasts for that year's rows.
 from __future__ import annotations
 
 from dataclasses import asdict, dataclass, field
+import hashlib
 import json
 import math
 import os
@@ -19,6 +20,7 @@ from typing import Callable, Iterable, Mapping, Sequence
 import numpy as np
 import pandas as pd
 from scipy.optimize import minimize
+from scipy.stats import cramervonmises, kstest
 from sklearn.linear_model import LogisticRegression
 
 from .parameters import canonical_json, canonical_sha256
@@ -317,17 +319,18 @@ def _discrete_crps(
         or not math.isfinite(float(actual))
     ):
         return None
-    # CRPS identity for a discrete predictive distribution:
-    # E|X-y| - 1/2 E|X-X'|.
+    # Linear-time form of E|X-y| - 1/2 E|X-X'| for sorted support.
     first = float(np.sum(mass * np.abs(support - float(actual))))
-    second = float(
-        np.sum(
-            mass[:, None]
-            * mass[None, :]
-            * np.abs(support[:, None] - support[None, :])
+    cumulative_probability = 0.0
+    cumulative_value = 0.0
+    half_pair_distance = 0.0
+    for value, probability in zip(support, mass, strict=True):
+        half_pair_distance += float(probability) * (
+            float(value) * cumulative_probability - cumulative_value
         )
-    )
-    return first - 0.5 * second
+        cumulative_probability += float(probability)
+        cumulative_value += float(probability) * float(value)
+    return first - half_pair_distance
 
 
 def _weighted_quantile(
@@ -403,6 +406,150 @@ def _finite_number(value: object) -> float | None:
     except (TypeError, ValueError):
         return None
     return number if math.isfinite(number) else None
+
+
+def _deterministic_uniform(*parts: object) -> float:
+    digest = hashlib.sha256(
+        "\x1f".join(str(part) for part in parts).encode("utf-8")
+    ).digest()
+    return (int.from_bytes(digest[:8], "big") + 0.5) / float(2**64)
+
+
+def _predictive_diagnostic(
+    actual: float,
+    support: np.ndarray,
+    mass: np.ndarray,
+    *,
+    event_id: object,
+    fight_id: object,
+    statistic: str,
+) -> dict[str, object]:
+    mean = float(np.sum(support * mass))
+    variance = float(np.sum(np.square(support - mean) * mass))
+    standard_deviation = math.sqrt(max(0.0, variance))
+    less = float(mass[support < actual].sum())
+    equal = float(mass[support == actual].sum())
+    randomized_pit = less + _deterministic_uniform(
+        event_id, fight_id, statistic, "randomized-pit-v1"
+    ) * equal
+    randomized_tail = min(1.0, 2.0 * min(randomized_pit, 1.0 - randomized_pit))
+    result: dict[str, object] = {
+        "event_id": str(event_id),
+        "fight_id": str(fight_id),
+        "statistic": statistic,
+        "observed": float(actual),
+        "predictive_mean": mean,
+        "predictive_standard_deviation": standard_deviation,
+        "standardized_residual": (
+            (float(actual) - mean) / standard_deviation
+            if standard_deviation > 0.0
+            else None
+        ),
+        "crps": _discrete_crps(float(actual), support, mass),
+        "pit": randomized_pit,
+        "randomized_two_sided_tail": randomized_tail,
+        "point_mass_at_observed": equal,
+    }
+    for coverage in (0.50, 0.80, 0.90, 0.95):
+        tail = (1.0 - coverage) / 2.0
+        lower = _weighted_quantile(support, mass, tail)
+        upper = _weighted_quantile(support, mass, 1.0 - tail)
+        label = f"{int(coverage * 100)}"
+        result[f"interval_{label}_lower"] = lower
+        result[f"interval_{label}_upper"] = upper
+        result[f"interval_{label}_contains"] = bool(lower <= actual <= upper)
+    return result
+
+
+def posterior_predictive_rows(frame: pd.DataFrame) -> list[dict[str, object]]:
+    """Return auditable fight/statistic diagnostics from exact forecast counts."""
+
+    rows: list[dict[str, object]] = []
+    for source in frame.to_dict("records"):
+        event_id = source.get("event_id", "")
+        fight_id = source.get("fight_id", "")
+        duration = _finite_number(source.get("actual_duration_seconds"))
+        if duration is not None:
+            support, mass = _duration_distribution(source["forecast"])
+            if len(support):
+                rows.append(
+                    _predictive_diagnostic(
+                        duration,
+                        support,
+                        mass,
+                        event_id=event_id,
+                        fight_id=fight_id,
+                        statistic="duration_seconds",
+                    )
+                )
+        for statistic, (support, mass) in _statistic_distributions(
+            source["forecast"]
+        ).items():
+            actual = _finite_number(source.get(f"actual_{statistic}"))
+            if actual is None:
+                continue
+            rows.append(
+                _predictive_diagnostic(
+                    actual,
+                    support,
+                    mass,
+                    event_id=event_id,
+                    fight_id=fight_id,
+                    statistic=statistic,
+                )
+            )
+    return rows
+
+
+def _diagnostic_summary(rows: Sequence[Mapping[str, object]]) -> dict[str, object]:
+    by_statistic: dict[str, list[Mapping[str, object]]] = {}
+    for row in rows:
+        by_statistic.setdefault(str(row["statistic"]), []).append(row)
+    result: dict[str, object] = {}
+    for statistic, items in sorted(by_statistic.items()):
+        pits = np.asarray([float(item["pit"]) for item in items], dtype=float)
+        residuals = np.asarray(
+            [
+                float(item["predictive_mean"]) - float(item["observed"])
+                for item in items
+            ],
+            dtype=float,
+        )
+        standardized = np.asarray(
+            [
+                float(item["standardized_residual"])
+                for item in items
+                if item.get("standardized_residual") is not None
+            ],
+            dtype=float,
+        )
+        ks = kstest(pits, "uniform") if len(pits) >= 2 else None
+        cvm = cramervonmises(pits, "uniform") if len(pits) >= 2 else None
+        result[statistic] = {
+            "n": len(items),
+            "mean_crps": float(np.mean([float(item["crps"]) for item in items])),
+            "predictive_minus_observed_mean": float(np.mean(residuals)),
+            "mean_absolute_standardized_residual": (
+                float(np.mean(np.abs(standardized))) if len(standardized) else None
+            ),
+            "pit_mean": float(np.mean(pits)),
+            "pit_histogram_10": np.histogram(pits, bins=np.linspace(0.0, 1.0, 11))[0].astype(int).tolist(),
+            "pit_ks_statistic": None if ks is None else float(ks.statistic),
+            "pit_ks_nominal_iid_pvalue": None if ks is None else float(ks.pvalue),
+            "pit_cvm_statistic": None if cvm is None else float(cvm.statistic),
+            "pit_cvm_nominal_iid_pvalue": (
+                None if cvm is None else float(cvm.pvalue)
+            ),
+            "randomized_tail_below_0_01_rate": float(np.mean([float(item["randomized_two_sided_tail"]) < 0.01 for item in items])),
+            "randomized_tail_below_0_05_rate": float(np.mean([float(item["randomized_two_sided_tail"]) < 0.05 for item in items])),
+            **{
+                f"interval_{coverage}_coverage": float(
+                    np.mean([bool(item[f"interval_{coverage}_contains"]) for item in items])
+                )
+                for coverage in (50, 80, 90, 95)
+            },
+        }
+    return result
 
 
 def _actual_method(outcome: str) -> str:
@@ -632,6 +779,18 @@ def evaluate_simulation_ledger(frame: pd.DataFrame) -> dict[str, object]:
                 np.mean(predictive - observed)
             ),
         }
+    predictive_rows = posterior_predictive_rows(frame)
+    posterior_checks = _diagnostic_summary(predictive_rows)
+    for statistic, existing in statistic_checks.items():
+        enhanced = posterior_checks.get(statistic)
+        if isinstance(enhanced, Mapping):
+            existing.update(
+                {
+                    key: value
+                    for key, value in enhanced.items()
+                    if key not in {"n", "mean_crps", "predictive_minus_observed_mean"}
+                }
+            )
     return {
         "n_fights": int(len(frame)),
         "primary_joint_side_method_log_loss": joint_loss,
@@ -660,6 +819,13 @@ def evaluate_simulation_ledger(frame: pd.DataFrame) -> dict[str, object]:
         "available_totals_missing_forecast_line": total_missing_forecast_line,
         "available_totals_missing_actual_duration": total_missing_actual_duration,
         "count_distribution_predictive_checks": statistic_checks,
+        "posterior_predictive_checks": posterior_checks,
+        "posterior_predictive_diagnostic_rows": len(predictive_rows),
+        "posterior_predictive_pvalue_warning": (
+            "PIT KS/CvM p-values are nominal iid diagnostics, not probabilities "
+            "that the simulator generated the observations; event-card clustering "
+            "and multiple comparisons require cautious interpretation"
+        ),
         "mean_reported_process_mcse": (
             float(np.nanmean(process_mcses)) if process_mcses else None
         ),

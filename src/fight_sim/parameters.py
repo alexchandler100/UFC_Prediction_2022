@@ -2156,6 +2156,7 @@ class CausalParameterFitter:
         division: str,
         member_index: int,
         as_of: object | None = None,
+        _artifact_validated: bool = False,
     ) -> object:
         """Construct the engine's immutable ``FighterSnapshot`` for one member.
 
@@ -2165,7 +2166,11 @@ class CausalParameterFitter:
         seemingly historical snapshot from carrying future-fit parameters.
         """
 
-        artifact.validate()
+        # Batch spec construction validates the immutable artifact once before
+        # requesting both sides across every member. Standalone callers retain
+        # the defensive validation default.
+        if not _artifact_validated:
+            artifact.validate()
         artifact_cutoff = pd.to_datetime(artifact.as_of_utc, utc=True)
         requested = (
             artifact_cutoff

@@ -9,13 +9,15 @@ from __future__ import annotations
 import csv
 from dataclasses import asdict, replace
 from datetime import datetime, timezone
+import gzip
 import json
 import math
 import os
 from pathlib import Path
 from statistics import median
 import tempfile
-from typing import Iterable, Mapping, Sequence
+import time
+from typing import Callable, Iterable, Mapping, Sequence
 
 import numpy as np
 import pandas as pd
@@ -24,12 +26,14 @@ from fight_semantics import historical_schedule, method_bucket, stable_ufcstats_
 from market_tracker import matchup_id_for
 
 from .analysis import write_analysis_report
-from .domain import BoutConfig, SimulationRunSpec
+from .domain import BoutConfig, SimulationRunSpec, SimulatorConfig
 from .evaluation import (
     BacktestConfig,
     BacktestReport,
     add_simulation_win_probability_column,
+    evaluate_simulation_ledger,
     evaluate_chronological_winner_stack,
+    posterior_predictive_rows,
     repeated_seed_summary,
     run_chronological_backtest,
     write_backtest_report,
@@ -114,6 +118,24 @@ def _json_default(value: object) -> object:
     if hasattr(value, "to_dict"):
         return value.to_dict()  # type: ignore[attr-defined]
     raise TypeError(f"cannot serialize {type(value).__name__}")
+
+
+def _json_ledger_value(value: object) -> object:
+    """Convert expected missing ledger values to JSON null without hiding report NaNs."""
+
+    if isinstance(value, np.generic):
+        return _json_ledger_value(value.item())
+    if isinstance(value, pd.Timestamp):
+        return value.isoformat()
+    if isinstance(value, Mapping):
+        return {str(key): _json_ledger_value(item) for key, item in value.items()}
+    if isinstance(value, (list, tuple)):
+        return [_json_ledger_value(item) for item in value]
+    if isinstance(value, float) and not math.isfinite(value):
+        return None
+    if hasattr(value, "to_dict"):
+        return _json_ledger_value(value.to_dict())  # type: ignore[attr-defined]
+    return value
 
 
 def atomic_write_text(path: str | Path, text: str) -> Path:
@@ -238,7 +260,11 @@ def build_specs(
     event_id: str,
     root_seed: str | int,
     matchup_id: str | None = None,
+    simulator_base: SimulatorConfig | None = None,
+    _artifact_validated: bool = False,
 ) -> tuple[SimulationRunSpec, ...]:
+    if not _artifact_validated:
+        artifact.validate()
     red_id = _identity_token(red_fighter_id)
     blue_id = _identity_token(blue_fighter_id)
     if not red_id or not blue_id or red_id == blue_id:
@@ -261,12 +287,14 @@ def build_specs(
             red_id,
             division=division,
             member_index=member.member_index,
+            _artifact_validated=True,
         )
         blue = fitter.snapshot_for(
             artifact,
             blue_id,
             division=division,
             member_index=member.member_index,
+            _artifact_validated=True,
         )
         specs.append(
             SimulationRunSpec(
@@ -276,7 +304,7 @@ def build_specs(
                 root_seed=root_seed,
                 parameter_artifact_id=artifact.artifact_sha256,
                 bootstrap_member=member.member_index,
-                simulator=simulator_config_for_member(member),
+                simulator=simulator_config_for_member(member, base=simulator_base),
             )
         )
     return tuple(specs)
@@ -339,6 +367,7 @@ def execute_run(
     winner_mcse_target: float = 0.002,
     parameter_quantile_tolerance: float = 0.01,
     allow_nonconverged_research: bool = False,
+    simulator_config: SimulatorConfig | None = None,
 ) -> tuple[Path, MonteCarloResult]:
     artifact = load_parameter_artifact(parameter_path)
     raw, profiles, rounds = load_research_inputs(raw_path, profiles_path, round_path)
@@ -353,6 +382,7 @@ def execute_run(
         event_id=event_id,
         root_seed=root_seed,
         matchup_id=matchup_id,
+        simulator_base=simulator_config,
     )
     destination = Path(output_dir) if output_dir is not None else _default_run_dir(specs)
     if destination.exists() and any(destination.iterdir()):
@@ -529,6 +559,9 @@ def physical_backtest_frame(raw: pd.DataFrame) -> pd.DataFrame:
                     for target, source in (
                         ("significant_strikes", "sig_strikes_landed"),
                         ("significant_strike_attempts", "sig_strikes_attempts"),
+                        ("head_strikes_landed", "head_strikes_landed"),
+                        ("body_strikes_landed", "body_strikes_landed"),
+                        ("leg_strikes_landed", "leg_strikes_landed"),
                         ("distance_strikes_landed", "distance_strikes_landed"),
                         ("distance_strike_attempts", "distance_strikes_attempts"),
                         ("clinch_strikes_landed", "clinch_strikes_landed"),
@@ -537,6 +570,7 @@ def physical_backtest_frame(raw: pd.DataFrame) -> pd.DataFrame:
                         ("ground_strike_attempts", "ground_strikes_attempts"),
                         ("knockdowns", "knockdowns"),
                         ("takedowns", "takedowns_landed"),
+                        ("takedown_attempts", "takedowns_attempts"),
                         ("submission_attempts", "sub_attempts"),
                         ("control_seconds", "control"),
                     )
@@ -548,6 +582,9 @@ def physical_backtest_frame(raw: pd.DataFrame) -> pd.DataFrame:
                     for target, source in (
                         ("significant_strikes", "sig_strikes_landed"),
                         ("significant_strike_attempts", "sig_strikes_attempts"),
+                        ("head_strikes_landed", "head_strikes_landed"),
+                        ("body_strikes_landed", "body_strikes_landed"),
+                        ("leg_strikes_landed", "leg_strikes_landed"),
                         ("distance_strikes_landed", "distance_strikes_landed"),
                         ("distance_strike_attempts", "distance_strikes_attempts"),
                         ("clinch_strikes_landed", "clinch_strikes_landed"),
@@ -556,15 +593,35 @@ def physical_backtest_frame(raw: pd.DataFrame) -> pd.DataFrame:
                         ("ground_strike_attempts", "ground_strikes_attempts"),
                         ("knockdowns", "knockdowns"),
                         ("takedowns", "takedowns_landed"),
+                        ("takedown_attempts", "takedowns_attempts"),
                         ("submission_attempts", "sub_attempts"),
                         ("control_seconds", "control"),
                     )
                 },
             }
         )
-    return pd.DataFrame(rows).sort_values(
+    result = pd.DataFrame(rows).sort_values(
         ["date", "event_id", "fight_id"], kind="stable"
     ).reset_index(drop=True)
+    pairs = {
+        "total_significant_strikes": ("significant_strikes", "sum"),
+        "significant_strike_differential": ("significant_strikes", "difference"),
+        "total_significant_strike_attempts": ("significant_strike_attempts", "sum"),
+        "total_ground_strikes_landed": ("ground_strikes_landed", "sum"),
+        "ground_strike_differential": ("ground_strikes_landed", "difference"),
+        "total_knockdowns": ("knockdowns", "sum"),
+        "knockdown_differential": ("knockdowns", "difference"),
+        "total_takedowns": ("takedowns", "sum"),
+        "takedown_differential": ("takedowns", "difference"),
+        "total_submission_attempts": ("submission_attempts", "sum"),
+        "total_control_seconds": ("control_seconds", "sum"),
+        "control_differential_seconds": ("control_seconds", "difference"),
+    }
+    for output, (source, operation) in pairs.items():
+        red = pd.to_numeric(result[f"actual_red_{source}"], errors="coerce")
+        blue = pd.to_numeric(result[f"actual_blue_{source}"], errors="coerce")
+        result[f"actual_{output}"] = red + blue if operation == "sum" else red - blue
+    return result
 
 
 def _bounded_backtest_input(
@@ -1156,7 +1213,7 @@ def _atomic_write_ledger(path: str | Path, ledger: pd.DataFrame) -> None:
     for row in ledger.to_dict("records"):
         lines.append(
             json.dumps(
-                row,
+                _json_ledger_value(row),
                 sort_keys=True,
                 ensure_ascii=False,
                 allow_nan=False,
@@ -1164,6 +1221,39 @@ def _atomic_write_ledger(path: str | Path, ledger: pd.DataFrame) -> None:
             )
         )
     atomic_write_text(path, "\n".join(lines) + ("\n" if lines else ""))
+
+
+def _atomic_write_jsonl_gzip(
+    path: str | Path, rows: Iterable[Mapping[str, object]]
+) -> Path:
+    destination = Path(path)
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    descriptor, temporary_name = tempfile.mkstemp(
+        prefix=f".{destination.name}.", suffix=".tmp", dir=destination.parent
+    )
+    try:
+        with os.fdopen(descriptor, "wb") as raw:
+            with gzip.GzipFile(fileobj=raw, mode="wb", mtime=0) as compressed:
+                for row in rows:
+                    line = json.dumps(
+                        _json_ledger_value(dict(row)),
+                        sort_keys=True,
+                        ensure_ascii=False,
+                        allow_nan=False,
+                        default=_json_default,
+                        separators=(",", ":"),
+                    )
+                    compressed.write(line.encode("utf-8") + b"\n")
+            raw.flush()
+            os.fsync(raw.fileno())
+        os.replace(temporary_name, destination)
+    except Exception:
+        try:
+            os.unlink(temporary_name)
+        except FileNotFoundError:
+            pass
+        raise
+    return destination
 
 
 _BASELINE_OUTCOME_CATEGORIES = (
@@ -1829,6 +1919,332 @@ def execute_diff(
     if output is not None:
         atomic_write_json(output, result)
     return result, differs
+
+
+def _recent_complete_event_selection(
+    physical: pd.DataFrame,
+    *,
+    last_events: int,
+    min_prior_ufc_fights: int,
+    skip_latest_events: int = 0,
+) -> tuple[pd.DataFrame, list[dict[str, object]], dict[str, int]]:
+    if last_events <= 0:
+        raise ValueError("last_events must be positive")
+    if min_prior_ufc_fights < 0:
+        raise ValueError("min_prior_ufc_fights must be nonnegative")
+    if skip_latest_events < 0:
+        raise ValueError("skip_latest_events must be nonnegative")
+    all_events = (
+        physical[["date", "event_id"]]
+        .drop_duplicates()
+        .sort_values(["date", "event_id"], kind="stable")
+    )
+    eligible_window = (
+        all_events.iloc[:-skip_latest_events]
+        if skip_latest_events
+        else all_events
+    )
+    events = eligible_window.tail(last_events)
+    if len(events) != last_events:
+        raise ValueError("not enough complete events for the requested selection window")
+    selected = physical.merge(
+        events.assign(_selected_event=True),
+        on=["date", "event_id"],
+        how="inner",
+        validate="many_to_one",
+    )
+    exposure = (
+        selected["red_prior_ufc_fights"].ge(min_prior_ufc_fights)
+        & selected["blue_prior_ufc_fights"].ge(min_prior_ufc_fights)
+    )
+    eligible = selected.loc[exposure].copy()
+    event_rows: list[dict[str, object]] = []
+    for source in events.to_dict("records"):
+        event_id = str(source["event_id"])
+        date = pd.Timestamp(source["date"])
+        all_card = selected.loc[
+            selected["event_id"].astype(str).eq(event_id)
+            & selected["date"].eq(date)
+        ]
+        card = eligible.loc[
+            eligible["event_id"].astype(str).eq(event_id)
+            & eligible["date"].eq(date)
+        ]
+        event_rows.append(
+            {
+                "event_id": event_id,
+                "date": date.date().isoformat(),
+                "card_fights": int(len(all_card)),
+                "eligible_fights": int(len(card)),
+                "excluded_low_exposure": int(len(all_card) - len(card)),
+            }
+        )
+    return (
+        eligible.sort_values(["date", "event_id", "fight_id"], kind="stable").reset_index(drop=True),
+        event_rows,
+        {
+            "selected_card_fights": int(len(selected)),
+            "eligible_fights": int(len(eligible)),
+            "excluded_low_exposure": int((~exposure).sum()),
+        },
+    )
+
+
+def _joint_log_loss(frame: pd.DataFrame, column: str) -> float | None:
+    losses: list[float] = []
+    for row in frame.to_dict("records"):
+        forecast = row.get(column)
+        if forecast is None:
+            continue
+        value = dict(forecast) if isinstance(forecast, Mapping) else {}
+        probabilities = dict(value.get("outcome_probabilities") or value)
+        probability = float(probabilities.get(str(row["actual_outcome"]), 0.0))
+        losses.append(-math.log(max(probability, 1e-12)))
+    return float(np.mean(losses)) if losses else None
+
+
+def execute_posterior_backtest(
+    *,
+    output_dir: str | Path,
+    last_events: int = 20,
+    skip_latest_events: int = 0,
+    min_prior_ufc_fights: int = 3,
+    bootstrap_members: int = 64,
+    paths_per_matchup: int = 4096,
+    seed_repeats: int = 2,
+    min_training_fights: int = 500,
+    random_seed: int = 2903,
+    workers: int = 1,
+    chunk_size: int = 64,
+    raw_path: str | Path = DEFAULT_RAW_FIGHTS,
+    profiles_path: str | Path = DEFAULT_FIGHTER_PROFILES,
+    round_path: str | Path = DEFAULT_ROUND_STATS,
+    progress: Callable[[str], None] | None = None,
+    simulator_config: SimulatorConfig | None = None,
+) -> tuple[Path, dict[str, object]]:
+    """Run a causal event-cutoff posterior-predictive population study."""
+
+    if paths_per_matchup <= 0 or paths_per_matchup % bootstrap_members:
+        raise ValueError("paths_per_matchup must be positive and divisible by bootstrap_members")
+    if not 2 <= seed_repeats <= 4:
+        raise ValueError("seed_repeats must be between 2 and 4")
+    destination = Path(output_dir)
+    if destination.exists() and any(destination.iterdir()):
+        raise ValueError(
+            f"population output directory is not empty: {destination}; choose a new directory"
+        )
+    destination.mkdir(parents=True, exist_ok=True)
+    started = time.perf_counter()
+    raw, profiles, rounds = load_research_inputs(raw_path, profiles_path, round_path)
+    physical = physical_backtest_frame(raw)
+    selected, event_manifest, selection_counts = _recent_complete_event_selection(
+        physical,
+        last_events=last_events,
+        min_prior_ufc_fights=min_prior_ufc_fights,
+        skip_latest_events=skip_latest_events,
+    )
+    if selected.empty:
+        raise ValueError("recent-event exposure filter selected no fights")
+    if progress:
+        progress(
+            f"Selected {len(selected)} eligible fights across {last_events} recent events "
+            f"({selection_counts['excluded_low_exposure']} low-exposure fights excluded)."
+        )
+    repeat_records: list[list[dict[str, object]]] = [
+        [] for _ in range(seed_repeats)
+    ]
+    completed = 0
+    total_work = len(selected) * seed_repeats
+    fitter = CausalParameterFitter(raw, profiles, rounds)
+    grouped_events = list(selected.groupby(["date", "event_id"], sort=True))
+    for event_position, ((date, event_id), event_test) in enumerate(
+        grouped_events, start=1
+    ):
+        cutoff = pd.Timestamp(date)
+        train = physical.loc[physical["date"].lt(cutoff)].copy()
+        if len(train) < min_training_fights:
+            raise ValueError(
+                f"event {event_id} has only {len(train)} prior fights; "
+                f"minimum is {min_training_fights}"
+            )
+        event_seed = random_seed + int(
+            canonical_sha256({"event_id": str(event_id), "date": cutoff.isoformat()})[:8],
+            16,
+        )
+        if progress:
+            progress(
+                f"Event {event_position}/{len(grouped_events)}: "
+                f"fitting {bootstrap_members} causal members for {cutoff.date()} "
+                f"({len(event_test)} eligible fights)."
+            )
+        artifact = fitter.fit(
+            cutoff,
+            config=ParameterFitConfig.historical(
+                bootstrap_members=bootstrap_members,
+                random_seed=event_seed,
+            ),
+            created_at_utc=cutoff,
+        )
+        artifact.validate()
+        baselines = causal_joint_baseline_forecasts(train, event_test).set_index("fight_id")
+        for row in event_test.sort_values("fight_id", kind="stable").to_dict("records"):
+            first_root_seed = f"posterior:{random_seed}:{row['fight_id']}"
+            first_specs = build_specs(
+                fitter,
+                artifact,
+                red_fighter_id=str(row["red_fighter_id"]),
+                blue_fighter_id=str(row["blue_fighter_id"]),
+                division=str(row["division"]),
+                scheduled_rounds=int(row["scheduled_rounds"]),
+                event_id=str(row["event_id"]),
+                matchup_id=matchup_id_for(
+                    row["event_id"], row["red_fighter_id"], row["blue_fighter_id"]
+                ),
+                root_seed=first_root_seed,
+                simulator_base=simulator_config,
+                _artifact_validated=True,
+            )
+            for repeat_index in range(seed_repeats):
+                repeat_number = repeat_index + 1
+                specs = (
+                    first_specs
+                    if repeat_number == 1
+                    else tuple(
+                        replace(
+                            spec,
+                            root_seed=(
+                                f"posterior:{random_seed}:repeat:"
+                                f"{repeat_number}:{row['fight_id']}"
+                            ),
+                        )
+                        for spec in first_specs
+                    )
+                )
+                simulation = run_nested(
+                    specs,
+                    paths_per_matchup // bootstrap_members,
+                    workers=workers,
+                    chunk_size=chunk_size,
+                    max_traces=0,
+                    retain_paths=False,
+                )
+                record = dict(row)
+                record["forecast"] = _forecast_with_full_support(
+                    _compact_evaluation_forecast(simulation.forecast)
+                )
+                record["causal_cutoff_utc"] = cutoff.isoformat()
+                if str(row["fight_id"]) in baselines.index:
+                    baseline = baselines.loc[str(row["fight_id"])]
+                    record["population_forecast"] = baseline["population_forecast"]
+                    record["division_forecast"] = baseline["division_forecast"]
+                repeat_records[repeat_index].append(record)
+                completed += 1
+                if progress:
+                    progress(
+                        f"Completed {completed}/{total_work}: {row['red_fighter_name']} vs "
+                        f"{row['blue_fighter_name']} (seed {repeat_number}/{seed_repeats})."
+                    )
+    ledgers = [pd.DataFrame(records) for records in repeat_records]
+    authoritative = ledgers[0]
+    aggregate = evaluate_simulation_ledger(authoritative)
+    high_information = authoritative.loc[
+        authoritative["red_prior_ufc_fights"].ge(5)
+        & authoritative["blue_prior_ufc_fights"].ge(5)
+    ]
+    event_summaries = []
+    for (date, event_id), group in authoritative.groupby(["date", "event_id"], sort=True):
+        metrics = evaluate_simulation_ledger(group)
+        event_summaries.append(
+            {
+                "date": pd.Timestamp(date).date().isoformat(),
+                "event_id": str(event_id),
+                "fights": int(len(group)),
+                "joint_log_loss": metrics["primary_joint_side_method_log_loss"],
+                "winner_log_loss": metrics["winner"]["log_loss"],
+                "duration_crps_seconds": metrics["duration_crps_seconds"],
+            }
+        )
+    diagnostics = posterior_predictive_rows(authoritative)
+    metadata = authoritative.set_index("fight_id")[
+        ["red_fighter_name", "blue_fighter_name", "date", "actual_outcome"]
+    ].to_dict("index")
+    diagnostic_rows = [
+        {**row, **metadata.get(str(row["fight_id"]), {})}
+        for row in diagnostics
+    ]
+    elapsed = time.perf_counter() - started
+    comparisons = {
+        "population_joint_log_loss": _joint_log_loss(authoritative, "population_forecast"),
+        "division_joint_log_loss": _joint_log_loss(authoritative, "division_forecast"),
+        "simulation_joint_log_loss": aggregate["primary_joint_side_method_log_loss"],
+    }
+    report_body: dict[str, object] = {
+        "schema_version": 1,
+        "evaluation_version": "fight-sim-posterior-population-v1",
+        "candidate_only": True,
+        "production_enabled": False,
+        "execution_enabled": False,
+        "primary_metric": "posterior_predictive_calibration",
+        "config": {
+            "last_events": last_events,
+            "skip_latest_events": skip_latest_events,
+            "min_prior_ufc_fights": min_prior_ufc_fights,
+            "high_information_min_prior_ufc_fights": 5,
+            "bootstrap_members": bootstrap_members,
+            "paths_per_matchup": paths_per_matchup,
+            "seed_repeats": seed_repeats,
+            "min_training_fights": min_training_fights,
+            "random_seed": random_seed,
+            "workers": workers,
+            "chunk_size": chunk_size,
+            "simulator_config": (
+                simulator_config.to_dict()
+                if simulator_config is not None
+                else SimulatorConfig().to_dict()
+            ),
+        },
+        "selection": {
+            **selection_counts,
+            "events": event_manifest,
+            "first_event_date": min(item["date"] for item in event_manifest),
+            "last_event_date": max(item["date"] for item in event_manifest),
+        },
+        "aggregate": aggregate,
+        "high_information_5_plus": (
+            evaluate_simulation_ledger(high_information)
+            if not high_information.empty
+            else None
+        ),
+        "event_summaries": event_summaries,
+        "comparisons": comparisons,
+        "simulation_noise": repeated_seed_summary(ledgers),
+        "runtime": {
+            "elapsed_seconds": elapsed,
+            "simulated_fight_seed_pairs": total_work,
+            "total_paths": int(total_work * paths_per_matchup),
+        },
+        "coverage_warnings": [
+            "nominal_pit_pvalues_do_not_account_for_event_card_clustering_or_multiple_comparisons",
+            "low_exposure_fights_are_excluded_from_primary_mechanics_calibration",
+            "control_definition_differs_from_broader_ufcstats_control",
+        ],
+    }
+    report_body["report_sha256"] = canonical_sha256(report_body)
+    report_path = atomic_write_json(destination / "population-summary.json", report_body)
+    _atomic_write_jsonl_gzip(
+        destination / "fight-diagnostics.jsonl.gz", diagnostic_rows
+    )
+    _atomic_write_jsonl_gzip(
+        destination / "forecast-ledger.jsonl.gz", authoritative.to_dict("records")
+    )
+    from .population_report import write_population_report
+
+    write_population_report(destination / "population-report.html", report_body)
+    if progress:
+        progress(
+            f"Population study complete in {elapsed / 60.0:.1f} minutes: {report_path}"
+        )
+    return destination, report_body
 
 
 def execute_analyze(

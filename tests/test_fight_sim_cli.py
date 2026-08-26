@@ -102,6 +102,13 @@ class FightSimulationCliTests(unittest.TestCase):
             "backfill",
             "fit",
             "backtest",
+            "posterior-backtest",
+            "derive-mechanics",
+            "select-mechanics",
+            "select-finishing",
+            "validate-mechanics",
+            "validate-finishing",
+            "upcoming-card",
             "run",
             "replay",
             "reduce",
@@ -133,6 +140,15 @@ class FightSimulationCliTests(unittest.TestCase):
         self.assertIsNone(parsed.ledger_output)
         self.assertEqual(parsed.seed_repeats, 2)
         self.assertFalse(parsed.skip_borderline_rerun)
+        posterior = parser.parse_args(["posterior-backtest"])
+        self.assertEqual(posterior.min_prior_ufc_fights, 3)
+        self.assertEqual(posterior.last_events, 20)
+        self.assertEqual(posterior.skip_latest_events, 0)
+        upcoming = parser.parse_args(["upcoming-card"])
+        self.assertEqual(upcoming.minimum_prior_ufc_fights, 3)
+        self.assertEqual(upcoming.bootstrap_members, 200)
+        tune = parser.parse_args(["derive-mechanics", "population-run"])
+        self.assertEqual(tune.holdout_latest_events, 5)
         self.assertEqual(parser.parse_args(["gui", "run-dir"]).run, "run-dir")
 
         run_parser = parser.parse_args(

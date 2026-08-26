@@ -23,6 +23,7 @@
       <button class="nav-button is-active" type="button" data-nav="matchups">Matchups</button>
       <button class="nav-button" type="button" data-nav="fighters">Fighters</button>
       <button class="nav-button" type="button" data-nav="graph">Fight graph</button>
+      <button class="nav-button" type="button" data-nav="simulation">Simulation</button>
       <button class="nav-button" type="button" data-nav="market">Market</button>
       <button class="nav-button" type="button" data-nav="data">Model &amp; data</button>
     </nav>
@@ -253,6 +254,26 @@
               </table>
             </div>
           </section>
+        </section>
+      </div>
+    </section>
+
+    <section class="view" id="view-simulation" data-view="simulation" aria-labelledby="simulation-title">
+      <div class="compact-hero page-shell">
+        <p class="eyebrow">Monte Carlo research</p><h1 id="simulation-title">See the full range of ways a fight can unfold.</h1>
+        <p>Precomputed upcoming-fight simulations show winner, method, finish time, round totals, and projected fight-stat distributions. They are candidate-only evidence, not betting instructions.</p>
+      </div>
+      <div class="page-shell page-stack">
+        <section class="panel simulation-picker-panel" aria-labelledby="simulation-picker-title">
+          <div class="section-heading">
+            <div><p class="eyebrow">Upcoming card</p><h2 id="simulation-picker-title">Choose a matchup</h2><p class="section-note" id="simulation-publication-status">Simulation forecasts load when this tab opens.</p></div>
+            <span class="research-badge">Paper only</span>
+          </div>
+          <label for="simulation-matchup-select">Fight</label>
+          <select id="simulation-matchup-select"><option value="">Loading upcoming simulations...</option></select>
+        </section>
+        <section id="simulation-results" class="simulation-results" aria-live="polite">
+          <div class="empty-state">Choose an upcoming matchup to inspect its simulated distributions.</div>
         </section>
       </div>
     </section>

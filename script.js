@@ -9,7 +9,10 @@ const DATA_PATHS = {
   market: "src/content/data/market/current_opportunities.json",
   performance: "src/content/data/market/performance_report.json",
   outcomes: "src/content/data/external/outcome_forecasts.json",
+  simulations: "src/content/data/external/simulation_forecasts.json",
 };
+
+const VALIDATED_SIMULATION_PROFILE_ID = "mechanics-8ba01f34444f";
 
 const state = {
   explorer: null,
@@ -20,6 +23,8 @@ const state = {
   market: null,
   performance: null,
   outcomes: null,
+  simulations: null,
+  simulationPromise: null,
   fighters: [],
   fighterById: new Map(),
   bayesianByPair: new Map(),
@@ -1290,16 +1295,280 @@ function focusMarketMatchup(fighterId, opponentId) {
   return true;
 }
 
+async function ensureSimulationData() {
+  if (state.simulationPromise) return state.simulationPromise;
+  state.simulationPromise = fetchJson(DATA_PATHS.simulations, false).then((publication) => {
+    state.simulations = publication;
+    return publication;
+  });
+  return state.simulationPromise;
+}
+
+function simulationAggregate(matchup) {
+  return matchup?.aggregate || matchup?.forecast || null;
+}
+
+function simulationOutcomeProbabilities(matchup) {
+  const aggregate = simulationAggregate(matchup);
+  if (!aggregate) return {};
+  if (aggregate.outcome_probabilities) return aggregate.outcome_probabilities;
+  const counts = aggregate.outcome_counts || {};
+  const total = Number(aggregate.total_paths) || Object.values(counts).reduce((sum, value) => sum + Number(value || 0), 0);
+  return Object.fromEntries(Object.entries(counts).map(([key, value]) => [key, total ? Number(value) / total : 0]));
+}
+
+function simulationSideProbability(probabilities, side) {
+  return Object.entries(probabilities).filter(([key]) => key.startsWith(`${side}_`)).reduce((sum, [, value]) => sum + Number(value || 0), 0);
+}
+
+function simulationDistribution(title, rows, formatter = (value) => formatPercent(value)) {
+  const section = element("section", "panel simulation-distribution");
+  appendText(section, "h3", "", title);
+  const maximum = Math.max(...rows.map((row) => Number(row.value) || 0), 0.000001);
+  const bars = element("div", "simulation-bars");
+  rows.forEach((row) => {
+    const item = element("div", "simulation-bar-row");
+    appendText(item, "span", "simulation-bar-label", row.label);
+    const track = element("div", "simulation-bar-track");
+    const fill = element("span", `simulation-bar-fill ${row.className || ""}`.trim());
+    fill.style.width = `${Math.max(0, Math.min(100, 100 * Number(row.value || 0) / maximum))}%`;
+    track.append(fill);
+    appendText(item, "strong", "", formatter(row.value));
+    item.append(track);
+    bars.append(item);
+  });
+  section.append(bars);
+  return section;
+}
+
+function simulationDurationRows(matchup) {
+  const aggregate = simulationAggregate(matchup);
+  const total = Number(aggregate?.total_paths) || 0;
+  const horizon = Number(matchup.scheduled_rounds || aggregate?.scheduled_rounds || 3) * 300;
+  const width = horizon > 900 ? 150 : 90;
+  const buckets = new Map();
+  (aggregate?.duration_bins || []).forEach((item) => {
+    const upper = Number(item.upper_seconds);
+    const bucket = Math.min(horizon, Math.ceil(upper / width) * width);
+    buckets.set(bucket, (buckets.get(bucket) || 0) + Number(item.count || 0));
+  });
+  return Array.from(buckets, ([upper, count]) => ({
+    label: `${formatDuration(Math.max(0, upper - width))} to ${formatDuration(upper)}`,
+    value: total ? count / total : 0,
+    sortKey: upper,
+  })).sort((left, right) => left.sortKey - right.sortKey);
+}
+
+function simulationMethodRoundRows(matchup) {
+  const aggregate = simulationAggregate(matchup);
+  const total = Number(aggregate?.total_paths) || 0;
+  return (aggregate?.method_round_counts || [])
+    .filter((item) => !["decision", "draw", "no_contest"].includes(item.method))
+    .map((item) => ({
+      label: `${String(item.method).replaceAll("_", "/").toUpperCase()} - round ${item.round_number}`,
+      value: total ? Number(item.count || 0) / total : 0,
+    }))
+    .sort((left, right) => right.value - left.value);
+}
+
+function simulationDecisionRows(matchup) {
+  const aggregate = simulationAggregate(matchup);
+  const total = Number(aggregate?.total_paths) || 0;
+  return Object.entries(aggregate?.decision_type_counts || {})
+    .map(([key, count]) => ({
+      label: `${key[0].toUpperCase()}${key.slice(1)} decision`,
+      value: total ? Number(count || 0) / total : 0,
+    }))
+    .sort((left, right) => right.value - left.value);
+}
+
+function simulationTotalRows(matchup) {
+  const aggregate = simulationAggregate(matchup);
+  return (aggregate?.total_lines || []).flatMap((line) => {
+    const settled = Math.max(1, Number(line.over || 0) + Number(line.under || 0));
+    const label = formatNumber(line.half_rounds, 1);
+    return [
+      { label: `Over ${label} rounds`, value: Number(line.over || 0) / settled },
+      { label: `Under ${label} rounds`, value: Number(line.under || 0) / settled },
+    ];
+  });
+}
+
+function simulationCurrentMatchup(matchup) {
+  return currentMatchups().find((item) => {
+    const ids = new Set([item.fighter_id, item.opponent_id]);
+    return ids.has(matchup.fighter_id) && ids.has(matchup.opponent_id);
+  }) || null;
+}
+
+function simulationComparisonContext(matchup) {
+  const current = simulationCurrentMatchup(matchup);
+  if (!current) return { current: null, modelRed: null, marketRed: null };
+  const redIsFighter = current.fighter_id === matchup.fighter_id;
+  const modelFighter = finite(current.model_probability_for_fighter);
+  const marketFighter = finite(current.full_market_consensus?.fighter_probability);
+  return {
+    current,
+    modelRed: modelFighter === null ? null : redIsFighter ? modelFighter : 1 - modelFighter,
+    marketRed: marketFighter === null ? null : redIsFighter ? marketFighter : 1 - marketFighter,
+  };
+}
+
+function simulationStatisticTable(matchup) {
+  const aggregate = simulationAggregate(matchup);
+  const summaries = new Map((aggregate?.statistic_summaries || []).map((item) => [item.statistic, item]));
+  const labels = [
+    ["significant_strikes", "Significant strikes"],
+    ["significant_strike_attempts", "Significant-strike attempts"],
+    ["head_strikes_landed", "Head significant strikes"],
+    ["body_strikes_landed", "Body significant strikes"],
+    ["leg_strikes_landed", "Leg significant strikes"],
+    ["distance_strikes_landed", "Distance significant strikes"],
+    ["clinch_strikes_landed", "Clinch significant strikes"],
+    ["ground_strikes_landed", "Ground significant strikes"],
+    ["knockdowns", "Knockdowns"],
+    ["takedowns", "Takedowns landed"],
+    ["takedown_attempts", "Takedown attempts"],
+    ["submission_attempts", "Submission attempts"],
+    ["control_seconds", "Ground top-control time"],
+  ];
+  const table = element("table", "data-table simulation-stat-table");
+  const head = document.createElement("thead");
+  const header = document.createElement("tr");
+  ["Statistic", `${matchup.fighter_name} mean`, "median", "90% range", `${matchup.opponent_name} mean`, "median", "90% range"].forEach((value) => appendText(header, "th", "", value));
+  head.append(header); table.append(head);
+  const body = document.createElement("tbody");
+  labels.forEach(([key, label]) => {
+    const red = summaries.get(`red_${key}`); const blue = summaries.get(`blue_${key}`);
+    if (!red && !blue) return;
+    const seconds = key.endsWith("seconds");
+    const value = (item, field) => item ? (seconds ? formatDuration(item[field]) : formatNumber(item[field], 1)) : "-";
+    const range = (item) => item ? `${value(item, "p05")} to ${value(item, "p95")}` : "-";
+    const row = document.createElement("tr");
+    [label, value(red, "mean"), value(red, "median"), range(red), value(blue, "mean"), value(blue, "median"), range(blue)].forEach((entry) => appendText(row, "td", "", entry));
+    body.append(row);
+  });
+  table.append(body);
+  return table;
+}
+
+function simulationMoneylineCard(matchup, redProbability, blueProbability) {
+  const current = simulationCurrentMatchup(matchup);
+  const card = element("section", "panel simulation-price-panel");
+  appendText(card, "h3", "", "Current moneyline context");
+  if (!current?.book_quotes?.length) {
+    appendText(card, "p", "section-note", "No synchronized moneyline prices are published. Probabilities alone are not betting value.");
+    return card;
+  }
+  const redIsFighter = current.fighter_id === matchup.fighter_id;
+  const candidates = [];
+  current.book_quotes.forEach((quote) => {
+    [
+      [matchup.fighter_name, redProbability, redIsFighter ? quote.fighter_moneyline : quote.opponent_moneyline],
+      [matchup.opponent_name, blueProbability, redIsFighter ? quote.opponent_moneyline : quote.fighter_moneyline],
+    ].forEach(([name, probability, odds]) => {
+      const decimal = decimalOdds(odds);
+      if (decimal !== null) candidates.push({ name, probability, odds, book: quote.book, ev: probability * decimal - 1 });
+    });
+  });
+  candidates.sort((left, right) => right.ev - left.ev);
+  const best = candidates[0];
+  if (best) {
+    const metrics = element("div", "metric-row");
+    [[best.name, "Best simulated side"], [`${formatOdds(best.odds)} at ${best.book}`, "Best offered line"], [formatPercent(best.ev), "Raw simulation EV"]].forEach(([value, label]) => {
+      const item = element("div", "mini-stat"); appendText(item, "strong", "", value); appendText(item, "span", "", label); metrics.append(item);
+    });
+    card.append(metrics);
+  }
+  appendText(card, "p", "simulation-warning", "Research only: this raw comparison does not pass the production evidence gate, account for limits, or authorize a wager. Method probabilities have no EV without real method prices.");
+  return card;
+}
+
+function renderSimulationMatchup(matchup) {
+  const container = $("#simulation-results"); container.replaceChildren();
+  if (!matchup || matchup.status !== "available" || !simulationAggregate(matchup)) {
+    const reason = matchup?.unavailable_reason || "This matchup has no validated simulation publication.";
+    container.append(element("div", "empty-state", reason));
+    return;
+  }
+  const aggregate = simulationAggregate(matchup); const probabilities = simulationOutcomeProbabilities(matchup);
+  const redWin = simulationSideProbability(probabilities, "red"); const blueWin = simulationSideProbability(probabilities, "blue");
+  const comparison = simulationComparisonContext(matchup);
+  const header = element("section", "simulation-matchup-header");
+  const red = element("div", "simulation-fighter"); appendText(red, "span", "eyebrow", "Red corner"); appendText(red, "h2", "", matchup.fighter_name); appendText(red, "strong", "", formatPercent(redWin));
+  const middle = element("div", "simulation-versus"); appendText(middle, "span", "", `${matchup.scheduled_rounds} rounds`); appendText(middle, "b", "", "VS"); appendText(middle, "small", "", `${Number(aggregate.total_paths).toLocaleString()} paths`);
+  const blue = element("div", "simulation-fighter is-blue"); appendText(blue, "span", "eyebrow", "Blue corner"); appendText(blue, "h2", "", matchup.opponent_name); appendText(blue, "strong", "", formatPercent(blueWin));
+  header.append(red, middle, blue); container.append(header);
+
+  const headline = element("div", "simulation-headline-grid");
+  const uncertainty = (aggregate.uncertainty || []).find((item) => item.metric === "red_win");
+  const decision = Object.entries(probabilities).filter(([key]) => key.endsWith("_decision")).reduce((sum, [, value]) => sum + Number(value), 0);
+  const medianDuration = (aggregate.statistic_summaries || []).find((item) => item.statistic === "duration_seconds")?.median;
+  const headlineRows = [
+    [formatPercent(redWin), `${matchup.fighter_name} win`],
+    [formatPercent(blueWin), `${matchup.opponent_name} win`],
+    [formatPercent(decision), "Goes to decision"],
+    [finite(medianDuration) === null ? "-" : formatDuration(medianDuration), "Median fight time"],
+    [uncertainty ? formatPercent(uncertainty.process_mcse) : "-", "Winner Monte Carlo SE"],
+    [uncertainty ? `${formatPercent(uncertainty.parameter_p025)} to ${formatPercent(uncertainty.parameter_p975)}` : "-", "Bootstrap range, red win"],
+  ];
+  if (comparison.modelRed !== null) {
+    const delta = redWin - comparison.modelRed;
+    headlineRows.push(
+      [formatPercent(comparison.modelRed), `Production model - ${matchup.fighter_name}`],
+      [`${delta >= 0 ? "+" : ""}${(delta * 100).toFixed(1)} pp`, "Simulation minus production model"],
+    );
+  }
+  if (comparison.marketRed !== null) headlineRows.push([formatPercent(comparison.marketRed), `No-vig market - ${matchup.fighter_name}`]);
+  headlineRows.forEach(([value, label]) => { const item = element("div", "stat-tile"); appendText(item, "strong", "", value); appendText(item, "span", "", label); headline.append(item); });
+  container.append(headline);
+
+  const distributions = element("div", "simulation-distribution-grid");
+  distributions.append(
+    simulationDistribution("Winner", [{ label: matchup.fighter_name, value: redWin, className: "is-red" }, { label: matchup.opponent_name, value: blueWin, className: "is-blue" }]),
+    simulationDistribution("Side and method", Object.entries(probabilities).filter(([key]) => key.startsWith("red_") || key.startsWith("blue_")).map(([key, value]) => ({ label: key.replace("red_", `${matchup.fighter_name} - `).replace("blue_", `${matchup.opponent_name} - `).replaceAll("_", " "), value })).sort((a, b) => b.value - a.value)),
+    simulationDistribution("Fight end time", simulationDurationRows(matchup)),
+    simulationDistribution("Round totals - over / under (settled paths)", simulationTotalRows(matchup)),
+    simulationDistribution("Finish method by round", simulationMethodRoundRows(matchup)),
+    simulationDistribution("Decision type", simulationDecisionRows(matchup)),
+  );
+  container.append(distributions);
+
+  const stats = element("section", "panel simulation-stat-panel"); appendText(stats, "h3", "", "Projected fight statistics"); appendText(stats, "p", "section-note", "Means and central 90% process-plus-bootstrap ranges. Control is simulated ground top-position time; UFCStats official control is broader."); const wrap = element("div", "book-table-wrap"); wrap.append(simulationStatisticTable(matchup)); stats.append(wrap); container.append(stats, simulationMoneylineCard(matchup, redWin, blueWin));
+}
+
+async function prepareSimulationView(requestedMatchupId = "") {
+  const status = $("#simulation-publication-status"); const select = $("#simulation-matchup-select");
+  status.textContent = "Loading precomputed simulation distributions...";
+  const publication = await ensureSimulationData();
+  if (!publication?.matchups?.length) {
+    status.textContent = "No current-card simulation publication is available yet.";
+    select.replaceChildren(element("option", "", "Simulation forecasts unavailable"));
+    renderSimulationMatchup(null);
+    return;
+  }
+  select.replaceChildren();
+  publication.matchups.forEach((matchup) => {
+    const option = element("option", "", `${matchup.fighter_name} vs ${matchup.opponent_name}${matchup.status === "available" ? "" : " - simulation withheld"}`);
+    option.value = matchup.matchup_id; select.append(option);
+  });
+  const selected = publication.matchups.find((item) => item.matchup_id === requestedMatchupId) || publication.matchups.find((item) => item.status === "available") || publication.matchups[0];
+  select.value = selected.matchup_id;
+  const refreshPending = publication.mechanics_profile_id !== VALIDATED_SIMULATION_PROFILE_ID;
+  status.textContent = `${publication.event_title} - ${publication.available_matchups} simulated, ${publication.excluded_matchups} withheld. Mechanics ${publication.mechanics_profile_id}.${refreshPending ? ` Final finish-calibrated refresh (${VALIDATED_SIMULATION_PROFILE_ID}) pending.` : ""}`;
+  renderSimulationMatchup(selected);
+}
+
 function showView(name) {
   document.querySelectorAll("[data-view]").forEach((view) => view.classList.toggle("is-active", view.dataset.view === name));
   document.querySelectorAll("[data-nav]").forEach((button) => button.classList.toggle("is-active", button.dataset.nav === name));
-  document.title = `${name === "matchups" ? "Matchups" : name === "fighters" ? "Fighters" : name === "graph" ? "Fight graph" : name === "market" ? "Market" : "Model & data"} · UFC Data Lab`;
+  document.title = `${name === "matchups" ? "Matchups" : name === "fighters" ? "Fighters" : name === "graph" ? "Fight graph" : name === "simulation" ? "Simulation" : name === "market" ? "Market" : "Model & data"} · UFC Data Lab`;
 }
 
 function applyRoute() {
   if (!state.explorer) return;
   const parts = window.location.hash.replace(/^#\/?/, "").split("/").filter(Boolean);
-  const view = ["matchups", "fighters", "graph", "market", "data"].includes(parts[0]) ? parts[0] : "matchups";
+  const view = ["matchups", "fighters", "graph", "simulation", "market", "data"].includes(parts[0]) ? parts[0] : "matchups";
   showView(view);
 
   if (view === "graph") {
@@ -1311,6 +1580,8 @@ function applyRoute() {
       });
     }
   }
+
+  if (view === "simulation") prepareSimulationView(parts[1] || "");
 
   if (view === "fighters" && parts[1]) renderFighterProfile(parts[1]);
   else if (view === "fighters") showFighterDirectory();
@@ -1604,6 +1875,10 @@ function renderCurrentCard() {
     });
     graphButton.disabled = !fighter || !opponent;
     if (!fighter || !opponent) graphButton.title = "Both fighters need linked profiles to build their fight graph.";
+    const simulationButton = actionButton("Simulation distributions", "secondary-button small-button", () => {
+      if (matchup.matchup_id) setRoute(`simulation/${matchup.matchup_id}`);
+    });
+    simulationButton.disabled = !matchup.matchup_id;
     const quoteCount = Array.isArray(matchup.book_quotes) ? matchup.book_quotes.length : 0;
     const hasCurrentPrices = Boolean(matchup.fighter_id && matchup.opponent_id && quoteCount);
     const marketButton = actionButton(
@@ -1615,7 +1890,7 @@ function renderCurrentCard() {
     );
     marketButton.disabled = !hasCurrentPrices;
     if (!hasCurrentPrices) marketButton.title = "No current book-price capture is published for this matchup.";
-    actions.append(analyze, graphButton, marketButton);
+    actions.append(analyze, graphButton, simulationButton, marketButton);
     card.append(actions);
     container.append(card);
   });
@@ -2276,6 +2551,9 @@ function bindEvents() {
   makeAutocomplete($("#matchup-fighter-a"), $("#matchup-results-a"), "a"); makeAutocomplete($("#matchup-fighter-b"), $("#matchup-results-b"), "b");
   $("#analyze-matchup").addEventListener("click", () => { if (state.selected.a && state.selected.b) setRoute(`matchups/${state.selected.a.id}/${state.selected.b.id}`); });
   $("#clear-matchup").addEventListener("click", clearMatchup);
+  $("#simulation-matchup-select").addEventListener("change", (event) => {
+    if (event.currentTarget.value) setRoute(`simulation/${event.currentTarget.value}`);
+  });
   $("#graph-apply").addEventListener("click", drawFightGraph);
   $("#graph-reset").addEventListener("click", resetFightGraph);
   $("#graph-mode-simple").addEventListener("click", () => setGraphFilterMode("simple"));

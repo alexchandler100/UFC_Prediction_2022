@@ -117,6 +117,8 @@ class FightSimDomainTests(unittest.TestCase):
             )
         with self.assertRaisesRegex(ValueError, "distinct"):
             BoutConfig("same", "fighter", "fighter")
+        with self.assertRaisesRegex(ValueError, "ko_tko_finish_probability_multiplier"):
+            SimulatorConfig(ko_tko_finish_probability_multiplier=-0.01)
 
     def test_zero_hazard_reaches_bell_and_one_terminal_event(self):
         zero = _zero_activity_parameters()
@@ -133,6 +135,29 @@ class FightSimDomainTests(unittest.TestCase):
         self.assertLess(kinds.index(EventType.ROUND_BELL), kinds.index(EventType.TERMINATION))
         self.assertEqual(path.red_stats.significant_strike_attempts, 0)
         self.assertEqual(path.blue_stats.significant_strike_attempts, 0)
+
+    def test_research_mechanics_multiplier_changes_only_configured_hazard(self):
+        strike_only = replace(
+            _zero_activity_parameters(),
+            strike_rate_distance=30.0,
+        )
+        base = _spec(red_parameters=strike_only, blue_parameters=strike_only)
+        active = simulate_fight(base, 0, telemetry="none")
+        disabled = simulate_fight(
+            replace(
+                base,
+                simulator=SimulatorConfig(distance_strike_hazard_multiplier=0.0),
+            ),
+            0,
+            telemetry="none",
+        )
+        self.assertGreater(
+            active.red_stats.significant_strike_attempts
+            + active.blue_stats.significant_strike_attempts,
+            0,
+        )
+        self.assertEqual(disabled.red_stats.significant_strike_attempts, 0)
+        self.assertEqual(disabled.blue_stats.significant_strike_attempts, 0)
 
     def test_global_rare_no_contest_process_is_supported(self):
         zero = _zero_activity_parameters()

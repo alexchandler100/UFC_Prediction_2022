@@ -312,9 +312,11 @@ The audit and ledgers are in `src/content/data/market_history_backfill/`.
 
 The event-sourced Monte Carlo simulator is an independent, candidate-only
 research challenger. It does not replace or blend with the production winner
-model, publish website behavior, place wagers, or expose a public matchup
-service. Its data, causal-fitting, deterministic RNG/replay, evaluation, and
-promotion contracts are documented in
+model, place wagers, or expose a public arbitrary-matchup service. The website
+may display a precomputed, read-only upcoming-card research publication, but
+that publication is explicitly paper-only and has no production influence.
+Its data, causal-fitting, deterministic RNG/replay, evaluation, and promotion
+contracts are documented in
 [SIMULATION_ARCHITECTURE.md](SIMULATION_ARCHITECTURE.md).
 
 ### Local CLI
@@ -328,6 +330,13 @@ export PYTHONPATH="$PWD/src"
 python -m fight_sim backfill --help
 python -m fight_sim fit --help
 python -m fight_sim backtest --help
+python -m fight_sim posterior-backtest --help
+python -m fight_sim derive-mechanics --help
+python -m fight_sim select-mechanics --help
+python -m fight_sim validate-mechanics --help
+python -m fight_sim select-finishing --help
+python -m fight_sim validate-finishing --help
+python -m fight_sim upcoming-card --help
 python -m fight_sim run --help
 python -m fight_sim replay --help
 python -m fight_sim reduce --help
@@ -430,6 +439,80 @@ them into a false joint likelihood. Population parameter tuning must aggregate
 strictly out-of-sample CRPS, interval coverage, and PIT calibration across
 chronological fights rather than optimize one showcase bout.
 
+`posterior-backtest` performs that population check on the newest complete
+event cards. Every card gets its own pre-event parameter refit, so neither the
+fight being scored nor a same-card fight enters its fighter snapshots or global
+parameters. The primary cohort requires both fighters to have at least three
+strictly prior UFCStats bouts; debuts and fighters with only one or two prior
+UFC bouts are excluded rather than filled in from current career summaries.
+The report repeats all metrics for the higher-information subset where both
+fighters have at least five prior bouts. Exact path counts remain authoritative,
+two independent seeds quantify inner Monte Carlo noise, and the output includes
+a dark self-contained HTML report plus compressed local ledgers.
+`--skip-latest-events` selects an earlier whole-card window, making it possible
+to reserve intermediate selection cards and a final untouched holdout.
+
+```bash
+python -m fight_sim posterior-backtest \
+  --last-events 20 \
+  --min-prior-ufc-fights 3 \
+  --bootstrap-members 64 \
+  --paths-per-matchup 4096 \
+  --seed-repeats 2 \
+  --workers 4 \
+  --output-dir artifacts/simulations/posterior-recent-20
+```
+
+This command is local, candidate-only research. Its low-exposure exclusions are
+reported per card, its nominal PIT uniformity p-values are labeled as
+exploratory because they do not correct card clustering or multiple testing,
+and it cannot change production predictions or betting decisions.
+
+`derive-mechanics` estimates global observable-action corrections on development
+cards only. `select-mechanics` applies predeclared winner/method/duration
+preservation gates on an intermediate chronological window before choosing the
+lowest observable moment error. `validate-mechanics` retains or rejects that
+choice on the newest untouched cards. `select-finishing` and
+`validate-finishing` repeat that selection/untouched-validation boundary for
+global finish conversion only; a rejected finish candidate falls back to the
+already validated action profile, not an unreviewed alternative.
+
+The August 2026 study first simulated the newest 20 completed event cards with
+both fighters required to have at least three strictly prior UFCStats bouts:
+133 of 248 fights were eligible, and 272,384 total paths were retained. The
+oldest ten cards supplied action-volume moments, the next five selected the
+candidate, and the newest five were left untouched until final validation.
+The retained action profile multiplied distance, clinch, and ground strike
+hazards by 1.5344, 0.5399, and 0.7602; takedown and submission-attempt hazards
+by 1.8891 and 5.2282; and knockdown conversion by 0.8007. A separately
+predeclared screen on the middle five cards selected a 0.40 global KO/TKO
+finish-after-knockdown multiplier.
+
+On the final untouched five cards (31 eligible fights, 63,488 paths), adding
+that finish adjustment improved joint side-by-method log loss from 2.0162 to
+1.9509, method log loss from 1.2787 to 1.2178, winner log loss from 0.7534 to
+0.7383, duration CRPS from 268.2 to 255.9 seconds, and the six-family observable
+action error from 0.3213 to 0.2893. Mean predicted-minus-observed duration moved
+from -87.4 to +10.0 seconds. These are useful held-out improvements over the
+previous simulator configuration, not evidence that the simulator beats the
+production winner model or warrants a wager. The 31-fight winner calibration
+intercept (0.208) and slope (0.206), underpredicted UFCStats control time, and
+wide parameter intervals remain explicit warnings and reasons to keep the
+result candidate-only.
+
+`upcoming-card` then fits or re-materializes one 200-member pre-event ensemble,
+withholds any bout where either fighter has fewer than three prior UFCStats
+bouts, stores every completed aggregate and convergence diagnostic under the
+ignored run directory, and atomically writes the much smaller
+`src/content/data/external/simulation_forecasts.json` website projection. A
+maximum-path run that misses any convergence gate is withheld even though its
+full aggregate remains available locally for diagnosis. `--parameter-artifact`
+pins the exact fitted inputs and members for a rerun; the current compact codec
+still deterministically re-materializes its 200 members when loaded, so this is
+an integrity/reproducibility option rather than an instant cache. Every website
+object carries `candidate_only`, `paper_only`, `execution_enabled: false`, and
+`production_influence: "none"`.
+
 ### Local simulation desktop explorer
 
 The optional Qt desktop explorer reads a completed run directory directly. It
@@ -468,12 +551,15 @@ High-volume nested runs stream exact counters instead of retaining every path.
 Detailed ledgers, traces, and local HTML reports belong under the ignored
 `artifacts/simulations/` tree. Full shadow aggregates, including exact
 per-bootstrap statistic histograms, are content-addressed gzip files below
-`artifacts/simulations/shadow-authority/<event>/`. The immutable public
-`compact_shadow_v1` projection omits only those large member histograms; it
-keeps overall exact distributions, per-bootstrap outcome counts, uncertainty,
-an omitted-field manifest, and the full aggregate SHA-256. Locally that hash
-identifies the ignored authority file. On an ephemeral Actions runner the file
-is not uploaded, so the hash is a deterministic replay commitment. A compact
+`artifacts/simulations/shadow-authority/<event>/`. The immutable shadow
+`compact_shadow_v1` projection omits only those large member histograms. The
+website projection is narrower still: it keeps the overall outcome/duration
+counts, survival and totals views, statistic summaries, winner uncertainty,
+an omitted-field manifest, and the full aggregate SHA-256, while omitting
+per-bootstrap outcome counts and statistic histograms that the browser never
+uses. Locally that hash identifies the ignored authority file. On an ephemeral
+Actions runner the file is not uploaded, so the hash is a deterministic replay
+commitment. A compact
 parameter or evaluation artifact is not production evidence merely because it
 was generated successfully; failed or inferior evaluations remain valid
 research results and never alter the weekly forecast.

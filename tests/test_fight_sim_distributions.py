@@ -128,6 +128,24 @@ class StatisticDistributionAggregationTests(unittest.TestCase):
             [(item.value, item.count) for item in distance_time.counts],
             [(600.0, 4)],
         )
+        total_strikes = next(
+            item
+            for item in forecast.statistic_distributions
+            if item.statistic == "total_significant_strikes"
+        )
+        self.assertEqual(
+            [(item.value, item.count) for item in total_strikes.counts],
+            [(3.0, 1), (7.0, 1), (11.0, 1), (15.0, 1)],
+        )
+        strike_differential = next(
+            item
+            for item in forecast.statistic_distributions
+            if item.statistic == "significant_strike_differential"
+        )
+        self.assertEqual(
+            [(item.value, item.count) for item in strike_differential.counts],
+            [(-1.0, 4)],
+        )
         member_zero = next(
             item
             for item in forecast.bootstrap_statistic_distributions
@@ -184,6 +202,14 @@ class StatisticDistributionEvaluationTests(unittest.TestCase):
         self.assertAlmostEqual(red["count_distribution_crps"], 0.75)
         self.assertAlmostEqual(red["interval_90_coverage"], 1.0)
         self.assertAlmostEqual(red["predictive_minus_observed_mean"], 0.0)
+        self.assertEqual(red["interval_50_coverage"], 1.0)
+        posterior = metrics["posterior_predictive_checks"][
+            "red_significant_strikes"
+        ]
+        self.assertEqual(posterior["n"], 1)
+        self.assertEqual(len(posterior["pit_histogram_10"]), 10)
+        self.assertIsNone(posterior["pit_cvm_statistic"])
+        self.assertEqual(metrics["posterior_predictive_diagnostic_rows"], 2)
         self.assertAlmostEqual(metrics["duration_integrated_brier"], 0.0)
         self.assertAlmostEqual(metrics["duration_crps_seconds"], 0.0)
         self.assertLess(metrics["available_totals_log_loss"], 2e-12)
@@ -211,6 +237,7 @@ class StatisticDistributionEvaluationTests(unittest.TestCase):
         metrics = evaluate_simulation_ledger(ledger)
 
         self.assertEqual(metrics["count_distribution_predictive_checks"], {})
+        self.assertIn("duration_seconds", metrics["posterior_predictive_checks"])
         self.assertIsNone(metrics["available_totals_log_loss"])
         self.assertAlmostEqual(metrics["duration_integrated_brier"], 0.0)
 

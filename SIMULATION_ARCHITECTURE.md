@@ -4,9 +4,12 @@
 
 The fight simulator is an independent research challenger. It does not replace,
 blend with, or otherwise affect the production winner model, the candidate
-competing-risk outcome model, market decisions, or the website. Its first job is
-to answer a scientific question: can one causally fitted generative model produce
-better calibrated joint winner, method, duration, and fight-stat distributions?
+competing-risk outcome model, or market decisions. A read-only website tab may
+show precomputed candidate distributions for an upcoming card, but it cannot run
+arbitrary public simulations or feed any production decision. The simulator's
+first job is to answer a scientific question: can one causally fitted generative
+model produce better calibrated joint winner, method, duration, and fight-stat
+distributions?
 
 The boundary is explicit in each schema. Backtest and local-run status objects
 carry `candidate_only: true`, `production_enabled: false`, and
@@ -205,6 +208,25 @@ improve held-out predictive checks without harming the primary side-by-method
 metric. A single well-matched historical fight is never a tuning target by
 itself.
 
+The recent-event posterior-predictive study uses an event-date cutoff and
+refits the complete parameter ensemble before every scored card. Its primary
+cohort requires at least three strictly prior UFCStats bouts for each fighter;
+UFC debuts and either-side histories of only one or two bouts are excluded.
+They may later form a separately labeled prior-only study, but they cannot tune
+fighter-specific mechanics. A five-prior-bouts-per-side sensitivity cohort is
+reported from the same forecasts. Card selection happens before the exposure
+filter so the manifest records every low-information exclusion on each of the
+newest complete cards.
+
+The population diagnostics retain deterministic randomized PIT values,
+two-sided predictive tails, standardized residuals, CRPS, and 50/80/90/95%
+central interval coverage for duration and every observable statistic. Coherent
+path-level sums and red-minus-blue differentials are aggregated directly from
+each trajectory rather than reconstructed from marginal distributions. KS and
+Cramer-von Mises p-values are nominal iid diagnostics only; reports explicitly
+warn that they neither establish a probability that reality came from the
+simulator nor account for card clustering and multiple comparisons.
+
 Outer evaluation uses expanding chronological calendar-year folds. The default
 repository command is a bounded 200-fight screen distributed across 2017--2026,
 not a claim of full incumbent-horizon coverage. Each fold refits its own causal
@@ -277,6 +299,19 @@ python -m fight_sim fit [--bootstrap-members 1..200] [--output PATH]
 python -m fight_sim backtest [--bootstrap-members 1..64]
     [--paths-per-matchup 1..16384] [--max-fights 1..500]
     [--workers 1..64] [--chunk-size 1..4096] [--output PATH]
+python -m fight_sim posterior-backtest [--last-events 1..100]
+    [--skip-latest-events 0..99]
+    [--min-prior-ufc-fights 0..100] [--bootstrap-members 1..64]
+    [--paths-per-matchup 1..16384] [--seed-repeats 2..4]
+    [--output-dir PATH]
+python -m fight_sim derive-mechanics POPULATION_RUN [--holdout-latest-events N]
+python -m fight_sim select-mechanics BASELINE --candidate LABEL=REPORT ...
+python -m fight_sim validate-mechanics BASELINE TUNED_HOLDOUT
+python -m fight_sim select-finishing BASELINE --candidate LABEL=REPORT ...
+python -m fight_sim validate-finishing BASELINE TUNED_HOLDOUT
+python -m fight_sim upcoming-card [--simulator-config PROFILE]
+    [--parameter-artifact PATH] [--bootstrap-members 1..200]
+    [--minimum-prior-ufc-fights 0..100] [--website-output PATH]
 python -m fight_sim run --red-fighter-id ID --blue-fighter-id ID --division NAME ...
 python -m fight_sim replay (--trace TRACE | --spec SPECS ...)
 python -m fight_sim reduce TRACE
@@ -306,6 +341,10 @@ src/content/data/simulation/
   backtest_report.json
   research_status.json
   shadow_forecasts/<date>_<event>_<publication_sha256>.json
+src/content/data/external/simulation_forecasts.json
+  # current compact website view; candidate/paper-only and replaceable per card
+artifacts/simulations/upcoming-card/
+  # ignored exact aggregates and fitted pre-event ensemble
 ```
 
 The status schema is version 1 and requires `candidate_only: true`,
@@ -357,14 +396,41 @@ committed under the exact bundle paths. Detailed ledgers and ad hoc reports live
 under ignored `artifacts/simulations/` and can be regenerated from their run
 specifications.
 
-## Deferred website roadmap
+## Website boundary and deferred roadmap
 
-Website work is deliberately outside V1. A later phase may add a Simulation tab,
-upcoming-card links, arbitrary fighter selection, division and three/five-round
-bout controls, progressive preview/refinement, sampled illustrative traces, and
-offline caching. It will compare value only against already collected moneyline
-and full-fight totals; it will not imply method-market value without real prices
-and settlement contracts.
+The implemented website surface is intentionally narrow: a dark-mode Simulation
+tab reads one precomputed, content-hashed upcoming-card JSON. It shows winner,
+side-by-method, duration, total-round, method-by-round, decision-type, projected
+statistic, process-error, and bootstrap-parameter distributions. Current
+moneylines may be shown as raw research context, but method EV is never implied
+without real synchronized method prices and settlement contracts. Matchups with
+fewer than three prior UFCStats bouts on either side are displayed as withheld,
+not simulated from fabricated detailed statistics.
+
+The first population calibration used the newest 20 completed cards, retained
+133 fights where both sides had three strictly prior UFCStats bouts, and split
+the cards chronologically into ten action-development, five selection, and five
+untouched validation cards. Observable action rates were adjusted only with
+global multipliers. Finish conversion was screened separately on the selection
+cards, where a 0.40 KO/TKO finish-after-knockdown multiplier minimized duration
+CRPS while satisfying joint, method, winner, and action-preservation gates. On
+the untouched 31-fight validation cohort it improved joint side-by-method log
+loss 2.0162 -> 1.9509, method log loss 1.2787 -> 1.2178, winner log loss 0.7534
+-> 0.7383, duration CRPS 268.2 -> 255.9 seconds, observable-action error 0.3213
+-> 0.2893, and mean duration bias -87.4 -> +10.0 seconds. It was therefore
+retained as mechanics profile `mechanics-8ba01f34444f`.
+
+This validation compares simulator versions; it is not a production-promotion
+result. Winner calibration remained weak on only 31 fights (intercept 0.208,
+slope 0.206), mean UFCStats control time was materially underpredicted, and
+bootstrap parameter intervals remained wide. Upcoming publications consequently
+retain candidate/paper-only labels and a no-wager warning. Any future adjustment
+to control/phase semantics or winner probabilities must repeat chronological
+selection and untouched validation rather than fit the current upcoming card.
+
+Still deferred are arbitrary visitor execution, arbitrary fighter selection,
+division and three/five-round controls, progressive browser refinement, sampled
+illustrative traces, and offline caching.
 
 The settled no-extra-service direction is high-precision precomputation in
 GitHub Actions plus on-device browser execution for custom fights, with a

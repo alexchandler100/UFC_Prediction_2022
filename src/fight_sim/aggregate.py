@@ -93,6 +93,20 @@ STATISTIC_EXTRACTORS: tuple[tuple[str, Callable[[SimulationPath], float]], ...] 
     ("clinch_time_seconds", lambda path: float(round(path.phase_duration_us("clinch") / 1_000_000.0))),
     ("ground_time_seconds", lambda path: float(round(path.phase_duration_us("ground") / 1_000_000.0))),
     ("scramble_time_seconds", lambda path: float(round(path.phase_duration_us("scramble") / 1_000_000.0))),
+    # Coherent path-level summaries preserve relationships that would be lost
+    # by multiplying marginal probabilities after aggregation.
+    ("total_significant_strikes", lambda path: float(path.red_stats.significant_strikes_landed + path.blue_stats.significant_strikes_landed)),
+    ("significant_strike_differential", lambda path: float(path.red_stats.significant_strikes_landed - path.blue_stats.significant_strikes_landed)),
+    ("total_significant_strike_attempts", lambda path: float(path.red_stats.significant_strike_attempts + path.blue_stats.significant_strike_attempts)),
+    ("total_ground_strikes_landed", lambda path: float(path.red_stats.ground_landed + path.blue_stats.ground_landed)),
+    ("ground_strike_differential", lambda path: float(path.red_stats.ground_landed - path.blue_stats.ground_landed)),
+    ("total_knockdowns", lambda path: float(path.red_stats.knockdowns + path.blue_stats.knockdowns)),
+    ("knockdown_differential", lambda path: float(path.red_stats.knockdowns - path.blue_stats.knockdowns)),
+    ("total_takedowns", lambda path: float(path.red_stats.takedowns_landed + path.blue_stats.takedowns_landed)),
+    ("takedown_differential", lambda path: float(path.red_stats.takedowns_landed - path.blue_stats.takedowns_landed)),
+    ("total_submission_attempts", lambda path: float(path.red_stats.submission_attempts + path.blue_stats.submission_attempts)),
+    ("total_control_seconds", lambda path: float(round((path.red_stats.control_time_us + path.blue_stats.control_time_us) / 1_000_000.0))),
+    ("control_differential_seconds", lambda path: float(round((path.red_stats.control_time_us - path.blue_stats.control_time_us) / 1_000_000.0))),
 )
 
 
