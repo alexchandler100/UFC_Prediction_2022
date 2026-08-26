@@ -5,7 +5,6 @@ from __future__ import annotations
 from collections import Counter
 from dataclasses import dataclass
 import math
-import re
 from typing import Iterable
 
 import numpy as np
@@ -15,6 +14,8 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score, log_loss
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
+
+from fight_semantics import method_bucket, schedule_from_row
 
 
 INTERVAL_SECONDS = 150
@@ -46,60 +47,15 @@ TOTAL_ROUND_THRESHOLDS = {
 
 
 def _method_bucket(value: object) -> str:
-    text = " ".join(str(value or "").upper().split())
-    if "DEC" in text:
-        return "decision"
-    if "KO" in text:
-        return "ko_tko"
-    if "SUB" in text:
-        return "submission"
-    return "other"
+    return method_bucket(value)
 
 
 def _scheduled_rounds(row: pd.Series) -> int | None:
-    text = " ".join(str(row.get("label_time_format") or "").split())
-    match = re.search(r"(\d+)\s*Rnd", text, flags=re.IGNORECASE)
-    if match:
-        rounds = int(match.group(1))
-        return rounds if 1 <= rounds <= 5 else None
-    method = _method_bucket(row.get("label_method"))
-    duration = pd.to_numeric(
-        pd.Series([row.get("label_total_fight_seconds")]), errors="coerce"
-    ).iloc[0]
-    if method == "decision" and pd.notna(duration):
-        inferred = float(duration) / 300.0
-        if inferred.is_integer() and 1 <= int(inferred) <= 5:
-            return int(inferred)
-    # Historical UFCStats rows did not persist round format. A completed
-    # finish still tells us enough for the common 1.5/2.5 markets: bouts that
-    # reached rounds four or five were scheduled for five, while earlier
-    # finishes are conservatively treated as three-round unless an explicit
-    # format says otherwise. This assumption is reported through coverage and
-    # is never used to relabel the observed finish time.
-    finish_round = pd.to_numeric(
-        pd.Series([row.get("label_finish_round")]), errors="coerce"
-    ).iloc[0]
-    if method != "decision" and pd.notna(finish_round):
-        return 5 if int(finish_round) > 3 else 3
-    return None
+    return schedule_from_row(row)[0]
 
 
 def _schedule_basis(row: pd.Series) -> str:
-    text = " ".join(str(row.get("label_time_format") or "").split())
-    if re.search(r"(\d+)\s*Rnd", text, flags=re.IGNORECASE):
-        return "explicit_time_format"
-    if _method_bucket(row.get("label_method")) == "decision" and _scheduled_rounds(row):
-        return "inferred_from_decision_duration"
-    finish_round = pd.to_numeric(
-        pd.Series([row.get("label_finish_round")]), errors="coerce"
-    ).iloc[0]
-    if pd.notna(finish_round):
-        return (
-            "inferred_five_round_late_finish"
-            if int(finish_round) > 3
-            else "assumed_three_round_early_finish"
-        )
-    return "unknown"
+    return schedule_from_row(row)[1]
 
 
 def _terminal_label(row: pd.Series) -> str:

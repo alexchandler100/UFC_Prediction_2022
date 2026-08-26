@@ -308,6 +308,211 @@ python -B src/evaluate_style_matchup_challenger.py
 
 The audit and ledgers are in `src/content/data/market_history_backfill/`.
 
+## Evidence-first fight simulation research
+
+The event-sourced Monte Carlo simulator is an independent, candidate-only
+research challenger. It does not replace or blend with the production winner
+model, publish website behavior, place wagers, or expose a public matchup
+service. Its data, causal-fitting, deterministic RNG/replay, evaluation, and
+promotion contracts are documented in
+[SIMULATION_ARCHITECTURE.md](SIMULATION_ARCHITECTURE.md).
+
+### Local CLI
+
+The package lives below `src/`, so set the import path once when working from
+the repository root. The research commands then share one interface:
+
+```bash
+export PYTHONPATH="$PWD/src"
+
+python -m fight_sim backfill --help
+python -m fight_sim fit --help
+python -m fight_sim backtest --help
+python -m fight_sim run --help
+python -m fight_sim replay --help
+python -m fight_sim reduce --help
+python -m fight_sim diff --help
+python -m fight_sim analyze --help
+```
+
+For example, these bounded commands checkpoint at most 25 UFCStats fight pages,
+fit the current 200-member event-card bootstrap ensemble, and run a tractable
+64-member historical screen with two worker processes:
+
+```bash
+mkdir -p artifacts/simulations/local
+python -m fight_sim backfill \
+  --max-fights 25 \
+  --checkpoint-every 5 \
+  --summary-output artifacts/simulations/local/round-backfill-summary.json
+python -m fight_sim fit \
+  --bootstrap-members 200 \
+  --output artifacts/simulations/local/parameter_model.json.gz
+python -m fight_sim backtest \
+  --bootstrap-members 64 \
+  --paths-per-matchup 4096 \
+  --seed-repeats 2 \
+  --first-test-year 2017 \
+  --last-test-year 2026 \
+  --max-fights 200 \
+  --workers 2 \
+  --chunk-size 64 \
+  --output artifacts/simulations/local/backtest_report.json
+```
+
+The V1 parameter fitter uses strongly pooled empirical sufficient-statistic
+ratios inside each event-card bootstrap member. It is not a simultaneous
+opponent-adjusted offense/defense regression: accuracy comes from a fighter's
+prior landed/attempted pairs, while defense comes from prior opponent
+landed/attempted pairs. Head/body/leg values are landed-target composition, and
+distance/clinch/ground values are strike-attempt composition rather than time
+spent in each phase. They may scale strike hazards but never divide or inflate
+whole-fight takedown/submission opportunity rates. Pace decay compares pooled
+first and later rounds for each fighter; later-round observations are
+survivor-selected, and V1 does not claim to correct that selection.
+
+`--paths-per-matchup` is the total nested path count per independent seed and
+must be divisible by the bootstrap-member count. Backtests use two independent
+inner-process seeds by default, retain the first forecast as authoritative, and
+hash their log-loss variation into `simulation_noise`. For the exact default
+repository study, a competing-risk, population, or division joint paired
+interval that crosses zero automatically triggers one nonrecursive
+16,384-path rerun using the same fitted fold artifacts.
+`--skip-borderline-rerun` disables that escalation for a bounded diagnostic.
+The default 2017--2026/200-fight command is a deliberately bounded screen, not
+a claim of complete incumbent-horizon coverage. The backfill command updates
+the normalized round CSV and reconciliation report in place; its checkpointing
+is durable when run locally. Parameter fits accept only rows explicitly
+reconciled as `matched` by default and cross-check their
+bout/event/fighter/opponent identities against the causal doubled table;
+unlabeled legacy rows are excluded. The backtest omits its detailed JSONL ledger
+unless `--ledger-output` is supplied explicitly.
+
+`run` writes `specs.json` and `convergence.json` before evaluating its gates.
+When the gates fail it exits with status 3 and withholds the aggregate, traces,
+and HTML report. `--allow-nonconverged-research` is available only for an
+explicitly labeled local diagnostic; such output is not eligible for a shadow
+publication. `replay`, `reduce`, and `diff` verify stored or regenerated event
+streams, while `analyze` rebuilds a self-contained local report.
+
+High-volume nested runs stream exact counters instead of retaining every path.
+Detailed ledgers, traces, and local HTML reports belong under the ignored
+`artifacts/simulations/` tree. Full shadow aggregates, including exact
+per-bootstrap statistic histograms, are content-addressed gzip files below
+`artifacts/simulations/shadow-authority/<event>/`. The immutable public
+`compact_shadow_v1` projection omits only those large member histograms; it
+keeps overall exact distributions, per-bootstrap outcome counts, uncertainty,
+an omitted-field manifest, and the full aggregate SHA-256. Locally that hash
+identifies the ignored authority file. On an ephemeral Actions runner the file
+is not uploaded, so the hash is a deterministic replay commitment. A compact
+parameter or evaluation artifact is not production evidence merely because it
+was generated successfully; failed or inferior evaluations remain valid
+research results and never alter the weekly forecast.
+
+### Frozen research bundle and shadow gate
+
+The reviewed repository contract uses these exact paths:
+
+```text
+src/content/data/processed/ufc_fight_round_stats_doubled.csv
+src/content/data/simulation/
+  parameter_model.json.gz
+  backtest_report.json
+  research_status.json
+  shadow_forecasts/<date>_<event>_<publication_sha256>.json
+```
+
+`parameter_model.json.gz` is a content-hashed
+`ParameterEnsembleArtifact`. `backtest_report.json` is a content-hashed
+`BacktestReport` with `candidate_only: true`, `production_enabled: false`, and
+`execution_enabled: false`. Merely creating either file enables nothing. The
+separately reviewed `research_status.json` must name both exact hashes and has
+this schema:
+
+```json
+{
+  "schema_version": 1,
+  "candidate_only": true,
+  "paper_only": true,
+  "production_enabled": false,
+  "execution_enabled": false,
+  "integrity_gate_passed": true,
+  "causal_backtest_gate_passed": true,
+  "shadow_enabled": false,
+  "parameter_artifact_sha256": "<64 lowercase hex characters>",
+  "backtest_report_sha256": "<64 lowercase hex characters>"
+}
+```
+
+The CLI and research workflow never create or change that status file. The two
+gate fields mean the engine/data invariants and strictly causal evaluation were
+reviewed; they do not claim that the simulator beat an incumbent. An enabled
+status is also checked against measured evidence: exactly 200 ensemble members
+using exclusively matched round rows; at least three chronological folds and
+200 scored fights; at least two independently hashed seeds with 4,096 paths per
+matchup; 99% population/division joint coverage; 90% production-winner and
+competing-risk-joint coverage; and at least one timestamp-aligned moneyline and
+full-fight-total comparison. After placing a reviewed bundle, validate the round
+table, hashes, schemas, and status cross-links with:
+
+```bash
+python -B src/validate_data.py --allow-stale --require-simulation-artifact
+```
+
+No frozen bundle is checked in at present, so the dependent weekly shadow job
+currently exits without generating a simulation shadow. A later explicit
+review may set `shadow_enabled` to `true`. The production update is validated,
+committed, and pushed before `simulation_shadow` starts. That separate job
+checks out the exact SHA exported by the successful production job, uses only
+the named frozen pair, appends a content-addressed card publication after every
+matchup converges, and stages only immutable shadow JSON. It records that exact
+source revision and refuses to push if the publication branch advances while it
+runs. The shadow job has its own concurrency group, so its three-hour ceiling
+does not retain the lock shared by the production updater and scheduled market
+captures. A timeout, nonconvergence, or shadow failure therefore cannot prevent
+or roll back the production update. Every shadow is marked
+`candidate_only: true`, `paper_only: true`, `execution_enabled: false`, and
+`production_influence: "none"`. This gate cannot blend probabilities, change
+betting decisions, or satisfy the separate prospective production-promotion
+gate.
+
+### Manual no-extra-service workflow
+
+The `simulation-research` GitHub Actions workflow is manual-only and uses a
+standard `ubuntu-24.04` runner already used by this public repository. Its four
+modes are tests, a bounded round-source check, parameter fitting, and a bounded
+chronological backtest. The workflow hard-caps a backfill at 100 fights, a fit
+at 200 bootstrap members, and a backtest at 64 members, 16,384 paths per
+matchup, 500 matchups, and two worker processes. The six-hour job timeout
+is a safety ceiling, not a guarantee that the largest permitted request will
+finish. It has no schedule, large or self-hosted runner, separately provisioned
+cloud runtime, database, object store, paid service, odds credential, push
+permission, production publication step, or website step.
+
+Workflow results remain inside the ephemeral runner by default. The explicit
+`upload_compact_artifact` input may upload exactly one schema-checked parameter
+artifact or compact summary, only after a 5 MiB hard cap passes, with three-day
+retention. Parameter fits use a versioned self-contained gzip encoding; the
+logical model hash excludes the creation timestamp. Fitted artifacts store
+compact causal input frames plus the fit/bootstrap recipe and logical metadata,
+rather than repeating every expanded member value. Loading reruns that frozen
+recipe without consulting mutable repository files, must reproduce the exact
+members and logical metadata, and validates the original content hash. A sealed
+storage/input/member commitment wrapper lets the weekly pre-commit validator
+and upload staging inspect integrity without running the fit; required research
+validation and simulation execution still materialize every member. Legacy
+row-oriented JSON and exact-columnar artifacts remain readable. The current
+repository's measured 200-member gzip is under 1 MiB, so the workflow can
+transfer the validated frozen artifact when the 5 MiB check passes. The
+workflow never uploads detailed ledgers, trace populations, HTML
+reports, the accumulated round table, or any production forecast. A workflow
+round backfill is therefore useful for a bounded source/contract check; run the
+same command locally when the accumulated CSV must persist across batches.
+Review and commit any validated frozen bundle separately. An Actions upload is
+only a short-lived transfer, not approval for
+`research_status.json`; this workflow never commits, pushes, enables shadows,
+or changes production.
+
 ## Running scripts locally from VS Code (Bash)
 
 In VS Code, open **Terminal -> New Terminal** and select **Git Bash**.
@@ -427,9 +632,10 @@ Odds API, appends separate validated quote/forecast/source-timing ledgers,
 freezes any eligible T-24 paper decisions, and publishes a
 bounded audit report, settles any newly completed moneyline and totals
 decisions, and refreshes
-the return/CLV report before strict revalidation. The
-two publishing workflows share one concurrency group and exact path allowlists.
-The collector creates no live wager.
+the return/CLV report before strict revalidation. The authoritative update job
+and collector share one publisher concurrency group and exact path allowlists;
+the dependent paper-shadow job uses a separate group and cannot delay a price
+capture. The collector creates no live wager.
 
 The source's free Starter tier currently includes 500 request credits per
 month. The configured `h2h,totals` request across `us,us2` costs up to four

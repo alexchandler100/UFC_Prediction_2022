@@ -192,6 +192,7 @@ write_outcome_forecast_publication(
     / 'content/data/external/outcome_forecasts.json',
     outcome_publication,
 )
+
 # Merge available sportsbook odds from the configured market source.
 predicted_odds_df_with_vegas_odds = dh.save_fightoddsio_to_vegas_odds_json_and_merge_with_predictions_df(predicted_odds_df)
 predicted_odds_df_with_vegas_odds = (
@@ -244,6 +245,7 @@ if summary_path:
             '## UFC weekly update',
             '',
             f'- Completed raw fights: {raw_fights["fight_url"].nunique():,}',
+            '- Simulation shadow: isolated dependent job (no production effect)',
             f'- Point-in-time W/L rows: {len(point_in_time_fights):,}',
             f'- Model: `{artifact["model_id"]}` through {artifact["data_through"]}',
             (

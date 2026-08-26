@@ -1,4 +1,7 @@
-from . fight_predictor import FightPredictor
+from typing import TYPE_CHECKING, Any
+
+if TYPE_CHECKING:
+    from .fight_predictor import FightPredictor
 from .point_in_time import (
     MODEL_VERSION,
     PointInTimeDatasetBuilder,
@@ -27,3 +30,19 @@ from .bayesian import (
     american_to_decimal,
     laplace_covariance,
 )
+
+
+def __getattr__(name: str) -> Any:
+    """Load the legacy predictor only when callers explicitly request it.
+
+    Importing a focused research or validation module must not pull in the
+    scraper/round-stat stack through ``fight_predictor.FightPredictor``.
+    ``from fight_predictor import FightPredictor`` remains compatible.
+    """
+
+    if name == "FightPredictor":
+        from .fight_predictor import FightPredictor
+
+        globals()[name] = FightPredictor
+        return FightPredictor
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")

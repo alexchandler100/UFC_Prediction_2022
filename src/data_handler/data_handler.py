@@ -26,6 +26,7 @@ from fight_stat_helpers import (
                        count_losses_losses_before_fight,
                        fight_math,
                        get_fight_card,
+                       get_fight_stats,
                        get_event_fight_urls,
             )
 
@@ -34,6 +35,17 @@ pd.set_option('future.no_silent_downcasting', True)
 
 from odds_getter import OddsGetter
 from ufcstats_client import UFCStatsError, UFCStatsEventNotComplete, ufcstats_client
+from ufc_round_data import (
+    RECONCILIATION_COLUMNS,
+    ROUND_DATA_COLUMNS,
+    RoundBackfillSummary,
+    empty_reconciliation_frame,
+    empty_round_stats_frame,
+    normalize_round_stats,
+    reconcile_round_stats,
+    ufcstats_identity as round_ufcstats_identity,
+    validate_normalized_round_stats,
+)
 
 git_root = str(Path(__file__).resolve().parents[2])
 
@@ -108,8 +120,13 @@ class DataHandler:
             'fighter_stats': f'{git_root}/src/content/data/processed/fighter_stats.csv',
             'ufc_fights_reported_derived_doubled': f'{git_root}/src/content/data/processed/ufc_fights_reported_derived_doubled.csv',
             'ufc_fights_reported_doubled': f'{git_root}/src/content/data/processed/ufc_fights_reported_doubled.csv',
+            'ufc_fight_round_stats_doubled': f'{git_root}/src/content/data/processed/ufc_fight_round_stats_doubled.csv',
             'ufc_fight_data_for_website': f'{git_root}/src/content/data/processed/ufc_fight_data_for_website.csv', # not really needed...
         }
+        self.round_reconciliation_filepath = (
+            f'{git_root}/src/content/data/processed/'
+            'ufc_fight_round_stats_reconciliation.csv'
+        )
 
         self.json_filepaths = {
             'card_info': f'{git_root}/src/content/data/external/card_info.json',
@@ -128,6 +145,7 @@ class DataHandler:
             key: pd.read_csv(path, sep=',')
             for key, path in self.csv_filepaths.items()
             if key != 'ufc_fights_reported_derived_doubled'
+            and Path(path).exists()
         }
         prediction_history = pd.read_json(self.json_filepaths['prediction_history'])
         vegas_odds = pd.read_json(self.json_filepaths['vegas_odds'])
@@ -148,7 +166,11 @@ class DataHandler:
             return self.json_data[key].copy()
         assert key in self.csv_filepaths, "Invalid key provided"
         if key not in self.csv_data:
-            self.csv_data[key] = pd.read_csv(self.csv_filepaths[key], sep=',')
+            path = Path(self.csv_filepaths[key])
+            if key == 'ufc_fight_round_stats_doubled' and not path.exists():
+                self.csv_data[key] = empty_round_stats_frame()
+            else:
+                self.csv_data[key] = pd.read_csv(path, sep=',')
         df = self.csv_data[key].copy()
         return df
     
@@ -159,6 +181,90 @@ class DataHandler:
     def save_csv(self, key):
         assert key in list(self.csv_filepaths.keys()), "Invalid key provided"
         atomic_to_csv(self.csv_data[key], self.csv_filepaths[key], index=False)
+
+    def _round_reconciliation_path(self):
+        configured = getattr(self, 'round_reconciliation_filepath', None)
+        if configured:
+            return Path(configured)
+        round_path = Path(self.csv_filepaths['ufc_fight_round_stats_doubled'])
+        return round_path.with_name('ufc_fight_round_stats_reconciliation.csv')
+
+    def _read_round_reconciliation(self):
+        path = self._round_reconciliation_path()
+        if not path.exists():
+            return empty_reconciliation_frame()
+        report = pd.read_csv(path, low_memory=False)
+        missing = set(RECONCILIATION_COLUMNS) - set(report.columns)
+        if missing:
+            raise ValueError(
+                f'round reconciliation report is missing columns: {sorted(missing)}'
+            )
+        return report.loc[:, RECONCILIATION_COLUMNS].copy()
+
+    def _persist_round_updates(self, new_rows, new_issues, replace_fight_ids):
+        """Atomically replace only successfully parsed physical fights.
+
+        ``replace_fight_ids`` can describe every bout a caller attempted, but
+        a transient detail-page/parser failure may leave no replacement rows
+        for one of those bouts.  Derive the destructive replacement set from
+        structurally valid parsed rows so an attempted refresh can never erase
+        the last known-good copy.
+        """
+        validate_normalized_round_stats(new_rows)
+        requested_ids = {
+            str(value).strip()
+            for value in replace_fight_ids
+            if str(value).strip()
+        }
+        parsed_ids = set(new_rows['fight_id'].dropna().astype(str))
+        replace_ids = requested_ids & parsed_ids
+        if not replace_ids:
+            return
+
+        new_rows = new_rows[
+            new_rows['fight_id'].astype(str).isin(replace_ids)
+        ].copy()
+        if new_issues.empty:
+            new_issues = empty_reconciliation_frame()
+        else:
+            new_issues = new_issues[
+                new_issues['fight_id'].astype(str).isin(replace_ids)
+            ].copy()
+        existing = self.get('ufc_fight_round_stats_doubled')
+        if not existing.empty:
+            validate_normalized_round_stats(existing)
+        kept = existing[~existing['fight_id'].astype(str).isin(replace_ids)]
+        combined = pd.concat([new_rows, kept], ignore_index=True)
+        if combined.empty:
+            combined = empty_round_stats_frame()
+        else:
+            combined = combined.loc[:, ROUND_DATA_COLUMNS]
+            combined = combined.sort_values(
+                ['date', 'bout_order', 'fight_id', 'round', 'fighter_id'],
+                ascending=[False, True, True, True, True],
+                kind='stable',
+            ).reset_index(drop=True)
+        validate_normalized_round_stats(combined)
+
+        existing_issues = self._read_round_reconciliation()
+        kept_issues = existing_issues[
+            ~existing_issues['fight_id'].astype(str).isin(replace_ids)
+        ]
+        combined_issues = pd.concat([new_issues, kept_issues], ignore_index=True)
+        if combined_issues.empty:
+            combined_issues = empty_reconciliation_frame()
+        else:
+            combined_issues = combined_issues.loc[:, RECONCILIATION_COLUMNS]
+            combined_issues = combined_issues.sort_values(
+                ['fight_id', 'fighter_id', 'field', 'issue', 'detail'],
+                kind='stable',
+            ).reset_index(drop=True)
+
+        self.set('ufc_fight_round_stats_doubled', combined)
+        self.save_csv('ufc_fight_round_stats_doubled')
+        atomic_to_csv(
+            combined_issues, self._round_reconciliation_path(), index=False
+        )
             
     def save_json(self, key, column):
         assert key in list(self.json_filepaths.keys()), "Invalid key provided"
@@ -183,6 +289,8 @@ class DataHandler:
             self.update_fighter_stats()
         elif key == 'ufc_fights_reported_derived_doubled':
             self.update_ufc_fights_reported_derived_doubled()
+        elif key == 'ufc_fight_round_stats_doubled':
+            self.backfill_ufc_fight_round_stats_doubled()
         elif key == 'prediction_history':
             self.update_prediction_history()
         elif key == 'all':
@@ -351,6 +459,9 @@ class DataHandler:
                 continue  # skip Road to UFC events
             try:
                 manifest_fight_urls = get_event_fight_urls(href)
+                # Per-round tables are research enrichment and are fetched by
+                # the bounded ``fight_sim backfill`` command.  The production
+                # updater collects authoritative bout totals only.
                 stats = get_fight_card(href)
                 stored_fight_urls = old_ufc_fights_reported_doubled.loc[
                     old_ufc_fights_reported_doubled['event_url'].eq(href),
@@ -439,6 +550,170 @@ class DataHandler:
         )
         self.set('ufc_fights_reported_doubled', updated_stats)
         self.save_csv('ufc_fights_reported_doubled')
+
+    def backfill_ufc_fight_round_stats_doubled(
+        self,
+        max_fights=100,
+        *,
+        checkpoint_every=10,
+        refresh_existing=False,
+    ):
+        """Fetch a bounded, resumable set of historical fight-detail pages.
+
+        A fight is considered complete only when structurally valid doubled
+        round rows are already stored.  Failed pages are reported and remain
+        eligible for the next run.  Successful checkpoints replace whole
+        physical fights, so an interruption cannot leave half a bout in the
+        persisted dataset.
+        """
+        if not isinstance(max_fights, int) or isinstance(max_fights, bool) or max_fights < 0:
+            raise ValueError('max_fights must be a nonnegative integer')
+        if (
+            not isinstance(checkpoint_every, int)
+            or isinstance(checkpoint_every, bool)
+            or checkpoint_every < 1
+        ):
+            raise ValueError('checkpoint_every must be a positive integer')
+
+        raw = self.get('ufc_fights_reported_doubled')
+        required_raw = {'fight_url', 'fighter_url', 'fighter', 'opponent'}
+        missing_raw = required_raw - set(raw.columns)
+        if missing_raw:
+            raise ValueError(
+                f'raw fights are missing round-backfill columns: {sorted(missing_raw)}'
+            )
+        physical_counts = raw.groupby('fight_url', dropna=False).size()
+        invalid = physical_counts[physical_counts != 2]
+        if not invalid.empty:
+            raise ValueError(
+                'round backfill requires exactly two raw sides per fight; '
+                f'invalid={invalid.head().to_dict()}'
+            )
+
+        existing = self.get('ufc_fight_round_stats_doubled')
+        if not existing.empty:
+            validate_normalized_round_stats(existing)
+        completed_ids = set(existing['fight_id'].dropna().astype(str))
+        physical = (
+            raw.assign(
+                _fight_id=raw['fight_url'].map(round_ufcstats_identity),
+                _date=pd.to_datetime(raw.get('date'), errors='coerce'),
+            )
+            .sort_values(
+                ['_date', 'fight_url'], ascending=[False, True], kind='stable'
+            )
+            .drop_duplicates('fight_url', keep='first')
+        )
+        if not refresh_existing:
+            physical = physical[~physical['_fight_id'].isin(completed_ids)]
+        candidates = physical.head(max_fights)
+
+        attempted = 0
+        saved = 0
+        failed = 0
+        saved_rows = 0
+        issue_count = 0
+        pending_rows = []
+        pending_issues = []
+        pending_ids = set()
+
+        def checkpoint():
+            if not pending_ids:
+                return
+            rows = pd.concat(pending_rows, ignore_index=True)
+            issues = (
+                pd.concat(pending_issues, ignore_index=True)
+                if pending_issues
+                else empty_reconciliation_frame()
+            )
+            self._persist_round_updates(rows, issues, pending_ids)
+            pending_rows.clear()
+            pending_issues.clear()
+            pending_ids.clear()
+
+        for candidate in candidates.to_dict('records'):
+            attempted += 1
+            fight_url = str(candidate['fight_url'])
+            fight_id = round_ufcstats_identity(fight_url)
+            bout_sides = raw[raw['fight_url'].astype(str).eq(fight_url)].copy()
+            try:
+                aggregate, parsed_rounds = get_fight_stats(
+                    fight_url,
+                    str(candidate['fighter']),
+                    str(candidate['opponent']),
+                    include_round_stats=True,
+                )
+                time_formats = aggregate['time_format'].dropna().astype(str).str.strip()
+                time_formats = time_formats[time_formats.ne('')].unique()
+                if len(time_formats) != 1:
+                    raise UFCStatsError(
+                        f'fight detail page did not provide one time format for {fight_url}'
+                    )
+                bout_sides['time_format'] = time_formats[0]
+                normalized = normalize_round_stats(parsed_rounds, bout_sides)
+
+                # Reconcile against aggregate values from the same response,
+                # while retaining the raw rows for stable event/side identity.
+                source_totals = bout_sides.copy()
+                for source in aggregate.to_dict('records'):
+                    source_name = str(source.get('fighter') or '').strip()
+                    parsed_identity = parsed_rounds[
+                        parsed_rounds['fighter'].astype(str).eq(source_name)
+                    ]['fighter_id'].dropna().astype(str).unique()
+                    if len(parsed_identity) == 1:
+                        matching = source_totals['fighter_url'].map(
+                            round_ufcstats_identity
+                        ).eq(parsed_identity[0])
+                    else:
+                        matching = source_totals['fighter'].astype(str).eq(source_name)
+                    if matching.sum() != 1:
+                        raise UFCStatsError(
+                            f'aggregate fighter {source_name!r} did not map uniquely '
+                            f'to stored sides for {fight_url}'
+                        )
+                    for field in ROUND_DATA_COLUMNS:
+                        if field in source:
+                            source_totals.loc[matching, field] = source[field]
+                normalized, issues = reconcile_round_stats(
+                    normalized, source_totals
+                )
+            except (UFCStatsError, ValueError, IndexError, TypeError) as error:
+                failed += 1
+                print(f'Round backfill failed for {fight_url}: {error}')
+                continue
+
+            pending_rows.append(normalized)
+            if not issues.empty:
+                pending_issues.append(issues)
+            pending_ids.add(fight_id)
+            saved += 1
+            saved_rows += len(normalized)
+            issue_count += len(issues)
+            if saved % checkpoint_every == 0:
+                checkpoint()
+
+        checkpoint()
+        now_existing = self.get('ufc_fight_round_stats_doubled')
+        now_complete_ids = set(now_existing['fight_id'].dropna().astype(str))
+        all_ids = {
+            round_ufcstats_identity(value)
+            for value in raw['fight_url'].dropna().astype(str).unique()
+        }
+        remaining = len(all_ids - now_complete_ids)
+        summary = RoundBackfillSummary(
+            attempted_fights=attempted,
+            saved_fights=saved,
+            failed_fights=failed,
+            remaining_fights=remaining,
+            saved_round_rows=saved_rows,
+            reconciliation_issues=issue_count,
+        )
+        print(
+            'Round backfill: '
+            f'attempted={attempted}, saved={saved}, failed={failed}, '
+            f'remaining={remaining}, issues={issue_count}'
+        )
+        return summary
     
         
     # updates fighter attributes with new fighters not yet saved yet

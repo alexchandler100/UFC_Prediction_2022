@@ -15,15 +15,16 @@ on:
 permissions:
   contents: write
 
-concurrency:
-  # Serialize every workflow that can publish data so a market capture cannot
-  # race the authoritative model/data update.
-  group: publish-ufc-data-main
-  cancel-in-progress: false
-
 jobs:
   update_data:
     runs-on: ubuntu-24.04
+    # Only the authoritative mutation job shares the market publisher lock.
+    # The slower paper-shadow job cannot delay scheduled price captures.
+    concurrency:
+      group: publish-ufc-data-main
+      cancel-in-progress: false
+    outputs:
+      published_sha: ${{ steps.publish.outputs.published_sha }}
     # A recent catch-up completed in ~8 minutes; the larger limit permits a
     # catch-up after an outage without silently killing an otherwise healthy rebuild.
     timeout-minutes: 180
@@ -83,6 +84,7 @@ jobs:
         run: python src/validate_data.py --require-model-artifact --require-market-data
 
       - name: Commit validated generated files
+        id: publish
         shell: bash
         run: |
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
@@ -109,6 +111,8 @@ jobs:
             src/content/data/market/performance_report.json
 
           for optional_path in \
+            src/content/data/processed/ufc_fight_round_stats_doubled.csv \
+            src/content/data/processed/ufc_fight_round_stats_reconciliation.csv \
             src/content/data/market/bayesian_filtered_paper_decisions.csv \
             src/content/data/market/bayesian_filtered_paper_decisions.jsonl \
             src/content/data/market/total_round_paper_settlements.csv \
@@ -121,6 +125,7 @@ jobs:
 
           if git diff --cached --quiet; then
             echo "No validated data changes to commit."
+            echo "published_sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
             exit 0
           fi
 
@@ -128,6 +133,89 @@ jobs:
           git fetch --no-tags --depth=1 origin "${GITHUB_REF_NAME}"
           if [ "$(git rev-parse FETCH_HEAD)" != "${GITHUB_SHA}" ]; then
             echo "Main changed during this build; refusing to publish artifacts built from older code."
+            exit 1
+          fi
+          git push origin "HEAD:${GITHUB_REF_NAME}"
+          echo "published_sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+  simulation_shadow:
+    name: Candidate simulation shadow (paper only)
+    needs: update_data
+    runs-on: ubuntu-24.04
+    timeout-minutes: 180
+    concurrency:
+      group: simulation-shadow-${{ github.ref }}
+      cancel-in-progress: false
+    env:
+      PYTHONDONTWRITEBYTECODE: "1"
+      PYTHONUNBUFFERED: "1"
+      PYTHONPATH: ${{ github.workspace }}/src
+      FIGHT_SIM_WORKERS: "2"
+
+    steps:
+      - name: Check out the production update
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.update_data.outputs.published_sha }}
+          fetch-depth: 1
+
+      - name: Detect reviewed shadow gate
+        id: shadow_gate
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          status_path = Path("src/content/data/simulation/research_status.json")
+          enabled = False
+          if status_path.is_file():
+              value = json.loads(status_path.read_text(encoding="utf-8"))
+              enabled = value.get("shadow_enabled") is True
+          with Path(os.environ["GITHUB_OUTPUT"]).open("a", encoding="utf-8") as output:
+              output.write(f"enabled={'true' if enabled else 'false'}\n")
+          print("Reviewed simulation shadow gate is enabled." if enabled else "Simulation shadows are disabled.")
+          PY
+
+      - name: Set up Python 3.11
+        if: ${{ steps.shadow_gate.outputs.enabled == 'true' }}
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install dependencies
+        if: ${{ steps.shadow_gate.outputs.enabled == 'true' }}
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.txt
+          python -m pip check
+
+      - name: Generate complete converged shadow card
+        if: ${{ steps.shadow_gate.outputs.enabled == 'true' }}
+        run: python src/generate_simulation_shadows.py
+
+      - name: Commit only the immutable paper shadow
+        if: ${{ steps.shadow_gate.outputs.enabled == 'true' }}
+        shell: bash
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          for shadow_path in src/content/data/simulation/shadow_forecasts/*.json
+          do
+            if [ -f "$shadow_path" ]; then
+              git add -- "$shadow_path"
+            fi
+          done
+          if git diff --cached --quiet; then
+            echo "No new converged simulation shadow to commit."
+            exit 0
+          fi
+          git commit -m "Add UFC simulation shadow ($(date -u +%F))"
+          git fetch --no-tags --depth=1 origin "${GITHUB_REF_NAME}"
+          if [ "$(git rev-parse HEAD^)" != "$(git rev-parse FETCH_HEAD)" ]; then
+            echo "Main changed during shadow generation; refusing to publish stale research."
             exit 1
           fi
           git push origin "HEAD:${GITHUB_REF_NAME}"

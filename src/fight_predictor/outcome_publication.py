@@ -18,6 +18,7 @@ from typing import Mapping
 
 import pandas as pd
 
+from fight_semantics import upcoming_schedule
 from market_tracker import matchup_id_for
 
 from .outcome_model import DiscreteTimeOutcomeModel
@@ -55,12 +56,7 @@ def scheduled_rounds_for_upcoming(
     audited and replaced if UFCStats later exposes an explicit format field.
     """
 
-    label = _text(division).casefold()
-    if "title" in label:
-        return 5, "ufcstats_title_bout_label"
-    if bout_index == 0:
-        return 5, "ufcstats_first_listed_main_event"
-    return 3, "ufc_standard_non_main_non_title"
+    return upcoming_schedule(bout_index, division)
 
 
 def build_outcome_forecast_publication(

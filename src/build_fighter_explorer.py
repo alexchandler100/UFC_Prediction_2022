@@ -14,6 +14,8 @@ from typing import Iterable, Mapping
 
 import pandas as pd
 
+from fight_semantics import method_bucket
+
 
 ROOT = Path(__file__).resolve().parent
 RAW_PATH = ROOT / "content" / "data" / "processed" / "ufc_fights_reported_doubled.csv"
@@ -217,14 +219,7 @@ def _rate(total: float, seconds: float, scale_seconds: float) -> float | None:
 
 
 def _method_bucket(method: object) -> str:
-    text = _clean_text(method).upper()
-    if "KO" in text:
-        return "ko_tko"
-    if "SUB" in text:
-        return "submission"
-    if "DEC" in text:
-        return "decision"
-    return "other"
+    return method_bucket(method)
 
 
 def _shard_key(fighter_id: str) -> str:

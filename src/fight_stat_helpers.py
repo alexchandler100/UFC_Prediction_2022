@@ -16,6 +16,13 @@ import networkx as nx
 from unidecode import unidecode
 from bs4 import BeautifulSoup
 from ufcstats_client import UFCStatsError, UFCStatsEventNotComplete, ufcstats_client
+from ufc_round_data import (
+    empty_reconciliation_frame,
+    empty_round_stats_frame,
+    normalize_round_stats,
+    parse_ufcstats_round_stats,
+    reconcile_round_stats,
+)
 
 from bokeh.plotting import figure, output_file, save
 from bokeh.io import show
@@ -778,11 +785,20 @@ def extract_time_format(soup, url='<unknown fight>'):
     raise UFCStatsError(f'Missing time-format metadata for {url}')
 
 
-def get_fight_card(url):
+def get_fight_card(url, *, include_round_stats=False):
+    """Scrape one completed event.
+
+    The historical return value remains the doubled aggregate fight frame.
+    Callers that explicitly request round data receive
+    ``(fight_frame, round_frame, reconciliation_frame)``; the detail response
+    is still fetched only once per bout.
+    """
     page = ufcstats_client.get(url, expected_text='b-fight-details__table')
     soup = BeautifulSoup(page.content, "html.parser")
 
     fight_card = pd.DataFrame()
+    round_card_parts = []
+    reconciliation_parts = []
     date = soup.select_one('li.b-list__box-list-item').text.strip().split('\n')[-1].strip()
     date = pd.to_datetime(date, format='%B %d, %Y')
     event_is_current = date.date() >= pd.Timestamp.today().date()
@@ -880,7 +896,35 @@ def get_fight_card(url):
 
         fight_data_dict = pd.DataFrame(fight_data_dict)
         # get striking details
-        strike_data_dict = get_fight_stats(fight_url, fighter, opponent)
+        round_source_error = None
+        if include_round_stats:
+            try:
+                strike_result = get_fight_stats(
+                    fight_url,
+                    fighter,
+                    opponent,
+                    include_round_stats=True,
+                )
+                strike_data_dict, parsed_rounds = strike_result
+            except UFCStatsError as error:
+                # Round markup is a research enrichment.  A source-only change
+                # in its collapsible tables must not prevent the authoritative
+                # completed-bout totals from updating.  Retry the already
+                # supported aggregate parser and persist an explicit round
+                # coverage issue for later bounded backfill.
+                round_source_error = error
+                print(
+                    f'Skipping unavailable per-round enrichment for {fight_url}: {error}'
+                )
+                strike_data_dict = get_fight_stats(
+                    fight_url, fighter, opponent
+                )
+                parsed_rounds = None
+        else:
+            # Preserve the legacy call shape for downstream monkeypatches and
+            # notebooks that wrap this helper.
+            strike_data_dict = get_fight_stats(fight_url, fighter, opponent)
+            parsed_rounds = None
                 
         if strike_data_dict is None:
             # Never mark a partially scraped event as complete.  The caller
@@ -906,15 +950,55 @@ def get_fight_card(url):
                 f'from round={rd!r}, time={time!r}, format={time_formats[0]!r}'
             )
         fight_data_dict['total_fight_time'] = total_fight_time
+
+        if include_round_stats and parsed_rounds is not None:
+            normalized_rounds = normalize_round_stats(
+                parsed_rounds, fight_data_dict
+            )
+            normalized_rounds, reconciliation = reconcile_round_stats(
+                normalized_rounds, fight_data_dict
+            )
+            round_card_parts.append(normalized_rounds)
+            if not reconciliation.empty:
+                reconciliation_parts.append(reconciliation)
+        elif include_round_stats and round_source_error is not None:
+            issue = empty_reconciliation_frame()
+            issue.loc[0] = {
+                "schema_version": 1,
+                "event_id": url.rstrip('/').rsplit('/', 1)[-1],
+                "fight_id": fight_url.rstrip('/').rsplit('/', 1)[-1],
+                "fight_url": fight_url,
+                "fighter_id": fighter_url.rstrip('/').rsplit('/', 1)[-1],
+                "fighter": fighter,
+                "field": "round_source",
+                "issue": "source_unavailable",
+                "bout_value": np.nan,
+                "round_value": np.nan,
+                "delta": np.nan,
+                "detail": str(round_source_error),
+            }
+            reconciliation_parts.append(issue)
         
         # add fight details to fight card
         fight_card = pd.concat([fight_card, fight_data_dict], axis=0)
         
     fight_card = fight_card.reset_index(drop=True)
+    if include_round_stats:
+        round_card = (
+            pd.concat(round_card_parts, ignore_index=True)
+            if round_card_parts
+            else empty_round_stats_frame()
+        )
+        reconciliation = (
+            pd.concat(reconciliation_parts, ignore_index=True)
+            if reconciliation_parts
+            else empty_reconciliation_frame()
+        )
+        return fight_card, round_card, reconciliation
     return fight_card
 
     
-def get_fight_stats(url, fighter, opponent):
+def get_fight_stats(url, fighter, opponent, *, include_round_stats=False):
     r"""
     Makes dataframe with two rows per fight, one for each fighter
     """
@@ -1107,6 +1191,9 @@ def get_fight_stats(url, fighter, opponent):
     
     fight_stat_df = pd.DataFrame(fd_columns)
     
+    if include_round_stats:
+        round_stats = parse_ufcstats_round_stats(soup, url, time_format)
+        return fight_stat_df, round_stats
     return fight_stat_df
 
 

@@ -83,8 +83,6 @@ from update_market_performance import (
     _bayesian_filtered_policy_performance,
     _bayesian_prediction_history_performance,
 )
-
-
 RAW_REQUIRED_COLUMNS = {
     "date",
     "fight_url",
@@ -164,6 +162,24 @@ SIGNIFICANT_STRIKE_PARTITIONS = (
         "sig_strikes_attempts",
     ),
 )
+
+
+# Frozen simulation research artifacts are deliberately isolated from both the
+# production model and website publications.  The exact layout is shared with
+# fight_sim.shadow and kept here as a validation/publication contract:
+#
+# src/content/data/
+#   processed/ufc_fight_round_stats_doubled.csv
+#   simulation/
+#     parameter_model.json.gz
+#     backtest_report.json
+#     research_status.json
+#     shadow_forecasts/<date>_<event>_<publication_sha256>.json
+SIMULATION_DIRECTORY_NAME = "simulation"
+SIMULATION_PARAMETER_FILE = "parameter_model.json.gz"
+SIMULATION_BACKTEST_FILE = "backtest_report.json"
+SIMULATION_STATUS_FILE = "research_status.json"
+SIMULATION_SHADOW_DIRECTORY = "shadow_forecasts"
 
 
 @dataclass
@@ -2235,12 +2251,357 @@ def validate_market_data(
     return report
 
 
+def _missing_simulation_input(
+    report: ValidationReport,
+    path: Path,
+    label: str,
+    *,
+    required: bool,
+) -> None:
+    message = f"{label} is missing: {path}"
+    if required:
+        report.errors.append(message)
+    else:
+        report.warnings.append(message)
+
+
+def _read_bounded_json(path: Path, *, maximum_bytes: int) -> object:
+    size = path.stat().st_size
+    if size <= 0:
+        raise ValueError("file is empty")
+    if size > maximum_bytes:
+        raise ValueError(f"file exceeds {maximum_bytes:,} bytes")
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
+def _reconcile_repository_round_stats(
+    round_stats: pd.DataFrame,
+    raw: pd.DataFrame,
+) -> tuple[pd.DataFrame, pd.DataFrame]:
+    """Reconcile the repository table one physical fight at a time.
+
+    ``reconcile_round_stats`` intentionally accepts one two-sided bout because
+    that is also the scraper checkpoint unit.  Repository validation must
+    preserve that contract rather than handing it the complete historical raw
+    table as if it were one fight.
+    """
+
+    from ufc_round_data import reconcile_round_stats
+
+    if "fight_url" not in raw:
+        raise ValueError("raw fights are missing fight_url for round reconciliation")
+    annotated: list[pd.DataFrame] = []
+    issues: list[pd.DataFrame] = []
+    raw_urls = raw["fight_url"].fillna("").astype(str)
+    for fight_url, fight_rounds in round_stats.groupby(
+        "fight_url", sort=False, dropna=False
+    ):
+        normalized_url = "" if pd.isna(fight_url) else str(fight_url).strip()
+        if not normalized_url or normalized_url.casefold() in {"nan", "none"}:
+            raise ValueError("round data contains a blank fight_url")
+        bout = raw.loc[raw_urls.eq(normalized_url)]
+        if len(bout) != 2:
+            raise ValueError(
+                f"round fight {normalized_url} matches {len(bout)} raw sides; expected 2"
+            )
+        fight_annotated, fight_issues = reconcile_round_stats(fight_rounds, bout)
+        annotated.append(fight_annotated)
+        issues.append(fight_issues)
+    return (
+        pd.concat(annotated, ignore_index=True),
+        pd.concat(issues, ignore_index=True),
+    )
+
+
+def validate_simulation_artifacts(
+    data_root: Path,
+    raw: pd.DataFrame,
+    *,
+    required: bool = False,
+) -> ValidationReport:
+    """Validate optional round/simulation research without enabling production.
+
+    Missing research inputs are warnings during normal repository validation.
+    ``required=True`` is the explicit research publication gate: it requires a
+    nonempty structurally valid round table plus the exact frozen parameter,
+    backtest, and research-status triple.  Shadow forecasts remain optional:
+    every file is validated against its own content-addressed commitment,
+    while only current/upcoming shadows are cross-checked against the frozen
+    parameter artifact so artifact rotation cannot invalidate history.
+    """
+
+    report = ValidationReport()
+    processed = data_root / "processed"
+    round_path = processed / "ufc_fight_round_stats_doubled.csv"
+    simulation_root = data_root / SIMULATION_DIRECTORY_NAME
+    if not required:
+        # The weekly production validator deliberately treats the simulator as
+        # an optional, isolated research package.  Presence diagnostics use
+        # paths only: no fight_sim import, decompression, parsing, or schema
+        # validation is allowed on this path.
+        if round_path.is_file():
+            report.facts.append(
+                "optional simulation per-round data is present (not validated; "
+                "use --require-simulation-artifact)"
+            )
+        else:
+            report.warnings.append(
+                f"optional simulation per-round data is absent: {round_path}"
+            )
+        if not simulation_root.is_dir():
+            report.warnings.append(
+                f"optional simulation research directory is absent: {simulation_root}"
+            )
+        else:
+            expected = (
+                SIMULATION_PARAMETER_FILE,
+                SIMULATION_BACKTEST_FILE,
+                SIMULATION_STATUS_FILE,
+            )
+            present = [name for name in expected if (simulation_root / name).is_file()]
+            missing = [name for name in expected if name not in present]
+            report.facts.append(
+                "optional simulation research files present but not validated: "
+                + (", ".join(present) if present else "none")
+            )
+            if missing:
+                report.warnings.append(
+                    "optional simulation research bundle is incomplete: "
+                    + ", ".join(missing)
+                )
+        return report
+
+    # Importing the research package is itself gated behind the explicit CLI
+    # flag so production updating cannot acquire simulator startup/runtime.
+    from fight_sim.evaluation import BacktestReport, load_backtest_report
+    from fight_sim.parameters import ParameterEnsembleArtifact, load_parameter_artifact
+    from fight_sim.publication import validate_shadow_forecast_publication
+    from fight_sim.shadow import validate_research_status
+    from ufc_round_data import validate_normalized_round_stats
+
+    if not round_path.is_file():
+        _missing_simulation_input(
+            report,
+            round_path,
+            "normalized UFC per-round data",
+            required=required,
+        )
+    else:
+        try:
+            if round_path.stat().st_size <= 0:
+                raise ValueError("file is empty")
+            round_stats = pd.read_csv(round_path, low_memory=False)
+            if round_stats.empty:
+                message = "normalized UFC per-round data contains no rows"
+                if required:
+                    report.errors.append(message)
+                else:
+                    report.warnings.append(message)
+            else:
+                validate_normalized_round_stats(round_stats)
+                annotated, reconciliation = _reconcile_repository_round_stats(
+                    round_stats, raw
+                )
+                side_status = annotated.drop_duplicates(["fight_id", "fighter_id"])[
+                    "reconciliation_status"
+                ].value_counts()
+                report.facts.append(
+                    "round stats: "
+                    f"{len(round_stats):,} rows / "
+                    f"{round_stats['fight_id'].nunique():,} fights / "
+                    f"{int(side_status.get('matched', 0)):,} matched sides / "
+                    f"{int(side_status.get('discrepancy', 0)):,} discrepancy sides / "
+                    f"{int(side_status.get('unverifiable', 0)):,} unverifiable sides"
+                )
+                if not reconciliation.empty:
+                    mismatch_names = {
+                        "round_coverage_mismatch",
+                        "round_duration_sum_mismatch",
+                        "round_sum_mismatch",
+                        "round_partition_mismatch",
+                    }
+                    source_discrepancies = int(
+                        reconciliation["issue"].isin(mismatch_names).sum()
+                    )
+                    unverifiable = len(reconciliation) - source_discrepancies
+                    report.warnings.append(
+                        "round stats reconciliation retained "
+                        f"{source_discrepancies:,} source discrepancy issue(s) and "
+                        f"{unverifiable:,} unverifiable comparison(s) without imputation"
+                    )
+        except (
+            OSError,
+            UnicodeError,
+            pd.errors.ParserError,
+            pd.errors.EmptyDataError,
+            KeyError,
+            TypeError,
+            ValueError,
+        ) as error:
+            report.errors.append(f"normalized UFC per-round data is invalid: {error}")
+
+    if not simulation_root.is_dir():
+        message = f"simulation research directory is missing: {simulation_root}"
+        if required:
+            report.errors.append(message)
+        else:
+            report.warnings.append(message)
+
+    artifact: ParameterEnsembleArtifact | None = None
+    backtest: BacktestReport | None = None
+    status: dict[str, object] | None = None
+    parameter_path = simulation_root / SIMULATION_PARAMETER_FILE
+    backtest_path = simulation_root / SIMULATION_BACKTEST_FILE
+    status_path = simulation_root / SIMULATION_STATUS_FILE
+
+    if not parameter_path.is_file():
+        _missing_simulation_input(
+            report,
+            parameter_path,
+            "frozen simulation parameter artifact",
+            required=required,
+        )
+    else:
+        try:
+            if parameter_path.stat().st_size <= 0:
+                raise ValueError("file is empty")
+            artifact = load_parameter_artifact(parameter_path).validate()
+            report.facts.append(
+                "simulation parameter artifact: "
+                f"{len(artifact.members):,} bootstrap members / "
+                f"{artifact.observed_fights:,} observed fights / "
+                f"sha256={artifact.artifact_sha256} / validation=materialized"
+            )
+        except (OSError, UnicodeError, json.JSONDecodeError, TypeError, ValueError) as error:
+            report.errors.append(f"frozen simulation parameter artifact is invalid: {error}")
+
+    if not backtest_path.is_file():
+        _missing_simulation_input(
+            report,
+            backtest_path,
+            "simulation backtest report",
+            required=required,
+        )
+    else:
+        try:
+            if backtest_path.stat().st_size <= 0:
+                raise ValueError("file is empty")
+            if backtest_path.stat().st_size > 16 * 1024 * 1024:
+                raise ValueError("file exceeds 16 MiB")
+            backtest = load_backtest_report(backtest_path).validate()
+            report.facts.append(
+                "simulation backtest: "
+                f"{len(backtest.folds):,} chronological folds / "
+                f"sha256={backtest.report_sha256}"
+            )
+        except (OSError, UnicodeError, json.JSONDecodeError, TypeError, ValueError) as error:
+            report.errors.append(f"simulation backtest report is invalid: {error}")
+
+    if not status_path.is_file():
+        _missing_simulation_input(
+            report,
+            status_path,
+            "simulation research-status gate",
+            required=required,
+        )
+    else:
+        try:
+            value = _read_bounded_json(status_path, maximum_bytes=64 * 1024)
+            status = validate_research_status(
+                value,
+                artifact=artifact,
+                backtest=backtest,
+            )
+            if status.get("shadow_enabled") is True and (
+                artifact is None or backtest is None
+            ):
+                raise ValueError(
+                    "shadow_enabled requires the frozen parameter/backtest pair"
+                )
+            report.facts.append(
+                "simulation research status: "
+                f"integrity_gate_passed=true / causal_backtest_gate_passed=true / "
+                f"shadow_enabled={str(status['shadow_enabled']).lower()}"
+            )
+        except (OSError, UnicodeError, json.JSONDecodeError, TypeError, ValueError) as error:
+            report.errors.append(f"simulation research-status gate is invalid: {error}")
+
+    shadow_root = simulation_root / SIMULATION_SHADOW_DIRECTORY
+    shadow_files = sorted(shadow_root.glob("*.json")) if shadow_root.is_dir() else []
+    if not shadow_files:
+        report.warnings.append(
+            f"simulation shadow forecasts are absent (optional): {shadow_root}"
+        )
+    validated_shadows = 0
+    current_shadows = 0
+    archived_shadows = 0
+    upcoming_by_event: dict[str, list[tuple[pd.Timestamp, str, dict[str, object]]]] = {}
+    today_utc = pd.Timestamp.now(tz="UTC").normalize()
+    for shadow_path in shadow_files:
+        try:
+            value = _read_bounded_json(shadow_path, maximum_bytes=16 * 1024 * 1024)
+            validated = validate_shadow_forecast_publication(value)
+            publication_hash = str(validated["publication_sha256"])
+            if not shadow_path.name.endswith(f"_{publication_hash}.json"):
+                raise ValueError(
+                    "content-addressed filename does not match publication_sha256"
+                )
+            event_date = pd.to_datetime(
+                validated.get("event_date"), errors="raise", utc=True
+            ).normalize()
+            is_current_upcoming = event_date >= today_utc
+            if is_current_upcoming:
+                current_shadows += 1
+                issued_at = pd.to_datetime(
+                    validated.get("forecast_issued_at_utc"), errors="raise", utc=True
+                )
+                upcoming_by_event.setdefault(str(validated["event_id"]), []).append(
+                    (issued_at, publication_hash, validated)
+                )
+            else:
+                archived_shadows += 1
+            validated_shadows += 1
+        except (OSError, UnicodeError, json.JSONDecodeError, TypeError, ValueError) as error:
+            report.errors.append(
+                f"simulation shadow forecast is invalid ({shadow_path.name}): {error}"
+            )
+    if artifact is not None:
+        # An upcoming card may have several immutable forecasts created before
+        # and after a parameter rotation.  Every file remains independently
+        # verifiable, but only the latest issuance per event is the active
+        # forecast that must name the currently frozen artifact.
+        for event_id, candidates in sorted(upcoming_by_event.items()):
+            _issued_at, _publication_hash, active = max(
+                candidates, key=lambda item: (item[0], item[1])
+            )
+            if active.get("parameter_artifact_sha256") != artifact.artifact_sha256:
+                report.errors.append(
+                    "current upcoming shadow names a different frozen parameter "
+                    f"artifact ({event_id})"
+                )
+            if active.get("parameter_input_sha256") != artifact.input_sha256:
+                report.errors.append(
+                    f"current upcoming shadow parameter input hash is stale ({event_id})"
+                )
+            if int(active.get("bootstrap_members") or 0) != len(artifact.members):
+                report.errors.append(
+                    f"current upcoming shadow bootstrap member count is stale ({event_id})"
+                )
+    if shadow_files:
+        report.facts.append(
+            f"simulation shadow forecasts: {validated_shadows:,}/{len(shadow_files):,} valid / "
+            f"{current_shadows:,} current / {archived_shadows:,} archived"
+        )
+    return report
+
+
 def validate_repository(
     repo_root: Path,
     *,
     allow_stale: bool = False,
     require_model_artifact: bool = False,
     require_market_data: bool = False,
+    require_simulation_artifact: bool = False,
 ) -> ValidationReport:
     data_root = repo_root / "src" / "content" / "data"
     processed = data_root / "processed"
@@ -2278,6 +2639,13 @@ def validate_repository(
         )
     )
     report.merge(validate_raw_fights(raw))
+    report.merge(
+        validate_simulation_artifacts(
+            data_root,
+            raw,
+            required=require_simulation_artifact,
+        )
+    )
     report.merge(validate_fighters(fighters))
     legacy_derived_path = processed / "ufc_fights_reported_derived_doubled.csv"
     if legacy_derived_path.exists():
@@ -2355,6 +2723,14 @@ def main() -> int:
         help="require and cross-check the point-in-time matrix and winner model",
     )
     parser.add_argument(
+        "--require-simulation-artifact",
+        action="store_true",
+        help=(
+            "require and cross-check normalized round data plus the frozen "
+            "candidate simulation parameter/backtest/research-status bundle"
+        ),
+    )
+    parser.add_argument(
         "--allow-stale",
         action="store_true",
         help="run structural checks without rejecting old completed/upcoming snapshots",
@@ -2366,6 +2742,7 @@ def main() -> int:
         allow_stale=args.allow_stale,
         require_model_artifact=args.require_model_artifact,
         require_market_data=args.require_market_data,
+        require_simulation_artifact=args.require_simulation_artifact,
     )
     for fact in report.facts:
         print(f"FACT: {fact}")

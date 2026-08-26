@@ -158,6 +158,47 @@ class UFCStatsClientTests(unittest.TestCase):
             with self.assertRaisesRegex(UFCStatsError, 'calculate elapsed time'):
                 fight_stat_helpers.get_fight_card('http://ufcstats.test/event')
 
+    def test_round_markup_failure_does_not_block_aggregate_event_ingestion(self):
+        response = make_response(
+            '<li class="b-list__box-list-item">Date:\n August 14, 2025</li>'
+            '<table class="b-fight-details__table">'
+            '<tr class="b-fight-details__table-row"></tr>'
+            '<tr class="b-fight-details__table-row">'
+            '<td><a href="http://ufcstats.test/fight/f1"></a><p>win</p></td>'
+            '<td><a href="http://ufcstats.test/fighter/a"></a>'
+            '<a href="http://ufcstats.test/fighter/b"></a><p>A</p><p>B</p></td>'
+            '<td></td><td></td><td></td><td></td>'
+            '<td><p>Lightweight</p></td><td><p>U-DEC</p></td>'
+            '<td><p>1</p></td><td><p>1:00</p></td>'
+            '</tr></table>'
+        )
+
+        class StaticClient:
+            def get(self, *_args, **_kwargs):
+                return response
+
+        details = pd.DataFrame(
+            {'fighter': ['A', 'B'], 'time_format': ['3 Rnd (5-5-5)'] * 2}
+        )
+        with (
+            patch.object(fight_stat_helpers, 'ufcstats_client', StaticClient()),
+            patch.object(
+                fight_stat_helpers,
+                'get_fight_stats',
+                side_effect=[UFCStatsError('changed round markup'), details],
+            ) as fetch,
+        ):
+            fights, rounds, issues = fight_stat_helpers.get_fight_card(
+                'http://ufcstats.test/event/e1', include_round_stats=True
+            )
+
+        self.assertEqual(fetch.call_count, 2)
+        self.assertEqual(len(fights), 2)
+        self.assertTrue(rounds.empty)
+        self.assertEqual(len(issues), 1)
+        self.assertEqual(issues.iloc[0]['issue'], 'source_unavailable')
+        self.assertIn('changed round markup', issues.iloc[0]['detail'])
+
 
 class OddsTests(unittest.TestCase):
     def test_consensus_removes_vig_in_probability_space(self):
