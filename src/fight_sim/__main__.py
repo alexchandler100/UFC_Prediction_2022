@@ -30,6 +30,7 @@ from .research import (
 from .posterior_predictive import validate_completed_fight, write_validation_report
 from .performance import execute_benchmark
 from .tuning import (
+    compare_outcome_mechanics,
     derive_mechanics_profile,
     select_finish_profile,
     select_mechanics_profile,
@@ -288,6 +289,14 @@ def build_parser() -> argparse.ArgumentParser:
         help="Reserve this many newest complete events after the selected window",
     )
     posterior.add_argument(
+        "--cohort-manifest",
+        help="Tracked frozen-cohort JSON; requires --cohort-name",
+    )
+    posterior.add_argument(
+        "--cohort-name",
+        help="Named cohort from --cohort-manifest",
+    )
+    posterior.add_argument(
         "--min-prior-ufc-fights", type=_bounded_integer(0, 100), default=3
     )
     posterior.add_argument(
@@ -356,6 +365,20 @@ def build_parser() -> argparse.ArgumentParser:
     posterior.add_argument(
         "--output-dir",
         default=str(DEFAULT_ARTIFACT_ROOT / "posterior-backtest-recent"),
+    )
+
+    compare_mechanics = commands.add_parser(
+        "compare-outcome-mechanics",
+        help="Compare outcome engines on identical completed event cards",
+    )
+    compare_mechanics.add_argument("baseline", help="Baseline posterior run")
+    compare_mechanics.add_argument("candidate", help="Candidate posterior run")
+    compare_mechanics.add_argument(
+        "--minimum-balanced-events", type=_bounded_integer(1, 100), default=5
+    )
+    compare_mechanics.add_argument(
+        "--output",
+        default=str(DEFAULT_ARTIFACT_ROOT / "outcome-mechanics-comparison.json"),
     )
 
     upcoming = commands.add_parser(
@@ -807,6 +830,8 @@ def main(argv: list[str] | None = None) -> int:
                     args.takedown_control_association
                 ),
                 max_runtime_seconds=args.max_runtime_seconds,
+                cohort_manifest_path=args.cohort_manifest,
+                cohort_name=args.cohort_name,
             )
             _print(
                 {
@@ -849,6 +874,21 @@ def main(argv: list[str] | None = None) -> int:
                     "excluded_matchups": publication["excluded_matchups"],
                     "publication_sha256": publication["publication_sha256"],
                     "website_output": str(website_path.resolve()),
+                }
+            )
+        elif args.command == "compare-outcome-mechanics":
+            comparison = compare_outcome_mechanics(
+                args.baseline,
+                args.candidate,
+                output=args.output,
+                minimum_balanced_events=args.minimum_balanced_events,
+            )
+            _print(
+                {
+                    "balanced_events": comparison["balanced_event_count"],
+                    "balanced_fights": comparison["balanced_fight_count"],
+                    "development_status": comparison["development_status"],
+                    "output": str(Path(args.output).resolve()),
                 }
             )
         elif args.command == "derive-mechanics":

@@ -304,6 +304,9 @@ class SimulatorConfig:
     knockdown_probability_multiplier: float = 1.0
     official_knockdown_observation_probability: float = 1.0
     ko_tko_finish_probability_multiplier: float = 1.0
+    outcome_mechanics_version: str = "legacy_v1"
+    post_knockdown_finish_probability: float = 0.52
+    non_knockdown_ko_rate_per_landed: float = 0.0011
     submission_finish_probability_multiplier: float = 1.0
     schema_version: str = SCHEMA_VERSION
 
@@ -316,6 +319,30 @@ class SimulatorConfig:
             0.0,
             1.0,
         )
+        if self.outcome_mechanics_version not in {"legacy_v1", "two_route_v2"}:
+            raise ValueError(
+                "outcome_mechanics_version must be legacy_v1 or two_route_v2"
+            )
+        _bounded(
+            "post_knockdown_finish_probability",
+            self.post_knockdown_finish_probability,
+            0.0,
+            1.0,
+        )
+        _bounded(
+            "non_knockdown_ko_rate_per_landed",
+            self.non_knockdown_ko_rate_per_landed,
+            0.0,
+            1.0,
+        )
+        if (
+            self.outcome_mechanics_version == "two_route_v2"
+            and self.official_knockdown_observation_probability != 1.0
+        ):
+            raise ValueError(
+                "two_route_v2 models official knockdowns directly and requires "
+                "official_knockdown_observation_probability=1"
+            )
         _nonnegative("ten_eight_threshold", self.ten_eight_threshold)
         if self.max_events <= 0:
             raise ValueError("max_events must be positive")
@@ -340,7 +367,15 @@ class SimulatorConfig:
             raise ValueError("max_hazard_per_minute must exceed minimum")
 
     def to_dict(self) -> dict[str, Any]:
-        return {name: getattr(self, name) for name in self.__dataclass_fields__}
+        values = {name: getattr(self, name) for name in self.__dataclass_fields__}
+        # Preserve the byte-level legacy run/RNG contract.  The v2-only fields
+        # did not exist in historical specs and their defaults must not change
+        # legacy run IDs merely because newer code can execute another engine.
+        if self.outcome_mechanics_version == "legacy_v1":
+            values.pop("outcome_mechanics_version")
+            values.pop("post_knockdown_finish_probability")
+            values.pop("non_knockdown_ko_rate_per_landed")
+        return values
 
 
 @dataclass(frozen=True, slots=True)
@@ -673,6 +708,7 @@ class SimulationPath:
     blue_stats: FighterStats
     final_state_hash: str
     phase_time_us: tuple[tuple[str, int], ...] = ()
+    mechanic_counts: tuple[tuple[str, int], ...] = ()
     events: tuple[SimulationEvent, ...] = ()
     invariant_failures: tuple[str, ...] = ()
 
@@ -690,6 +726,15 @@ class SimulationPath:
             total += int(duration_us)
         if self.phase_time_us and total != self.result.fight_time_us:
             raise ValueError("phase durations must sum to fight duration")
+        mechanic_names: set[str] = set()
+        for name, count in self.mechanic_counts:
+            if not str(name).strip():
+                raise ValueError("mechanic count names cannot be empty")
+            if name in mechanic_names:
+                raise ValueError("mechanic_counts must contain each name at most once")
+            if int(count) < 0:
+                raise ValueError("mechanic counts must be nonnegative")
+            mechanic_names.add(name)
 
     @property
     def outcome_key(self) -> str:
@@ -698,6 +743,12 @@ class SimulationPath:
     def phase_duration_us(self, phase: Phase | str) -> int:
         key = phase.value if isinstance(phase, Phase) else str(phase)
         return next((int(value) for name, value in self.phase_time_us if name == key), 0)
+
+    def mechanic_count(self, name: str) -> int:
+        return next(
+            (int(value) for key, value in self.mechanic_counts if key == name),
+            0,
+        )
 
 
 @dataclass(frozen=True, slots=True)

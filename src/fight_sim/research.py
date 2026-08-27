@@ -2036,6 +2036,129 @@ def _recent_complete_event_selection(
     )
 
 
+def _frozen_cohort_selection(
+    physical: pd.DataFrame,
+    *,
+    manifest_path: str | Path,
+    cohort_name: str,
+    min_prior_ufc_fights: int,
+    source_sha256: Mapping[str, str | None] | None = None,
+) -> tuple[
+    pd.DataFrame,
+    list[dict[str, object]],
+    dict[str, int],
+    dict[str, object],
+]:
+    """Select and verify a named immutable research cohort.
+
+    The event identities, exposure rule, expected fight count, and checksum of
+    the sorted eligible fight IDs are all sealed in the tracked manifest.  A
+    refreshed dataset therefore fails loudly instead of moving the window.
+    """
+
+    manifest = load_json(manifest_path)
+    if manifest.get("schema_version") != 1:
+        raise ValueError("unsupported simulation cohort manifest schema")
+    contract = dict(manifest.get("selection_contract") or {})
+    declared_minimum = int(contract.get("min_prior_ufc_fights", -1))
+    if declared_minimum != min_prior_ufc_fights:
+        raise ValueError(
+            "cohort manifest exposure rule differs from min_prior_ufc_fights"
+        )
+    declared_sources = dict(contract.get("source_sha256") or {})
+    if source_sha256 is not None and declared_sources != dict(source_sha256):
+        raise ValueError(
+            "cohort manifest source fingerprints differ from the research inputs"
+        )
+    cohorts = dict(manifest.get("cohorts") or {})
+    if cohort_name not in cohorts:
+        raise ValueError(f"unknown frozen simulation cohort: {cohort_name}")
+    cohort = dict(cohorts[cohort_name])
+    event_values = list(cohort.get("events") or [])
+    if not event_values:
+        raise ValueError("frozen simulation cohort contains no events")
+    events = pd.DataFrame(
+        [
+            {
+                "date": pd.to_datetime(str(item["date"]), utc=True),
+                "event_id": str(item["event_id"]),
+            }
+            for item in event_values
+        ]
+    ).sort_values(["date", "event_id"], kind="stable")
+    if events.duplicated(["date", "event_id"]).any():
+        raise ValueError("frozen simulation cohort contains duplicate events")
+    available = physical[["date", "event_id"]].drop_duplicates()
+    checked = events.merge(
+        available.assign(_available=True),
+        on=["date", "event_id"],
+        how="left",
+        validate="one_to_one",
+    )
+    if not checked["_available"].fillna(False).all():
+        missing = checked.loc[checked["_available"].isna(), "event_id"].tolist()
+        raise ValueError(f"frozen simulation cohort events are missing: {missing}")
+    selected = physical.merge(
+        events.assign(_selected_event=True),
+        on=["date", "event_id"],
+        how="inner",
+        validate="many_to_one",
+    )
+    exposure = (
+        selected["red_prior_ufc_fights"].ge(min_prior_ufc_fights)
+        & selected["blue_prior_ufc_fights"].ge(min_prior_ufc_fights)
+    )
+    eligible = selected.loc[exposure].copy()
+    fight_ids = sorted(eligible["fight_id"].astype(str).tolist())
+    expected_count = int(cohort["eligible_fights"])
+    expected_hash = str(cohort["fight_ids_sha256"])
+    actual_hash = canonical_sha256(fight_ids)
+    if len(fight_ids) != expected_count or actual_hash != expected_hash:
+        raise ValueError(
+            "frozen simulation cohort fight identities changed: "
+            f"expected {expected_count}/{expected_hash}, got "
+            f"{len(fight_ids)}/{actual_hash}"
+        )
+    event_rows: list[dict[str, object]] = []
+    for source in events.to_dict("records"):
+        event_id = str(source["event_id"])
+        date = pd.Timestamp(source["date"])
+        all_card = selected.loc[
+            selected["event_id"].astype(str).eq(event_id)
+            & selected["date"].eq(date)
+        ]
+        card = eligible.loc[
+            eligible["event_id"].astype(str).eq(event_id)
+            & eligible["date"].eq(date)
+        ]
+        event_rows.append(
+            {
+                "event_id": event_id,
+                "date": date.date().isoformat(),
+                "card_fights": int(len(all_card)),
+                "eligible_fights": int(len(card)),
+                "excluded_low_exposure": int(len(all_card) - len(card)),
+            }
+        )
+    metadata = {
+        "cohort_name": cohort_name,
+        "cohort_manifest_sha256": canonical_sha256(manifest),
+        "fight_ids_sha256": actual_hash,
+    }
+    return (
+        eligible.sort_values(
+            ["date", "event_id", "fight_id"], kind="stable"
+        ).reset_index(drop=True),
+        event_rows,
+        {
+            "selected_card_fights": int(len(selected)),
+            "eligible_fights": int(len(eligible)),
+            "excluded_low_exposure": int((~exposure).sum()),
+        },
+        metadata,
+    )
+
+
 def _joint_log_loss(frame: pd.DataFrame, column: str) -> float | None:
     losses: list[float] = []
     for row in frame.to_dict("records"):
@@ -2169,6 +2292,8 @@ def execute_posterior_backtest(
     simulator_config: SimulatorConfig | None = None,
     use_takedown_control_association: bool = False,
     max_runtime_seconds: float | None = None,
+    cohort_manifest_path: str | Path | None = None,
+    cohort_name: str | None = None,
 ) -> tuple[Path, dict[str, object]]:
     """Run a causal event-cutoff posterior-predictive population study."""
 
@@ -2180,12 +2305,19 @@ def execute_posterior_backtest(
         raise ValueError(f"unsupported posterior fidelity: {fidelity}")
     if max_runtime_seconds is not None and not 0 < max_runtime_seconds <= 3300:
         raise ValueError("max_runtime_seconds must be in (0, 3300]")
+    if (cohort_manifest_path is None) != (cohort_name is None):
+        raise ValueError("cohort_manifest_path and cohort_name must be provided together")
     fingerprint_started = time.perf_counter()
     source_sha256 = {
         "raw": _file_sha256(raw_path, required=True),
         "profiles": _file_sha256(profiles_path, required=False),
         "round_stats": _file_sha256(round_path, required=False),
     }
+    cohort_manifest_sha256 = (
+        None
+        if cohort_manifest_path is None
+        else canonical_sha256(load_json(cohort_manifest_path))
+    )
     fingerprint_seconds = time.perf_counter() - fingerprint_started
     simulator = simulator_config or SimulatorConfig()
     parameter_model = (
@@ -2208,6 +2340,8 @@ def execute_posterior_backtest(
                 use_takedown_control_association
             ),
             "max_runtime_seconds": max_runtime_seconds,
+            "cohort_manifest_sha256": cohort_manifest_sha256,
+            "cohort_name": cohort_name,
         },
         "simulation": {
             "bootstrap_members": bootstrap_members,
@@ -2252,17 +2386,32 @@ def execute_posterior_backtest(
     )
     raw, profiles, rounds = load_research_inputs(raw_path, profiles_path, round_path)
     physical = physical_backtest_frame(raw)
-    selected, event_manifest, selection_counts = _recent_complete_event_selection(
-        physical,
-        last_events=last_events,
-        min_prior_ufc_fights=min_prior_ufc_fights,
-        skip_latest_events=skip_latest_events,
-    )
+    cohort_metadata: dict[str, object] = {}
+    if cohort_manifest_path is not None and cohort_name is not None:
+        (
+            selected,
+            event_manifest,
+            selection_counts,
+            cohort_metadata,
+        ) = _frozen_cohort_selection(
+            physical,
+            manifest_path=cohort_manifest_path,
+            cohort_name=cohort_name,
+            min_prior_ufc_fights=min_prior_ufc_fights,
+            source_sha256=source_sha256,
+        )
+    else:
+        selected, event_manifest, selection_counts = _recent_complete_event_selection(
+            physical,
+            last_events=last_events,
+            min_prior_ufc_fights=min_prior_ufc_fights,
+            skip_latest_events=skip_latest_events,
+        )
     if selected.empty:
         raise ValueError("recent-event exposure filter selected no fights")
     if progress:
         progress(
-            f"Selected {len(selected)} eligible fights across {last_events} recent events "
+            f"Selected {len(selected)} eligible fights across {len(event_manifest)} events "
             f"({selection_counts['excluded_low_exposure']} low-exposure fights excluded)."
         )
     repeat_records: list[list[dict[str, object]]] = [
@@ -2548,6 +2697,7 @@ def execute_posterior_backtest(
             ),
             "parameter_model": parameter_model,
             "max_runtime_seconds": max_runtime_seconds,
+            **cohort_metadata,
             "workers": workers,
             "chunk_size": chunk_size,
             "simulator_config": simulator.to_dict(),

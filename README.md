@@ -469,6 +469,10 @@ two independent seeds quantify inner Monte Carlo noise, and the output includes
 a dark self-contained HTML report plus compressed local ledgers.
 `--skip-latest-events` selects an earlier whole-card window, making it possible
 to reserve intermediate selection cards and a final untouched holdout.
+`--cohort-manifest PATH --cohort-name NAME` instead selects a tracked immutable
+card set and hard-fails if source hashes, the exposure rule, eligible fight
+count, or sorted fight-ID checksum changes. `compare-outcome-mechanics` scores
+two population runs only on identical complete event cards.
 
 ```bash
 python -m fight_sim posterior-backtest \
@@ -551,6 +555,15 @@ underpredicting duration, attempts, takedowns, and UFCStats control. The
 simulator therefore remains unsuitable as a standalone predictor. Full results
 and the next frozen development boundary are in
 `SIMULATION_CONDITIONAL_CONTROL_AND_BREADTH_REPORT_2026-08-27.md`.
+
+The follow-up outcome-engine experiment is documented in
+`SIMULATION_OUTCOME_ENGINE_V2_REPORT_2026-08-27.md`. It freezes exact
+development, confirmation, and final-holdout identities; adds a versioned
+official-KD hurdle plus distinct KD and no-KD KO routes; and records finish-route
+diagnostics. The v2.1 profile passed all development gates on the same 229
+fights, including a wholly favorable event-card interval for joint log-loss
+improvement, but remains frozen for confirmation because winner accuracy was
+still only 52.63% and winner log loss remained worse than 50/50.
 
 Measure a fixed run specification before and after performance changes with:
 

@@ -1,0 +1,27 @@
+{
+  "profile_type": "predeclared_two_route_development_candidate",
+  "candidate_only": true,
+  "production_enabled": false,
+  "derivation": {
+    "strictly_before": "2024-04-13T00:00:00Z",
+    "training_window_start": "2014-01-01T00:00:00Z",
+    "physical_fights": 5062,
+    "official_knockdowns": 2184,
+    "ko_tko_with_winner_knockdown": 1133,
+    "ko_tko_without_winner_knockdown": 463,
+    "significant_strikes_landed": 416387
+  },
+  "simulator_config": {
+    "distance_strike_hazard_multiplier": 1.5343541386693342,
+    "clinch_strike_hazard_multiplier": 0.5398684975107,
+    "ground_strike_hazard_multiplier": 0.7601949755447748,
+    "takedown_hazard_multiplier": 1.8891188710622644,
+    "submission_hazard_multiplier": 5.228165930524158,
+    "knockdown_probability_multiplier": 1.0,
+    "official_knockdown_observation_probability": 1.0,
+    "ko_tko_finish_probability_multiplier": 1.0,
+    "outcome_mechanics_version": "two_route_v2",
+    "post_knockdown_finish_probability": 0.5187728937728938,
+    "non_knockdown_ko_rate_per_landed": 0.0011119463383823223
+  }
+}

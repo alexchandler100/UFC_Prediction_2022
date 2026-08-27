@@ -108,6 +108,13 @@ class FightSimDomainTests(unittest.TestCase):
     def test_contract_roundtrip_and_stat_partitions(self):
         spec = _spec()
         self.assertEqual(SimulationRunSpec.from_dict(spec.to_dict()), spec)
+        self.assertNotIn("outcome_mechanics_version", SimulatorConfig().to_dict())
+        self.assertEqual(
+            SimulatorConfig(
+                outcome_mechanics_version="two_route_v2"
+            ).to_dict()["outcome_mechanics_version"],
+            "two_route_v2",
+        )
         with self.assertRaisesRegex(ValueError, "target strike partitions"):
             FighterStats(
                 strike_attempts=1,
@@ -123,6 +130,76 @@ class FightSimDomainTests(unittest.TestCase):
             ValueError, "official_knockdown_observation_probability"
         ):
             SimulatorConfig(official_knockdown_observation_probability=1.01)
+        with self.assertRaisesRegex(ValueError, "models official knockdowns"):
+            SimulatorConfig(
+                outcome_mechanics_version="two_route_v2",
+                official_knockdown_observation_probability=0.5,
+            )
+
+    def test_two_route_mechanics_can_finish_without_official_knockdown(self):
+        active = replace(
+            _zero_activity_parameters(),
+            strike_rate_distance=100.0,
+            strike_accuracy=1.0,
+            strike_defense=0.0,
+            knockdown_rate_per_landed=0.0,
+        )
+        base = _spec(
+            round_seconds=30,
+            red_parameters=active,
+            blue_parameters=active,
+        )
+        path = simulate_fight(
+            replace(
+                base,
+                simulator=SimulatorConfig(
+                    outcome_mechanics_version="two_route_v2",
+                    non_knockdown_ko_rate_per_landed=1.0,
+                    post_knockdown_finish_probability=0.0,
+                ),
+            ),
+            0,
+            telemetry="full",
+        )
+        self.assertIs(path.result.method, OutcomeMethod.KO_TKO)
+        self.assertEqual(path.red_stats.knockdowns + path.blue_stats.knockdowns, 0)
+        self.assertEqual(
+            path.mechanic_count("red_ko_without_knockdown")
+            + path.mechanic_count("blue_ko_without_knockdown"),
+            1,
+        )
+        self.assertEqual(trace_from_dict(trace_to_dict(path)), path)
+
+    def test_two_route_mechanics_caps_knockdowns_per_landed_exchange(self):
+        active = replace(
+            _zero_activity_parameters(),
+            strike_rate_distance=100.0,
+            strike_accuracy=1.0,
+            strike_defense=0.0,
+            knockdown_rate_per_landed=1.0,
+        )
+        base = _spec(
+            round_seconds=30,
+            red_parameters=active,
+            blue_parameters=active,
+        )
+        spec = replace(
+            base,
+            simulator=SimulatorConfig(
+                outcome_mechanics_version="two_route_v2",
+                knockdown_probability_multiplier=100.0,
+                post_knockdown_finish_probability=1.0,
+                non_knockdown_ko_rate_per_landed=0.0,
+            ),
+        )
+        paths = simulate_indices(spec, range(32))
+        self.assertTrue(any(path.result.method is OutcomeMethod.KO_TKO for path in paths))
+        for path in paths:
+            knockdowns = path.red_stats.knockdowns + path.blue_stats.knockdowns
+            landed_exchanges = path.mechanic_count(
+                "red_landed_exchanges"
+            ) + path.mechanic_count("blue_landed_exchanges")
+            self.assertLessEqual(knockdowns, landed_exchanges)
 
     def test_zero_hazard_reaches_bell_and_one_terminal_event(self):
         zero = _zero_activity_parameters()
@@ -228,6 +305,7 @@ class FightSimDeterminismTests(unittest.TestCase):
         self.assertEqual(lean.result, traced.result)
         self.assertEqual(lean.red_stats, traced.red_stats)
         self.assertEqual(lean.blue_stats, traced.blue_stats)
+        self.assertEqual(lean.mechanic_counts, traced.mechanic_counts)
         self.assertEqual(lean.final_state_hash, traced.final_state_hash)
         self.assertEqual(
             replay_trace(traced, scheduled_rounds=spec.bout.scheduled_rounds),

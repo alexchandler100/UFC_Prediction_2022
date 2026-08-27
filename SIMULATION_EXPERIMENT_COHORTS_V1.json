@@ -1,0 +1,87 @@
+{
+  "schema_version": 1,
+  "created_at_utc": "2026-08-27T00:00:00Z",
+  "selection_contract": {
+    "population": "physical UFC fights only",
+    "min_prior_ufc_fights": 3,
+    "identity_rule": "sorted eligible UFCStats fight IDs, canonical JSON SHA-256",
+    "source_sha256": {
+      "raw": "6cfb14c9ebcaf2946d942447f4af0166df8b1e5cefa9111edb184b74d7197d49",
+      "profiles": "88341fc47df0dac282a4c91c6f5df4d60e9e5905204eda4ce950459720c01230",
+      "round_stats": "2ca7e38eaf679ddcccd5a1b9d1e6d1943874072a9492eeaf2f2bdb3815e45cce"
+    }
+  },
+  "cohorts": {
+    "development_2024": {
+      "purpose": "Open development and mechanic selection",
+      "eligible_fights": 229,
+      "fight_ids_sha256": "3307a65497f7ab9558a2788f13238b8cc2751bf88a037073ab02c21199947a10",
+      "events": [
+        {"date": "2024-04-13", "event_id": "6750e338922a099d"},
+        {"date": "2024-04-27", "event_id": "a16ce18149021139"},
+        {"date": "2024-05-04", "event_id": "981ab7a0576f76a0"},
+        {"date": "2024-05-11", "event_id": "5dfe71ade71f3a4b"},
+        {"date": "2024-05-18", "event_id": "46baf0f57edfa4df"},
+        {"date": "2024-06-01", "event_id": "6e4acc2c115215b5"},
+        {"date": "2024-06-08", "event_id": "cba3a2dfbc06ce79"},
+        {"date": "2024-06-15", "event_id": "9c5828c6fd9dc948"},
+        {"date": "2024-06-22", "event_id": "b12a1d19ee383b7c"},
+        {"date": "2024-06-29", "event_id": "f3743d8ef5dde970"},
+        {"date": "2024-07-13", "event_id": "66e0a70352fef46a"},
+        {"date": "2024-07-20", "event_id": "c11036da9162cb5f"},
+        {"date": "2024-07-27", "event_id": "026b4f7049085842"},
+        {"date": "2024-08-03", "event_id": "fe435e440b5de0ff"},
+        {"date": "2024-08-10", "event_id": "2c733e059462c1dc"},
+        {"date": "2024-08-17", "event_id": "32ba186f4b0e3267"},
+        {"date": "2024-08-24", "event_id": "be8ad887e4d674b0"},
+        {"date": "2024-09-07", "event_id": "ee0b69e307c857e5"},
+        {"date": "2024-09-14", "event_id": "0c01568b1ac77bff"},
+        {"date": "2024-09-28", "event_id": "079488710f012779"},
+        {"date": "2024-10-05", "event_id": "eee8efec7b951d84"},
+        {"date": "2024-10-12", "event_id": "5bdcbd8dd681a257"},
+        {"date": "2024-10-19", "event_id": "6a0047ac8c99fece"},
+        {"date": "2024-10-26", "event_id": "221b2a3070c7ce3e"},
+        {"date": "2024-11-02", "event_id": "3ab0df1ddd5f1dc2"},
+        {"date": "2024-11-09", "event_id": "585f9ffdb0cd0466"},
+        {"date": "2024-11-16", "event_id": "daff32bc96d1eabf"},
+        {"date": "2024-11-23", "event_id": "e955046551f8c7dd"},
+        {"date": "2024-12-07", "event_id": "ad23903ef3af7406"},
+        {"date": "2024-12-14", "event_id": "72c9c2eadfc3277e"}
+      ]
+    },
+    "confirmation_2025_a": {
+      "purpose": "Locked confirmation after candidate freeze",
+      "eligible_fights": 57,
+      "fight_ids_sha256": "24a43e1d0914cba5d7b27d8c89166f609459d7328018d835594f06139106735a",
+      "events": [
+        {"date": "2025-01-11", "event_id": "81ddc98fceb30086"},
+        {"date": "2025-01-18", "event_id": "39f68882def7a507"},
+        {"date": "2025-02-01", "event_id": "80dbeb1dd5b53e64"},
+        {"date": "2025-02-08", "event_id": "e6015889f50075d2"},
+        {"date": "2025-02-15", "event_id": "ce7871949b0ed2bf"},
+        {"date": "2025-02-22", "event_id": "c50ea21fe9ef478d"},
+        {"date": "2025-03-01", "event_id": "9766ed20b68c7c33"},
+        {"date": "2025-03-08", "event_id": "ca936c67687789e9"},
+        {"date": "2025-03-15", "event_id": "39f62b833e4cf126"},
+        {"date": "2025-03-22", "event_id": "cc2ad11b1f9d818b"}
+      ]
+    },
+    "final_holdout_2025_b": {
+      "purpose": "Untouched final holdout after confirmation",
+      "eligible_fights": 72,
+      "fight_ids_sha256": "ddf1baf6386e0bbfdad6095af5992aba51bdd8dd28fcda4c4b6158a723e92933",
+      "events": [
+        {"date": "2025-03-29", "event_id": "0f7210aa8d61af8d"},
+        {"date": "2025-04-05", "event_id": "86b30a86664cb6e4"},
+        {"date": "2025-04-12", "event_id": "22f4b6cb6b1bd7fd"},
+        {"date": "2025-04-26", "event_id": "b2e3aca4cd363477"},
+        {"date": "2025-05-03", "event_id": "de20ffb3fc2e7629"},
+        {"date": "2025-05-10", "event_id": "118463dd8db16e7f"},
+        {"date": "2025-05-17", "event_id": "8ad022dd81224f61"},
+        {"date": "2025-05-31", "event_id": "2a898bf9fb7710b3"},
+        {"date": "2025-06-07", "event_id": "18c49685296c60e6"},
+        {"date": "2025-06-14", "event_id": "de277a4abcfeea46"}
+      ]
+    }
+  }
+}

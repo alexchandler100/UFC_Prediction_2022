@@ -11,7 +11,11 @@ from typing import Mapping
 import pandas as pd
 
 from .domain import SimulatorConfig
-from .evaluation import evaluate_simulation_ledger
+from .evaluation import (
+    _joint_event_card_paired_interval,
+    evaluate_simulation_ledger,
+    event_card_paired_interval,
+)
 from .parameters import canonical_sha256
 from .research import atomic_write_json
 
@@ -48,6 +52,276 @@ def load_population_ledger(path: str | Path) -> pd.DataFrame:
     frame = pd.DataFrame(records)
     frame["date"] = pd.to_datetime(frame["date"], errors="raise", utc=True)
     return frame.sort_values(["date", "event_id", "fight_id"], kind="stable").reset_index(drop=True)
+
+
+def _expected_event_fight_counts(path: str | Path) -> dict[str, int]:
+    source = Path(path)
+    report_path = source / "population-summary.json" if source.is_dir() else source.parent / "population-summary.json"
+    if not report_path.is_file():
+        raise ValueError(
+            "balanced outcome comparison requires each population-summary.json"
+        )
+    report = json.loads(report_path.read_text(encoding="utf-8"))
+    selection = dict(report.get("selection") or {})
+    events = list(selection.get("events") or [])
+    counts = {
+        str(item["event_id"]): int(item["eligible_fights"])
+        for item in events
+    }
+    if not counts:
+        raise ValueError("population summary contains no selected event manifest")
+    return counts
+
+
+def _forecast_probabilities(value: object) -> dict[str, float]:
+    if not isinstance(value, Mapping):
+        raise ValueError("forecast must be an object")
+    probabilities = value.get("outcome_probabilities", value)
+    if not isinstance(probabilities, Mapping):
+        raise ValueError("forecast outcome probabilities must be an object")
+    return {str(key): float(item) for key, item in probabilities.items()}
+
+
+def _projected_method_counts(frame: pd.DataFrame) -> dict[str, dict[str, float]]:
+    methods = ("decision", "ko_tko", "submission", "other", "draw", "no_contest")
+    observed = {method: 0.0 for method in methods}
+    predicted = {method: 0.0 for method in methods}
+    for row in frame.to_dict("records"):
+        actual = str(row["actual_outcome"])
+        actual_method = next(
+            (method for method in methods if actual == method or actual.endswith(f"_{method}")),
+            "other",
+        )
+        observed[actual_method] += 1.0
+        for outcome, probability in _forecast_probabilities(row["forecast"]).items():
+            method = next(
+                (name for name in methods if outcome == name or outcome.endswith(f"_{name}")),
+                "other",
+            )
+            predicted[method] += probability
+    return {
+        method: {
+            "observed": observed[method],
+            "predicted": predicted[method],
+            "bias": predicted[method] - observed[method],
+        }
+        for method in methods
+    }
+
+
+def _check(metrics: Mapping[str, object], statistic: str) -> dict[str, object]:
+    checks = dict(metrics.get("posterior_predictive_checks") or {})
+    value = checks.get(statistic)
+    if not isinstance(value, Mapping):
+        raise ValueError(f"posterior metrics are missing {statistic}")
+    return dict(value)
+
+
+def _count_check(metrics: Mapping[str, object], statistic: str) -> dict[str, object]:
+    checks = dict(metrics.get("count_distribution_predictive_checks") or {})
+    value = checks.get(statistic)
+    if not isinstance(value, Mapping):
+        raise ValueError(f"count metrics are missing {statistic}")
+    return dict(value)
+
+
+def _bias_reduction(baseline: float, candidate: float) -> float:
+    if abs(baseline) <= 1e-12:
+        return 0.0 if abs(candidate) <= 1e-12 else float("-inf")
+    return 1.0 - abs(candidate) / abs(baseline)
+
+
+def compare_outcome_mechanics(
+    baseline_population_run: str | Path,
+    candidate_population_run: str | Path,
+    *,
+    output: str | Path,
+    minimum_balanced_events: int = 5,
+) -> dict[str, object]:
+    """Evaluate two outcome engines only on identical complete event cards."""
+
+    if minimum_balanced_events <= 0:
+        raise ValueError("minimum_balanced_events must be positive")
+    baseline_all = load_population_ledger(baseline_population_run)
+    candidate_all = load_population_ledger(candidate_population_run)
+    baseline_expected = _expected_event_fight_counts(baseline_population_run)
+    candidate_expected = _expected_event_fight_counts(candidate_population_run)
+    baseline_ids = {
+        str(event_id): frozenset(group["fight_id"].astype(str))
+        for event_id, group in baseline_all.groupby("event_id", sort=True)
+    }
+    candidate_ids = {
+        str(event_id): frozenset(group["fight_id"].astype(str))
+        for event_id, group in candidate_all.groupby("event_id", sort=True)
+    }
+    balanced_events = sorted(
+        event_id
+        for event_id in set(baseline_ids) & set(candidate_ids)
+        if baseline_ids[event_id] == candidate_ids[event_id]
+        and baseline_ids[event_id]
+        and len(baseline_ids[event_id]) == baseline_expected.get(event_id)
+        and len(candidate_ids[event_id]) == candidate_expected.get(event_id)
+    )
+    if len(balanced_events) < minimum_balanced_events:
+        raise ValueError(
+            "outcome mechanics comparison has too few identical complete event cards"
+        )
+    baseline = baseline_all.loc[
+        baseline_all["event_id"].astype(str).isin(balanced_events)
+    ].copy()
+    candidate = candidate_all.loc[
+        candidate_all["event_id"].astype(str).isin(balanced_events)
+    ].copy()
+    ordered = ["date", "event_id", "fight_id", "actual_outcome"]
+    left_identity = baseline[ordered].sort_values(ordered[:3], kind="stable").reset_index(drop=True)
+    right_identity = candidate[ordered].sort_values(ordered[:3], kind="stable").reset_index(drop=True)
+    if not left_identity.equals(right_identity):
+        raise ValueError("balanced outcome mechanics rows disagree on identity or truth")
+    baseline_paths = baseline.sort_values(ordered[:3], kind="stable")["forecast"].map(
+        lambda value: int(dict(value).get("total_paths", 0))
+    ).tolist()
+    candidate_paths = candidate.sort_values(ordered[:3], kind="stable")["forecast"].map(
+        lambda value: int(dict(value).get("total_paths", 0))
+    ).tolist()
+    if baseline_paths != candidate_paths or any(value <= 0 for value in baseline_paths):
+        raise ValueError("balanced outcome mechanics rows require equal positive path counts")
+
+    baseline_metrics = evaluate_simulation_ledger(baseline)
+    candidate_metrics = evaluate_simulation_ledger(candidate)
+    baseline_methods = _projected_method_counts(baseline)
+    candidate_methods = _projected_method_counts(candidate)
+    paired = left_identity.copy()
+    paired["baseline_forecast"] = baseline.sort_values(
+        ordered[:3], kind="stable"
+    )["forecast"].tolist()
+    paired["candidate_forecast"] = candidate.sort_values(
+        ordered[:3], kind="stable"
+    )["forecast"].tolist()
+    paired["baseline_red_win_probability"] = paired["baseline_forecast"].map(
+        lambda value: sum(
+            probability
+            for outcome, probability in _forecast_probabilities(value).items()
+            if outcome.startswith("red_")
+        )
+    )
+    paired["candidate_red_win_probability"] = paired["candidate_forecast"].map(
+        lambda value: sum(
+            probability
+            for outcome, probability in _forecast_probabilities(value).items()
+            if outcome.startswith("red_")
+        )
+    )
+    winner_interval = event_card_paired_interval(
+        paired,
+        "candidate_red_win_probability",
+        "baseline_red_win_probability",
+        random_seed=2903,
+    )
+    joint_interval = _joint_event_card_paired_interval(
+        paired,
+        "candidate_forecast",
+        "baseline_forecast",
+        replicates=2000,
+        random_seed=2903,
+    )
+
+    baseline_kd = _count_check(baseline_metrics, "total_knockdowns")
+    candidate_kd = _count_check(candidate_metrics, "total_knockdowns")
+    baseline_duration = _check(baseline_metrics, "duration_seconds")
+    candidate_duration = _check(candidate_metrics, "duration_seconds")
+    kd_reduction = _bias_reduction(
+        float(baseline_kd["predictive_minus_observed_mean"]),
+        float(candidate_kd["predictive_minus_observed_mean"]),
+    )
+    ko_reduction = _bias_reduction(
+        float(baseline_methods["ko_tko"]["bias"]),
+        float(candidate_methods["ko_tko"]["bias"]),
+    )
+    decision_reduction = _bias_reduction(
+        float(baseline_methods["decision"]["bias"]),
+        float(candidate_methods["decision"]["bias"]),
+    )
+    duration_reduction = _bias_reduction(
+        float(baseline_duration["predictive_minus_observed_mean"]),
+        float(candidate_duration["predictive_minus_observed_mean"]),
+    )
+    action_statistics = (
+        "total_significant_strike_attempts",
+        "total_ground_strikes_landed",
+        "total_takedowns",
+        "total_submission_attempts",
+        "total_control_seconds",
+    )
+    action_crps_ratios = {
+        statistic: float(_count_check(candidate_metrics, statistic)["count_distribution_crps"])
+        / max(
+            float(_count_check(baseline_metrics, statistic)["count_distribution_crps"]),
+            1e-12,
+        )
+        for statistic in action_statistics
+    }
+    baseline_joint = float(baseline_metrics["primary_joint_side_method_log_loss"])
+    candidate_joint = float(candidate_metrics["primary_joint_side_method_log_loss"])
+    baseline_winner = float(dict(baseline_metrics["winner"])["log_loss"])
+    candidate_winner = float(dict(candidate_metrics["winner"])["log_loss"])
+    baseline_method = float(baseline_metrics["method_log_loss"])
+    candidate_method = float(candidate_metrics["method_log_loss"])
+    gates = {
+        "knockdown_absolute_bias_reduced_at_least_40_percent": kd_reduction >= 0.40,
+        "ko_tko_absolute_bias_reduced_at_least_40_percent": ko_reduction >= 0.40,
+        "decision_absolute_bias_reduced_at_least_30_percent": decision_reduction >= 0.30,
+        "duration_absolute_bias_reduced_at_least_30_percent": duration_reduction >= 0.30,
+        "method_log_loss_improves": candidate_method < baseline_method,
+        "joint_log_loss_not_worse_by_more_than_0_01": candidate_joint <= baseline_joint + 0.01,
+        "winner_log_loss_not_worse_by_more_than_0_01": candidate_winner <= baseline_winner + 0.01,
+        "no_action_crps_worse_by_more_than_5_percent": max(action_crps_ratios.values()) <= 1.05,
+    }
+    retained = all(gates.values())
+    body: dict[str, object] = {
+        "schema_version": TUNING_SCHEMA_VERSION,
+        "comparison_type": "balanced_complete_card_outcome_mechanics_development",
+        "candidate_only": True,
+        "production_enabled": False,
+        "execution_enabled": False,
+        "balanced_events": balanced_events,
+        "balanced_event_count": len(balanced_events),
+        "balanced_fight_count": int(len(baseline)),
+        "paths_per_fight": sorted(set(baseline_paths)),
+        "dropped_unbalanced_events": sorted(
+            (set(baseline_ids) | set(candidate_ids)) - set(balanced_events)
+        ),
+        "baseline": {
+            "metrics": baseline_metrics,
+            "projected_method_counts": baseline_methods,
+        },
+        "candidate": {
+            "metrics": candidate_metrics,
+            "projected_method_counts": candidate_methods,
+        },
+        "candidate_minus_baseline": {
+            "joint_log_loss": candidate_joint - baseline_joint,
+            "winner_log_loss": candidate_winner - baseline_winner,
+            "method_log_loss": candidate_method - baseline_method,
+            "duration_crps_seconds": float(candidate_metrics["duration_crps_seconds"])
+            - float(baseline_metrics["duration_crps_seconds"]),
+        },
+        "absolute_bias_reduction_fraction": {
+            "total_knockdowns": kd_reduction,
+            "ko_tko_count": ko_reduction,
+            "decision_count": decision_reduction,
+            "duration_seconds": duration_reduction,
+        },
+        "action_crps_candidate_over_baseline": action_crps_ratios,
+        "paired_event_card_intervals": {
+            "winner": winner_interval,
+            "joint_side_method": joint_interval,
+        },
+        "gates": gates,
+        "development_status": "retained_for_confirmation" if retained else "rejected",
+    }
+    body["comparison_sha256"] = canonical_sha256(body)
+    atomic_write_json(output, body)
+    return body
 
 
 def _summary_mean(forecast: object, statistic: str) -> float | None:

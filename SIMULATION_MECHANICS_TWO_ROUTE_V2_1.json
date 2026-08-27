@@ -1,0 +1,26 @@
+{
+  "profile_type": "development_calibrated_two_route_candidate",
+  "candidate_only": true,
+  "production_enabled": false,
+  "parent_profile": "SIMULATION_MECHANICS_TWO_ROUTE_V2.json",
+  "development_calibration": {
+    "cohort": "development_2024",
+    "observed_total_knockdowns_per_fight": 0.35807860262008734,
+    "parent_predicted_total_knockdowns_per_fight": 0.5580786026200873,
+    "single_changed_field": "knockdown_probability_multiplier",
+    "observed_over_predicted_ratio": 0.6416275430359937
+  },
+  "simulator_config": {
+    "distance_strike_hazard_multiplier": 1.5343541386693342,
+    "clinch_strike_hazard_multiplier": 0.5398684975107,
+    "ground_strike_hazard_multiplier": 0.7601949755447748,
+    "takedown_hazard_multiplier": 1.8891188710622644,
+    "submission_hazard_multiplier": 5.228165930524158,
+    "knockdown_probability_multiplier": 0.6416275430359937,
+    "official_knockdown_observation_probability": 1.0,
+    "ko_tko_finish_probability_multiplier": 1.0,
+    "outcome_mechanics_version": "two_route_v2",
+    "post_knockdown_finish_probability": 0.5187728937728938,
+    "non_knockdown_ko_rate_per_landed": 0.0011119463383823223
+  }
+}

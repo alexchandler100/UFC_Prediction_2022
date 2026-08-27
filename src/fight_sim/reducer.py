@@ -251,6 +251,16 @@ _ACTION_PHASES = {
     "no_contest": {Phase.DISTANCE, Phase.CLINCH, Phase.GROUND, Phase.SCRAMBLE},
     "other_finish": {Phase.DISTANCE, Phase.CLINCH, Phase.GROUND, Phase.SCRAMBLE},
     "knockdown_follow_up": {Phase.DISTANCE, Phase.CLINCH, Phase.GROUND},
+    "official_knockdown_follow_up": {
+        Phase.DISTANCE,
+        Phase.CLINCH,
+        Phase.GROUND,
+    },
+    "non_knockdown_stoppage_check": {
+        Phase.DISTANCE,
+        Phase.CLINCH,
+        Phase.GROUND,
+    },
 }
 
 _ACTION_RESULT_PHASES = {

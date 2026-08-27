@@ -1,8 +1,25 @@
 # Fight simulation continuation TODO
 
-Status updated 2026-08-27 after the conditional-control implementation and
-broad 100-path audit. This file is the handoff contract for the next simulation
-session.
+Status updated 2026-08-27 after the two-route outcome-engine development
+experiment. This file is the handoff contract for the next simulation session.
+
+## Frozen next action: confirm outcome engine v2.1
+
+The new outcome-engine work is documented in
+`SIMULATION_OUTCOME_ENGINE_V2_REPORT_2026-08-27.md`. The legacy engine remains
+the default. The opt-in `two_route_v2` engine models official knockdowns as a
+one-per-exchange hurdle and has separate KO-after-KD and KO-without-KD routes.
+Its v2.1 development profile passed every gate on the opened 229-fight / 30-card
+cohort and is frozen in `SIMULATION_MECHANICS_TWO_ROUTE_V2_1.json`.
+
+Do not tune it again on the 2024 development cards. Next compare legacy and
+v2.1 on the locked `confirmation_2025_a` cohort from
+`SIMULATION_EXPERIMENT_COHORTS_V1.json`, using materially more than 100 paths
+per fight and at least two independent seeds. Use
+`compare-outcome-mechanics` so only identical complete cards are scored. Each
+command remains capped at 3,300 seconds. Do not open `final_holdout_2025_b`
+unless confirmation passes. No website or production simulator profile changes
+until both gates are passed.
 
 ## Completed and safe to use
 
@@ -119,6 +136,12 @@ missing the parameter-quantile stability gate. No adaptive checkpoint remains.
    seeds, and preservation gates. Use later unrun cards beginning in January
    2025 for confirmation; do not call the opened cohort validation. No
    experiment command may exceed 3,300 seconds.
+   The proposed latent-knockdown grid was superseded by the supported
+   two-route outcome engine. v2.1 reduced KD, KO-count, decision-count, and
+   duration absolute biases by 89%, 77%, 65%, and 57% and improved joint,
+   method, duration, winner-log-loss, Brier, and protected action point metrics
+   on the full opened development cohort. It is retained for confirmation, not
+   production.
 7. Profile materialized-artifact loading. Reconstruction is now cached, but
    validating and decoding the 200-member cache still takes roughly two to
    three minutes and peaks near 1.4 GiB. Optimize only with exact artifact and

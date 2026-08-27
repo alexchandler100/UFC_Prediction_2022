@@ -370,6 +370,24 @@ changes production automatically.
 
 ## Local operation and analysis
 
+### Versioned outcome mechanics
+
+The default `legacy_v1` outcome mechanics remain replay-compatible. The opt-in
+`two_route_v2` candidate models an official knockdown as an exchange-level
+hurdle capped at one, then separates KO/TKO after an official KD from KO/TKO
+without an official KD. The latter is necessary because official UFCStats data
+contains a material population of KO/TKO wins with zero winner knockdowns.
+Neither immediate route feeds the current strike's newly written hurt/damage
+state back into its own finish probability. Route counts and phase times are
+stored as path diagnostics and reduced into exact aggregate distributions.
+
+`SIMULATION_EXPERIMENT_COHORTS_V1.json` seals chronological development,
+confirmation, and final-holdout card identities plus the eligible fight-ID
+checksum. `compare-outcome-mechanics` accepts only identical complete cards.
+The v2.1 profile is development-selected and cannot become the default until it
+passes both untouched cohorts. See
+`SIMULATION_OUTCOME_ENGINE_V2_REPORT_2026-08-27.md`.
+
 The research interface supports fitting, chronological backtesting, arbitrary
 local runs, deterministic replay/reduction/diff, and generation of a
 self-contained HTML analysis report. Reports cover convergence, process versus

@@ -283,6 +283,7 @@ class _Runtime:
         self.events: list[SimulationEvent] = []
         self.previous_event_hash = GENESIS_EVENT_HASH
         self.phase_time_us = {phase: 0 for phase in Phase}
+        self.mechanic_counts: dict[str, int] = {}
 
     def emit(
         self,
@@ -322,6 +323,11 @@ class _Runtime:
 
     def frozen_state(self) -> FightState:
         return self.state if isinstance(self.state, FightState) else self.state.freeze()
+
+    def count_mechanic(self, name: str, amount: int = 1) -> None:
+        if amount < 0:
+            raise SimulationInvariantError("mechanic count increment must be nonnegative")
+        self.mechanic_counts[name] = self.mechanic_counts.get(name, 0) + amount
 
 
 def _clip(value: float, lower: float, upper: float) -> float:
@@ -635,7 +641,7 @@ def _terminate(runtime: _Runtime, winner: Side | None, method: OutcomeMethod, re
     )
 
 
-def _strike_consequence(runtime: _Runtime, actor: Side, landed: int) -> None:
+def _legacy_strike_consequence(runtime: _Runtime, actor: Side, landed: int) -> None:
     state = runtime.state
     target = actor.opponent
     actor_params = _runtime_parameters(runtime, actor)
@@ -686,6 +692,9 @@ def _strike_consequence(runtime: _Runtime, actor: Side, landed: int) -> None:
         0.0,
         1.0,
     )
+    runtime.count_mechanic(f"{actor.value}_landed_exchanges")
+    if latent_knockdowns or target_hurt - current_hurt >= 0.15:
+        runtime.count_mechanic(f"{actor.value}_hurt_events")
     delta_values = {
         **_dynamic_delta(target, hurt=target_hurt, damage=target_damage),
         **_effectiveness_delta(actor, effectiveness),
@@ -741,7 +750,169 @@ def _strike_consequence(runtime: _Runtime, actor: Side, landed: int) -> None:
             ),
         )
         if finished:
+            runtime.count_mechanic(f"{actor.value}_ko_after_knockdown")
+            if state.phase is Phase.GROUND:
+                runtime.count_mechanic(f"{actor.value}_ground_stoppages")
             _terminate(runtime, actor, OutcomeMethod.KO_TKO, "finish after knockdown")
+        else:
+            runtime.count_mechanic(f"{actor.value}_knockdown_recoveries")
+
+
+def _two_route_strike_consequence(
+    runtime: _Runtime, actor: Side, landed: int
+) -> None:
+    """Resolve an observed knockdown hurdle and two identifiable KO routes.
+
+    UFCStats knockdowns are modeled directly, with at most one official
+    knockdown per exchange.  A separate small per-landed-strike route permits
+    KO/TKO results with no official knockdown, which comprise a material share
+    of observed stoppages.  Neither route reuses the hurt/damage increment from
+    the current exchange in its immediate finish probability.
+    """
+
+    state = runtime.state
+    target = actor.opponent
+    actor_params = _runtime_parameters(runtime, actor)
+    severity = actor_params.strike_power * (
+        0.70 + 0.60 * runtime.rng.uniform("strike.severity")
+    )
+    current_damage = _damage(state, target)
+    current_hurt = _hurt(state, target)
+    damage_increment = landed * (0.025 + 0.085 * severity)
+    hurt_increment = landed * (0.035 + 0.22 * severity)
+
+    # The fitted fighter rate is already KD per landed significant strike.
+    # Convert it to an exchange-level hurdle without reapplying severity,
+    # resistance, hurt and damage multipliers that duplicate its marginal data.
+    kd_intensity = (
+        actor_params.knockdown_rate_per_landed
+        * landed
+        * runtime.spec.simulator.knockdown_probability_multiplier
+    )
+    knockdown_probability = _clip(1.0 - math.exp(-kd_intensity), 0.0, 0.95)
+    official_knockdown = (
+        runtime.rng.uniform("strike.knockdown.two_route")
+        < knockdown_probability
+    )
+    target_hurt = _clip(
+        current_hurt + hurt_increment + (0.40 if official_knockdown else 0.0),
+        0.0,
+        1.0,
+    )
+    target_damage = _clip(
+        current_damage + damage_increment + (0.10 if official_knockdown else 0.0),
+        0.0,
+        1.0,
+    )
+    runtime.count_mechanic(f"{actor.value}_landed_exchanges")
+    if official_knockdown or target_hurt - current_hurt >= 0.15:
+        runtime.count_mechanic(f"{actor.value}_hurt_events")
+    stats = FighterStats(knockdowns=int(official_knockdown))
+    effectiveness = landed * (1.0 + 1.75 * severity) + 4.0 * int(
+        official_knockdown
+    )
+    runtime.emit(
+        EventType.ACTION_CONSEQUENCE,
+        StateDelta(
+            **_dynamic_delta(target, hurt=target_hurt, damage=target_damage),
+            **_effectiveness_delta(actor, effectiveness),
+            red_stats_delta=stats if actor is Side.RED else None,
+            blue_stats_delta=stats if actor is Side.BLUE else None,
+        ),
+        actor=actor,
+        target=target,
+        action="strike",
+        payload=(
+            {
+                "severity": severity,
+                "landed": landed,
+                "knockdowns": int(official_knockdown),
+                "knockdown_probability": knockdown_probability,
+                "outcome_mechanics_version": "two_route_v2",
+            }
+            if runtime.tracing
+            else None
+        ),
+    )
+
+    finish_multiplier = runtime.spec.simulator.ko_tko_finish_probability_multiplier
+    if official_knockdown:
+        finish_probability = _clip(
+            runtime.spec.simulator.post_knockdown_finish_probability
+            * finish_multiplier,
+            0.0,
+            0.95,
+        )
+        finished = (
+            runtime.rng.uniform("strike.finish.after_official_knockdown")
+            < finish_probability
+        )
+        runtime.emit(
+            EventType.ACTION_CONSEQUENCE,
+            _EMPTY_DELTA,
+            actor=actor,
+            target=target,
+            action="official_knockdown_follow_up",
+            payload=(
+                {"finished": finished, "finish_probability": finish_probability}
+                if runtime.tracing
+                else None
+            ),
+        )
+        if finished:
+            runtime.count_mechanic(f"{actor.value}_ko_after_knockdown")
+            if state.phase is Phase.GROUND:
+                runtime.count_mechanic(f"{actor.value}_ground_stoppages")
+            _terminate(
+                runtime,
+                actor,
+                OutcomeMethod.KO_TKO,
+                "finish after official knockdown",
+            )
+        else:
+            runtime.count_mechanic(f"{actor.value}_knockdown_recoveries")
+        return
+
+    no_knockdown_rate = _clip(
+        runtime.spec.simulator.non_knockdown_ko_rate_per_landed
+        * finish_multiplier,
+        0.0,
+        1.0,
+    )
+    finish_probability = 1.0 - (1.0 - no_knockdown_rate) ** landed
+    finished = (
+        runtime.rng.uniform("strike.finish.without_official_knockdown")
+        < finish_probability
+    )
+    runtime.emit(
+        EventType.ACTION_CONSEQUENCE,
+        _EMPTY_DELTA,
+        actor=actor,
+        target=target,
+        action="non_knockdown_stoppage_check",
+        payload=(
+            {"finished": finished, "finish_probability": finish_probability}
+            if runtime.tracing
+            else None
+        ),
+    )
+    if finished:
+        runtime.count_mechanic(f"{actor.value}_ko_without_knockdown")
+        if state.phase is Phase.GROUND:
+            runtime.count_mechanic(f"{actor.value}_ground_stoppages")
+        _terminate(
+            runtime,
+            actor,
+            OutcomeMethod.KO_TKO,
+            "stoppage without official knockdown",
+        )
+
+
+def _strike_consequence(runtime: _Runtime, actor: Side, landed: int) -> None:
+    if runtime.spec.simulator.outcome_mechanics_version == "two_route_v2":
+        _two_route_strike_consequence(runtime, actor, landed)
+    else:
+        _legacy_strike_consequence(runtime, actor, landed)
 
 
 def _perform_action(runtime: _Runtime, hazard: _Hazard) -> None:
@@ -864,6 +1035,7 @@ def _perform_action(runtime: _Runtime, hazard: _Hazard) -> None:
             action=action,
             payload={"state_change": True} if runtime.tracing else None,
         )
+        runtime.count_mechanic(f"{actor.value}_submission_finishes")
         _terminate(runtime, actor, OutcomeMethod.SUBMISSION, "completed submission")
         return
     reversal = False
@@ -1101,6 +1273,7 @@ def _simulate_fight_once(
         phase_time_us=tuple(
             (phase.value, int(runtime.phase_time_us[phase])) for phase in Phase
         ),
+        mechanic_counts=tuple(sorted(runtime.mechanic_counts.items())),
         events=tuple(runtime.events),
     )
 

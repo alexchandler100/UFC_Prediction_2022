@@ -90,6 +90,7 @@ def _path(
             ("ground", 150_000_000),
             ("scramble", 50_000_000),
         ),
+        mechanic_counts=(("red_hurt_events", member + index),),
     )
 
 
@@ -127,6 +128,15 @@ class StatisticDistributionAggregationTests(unittest.TestCase):
         self.assertEqual(
             [(item.value, item.count) for item in distance_time.counts],
             [(600.0, 4)],
+        )
+        hurt_events = next(
+            item
+            for item in forecast.statistic_distributions
+            if item.statistic == "red_hurt_events"
+        )
+        self.assertEqual(
+            [(item.value, item.count) for item in hurt_events.counts],
+            [(0.0, 1), (1.0, 2), (2.0, 1)],
         )
         total_strikes = next(
             item
