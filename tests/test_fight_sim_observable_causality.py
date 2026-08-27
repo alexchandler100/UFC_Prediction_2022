@@ -244,6 +244,22 @@ class CausalParameterInvariantTests(unittest.TestCase):
                 member_index=0,
             ).to_dict(),
         )
+        self.assertEqual(
+            appended_fitter.snapshot_for(
+                appended,
+                "head",
+                division="Lightweight",
+                member_index=0,
+                parameter_mode="opponent_adjusted_v1",
+            ).to_dict(),
+            baseline_fitter.snapshot_for(
+                baseline,
+                "head",
+                division="Lightweight",
+                member_index=0,
+                parameter_mode="opponent_adjusted_v1",
+            ).to_dict(),
+        )
 
     def test_same_card_is_excluded_and_current_career_summaries_are_not_features(self):
         history = _history(4)

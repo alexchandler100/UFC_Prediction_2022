@@ -9,6 +9,10 @@ import sys
 
 from .domain import SimulatorConfig
 from .parameters import SNAPSHOT_PARAMETER_MODES
+from .opponent_audit import (
+    OpponentAdjustmentAuditConfig,
+    execute_opponent_adjustment_audit,
+)
 from .research import (
     DEFAULT_ARTIFACT_ROOT,
     DEFAULT_FIGHTER_PROFILES,
@@ -85,6 +89,22 @@ def _worker_counts(value: str) -> tuple[int, ...]:
         raise argparse.ArgumentTypeError("must be comma-separated integers") from error
     if not parsed or any(item < 1 or item > 64 for item in parsed):
         raise argparse.ArgumentTypeError("worker counts must be between 1 and 64")
+    return parsed
+
+
+def _positive_float_tuple(value: str) -> tuple[float, ...]:
+    try:
+        parsed = tuple(float(item.strip()) for item in value.split(","))
+    except ValueError as error:
+        raise argparse.ArgumentTypeError(
+            "must be comma-separated numbers"
+        ) from error
+    if not parsed or any(not item > 0 for item in parsed):
+        raise argparse.ArgumentTypeError("values must be positive")
+    if tuple(sorted(set(parsed))) != parsed:
+        raise argparse.ArgumentTypeError(
+            "values must be unique and strictly increasing"
+        )
     return parsed
 
 
@@ -362,8 +382,9 @@ def build_parser() -> argparse.ArgumentParser:
         choices=tuple(sorted(SNAPSHOT_PARAMETER_MODES)),
         default="full",
         help=(
-            "Research ablation for fighter deviations: full, division/era "
-            "context only, or a second causal exposure-weighted shrinkage step"
+            "Research policy for fighter deviations: full, division/era "
+            "context only, causal opponent-adjusted v1, or a second causal "
+            "exposure-weighted shrinkage step"
         ),
     )
     posterior.add_argument(
@@ -603,6 +624,52 @@ def build_parser() -> argparse.ArgumentParser:
     transitions.add_argument(
         "--predictions-output",
         default=str(DEFAULT_ARTIFACT_ROOT / "transition-audit-predictions.csv"),
+    )
+
+    opponent_audit = commands.add_parser(
+        "opponent-adjustment-audit",
+        help=(
+            "Cross-fit bout-clustered opponent effects on directly observed "
+            "next-card statistics before another simulator screen"
+        ),
+    )
+    _input_arguments(opponent_audit)
+    opponent_audit.add_argument(
+        "--cohort-manifest",
+        default=str(Path(__file__).resolve().parents[2] / "SIMULATION_EXPERIMENT_COHORTS_V1.json"),
+    )
+    opponent_audit.add_argument("--cohort-name", default="development_2024")
+    opponent_audit.add_argument(
+        "--min-prior-ufc-fights", type=_bounded_integer(1, 99), default=3
+    )
+    opponent_audit.add_argument(
+        "--inner-validation-events", type=_bounded_integer(3, 30), default=8
+    )
+    opponent_audit.add_argument(
+        "--minimum-training-fights", type=_bounded_integer(1, 100000), default=500
+    )
+    opponent_audit.add_argument(
+        "--ridge-grid", type=_positive_float_tuple, default=(5.0, 10.0, 20.0, 40.0)
+    )
+    opponent_audit.add_argument(
+        "--bootstrap-replicates", type=_bounded_integer(100, 10000), default=2000
+    )
+    opponent_audit.add_argument("--random-seed", type=int, default=52237)
+    opponent_audit.add_argument(
+        "--max-runtime-seconds",
+        type=_positive_float,
+        default=3300.0,
+        help="Hard audit budget (maximum 3300 seconds)",
+    )
+    opponent_audit.add_argument(
+        "--output",
+        default=str(DEFAULT_ARTIFACT_ROOT / "opponent-adjustment-audit.json"),
+    )
+    opponent_audit.add_argument(
+        "--predictions-output",
+        default=str(
+            DEFAULT_ARTIFACT_ROOT / "opponent-adjustment-audit-predictions.csv"
+        ),
     )
 
     replay = commands.add_parser(
@@ -1037,6 +1104,43 @@ def main(argv: list[str] | None = None) -> int:
                         for name, result in report["targets"].items()
                         if result.get("candidate_retained")
                     ],
+                }
+            )
+        elif args.command == "opponent-adjustment-audit":
+            if args.max_runtime_seconds > 3300:
+                raise ValueError("max-runtime-seconds must not exceed 3300")
+            report, report_path, predictions_path = (
+                execute_opponent_adjustment_audit(
+                    raw_path=args.raw,
+                    profiles_path=args.profiles,
+                    round_path=args.round_stats,
+                    cohort_manifest_path=args.cohort_manifest,
+                    cohort_name=args.cohort_name,
+                    output=args.output,
+                    predictions_output=args.predictions_output,
+                    config=OpponentAdjustmentAuditConfig(
+                        min_prior_ufc_fights=args.min_prior_ufc_fights,
+                        inner_validation_events=args.inner_validation_events,
+                        minimum_training_fights=args.minimum_training_fights,
+                        ridge_grid=args.ridge_grid,
+                        bootstrap_replicates=args.bootstrap_replicates,
+                        random_seed=args.random_seed,
+                        max_runtime_seconds=args.max_runtime_seconds,
+                    ),
+                    progress=lambda message: print(
+                        message, file=sys.stderr, flush=True
+                    ),
+                )
+            )
+            _print(
+                {
+                    "candidate_advances_to_simulation_screen": report[
+                        "candidate_advances_to_simulation_screen"
+                    ],
+                    "decision": report["decision"],
+                    "output": str(report_path.resolve()),
+                    "predictions_output": str(predictions_path.resolve()),
+                    "report_sha256": report["report_sha256"],
                 }
             )
         elif args.command == "replay":

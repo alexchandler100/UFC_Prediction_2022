@@ -1,9 +1,9 @@
 # Fight simulation continuation TODO
 
-Status updated 2026-08-27 after the fighter-effect ablation. This file is the
-handoff contract for the next simulation session.
+Status updated 2026-08-27 after the opponent-adjusted fighter-effect screen.
+This file is the handoff contract for the next simulation session.
 
-## Frozen next action: opponent-adjusted fighter effects
+## Frozen next action: bout-clustered v2 simulator screen
 
 The outcome-engine v2.1 work remains frozen in
 `SIMULATION_MECHANICS_TWO_ROUTE_V2_1.json`. Its separate confirmation
@@ -22,16 +22,43 @@ interval included 50%, and log loss/Brier remained worse than constant 50/50.
 Context-only merely collapsed toward chance and lost useful method structure.
 No snapshot mode is validated or production-eligible.
 
-Do not tune another scalar shrinkage or winner-temperature value on these same
-paths. Next implement one predeclared, strictly causal opponent-adjusted
-offense/defense parameter model for observable strike, takedown, and submission
-opportunities. Estimate between-fighter variance and reliability from training
-data instead of adding fixed pseudo-exposure shrinkage. Screen it against both
-`full` and `reliability_weighted` on the same open 2024 cohort using cached
-fits, common seeds, ten members, 100 paths per fight, and a 3,300-second hard
-cap. Require winner log-loss and Brier improvement without material joint,
-method, duration, or action-distribution harm. Point accuracy alone is not a
-gate.
+That opponent-adjusted screen is now complete and documented in
+`SIMULATION_OPPONENT_ADJUSTMENT_REPORT_2026-08-27.md`. It finished all 229
+fights in 18.4 minutes, but was decisively rejected: accuracy fell to 46.49%,
+winner log loss rose to 0.82197, Brier rose to 0.30308, and calibration slope
+became -0.192. Paired event-card intervals for winner log loss, Brier, and
+joint log loss were wholly harmful against both `full` and
+`reliability_weighted`. The trajectory's method, duration, and action
+distributions were broadly preserved, isolating the failure to fighter-side
+ranking.
+
+The first estimator assigned about 0.80--0.92 mean reliability to strike
+actor/opponent effects because action counts acted too much like independent
+evidence. Do not tune a scalar attenuation on these same trajectories. Before
+another simulator run, implement a bounded cross-fitted audit that scores
+opponent-adjusted strike/takedown/submission observation models on next-card
+likelihood, with uncertainty and effective sample size clustered by physical
+bout/event. Select any small regularization grid only inside nested
+chronological training splits. An opponent model may enter another 229-fight
+simulation screen only if it first improves its directly observed held-out
+targets over both context-only and marginal-fighter baselines.
+
+That audit is now complete and documented in
+`SIMULATION_BOUT_CLUSTERED_OPPONENT_AUDIT_REPORT_2026-08-27.md`. It scored all
+229 fights in 103.6 seconds without simulation. The tuned marginal model beat
+context by 7.38% equal-target relative held-out loss. Bout-clustered opponent
+adjustment improved another 0.795%, with a wholly favorable event-card interval
+of `[-1.224%, -0.361%]`. Strike pace and accuracy improved significantly;
+takedown point estimates improved but intervals crossed zero; submission pace
+worsened 0.576% but stayed inside the predeclared one-percent harm limit.
+
+The audit therefore authorizes one `opponent_adjusted_v2` simulator screen on
+the same open cohort. Reconstruct each cutoff's eight-prior-card target-specific
+ridge selection, retain equal-bout precision inside the matching card-bootstrap
+member, and reuse the v2.1 mechanics/common seeds. Compare against both `full`
+and `reliability_weighted` at 100 paths/fight under a 3,300-second hard cap.
+Do not reuse v1's action-count reliability and do not tune away its adverse
+submission result using the outer observations.
 
 Keep `confirmation_2025_a` and `final_holdout_2025_b` unopened until a single
 fighter-parameter model survives that development comparison. Then confirm the

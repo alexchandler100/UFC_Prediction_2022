@@ -498,6 +498,13 @@ class FightSimulationResearchTests(unittest.TestCase):
             member_index=0,
             parameter_mode="reliability_weighted",
         )
+        opponent_adjusted = fitter.snapshot_for(
+            artifact,
+            "a",
+            division="Lightweight",
+            member_index=0,
+            parameter_mode="opponent_adjusted_v1",
+        )
         self.assertEqual(context.data_quality, "division_era_prior")
         self.assertEqual(
             context.parameters.to_dict(), other_context.parameters.to_dict()
@@ -505,6 +512,12 @@ class FightSimulationResearchTests(unittest.TestCase):
         self.assertEqual(
             weighted.data_quality, "reliability_weighted_fighter_history"
         )
+        self.assertEqual(
+            opponent_adjusted.data_quality, "opponent_adjusted_fighter_history"
+        )
+        self.assertGreater(opponent_adjusted.parameters.strike_rate_distance, 0)
+        self.assertGreaterEqual(opponent_adjusted.parameters.strike_accuracy, 0)
+        self.assertLessEqual(opponent_adjusted.parameters.strike_accuracy, 1)
         self.assertNotEqual(
             full.parameters.strike_accuracy,
             context.parameters.strike_accuracy,
@@ -537,6 +550,32 @@ class FightSimulationResearchTests(unittest.TestCase):
                 member_index=0,
                 parameter_mode="unsupported",
             )
+
+    def test_two_way_opponent_effects_recover_supported_directions(self):
+        actor_ids = []
+        opponent_ids = []
+        residuals = []
+        precisions = []
+        actor_truth = {"strong": 0.35, "weak": -0.35}
+        opponent_truth = {"durable": -0.25, "vulnerable": 0.25}
+        for _ in range(12):
+            for actor, actor_effect in actor_truth.items():
+                for opponent, opponent_effect in opponent_truth.items():
+                    actor_ids.append(actor)
+                    opponent_ids.append(opponent)
+                    residuals.append(actor_effect + opponent_effect)
+                    precisions.append(20.0)
+        actor, opponent, diagnostics = (
+            CausalParameterFitter._fit_two_way_opponent_effects(
+                actor_ids, opponent_ids, residuals, precisions
+            )
+        )
+        self.assertGreater(actor["strong"], actor["weak"])
+        self.assertGreater(opponent["vulnerable"], opponent["durable"])
+        self.assertGreater(diagnostics["actor_variance"], 0)
+        self.assertGreater(diagnostics["opponent_variance"], 0)
+        self.assertGreater(diagnostics["mean_actor_reliability"], 0)
+        self.assertGreater(diagnostics["mean_opponent_reliability"], 0)
 
     def test_evaluation_scores_coherent_ledger_and_card_paired_difference(self):
         rows = []

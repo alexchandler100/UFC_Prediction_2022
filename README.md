@@ -534,9 +534,35 @@ checkpointed fights when the deadline is reached.
 default. `context_only` removes fighter-specific and fighter-covariate
 deviations, while `reliability_weighted` applies an additional strictly causal,
 parameter-specific exposure weight to the already pooled fighter deviation.
-It uses natural log, logit, or normalized-composition scales as appropriate.
-The mode is committed in the resumable run contract and does not alter the
-shared fitted parameter artifact.
+`opponent_adjusted_v1` is a rejected diagnostic that reconstructs each
+bootstrap member and estimates two-way actor/opponent effects for supported
+strike, takedown, and submission observations. It is retained for reproducible
+research only and must not drive upcoming or website forecasts. The policies
+use natural log, logit, or normalized-composition scales as appropriate. The
+mode is committed in the resumable run contract and does not alter the shared
+fitted parameter artifact. See
+`SIMULATION_OPPONENT_ADJUSTMENT_REPORT_2026-08-27.md` for the failed 229-fight
+screen and the bout-clustered follow-up boundary.
+
+Before spending simulation paths on another opponent model, run the causal
+observation gate:
+
+```bash
+python -m fight_sim opponent-adjustment-audit \
+  --cohort-manifest SIMULATION_EXPERIMENT_COHORTS_V1.json \
+  --cohort-name development_2024 \
+  --ridge-grid 5,10,20,40 \
+  --max-runtime-seconds 3300 \
+  --output artifacts/simulations/opponent-adjustment-audit.json \
+  --predictions-output artifacts/simulations/opponent-adjustment-audit.csv
+```
+
+This command executes no Monte Carlo paths. It selects target-specific ridge
+strengths from strictly earlier cards, scores Poisson/binomial observations on
+the next card, and block-bootstraps uncertainty by physical event. The first
+frozen 229-fight audit passed the pre-simulation gate; details and the limited
+authorization for one v2 development screen are in
+`SIMULATION_BOUT_CLUSTERED_OPPONENT_AUDIT_REPORT_2026-08-27.md`.
 
 For a broad, low-precision diagnostic, 100 total paths can be split across ten
 bootstrap members. This is useful for aggregate accuracy, not precise

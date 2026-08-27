@@ -91,16 +91,31 @@ and production paths do not enable it. The paired mechanics screen and broad
 accuracy audit are documented in
 `SIMULATION_CONDITIONAL_CONTROL_AND_BREADTH_REPORT_2026-08-27.md`.
 
-The snapshot layer also exposes research-only `full`, `context_only`, and
-`reliability_weighted` policies. The last applies a second parameter-specific
-causal exposure weight to the already pooled fighter deviation on the
-parameter's natural scale; it does not refit or mutate the bootstrap artifact.
+The snapshot layer also exposes research-only `full`, `context_only`,
+`reliability_weighted`, and `opponent_adjusted_v1` policies. Reliability
+weighting applies a second parameter-specific causal exposure weight to the
+already pooled fighter deviation on the parameter's natural scale.
+`opponent_adjusted_v1` reconstructs each member's card bootstrap and estimates
+two-way actor/opponent residuals for supported strike, takedown, and submission
+observations. Neither policy mutates the shared bootstrap artifact.
 The 229-fight ablation found weak directional fighter signal but no standalone
 proper-score advantage over 50/50. It is documented in
-`SIMULATION_FIGHTER_EFFECT_ABLATION_REPORT_2026-08-27.md`. The supported next
-parameter-model experiment is a joint opponent-adjusted offense/defense fit
-with training-estimated between-fighter variance, not another scalar
-temperature or pseudo-exposure tweak.
+`SIMULATION_FIGHTER_EFFECT_ABLATION_REPORT_2026-08-27.md`. The first opponent-
+adjusted implementation then failed decisively because action-count precision
+made fighter reliability far too high; it is documented in
+`SIMULATION_OPPONENT_ADJUSTMENT_REPORT_2026-08-27.md`. It remains diagnostic
+only. A second implementation must first pass a chronological, bout/card-
+clustered observation-likelihood audit before spending another simulation
+screen.
+
+That audit is implemented by `opponent-adjustment-audit`. Fighter effects use
+one equal-weight observation per fighter-side bout; ridge choices are selected
+per target/model from the eight strictly preceding eligible cards; and Poisson
+or binomial next-card likelihood is compared with physical event-card block
+uncertainty. The first frozen audit passed overall and is documented in
+`SIMULATION_BOUT_CLUSTERED_OPPONENT_AUDIT_REPORT_2026-08-27.md`. Passing permits
+one bounded `opponent_adjusted_v2` development simulation screen, not production
+or confirmation use.
 
 ## Data contract and causal fitting
 
@@ -134,11 +149,13 @@ earlier artifact and snapshot unchanged.
 Each bootstrap member contains global, division-era, and fighter empirical
 parameters. Round data currently affects the strongly pooled pace-decay ratio;
 age, prior UFC experience, and layoff enter a regularized log-rate adjustment.
-There is no simultaneous opponent-adjusted offense/defense fit. A
-publication-eligible frozen artifact must contain 200 event-card block-bootstrap
-replicas. Historical screening uses 64 replicas and reruns borderline primary
-comparisons at higher precision. One outer draw selects the same replica for
-the global model and both fighters so covariance is not broken.
+The base artifact has no simultaneous opponent-adjusted offense/defense fit.
+The rejected `opponent_adjusted_v1` snapshot transform is explicitly separate
+from that artifact and cannot be publication eligible. A publication-eligible
+frozen artifact must contain 200 event-card block-bootstrap replicas.
+Historical screening uses 64 replicas and reruns borderline primary comparisons
+at higher precision. One outer draw selects the same replica for the global
+model and both fighters so covariance is not broken.
 
 Bootstrap percentiles are called **parameter/model uncertainty intervals**.
 They are not Bayesian credible intervals. Inner-path Monte Carlo standard error

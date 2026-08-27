@@ -109,6 +109,7 @@ class FightSimulationCliTests(unittest.TestCase):
             "validate-mechanics",
             "validate-finishing",
             "validate-knockdown-observation",
+            "opponent-adjustment-audit",
             "upcoming-card",
             "run",
             "replay",
@@ -157,6 +158,25 @@ class FightSimulationCliTests(unittest.TestCase):
             ]
         )
         self.assertEqual(weighted.snapshot_parameter_mode, "reliability_weighted")
+        opponent_adjusted = parser.parse_args(
+            [
+                "posterior-backtest",
+                "--snapshot-parameter-mode",
+                "opponent_adjusted_v1",
+            ]
+        )
+        self.assertEqual(
+            opponent_adjusted.snapshot_parameter_mode, "opponent_adjusted_v1"
+        )
+        audit = parser.parse_args(
+            [
+                "opponent-adjustment-audit",
+                "--ridge-grid",
+                "5,10,20,40",
+            ]
+        )
+        self.assertEqual(audit.ridge_grid, (5.0, 10.0, 20.0, 40.0))
+        self.assertEqual(audit.inner_validation_events, 8)
         screen = parser.parse_args(["posterior-backtest", "--quick-screen"])
         self.assertTrue(screen.quick_screen)
         benchmark = parser.parse_args(

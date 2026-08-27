@@ -76,8 +76,11 @@ PARAMETER_NAMES = (
 )
 
 SNAPSHOT_PARAMETER_MODES = frozenset(
-    {"full", "context_only", "reliability_weighted"}
+    {"full", "context_only", "opponent_adjusted_v1", "reliability_weighted"}
 )
+
+_OPPONENT_EFFECT_ITERATIONS = 12
+_OPPONENT_EFFECT_ABSOLUTE_LIMIT = math.log(3.0)
 
 _SNAPSHOT_COMPOSITION_GROUPS = (
     ("distance_phase_share", "clinch_phase_share", "ground_phase_share"),
@@ -1171,6 +1174,13 @@ class CausalParameterFitter:
             round_stats,
             allow_legacy_unreconciled_rounds=self.allow_legacy_unreconciled_rounds,
         )
+        self._opponent_adjusted_effect_cache: dict[
+            tuple[str, int], dict[str, dict[str, float]]
+        ] = {}
+        self._opponent_adjusted_diagnostics_cache: dict[
+            tuple[str, int], dict[str, dict[str, float]]
+        ] = {}
+        self._opponent_adjusted_cache_artifact_sha256: str | None = None
 
     @property
     def parameter_model_version(self) -> str:
@@ -2762,6 +2772,449 @@ class CausalParameterFitter:
         return result
 
     @staticmethod
+    def _logit(value: float) -> float:
+        probability = _clip(float(value), 1e-6, 1.0 - 1e-6)
+        return math.log(probability / (1.0 - probability))
+
+    @staticmethod
+    def _inverse_logit(value: float) -> float:
+        bounded = _clip(float(value), -30.0, 30.0)
+        return 1.0 / (1.0 + math.exp(-bounded))
+
+    @staticmethod
+    def _fit_two_way_opponent_effects(
+        actor_ids: Iterable[object],
+        opponent_ids: Iterable[object],
+        residuals: Iterable[float],
+        precisions: Iterable[float],
+    ) -> tuple[dict[str, float], dict[str, float], dict[str, float]]:
+        """Fit shrunk actor and opponent effects from causal matchup residuals.
+
+        This is a deliberately small empirical-Bayes two-way model.  Its
+        between-fighter variances and reliability weights are estimated from
+        the supplied training rows rather than selected on the held-out card.
+        Positive opponent effects mean that the opponent tends to concede more
+        than the context expectation.
+        """
+
+        actor_values = np.asarray([str(value) for value in actor_ids], dtype=object)
+        opponent_values = np.asarray(
+            [str(value) for value in opponent_ids], dtype=object
+        )
+        residual_values = np.asarray(list(residuals), dtype=float)
+        precision_values = np.asarray(list(precisions), dtype=float)
+        if not (
+            len(actor_values)
+            == len(opponent_values)
+            == len(residual_values)
+            == len(precision_values)
+        ):
+            raise ValueError("opponent-effect inputs must have equal lengths")
+        valid = (
+            np.isfinite(residual_values)
+            & np.isfinite(precision_values)
+            & (precision_values > 0)
+            & (actor_values != "")
+            & (opponent_values != "")
+        )
+        if not valid.any():
+            return {}, {}, {
+                "observations": 0.0,
+                "actor_variance": 0.0,
+                "opponent_variance": 0.0,
+                "mean_actor_reliability": 0.0,
+                "mean_opponent_reliability": 0.0,
+            }
+        actor_values = actor_values[valid]
+        opponent_values = opponent_values[valid]
+        residual_values = residual_values[valid]
+        precision_values = precision_values[valid]
+        identities = sorted(set(actor_values) | set(opponent_values))
+        identity_index = {identity: index for index, identity in enumerate(identities)}
+        actor_index = np.fromiter(
+            (identity_index[value] for value in actor_values),
+            dtype=np.int64,
+            count=len(actor_values),
+        )
+        opponent_index = np.fromiter(
+            (identity_index[value] for value in opponent_values),
+            dtype=np.int64,
+            count=len(opponent_values),
+        )
+        count = len(identities)
+        actor_effect = np.zeros(count, dtype=float)
+        opponent_effect = np.zeros(count, dtype=float)
+        actor_variance = opponent_variance = 0.0
+        actor_reliability = opponent_reliability = np.zeros(count, dtype=float)
+
+        def update(
+            group_index: np.ndarray,
+            targets: np.ndarray,
+        ) -> tuple[np.ndarray, float, np.ndarray]:
+            group_precision = np.bincount(
+                group_index, weights=precision_values, minlength=count
+            )
+            numerator = np.bincount(
+                group_index,
+                weights=precision_values * targets,
+                minlength=count,
+            )
+            active = group_precision > 0
+            means = np.zeros(count, dtype=float)
+            means[active] = numerator[active] / group_precision[active]
+            total_precision = float(group_precision[active].sum())
+            if total_precision <= 0:
+                return means, 0.0, np.zeros(count, dtype=float)
+            means[active] -= float(
+                np.dot(group_precision[active], means[active]) / total_precision
+            )
+            observed_variance = float(
+                np.dot(group_precision[active], means[active] ** 2)
+                / total_precision
+            )
+            # Weighted average sampling variance of the group means.
+            sampling_variance = float(active.sum()) / total_precision
+            between_variance = max(observed_variance - sampling_variance, 0.0)
+            reliability = np.zeros(count, dtype=float)
+            reliability[active] = (
+                between_variance
+                * group_precision[active]
+                / (1.0 + between_variance * group_precision[active])
+            )
+            effects = np.clip(
+                reliability * means,
+                -_OPPONENT_EFFECT_ABSOLUTE_LIMIT,
+                _OPPONENT_EFFECT_ABSOLUTE_LIMIT,
+            )
+            effects[active] -= float(
+                np.dot(group_precision[active], effects[active]) / total_precision
+            )
+            effects = np.clip(
+                effects,
+                -_OPPONENT_EFFECT_ABSOLUTE_LIMIT,
+                _OPPONENT_EFFECT_ABSOLUTE_LIMIT,
+            )
+            return effects, between_variance, reliability
+
+        for _ in range(_OPPONENT_EFFECT_ITERATIONS):
+            actor_effect, actor_variance, actor_reliability = update(
+                actor_index, residual_values - opponent_effect[opponent_index]
+            )
+            opponent_effect, opponent_variance, opponent_reliability = update(
+                opponent_index, residual_values - actor_effect[actor_index]
+            )
+        actor_precision = np.bincount(
+            actor_index, weights=precision_values, minlength=count
+        )
+        opponent_precision = np.bincount(
+            opponent_index, weights=precision_values, minlength=count
+        )
+        actor_output = {
+            identity: float(actor_effect[index])
+            for identity, index in identity_index.items()
+            if actor_precision[index] > 0
+        }
+        opponent_output = {
+            identity: float(opponent_effect[index])
+            for identity, index in identity_index.items()
+            if opponent_precision[index] > 0
+        }
+        diagnostics = {
+            "observations": float(len(residual_values)),
+            "actor_variance": float(actor_variance),
+            "opponent_variance": float(opponent_variance),
+            "mean_actor_reliability": float(
+                actor_reliability[actor_precision > 0].mean()
+            ),
+            "mean_opponent_reliability": float(
+                opponent_reliability[opponent_precision > 0].mean()
+            ),
+        }
+        return actor_output, opponent_output, diagnostics
+
+    def _opponent_adjusted_effects(
+        self,
+        artifact: ParameterEnsembleArtifact,
+        member_index: int,
+        cutoff: pd.Timestamp,
+    ) -> dict[str, dict[str, float]]:
+        """Estimate supported offense/defense effects for one bootstrap draw."""
+
+        # Chronological backtests use one artifact for a complete card and then
+        # advance permanently. Retaining every historical fighter/effect map
+        # would make memory scale with the number of tested cards, so keep only
+        # the active artifact and deterministically recompute if a caller later
+        # revisits an older one.
+        if (
+            self._opponent_adjusted_cache_artifact_sha256
+            != artifact.artifact_sha256
+        ):
+            self._opponent_adjusted_effect_cache.clear()
+            self._opponent_adjusted_diagnostics_cache.clear()
+            self._opponent_adjusted_cache_artifact_sha256 = artifact.artifact_sha256
+        cache_key = (artifact.artifact_sha256, int(member_index))
+        cached = self._opponent_adjusted_effect_cache.get(cache_key)
+        if cached is not None:
+            return cached
+        member = artifact.members[member_index]
+        fights = self.raw_fights.loc[self.raw_fights["date"].lt(cutoff)].copy()
+        event_ids = np.asarray(sorted(fights["event_id"].unique()), dtype=object)
+        if len(event_ids) != member.sampled_event_count:
+            raise ValueError(
+                "opponent adjustment training events disagree with fitted member"
+            )
+        rng = np.random.Generator(np.random.PCG64DXSM(member.bootstrap_seed))
+        sampled = rng.choice(event_ids, size=len(event_ids), replace=True)
+        unique, counts = np.unique(sampled, return_counts=True)
+        event_weights = {
+            str(key): int(value) for key, value in zip(unique, counts)
+        }
+        rows = self._prepare_member_rows(
+            fights, event_weights, cutoff, artifact.config
+        )
+        rows = self._attach_age(rows)
+        contexts = member.context_parameters
+        context_rows = [
+            contexts.get(
+                f"{str(division).strip() or 'Unknown'}|{era}",
+                contexts["__global__"],
+            )
+            for division, era in zip(rows["division"], rows["era"])
+        ]
+
+        def context_values(name: str) -> np.ndarray:
+            return np.asarray(
+                [float(parameters[name]) for parameters in context_rows],
+                dtype=float,
+            )
+
+        actor_ids = rows["fighter_id"].astype(str).to_numpy(object)
+        opponent_ids = rows["opponent_id"].astype(str).to_numpy(object)
+        row_weights = rows["_weight"].to_numpy(dtype=float)
+        minutes = pd.to_numeric(
+            rows["fight_seconds"], errors="coerce"
+        ).to_numpy(dtype=float) / 60.0
+        adjustments: dict[str, tuple[dict[str, float], dict[str, float]]] = {}
+        diagnostics: dict[str, dict[str, float]] = {}
+
+        def fit_rate(metric: str, column: str, baseline: np.ndarray) -> None:
+            counts_array = pd.to_numeric(
+                rows[column], errors="coerce"
+            ).to_numpy(dtype=float)
+            valid = (
+                np.isfinite(counts_array)
+                & np.isfinite(minutes)
+                & (minutes > 0)
+                & np.isfinite(baseline)
+                & (baseline > 0)
+                & (row_weights > 0)
+            )
+            stabilized_rate = (
+                counts_array[valid] + 0.5
+            ) / (minutes[valid] + 0.5 / baseline[valid])
+            residual = np.log(stabilized_rate / baseline[valid])
+            precision = (counts_array[valid] + 0.5) * row_weights[valid]
+            actor, opponent, summary = self._fit_two_way_opponent_effects(
+                actor_ids[valid],
+                opponent_ids[valid],
+                residual,
+                precision,
+            )
+            adjustments[metric] = (actor, opponent)
+            diagnostics[metric] = summary
+
+        def fit_probability(
+            metric: str,
+            successes_column: str,
+            attempts_column: str,
+            baseline: np.ndarray,
+        ) -> None:
+            successes = pd.to_numeric(
+                rows[successes_column], errors="coerce"
+            ).to_numpy(dtype=float)
+            attempts = pd.to_numeric(
+                rows[attempts_column], errors="coerce"
+            ).to_numpy(dtype=float)
+            valid = (
+                np.isfinite(successes)
+                & np.isfinite(attempts)
+                & (attempts >= successes)
+                & (attempts > 0)
+                & np.isfinite(baseline)
+                & (baseline > 0)
+                & (baseline < 1)
+                & (row_weights > 0)
+            )
+            smoothed = (successes[valid] + 0.5) / (attempts[valid] + 1.0)
+            bounded = np.clip(smoothed, 1e-6, 1.0 - 1e-6)
+            residual = np.log(bounded / (1.0 - bounded)) - np.log(
+                baseline[valid] / (1.0 - baseline[valid])
+            )
+            precision = (
+                (attempts[valid] + 1.0)
+                * baseline[valid]
+                * (1.0 - baseline[valid])
+                * row_weights[valid]
+            )
+            actor, opponent, summary = self._fit_two_way_opponent_effects(
+                actor_ids[valid],
+                opponent_ids[valid],
+                residual,
+                precision,
+            )
+            adjustments[metric] = (actor, opponent)
+            diagnostics[metric] = summary
+
+        phase_names = ("distance", "clinch", "ground")
+        strike_baseline = np.asarray(
+            [
+                math.fsum(
+                    parameters[f"strike_rate_{phase}"]
+                    * parameters[f"{phase}_phase_share"]
+                    for phase in phase_names
+                )
+                for parameters in context_rows
+            ],
+            dtype=float,
+        )
+        covariates = member.covariate_effects
+        age = pd.to_numeric(rows["age_years"], errors="coerce").to_numpy(float)
+        experience = pd.to_numeric(
+            rows["experience_fights"], errors="coerce"
+        ).to_numpy(float)
+        layoff = pd.to_numeric(rows["layoff_days"], errors="coerce").to_numpy(
+            float
+        )
+        age_scaled = np.where(
+            np.isfinite(age),
+            (age - 30.0) / 10.0,
+            float(covariates.get("age_center", 0.0)),
+        )
+        experience_scaled = np.log1p(
+            np.maximum(np.nan_to_num(experience, nan=0.0), 0.0)
+        )
+        layoff_scaled = np.where(
+            np.isfinite(layoff),
+            np.log1p(np.maximum(layoff, 0.0) / 365.25),
+            float(covariates.get("log_layoff_years_center", 0.0)),
+        )
+        log_rate_adjustment = (
+            float(covariates.get("age_per_decade", 0.0))
+            * (age_scaled - float(covariates.get("age_center", 0.0)))
+            + float(covariates.get("log_experience", 0.0))
+            * (
+                experience_scaled
+                - float(covariates.get("log_experience_center", 0.0))
+            )
+            + float(covariates.get("log_layoff_years", 0.0))
+            * (
+                layoff_scaled
+                - float(covariates.get("log_layoff_years_center", 0.0))
+            )
+        )
+        # Snapshot construction reapplies the current-fight covariate effect;
+        # remove its historical counterpart here so fighter effects do not
+        # absorb age, experience, or layoff twice.
+        strike_baseline *= np.clip(np.exp(log_rate_adjustment), 0.6, 1.4)
+        fit_rate("strike_pace", "sig_strikes_attempts", strike_baseline)
+        fit_probability(
+            "strike_accuracy",
+            "sig_strikes_landed",
+            "sig_strikes_attempts",
+            context_values("strike_accuracy"),
+        )
+        fit_rate(
+            "takedown_pace",
+            "takedowns_attempts",
+            context_values("takedown_attempt_rate"),
+        )
+        fit_probability(
+            "takedown_accuracy",
+            "takedowns_landed",
+            "takedowns_attempts",
+            context_values("takedown_accuracy"),
+        )
+        fit_rate(
+            "submission_pace",
+            "sub_attempts",
+            context_values("submission_attempt_rate"),
+        )
+        identities = sorted(set(actor_ids) | set(opponent_ids))
+        result: dict[str, dict[str, float]] = {identity: {} for identity in identities}
+        for metric, (actor, opponent) in adjustments.items():
+            for identity in identities:
+                result[identity][f"{metric}_offense"] = float(
+                    actor.get(identity, 0.0)
+                )
+                result[identity][f"{metric}_vulnerability"] = float(
+                    opponent.get(identity, 0.0)
+                )
+        self._opponent_adjusted_effect_cache[cache_key] = result
+        self._opponent_adjusted_diagnostics_cache[cache_key] = diagnostics
+        return result
+
+    @classmethod
+    def _apply_opponent_adjusted_snapshot(
+        cls,
+        fighter: Mapping[str, float],
+        context: Mapping[str, float],
+        effects: Mapping[str, float],
+    ) -> dict[str, float]:
+        """Replace supported marginal effects with strength-adjusted effects."""
+
+        result = dict(fighter)
+        phase_names = ("distance", "clinch", "ground")
+        context_rate = math.fsum(
+            float(context[f"strike_rate_{phase}"])
+            * float(fighter[f"{phase}_phase_share"])
+            for phase in phase_names
+        )
+        fighter_rate = math.fsum(
+            float(fighter[f"strike_rate_{phase}"])
+            * float(fighter[f"{phase}_phase_share"])
+            for phase in phase_names
+        )
+        target_rate = context_rate * math.exp(
+            float(effects.get("strike_pace_offense", 0.0))
+        )
+        strike_multiplier = target_rate / max(fighter_rate, 1e-12)
+        for phase in phase_names:
+            result[f"strike_rate_{phase}"] = _clip(
+                float(fighter[f"strike_rate_{phase}"]) * strike_multiplier,
+                0.01,
+                30.0,
+            )
+        result["strike_accuracy"] = cls._inverse_logit(
+            cls._logit(float(context["strike_accuracy"]))
+            + float(effects.get("strike_accuracy_offense", 0.0))
+        )
+        result["strike_defense"] = cls._inverse_logit(
+            cls._logit(float(context["strike_defense"]))
+            - float(effects.get("strike_accuracy_vulnerability", 0.0))
+        )
+        result["takedown_attempt_rate"] = _clip(
+            float(context["takedown_attempt_rate"])
+            * math.exp(float(effects.get("takedown_pace_offense", 0.0))),
+            0.001,
+            5.0,
+        )
+        result["takedown_accuracy"] = cls._inverse_logit(
+            cls._logit(float(context["takedown_accuracy"]))
+            + float(effects.get("takedown_accuracy_offense", 0.0))
+        )
+        result["takedown_defense"] = cls._inverse_logit(
+            cls._logit(float(context["takedown_defense"]))
+            - float(effects.get("takedown_accuracy_vulnerability", 0.0))
+        )
+        result["submission_attempt_rate"] = _clip(
+            float(context["submission_attempt_rate"])
+            * math.exp(float(effects.get("submission_pace_offense", 0.0))),
+            0.0001,
+            3.0,
+        )
+        return result
+
+    @staticmethod
     def _construct_domain_dataclass(cls: type, values: Mapping[str, object]) -> object:
         """Construct a domain dataclass while keeping this fitter schema-isolated."""
 
@@ -2806,7 +3259,8 @@ class CausalParameterFitter:
             raise IndexError("bootstrap member index is out of range")
         if parameter_mode not in SNAPSHOT_PARAMETER_MODES:
             raise ValueError(
-                "parameter_mode must be full, context_only, or reliability_weighted"
+                "parameter_mode must be full, context_only, opponent_adjusted_v1, "
+                "or reliability_weighted"
             )
         stable_id = _identity_token(fighter_id)
         if not stable_id:
@@ -2821,6 +3275,16 @@ class CausalParameterFitter:
         if fighter_parameters is None or parameter_mode == "context_only":
             parameters = context_parameters
             data_quality = "division_era_prior"
+        elif parameter_mode == "opponent_adjusted_v1":
+            adjustments = self._opponent_adjusted_effects(
+                artifact, member_index, requested
+            )
+            parameters = self._apply_opponent_adjusted_snapshot(
+                fighter_parameters,
+                context_parameters,
+                adjustments.get(stable_id, {}),
+            )
+            data_quality = "opponent_adjusted_fighter_history"
         elif parameter_mode == "reliability_weighted":
             parameters = self._blend_snapshot_parameters(
                 fighter_parameters,
