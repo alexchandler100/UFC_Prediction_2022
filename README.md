@@ -549,6 +549,16 @@ intercept (0.208) and slope (0.206), underpredicted UFCStats control time, and
 wide parameter intervals remain explicit warnings and reasons to keep the
 result candidate-only.
 
+A subsequent bounded control-time experiment is reported in
+`SIMULATION_TUNING_REPORT_2026-08-26.md`. On the same 31-fight, two-seed
+confirmation cohort, lowering the escape hazard from `1.0` to `0.67` improved
+control CRPS but reliably worsened winner log loss and ground-strike CRPS under
+paired event-card resampling, so the change was rejected. The retained
+simulator selected only 13/31 winners, and its winner log loss (`0.738`) and
+Brier score (`0.272`) were worse than constant 50/50 references (`0.693` and
+`0.250`). This is evidence against current standalone predictive usefulness,
+not a reason to weaken the chronological evaluation gate.
+
 `upcoming-card` then fits or re-materializes one 200-member pre-event ensemble,
 withholds any bout where either fighter has fewer than three prior UFCStats
 bouts, stores every completed aggregate and convergence diagnostic under the

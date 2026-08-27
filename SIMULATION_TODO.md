@@ -71,6 +71,12 @@ missing the parameter-quantile stability gate. No adaptive checkpoint remains.
    then compare any candidate convergence statistic under the existing
    chronological selection/untouched split. Do not tune this or the mechanics
    on the upcoming card.
+   The bounded 2026-08-26 control experiment is complete and documented in
+   `SIMULATION_TUNING_REPORT_2026-08-26.md`. Reducing the escape hazard to
+   `0.67` was rejected: it reliably improved control CRPS but reliably worsened
+   winner log loss and ground-strike CRPS on the two-seed five-card
+   confirmation. Keep `escape_hazard_multiplier = 1.0`. Next test a separate
+   UFCStats-control observation model without changing latent fight dynamics.
 7. Profile materialized-artifact loading. Reconstruction is now cached, but
    validating and decoding the 200-member cache still takes roughly two to
    three minutes and peaks near 1.4 GiB. Optimize only with exact artifact and
