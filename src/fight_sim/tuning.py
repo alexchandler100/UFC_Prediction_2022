@@ -395,6 +395,12 @@ def _finish_selection_metrics(path_value: str | Path) -> dict[str, object]:
         )
         or {}
     )
+    knockdown_check = dict(
+        dict(metrics.get("count_distribution_predictive_checks") or {}).get(
+            "total_knockdowns"
+        )
+        or {}
+    )
     path, report = _population_report(path_value)
     config = dict(dict(report.get("config") or {}).get("simulator_config") or {})
     return {
@@ -409,6 +415,12 @@ def _finish_selection_metrics(path_value: str | Path) -> dict[str, object]:
         "duration_mean_bias_seconds": float(
             duration_check["predictive_minus_observed_mean"]
         ),
+        "knockdown_crps": float(knockdown_check["count_distribution_crps"]),
+        "knockdown_observed_mean": float(knockdown_check["observed_mean"]),
+        "knockdown_predictive_mean": float(knockdown_check["predictive_mean"]),
+        "knockdown_mean_bias": float(
+            knockdown_check["predictive_minus_observed_mean"]
+        ),
         "observable_action_error": action_error,
         "observable_action_errors": action_errors,
         "simulator_config": config,
@@ -420,18 +432,21 @@ def select_finish_profile(
     candidates: Mapping[str, str | Path],
     *,
     output: str | Path,
+    objective: str = "duration",
 ) -> dict[str, object]:
     """Select a finish-conversion candidate on one chronological dev window."""
 
     if not candidates:
         raise ValueError("finish selection requires at least one candidate")
+    if objective not in {"duration", "joint"}:
+        raise ValueError("finish selection objective must be 'duration' or 'joint'")
     baseline = _finish_selection_metrics(baseline_population_run)
     rows: list[dict[str, object]] = []
     for label, path in sorted(candidates.items()):
         row = _finish_selection_metrics(path)
         if row["event_ids"] != baseline["event_ids"] or row["fight_ids"] != baseline["fight_ids"]:
             raise ValueError(f"finish candidate {label} does not match the baseline cohort")
-        gates = {
+        preservation_gates = {
             "joint_log_loss_not_worse_by_more_than_0.02": (
                 float(row["joint_log_loss"]) <= float(baseline["joint_log_loss"]) + 0.02
             ),
@@ -445,18 +460,42 @@ def select_finish_profile(
                 float(row["observable_action_error"])
                 <= float(baseline["observable_action_error"]) + 0.02
             ),
-            "duration_crps_improves": (
-                float(row["duration_crps_seconds"])
-                < float(baseline["duration_crps_seconds"])
-            ),
         }
+        if objective == "duration":
+            objective_gates = {
+                "duration_crps_improves": (
+                    float(row["duration_crps_seconds"])
+                    < float(baseline["duration_crps_seconds"])
+                ),
+            }
+        else:
+            objective_gates = {
+                "joint_log_loss_improves": (
+                    float(row["joint_log_loss"])
+                    < float(baseline["joint_log_loss"])
+                ),
+                "duration_crps_not_worse_by_more_than_5_seconds": (
+                    float(row["duration_crps_seconds"])
+                    <= float(baseline["duration_crps_seconds"]) + 5.0
+                ),
+                "absolute_duration_bias_not_worse_by_more_than_15_seconds": (
+                    abs(float(row["duration_mean_bias_seconds"]))
+                    <= abs(float(baseline["duration_mean_bias_seconds"])) + 15.0
+                ),
+            }
+        gates = {**preservation_gates, **objective_gates}
         row.update({"label": label, "gates": gates, "eligible": all(gates.values())})
         rows.append(row)
+    ranking_fields = (
+        ("duration_crps_seconds", "joint_log_loss")
+        if objective == "duration"
+        else ("joint_log_loss", "duration_crps_seconds")
+    )
     eligible = sorted(
         (row for row in rows if row["eligible"]),
         key=lambda row: (
-            float(row["duration_crps_seconds"]),
-            float(row["joint_log_loss"]),
+            float(row[ranking_fields[0]]),
+            float(row[ranking_fields[1]]),
             str(row["label"]),
         ),
     )
@@ -472,9 +511,14 @@ def select_finish_profile(
         "candidate_only": True,
         "production_enabled": False,
         "execution_enabled": False,
+        "objective": objective,
         "selection_rule": (
             "pass joint/method/winner/action preservation gates and improve duration "
             "CRPS, then minimize duration CRPS with joint log loss as tie-breaker"
+            if objective == "duration"
+            else "improve joint side/method log loss while passing method, winner, "
+            "action, duration-CRPS, and duration-bias preservation gates; then "
+            "minimize joint log loss with duration CRPS as tie-breaker"
         ),
         "baseline": baseline,
         "candidates": rows,
@@ -484,6 +528,96 @@ def select_finish_profile(
     }
     body["mechanics_profile_id"] = f"mechanics-{canonical_sha256(selected_config)[:12]}"
     body["selection_sha256"] = canonical_sha256(body)
+    atomic_write_json(output, body)
+    return body
+
+
+def validate_knockdown_observation_profile(
+    baseline_holdout_run: str | Path,
+    candidate_holdout_run: str | Path,
+    *,
+    output: str | Path,
+) -> dict[str, object]:
+    """Validate official-knockdown thinning without changing latent outcomes."""
+
+    baseline = _finish_selection_metrics(baseline_holdout_run)
+    candidate = _finish_selection_metrics(candidate_holdout_run)
+    if candidate["event_ids"] != baseline["event_ids"] or candidate["fight_ids"] != baseline["fight_ids"]:
+        raise ValueError("knockdown-observation candidate does not match the baseline cohort")
+
+    baseline_config = dict(baseline["simulator_config"])
+    candidate_config = dict(candidate["simulator_config"])
+    observation_field = "official_knockdown_observation_probability"
+    baseline_without_observation = dict(baseline_config)
+    candidate_without_observation = dict(candidate_config)
+    baseline_without_observation.pop(observation_field, None)
+    candidate_without_observation.pop(observation_field, None)
+
+    invariant_metric_names = (
+        "joint_log_loss",
+        "method_log_loss",
+        "winner_log_loss",
+        "duration_crps_seconds",
+        "duration_mean_bias_seconds",
+    )
+    invariant_metrics_equal = all(
+        math.isclose(
+            float(candidate[name]),
+            float(baseline[name]),
+            rel_tol=0.0,
+            abs_tol=1e-12,
+        )
+        for name in invariant_metric_names
+    )
+    baseline_action_errors = dict(baseline["observable_action_errors"])
+    candidate_action_errors = dict(candidate["observable_action_errors"])
+    non_knockdown_action_errors_equal = all(
+        name in candidate_action_errors
+        and math.isclose(
+            float(candidate_action_errors[name]),
+            float(value),
+            rel_tol=0.0,
+            abs_tol=1e-12,
+        )
+        for name, value in baseline_action_errors.items()
+        if name != "knockdowns"
+    )
+    gates = {
+        "only_observation_probability_changes": (
+            baseline_without_observation == candidate_without_observation
+            and float(candidate_config.get(observation_field, 1.0)) < 1.0
+        ),
+        "outcome_and_duration_metrics_are_identical": invariant_metrics_equal,
+        "non_knockdown_action_errors_are_identical": non_knockdown_action_errors_equal,
+        "knockdown_crps_improves": (
+            float(candidate["knockdown_crps"])
+            < float(baseline["knockdown_crps"])
+        ),
+        "absolute_knockdown_mean_bias_improves": (
+            abs(float(candidate["knockdown_mean_bias"]))
+            < abs(float(baseline["knockdown_mean_bias"]))
+        ),
+        "observable_action_error_improves": (
+            float(candidate["observable_action_error"])
+            < float(baseline["observable_action_error"])
+        ),
+    }
+    retained = all(gates.values())
+    config = candidate_config if retained else baseline_config
+    body: dict[str, object] = {
+        "schema_version": TUNING_SCHEMA_VERSION,
+        "validation_type": "locked_knockdown_observation_holdout",
+        "candidate_only": True,
+        "production_enabled": False,
+        "execution_enabled": False,
+        "validation_status": "retained_for_prospective_shadow" if retained else "rejected_baseline_fallback",
+        "gates": gates,
+        "baseline": baseline,
+        "candidate": candidate,
+        "simulator_config": config,
+    }
+    body["mechanics_profile_id"] = f"mechanics-{canonical_sha256(config)[:12]}"
+    body["validation_sha256"] = canonical_sha256(body)
     atomic_write_json(output, body)
     return body
 

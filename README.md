@@ -559,6 +559,27 @@ Brier score (`0.272`) were worse than constant 50/50 references (`0.693` and
 `0.250`). This is evidence against current standalone predictive usefulness,
 not a reason to weaken the chronological evaluation gate.
 
+The same report records a follow-up coupled knockdown/finish experiment. A
+`0.45` knockdown and `0.71` conditional KO/TKO-finish profile improved the
+31-fight point estimates for winner, joint side/method, method, duration, and
+knockdown distributions, but failed the predeclared absolute-duration-bias
+gate. The formal result was `rejected_baseline_fallback`; the retained profile
+remains `mechanics-8ba01f34444f`, and no website or production forecast was
+changed.
+
+A fresh predeclared follow-up is documented in
+`SIMULATION_KNOCKDOWN_FINISH_GRID_2026-08-27.md`. A three-point coupled grid on
+an earlier 35-fight cohort improved knockdown distributions but worsened the
+primary joint side/method score at every point, so no latent-mechanics change
+advanced. The resulting observation-layer experiment keeps latent hurt,
+finish, judging, and trajectories unchanged while projecting only 59% of
+latent knockdowns into the official UFCStats counter. On its locked 31-fight,
+63,488-path-per-profile confirmation, knockdown CRPS improved from `0.3646` to
+`0.2280` and combined observable-action error from `0.5619` to `0.4863`, while
+joint, winner, method, duration, and every non-knockdown action metric were
+exactly unchanged. It is retained as `mechanics-7dca94cd8d5b` for prospective
+shadow research only; the website still uses `mechanics-8ba01f34444f`.
+
 `upcoming-card` then fits or re-materializes one 200-member pre-event ensemble,
 withholds any bout where either fighter has fewer than three prior UFCStats
 bouts, stores every completed aggregate and convergence diagnostic under the

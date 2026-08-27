@@ -119,6 +119,10 @@ class FightSimDomainTests(unittest.TestCase):
             BoutConfig("same", "fighter", "fighter")
         with self.assertRaisesRegex(ValueError, "ko_tko_finish_probability_multiplier"):
             SimulatorConfig(ko_tko_finish_probability_multiplier=-0.01)
+        with self.assertRaisesRegex(
+            ValueError, "official_knockdown_observation_probability"
+        ):
+            SimulatorConfig(official_knockdown_observation_probability=1.01)
 
     def test_zero_hazard_reaches_bell_and_one_terminal_event(self):
         zero = _zero_activity_parameters()
@@ -159,6 +163,44 @@ class FightSimDomainTests(unittest.TestCase):
         self.assertEqual(disabled.red_stats.significant_strike_attempts, 0)
         self.assertEqual(disabled.blue_stats.significant_strike_attempts, 0)
 
+    def test_official_knockdown_observation_does_not_change_trajectory(self):
+        active = FighterParameters(
+            strike_rate_distance=14.0,
+            strike_accuracy=0.72,
+            strike_power=0.90,
+            knockdown_rate_per_landed=0.16,
+            finish_after_knockdown=0.35,
+        )
+        baseline_spec = _spec(
+            round_seconds=120,
+            red_parameters=active,
+            blue_parameters=active,
+        )
+        hidden_spec = replace(
+            baseline_spec,
+            simulator=SimulatorConfig(
+                official_knockdown_observation_probability=0.0
+            ),
+        )
+        baseline = simulate_indices(baseline_spec, range(100))
+        hidden = simulate_indices(hidden_spec, range(100))
+        self.assertGreater(
+            sum(
+                path.red_stats.knockdowns + path.blue_stats.knockdowns
+                for path in baseline
+            ),
+            0,
+        )
+        for expected, actual in zip(baseline, hidden, strict=True):
+            self.assertEqual(expected.result, actual.result)
+            self.assertEqual(expected.phase_time_us, actual.phase_time_us)
+            self.assertEqual(
+                replace(expected.red_stats, knockdowns=0), actual.red_stats
+            )
+            self.assertEqual(
+                replace(expected.blue_stats, knockdowns=0), actual.blue_stats
+            )
+
     def test_global_rare_no_contest_process_is_supported(self):
         zero = _zero_activity_parameters()
         base = _spec(red_parameters=zero, blue_parameters=zero, round_seconds=300)
@@ -193,7 +235,7 @@ class FightSimDeterminismTests(unittest.TestCase):
         )
         self.assertEqual(
             trace_digest(traced),
-            "1c3b265931b5b973867b7957384405c6c34970e7903c1868cf6406c46cae11ac",
+            "03a9ad669207aa871345442777adef8fc74551714a5218cdb58d2964cc0678f5",
         )
         replayed = stochastic_replay(spec, 17, expected=traced)
         self.assertEqual(trace_digest(replayed), trace_digest(traced))

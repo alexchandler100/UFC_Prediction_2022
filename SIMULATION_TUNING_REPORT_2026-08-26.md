@@ -129,3 +129,73 @@ should separate the latent fight dynamics from the observation model:
 The new causal-fit cache reduces subsequent ten-card mechanics candidates from
 about 25 minutes to about eight minutes, so these isolated tests can remain
 bounded and interpretable.
+
+## Follow-up low-hanging-fruit experiments
+
+Three additional candidates were tested after the control experiment. None was
+allowed to replace the retained profile.
+
+### Winner temperature calibration
+
+A nonnegative, zero-intercept temperature was fitted on the earlier five-card
+selection cohort and evaluated once on the later five cards. The fitted
+temperature was effectively zero (`5.3e-13`). It mapped every decisive winner
+probability to 50/50 and improved holdout winner log loss from `0.738` to the
+constant-reference `0.693`, but left winner accuracy unchanged. This is signal
+deletion, not useful calibration, and was rejected. It is additional evidence
+that the current simulated winner ranking is not predictive.
+
+### Knockdown-rate-only candidate
+
+The retained simulator predicted 1.038 total knockdowns per fight versus 0.588
+observed on the middle-five selection cards. Applying that ratio to the retained
+`0.800686` knockdown multiplier produced a predeclared `0.45` candidate.
+
+On the 65-fight screen it improved winner log loss (`0.761` to `0.738`) and
+knockdown CRPS (`0.395` to `0.337`), but worsened the primary joint loss
+(`1.787` to `1.824`), method loss (`1.039` to `1.077`), duration CRPS (`201.83`
+to `208.66` seconds), and landed-strike CRPS. Fewer knockdowns caused fewer
+finishes and longer fights. It failed the screen and did not advance.
+
+### Coupled knockdown/finish candidate
+
+The next candidate preserved approximate KO finish intensity while reducing
+repeated knockdowns: `knockdown_probability_multiplier = 0.45` and
+`ko_tko_finish_probability_multiplier = 0.71`, since
+`0.800686 * 0.40 / 0.45 = 0.7117`.
+
+It passed the 65-fight screen and advanced to the two-seed, 63,488-path
+confirmation. On those 31 later fights it produced these point estimates:
+
+| Metric | Retained profile | Coupled candidate |
+| --- | ---: | ---: |
+| Winner accuracy | 41.9% | 45.2% |
+| Winner log loss | 0.7383 | 0.7342 |
+| Winner Brier | 0.2718 | 0.2704 |
+| Exact side/method accuracy | 6.5% | 6.5% |
+| Joint side/method log loss | 1.9509 | 1.9347 |
+| Method log loss | 1.2178 | 1.2144 |
+| Goes-distance accuracy | 41.9% | 48.4% |
+| Duration CRPS | 255.88 sec | 254.04 sec |
+| Predicted / observed knockdowns | 0.780 / 0.452 | 0.444 / 0.452 |
+| Knockdown CRPS | 0.417 | 0.352 |
+
+Paired five-event intervals crossed zero for joint, winner, method, duration,
+and knockdown score changes; no headline metric showed reliable degradation.
+Control CRPS improved reliably, while significant-strike and takedown changes
+were small and inconclusive.
+
+Despite broadly favorable point estimates, the formal predeclared validation
+returned `rejected_baseline_fallback`. Mean duration bias moved from `+9.96` to
+`+16.77` seconds, failing the required `absolute_duration_bias_improves` gate.
+The validation artifact is
+`artifacts/simulations/mechanics-validated-knockdown045-finish071-final5-20260826.json`
+with hash
+`3d44630bfede78e42ae76143ec8e0a8a79cd2ddbeac839b90619306d6dcf3a44`.
+
+The retained profile therefore remains `mechanics-8ba01f34444f`. The coupled
+candidate is promising evidence for a better parameterization, not a validated
+replacement. Do not tune `0.71` again after observing this holdout. A future
+round must predeclare a small coupled candidate set using earlier, previously
+unused cards and reserve a fresh chronological confirmation cohort—or wait for
+prospective fights—to avoid repeatedly optimizing the same five cards.

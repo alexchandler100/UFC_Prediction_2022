@@ -659,12 +659,30 @@ def _strike_consequence(runtime: _Runtime, actor: Side, landed: int) -> None:
         0.0,
         0.75,
     )
-    knockdowns = runtime.rng.binomial("strike.knockdown", landed, knockdown_probability_per_landed)
-    stats = FighterStats(knockdowns=knockdowns)
-    effectiveness = landed * (1.0 + 1.75 * severity) + 4.0 * knockdowns
-    target_hurt = _clip(current_hurt + hurt_increment + (0.40 if knockdowns else 0.0), 0.0, 1.0)
+    latent_knockdowns = runtime.rng.binomial(
+        "strike.knockdown", landed, knockdown_probability_per_landed
+    )
+    observation_probability = (
+        runtime.spec.simulator.official_knockdown_observation_probability
+    )
+    observed_knockdowns = (
+        latent_knockdowns
+        if observation_probability >= 1.0
+        else runtime.rng.binomial(
+            "strike.knockdown.official_observation",
+            latent_knockdowns,
+            observation_probability,
+        )
+    )
+    stats = FighterStats(knockdowns=observed_knockdowns)
+    effectiveness = landed * (1.0 + 1.75 * severity) + 4.0 * latent_knockdowns
+    target_hurt = _clip(
+        current_hurt + hurt_increment + (0.40 if latent_knockdowns else 0.0),
+        0.0,
+        1.0,
+    )
     target_damage = _clip(
-        current_damage + damage_increment + 0.10 * knockdowns,
+        current_damage + damage_increment + 0.10 * latent_knockdowns,
         0.0,
         1.0,
     )
@@ -684,14 +702,16 @@ def _strike_consequence(runtime: _Runtime, actor: Side, landed: int) -> None:
             {
                 "severity": severity,
                 "landed": landed,
-                "knockdowns": knockdowns,
+                "knockdowns": observed_knockdowns,
+                "latent_knockdowns": latent_knockdowns,
+                "official_knockdown_observation_probability": observation_probability,
                 "knockdown_probability_per_landed": knockdown_probability_per_landed,
             }
             if runtime.tracing
             else None
         ),
     )
-    if knockdowns:
+    if latent_knockdowns:
         finish_multiplier = runtime.spec.simulator.ko_tko_finish_probability_multiplier
         finish_probability_per_knockdown = _clip(
             actor_params.finish_after_knockdown
@@ -701,7 +721,10 @@ def _strike_consequence(runtime: _Runtime, actor: Side, landed: int) -> None:
             0.01 if finish_multiplier > 0.0 else 0.0,
             0.95,
         )
-        finish_probability = 1.0 - (1.0 - finish_probability_per_knockdown) ** knockdowns
+        finish_probability = (
+            1.0
+            - (1.0 - finish_probability_per_knockdown) ** latent_knockdowns
+        )
         finished = runtime.rng.uniform("strike.finish") < finish_probability
         # Keep the finish draw attached to a diagnostic consequence even when
         # it fails; otherwise the trace would hide a decisive stochastic draw.

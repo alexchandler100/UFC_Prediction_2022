@@ -108,6 +108,7 @@ class FightSimulationCliTests(unittest.TestCase):
             "select-finishing",
             "validate-mechanics",
             "validate-finishing",
+            "validate-knockdown-observation",
             "upcoming-card",
             "run",
             "replay",

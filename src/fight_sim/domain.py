@@ -302,6 +302,7 @@ class SimulatorConfig:
     clinch_exit_hazard_multiplier: float = 1.0
     escape_hazard_multiplier: float = 1.0
     knockdown_probability_multiplier: float = 1.0
+    official_knockdown_observation_probability: float = 1.0
     ko_tko_finish_probability_multiplier: float = 1.0
     submission_finish_probability_multiplier: float = 1.0
     schema_version: str = SCHEMA_VERSION
@@ -309,6 +310,12 @@ class SimulatorConfig:
     def __post_init__(self) -> None:
         _nonnegative("judge_noise_sd", self.judge_noise_sd)
         _bounded("judge_correlation", self.judge_correlation, 0.0, 1.0)
+        _bounded(
+            "official_knockdown_observation_probability",
+            self.official_knockdown_observation_probability,
+            0.0,
+            1.0,
+        )
         _nonnegative("ten_eight_threshold", self.ten_eight_threshold)
         if self.max_events <= 0:
             raise ValueError("max_events must be positive")

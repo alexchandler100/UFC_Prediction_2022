@@ -77,6 +77,27 @@ missing the parameter-quantile stability gate. No adaptive checkpoint remains.
    winner log loss and ground-strike CRPS on the two-seed five-card
    confirmation. Keep `escape_hazard_multiplier = 1.0`. Next test a separate
    UFCStats-control observation model without changing latent fight dynamics.
+   A follow-up low-hanging-fruit round also tested winner-temperature
+   calibration, a `0.45` knockdown-only profile, and a coupled `0.45`
+   knockdown / `0.71` conditional-finish profile. The temperature collapsed to
+   50/50 and the knockdown-only profile failed the primary screen. The coupled
+   profile improved all headline confirmation point estimates and nearly
+   eliminated knockdown mean bias, but the formal validator returned
+   `rejected_baseline_fallback` because absolute duration bias worsened from
+   9.96 to 16.77 seconds. Do not tune it again on the same five-card holdout;
+   use an earlier unused chronological split or prospective results.
+   That split is now complete and documented in
+   `SIMULATION_KNOCKDOWN_FINISH_GRID_2026-08-27.md`. All three coupled
+   knockdown/finish profiles improved knockdown CRPS but worsened the primary
+   joint side/method score, so the selector retained the baseline. A separate
+   official-knockdown observation projection at `0.59` then passed every gate
+   on the locked 31-fight confirmation: knockdown CRPS improved from 0.3646 to
+   0.2280 and combined action error from 0.5619 to 0.4863, with exact outcome,
+   duration, and non-knockdown invariance. Keep `mechanics-7dca94cd8d5b` as a
+   prospective shadow candidate only; do not replace the current website
+   profile or retune `0.59` on the opened cohort. The next analogous low-risk
+   mechanics task remains a UFCStats-control observation projection that does
+   not alter latent phase dynamics.
 7. Profile materialized-artifact loading. Reconstruction is now cached, but
    validating and decoding the 200-member cache still takes roughly two to
    three minutes and peaks near 1.4 GiB. Optimize only with exact artifact and

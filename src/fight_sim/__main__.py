@@ -34,6 +34,7 @@ from .tuning import (
     select_finish_profile,
     select_mechanics_profile,
     validate_finish_profile,
+    validate_knockdown_observation_profile,
     validate_mechanics_holdout,
 )
 from .upcoming import DEFAULT_PARAMETER_CACHE, execute_upcoming_card
@@ -458,6 +459,12 @@ def build_parser() -> argparse.ArgumentParser:
         help="Candidate label and population-summary path; repeat for each profile",
     )
     select_finish.add_argument(
+        "--objective",
+        choices=("duration", "joint"),
+        default="duration",
+        help="Selection objective; joint preserves the predeclared simulator primary metric",
+    )
+    select_finish.add_argument(
         "--output",
         default=str(DEFAULT_ARTIFACT_ROOT / "selected-finish-profile.json"),
     )
@@ -485,6 +492,19 @@ def build_parser() -> argparse.ArgumentParser:
     validate_finish.add_argument(
         "--output",
         default=str(DEFAULT_ARTIFACT_ROOT / "validated-finish-profile.json"),
+    )
+
+    validate_knockdown_observation = commands.add_parser(
+        "validate-knockdown-observation",
+        help="Validate official-knockdown observation thinning on a locked cohort",
+    )
+    validate_knockdown_observation.add_argument("baseline_holdout_run")
+    validate_knockdown_observation.add_argument("candidate_holdout_run")
+    validate_knockdown_observation.add_argument(
+        "--output",
+        default=str(
+            DEFAULT_ARTIFACT_ROOT / "validated-knockdown-observation-profile.json"
+        ),
     )
 
     replay = commands.add_parser(
@@ -819,6 +839,7 @@ def main(argv: list[str] | None = None) -> int:
                 args.baseline_population_run,
                 candidates,
                 output=args.output,
+                objective=args.objective,
             )
             _print(
                 {
@@ -831,6 +852,20 @@ def main(argv: list[str] | None = None) -> int:
             )
         elif args.command == "validate-finishing":
             validation = validate_finish_profile(
+                args.baseline_holdout_run,
+                args.candidate_holdout_run,
+                output=args.output,
+            )
+            _print(
+                {
+                    "mechanics_profile_id": validation["mechanics_profile_id"],
+                    "output": str(Path(args.output).resolve()),
+                    "validation_sha256": validation["validation_sha256"],
+                    "validation_status": validation["validation_status"],
+                }
+            )
+        elif args.command == "validate-knockdown-observation":
+            validation = validate_knockdown_observation_profile(
                 args.baseline_holdout_run,
                 args.candidate_holdout_run,
                 output=args.output,

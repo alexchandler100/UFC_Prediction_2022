@@ -45,6 +45,15 @@ well calibrated.
 | Injury or withdrawal | No reliable cancellation population | Excluded from V1 |
 | Exact transitions or follow-up timing | Not observed | Never presented as fitted fighter-specific skill |
 
+Official knockdowns are an observation as well as a latent fight mechanic.
+`official_knockdown_observation_probability` may thin latent destabilization
+events only when validated on a locked cohort. The latent event still drives
+hurt, damage, effectiveness, finish conversion, judging, and termination; the
+separate named observation RNG stream changes only the UFCStats-facing counter.
+Its default is `1.0`, preserving previous trajectories and reports. This same
+observation-layer pattern should be preferred for UFCStats control semantics
+when changing latent phase dynamics would damage held-out outcomes.
+
 Metadata-only external fights may update experience, activity, record, and rating
 priors. They must not manufacture strike, takedown, control, or submission
 parameters.
