@@ -1,7 +1,8 @@
 # Fight simulation continuation TODO
 
-Status updated 2026-08-26 after resuming and completing the bounded Aug. 29
-card run. This file is the handoff contract for the next simulation session.
+Status updated 2026-08-27 after the conditional-control implementation and
+broad 100-path audit. This file is the handoff contract for the next simulation
+session.
 
 ## Completed and safe to use
 
@@ -98,6 +99,26 @@ missing the parameter-quantile stability gate. No adaptive checkpoint remains.
    profile or retune `0.59` on the opened cohort. The next analogous low-risk
    mechanics task remains a UFCStats-control observation projection that does
    not alter latent phase dynamics.
+   The separate fighter-transition audit is complete on 1,000 recent fights / 81
+   cards and is documented in `SIMULATION_TRANSITION_AUDIT_2026-08-27.md`.
+   Fighter/opponent KD→KO, TD→submission-attempt, and TD→submission-win point
+   estimates improved slightly, but every event-block 95% interval crossed
+   zero; do not add those effects. Conditional TD-round credited-control MAE
+   improved from 0.23690 to 0.23094 with a wholly favorable interval of
+   −0.00976 to −0.00233. The mapping is now implemented behind
+   `--takedown-control-association`; its paired five-card screen improved joint,
+   winner, method, duration, and total-control point scores. The subsequent
+   56.3-minute audit completed 229 fights / 30 cards at exactly 100 paths per
+   fight and is documented in
+   `SIMULATION_CONDITIONAL_CONTROL_AND_BREADTH_REPORT_2026-08-27.md`. Standalone
+   winner accuracy was 52.63%; log loss 0.72865 and Brier 0.26382 were worse
+   than 50/50, with excess knockdowns/KO outcomes and underpredicted duration,
+   attempts, takedowns, and control. Keep this fit candidate-only. The next
+   development experiment should test a very small predeclared latent-
+   knockdown grid on the now-opened 30-card cohort using cached fits, common
+   seeds, and preservation gates. Use later unrun cards beginning in January
+   2025 for confirmation; do not call the opened cohort validation. No
+   experiment command may exceed 3,300 seconds.
 7. Profile materialized-artifact loading. Reconstruction is now cached, but
    validating and decoding the 200-member cache still takes roughly two to
    three minutes and peaks near 1.4 GiB. Optimize only with exact artifact and

@@ -355,6 +355,7 @@ mkdir -p artifacts/simulations/local
 python -m fight_sim backfill \
   --max-fights 25 \
   --checkpoint-every 5 \
+  --max-runtime-seconds 1800 \
   --summary-output artifacts/simulations/local/round-backfill-summary.json
 python -m fight_sim fit \
   --bootstrap-members 200 \
@@ -408,6 +409,23 @@ reconciled as `matched` by default and cross-check their
 bout/event/fighter/opponent identities against the causal doubled table;
 unlabeled legacy rows are excluded. The backtest omits its detailed JSONL ledger
 unless `--ledger-output` is supplied explicitly.
+
+`transition-audit` uses the reconciled round table to test strongly pooled
+fighter/opponent KD→KO, TD→submission, and TD→credited-control associations on
+a locked latest-event holdout. These are interval-censored same-round labels,
+not claims about exact action order. Passing its event-card interval only
+advances a candidate to separate simulator-mechanics validation; it never
+changes a forecast directly. Backfill and audit wall-clock budgets are capped
+at 3,300 seconds.
+
+```bash
+python -m fight_sim transition-audit \
+  --holdout-latest-events 15 \
+  --bootstrap-replicates 5000 \
+  --max-runtime-seconds 300 \
+  --output artifacts/simulations/transition-audit/report.json \
+  --predictions-output artifacts/simulations/transition-audit/predictions.csv
+```
 
 `run` writes `specs.json` and `convergence.json` before evaluating its gates.
 When the gates fail it exits with status 3 and withholds the aggregate, traces,
@@ -498,6 +516,41 @@ event-cutoff fits are shared by default under
 the same bootstrap fit. Use `--no-fit-cache` only for cache diagnostics. The
 summary reports input fingerprint, fit/load, simulation, checkpoint, and cache
 hit timings separately.
+
+`--takedown-control-association` enables a research-only parameter variant that
+uses strongly pooled, strictly causal same-round takedown/credited-control
+history for coarse ground retention and escape. UFCStats does not identify
+action order or top position, so the feature remains explicitly an
+interval-censored association and has a separate artifact/cache model version.
+The default fit is unchanged. `--max-runtime-seconds` accepts at most 3,300
+seconds and produces a valid partial screening report from complete,
+checkpointed fights when the deadline is reached.
+
+For a broad, low-precision diagnostic, 100 total paths can be split across ten
+bootstrap members. This is useful for aggregate accuracy, not precise
+matchup-level probabilities:
+
+```bash
+python -m fight_sim posterior-backtest \
+  --last-events 100 \
+  --min-prior-ufc-fights 3 \
+  --bootstrap-members 10 \
+  --paths-per-matchup 100 \
+  --seed-repeats 1 \
+  --takedown-control-association \
+  --max-runtime-seconds 3300 \
+  --workers 8 \
+  --chunk-size 10 \
+  --output-dir artifacts/simulations/broad-100paths
+```
+
+The August 27 audit completed 229 fights / 30 cards in 56.3 minutes. Winner
+accuracy was 52.63%, while log loss (0.72865) and Brier (0.26382) were worse
+than constant 50/50. It also overpredicted knockdowns and KO/TKO outcomes while
+underpredicting duration, attempts, takedowns, and UFCStats control. The
+simulator therefore remains unsuitable as a standalone predictor. Full results
+and the next frozen development boundary are in
+`SIMULATION_CONDITIONAL_CONTROL_AND_BREADTH_REPORT_2026-08-27.md`.
 
 Measure a fixed run specification before and after performance changes with:
 

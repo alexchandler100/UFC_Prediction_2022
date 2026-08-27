@@ -18,6 +18,7 @@ sys.path.insert(0, str(REPO_ROOT / "src"))
 from fight_sim.parameters import (  # noqa: E402
     CausalParameterFitter,
     PARAMETER_STORAGE_FORMAT,
+    TAKEDOWN_CONTROL_PARAMETER_MODEL_VERSION,
     ParameterFitConfig,
     canonical_json,
     canonical_sha256,
@@ -45,6 +46,9 @@ def _round_rows(*, reconciled: bool, mismatched: bool = False) -> pd.DataFrame:
             "round": 1,
             "round_seconds": 300,
             "sig_strikes_attempts": source["sig_strikes_attempts"],
+            "division": source["division"],
+            "takedowns_landed": source["takedowns_landed"],
+            "control": source["control"],
         }
         if reconciled:
             row["reconciliation_status"] = "matched"
@@ -91,6 +95,34 @@ def _sufficient_stats() -> dict[str, float]:
 
 
 class ParameterArtifactTests(unittest.TestCase):
+    def test_takedown_control_candidate_is_explicit_and_recipe_reproducible(self):
+        config = ParameterFitConfig(bootstrap_members=1, random_seed=13)
+        rounds = _round_rows(reconciled=True)
+        baseline = CausalParameterFitter(_raw(), _profiles(), rounds).fit(
+            "2021-01-01", config=config, created_at_utc="2021-01-01T00:00:00Z"
+        )
+        candidate = CausalParameterFitter(
+            _raw(),
+            _profiles(),
+            rounds,
+            use_takedown_control_association=True,
+        ).fit(
+            "2021-01-01", config=config, created_at_utc="2021-01-01T00:00:00Z"
+        )
+        self.assertEqual(
+            candidate.model_version, TAKEDOWN_CONTROL_PARAMETER_MODEL_VERSION
+        )
+        self.assertNotEqual(candidate.input_sha256, baseline.input_sha256)
+        self.assertNotEqual(
+            candidate.members[0].fighter_parameters["a"]["ground_control_rate"],
+            baseline.members[0].fighter_parameters["a"]["ground_control_rate"],
+        )
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "candidate-recipe.json.gz"
+            save_parameter_artifact(path, candidate)
+            restored = load_parameter_artifact(path)
+        self.assertEqual(restored.to_dict(), candidate.to_dict())
+
     def test_recipe_artifact_populates_and_reuses_content_addressed_cache(self):
         artifact = CausalParameterFitter(_raw(), _profiles()).fit(
             "2022-01-01",

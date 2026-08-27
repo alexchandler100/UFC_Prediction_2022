@@ -43,7 +43,7 @@ well calibrated.
 | Pace decay | First-round and later-round attempt rates for fighters reaching those rounds | Strongly pooled empirical decay; later-round observations are survivor-selected and V1 does not correct that selection |
 | Judging | Final decision result/type and simulated round effectiveness | Three latent judges with fixed global correlated-noise settings, not a fighter-specific or scorecard-fitted judging model |
 | Injury or withdrawal | No reliable cancellation population | Excluded from V1 |
-| Exact transitions or follow-up timing | Not observed | Never presented as fitted fighter-specific skill |
+| Exact transitions or follow-up timing | Not observed; only interval-censored round totals | Never presented as observed causal conversion. Strongly pooled same-round associations may be audited as candidate predictors before a separate simulator-mechanics validation |
 
 Official knockdowns are an observation as well as a latent fight mechanic.
 `official_knockdown_observation_probability` may thin latent destabilization
@@ -71,6 +71,26 @@ and are not themselves a fitted phase-transition policy. Whole-fight takedown
 and submission attempt rates remain conservative marginal opportunity proxies;
 they are never divided by strike composition.
 
+The candidate-only `transition-audit` command evaluates whether strongly pooled
+fighter and opponent histories improve a locked latest-card holdout over a
+division/round context model. Its labels include `same_round_association` by
+contract. Event-card block intervals must be wholly favorable before a target
+can advance to a separate mechanics test; passing that audit does not itself
+change a fitted parameter. The first 1,000-fight audit is documented in
+`SIMULATION_TRANSITION_AUDIT_2026-08-27.md`.
+
+The one transition that cleared that audit, same-round takedown/credited-control
+association, is available only through the explicit
+`--takedown-control-association` research fit. It maps own credited-control
+share after a same-round takedown to coarse retention and opponent-conceded
+share to coarse escape, with global/context/fighter pseudo-opportunities
+25/25/12. This remains an interval-censored proxy, not measured action order or
+top position. Its parameter-model version, fit input hash, compact recipe, and
+materialized cache identity are distinct from the default model. The default
+and production paths do not enable it. The paired mechanics screen and broad
+accuracy audit are documented in
+`SIMULATION_CONDITIONAL_CONTROL_AND_BREADTH_REPORT_2026-08-27.md`.
+
 ## Data contract and causal fitting
 
 When backfilled, the normalized round table has one row per physical bout,
@@ -83,6 +103,12 @@ their bout/event/fighter/opponent identity against the causal doubled bout
 table. A programmatic `allow_legacy_unreconciled_rounds=True` override exists
 only for isolated research migration; normal fit and shadow paths do not enable
 it.
+
+Local round backfill is both count-bounded and wall-clock-bounded. It atomically
+checkpoints whole physical fights, resumes from stored stable IDs, and rejects a
+`--max-runtime-seconds` value over 3,300 seconds. A source call still uses the
+central client's finite connect/read timeouts; callers should leave headroom
+between the command budget and the one-hour research ceiling.
 
 Historical evaluation uses expanding calendar-year folds. Each fold fits one
 artifact at January 1 from rows strictly before that cutoff, and every test bout
@@ -190,6 +216,14 @@ version. Published parameter artifacts keep their self-contained causal fit
 recipe; only the local performance cache chooses the faster materialized
 representation. Phase timings separate input fingerprinting, causal fit/cache
 loads, and simulation.
+
+`posterior-backtest --max-runtime-seconds` is capped at 3,300 seconds. The
+runner stops between complete fight/seed pairs, reports the planned and
+completed cohort separately, and never folds a partial matchup into metrics.
+A 100-total-path configuration may be used for broad descriptive accuracy when
+the path count is divisible across bootstrap members. Such runs are always
+screening-only: probabilities are quantized, rare joint outcomes may receive
+zero paths, and a single seed cannot estimate end-to-end simulation noise.
 
 Upcoming-card runs add a finer restart boundary because one 200-member matchup
 can itself be expensive. After every adaptive doubling stage, all bootstrap

@@ -713,3 +713,5 @@ class RoundBackfillSummary:
     remaining_fights: int
     saved_round_rows: int
     reconciliation_issues: int
+    elapsed_seconds: float = 0.0
+    stopped_by_time_limit: bool = False

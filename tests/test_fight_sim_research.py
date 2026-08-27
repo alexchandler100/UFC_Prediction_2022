@@ -485,6 +485,9 @@ class FightSimulationResearchTests(unittest.TestCase):
         self.assertEqual(metrics["n_fights"], 4)
         self.assertAlmostEqual(metrics["duration_crps_seconds"], 0.0)
         self.assertLess(metrics["winner"]["log_loss"], 0.5)
+        self.assertEqual(metrics["winner"]["accuracy"], 1.0)
+        self.assertEqual(metrics["method_top_class_accuracy"], 1.0)
+        self.assertEqual(metrics["joint_side_method_top_class_accuracy"], 1.0)
         ledger["challenger"] = [0.8, 0.2, 0.7, 0.3]
         interval = event_card_paired_interval(
             ledger, "challenger", "baseline", replicates=100, random_seed=4

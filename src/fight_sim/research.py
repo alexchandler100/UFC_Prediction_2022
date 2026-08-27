@@ -54,6 +54,7 @@ from .monte_carlo import (
 from .parameters import (
     CausalParameterFitter,
     PARAMETER_MODEL_VERSION,
+    TAKEDOWN_CONTROL_PARAMETER_MODEL_VERSION,
     ParameterEnsembleArtifact,
     ParameterFitConfig,
     canonical_sha256,
@@ -242,6 +243,7 @@ def execute_backfill(
     checkpoint_every: int,
     summary_output: str | Path,
     refresh_existing: bool = False,
+    max_runtime_seconds: float = 3000.0,
 ) -> dict[str, object]:
     # Lazy import avoids initializing legacy odds helpers for every CLI command.
     from data_handler.data_handler import DataHandler
@@ -251,6 +253,7 @@ def execute_backfill(
         max_fights=max_fights,
         checkpoint_every=checkpoint_every,
         refresh_existing=refresh_existing,
+        max_runtime_seconds=max_runtime_seconds,
     )
     payload = asdict(summary)
     atomic_write_json(summary_output, payload)
@@ -267,10 +270,16 @@ def execute_fit(
     bootstrap_members: int = 200,
     random_seed: int = 1729,
     created_at_utc: object | None = None,
+    use_takedown_control_association: bool = False,
 ) -> ParameterEnsembleArtifact:
     raw, profiles, rounds = load_research_inputs(raw_path, profiles_path, round_path)
     cutoff = as_of or datetime.now(timezone.utc).isoformat()
-    artifact = CausalParameterFitter(raw, profiles, rounds).fit(
+    artifact = CausalParameterFitter(
+        raw,
+        profiles,
+        rounds,
+        use_takedown_control_association=use_takedown_control_association,
+    ).fit(
         cutoff,
         config=ParameterFitConfig(
             bootstrap_members=bootstrap_members,
@@ -2091,10 +2100,11 @@ def _fit_cache_contract(
     cutoff: pd.Timestamp,
     config: ParameterFitConfig,
     source_sha256: Mapping[str, str | None],
+    parameter_model: str = PARAMETER_MODEL_VERSION,
 ) -> dict[str, object]:
     return {
         "schema_version": 1,
-        "parameter_model": PARAMETER_MODEL_VERSION,
+        "parameter_model": parameter_model,
         "strictly_before_utc": cutoff.isoformat(),
         "config": asdict(config),
         "source_sha256": dict(source_sha256),
@@ -2118,12 +2128,17 @@ def _load_or_fit_posterior_artifact(
         cutoff=cutoff,
         config=config,
         source_sha256=source_sha256,
+        parameter_model=fitter.parameter_model_version,
     )
     key = canonical_sha256(contract)
     cache_path = Path(fit_cache_dir) / f"fit-{key}.json.gz"
     if cache_path.is_file():
         artifact = load_parameter_artifact(cache_path)
-        if artifact.as_of_utc != cutoff.isoformat() or artifact.config != config:
+        if (
+            artifact.as_of_utc != cutoff.isoformat()
+            or artifact.config != config
+            or artifact.model_version != fitter.parameter_model_version
+        ):
             raise ValueError(f"cached causal fit contract is invalid: {cache_path}")
         return artifact, True
     artifact = fitter.fit(cutoff, config=config, created_at_utc=cutoff)
@@ -2152,6 +2167,8 @@ def execute_posterior_backtest(
     round_path: str | Path = DEFAULT_ROUND_STATS,
     progress: Callable[[str], None] | None = None,
     simulator_config: SimulatorConfig | None = None,
+    use_takedown_control_association: bool = False,
+    max_runtime_seconds: float | None = None,
 ) -> tuple[Path, dict[str, object]]:
     """Run a causal event-cutoff posterior-predictive population study."""
 
@@ -2161,6 +2178,8 @@ def execute_posterior_backtest(
         raise ValueError("seed_repeats must be between 1 and 4")
     if fidelity not in _POSTERIOR_FIDELITIES:
         raise ValueError(f"unsupported posterior fidelity: {fidelity}")
+    if max_runtime_seconds is not None and not 0 < max_runtime_seconds <= 3300:
+        raise ValueError("max_runtime_seconds must be in (0, 3300]")
     fingerprint_started = time.perf_counter()
     source_sha256 = {
         "raw": _file_sha256(raw_path, required=True),
@@ -2169,17 +2188,26 @@ def execute_posterior_backtest(
     }
     fingerprint_seconds = time.perf_counter() - fingerprint_started
     simulator = simulator_config or SimulatorConfig()
+    parameter_model = (
+        TAKEDOWN_CONTROL_PARAMETER_MODEL_VERSION
+        if use_takedown_control_association
+        else PARAMETER_MODEL_VERSION
+    )
     run_contract: dict[str, object] = {
         "schema_version": 1,
         "engine_version": ENGINE_VERSION,
         "rng_contract": RNG_CONTRACT_VERSION,
-        "parameter_model": PARAMETER_MODEL_VERSION,
+        "parameter_model": parameter_model,
         "source_sha256": source_sha256,
         "selection": {
             "last_events": last_events,
             "skip_latest_events": skip_latest_events,
             "min_prior_ufc_fights": min_prior_ufc_fights,
             "min_training_fights": min_training_fights,
+            "use_takedown_control_association": bool(
+                use_takedown_control_association
+            ),
+            "max_runtime_seconds": max_runtime_seconds,
         },
         "simulation": {
             "bootstrap_members": bootstrap_members,
@@ -2217,6 +2245,11 @@ def execute_posterior_backtest(
             },
         )
     started = time.perf_counter()
+    deadline = (
+        None
+        if max_runtime_seconds is None
+        else started + float(max_runtime_seconds)
+    )
     raw, profiles, rounds = load_research_inputs(raw_path, profiles_path, round_path)
     physical = physical_backtest_frame(raw)
     selected, event_manifest, selection_counts = _recent_complete_event_selection(
@@ -2244,11 +2277,20 @@ def execute_posterior_backtest(
     fit_seconds = 0.0
     simulation_seconds = 0.0
     checkpoint_seconds = 0.0
-    fitter = CausalParameterFitter(raw, profiles, rounds)
+    fitter = CausalParameterFitter(
+        raw,
+        profiles,
+        rounds,
+        use_takedown_control_association=use_takedown_control_association,
+    )
     grouped_events = list(selected.groupby(["date", "event_id"], sort=True))
+    stopped_by_time_limit = False
     for event_position, ((date, event_id), event_test) in enumerate(
         grouped_events, start=1
     ):
+        if deadline is not None and time.perf_counter() >= deadline:
+            stopped_by_time_limit = True
+            break
         cutoff = pd.Timestamp(date)
         train = physical.loc[physical["date"].lt(cutoff)].copy()
         if len(train) < min_training_fights:
@@ -2319,6 +2361,11 @@ def execute_posterior_backtest(
         artifact.validate()
         baselines = causal_joint_baseline_forecasts(train, event_test).set_index("fight_id")
         for row in ordered_rows:
+            # Stop only between complete fights, keeping all requested seed
+            # repeats aligned and every written checkpoint independently valid.
+            if deadline is not None and time.perf_counter() >= deadline:
+                stopped_by_time_limit = True
+                break
             missing_repeats = [
                 repeat_index
                 for repeat_index in range(seed_repeats)
@@ -2413,8 +2460,14 @@ def execute_posterior_backtest(
                         f"Completed {completed}/{total_work}: {row['red_fighter_name']} vs "
                         f"{row['blue_fighter_name']} (seed {repeat_number}/{seed_repeats})."
                     )
+        if stopped_by_time_limit:
+            break
     ledgers = [pd.DataFrame(records) for records in repeat_records]
     authoritative = ledgers[0]
+    if authoritative.empty:
+        raise RuntimeError(
+            "posterior backtest reached its runtime budget before completing a fight"
+        )
     aggregate = evaluate_simulation_ledger(authoritative)
     high_information = authoritative.loc[
         authoritative["red_prior_ufc_fights"].ge(5)
@@ -2461,6 +2514,10 @@ def execute_posterior_backtest(
         coverage_warnings.append(
             "single_seed_low_fidelity_screen_cannot_estimate_end_to_end_simulation_noise"
         )
+    if stopped_by_time_limit:
+        coverage_warnings.append(
+            "time_bounded_partial_screen_completed_only_checkpointed_fights"
+        )
     report_body: dict[str, object] = {
         "schema_version": 1,
         "evaluation_version": "fight-sim-posterior-population-v1",
@@ -2486,6 +2543,11 @@ def execute_posterior_backtest(
             "seed_repeats": seed_repeats,
             "min_training_fights": min_training_fights,
             "random_seed": random_seed,
+            "use_takedown_control_association": bool(
+                use_takedown_control_association
+            ),
+            "parameter_model": parameter_model,
+            "max_runtime_seconds": max_runtime_seconds,
             "workers": workers,
             "chunk_size": chunk_size,
             "simulator_config": simulator.to_dict(),
@@ -2493,6 +2555,8 @@ def execute_posterior_backtest(
         "selection": {
             **selection_counts,
             "events": event_manifest,
+            "completed_fights": int(len(authoritative)),
+            "completed_event_cards": int(authoritative["event_id"].nunique()),
             "first_event_date": min(item["date"] for item in event_manifest),
             "last_event_date": max(item["date"] for item in event_manifest),
         },
@@ -2511,15 +2575,18 @@ def execute_posterior_backtest(
             "causal_fit_load_seconds": fit_seconds,
             "simulation_seconds": simulation_seconds,
             "checkpoint_seconds": checkpoint_seconds,
-            "simulated_fight_seed_pairs": total_work,
+            "planned_fight_seed_pairs": total_work,
+            "simulated_fight_seed_pairs": int(sum(len(frame) for frame in ledgers)),
+            "completed_fight_seed_pairs": int(sum(len(frame) for frame in ledgers)),
             "computed_fight_seed_pairs_this_invocation": simulated_pairs,
             "resumed_fight_seed_pairs": resumed_pairs,
-            "total_paths": int(total_work * paths_per_matchup),
+            "total_paths": int(sum(len(frame) for frame in ledgers) * paths_per_matchup),
             "paths_computed_this_invocation": int(
                 simulated_pairs * paths_per_matchup
             ),
             "fit_cache_hits": fit_cache_hits,
             "fit_cache_misses": fit_cache_misses,
+            "stopped_by_time_limit": stopped_by_time_limit,
         },
         "coverage_warnings": coverage_warnings,
     }

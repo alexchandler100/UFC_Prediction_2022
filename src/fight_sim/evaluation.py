@@ -569,9 +569,17 @@ def _binary_metrics(truth: Sequence[int], probability: Sequence[float]) -> dict[
     y = np.asarray(truth, dtype=int)
     p = np.clip(np.asarray(probability, dtype=float), 1e-12, 1 - 1e-12)
     if len(y) == 0:
-        return {"n": 0, "log_loss": None, "brier": None, "calibration_intercept": None, "calibration_slope": None}
+        return {
+            "n": 0,
+            "accuracy": None,
+            "log_loss": None,
+            "brier": None,
+            "calibration_intercept": None,
+            "calibration_slope": None,
+        }
     loss = float(-np.mean(y * np.log(p) + (1 - y) * np.log1p(-p)))
     brier = float(np.mean((p - y) ** 2))
+    accuracy = float(np.mean((p >= 0.5).astype(int) == y))
     intercept: float | None = None
     slope: float | None = None
     if len(np.unique(y)) == 2 and np.ptp(p) > 1e-8:
@@ -581,6 +589,7 @@ def _binary_metrics(truth: Sequence[int], probability: Sequence[float]) -> dict[
         slope = float(model.coef_[0, 0])
     return {
         "n": int(len(y)),
+        "accuracy": accuracy,
         "log_loss": loss,
         "brier": brier,
         "calibration_intercept": intercept,
@@ -763,6 +772,30 @@ def evaluate_simulation_ledger(frame: pd.DataFrame) -> dict[str, object]:
                 )
     joint_loss = _multiclass_log_loss(joint_truth, predictions)
     method_loss = _multiclass_log_loss(method_truth, method_predictions)
+    joint_top_class_accuracy = (
+        float(
+            np.mean(
+                [
+                    max(probabilities, key=probabilities.get) == actual
+                    for actual, probabilities in zip(joint_truth, predictions)
+                ]
+            )
+        )
+        if joint_truth
+        else None
+    )
+    method_top_class_accuracy = (
+        float(
+            np.mean(
+                [
+                    max(probabilities, key=probabilities.get) == actual
+                    for actual, probabilities in zip(method_truth, method_predictions)
+                ]
+            )
+        )
+        if method_truth
+        else None
+    )
     statistic_checks: dict[str, object] = {}
     for statistic in sorted(statistic_scores):
         scores = statistic_scores[statistic]
@@ -794,9 +827,11 @@ def evaluate_simulation_ledger(frame: pd.DataFrame) -> dict[str, object]:
     return {
         "n_fights": int(len(frame)),
         "primary_joint_side_method_log_loss": joint_loss,
+        "joint_side_method_top_class_accuracy": joint_top_class_accuracy,
         "winner": _binary_metrics(winner_truth, winner_probability),
         "winner_omitted_draw_or_no_contest": omitted_winner,
         "method_log_loss": method_loss,
+        "method_top_class_accuracy": method_top_class_accuracy,
         "duration_crps_seconds": (
             float(np.mean(duration_scores)) if duration_scores else None
         ),

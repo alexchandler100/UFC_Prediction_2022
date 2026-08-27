@@ -265,6 +265,13 @@ class RoundParsingTests(unittest.TestCase):
 
 
 class RoundBackfillTests(unittest.TestCase):
+    def test_backfill_rejects_runtime_budgets_over_one_hour_guardrail(self):
+        handler = DataHandler.__new__(DataHandler)
+        with self.assertRaisesRegex(ValueError, "max_runtime_seconds"):
+            handler.backfill_ufc_fight_round_stats_doubled(
+                max_fights=1, max_runtime_seconds=3301
+            )
+
     def test_persistence_preserves_attempted_bout_without_parsed_rows(self):
         first = _raw_bout("fight-1", "event-1", "2025-02-01")
         second = _raw_bout("fight-2", "event-2", "2025-01-01")

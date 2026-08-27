@@ -37,6 +37,7 @@ from .tuning import (
     validate_knockdown_observation_profile,
     validate_mechanics_holdout,
 )
+from .transition_audit import TransitionAuditConfig, execute_transition_audit
 from .upcoming import DEFAULT_PARAMETER_CACHE, execute_upcoming_card
 
 
@@ -122,7 +123,7 @@ def build_parser() -> argparse.ArgumentParser:
     backfill = commands.add_parser(
         "backfill", help="Fetch a bounded, resumable batch of UFCStats round tables"
     )
-    backfill.add_argument("--max-fights", type=_bounded_integer(1, 100), default=25)
+    backfill.add_argument("--max-fights", type=_bounded_integer(1, 1000), default=25)
     backfill.add_argument(
         "--checkpoint-every", type=_bounded_integer(1, 25), default=5
     )
@@ -135,6 +136,12 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Re-fetch already stored fights (off by default)",
     )
+    backfill.add_argument(
+        "--max-runtime-seconds",
+        type=_positive_float,
+        default=3000.0,
+        help="Checkpoint and stop before this compute budget (maximum 3300 seconds)",
+    )
 
     fit = commands.add_parser("fit", help="Fit a frozen card-bootstrap parameter ensemble")
     _input_arguments(fit)
@@ -146,6 +153,11 @@ def build_parser() -> argparse.ArgumentParser:
         "--as-of", help="Strict UTC data cutoff; defaults to the current time"
     )
     fit.add_argument("--output", default=str(DEFAULT_PARAMETER_ARTIFACT))
+    fit.add_argument(
+        "--takedown-control-association",
+        action="store_true",
+        help="Fit the research-only conditional TD/CTRL retention candidate",
+    )
 
     run = commands.add_parser(
         "run", help="Run an adaptive nested simulation for two stable fighter IDs"
@@ -328,6 +340,20 @@ def build_parser() -> argparse.ArgumentParser:
         help="Disable reuse of materialized causal event-cutoff fits",
     )
     posterior.add_argument(
+        "--takedown-control-association",
+        action="store_true",
+        help=(
+            "Research-only fit using strongly pooled same-round TD/CTRL "
+            "associations for ground retention and escape"
+        ),
+    )
+    posterior.add_argument(
+        "--max-runtime-seconds",
+        type=_positive_float,
+        default=3300.0,
+        help="Checkpoint complete fights and stop (maximum 3300 seconds)",
+    )
+    posterior.add_argument(
         "--output-dir",
         default=str(DEFAULT_ARTIFACT_ROOT / "posterior-backtest-recent"),
     )
@@ -507,6 +533,45 @@ def build_parser() -> argparse.ArgumentParser:
         ),
     )
 
+    transitions = commands.add_parser(
+        "transition-audit",
+        help=(
+            "Test strongly pooled fighter-specific KD/TD same-round associations "
+            "on a locked chronological holdout"
+        ),
+    )
+    transitions.add_argument("--round-stats", default=str(DEFAULT_ROUND_STATS))
+    transitions.add_argument(
+        "--holdout-latest-events", type=_bounded_integer(1, 99), default=5
+    )
+    transitions.add_argument(
+        "--context-prior-opportunities", type=_positive_float, default=25.0
+    )
+    transitions.add_argument(
+        "--fighter-prior-opportunities", type=_positive_float, default=12.0
+    )
+    transitions.add_argument(
+        "--bootstrap-replicates", type=_bounded_integer(100, 10000), default=2000
+    )
+    transitions.add_argument("--random-seed", type=int, default=41041)
+    transitions.add_argument(
+        "--max-runtime-seconds",
+        type=_positive_float,
+        default=3000.0,
+        help="Hard audit budget (maximum 3300 seconds)",
+    )
+    transitions.add_argument(
+        "--as-of", help="Strict UTC source cutoff; rows on/after it are excluded"
+    )
+    transitions.add_argument(
+        "--output",
+        default=str(DEFAULT_ARTIFACT_ROOT / "transition-audit.json"),
+    )
+    transitions.add_argument(
+        "--predictions-output",
+        default=str(DEFAULT_ARTIFACT_ROOT / "transition-audit-predictions.csv"),
+    )
+
     replay = commands.add_parser(
         "replay", help="Verify a stored trace or regenerate one from spec plus index"
     )
@@ -584,11 +649,14 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
     try:
         if args.command == "backfill":
+            if args.max_runtime_seconds > 3300:
+                raise ValueError("max-runtime-seconds must not exceed 3300")
             result = execute_backfill(
                 max_fights=args.max_fights,
                 checkpoint_every=args.checkpoint_every,
                 summary_output=args.summary_output,
                 refresh_existing=args.refresh_existing,
+                max_runtime_seconds=args.max_runtime_seconds,
             )
             _print(result)
         elif args.command == "fit":
@@ -600,6 +668,9 @@ def main(argv: list[str] | None = None) -> int:
                 as_of=args.as_of,
                 bootstrap_members=args.bootstrap_members,
                 random_seed=args.random_seed,
+                use_takedown_control_association=(
+                    args.takedown_control_association
+                ),
             )
             _print(
                 {
@@ -684,6 +755,8 @@ def main(argv: list[str] | None = None) -> int:
                 }
             )
         elif args.command == "posterior-backtest":
+            if args.max_runtime_seconds > 3300:
+                raise ValueError("max-runtime-seconds must not exceed 3300")
             if args.quick_screen:
                 last_events = 5
                 bootstrap_members = 16
@@ -730,14 +803,22 @@ def main(argv: list[str] | None = None) -> int:
                 fidelity=fidelity,
                 progress=lambda message: print(message, file=sys.stderr, flush=True),
                 simulator_config=_load_simulator_config(args.simulator_config),
+                use_takedown_control_association=(
+                    args.takedown_control_association
+                ),
+                max_runtime_seconds=args.max_runtime_seconds,
             )
             _print(
                 {
                     "eligible_fights": report["selection"]["eligible_fights"],
+                    "completed_fights": report["selection"]["completed_fights"],
                     "elapsed_seconds": report["runtime"]["elapsed_seconds"],
                     "output_dir": str(destination.resolve()),
                     "report_sha256": report["report_sha256"],
                     "total_paths": report["runtime"]["total_paths"],
+                    "stopped_by_time_limit": report["runtime"][
+                        "stopped_by_time_limit"
+                    ],
                 }
             )
         elif args.command == "upcoming-card":
@@ -876,6 +957,35 @@ def main(argv: list[str] | None = None) -> int:
                     "output": str(Path(args.output).resolve()),
                     "validation_sha256": validation["validation_sha256"],
                     "validation_status": validation["validation_status"],
+                }
+            )
+        elif args.command == "transition-audit":
+            if args.max_runtime_seconds > 3300:
+                raise ValueError("max-runtime-seconds must not exceed 3300")
+            report, report_path, predictions_path = execute_transition_audit(
+                round_path=args.round_stats,
+                output=args.output,
+                predictions_output=args.predictions_output,
+                config=TransitionAuditConfig(
+                    holdout_latest_events=args.holdout_latest_events,
+                    context_prior_opportunities=args.context_prior_opportunities,
+                    fighter_prior_opportunities=args.fighter_prior_opportunities,
+                    bootstrap_replicates=args.bootstrap_replicates,
+                    random_seed=args.random_seed,
+                    max_runtime_seconds=args.max_runtime_seconds,
+                    as_of=args.as_of,
+                ),
+            )
+            _print(
+                {
+                    "output": str(report_path.resolve()),
+                    "predictions_output": str(predictions_path.resolve()),
+                    "report_sha256": report["report_sha256"],
+                    "retained_targets": [
+                        name
+                        for name, result in report["targets"].items()
+                        if result.get("candidate_retained")
+                    ],
                 }
             )
         elif args.command == "replay":

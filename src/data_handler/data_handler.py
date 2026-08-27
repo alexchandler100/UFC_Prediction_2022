@@ -10,6 +10,7 @@ import re
 import numpy as np
 from pathlib import Path
 import tempfile
+import time
 
 # local imports
 from fight_stat_helpers import (
@@ -557,6 +558,7 @@ class DataHandler:
         *,
         checkpoint_every=10,
         refresh_existing=False,
+        max_runtime_seconds=3000.0,
     ):
         """Fetch a bounded, resumable set of historical fight-detail pages.
 
@@ -574,6 +576,14 @@ class DataHandler:
             or checkpoint_every < 1
         ):
             raise ValueError('checkpoint_every must be a positive integer')
+        if (
+            isinstance(max_runtime_seconds, bool)
+            or not isinstance(max_runtime_seconds, (int, float))
+            or not 0 < float(max_runtime_seconds) <= 3300
+        ):
+            raise ValueError('max_runtime_seconds must be in (0, 3300]')
+        started_at = time.monotonic()
+        deadline = started_at + float(max_runtime_seconds)
 
         raw = self.get('ufc_fights_reported_doubled')
         required_raw = {'fight_url', 'fighter_url', 'fighter', 'opponent'}
@@ -616,6 +626,7 @@ class DataHandler:
         pending_rows = []
         pending_issues = []
         pending_ids = set()
+        stopped_by_time_limit = False
 
         def checkpoint():
             if not pending_ids:
@@ -632,6 +643,9 @@ class DataHandler:
             pending_ids.clear()
 
         for candidate in candidates.to_dict('records'):
+            if time.monotonic() >= deadline:
+                stopped_by_time_limit = True
+                break
             attempted += 1
             fight_url = str(candidate['fight_url'])
             fight_id = round_ufcstats_identity(fight_url)
@@ -707,6 +721,8 @@ class DataHandler:
             remaining_fights=remaining,
             saved_round_rows=saved_rows,
             reconciliation_issues=issue_count,
+            elapsed_seconds=round(time.monotonic() - started_at, 3),
+            stopped_by_time_limit=stopped_by_time_limit,
         )
         print(
             'Round backfill: '

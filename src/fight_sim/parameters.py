@@ -34,6 +34,12 @@ from fight_semantics import method_bucket
 
 PARAMETER_SCHEMA_VERSION = 3
 PARAMETER_MODEL_VERSION = "fight-sim-empirical-bayes-card-bootstrap-v3"
+TAKEDOWN_CONTROL_PARAMETER_MODEL_VERSION = (
+    "fight-sim-empirical-bayes-card-bootstrap-v3+td-control-association-v1"
+)
+TAKEDOWN_CONTROL_GLOBAL_PRIOR_OPPORTUNITIES = 25.0
+TAKEDOWN_CONTROL_CONTEXT_PRIOR_OPPORTUNITIES = 25.0
+TAKEDOWN_CONTROL_FIGHTER_PRIOR_OPPORTUNITIES = 12.0
 LEGACY_PARAMETER_SCHEMAS = frozenset({2})
 PARAMETER_STORAGE_FORMAT = "fight-sim.parameter-ensemble"
 PARAMETER_STORAGE_VERSION = 1
@@ -123,6 +129,12 @@ _FIT_ROUND_COLUMNS = (
     "sig_strikes_attempts",
     "reconciliation_status",
     "_fit_eligible",
+)
+
+_TAKEDOWN_CONTROL_ROUND_COLUMNS = (
+    "division",
+    "takedowns_landed",
+    "control",
 )
 
 
@@ -323,6 +335,7 @@ class ParameterEnsembleArtifact:
             raise ValueError("unsupported simulation parameter schema")
         supported_models = {
             PARAMETER_MODEL_VERSION,
+            TAKEDOWN_CONTROL_PARAMETER_MODEL_VERSION,
             "fight-sim-empirical-bayes-card-bootstrap-v2",
         }
         if self.model_version not in supported_models:
@@ -447,6 +460,7 @@ class ParameterArtifactInspection:
             raise ValueError("unsupported simulation parameter schema")
         if self.model_version not in {
             PARAMETER_MODEL_VERSION,
+            TAKEDOWN_CONTROL_PARAMETER_MODEL_VERSION,
             "fight-sim-empirical-bayes-card-bootstrap-v2",
         }:
             raise ValueError("unsupported simulation parameter model")
@@ -649,7 +663,15 @@ def _decode_frame(value: Mapping[str, object]) -> pd.DataFrame:
             series = pd.Series(pd.to_datetime(array.copy(), utc=True))
         elif kind == "bool":
             array = np.frombuffer(_decode_binary(column["data"]), dtype=np.uint8)
-            series = pd.Series(array.astype(bool, copy=True))
+            decoded = array.astype(bool, copy=True)
+            series = pd.Series(
+                decoded,
+                dtype=(
+                    "boolean"
+                    if str(column.get("dtype", "bool")).startswith("boolean")
+                    else bool
+                ),
+            )
         elif kind == "numeric":
             dtype = np.dtype(str(column["dtype"]))
             array = np.frombuffer(_decode_binary(column["data"]), dtype=dtype)
@@ -792,6 +814,9 @@ def _encode_fit_recipe(
         "allow_legacy_unreconciled_rounds": bool(
             inputs["allow_legacy_unreconciled_rounds"]
         ),
+        "use_takedown_control_association": bool(
+            inputs.get("use_takedown_control_association", False)
+        ),
     }
     body = {
         "storage_format": PARAMETER_STORAGE_FORMAT,
@@ -820,6 +845,9 @@ def _decode_fit_recipe(value: Mapping[str, object]) -> ParameterEnsembleArtifact
     fitter.round_stats = _decode_frame(dict(inputs["rounds"]))
     fitter.allow_legacy_unreconciled_rounds = bool(
         inputs.get("allow_legacy_unreconciled_rounds", False)
+    )
+    fitter.use_takedown_control_association = bool(
+        inputs.get("use_takedown_control_association", False)
     )
     artifact = fitter.fit(
         metadata["as_of_utc"],
@@ -1105,15 +1133,35 @@ class CausalParameterFitter:
         round_stats: pd.DataFrame | None = None,
         *,
         allow_legacy_unreconciled_rounds: bool = False,
+        use_takedown_control_association: bool = False,
     ) -> None:
         self.raw_fights = self._normalize_fights(raw_fights)
         self.fighter_profiles = self._normalize_profiles(fighter_profiles)
         self.allow_legacy_unreconciled_rounds = bool(
             allow_legacy_unreconciled_rounds
         )
+        self.use_takedown_control_association = bool(
+            use_takedown_control_association
+        )
         self.round_stats = self._normalize_rounds(
             round_stats,
             allow_legacy_unreconciled_rounds=self.allow_legacy_unreconciled_rounds,
+        )
+
+    @property
+    def parameter_model_version(self) -> str:
+        return (
+            TAKEDOWN_CONTROL_PARAMETER_MODEL_VERSION
+            if self.use_takedown_control_association
+            else PARAMETER_MODEL_VERSION
+        )
+
+    @property
+    def fit_round_columns(self) -> tuple[str, ...]:
+        return (
+            (*_FIT_ROUND_COLUMNS, *_TAKEDOWN_CONTROL_ROUND_COLUMNS)
+            if self.use_takedown_control_association
+            else _FIT_ROUND_COLUMNS
         )
 
     @staticmethod
@@ -1932,6 +1980,141 @@ class CausalParameterFitter:
                 )
         return output
 
+    def _takedown_control_sufficient(
+        self,
+        rounds: pd.DataFrame,
+        event_weights: Mapping[str, int],
+        config: ParameterFitConfig,
+    ) -> pd.DataFrame:
+        """Return additive, interval-censored TD-round control associations.
+
+        UFCStats does not expose exact action order or top/bottom position.
+        Each qualifying fighter-round is therefore one same-round opportunity,
+        and its response is credited CTRL divided by observed round exposure.
+        The mirrored opponent row supplies control conceded after an opponent
+        takedown. These are candidate predictors, not claimed causal counts.
+        """
+
+        columns = (
+            "fighter_id",
+            "division",
+            "era",
+            "td_control_share_sum",
+            "td_control_opportunities",
+            "opp_td_control_share_sum",
+            "opp_td_control_opportunities",
+        )
+        if rounds.empty:
+            return pd.DataFrame(columns=columns)
+        required = {
+            "fight_id",
+            "event_id",
+            "fighter_id",
+            "opponent_id",
+            "date",
+            "round_number",
+            "round_seconds",
+            "division",
+            "takedowns_landed",
+            "control",
+        }
+        if required - set(rounds.columns):
+            return pd.DataFrame(columns=columns)
+        frame = rounds.copy()
+        frame["_weight"] = frame["event_id"].map(event_weights).fillna(0).astype(float)
+        for name in ("round_seconds", "takedowns_landed", "control"):
+            frame[name] = pd.to_numeric(frame[name], errors="coerce")
+        frame = frame.loc[frame["_weight"].gt(0)].copy()
+        if frame.empty:
+            return pd.DataFrame(columns=columns)
+        opponent = frame[
+            [
+                "fight_id",
+                "round_number",
+                "fighter_id",
+                "round_seconds",
+                "takedowns_landed",
+                "control",
+            ]
+        ].rename(
+            columns={
+                "fighter_id": "opponent_id_join",
+                "round_seconds": "opponent_round_seconds",
+                "takedowns_landed": "opponent_takedowns_landed",
+                "control": "opponent_control",
+            }
+        )
+        frame = frame.merge(
+            opponent,
+            left_on=["fight_id", "round_number", "opponent_id"],
+            right_on=["fight_id", "round_number", "opponent_id_join"],
+            how="left",
+            validate="one_to_one",
+        )
+        frame["era"] = frame["date"].map(
+            lambda value: self._era_key(pd.Timestamp(value), config.era_years)
+        )
+        own_valid = (
+            frame["takedowns_landed"].gt(0)
+            & frame["control"].notna()
+            & frame["round_seconds"].gt(0)
+        )
+        opponent_valid = (
+            frame["opponent_takedowns_landed"].gt(0)
+            & frame["opponent_control"].notna()
+            & frame["opponent_round_seconds"].gt(0)
+        )
+        frame["td_control_opportunities"] = np.where(
+            own_valid, frame["_weight"], 0.0
+        )
+        frame["td_control_share_sum"] = np.where(
+            own_valid,
+            np.clip(frame["control"] / frame["round_seconds"], 0.0, 1.0)
+            * frame["_weight"],
+            0.0,
+        )
+        frame["opp_td_control_opportunities"] = np.where(
+            opponent_valid, frame["_weight"], 0.0
+        )
+        frame["opp_td_control_share_sum"] = np.where(
+            opponent_valid,
+            np.clip(
+                frame["opponent_control"] / frame["opponent_round_seconds"],
+                0.0,
+                1.0,
+            )
+            * frame["_weight"],
+            0.0,
+        )
+        return frame.loc[:, columns]
+
+    @staticmethod
+    def _apply_takedown_control_association(
+        parameters: Mapping[str, float],
+        stats: Mapping[str, float],
+        prior: Mapping[str, float],
+        prior_opportunities: float,
+    ) -> dict[str, float]:
+        result = dict(parameters)
+        own_opportunities = max(float(stats.get("td_control_opportunities", 0.0)), 0.0)
+        own_sum = float(stats.get("td_control_share_sum", 0.0))
+        conceded_opportunities = max(
+            float(stats.get("opp_td_control_opportunities", 0.0)), 0.0
+        )
+        conceded_sum = float(stats.get("opp_td_control_share_sum", 0.0))
+        result["ground_control_rate"] = _clip(
+            (own_sum + prior_opportunities * prior["ground_control_rate"])
+            / (own_opportunities + prior_opportunities),
+            0.0,
+            1.0,
+        )
+        conceded_prior = 1.0 - prior["escape_rate"]
+        conceded_share = (
+            conceded_sum + prior_opportunities * conceded_prior
+        ) / (conceded_opportunities + prior_opportunities)
+        result["escape_rate"] = _clip(1.0 - conceded_share, 0.0, 1.0)
+        return result
+
     def _fit_member(
         self,
         member_index: int,
@@ -1950,6 +2133,9 @@ class CausalParameterFitter:
         rows = self._attach_age(rows)
         covariates = self._fit_covariate_effects(rows)
         sufficient = self._sufficient_rows(rows)
+        control_sufficient = self._takedown_control_sufficient(
+            rounds, weights, config
+        )
         sufficient_names = [
             column
             for column in sufficient.columns
@@ -1966,6 +2152,22 @@ class CausalParameterFitter:
             prior_scale=0.25,
             update_weak_mechanics=True,
         )
+        if self.use_takedown_control_association and not control_sufficient.empty:
+            global_control = {
+                name: float(control_sufficient[name].sum())
+                for name in (
+                    "td_control_share_sum",
+                    "td_control_opportunities",
+                    "opp_td_control_share_sum",
+                    "opp_td_control_opportunities",
+                )
+            }
+            global_parameters = self._apply_takedown_control_association(
+                global_parameters,
+                global_control,
+                global_parameters,
+                TAKEDOWN_CONTROL_GLOBAL_PRIOR_OPPORTUNITIES,
+            )
         pace_by_fighter = self._pace_decay_by_fighter(
             rounds, weights, global_parameters["pace_decay"]
         )
@@ -1982,6 +2184,26 @@ class CausalParameterFitter:
                 prior_scale=config.division_prior_fights / config.rate_prior_fights,
                 update_weak_mechanics=True,
             )
+            if self.use_takedown_control_association and not control_sufficient.empty:
+                matching_control = control_sufficient.loc[
+                    control_sufficient["division"].astype(str).eq(str(division))
+                    & control_sufficient["era"].astype(str).eq(str(era))
+                ]
+                control_stats = {
+                    name: float(matching_control[name].sum())
+                    for name in (
+                        "td_control_share_sum",
+                        "td_control_opportunities",
+                        "opp_td_control_share_sum",
+                        "opp_td_control_opportunities",
+                    )
+                }
+                contexts[context_key] = self._apply_takedown_control_association(
+                    contexts[context_key],
+                    control_stats,
+                    global_parameters,
+                    TAKEDOWN_CONTROL_CONTEXT_PRIOR_OPPORTUNITIES,
+                )
 
         current_era = self._era_key(cutoff, config.era_years)
         fighters: dict[str, dict[str, float]] = {}
@@ -2010,6 +2232,25 @@ class CausalParameterFitter:
                 config,
                 pace_decay=pace_by_fighter.get(str(fighter_id), prior["pace_decay"]),
             )
+            if self.use_takedown_control_association and not control_sufficient.empty:
+                matching_control = control_sufficient.loc[
+                    control_sufficient["fighter_id"].astype(str).eq(str(fighter_id))
+                ]
+                control_stats = {
+                    name: float(matching_control[name].sum())
+                    for name in (
+                        "td_control_share_sum",
+                        "td_control_opportunities",
+                        "opp_td_control_share_sum",
+                        "opp_td_control_opportunities",
+                    )
+                }
+                fighters[str(fighter_id)] = self._apply_takedown_control_association(
+                    fighters[str(fighter_id)],
+                    control_stats,
+                    prior,
+                    TAKEDOWN_CONTROL_FIGHTER_PRIOR_OPPORTUNITIES,
+                )
         return BootstrapParameterMember(
             member_index=member_index,
             bootstrap_seed=seed,
@@ -2058,7 +2299,7 @@ class CausalParameterFitter:
             "rounds": (
                 None
                 if rounds.empty
-                else _frame_sha256(rounds.loc[:, _FIT_ROUND_COLUMNS])
+                else _frame_sha256(rounds.loc[:, self.fit_round_columns])
             ),
             "profiles": (
                 None
@@ -2066,6 +2307,9 @@ class CausalParameterFitter:
                 else _frame_sha256(causal_profiles)
             ),
             "strictly_before": cutoff.isoformat(),
+            "use_takedown_control_association": (
+                self.use_takedown_control_association
+            ),
         }
         input_hash = canonical_sha256(source_parts)
         seed_sequence = np.random.SeedSequence(config.random_seed)
@@ -2088,7 +2332,7 @@ class CausalParameterFitter:
         )
         body: dict[str, object] = {
             "schema_version": PARAMETER_SCHEMA_VERSION,
-            "model_version": PARAMETER_MODEL_VERSION,
+            "model_version": self.parameter_model_version,
             "as_of_utc": cutoff.isoformat(),
             "trained_through": fights["date"].max().date().isoformat(),
             "input_sha256": input_hash,
@@ -2104,7 +2348,7 @@ class CausalParameterFitter:
         content.pop("created_at_utc")
         artifact = ParameterEnsembleArtifact(
             schema_version=PARAMETER_SCHEMA_VERSION,
-            model_version=PARAMETER_MODEL_VERSION,
+            model_version=self.parameter_model_version,
             as_of_utc=cutoff.isoformat(),
             trained_through=str(body["trained_through"]),
             input_sha256=input_hash,
@@ -2129,13 +2373,16 @@ class CausalParameterFitter:
             {
                 "fights": fights.loc[:, _FIT_FIGHT_COLUMNS].copy(),
                 "rounds": self.round_stats.loc[
-                    self.round_stats["date"].lt(cutoff), _FIT_ROUND_COLUMNS
+                    self.round_stats["date"].lt(cutoff), self.fit_round_columns
                 ].copy()
                 if not self.round_stats.empty
                 else self.round_stats.copy(),
                 "profiles": causal_profiles.set_index("fighter_id", drop=False),
                 "allow_legacy_unreconciled_rounds": (
                     self.allow_legacy_unreconciled_rounds
+                ),
+                "use_takedown_control_association": (
+                    self.use_takedown_control_association
                 ),
             },
         )
