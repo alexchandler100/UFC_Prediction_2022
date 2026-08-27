@@ -13,6 +13,7 @@ from .research import (
     DEFAULT_FIGHTER_PROFILES,
     DEFAULT_PARAMETER_ARTIFACT,
     DEFAULT_POINT_IN_TIME,
+    DEFAULT_POSTERIOR_FIT_CACHE,
     DEFAULT_RAW_FIGHTS,
     DEFAULT_ROUND_STATS,
     NonConvergedSimulationError,
@@ -27,6 +28,7 @@ from .research import (
     execute_run,
 )
 from .posterior_predictive import validate_completed_fight, write_validation_report
+from .performance import execute_benchmark
 from .tuning import (
     derive_mechanics_profile,
     select_finish_profile,
@@ -34,7 +36,7 @@ from .tuning import (
     validate_finish_profile,
     validate_mechanics_holdout,
 )
-from .upcoming import execute_upcoming_card
+from .upcoming import DEFAULT_PARAMETER_CACHE, execute_upcoming_card
 
 
 def _bounded_integer(lower: int, upper: int):
@@ -69,6 +71,16 @@ def _nonnegative_float(value: str) -> float:
         raise argparse.ArgumentTypeError("must be a number") from error
     if parsed < 0:
         raise argparse.ArgumentTypeError("must be nonnegative")
+    return parsed
+
+
+def _worker_counts(value: str) -> tuple[int, ...]:
+    try:
+        parsed = tuple(dict.fromkeys(int(item.strip()) for item in value.split(",")))
+    except ValueError as error:
+        raise argparse.ArgumentTypeError("must be comma-separated integers") from error
+    if not parsed or any(item < 1 or item > 64 for item in parsed):
+        raise argparse.ArgumentTypeError("worker counts must be between 1 and 64")
     return parsed
 
 
@@ -271,7 +283,7 @@ def build_parser() -> argparse.ArgumentParser:
     posterior.add_argument(
         "--paths-per-matchup", type=_bounded_integer(1, 16384), default=4096
     )
-    posterior.add_argument("--seed-repeats", type=_bounded_integer(2, 4), default=2)
+    posterior.add_argument("--seed-repeats", type=_bounded_integer(1, 4), default=2)
     posterior.add_argument(
         "--min-training-fights", type=_bounded_integer(1, 100000), default=500
     )
@@ -282,6 +294,38 @@ def build_parser() -> argparse.ArgumentParser:
     )
     posterior.add_argument("--workers", type=_bounded_integer(1, 64), default=1)
     posterior.add_argument("--chunk-size", type=_bounded_integer(1, 4096), default=64)
+    fidelity = posterior.add_mutually_exclusive_group()
+    fidelity.add_argument(
+        "--quick-screen",
+        action="store_true",
+        help=(
+            "Use 5 events, 16 members, 512 total paths/matchup, and one seed; "
+            "screening output cannot serve as final validation or promotion evidence"
+        ),
+    )
+    fidelity.add_argument(
+        "--confirmation-screen",
+        action="store_true",
+        help=(
+            "Use 15 events, 32 members, 2,048 total paths/matchup, and one seed "
+            "for survivors from the quick screen"
+        ),
+    )
+    posterior.add_argument(
+        "--resume",
+        action="store_true",
+        help="Resume atomically checkpointed fight/seed pairs in the output directory",
+    )
+    posterior.add_argument(
+        "--fit-cache-dir",
+        default=str(DEFAULT_POSTERIOR_FIT_CACHE),
+        help="Shared ignored cache for materialized causal event-cutoff fits",
+    )
+    posterior.add_argument(
+        "--no-fit-cache",
+        action="store_true",
+        help="Disable reuse of materialized causal event-cutoff fits",
+    )
     posterior.add_argument(
         "--output-dir",
         default=str(DEFAULT_ARTIFACT_ROOT / "posterior-backtest-recent"),
@@ -312,6 +356,14 @@ def build_parser() -> argparse.ArgumentParser:
     upcoming.add_argument(
         "--parameter-artifact",
         help="Reuse a validated same-card pre-event artifact when no fights were added",
+    )
+    upcoming.add_argument(
+        "--parameter-cache-dir",
+        default=str(DEFAULT_PARAMETER_CACHE),
+        help=(
+            "Ignored content-addressed materialized cache; defaults beneath "
+            "artifacts/simulations"
+        ),
     )
     upcoming.add_argument(
         "--minimum-prior-ufc-fights", type=_bounded_integer(0, 100), default=3
@@ -461,6 +513,19 @@ def build_parser() -> argparse.ArgumentParser:
     analyze.add_argument("--output")
     analyze.add_argument("--title")
 
+    benchmark = commands.add_parser(
+        "benchmark",
+        help="Measure deterministic bulk-simulation throughput across worker counts",
+    )
+    benchmark.add_argument("specs", help="Run specs.json or a single run-spec JSON")
+    benchmark.add_argument(
+        "--paths-per-member", type=_bounded_integer(1, 65536), default=128
+    )
+    benchmark.add_argument("--workers", type=_worker_counts, default=(1, 2, 4))
+    benchmark.add_argument("--chunk-size", type=_bounded_integer(1, 4096), default=64)
+    benchmark.add_argument("--repeats", type=_bounded_integer(1, 10), default=1)
+    benchmark.add_argument("--output")
+
     validate_fight = commands.add_parser(
         "validate-fight",
         help="Compare one completed run with observed UFCStats bout totals",
@@ -591,21 +656,50 @@ def main(argv: list[str] | None = None) -> int:
                 }
             )
         elif args.command == "posterior-backtest":
+            if args.quick_screen:
+                last_events = 5
+                bootstrap_members = 16
+                paths_per_matchup = 512
+                seed_repeats = 1
+                fidelity = "screen"
+            elif args.confirmation_screen:
+                last_events = 15
+                bootstrap_members = 32
+                paths_per_matchup = 2048
+                seed_repeats = 1
+                fidelity = "confirm"
+            else:
+                last_events = args.last_events
+                bootstrap_members = args.bootstrap_members
+                paths_per_matchup = args.paths_per_matchup
+                seed_repeats = args.seed_repeats
+                fidelity = (
+                    "final"
+                    if (
+                        bootstrap_members == 64
+                        and paths_per_matchup == 4096
+                        and seed_repeats >= 2
+                    )
+                    else "custom"
+                )
             destination, report = execute_posterior_backtest(
                 raw_path=args.raw,
                 profiles_path=args.profiles,
                 round_path=args.round_stats,
                 output_dir=args.output_dir,
-                last_events=args.last_events,
+                last_events=last_events,
                 skip_latest_events=args.skip_latest_events,
                 min_prior_ufc_fights=args.min_prior_ufc_fights,
-                bootstrap_members=args.bootstrap_members,
-                paths_per_matchup=args.paths_per_matchup,
-                seed_repeats=args.seed_repeats,
+                bootstrap_members=bootstrap_members,
+                paths_per_matchup=paths_per_matchup,
+                seed_repeats=seed_repeats,
                 min_training_fights=args.min_training_fights,
                 random_seed=args.random_seed,
                 workers=args.workers,
                 chunk_size=args.chunk_size,
+                resume=args.resume,
+                fit_cache_dir=(None if args.no_fit_cache else args.fit_cache_dir),
+                fidelity=fidelity,
                 progress=lambda message: print(message, file=sys.stderr, flush=True),
                 simulator_config=_load_simulator_config(args.simulator_config),
             )
@@ -636,6 +730,7 @@ def main(argv: list[str] | None = None) -> int:
                 chunk_size=args.chunk_size,
                 simulator_config=_load_simulator_config(args.simulator_config),
                 parameter_artifact_path=args.parameter_artifact,
+                parameter_cache_dir=args.parameter_cache_dir,
                 progress=lambda message: print(message, file=sys.stderr, flush=True),
             )
             _print(
@@ -760,6 +855,16 @@ def main(argv: list[str] | None = None) -> int:
         elif args.command == "analyze":
             output = execute_analyze(args.input, output=args.output, title=args.title)
             _print({"output": str(output)})
+        elif args.command == "benchmark":
+            benchmark = execute_benchmark(
+                args.specs,
+                paths_per_member=args.paths_per_member,
+                worker_counts=args.workers,
+                chunk_size=args.chunk_size,
+                repeats=args.repeats,
+                output=args.output,
+            )
+            _print(benchmark)
         elif args.command == "validate-fight":
             run = Path(args.run)
             report = validate_completed_fight(

@@ -43,6 +43,7 @@ from fight_sim.research import (  # noqa: E402
     attach_chronological_model_baselines,
     attach_timestamped_market_baselines,
     causal_joint_baseline_forecasts,
+    execute_posterior_backtest,
     physical_backtest_frame,
 )
 from market_tracker import (  # noqa: E402
@@ -203,6 +204,64 @@ def _forecast(matchup_id: str, red_count: int, blue_count: int) -> dict[str, obj
 
 
 class FightSimulationResearchTests(unittest.TestCase):
+    def test_posterior_backtest_resumes_per_fight_and_reuses_shared_fit_cache(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            raw_path = root / "raw.csv"
+            profiles_path = root / "profiles.csv"
+            missing_rounds = root / "rounds-missing.csv"
+            cache = root / "fit-cache"
+            _raw().to_csv(raw_path, index=False)
+            _profiles().to_csv(profiles_path, index=False)
+
+            common = {
+                "raw_path": raw_path,
+                "profiles_path": profiles_path,
+                "round_path": missing_rounds,
+                "last_events": 1,
+                "min_prior_ufc_fights": 0,
+                "bootstrap_members": 1,
+                "paths_per_matchup": 1,
+                "seed_repeats": 1,
+                "min_training_fights": 1,
+                "workers": 1,
+                "chunk_size": 1,
+                "fit_cache_dir": cache,
+                "fidelity": "screen",
+            }
+            first_dir = root / "first"
+            _, first = execute_posterior_backtest(
+                output_dir=first_dir,
+                **common,
+            )
+            self.assertEqual(first["runtime"]["fit_cache_misses"], 1)
+            self.assertEqual(
+                first["runtime"]["computed_fight_seed_pairs_this_invocation"],
+                1,
+            )
+
+            _, resumed = execute_posterior_backtest(
+                output_dir=first_dir,
+                resume=True,
+                **common,
+            )
+            self.assertEqual(resumed["runtime"]["resumed_fight_seed_pairs"], 1)
+            self.assertEqual(
+                resumed["runtime"]["computed_fight_seed_pairs_this_invocation"],
+                0,
+            )
+            self.assertEqual(resumed["runtime"]["simulation_seconds"], 0.0)
+
+            _, cached = execute_posterior_backtest(
+                output_dir=root / "second",
+                **common,
+            )
+            self.assertEqual(cached["runtime"]["fit_cache_hits"], 1)
+            self.assertEqual(cached["runtime"]["fit_cache_misses"], 0)
+            self.assertEqual(
+                cached["aggregate"], first["aggregate"]
+            )
+
     def test_recent_event_selection_keeps_whole_cards_then_excludes_low_exposure(self):
         physical = pd.DataFrame(
             [

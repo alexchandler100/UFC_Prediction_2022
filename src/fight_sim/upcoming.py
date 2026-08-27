@@ -26,13 +26,15 @@ from .monte_carlo import run_adaptive_nested
 from .parameters import (
     CausalParameterFitter,
     ParameterFitConfig,
+    cache_materialized_parameter_artifact,
     canonical_json,
     canonical_sha256,
-    load_parameter_artifact,
+    load_parameter_artifact_cached,
     save_parameter_artifact,
 )
 from .publication import compact_shadow_aggregate
 from .research import (
+    DEFAULT_ARTIFACT_ROOT,
     DEFAULT_FIGHTER_PROFILES,
     DEFAULT_RAW_FIGHTS,
     DEFAULT_ROUND_STATS,
@@ -44,6 +46,7 @@ from .research import (
 
 UPCOMING_WEBSITE_SCHEMA_VERSION = 1
 UPCOMING_WEBSITE_MODEL_VERSION = "candidate-fight-sim-card-v1"
+DEFAULT_PARAMETER_CACHE = DEFAULT_ARTIFACT_ROOT / "parameter-materialized-cache"
 AVAILABLE = "available"
 WITHHELD_HISTORY = "withheld_insufficient_history"
 WITHHELD_NONCONVERGED = "withheld_nonconverged"
@@ -259,6 +262,7 @@ def execute_upcoming_card(
     chunk_size: int = 64,
     simulator_config: SimulatorConfig | None = None,
     parameter_artifact_path: str | Path | None = None,
+    parameter_cache_dir: str | Path = DEFAULT_PARAMETER_CACHE,
     issued_at_utc: object | None = None,
     progress: Callable[[str], None] | None = None,
 ) -> tuple[Path, dict[str, object]]:
@@ -307,8 +311,11 @@ def execute_upcoming_card(
             ),
             created_at_utc=issued,
         )
+        cache_materialized_parameter_artifact(artifact, parameter_cache_dir)
     else:
-        artifact = load_parameter_artifact(parameter_artifact_path)
+        artifact, parameter_cache_hit, _ = load_parameter_artifact_cached(
+            parameter_artifact_path, parameter_cache_dir
+        )
         artifact.validate()
         if len(artifact.members) != bootstrap_members:
             raise ValueError("reused parameter artifact bootstrap member count disagrees")
@@ -322,7 +329,8 @@ def execute_upcoming_card(
             )
         if progress:
             progress(
-                f"Reusing validated {bootstrap_members}-member pre-event artifact for "
+                f"Reusing validated {bootstrap_members}-member pre-event artifact "
+                f"({'materialized cache' if parameter_cache_hit else 'newly materialized'}) for "
                 f"{len(matchups)} card matchups."
             )
     save_parameter_artifact(destination / "parameter_model.json.gz", artifact)

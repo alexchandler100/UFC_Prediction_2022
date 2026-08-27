@@ -953,18 +953,32 @@ def inspect_parameter_artifact(path: str | Path) -> ParameterArtifactInspection:
 
 
 def save_parameter_artifact(
-    path: str | Path, artifact: ParameterEnsembleArtifact
+    path: str | Path,
+    artifact: ParameterEnsembleArtifact,
+    *,
+    materialized: bool = False,
 ) -> None:
-    """Atomically save an exact, versioned artifact in deterministic bytes."""
+    """Atomically save an exact, versioned artifact in deterministic bytes.
+
+    Normal published artifacts retain the compact self-contained fit recipe so
+    their causal inputs remain independently auditable.  Ignored local caches
+    can request ``materialized=True`` to store the already-fitted member
+    columns instead.  Loading that representation performs integrity checks
+    but never repeats the expensive bootstrap fit.
+    """
 
     artifact.validate()
     destination = Path(path)
     destination.parent.mkdir(parents=True, exist_ok=True)
     fit_inputs = getattr(artifact, "_compact_fit_inputs", None)
     physical = (
-        _encode_fit_recipe(artifact, fit_inputs)
-        if isinstance(fit_inputs, Mapping)
-        else _encode_columnar_artifact(artifact)
+        _encode_columnar_artifact(artifact)
+        if materialized
+        else (
+            _encode_fit_recipe(artifact, fit_inputs)
+            if isinstance(fit_inputs, Mapping)
+            else _encode_columnar_artifact(artifact)
+        )
     )
     payload = (canonical_json(physical) + "\n").encode("utf-8")
     if destination.suffix.casefold() == ".gz":
@@ -1003,6 +1017,51 @@ def load_parameter_artifact(path: str | Path) -> ParameterEnsembleArtifact:
     if _member_values_sha256(artifact) != inspection.members_sha256:
         raise ValueError("materialized parameter member commitment is invalid")
     return artifact
+
+
+def cache_materialized_parameter_artifact(
+    artifact: ParameterEnsembleArtifact, cache_dir: str | Path
+) -> Path:
+    """Persist a fast-loading ignored cache entry keyed by logical identity."""
+
+    artifact.validate()
+    destination = Path(cache_dir) / f"parameter-{artifact.artifact_sha256}.json.gz"
+    if destination.is_file():
+        inspection = inspect_parameter_artifact(destination)
+        if (
+            inspection.codec != "exact-columnar-v1"
+            or inspection.artifact_sha256 != artifact.artifact_sha256
+        ):
+            raise ValueError(f"materialized parameter cache is invalid: {destination}")
+        return destination
+    save_parameter_artifact(destination, artifact, materialized=True)
+    return destination
+
+
+def load_parameter_artifact_cached(
+    path: str | Path, cache_dir: str | Path
+) -> tuple[ParameterEnsembleArtifact, bool, Path]:
+    """Load through a content-addressed materialized cache.
+
+    The first access to a recipe artifact still performs its authoritative
+    deterministic reconstruction. Later accesses decode exact member columns
+    directly and return ``cache_hit=True``.
+    """
+
+    source = inspect_parameter_artifact(path)
+    cache_path = Path(cache_dir) / f"parameter-{source.artifact_sha256}.json.gz"
+    if cache_path.is_file():
+        cached = inspect_parameter_artifact(cache_path)
+        if (
+            cached.codec != "exact-columnar-v1"
+            or cached.artifact_sha256 != source.artifact_sha256
+            or cached.members_sha256 != source.members_sha256
+        ):
+            raise ValueError(f"materialized parameter cache is invalid: {cache_path}")
+        return load_parameter_artifact(cache_path), True, cache_path
+    artifact = load_parameter_artifact(path)
+    cache_materialized_parameter_artifact(artifact, cache_dir)
+    return artifact, False, cache_path
 
 
 def _ratio(successes: float, attempts: float, prior: float, strength: float) -> float:

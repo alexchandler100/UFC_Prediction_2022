@@ -114,6 +114,7 @@ class FightSimulationCliTests(unittest.TestCase):
             "reduce",
             "diff",
             "analyze",
+            "benchmark",
             "validate-fight",
             "gui",
         ):
@@ -144,6 +145,14 @@ class FightSimulationCliTests(unittest.TestCase):
         self.assertEqual(posterior.min_prior_ufc_fights, 3)
         self.assertEqual(posterior.last_events, 20)
         self.assertEqual(posterior.skip_latest_events, 0)
+        self.assertFalse(posterior.resume)
+        self.assertFalse(posterior.quick_screen)
+        screen = parser.parse_args(["posterior-backtest", "--quick-screen"])
+        self.assertTrue(screen.quick_screen)
+        benchmark = parser.parse_args(
+            ["benchmark", "specs.json", "--workers", "1,4,4,8"]
+        )
+        self.assertEqual(benchmark.workers, (1, 4, 8))
         upcoming = parser.parse_args(["upcoming-card"])
         self.assertEqual(upcoming.minimum_prior_ufc_fights, 3)
         self.assertEqual(upcoming.bootstrap_members, 200)

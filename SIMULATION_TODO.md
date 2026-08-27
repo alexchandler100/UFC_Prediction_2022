@@ -35,8 +35,10 @@ adaptive run returns, so no partial Nurmagomedov-Song forecast was published.
 
 ## Next implementation work (in order)
 
-1. Add a materialized, content-verified parameter cache so a validated
-   200-member artifact loads in under a minute without changing member values.
+1. **Completed:** content-addressed materialized parameter caches now preserve
+   exact member commitments. A newly fitted card populates the cache directly;
+   the first access to an older recipe artifact reconstructs it once and later
+   accesses decode member columns without refitting.
 2. Checkpoint the exact nested aggregate after every member-balanced adaptive
    batch. The checkpoint must include the run/spec hash, member counts, named
    RNG contract, convergence history, and aggregate hash.
@@ -55,11 +57,17 @@ adaptive run returns, so no partial Nurmagomedov-Song forecast was published.
    winner calibration, UFCStats-control versus simulated-ground-top-control
    semantics, total strike-attempt dispersion, and wide fighter parameter
    intervals. Do not tune these on the upcoming card.
+7. Prototype a compiled bulk kernel only after a supported local C++ compiler
+   or Numba toolchain is installed. Keep Python telemetry/replay authoritative,
+   require batched calls and at least a material measured speedup, and reject
+   the backend unless deterministic/reference equivalence passes. The current
+   machine has neither toolchain, so no untestable compiled path was added.
 
-## Current rerun command (before resume support exists)
+## Current rerun command (before upcoming-card resume support exists)
 
-Use a new empty output directory. This restarts the matchup simulations and the
-current compact codec still spends time re-materializing the artifact:
+Use a new empty output directory. This restarts the matchup simulations. The
+first access to the older recipe artifact also populates the shared materialized
+cache; later reruns avoid that reconstruction:
 
 ```bash
 export PYTHONPATH="$PWD/src"

@@ -463,6 +463,55 @@ python -m fight_sim posterior-backtest \
   --output-dir artifacts/simulations/posterior-recent-20
 ```
 
+Use the explicit fidelity presets while searching mechanics. They preserve the
+same causal cutoffs and deterministic seeds, but avoid spending final-run
+precision on candidates that will be discarded:
+
+```bash
+# Stage 1: screen all predeclared candidates on five development cards.
+python -m fight_sim posterior-backtest \
+  --quick-screen \
+  --skip-latest-events 5 \
+  --workers 8 \
+  --output-dir artifacts/simulations/screens/candidate-name
+
+# Stage 2: rerun only survivors at intermediate precision.
+python -m fight_sim posterior-backtest \
+  --confirmation-screen \
+  --skip-latest-events 5 \
+  --workers 8 \
+  --output-dir artifacts/simulations/confirm/candidate-name
+```
+
+`--quick-screen` uses 5 cards, 16 bootstrap members, 512 total paths per
+matchup, and one seed. `--confirmation-screen` uses 15 cards, 32 members, 2,048
+paths, and one seed. Both outputs are labeled screening-only and cannot stand
+in for the two-seed final evaluation. Candidates should share the same
+`--random-seed` so their paired Monte Carlo noise is reduced by common random
+numbers.
+
+Every fight/seed pair is saved immediately beneath the ignored output
+directory. Re-run the identical command with `--resume` after an interruption;
+the run-contract hash rejects changed data or scientific settings. Materialized
+event-cutoff fits are shared by default under
+`artifacts/simulations/causal-fit-cache`, so mechanics candidates do not repeat
+the same bootstrap fit. Use `--no-fit-cache` only for cache diagnostics. The
+summary reports input fingerprint, fit/load, simulation, checkpoint, and cache
+hit timings separately.
+
+Measure a fixed run specification before and after performance changes with:
+
+```bash
+python -m fight_sim benchmark path/to/specs.json \
+  --paths-per-member 256 \
+  --workers 1,2,4,8 \
+  --repeats 3 \
+  --output artifacts/simulations/benchmark.json
+```
+
+The benchmark hard-fails if the aggregate changes with worker count and also
+reports whether a local Numba or C++ prototype toolchain is available.
+
 This command is local, candidate-only research. Its low-exposure exclusions are
 reported per card, its nominal PIT uniformity p-values are labeled as
 exploratory because they do not correct card clustering or multiple testing,
@@ -507,11 +556,12 @@ ignored run directory, and atomically writes the much smaller
 `src/content/data/external/simulation_forecasts.json` website projection. A
 maximum-path run that misses any convergence gate is withheld even though its
 full aggregate remains available locally for diagnosis. `--parameter-artifact`
-pins the exact fitted inputs and members for a rerun; the current compact codec
-still deterministically re-materializes its 200 members when loaded, so this is
-an integrity/reproducibility option rather than an instant cache. Every website
-object carries `candidate_only`, `paper_only`, `execution_enabled: false`, and
-`production_influence: "none"`.
+pins the exact fitted inputs and members for a rerun. The first recipe load
+reconstructs those members and writes an ignored content-addressed materialized
+cache; later card/candidate runs validate both commitments and load the member
+columns directly. A newly fitted card also writes that cache immediately. Every
+website object carries `candidate_only`, `paper_only`, `execution_enabled:
+false`, and `production_influence: "none"`.
 
 ### Local simulation desktop explorer
 

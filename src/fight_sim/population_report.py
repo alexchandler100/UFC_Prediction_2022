@@ -49,7 +49,7 @@ def render_population_report(report: Mapping[str, object]) -> str:
             if isinstance(value, Mapping)
         ),
         key=lambda pair: (
-            float(pair[1].get("pit_cvm_nominal_iid_pvalue", 1.0)),
+            float(pair[1].get("pit_cvm_nominal_iid_pvalue") or 1.0),
             pair[0],
         ),
     )

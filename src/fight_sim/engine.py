@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from functools import lru_cache
 import math
 from typing import Iterable
 
@@ -19,6 +20,7 @@ from .domain import (
     SimulationEvent,
     SimulationPath,
     SimulationRunSpec,
+    SimulatorConfig,
     StateDelta,
     TelemetryLevel,
 )
@@ -40,6 +42,80 @@ class SimulationInvariantError(RuntimeError):
 
 
 _Hazard = tuple[str, Side | None, float]
+_HazardBase = tuple[str, float]
+
+
+@lru_cache(maxsize=4096)
+def _fighter_hazard_bases(
+    params: FighterParameters, config: SimulatorConfig
+) -> tuple[tuple[_HazardBase, ...], ...]:
+    simulator = config
+    return (
+        (
+            (
+                "strike",
+                (params.strike_rate_distance / STRIKES_PER_EXCHANGE)
+                * simulator.distance_strike_hazard_multiplier,
+            ),
+            (
+                "clinch_entry",
+                params.clinch_entry_rate * simulator.clinch_entry_hazard_multiplier,
+            ),
+            (
+                "takedown",
+                params.takedown_attempt_rate
+                * (0.60 * simulator.takedown_hazard_multiplier),
+            ),
+        ),
+        (
+            (
+                "strike",
+                (params.strike_rate_clinch / STRIKES_PER_EXCHANGE)
+                * simulator.clinch_strike_hazard_multiplier,
+            ),
+            (
+                "takedown",
+                params.takedown_attempt_rate
+                * (1.25 * simulator.takedown_hazard_multiplier),
+            ),
+            (
+                "clinch_exit",
+                params.clinch_exit_rate * simulator.clinch_exit_hazard_multiplier,
+            ),
+        ),
+        (
+            (
+                "strike",
+                (params.strike_rate_ground / STRIKES_PER_EXCHANGE)
+                * simulator.ground_strike_hazard_multiplier,
+            ),
+            (
+                "submission",
+                params.submission_attempt_rate
+                * simulator.submission_hazard_multiplier,
+            ),
+        ),
+        (
+            (
+                "strike",
+                (params.strike_rate_ground / STRIKES_PER_EXCHANGE)
+                * (0.18 * simulator.ground_strike_hazard_multiplier),
+            ),
+            (
+                "submission",
+                params.submission_attempt_rate
+                * (0.55 * simulator.submission_hazard_multiplier),
+            ),
+            (
+                "escape",
+                params.escape_rate * simulator.escape_hazard_multiplier,
+            ),
+        ),
+        (
+            ("scramble_ground", (2.0 + params.ground_control_rate) * 1.0),
+            ("scramble_distance", (1.6 + params.escape_rate) * 1.0),
+        ),
+    )
 
 
 class _MutableStats:
@@ -50,10 +126,25 @@ class _MutableStats:
             setattr(self, name, 0)
 
     def add(self, delta: FighterStats) -> None:
-        for name in self.__slots__:
-            value = getattr(delta, name)
-            if value:
-                setattr(self, name, getattr(self, name) + value)
+        self.strike_attempts += delta.strike_attempts
+        self.strikes_landed += delta.strikes_landed
+        self.significant_strike_attempts += delta.significant_strike_attempts
+        self.significant_strikes_landed += delta.significant_strikes_landed
+        self.head_landed += delta.head_landed
+        self.body_landed += delta.body_landed
+        self.leg_landed += delta.leg_landed
+        self.distance_attempts += delta.distance_attempts
+        self.distance_landed += delta.distance_landed
+        self.clinch_attempts += delta.clinch_attempts
+        self.clinch_landed += delta.clinch_landed
+        self.ground_attempts += delta.ground_attempts
+        self.ground_landed += delta.ground_landed
+        self.knockdowns += delta.knockdowns
+        self.takedown_attempts += delta.takedown_attempts
+        self.takedowns_landed += delta.takedowns_landed
+        self.submission_attempts += delta.submission_attempts
+        self.reversals += delta.reversals
+        self.control_time_us += delta.control_time_us
 
     def freeze(self) -> FighterStats:
         return FighterStats(**{name: getattr(self, name) for name in self.__slots__})
@@ -162,8 +253,23 @@ class _Runtime:
         self.spec = spec
         self.red_parameters = spec.red.parameters
         self.blue_parameters = spec.blue.parameters
+        self.red_hazard_bases = _fighter_hazard_bases(
+            self.red_parameters, spec.simulator
+        )
+        self.blue_hazard_bases = _fighter_hazard_bases(
+            self.blue_parameters, spec.simulator
+        )
+        self.min_hazard_per_minute = spec.simulator.min_hazard_per_minute
+        self.max_hazard_per_minute = spec.simulator.max_hazard_per_minute
+        self.no_contest_hazard = _hazard_rate(
+            spec, spec.simulator.no_contest_rate_per_minute
+        )
+        self.other_side_hazard = _hazard_rate(
+            spec, spec.simulator.other_finish_rate_per_minute / 2.0
+        )
         self.simulation_index = simulation_index
         self.telemetry = telemetry
+        self.tracing = telemetry is TelemetryLevel.FULL
         self.state: FightState | _LeanState = (
             initial_state(spec.bout.matchup_id, spec.bout.scheduled_rounds)
             if telemetry is TelemetryLevel.FULL
@@ -172,7 +278,7 @@ class _Runtime:
         self.rng = NamedRandomStreams(
             spec,
             simulation_index,
-            record=telemetry is TelemetryLevel.FULL,
+            record=self.tracing,
         )
         self.events: list[SimulationEvent] = []
         self.previous_event_hash = GENESIS_EVENT_HASH
@@ -192,8 +298,8 @@ class _Runtime:
             elapsed_us = int(delta.fight_time_us) - int(self.state.fight_time_us)
             if elapsed_us > 0:
                 self.phase_time_us[self.state.phase] += elapsed_us
-        draws = self.rng.drain()
-        if self.telemetry is TelemetryLevel.FULL:
+        if self.tracing:
+            draws = self.rng.drain()
             self.state, event = make_event(
                 self.state,
                 event_type,
@@ -219,7 +325,11 @@ class _Runtime:
 
 
 def _clip(value: float, lower: float, upper: float) -> float:
-    return min(upper, max(lower, value))
+    if value < lower:
+        return lower
+    if value > upper:
+        return upper
+    return value
 
 
 def _runtime_parameters(runtime: _Runtime, side: Side) -> FighterParameters:
@@ -276,102 +386,45 @@ def _hazard_rate(spec: SimulationRunSpec, rate_per_minute: float) -> float:
 
 def _hazards(runtime: _Runtime) -> tuple[_Hazard, ...]:
     state = runtime.state
-    spec = runtime.spec
     hazards: list[_Hazard] = []
-
-    def add(action: str, side: Side, rate: float, multiplier: float = 1.0) -> None:
-        if side is Side.RED:
-            pace = _clip((0.30 + 0.70 * state.red_stamina) * (1.0 - 0.45 * state.red_hurt), 0.15, 1.0)
-        else:
-            pace = _clip((0.30 + 0.70 * state.blue_stamina) * (1.0 - 0.45 * state.blue_hurt), 0.15, 1.0)
-        value = _hazard_rate(spec, rate * multiplier * pace)
-        if value > 0:
-            hazards.append((action, side, value))
+    minimum = runtime.min_hazard_per_minute
+    maximum = runtime.max_hazard_per_minute
 
     for side in (Side.RED, Side.BLUE):
-        params = _runtime_parameters(runtime, side)
+        bases = (
+            runtime.red_hazard_bases
+            if side is Side.RED
+            else runtime.blue_hazard_bases
+        )
+        pace = _clip(
+            (0.30 + 0.70 * _stamina(state, side))
+            * (1.0 - 0.45 * _hurt(state, side)),
+            0.15,
+            1.0,
+        )
         if state.phase is Phase.DISTANCE:
-            add(
-                "strike",
-                side,
-                params.strike_rate_distance / STRIKES_PER_EXCHANGE,
-                spec.simulator.distance_strike_hazard_multiplier,
-            )
-            add(
-                "clinch_entry",
-                side,
-                params.clinch_entry_rate,
-                spec.simulator.clinch_entry_hazard_multiplier,
-            )
-            add(
-                "takedown",
-                side,
-                params.takedown_attempt_rate,
-                0.60 * spec.simulator.takedown_hazard_multiplier,
-            )
+            candidates = bases[0]
         elif state.phase is Phase.CLINCH:
-            add(
-                "strike",
-                side,
-                params.strike_rate_clinch / STRIKES_PER_EXCHANGE,
-                spec.simulator.clinch_strike_hazard_multiplier,
-            )
-            add(
-                "takedown",
-                side,
-                params.takedown_attempt_rate,
-                1.25 * spec.simulator.takedown_hazard_multiplier,
-            )
-            add(
-                "clinch_exit",
-                side,
-                params.clinch_exit_rate,
-                spec.simulator.clinch_exit_hazard_multiplier,
-            )
+            candidates = bases[1]
         elif state.phase is Phase.GROUND:
-            if state.top_position is side:
-                add(
-                    "strike",
-                    side,
-                    params.strike_rate_ground / STRIKES_PER_EXCHANGE,
-                    spec.simulator.ground_strike_hazard_multiplier,
-                )
-                add(
-                    "submission",
-                    side,
-                    params.submission_attempt_rate,
-                    spec.simulator.submission_hazard_multiplier,
-                )
-            else:
-                add(
-                    "strike",
-                    side,
-                    params.strike_rate_ground / STRIKES_PER_EXCHANGE,
-                    0.18 * spec.simulator.ground_strike_hazard_multiplier,
-                )
-                add(
-                    "submission",
-                    side,
-                    params.submission_attempt_rate,
-                    0.55 * spec.simulator.submission_hazard_multiplier,
-                )
-                add(
-                    "escape",
-                    side,
-                    params.escape_rate,
-                    spec.simulator.escape_hazard_multiplier,
-                )
+            candidates = bases[2] if state.top_position is side else bases[3]
         else:
-            add("scramble_ground", side, 2.0 + params.ground_control_rate)
-            add("scramble_distance", side, 1.6 + params.escape_rate)
+            candidates = bases[4]
+        for action, base_rate in candidates:
+            per_minute = base_rate * pace
+            if per_minute < minimum:
+                per_minute = minimum
+            elif per_minute > maximum:
+                per_minute = maximum
+            value = per_minute / 60.0
+            if value > 0:
+                hazards.append((action, side, value))
     # These rare outcomes are globally fitted, never fighter-specific.  The
     # total other-result hazard is split symmetrically between the two sides.
-    no_contest = _hazard_rate(spec, spec.simulator.no_contest_rate_per_minute)
+    no_contest = runtime.no_contest_hazard
     if no_contest > 0:
         hazards.append(("no_contest", None, no_contest))
-    other_side = _hazard_rate(
-        spec, spec.simulator.other_finish_rate_per_minute / 2.0
-    )
+    other_side = runtime.other_side_hazard
     if other_side > 0:
         hazards.extend(
             ("other_finish", side, other_side) for side in (Side.RED, Side.BLUE)
@@ -391,6 +444,18 @@ def _advance(runtime: _Runtime, target_round_time_us: int) -> None:
     elapsed = target_round_time_us - state.round_time_us
     if elapsed <= 0:
         raise SimulationInvariantError("time advance must be positive", runtime.events)
+    if not runtime.tracing:
+        assert isinstance(state, _LeanState)
+        runtime.phase_time_us[state.phase] += elapsed
+        state.fight_time_us += elapsed
+        state.round_time_us = target_round_time_us
+        if state.phase is Phase.GROUND:
+            if state.top_position is Side.RED:
+                state.red_stats.control_time_us += elapsed
+            elif state.top_position is Side.BLUE:
+                state.blue_stats.control_time_us += elapsed
+        state.event_count += 1
+        return
     red_control, blue_control = _control_delta(state, elapsed)
     runtime.emit(
         EventType.TIME_ADVANCE,
@@ -400,7 +465,7 @@ def _advance(runtime: _Runtime, target_round_time_us: int) -> None:
             red_stats_delta=red_control,
             blue_stats_delta=blue_control,
         ),
-        payload={"elapsed_us": elapsed},
+        payload={"elapsed_us": elapsed} if runtime.tracing else None,
     )
 
 
@@ -413,9 +478,29 @@ def _tick(runtime: _Runtime, elapsed_seconds: float) -> None:
         Phase.GROUND: 1.00,
         Phase.SCRAMBLE: 1.20,
     }[state.phase]
+    minutes = elapsed_seconds / 60.0
+    if not runtime.tracing:
+        assert isinstance(state, _LeanState)
+        for side in (Side.RED, Side.BLUE):
+            params = _runtime_parameters(runtime, side)
+            fatigue = minutes * intensity * (0.015 + 0.085 * params.pace_decay)
+            stamina = _clip(_stamina(state, side) - fatigue, 0.0, 1.0)
+            hurt = _clip(
+                _hurt(state, side)
+                * math.exp(-params.hurt_recovery_per_minute * minutes),
+                0.0,
+                1.0,
+            )
+            if side is Side.RED:
+                state.red_stamina = stamina
+                state.red_hurt = hurt
+            else:
+                state.blue_stamina = stamina
+                state.blue_hurt = hurt
+        state.event_count += 1
+        return
     for side in (Side.RED, Side.BLUE):
         params = _runtime_parameters(runtime, side)
-        minutes = elapsed_seconds / 60.0
         fatigue = minutes * intensity * (0.015 + 0.085 * params.pace_decay)
         updates.update(
             _dynamic_delta(
@@ -432,7 +517,7 @@ def _tick(runtime: _Runtime, elapsed_seconds: float) -> None:
     runtime.emit(
         EventType.DYNAMICS_TICK,
         StateDelta(**updates),
-        payload={"elapsed_seconds": elapsed_seconds},
+        payload={"elapsed_seconds": elapsed_seconds} if runtime.tracing else None,
     )
 
 
@@ -546,7 +631,7 @@ def _terminate(runtime: _Runtime, winner: Side | None, method: OutcomeMethod, re
         actor=winner,
         target=winner.opponent if winner else None,
         action=method.value,
-        payload={"reason": reason},
+        payload={"reason": reason} if runtime.tracing else None,
     )
 
 
@@ -595,12 +680,16 @@ def _strike_consequence(runtime: _Runtime, actor: Side, landed: int) -> None:
         actor=actor,
         target=target,
         action="strike",
-        payload={
-            "severity": severity,
-            "landed": landed,
-            "knockdowns": knockdowns,
-            "knockdown_probability_per_landed": knockdown_probability_per_landed,
-        },
+        payload=(
+            {
+                "severity": severity,
+                "landed": landed,
+                "knockdowns": knockdowns,
+                "knockdown_probability_per_landed": knockdown_probability_per_landed,
+            }
+            if runtime.tracing
+            else None
+        ),
     )
     if knockdowns:
         finish_multiplier = runtime.spec.simulator.ko_tko_finish_probability_multiplier
@@ -622,7 +711,11 @@ def _strike_consequence(runtime: _Runtime, actor: Side, landed: int) -> None:
             actor=actor,
             target=target,
             action="knockdown_follow_up",
-            payload={"finished": finished, "finish_probability": finish_probability},
+            payload=(
+                {"finished": finished, "finish_probability": finish_probability}
+                if runtime.tracing
+                else None
+            ),
         )
         if finished:
             _terminate(runtime, actor, OutcomeMethod.KO_TKO, "finish after knockdown")
@@ -637,7 +730,7 @@ def _perform_action(runtime: _Runtime, hazard: _Hazard) -> None:
         actor=actor,
         target=target,
         action=action,
-        payload={"hazard_per_second": hazard_rate},
+        payload={"hazard_per_second": hazard_rate} if runtime.tracing else None,
     )
 
     probability = 1.0
@@ -670,7 +763,16 @@ def _perform_action(runtime: _Runtime, hazard: _Hazard) -> None:
         actor=actor,
         target=target,
         action=action,
-        payload={"success": success, "probability": probability, "attempts": STRIKES_PER_EXCHANGE if action == "strike" else 1, "landed": landed},
+        payload=(
+            {
+                "success": success,
+                "probability": probability,
+                "attempts": STRIKES_PER_EXCHANGE if action == "strike" else 1,
+                "landed": landed,
+            }
+            if runtime.tracing
+            else None
+        ),
     )
 
     if not success:
@@ -680,7 +782,7 @@ def _perform_action(runtime: _Runtime, hazard: _Hazard) -> None:
             actor=actor,
             target=target,
             action=action,
-            payload={"state_change": False},
+            payload={"state_change": False} if runtime.tracing else None,
         )
         return
     if action == "no_contest":
@@ -688,7 +790,11 @@ def _perform_action(runtime: _Runtime, hazard: _Hazard) -> None:
             EventType.ACTION_CONSEQUENCE,
             _EMPTY_DELTA,
             action=action,
-            payload={"state_change": False, "global_rare_outcome": True},
+            payload=(
+                {"state_change": False, "global_rare_outcome": True}
+                if runtime.tracing
+                else None
+            ),
         )
         _terminate(runtime, None, OutcomeMethod.NO_CONTEST, "global rare no-contest process")
         return
@@ -701,7 +807,11 @@ def _perform_action(runtime: _Runtime, hazard: _Hazard) -> None:
             actor=actor,
             target=target,
             action=action,
-            payload={"state_change": True, "global_rare_outcome": True},
+            payload=(
+                {"state_change": True, "global_rare_outcome": True}
+                if runtime.tracing
+                else None
+            ),
         )
         _terminate(runtime, actor, OutcomeMethod.OTHER, "global rare other-result process")
         return
@@ -719,7 +829,7 @@ def _perform_action(runtime: _Runtime, hazard: _Hazard) -> None:
             actor=actor,
             target=target,
             action=action,
-            payload={"state_change": True},
+            payload={"state_change": True} if runtime.tracing else None,
         )
         return
     if action == "submission":
@@ -729,7 +839,7 @@ def _perform_action(runtime: _Runtime, hazard: _Hazard) -> None:
             actor=actor,
             target=target,
             action=action,
-            payload={"state_change": True},
+            payload={"state_change": True} if runtime.tracing else None,
         )
         _terminate(runtime, actor, OutcomeMethod.SUBMISSION, "completed submission")
         return
@@ -772,11 +882,15 @@ def _perform_action(runtime: _Runtime, hazard: _Hazard) -> None:
         actor=actor,
         target=target,
         action=action,
-        payload={
-            "state_change": True,
-            "phase": phase.value,
-            "reversal": reversal,
-        },
+        payload=(
+            {
+                "state_change": True,
+                "phase": phase.value,
+                "reversal": reversal,
+            }
+            if runtime.tracing
+            else None
+        ),
     )
 
 
@@ -840,9 +954,20 @@ def _close_round(runtime: _Runtime) -> None:
     runtime.emit(
         EventType.ROUND_SCORE,
         StateDelta(append_round_score=score),
-        payload={"red_effectiveness": score.red_effectiveness, "blue_effectiveness": score.blue_effectiveness},
+        payload=(
+            {
+                "red_effectiveness": score.red_effectiveness,
+                "blue_effectiveness": score.blue_effectiveness,
+            }
+            if runtime.tracing
+            else None
+        ),
     )
-    runtime.emit(EventType.ROUND_BELL, _EMPTY_DELTA, payload={"completed_round": state.round_number})
+    runtime.emit(
+        EventType.ROUND_BELL,
+        _EMPTY_DELTA,
+        payload={"completed_round": state.round_number} if runtime.tracing else None,
+    )
     if state.round_number == runtime.spec.bout.scheduled_rounds:
         winner, method, decision_type, reason = _decision(runtime)
         _terminate(runtime, winner, method, reason, decision_type)
@@ -861,7 +986,11 @@ def _close_round(runtime: _Runtime) -> None:
     runtime.emit(
         EventType.ROUND_RECOVERY,
         StateDelta(**updates),
-        payload={"rest_seconds": runtime.spec.bout.rest_seconds},
+        payload=(
+            {"rest_seconds": runtime.spec.bout.rest_seconds}
+            if runtime.tracing
+            else None
+        ),
     )
     runtime.emit(
         EventType.ROUND_START,
@@ -872,7 +1001,7 @@ def _close_round(runtime: _Runtime) -> None:
             clear_top_position=True,
             reset_round_effectiveness=True,
         ),
-        payload={"round": state.round_number + 1},
+        payload={"round": state.round_number + 1} if runtime.tracing else None,
     )
 
 
@@ -886,8 +1015,14 @@ def _simulate_fight_once(
 
     telemetry = TelemetryLevel(telemetry)
     runtime = _Runtime(spec, simulation_index, telemetry)
-    runtime.emit(EventType.FIGHT_START, payload={"engine_version": spec.engine_version})
-    runtime.emit(EventType.ROUND_START, payload={"round": 1})
+    runtime.emit(
+        EventType.FIGHT_START,
+        payload={"engine_version": spec.engine_version} if runtime.tracing else None,
+    )
+    runtime.emit(
+        EventType.ROUND_START,
+        payload={"round": 1} if runtime.tracing else None,
+    )
     round_us = spec.bout.round_seconds * MICROSECONDS
     dynamics_us = spec.bout.dynamics_seconds * MICROSECONDS
 

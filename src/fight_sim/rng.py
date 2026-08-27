@@ -51,6 +51,15 @@ def sha256_hex(value: Any) -> str:
     return hashlib.sha256(canonical_json(value).encode("utf-8")).hexdigest()
 
 
+def _canonical_string_bytes(value: object) -> bytes:
+    return json.dumps(
+        str(value),
+        ensure_ascii=False,
+        allow_nan=False,
+        separators=(",", ":"),
+    ).encode("utf-8")
+
+
 def run_id_for(spec: SimulationRunSpec) -> str:
     return f"sim-{sha256_hex(spec.to_dict())[:24]}"
 
@@ -84,21 +93,34 @@ class NamedRandomStreams:
         self._generators: dict[str, np.random.Generator] = {}
         self._indices: dict[str, int] = {}
         self._pending: list[RngDraw] = []
+        # The seed contract is a flat object with a fixed sorted-key order.
+        # Construct its invariant portion once per path instead of recursively
+        # normalizing and sorting the same six fields for every named stream.
+        self._seed_prefix = b"".join(
+            (
+                b'{"bootstrap_member":',
+                str(int(spec.bootstrap_member)).encode("ascii"),
+                b',"matchup_id":',
+                _canonical_string_bytes(spec.bout.matchup_id),
+                b',"parameter_artifact_id":',
+                _canonical_string_bytes(spec.parameter_artifact_id),
+                b',"rng_contract":',
+                _canonical_string_bytes(spec.rng_contract),
+                b',"root_seed":',
+                _canonical_string_bytes(spec.root_seed),
+                b',"simulation_index":',
+                str(self.simulation_index).encode("ascii"),
+                b',"stream":',
+            )
+        )
 
     def _generator(self, stream: str) -> np.random.Generator:
         if not stream or not stream.strip():
             raise ValueError("stream name is required")
         if stream not in self._generators:
-            material = {
-                "rng_contract": self.spec.rng_contract,
-                "root_seed": str(self.spec.root_seed),
-                "matchup_id": self.spec.bout.matchup_id,
-                "parameter_artifact_id": self.spec.parameter_artifact_id,
-                "bootstrap_member": self.spec.bootstrap_member,
-                "simulation_index": self.simulation_index,
-                "stream": stream,
-            }
-            digest = hashlib.sha256(canonical_json(material).encode("utf-8")).digest()
+            digest = hashlib.sha256(
+                self._seed_prefix + _canonical_string_bytes(stream) + b"}"
+            ).digest()
             entropy = [
                 int.from_bytes(digest[offset : offset + 4], "little")
                 for offset in range(0, 32, 4)

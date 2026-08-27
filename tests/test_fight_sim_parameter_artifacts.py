@@ -23,6 +23,7 @@ from fight_sim.parameters import (  # noqa: E402
     canonical_sha256,
     inspect_parameter_artifact,
     load_parameter_artifact,
+    load_parameter_artifact_cached,
     save_parameter_artifact,
 )
 from test_fight_sim_research import _profiles, _raw  # noqa: E402
@@ -90,6 +91,53 @@ def _sufficient_stats() -> dict[str, float]:
 
 
 class ParameterArtifactTests(unittest.TestCase):
+    def test_recipe_artifact_populates_and_reuses_content_addressed_cache(self):
+        artifact = CausalParameterFitter(_raw(), _profiles()).fit(
+            "2022-01-01",
+            config=ParameterFitConfig(bootstrap_members=2, random_seed=31),
+            created_at_utc="2022-01-01T00:00:00Z",
+        )
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source = root / "recipe.json.gz"
+            cache = root / "cache"
+            save_parameter_artifact(source, artifact)
+            first, first_hit, cache_path = load_parameter_artifact_cached(
+                source, cache
+            )
+            self.assertFalse(first_hit)
+            self.assertTrue(cache_path.is_file())
+            with patch.object(
+                CausalParameterFitter,
+                "fit",
+                side_effect=AssertionError("cache hit must not refit"),
+            ):
+                second, second_hit, second_path = load_parameter_artifact_cached(
+                    source, cache
+                )
+        self.assertTrue(second_hit)
+        self.assertEqual(second_path, cache_path)
+        self.assertEqual(first.to_dict(), second.to_dict())
+
+    def test_materialized_local_cache_loads_without_refitting(self):
+        artifact = CausalParameterFitter(_raw(), _profiles()).fit(
+            "2022-01-01",
+            config=ParameterFitConfig(bootstrap_members=3, random_seed=29),
+            created_at_utc="2022-01-01T00:00:00Z",
+        )
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "materialized-cache.json.gz"
+            save_parameter_artifact(path, artifact, materialized=True)
+            physical = json.loads(gzip.decompress(path.read_bytes()))
+            self.assertEqual(physical["codec"], "exact-columnar-v1")
+            with patch.object(
+                CausalParameterFitter,
+                "fit",
+                side_effect=AssertionError("materialized cache must not refit"),
+            ):
+                loaded = load_parameter_artifact(path)
+        self.assertEqual(loaded.to_dict(), artifact.to_dict())
+
     def test_compact_round_trip_is_exact_and_physical_bytes_are_deterministic(self):
         artifact = CausalParameterFitter(_raw(), _profiles()).fit(
             "2022-01-01",

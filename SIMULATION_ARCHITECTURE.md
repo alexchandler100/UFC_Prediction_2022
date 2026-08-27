@@ -166,6 +166,31 @@ populated outcome/round strata and rerun with full tracing. An invariant failure
 is deterministically retried with full telemetry and aborts publication rather
 than being converted into a partial result.
 
+Population research uses three compute fidelities. A quick screen uses five
+development cards, 16 bootstrap members, 512 total paths per matchup, and one
+seed. Confirmation uses 15 cards, 32 members, 2,048 paths, and one seed. Only
+the final 64-member, 4,096-path, repeated-seed run is selection-eligible. All
+candidates in a stage retain common run seeds, and higher precision is spent
+only on survivors or borderline comparisons.
+
+Long posterior runs write one atomic, contract-hashed checkpoint per completed
+fight/seed pair and can resume without changing worker or chunk invariance. A
+shared ignored cache stores exact materialized member columns for each causal
+event cutoff, data fingerprint, fit configuration, and parameter-model
+version. Published parameter artifacts keep their self-contained causal fit
+recipe; only the local performance cache chooses the faster materialized
+representation. Phase timings separate input fingerprinting, causal fit/cache
+loads, and simulation.
+
+The Python implementation remains the authoritative reference. Its bulk path
+uses cached immutable hazard bases, a direct lean-state clock/dynamics reducer,
+and a seed-prefix implementation that is byte-identical to the named RNG
+contract. `benchmark` verifies aggregate hashes across worker counts. A compiled
+bulk backend is attempted only when a supported local compiler or JIT exists,
+crosses the language boundary in batches, demonstrates a material speedup, and
+passes deterministic/reference equivalence gates; Python fitting, telemetry,
+replay, and analysis remain authoritative.
+
 The full local aggregate includes exact per-bootstrap statistic histograms and
 is written as content-addressed gzip under ignored
 `artifacts/simulations/shadow-authority/<event>/`. A public
@@ -302,8 +327,11 @@ python -m fight_sim backtest [--bootstrap-members 1..64]
 python -m fight_sim posterior-backtest [--last-events 1..100]
     [--skip-latest-events 0..99]
     [--min-prior-ufc-fights 0..100] [--bootstrap-members 1..64]
-    [--paths-per-matchup 1..16384] [--seed-repeats 2..4]
-    [--output-dir PATH]
+    [--paths-per-matchup 1..16384] [--seed-repeats 1..4]
+    [--quick-screen | --confirmation-screen] [--resume]
+    [--fit-cache-dir PATH | --no-fit-cache] [--output-dir PATH]
+python -m fight_sim benchmark SPECS [--paths-per-member N]
+    [--workers 1,2,4,8] [--repeats N] [--output PATH]
 python -m fight_sim derive-mechanics POPULATION_RUN [--holdout-latest-events N]
 python -m fight_sim select-mechanics BASELINE --candidate LABEL=REPORT ...
 python -m fight_sim validate-mechanics BASELINE TUNED_HOLDOUT

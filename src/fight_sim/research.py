@@ -10,6 +10,7 @@ import csv
 from dataclasses import asdict, replace
 from datetime import datetime, timezone
 import gzip
+import hashlib
 import json
 import math
 import os
@@ -26,7 +27,13 @@ from fight_semantics import historical_schedule, method_bucket, stable_ufcstats_
 from market_tracker import matchup_id_for
 
 from .analysis import write_analysis_report
-from .domain import BoutConfig, SimulationRunSpec, SimulatorConfig
+from .domain import (
+    ENGINE_VERSION,
+    RNG_CONTRACT_VERSION,
+    BoutConfig,
+    SimulationRunSpec,
+    SimulatorConfig,
+)
 from .evaluation import (
     BacktestConfig,
     BacktestReport,
@@ -46,6 +53,7 @@ from .monte_carlo import (
 )
 from .parameters import (
     CausalParameterFitter,
+    PARAMETER_MODEL_VERSION,
     ParameterEnsembleArtifact,
     ParameterFitConfig,
     canonical_sha256,
@@ -66,6 +74,7 @@ DEFAULT_POINT_IN_TIME = PROCESSED_DATA / "ufc_fights_point_in_time.csv"
 DEFAULT_MARKET_DIRECTORY = REPO_ROOT / "src/content/data/market"
 DEFAULT_ARTIFACT_ROOT = REPO_ROOT / "artifacts/simulations"
 DEFAULT_PARAMETER_ARTIFACT = DEFAULT_ARTIFACT_ROOT / "parameters.json.gz"
+DEFAULT_POSTERIOR_FIT_CACHE = DEFAULT_ARTIFACT_ROOT / "causal-fit-cache"
 BASELINE_WARNINGS_ATTR = "fight_sim_baseline_warnings"
 MONEYLINE_MINIMUM_BOOKS = 3
 TOTAL_MINIMUM_BOOKS = 2
@@ -175,6 +184,34 @@ def load_json(path: str | Path) -> dict[str, object]:
     value = json.loads(Path(path).read_text(encoding="utf-8"))
     if not isinstance(value, dict):
         raise ValueError(f"{path} must contain a JSON object")
+    return value
+
+
+def _file_sha256(path: str | Path, *, required: bool) -> str | None:
+    source = Path(path)
+    if not source.is_file():
+        if required:
+            raise FileNotFoundError(source)
+        return None
+    digest = hashlib.sha256()
+    with source.open("rb") as stream:
+        while block := stream.read(1024 * 1024):
+            digest.update(block)
+    return digest.hexdigest()
+
+
+def _atomic_write_json_gzip(path: str | Path, value: Mapping[str, object]) -> Path:
+    return _atomic_write_jsonl_gzip(path, (value,))
+
+
+def _load_json_gzip(path: str | Path) -> dict[str, object]:
+    with gzip.open(path, "rt", encoding="utf-8") as stream:
+        lines = [line for line in stream if line.strip()]
+    if len(lines) != 1:
+        raise ValueError(f"checkpoint must contain exactly one JSON object: {path}")
+    value = json.loads(lines[0])
+    if not isinstance(value, dict):
+        raise ValueError(f"checkpoint must contain a JSON object: {path}")
     return value
 
 
@@ -2003,6 +2040,97 @@ def _joint_log_loss(frame: pd.DataFrame, column: str) -> float | None:
     return float(np.mean(losses)) if losses else None
 
 
+_POSTERIOR_FIDELITIES = {"screen", "confirm", "final", "custom"}
+
+
+def _posterior_checkpoint_path(
+    destination: Path, fight_id: object, repeat_index: int
+) -> Path:
+    identity = canonical_sha256(
+        {"fight_id": str(fight_id), "repeat_index": int(repeat_index)}
+    )[:24]
+    return destination / "checkpoints" / f"repeat-{repeat_index + 1:02d}" / f"{identity}.json.gz"
+
+
+def _load_posterior_checkpoint(
+    path: Path,
+    *,
+    run_contract_sha256: str,
+    fight_id: object,
+    repeat_index: int,
+) -> dict[str, object]:
+    value = _load_json_gzip(path)
+    if value.get("schema_version") != 1:
+        raise ValueError(f"unsupported posterior checkpoint schema: {path}")
+    if value.get("run_contract_sha256") != run_contract_sha256:
+        raise ValueError(f"posterior checkpoint belongs to another run: {path}")
+    if value.get("fight_id") != str(fight_id) or value.get("repeat_index") != repeat_index:
+        raise ValueError(f"posterior checkpoint identity is invalid: {path}")
+    record = value.get("record")
+    if not isinstance(record, dict):
+        raise ValueError(f"posterior checkpoint is missing its forecast record: {path}")
+    return dict(record)
+
+
+def _posterior_single_seed_summary(ledger: pd.DataFrame) -> dict[str, object]:
+    metrics = evaluate_simulation_ledger(ledger)
+    return {
+        "seed_repeats": 1,
+        "joint_log_loss_mean": float(
+            metrics["primary_joint_side_method_log_loss"]
+        ),
+        "joint_log_loss_sd": None,
+        "winner_log_loss_mean": float(dict(metrics["winner"])["log_loss"]),
+        "winner_log_loss_sd": None,
+        "screening_only": True,
+    }
+
+
+def _fit_cache_contract(
+    *,
+    cutoff: pd.Timestamp,
+    config: ParameterFitConfig,
+    source_sha256: Mapping[str, str | None],
+) -> dict[str, object]:
+    return {
+        "schema_version": 1,
+        "parameter_model": PARAMETER_MODEL_VERSION,
+        "strictly_before_utc": cutoff.isoformat(),
+        "config": asdict(config),
+        "source_sha256": dict(source_sha256),
+    }
+
+
+def _load_or_fit_posterior_artifact(
+    fitter: CausalParameterFitter,
+    *,
+    cutoff: pd.Timestamp,
+    config: ParameterFitConfig,
+    source_sha256: Mapping[str, str | None],
+    fit_cache_dir: str | Path | None,
+) -> tuple[ParameterEnsembleArtifact, bool]:
+    if fit_cache_dir is None:
+        return (
+            fitter.fit(cutoff, config=config, created_at_utc=cutoff),
+            False,
+        )
+    contract = _fit_cache_contract(
+        cutoff=cutoff,
+        config=config,
+        source_sha256=source_sha256,
+    )
+    key = canonical_sha256(contract)
+    cache_path = Path(fit_cache_dir) / f"fit-{key}.json.gz"
+    if cache_path.is_file():
+        artifact = load_parameter_artifact(cache_path)
+        if artifact.as_of_utc != cutoff.isoformat() or artifact.config != config:
+            raise ValueError(f"cached causal fit contract is invalid: {cache_path}")
+        return artifact, True
+    artifact = fitter.fit(cutoff, config=config, created_at_utc=cutoff)
+    save_parameter_artifact(cache_path, artifact, materialized=True)
+    return artifact, False
+
+
 def execute_posterior_backtest(
     *,
     output_dir: str | Path,
@@ -2016,6 +2144,9 @@ def execute_posterior_backtest(
     random_seed: int = 2903,
     workers: int = 1,
     chunk_size: int = 64,
+    resume: bool = False,
+    fit_cache_dir: str | Path | None = DEFAULT_POSTERIOR_FIT_CACHE,
+    fidelity: str = "final",
     raw_path: str | Path = DEFAULT_RAW_FIGHTS,
     profiles_path: str | Path = DEFAULT_FIGHTER_PROFILES,
     round_path: str | Path = DEFAULT_ROUND_STATS,
@@ -2026,14 +2157,65 @@ def execute_posterior_backtest(
 
     if paths_per_matchup <= 0 or paths_per_matchup % bootstrap_members:
         raise ValueError("paths_per_matchup must be positive and divisible by bootstrap_members")
-    if not 2 <= seed_repeats <= 4:
-        raise ValueError("seed_repeats must be between 2 and 4")
+    if not 1 <= seed_repeats <= 4:
+        raise ValueError("seed_repeats must be between 1 and 4")
+    if fidelity not in _POSTERIOR_FIDELITIES:
+        raise ValueError(f"unsupported posterior fidelity: {fidelity}")
+    fingerprint_started = time.perf_counter()
+    source_sha256 = {
+        "raw": _file_sha256(raw_path, required=True),
+        "profiles": _file_sha256(profiles_path, required=False),
+        "round_stats": _file_sha256(round_path, required=False),
+    }
+    fingerprint_seconds = time.perf_counter() - fingerprint_started
+    simulator = simulator_config or SimulatorConfig()
+    run_contract: dict[str, object] = {
+        "schema_version": 1,
+        "engine_version": ENGINE_VERSION,
+        "rng_contract": RNG_CONTRACT_VERSION,
+        "parameter_model": PARAMETER_MODEL_VERSION,
+        "source_sha256": source_sha256,
+        "selection": {
+            "last_events": last_events,
+            "skip_latest_events": skip_latest_events,
+            "min_prior_ufc_fights": min_prior_ufc_fights,
+            "min_training_fights": min_training_fights,
+        },
+        "simulation": {
+            "bootstrap_members": bootstrap_members,
+            "paths_per_matchup": paths_per_matchup,
+            "seed_repeats": seed_repeats,
+            "random_seed": random_seed,
+            "simulator_config": simulator.to_dict(),
+        },
+        "fidelity": fidelity,
+    }
+    run_contract_sha256 = canonical_sha256(run_contract)
     destination = Path(output_dir)
-    if destination.exists() and any(destination.iterdir()):
+    manifest_path = destination / "run-manifest.json"
+    if destination.exists() and any(destination.iterdir()) and not resume:
         raise ValueError(
             f"population output directory is not empty: {destination}; choose a new directory"
         )
     destination.mkdir(parents=True, exist_ok=True)
+    if resume and manifest_path.is_file():
+        manifest = load_json(manifest_path)
+        if manifest.get("run_contract_sha256") != run_contract_sha256:
+            raise ValueError(
+                "resume contract differs from the existing population run; "
+                "use a new output directory"
+            )
+    elif resume and any(destination.iterdir()):
+        raise ValueError("resume requires an existing valid run-manifest.json")
+    else:
+        atomic_write_json(
+            manifest_path,
+            {
+                "schema_version": 1,
+                "run_contract": run_contract,
+                "run_contract_sha256": run_contract_sha256,
+            },
+        )
     started = time.perf_counter()
     raw, profiles, rounds = load_research_inputs(raw_path, profiles_path, round_path)
     physical = physical_backtest_frame(raw)
@@ -2055,6 +2237,13 @@ def execute_posterior_backtest(
     ]
     completed = 0
     total_work = len(selected) * seed_repeats
+    resumed_pairs = 0
+    simulated_pairs = 0
+    fit_cache_hits = 0
+    fit_cache_misses = 0
+    fit_seconds = 0.0
+    simulation_seconds = 0.0
+    checkpoint_seconds = 0.0
     fitter = CausalParameterFitter(raw, profiles, rounds)
     grouped_events = list(selected.groupby(["date", "event_id"], sort=True))
     for event_position, ((date, event_id), event_test) in enumerate(
@@ -2071,23 +2260,78 @@ def execute_posterior_backtest(
             canonical_sha256({"event_id": str(event_id), "date": cutoff.isoformat()})[:8],
             16,
         )
+        ordered_rows = event_test.sort_values("fight_id", kind="stable").to_dict(
+            "records"
+        )
+        checkpoint_records: dict[tuple[str, int], dict[str, object]] = {}
+        checkpoint_started = time.perf_counter()
+        for row in ordered_rows:
+            for repeat_index in range(seed_repeats):
+                checkpoint_path = _posterior_checkpoint_path(
+                    destination, row["fight_id"], repeat_index
+                )
+                if checkpoint_path.is_file():
+                    checkpoint_records[(str(row["fight_id"]), repeat_index)] = (
+                        _load_posterior_checkpoint(
+                            checkpoint_path,
+                            run_contract_sha256=run_contract_sha256,
+                            fight_id=row["fight_id"],
+                            repeat_index=repeat_index,
+                        )
+                    )
+        checkpoint_seconds += time.perf_counter() - checkpoint_started
+        missing_pairs = len(ordered_rows) * seed_repeats - len(checkpoint_records)
+        if missing_pairs == 0:
+            for row in ordered_rows:
+                for repeat_index in range(seed_repeats):
+                    repeat_records[repeat_index].append(
+                        checkpoint_records[(str(row["fight_id"]), repeat_index)]
+                    )
+                    completed += 1
+                    resumed_pairs += 1
+            if progress:
+                progress(
+                    f"Event {event_position}/{len(grouped_events)}: restored all "
+                    f"{len(ordered_rows) * seed_repeats} fight/seed pairs from checkpoints."
+                )
+            continue
         if progress:
             progress(
                 f"Event {event_position}/{len(grouped_events)}: "
-                f"fitting {bootstrap_members} causal members for {cutoff.date()} "
+                f"loading/fitting {bootstrap_members} causal members for {cutoff.date()} "
                 f"({len(event_test)} eligible fights)."
             )
-        artifact = fitter.fit(
-            cutoff,
-            config=ParameterFitConfig.historical(
-                bootstrap_members=bootstrap_members,
-                random_seed=event_seed,
-            ),
-            created_at_utc=cutoff,
+        fit_config = ParameterFitConfig.historical(
+            bootstrap_members=bootstrap_members,
+            random_seed=event_seed,
         )
+        fit_started = time.perf_counter()
+        artifact, cache_hit = _load_or_fit_posterior_artifact(
+            fitter,
+            cutoff=cutoff,
+            config=fit_config,
+            source_sha256=source_sha256,
+            fit_cache_dir=fit_cache_dir,
+        )
+        fit_seconds += time.perf_counter() - fit_started
+        fit_cache_hits += int(cache_hit)
+        fit_cache_misses += int(not cache_hit)
         artifact.validate()
         baselines = causal_joint_baseline_forecasts(train, event_test).set_index("fight_id")
-        for row in event_test.sort_values("fight_id", kind="stable").to_dict("records"):
+        for row in ordered_rows:
+            missing_repeats = [
+                repeat_index
+                for repeat_index in range(seed_repeats)
+                if (str(row["fight_id"]), repeat_index) not in checkpoint_records
+            ]
+            if not missing_repeats:
+                for repeat_index in range(seed_repeats):
+                    repeat_records[repeat_index].append(
+                        checkpoint_records[(str(row["fight_id"]), repeat_index)]
+                    )
+                    completed += 1
+                    resumed_pairs += 1
+                continue
             first_root_seed = f"posterior:{random_seed}:{row['fight_id']}"
             first_specs = build_specs(
                 fitter,
@@ -2101,11 +2345,19 @@ def execute_posterior_backtest(
                     row["event_id"], row["red_fighter_id"], row["blue_fighter_id"]
                 ),
                 root_seed=first_root_seed,
-                simulator_base=simulator_config,
+                simulator_base=simulator,
                 _artifact_validated=True,
             )
             for repeat_index in range(seed_repeats):
                 repeat_number = repeat_index + 1
+                checkpoint_key = (str(row["fight_id"]), repeat_index)
+                if checkpoint_key in checkpoint_records:
+                    repeat_records[repeat_index].append(
+                        checkpoint_records[checkpoint_key]
+                    )
+                    completed += 1
+                    resumed_pairs += 1
+                    continue
                 specs = (
                     first_specs
                     if repeat_number == 1
@@ -2120,6 +2372,7 @@ def execute_posterior_backtest(
                         for spec in first_specs
                     )
                 )
+                simulation_started = time.perf_counter()
                 simulation = run_nested(
                     specs,
                     paths_per_matchup // bootstrap_members,
@@ -2128,6 +2381,7 @@ def execute_posterior_backtest(
                     max_traces=0,
                     retain_paths=False,
                 )
+                simulation_seconds += time.perf_counter() - simulation_started
                 record = dict(row)
                 record["forecast"] = _forecast_with_full_support(
                     _compact_evaluation_forecast(simulation.forecast)
@@ -2137,8 +2391,23 @@ def execute_posterior_backtest(
                     baseline = baselines.loc[str(row["fight_id"])]
                     record["population_forecast"] = baseline["population_forecast"]
                     record["division_forecast"] = baseline["division_forecast"]
+                checkpoint_started = time.perf_counter()
+                _atomic_write_json_gzip(
+                    _posterior_checkpoint_path(
+                        destination, row["fight_id"], repeat_index
+                    ),
+                    {
+                        "schema_version": 1,
+                        "run_contract_sha256": run_contract_sha256,
+                        "fight_id": str(row["fight_id"]),
+                        "repeat_index": repeat_index,
+                        "record": record,
+                    },
+                )
+                checkpoint_seconds += time.perf_counter() - checkpoint_started
                 repeat_records[repeat_index].append(record)
                 completed += 1
+                simulated_pairs += 1
                 if progress:
                     progress(
                         f"Completed {completed}/{total_work}: {row['red_fighter_name']} vs "
@@ -2178,6 +2447,20 @@ def execute_posterior_backtest(
         "division_joint_log_loss": _joint_log_loss(authoritative, "division_forecast"),
         "simulation_joint_log_loss": aggregate["primary_joint_side_method_log_loss"],
     }
+    simulation_noise = (
+        repeated_seed_summary(ledgers)
+        if seed_repeats >= 2
+        else _posterior_single_seed_summary(authoritative)
+    )
+    coverage_warnings = [
+        "nominal_pit_pvalues_do_not_account_for_event_card_clustering_or_multiple_comparisons",
+        "low_exposure_fights_are_excluded_from_primary_mechanics_calibration",
+        "control_definition_differs_from_broader_ufcstats_control",
+    ]
+    if seed_repeats == 1:
+        coverage_warnings.append(
+            "single_seed_low_fidelity_screen_cannot_estimate_end_to_end_simulation_noise"
+        )
     report_body: dict[str, object] = {
         "schema_version": 1,
         "evaluation_version": "fight-sim-posterior-population-v1",
@@ -2185,6 +2468,14 @@ def execute_posterior_backtest(
         "production_enabled": False,
         "execution_enabled": False,
         "primary_metric": "posterior_predictive_calibration",
+        "fidelity": fidelity,
+        "selection_eligible": (
+            fidelity == "final"
+            and bootstrap_members >= 64
+            and paths_per_matchup >= 4096
+            and seed_repeats >= 2
+        ),
+        "run_contract_sha256": run_contract_sha256,
         "config": {
             "last_events": last_events,
             "skip_latest_events": skip_latest_events,
@@ -2197,11 +2488,7 @@ def execute_posterior_backtest(
             "random_seed": random_seed,
             "workers": workers,
             "chunk_size": chunk_size,
-            "simulator_config": (
-                simulator_config.to_dict()
-                if simulator_config is not None
-                else SimulatorConfig().to_dict()
-            ),
+            "simulator_config": simulator.to_dict(),
         },
         "selection": {
             **selection_counts,
@@ -2217,17 +2504,24 @@ def execute_posterior_backtest(
         ),
         "event_summaries": event_summaries,
         "comparisons": comparisons,
-        "simulation_noise": repeated_seed_summary(ledgers),
+        "simulation_noise": simulation_noise,
         "runtime": {
             "elapsed_seconds": elapsed,
+            "input_fingerprint_seconds": fingerprint_seconds,
+            "causal_fit_load_seconds": fit_seconds,
+            "simulation_seconds": simulation_seconds,
+            "checkpoint_seconds": checkpoint_seconds,
             "simulated_fight_seed_pairs": total_work,
+            "computed_fight_seed_pairs_this_invocation": simulated_pairs,
+            "resumed_fight_seed_pairs": resumed_pairs,
             "total_paths": int(total_work * paths_per_matchup),
+            "paths_computed_this_invocation": int(
+                simulated_pairs * paths_per_matchup
+            ),
+            "fit_cache_hits": fit_cache_hits,
+            "fit_cache_misses": fit_cache_misses,
         },
-        "coverage_warnings": [
-            "nominal_pit_pvalues_do_not_account_for_event_card_clustering_or_multiple_comparisons",
-            "low_exposure_fights_are_excluded_from_primary_mechanics_calibration",
-            "control_definition_differs_from_broader_ufcstats_control",
-        ],
+        "coverage_warnings": coverage_warnings,
     }
     report_body["report_sha256"] = canonical_sha256(report_body)
     report_path = atomic_write_json(destination / "population-summary.json", report_body)
