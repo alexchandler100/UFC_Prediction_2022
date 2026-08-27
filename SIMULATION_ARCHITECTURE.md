@@ -91,6 +91,17 @@ and production paths do not enable it. The paired mechanics screen and broad
 accuracy audit are documented in
 `SIMULATION_CONDITIONAL_CONTROL_AND_BREADTH_REPORT_2026-08-27.md`.
 
+The snapshot layer also exposes research-only `full`, `context_only`, and
+`reliability_weighted` policies. The last applies a second parameter-specific
+causal exposure weight to the already pooled fighter deviation on the
+parameter's natural scale; it does not refit or mutate the bootstrap artifact.
+The 229-fight ablation found weak directional fighter signal but no standalone
+proper-score advantage over 50/50. It is documented in
+`SIMULATION_FIGHTER_EFFECT_ABLATION_REPORT_2026-08-27.md`. The supported next
+parameter-model experiment is a joint opponent-adjusted offense/defense fit
+with training-estimated between-fighter variance, not another scalar
+temperature or pseudo-exposure tweak.
+
 ## Data contract and causal fitting
 
 When backfilled, the normalized round table has one row per physical bout,

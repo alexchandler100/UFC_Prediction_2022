@@ -54,6 +54,7 @@ from .monte_carlo import (
 from .parameters import (
     CausalParameterFitter,
     PARAMETER_MODEL_VERSION,
+    SNAPSHOT_PARAMETER_MODES,
     TAKEDOWN_CONTROL_PARAMETER_MODEL_VERSION,
     ParameterEnsembleArtifact,
     ParameterFitConfig,
@@ -307,6 +308,7 @@ def build_specs(
     root_seed: str | int,
     matchup_id: str | None = None,
     simulator_base: SimulatorConfig | None = None,
+    snapshot_parameter_mode: str = "full",
     _artifact_validated: bool = False,
 ) -> tuple[SimulationRunSpec, ...]:
     if not _artifact_validated:
@@ -333,6 +335,7 @@ def build_specs(
             red_id,
             division=division,
             member_index=member.member_index,
+            parameter_mode=snapshot_parameter_mode,
             _artifact_validated=True,
         )
         blue = fitter.snapshot_for(
@@ -340,6 +343,7 @@ def build_specs(
             blue_id,
             division=division,
             member_index=member.member_index,
+            parameter_mode=snapshot_parameter_mode,
             _artifact_validated=True,
         )
         specs.append(
@@ -2294,6 +2298,7 @@ def execute_posterior_backtest(
     max_runtime_seconds: float | None = None,
     cohort_manifest_path: str | Path | None = None,
     cohort_name: str | None = None,
+    snapshot_parameter_mode: str = "full",
 ) -> tuple[Path, dict[str, object]]:
     """Run a causal event-cutoff posterior-predictive population study."""
 
@@ -2307,6 +2312,10 @@ def execute_posterior_backtest(
         raise ValueError("max_runtime_seconds must be in (0, 3300]")
     if (cohort_manifest_path is None) != (cohort_name is None):
         raise ValueError("cohort_manifest_path and cohort_name must be provided together")
+    if snapshot_parameter_mode not in SNAPSHOT_PARAMETER_MODES:
+        raise ValueError(
+            "snapshot_parameter_mode must be full, context_only, or reliability_weighted"
+        )
     fingerprint_started = time.perf_counter()
     source_sha256 = {
         "raw": _file_sha256(raw_path, required=True),
@@ -2342,6 +2351,7 @@ def execute_posterior_backtest(
             "max_runtime_seconds": max_runtime_seconds,
             "cohort_manifest_sha256": cohort_manifest_sha256,
             "cohort_name": cohort_name,
+            "snapshot_parameter_mode": snapshot_parameter_mode,
         },
         "simulation": {
             "bootstrap_members": bootstrap_members,
@@ -2542,6 +2552,7 @@ def execute_posterior_backtest(
                 ),
                 root_seed=first_root_seed,
                 simulator_base=simulator,
+                snapshot_parameter_mode=snapshot_parameter_mode,
                 _artifact_validated=True,
             )
             for repeat_index in range(seed_repeats):
@@ -2696,6 +2707,7 @@ def execute_posterior_backtest(
                 use_takedown_control_association
             ),
             "parameter_model": parameter_model,
+            "snapshot_parameter_mode": snapshot_parameter_mode,
             "max_runtime_seconds": max_runtime_seconds,
             **cohort_metadata,
             "workers": workers,

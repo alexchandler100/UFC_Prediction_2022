@@ -464,6 +464,80 @@ class FightSimulationResearchTests(unittest.TestCase):
                 as_of="2021-01-01",
             )
 
+    def test_snapshot_parameter_ablation_is_contextual_and_exposure_weighted(self):
+        fitter = CausalParameterFitter(_raw(), _profiles())
+        artifact = fitter.fit(
+            "2022-01-01",
+            config=ParameterFitConfig(bootstrap_members=1, random_seed=17),
+            created_at_utc="2022-01-01T00:00:00Z",
+        )
+        full = fitter.snapshot_for(
+            artifact,
+            "a",
+            division="Lightweight",
+            member_index=0,
+        )
+        context = fitter.snapshot_for(
+            artifact,
+            "a",
+            division="Lightweight",
+            member_index=0,
+            parameter_mode="context_only",
+        )
+        other_context = fitter.snapshot_for(
+            artifact,
+            "b",
+            division="Lightweight",
+            member_index=0,
+            parameter_mode="context_only",
+        )
+        weighted = fitter.snapshot_for(
+            artifact,
+            "a",
+            division="Lightweight",
+            member_index=0,
+            parameter_mode="reliability_weighted",
+        )
+        self.assertEqual(context.data_quality, "division_era_prior")
+        self.assertEqual(
+            context.parameters.to_dict(), other_context.parameters.to_dict()
+        )
+        self.assertEqual(
+            weighted.data_quality, "reliability_weighted_fighter_history"
+        )
+        self.assertNotEqual(
+            full.parameters.strike_accuracy,
+            context.parameters.strike_accuracy,
+        )
+        low = min(
+            full.parameters.strike_accuracy,
+            context.parameters.strike_accuracy,
+        )
+        high = max(
+            full.parameters.strike_accuracy,
+            context.parameters.strike_accuracy,
+        )
+        self.assertGreater(weighted.parameters.strike_accuracy, low)
+        self.assertLess(weighted.parameters.strike_accuracy, high)
+        self.assertAlmostEqual(
+            sum(
+                (
+                    weighted.parameters.distance_phase_share,
+                    weighted.parameters.clinch_phase_share,
+                    weighted.parameters.ground_phase_share,
+                )
+            ),
+            1.0,
+        )
+        with self.assertRaisesRegex(ValueError, "parameter_mode"):
+            fitter.snapshot_for(
+                artifact,
+                "a",
+                division="Lightweight",
+                member_index=0,
+                parameter_mode="unsupported",
+            )
+
     def test_evaluation_scores_coherent_ledger_and_card_paired_difference(self):
         rows = []
         for index, (actual, red) in enumerate(

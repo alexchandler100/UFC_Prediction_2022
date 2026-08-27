@@ -1,25 +1,43 @@
 # Fight simulation continuation TODO
 
-Status updated 2026-08-27 after the two-route outcome-engine development
-experiment. This file is the handoff contract for the next simulation session.
+Status updated 2026-08-27 after the fighter-effect ablation. This file is the
+handoff contract for the next simulation session.
 
-## Frozen next action: confirm outcome engine v2.1
+## Frozen next action: opponent-adjusted fighter effects
 
-The new outcome-engine work is documented in
-`SIMULATION_OUTCOME_ENGINE_V2_REPORT_2026-08-27.md`. The legacy engine remains
-the default. The opt-in `two_route_v2` engine models official knockdowns as a
-one-per-exchange hurdle and has separate KO-after-KD and KO-without-KD routes.
-Its v2.1 development profile passed every gate on the opened 229-fight / 30-card
-cohort and is frozen in `SIMULATION_MECHANICS_TWO_ROUTE_V2_1.json`.
+The outcome-engine v2.1 work remains frozen in
+`SIMULATION_MECHANICS_TWO_ROUTE_V2_1.json`. Its separate confirmation
+requirement has not been waived. Before spending the locked 2025 cohort on a
+fighter-parameter choice, the open 229-fight / 30-card development cohort was
+used to compare full fighter snapshots, division/era context only, and a
+second causal exposure-weighted shrinkage step. The design and results are in
+`SIMULATION_FIGHTER_EFFECT_ABLATION_REPORT_2026-08-27.md`.
 
-Do not tune it again on the 2024 development cards. Next compare legacy and
-v2.1 on the locked `confirmation_2025_a` cohort from
-`SIMULATION_EXPERIMENT_COHORTS_V1.json`, using materially more than 100 paths
-per fight and at least two independent seeds. Use
-`compare-outcome-mechanics` so only identical complete cards are scored. Each
-command remains capped at 3,300 seconds. Do not open `final_holdout_2025_b`
-unless confirmation passes. No website or production simulator profile changes
-until both gates are passed.
+Reliability weighting raised point accuracy from 52.63% to 55.70%, improved
+winner log loss from 0.72135 to 0.71470, Brier from 0.26127 to 0.25863, and
+joint log loss from 1.98694 to 1.96508. It also preserved the broad v2.1
+method/duration/action realism. These changes were not statistically resolved:
+all event-card proper-score intervals crossed zero, the 55.70% accuracy Wilson
+interval included 50%, and log loss/Brier remained worse than constant 50/50.
+Context-only merely collapsed toward chance and lost useful method structure.
+No snapshot mode is validated or production-eligible.
+
+Do not tune another scalar shrinkage or winner-temperature value on these same
+paths. Next implement one predeclared, strictly causal opponent-adjusted
+offense/defense parameter model for observable strike, takedown, and submission
+opportunities. Estimate between-fighter variance and reliability from training
+data instead of adding fixed pseudo-exposure shrinkage. Screen it against both
+`full` and `reliability_weighted` on the same open 2024 cohort using cached
+fits, common seeds, ten members, 100 paths per fight, and a 3,300-second hard
+cap. Require winner log-loss and Brier improvement without material joint,
+method, duration, or action-distribution harm. Point accuracy alone is not a
+gate.
+
+Keep `confirmation_2025_a` and `final_holdout_2025_b` unopened until a single
+fighter-parameter model survives that development comparison. Then confirm the
+combined frozen choice at materially more than 100 paths per fight and at least
+two independent seeds. No website or production simulator profile changes are
+authorized by this research.
 
 ## Completed and safe to use
 
@@ -141,7 +159,13 @@ missing the parameter-quantile stability gate. No adaptive checkpoint remains.
    duration absolute biases by 89%, 77%, 65%, and 57% and improved joint,
    method, duration, winner-log-loss, Brier, and protected action point metrics
    on the full opened development cohort. It is retained for confirmation, not
-   production.
+   production. The subsequent fighter-effect ablation is also complete.
+   Context-only collapsed toward chance; exposure-weighted second-stage
+   shrinkage reached 55.70% point accuracy and modestly improved full-fighter
+   proper scores, but it remained worse than 50/50 and every paired card
+   interval crossed zero. Treat it as a diagnostic base for the next
+   opponent-adjusted hierarchical parameter experiment, not as a confirmed
+   snapshot policy.
 7. Profile materialized-artifact loading. Reconstruction is now cached, but
    validating and decoding the 200-member cache still takes roughly two to
    three minutes and peaks near 1.4 GiB. Optimize only with exact artifact and

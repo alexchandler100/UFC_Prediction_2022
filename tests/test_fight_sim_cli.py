@@ -148,6 +148,15 @@ class FightSimulationCliTests(unittest.TestCase):
         self.assertEqual(posterior.skip_latest_events, 0)
         self.assertFalse(posterior.resume)
         self.assertFalse(posterior.quick_screen)
+        self.assertEqual(posterior.snapshot_parameter_mode, "full")
+        weighted = parser.parse_args(
+            [
+                "posterior-backtest",
+                "--snapshot-parameter-mode",
+                "reliability_weighted",
+            ]
+        )
+        self.assertEqual(weighted.snapshot_parameter_mode, "reliability_weighted")
         screen = parser.parse_args(["posterior-backtest", "--quick-screen"])
         self.assertTrue(screen.quick_screen)
         benchmark = parser.parse_args(

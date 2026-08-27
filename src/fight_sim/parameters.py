@@ -75,6 +75,30 @@ PARAMETER_NAMES = (
     "stamina_recovery_between_rounds",
 )
 
+SNAPSHOT_PARAMETER_MODES = frozenset(
+    {"full", "context_only", "reliability_weighted"}
+)
+
+_SNAPSHOT_COMPOSITION_GROUPS = (
+    ("distance_phase_share", "clinch_phase_share", "ground_phase_share"),
+    ("head_target_share", "body_target_share", "leg_target_share"),
+)
+
+_SNAPSHOT_POSITIVE_RATE_PARAMETERS = frozenset(
+    {
+        "strike_rate_distance",
+        "strike_rate_clinch",
+        "strike_rate_ground",
+        "clinch_entry_rate",
+        "clinch_exit_rate",
+        "takedown_attempt_rate",
+        "ground_control_rate",
+        "escape_rate",
+        "submission_attempt_rate",
+        "hurt_recovery_per_minute",
+    }
+)
+
 _COUNT_COLUMNS = (
     "knockdowns",
     "sig_strikes_landed",
@@ -2445,6 +2469,298 @@ class CausalParameterFitter:
             "observed_rounds": observed_rounds,
         }
 
+    def _snapshot_reliability_weights(
+        self,
+        fighter_id: str,
+        as_of: pd.Timestamp,
+        config: ParameterFitConfig,
+    ) -> dict[str, float]:
+        """Return causal, parameter-specific second-stage reliability weights.
+
+        The fitted fighter vector is already empirically pooled. This research
+        mode deliberately applies one additional exposure-based shrinkage step
+        to test whether the remaining fighter deviations are still too noisy.
+        Each opportunity definition mirrors the observable denominator used by
+        the fitter; unsupported latent mechanics receive no fighter deviation.
+        """
+
+        cache = getattr(self, "_snapshot_reliability_cache", None)
+        if cache is None:
+            cache = {}
+            self._snapshot_reliability_cache = cache
+        cache_key = (fighter_id, as_of.isoformat(), config)
+        if cache_key in cache:
+            return dict(cache[cache_key])
+
+        history = self.raw_fights.loc[
+            self.raw_fights["fighter_id"].eq(fighter_id)
+            & self.raw_fights["date"].lt(as_of)
+        ].copy()
+        weights = {name: 0.0 for name in PARAMETER_NAMES}
+        if history.empty:
+            cache[cache_key] = dict(weights)
+            return weights
+
+        def observed_sum(column: str) -> float:
+            if column not in history:
+                return 0.0
+            values = pd.to_numeric(history[column], errors="coerce")
+            if not values.notna().any():
+                return 0.0
+            return max(float(values.sum(min_count=1)), 0.0)
+
+        def observed_minutes(column: str) -> float:
+            if column not in history:
+                return 0.0
+            observed = pd.to_numeric(history[column], errors="coerce").notna()
+            seconds = pd.to_numeric(
+                history.loc[observed, "fight_seconds"], errors="coerce"
+            )
+            if not seconds.notna().any():
+                return 0.0
+            return max(float(seconds.sum(min_count=1)) / 60.0, 0.0)
+
+        def reliability(exposure: float, prior: float) -> float:
+            if exposure <= 0.0:
+                return 0.0
+            return _clip(exposure / (exposure + prior), 0.0, 1.0)
+
+        rate_prior_minutes = config.rate_prior_fights * 15.0
+        probability_prior = config.probability_prior_attempts
+        rare_prior = config.rare_event_prior_opportunities
+        strike_rate_weight = reliability(
+            observed_minutes("sig_strikes_attempts"), rate_prior_minutes
+        )
+        for name in (
+            "strike_rate_distance",
+            "strike_rate_clinch",
+            "strike_rate_ground",
+        ):
+            weights[name] = strike_rate_weight
+
+        phase_attempts = math.fsum(
+            observed_sum(name)
+            for name in (
+                "distance_strikes_attempts",
+                "clinch_strikes_attempts",
+                "ground_strikes_attempts",
+            )
+        )
+        phase_weight = reliability(phase_attempts, probability_prior)
+        for name in _SNAPSHOT_COMPOSITION_GROUPS[0]:
+            weights[name] = phase_weight
+
+        sig_attempts = observed_sum("sig_strikes_attempts")
+        sig_landed = observed_sum("sig_strikes_landed")
+        weights["strike_accuracy"] = reliability(sig_attempts, probability_prior)
+        weights["strike_defense"] = reliability(
+            observed_sum("opponent_sig_strikes_attempts"), probability_prior
+        )
+        target_landed = math.fsum(
+            observed_sum(name)
+            for name in (
+                "head_strikes_landed",
+                "body_strikes_landed",
+                "leg_strikes_landed",
+            )
+        )
+        target_weight = reliability(target_landed, probability_prior)
+        for name in _SNAPSHOT_COMPOSITION_GROUPS[1]:
+            weights[name] = target_weight
+        weights["knockdown_rate_per_landed"] = reliability(
+            sig_landed, rare_prior
+        )
+
+        weights["takedown_attempt_rate"] = reliability(
+            observed_minutes("takedowns_attempts"), rate_prior_minutes
+        )
+        weights["takedown_accuracy"] = reliability(
+            observed_sum("takedowns_attempts"), probability_prior
+        )
+        weights["takedown_defense"] = reliability(
+            observed_sum("opponent_takedowns_attempts"), probability_prior
+        )
+
+        if self.use_takedown_control_association and not self.round_stats.empty:
+            rounds = self.round_stats.loc[
+                self.round_stats["fighter_id"].eq(fighter_id)
+                & self.round_stats["date"].lt(as_of)
+                & self.round_stats["_fit_eligible"]
+            ].copy()
+            required = {
+                "takedowns_landed",
+                "control",
+                "fight_id",
+                "round_number",
+                "opponent_id",
+            }
+            if required.issubset(rounds.columns):
+                own_opportunities = float(
+                    (
+                        pd.to_numeric(
+                            rounds["takedowns_landed"], errors="coerce"
+                        ).gt(0)
+                        & pd.to_numeric(rounds["control"], errors="coerce").notna()
+                    ).sum()
+                )
+                mirrored = self.round_stats.loc[
+                    self.round_stats["date"].lt(as_of)
+                    & self.round_stats["_fit_eligible"]
+                ][
+                    [
+                        "fight_id",
+                        "round_number",
+                        "fighter_id",
+                        "takedowns_landed",
+                        "control",
+                    ]
+                ].rename(
+                    columns={
+                        "fighter_id": "opponent_id_join",
+                        "takedowns_landed": "opponent_takedowns_landed",
+                        "control": "opponent_control",
+                    }
+                )
+                conceded = rounds.merge(
+                    mirrored,
+                    left_on=["fight_id", "round_number", "opponent_id"],
+                    right_on=["fight_id", "round_number", "opponent_id_join"],
+                    how="left",
+                    validate="one_to_one",
+                )
+                conceded_opportunities = float(
+                    (
+                        pd.to_numeric(
+                            conceded["opponent_takedowns_landed"], errors="coerce"
+                        ).gt(0)
+                        & pd.to_numeric(
+                            conceded["opponent_control"], errors="coerce"
+                        ).notna()
+                    ).sum()
+                )
+                weights["ground_control_rate"] = reliability(
+                    own_opportunities,
+                    TAKEDOWN_CONTROL_FIGHTER_PRIOR_OPPORTUNITIES,
+                )
+                weights["escape_rate"] = reliability(
+                    conceded_opportunities,
+                    TAKEDOWN_CONTROL_FIGHTER_PRIOR_OPPORTUNITIES,
+                )
+        else:
+            control_observed = pd.to_numeric(
+                history["control"], errors="coerce"
+            ).notna()
+            control_exposure = pd.to_numeric(
+                history.loc[control_observed, "fight_seconds"], errors="coerce"
+            )
+            opponent_control_observed = pd.to_numeric(
+                history["opponent_control"], errors="coerce"
+            ).notna()
+            opponent_control_exposure = pd.to_numeric(
+                history.loc[opponent_control_observed, "fight_seconds"],
+                errors="coerce",
+            )
+            weights["ground_control_rate"] = reliability(
+                float(control_exposure.sum(min_count=1))
+                if control_exposure.notna().any()
+                else 0.0,
+                probability_prior * 60.0,
+            )
+            weights["escape_rate"] = reliability(
+                float(opponent_control_exposure.sum(min_count=1))
+                if opponent_control_exposure.notna().any()
+                else 0.0,
+                probability_prior * 60.0,
+            )
+
+        reversals = observed_sum("reversals")
+        opponent_takedowns = observed_sum("opponent_takedowns_landed")
+        weights["reversal_after_escape"] = reliability(
+            max(reversals, opponent_takedowns), rare_prior
+        )
+        weights["submission_attempt_rate"] = reliability(
+            observed_minutes("sub_attempts"), rate_prior_minutes
+        )
+        submission_attempts = observed_sum("sub_attempts")
+        opponent_submission_attempts = observed_sum("opponent_sub_attempts")
+        method = history["method"].map(self._method_bucket)
+        result = history["result"].astype(str).str.upper()
+        submission_wins = float((result.eq("W") & method.eq("submission")).sum())
+        submission_losses = float((result.eq("L") & method.eq("submission")).sum())
+        ko_losses = float((result.eq("L") & method.eq("ko_tko")).sum())
+        weights["submission_finish_probability"] = reliability(
+            max(submission_attempts, submission_wins), rare_prior
+        )
+        weights["submission_defense"] = reliability(
+            max(opponent_submission_attempts, submission_losses), rare_prior
+        )
+        weights["ko_resistance"] = reliability(
+            max(observed_sum("opponent_knockdowns"), ko_losses), rare_prior
+        )
+
+        if not self.round_stats.empty:
+            later_rounds = self.round_stats.loc[
+                self.round_stats["fighter_id"].eq(fighter_id)
+                & self.round_stats["date"].lt(as_of)
+                & self.round_stats["_fit_eligible"]
+                & self.round_stats["round_number"].gt(1)
+                & self.round_stats["sig_strikes_attempts"].notna()
+            ]
+            weights["pace_decay"] = reliability(float(len(later_rounds)), 10.0)
+        cache[cache_key] = dict(weights)
+        return weights
+
+    @staticmethod
+    def _blend_snapshot_parameters(
+        fighter: Mapping[str, float],
+        context: Mapping[str, float],
+        weights: Mapping[str, float],
+    ) -> dict[str, float]:
+        """Shrink a fighter vector toward its causal context on natural scales."""
+
+        result: dict[str, float] = {}
+        composition_names = {
+            name for group in _SNAPSHOT_COMPOSITION_GROUPS for name in group
+        }
+        for name in PARAMETER_NAMES:
+            if name in composition_names:
+                continue
+            weight = _clip(float(weights.get(name, 0.0)), 0.0, 1.0)
+            fighter_value = float(fighter[name])
+            context_value = float(context[name])
+            if name in _SNAPSHOT_POSITIVE_RATE_PARAMETERS:
+                result[name] = math.exp(
+                    (1.0 - weight) * math.log(max(context_value, 1e-12))
+                    + weight * math.log(max(fighter_value, 1e-12))
+                )
+            else:
+                epsilon = 1e-9
+                fighter_probability = _clip(fighter_value, epsilon, 1.0 - epsilon)
+                context_probability = _clip(context_value, epsilon, 1.0 - epsilon)
+                fighter_logit = math.log(
+                    fighter_probability / (1.0 - fighter_probability)
+                )
+                context_logit = math.log(
+                    context_probability / (1.0 - context_probability)
+                )
+                blended_logit = (
+                    (1.0 - weight) * context_logit + weight * fighter_logit
+                )
+                result[name] = 1.0 / (1.0 + math.exp(-blended_logit))
+
+        for group in _SNAPSHOT_COMPOSITION_GROUPS:
+            unnormalized = {}
+            for name in group:
+                weight = _clip(float(weights.get(name, 0.0)), 0.0, 1.0)
+                unnormalized[name] = (
+                    max(float(context[name]), 1e-12) ** (1.0 - weight)
+                    * max(float(fighter[name]), 1e-12) ** weight
+                )
+            total = math.fsum(unnormalized.values())
+            for name, value in unnormalized.items():
+                result[name] = value / total
+        return result
+
     @staticmethod
     def _construct_domain_dataclass(cls: type, values: Mapping[str, object]) -> object:
         """Construct a domain dataclass while keeping this fitter schema-isolated."""
@@ -2462,6 +2778,7 @@ class CausalParameterFitter:
         division: str,
         member_index: int,
         as_of: object | None = None,
+        parameter_mode: str = "full",
         _artifact_validated: bool = False,
     ) -> object:
         """Construct the engine's immutable ``FighterSnapshot`` for one member.
@@ -2487,19 +2804,35 @@ class CausalParameterFitter:
             raise ValueError("snapshot as_of must exactly match the fitted artifact cutoff")
         if member_index < 0 or member_index >= len(artifact.members):
             raise IndexError("bootstrap member index is out of range")
+        if parameter_mode not in SNAPSHOT_PARAMETER_MODES:
+            raise ValueError(
+                "parameter_mode must be full, context_only, or reliability_weighted"
+            )
         stable_id = _identity_token(fighter_id)
         if not stable_id:
             raise ValueError("fighter_id is blank")
         member = artifact.members[member_index]
-        parameters = member.fighter_parameters.get(stable_id)
-        data_quality = "fighter_history"
-        if parameters is None:
-            current_era = self._era_key(requested, artifact.config.era_years)
-            context_key = f"{str(division).strip() or 'Unknown'}|{current_era}"
-            parameters = member.context_parameters.get(
-                context_key, member.context_parameters["__global__"]
-            )
+        current_era = self._era_key(requested, artifact.config.era_years)
+        context_key = f"{str(division).strip() or 'Unknown'}|{current_era}"
+        context_parameters = member.context_parameters.get(
+            context_key, member.context_parameters["__global__"]
+        )
+        fighter_parameters = member.fighter_parameters.get(stable_id)
+        if fighter_parameters is None or parameter_mode == "context_only":
+            parameters = context_parameters
             data_quality = "division_era_prior"
+        elif parameter_mode == "reliability_weighted":
+            parameters = self._blend_snapshot_parameters(
+                fighter_parameters,
+                context_parameters,
+                self._snapshot_reliability_weights(
+                    stable_id, requested, artifact.config
+                ),
+            )
+            data_quality = "reliability_weighted_fighter_history"
+        else:
+            parameters = fighter_parameters
+            data_quality = "fighter_history"
         metadata = self._snapshot_metadata(stable_id, requested)
         parameters = dict(parameters)
         effects = member.covariate_effects
@@ -2529,7 +2862,11 @@ class CausalParameterFitter:
             + effects.get("log_layoff_years", 0.0)
             * (layoff_scaled - effects.get("log_layoff_years_center", 0.0))
         )
-        multiplier = _clip(math.exp(log_rate_adjustment), 0.6, 1.4)
+        multiplier = (
+            1.0
+            if parameter_mode == "context_only"
+            else _clip(math.exp(log_rate_adjustment), 0.6, 1.4)
+        )
         for field_name in (
             "strike_rate_distance",
             "strike_rate_clinch",

@@ -8,6 +8,7 @@ from pathlib import Path
 import sys
 
 from .domain import SimulatorConfig
+from .parameters import SNAPSHOT_PARAMETER_MODES
 from .research import (
     DEFAULT_ARTIFACT_ROOT,
     DEFAULT_FIGHTER_PROFILES,
@@ -354,6 +355,15 @@ def build_parser() -> argparse.ArgumentParser:
         help=(
             "Research-only fit using strongly pooled same-round TD/CTRL "
             "associations for ground retention and escape"
+        ),
+    )
+    posterior.add_argument(
+        "--snapshot-parameter-mode",
+        choices=tuple(sorted(SNAPSHOT_PARAMETER_MODES)),
+        default="full",
+        help=(
+            "Research ablation for fighter deviations: full, division/era "
+            "context only, or a second causal exposure-weighted shrinkage step"
         ),
     )
     posterior.add_argument(
@@ -832,6 +842,7 @@ def main(argv: list[str] | None = None) -> int:
                 max_runtime_seconds=args.max_runtime_seconds,
                 cohort_manifest_path=args.cohort_manifest,
                 cohort_name=args.cohort_name,
+                snapshot_parameter_mode=args.snapshot_parameter_mode,
             )
             _print(
                 {

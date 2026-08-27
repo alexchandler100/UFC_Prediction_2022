@@ -530,6 +530,14 @@ The default fit is unchanged. `--max-runtime-seconds` accepts at most 3,300
 seconds and produces a valid partial screening report from complete,
 checkpointed fights when the deadline is reached.
 
+`--snapshot-parameter-mode` is a separate research ablation with `full` as the
+default. `context_only` removes fighter-specific and fighter-covariate
+deviations, while `reliability_weighted` applies an additional strictly causal,
+parameter-specific exposure weight to the already pooled fighter deviation.
+It uses natural log, logit, or normalized-composition scales as appropriate.
+The mode is committed in the resumable run contract and does not alter the
+shared fitted parameter artifact.
+
 For a broad, low-precision diagnostic, 100 total paths can be split across ten
 bootstrap members. This is useful for aggregate accuracy, not precise
 matchup-level probabilities:
@@ -564,6 +572,15 @@ diagnostics. The v2.1 profile passed all development gates on the same 229
 fights, including a wholly favorable event-card interval for joint log-loss
 improvement, but remains frozen for confirmation because winner accuracy was
 still only 52.63% and winner log loss remained worse than 50/50.
+
+The bounded fighter-effect ablation then compared full, context-only, and
+reliability-weighted snapshots using the same v2.1 paths. Reliability weighting
+raised point accuracy to 55.70% and improved joint and winner point scores, but
+its 49.21%--62.00% Wilson accuracy interval included chance, every paired
+proper-score interval crossed zero, and winner log loss/Brier remained worse
+than 50/50. Context-only lost winner and method ranking signal. The complete
+result and the next opponent-adjusted parameter-model experiment are recorded
+in `SIMULATION_FIGHTER_EFFECT_ABLATION_REPORT_2026-08-27.md`.
 
 Measure a fixed run specification before and after performance changes with:
 
