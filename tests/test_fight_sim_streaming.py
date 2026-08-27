@@ -86,6 +86,12 @@ class StreamingAccumulatorTests(unittest.TestCase):
             18 * 8,
         )
 
+        restored = ForecastAccumulator.from_checkpoint_dict(
+            left.to_checkpoint_dict()
+        )
+        self.assertEqual(restored.to_checkpoint_dict(), left.to_checkpoint_dict())
+        self.assertEqual(restored.forecast().to_dict(), expected)
+
     def test_streaming_equals_retained_forecast_convergence_and_traces(self):
         specs = (_spec(0), _spec(1))
         retained = run_nested(
@@ -290,6 +296,122 @@ class StreamingAccumulatorTests(unittest.TestCase):
         self.assertEqual(adaptive.forecast.to_dict(), one_shot.forecast.to_dict())
         self.assertEqual(adaptive.convergence[-1], one_shot.convergence[-1])
         self.assertEqual(adaptive.ledger.packed_duration_bytes, 16 * 8)
+
+    def test_adaptive_checkpoint_resume_is_exact_across_workers_and_chunks(self):
+        specs = (_spec(0), _spec(1))
+        direct = run_adaptive_nested(
+            specs,
+            initial_paths_per_member=4,
+            max_paths_per_member=8,
+            workers=1,
+            chunk_size=3,
+            max_traces=0,
+            retain_paths=False,
+            winner_mcse_target=1e-12,
+            parameter_quantile_tolerance=0.0,
+        )
+        checkpoints = []
+
+        class IntentionalInterruption(RuntimeError):
+            pass
+
+        def interrupt_after_checkpoint(value):
+            checkpoints.append(dict(value))
+            raise IntentionalInterruption
+
+        with self.assertRaises(IntentionalInterruption):
+            run_adaptive_nested(
+                specs,
+                initial_paths_per_member=4,
+                max_paths_per_member=8,
+                workers=1,
+                chunk_size=2,
+                max_traces=0,
+                retain_paths=False,
+                winner_mcse_target=1e-12,
+                parameter_quantile_tolerance=0.0,
+                checkpoint_callback=interrupt_after_checkpoint,
+            )
+
+        self.assertEqual(checkpoints[0]["paths_per_member"], 4)
+        parallel_checkpoints = []
+        run_adaptive_nested(
+            specs,
+            initial_paths_per_member=4,
+            max_paths_per_member=4,
+            workers=2,
+            chunk_size=7,
+            max_traces=0,
+            retain_paths=False,
+            winner_mcse_target=1e-12,
+            parameter_quantile_tolerance=0.0,
+            checkpoint_callback=lambda value: parallel_checkpoints.append(dict(value)),
+        )
+        # The max-path setting is intentionally part of the resume contract, so
+        # compare only its exact accumulator/aggregate authority across layouts.
+        self.assertEqual(
+            parallel_checkpoints[0]["accumulator_sha256"],
+            checkpoints[0]["accumulator_sha256"],
+        )
+        self.assertEqual(
+            parallel_checkpoints[0]["aggregate_sha256"],
+            checkpoints[0]["aggregate_sha256"],
+        )
+        resumed_checkpoints = []
+        resumed = run_adaptive_nested(
+            reversed(specs),
+            initial_paths_per_member=4,
+            max_paths_per_member=8,
+            workers=2,
+            chunk_size=7,
+            max_traces=0,
+            retain_paths=False,
+            winner_mcse_target=1e-12,
+            parameter_quantile_tolerance=0.0,
+            resume_checkpoint=checkpoints[0],
+            checkpoint_callback=lambda value: resumed_checkpoints.append(dict(value)),
+        )
+
+        self.assertEqual(resumed_checkpoints[-1]["paths_per_member"], 8)
+        self.assertEqual(resumed.forecast.to_dict(), direct.forecast.to_dict())
+        self.assertEqual(resumed.convergence, direct.convergence)
+        self.assertEqual(resumed.converged, direct.converged)
+
+    def test_adaptive_checkpoint_rejects_hash_corruption(self):
+        specs = (_spec(0), _spec(1))
+        checkpoints = []
+
+        class IntentionalInterruption(RuntimeError):
+            pass
+
+        def capture(value):
+            checkpoints.append(dict(value))
+            raise IntentionalInterruption
+
+        with self.assertRaises(IntentionalInterruption):
+            run_adaptive_nested(
+                specs,
+                initial_paths_per_member=4,
+                max_paths_per_member=8,
+                max_traces=0,
+                retain_paths=False,
+                winner_mcse_target=1e-12,
+                parameter_quantile_tolerance=0.0,
+                checkpoint_callback=capture,
+            )
+        checkpoints[0]["total_paths"] = 999
+
+        with self.assertRaisesRegex(ValueError, "checkpoint hash"):
+            run_adaptive_nested(
+                specs,
+                initial_paths_per_member=4,
+                max_paths_per_member=8,
+                max_traces=0,
+                retain_paths=False,
+                winner_mcse_target=1e-12,
+                parameter_quantile_tolerance=0.0,
+                resume_checkpoint=checkpoints[0],
+            )
 
 
 if __name__ == "__main__":

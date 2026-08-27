@@ -3,9 +3,9 @@
 from __future__ import annotations
 
 from concurrent.futures import FIRST_COMPLETED, ProcessPoolExecutor, wait
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass, fields
 import math
-from typing import Iterable, Iterator
+from typing import Callable, Iterable, Iterator, Mapping
 
 import numpy as np
 
@@ -18,6 +18,7 @@ from .domain import (
     TraceManifest,
 )
 from .engine import SimulationInvariantError, simulate_fight
+from .parameters import canonical_sha256
 from .reducer import event_to_dict
 from .telemetry import (
     build_trace_manifest,
@@ -29,6 +30,8 @@ from .telemetry import (
 
 
 DEFAULT_PATH_RETENTION_LIMIT = 4096
+ADAPTIVE_CHECKPOINT_SCHEMA_VERSION = 1
+ADAPTIVE_ALGORITHM = "member-balanced-doubling-v1"
 
 
 @dataclass(frozen=True, slots=True)
@@ -564,6 +567,155 @@ def run_nested(
     )
 
 
+def _adaptive_contract(
+    values: tuple[SimulationRunSpec, ...],
+    *,
+    run_id: str,
+    initial_paths_per_member: int,
+    max_paths_per_member: int,
+    start_index: int,
+    winner_mcse_target: float,
+    parameter_quantile_tolerance: float,
+) -> dict[str, object]:
+    first = values[0]
+    return {
+        "algorithm": ADAPTIVE_ALGORITHM,
+        "ensemble_run_id": run_id,
+        "specs_sha256": canonical_sha256([spec.to_dict() for spec in values]),
+        "bootstrap_members": [spec.bootstrap_member for spec in values],
+        "engine_version": first.engine_version,
+        "rng_contract": first.rng_contract,
+        "matchup_id": first.bout.matchup_id,
+        "scheduled_rounds": first.bout.scheduled_rounds,
+        "start_index": int(start_index),
+        "initial_paths_per_member": int(initial_paths_per_member),
+        "max_paths_per_member": int(max_paths_per_member),
+        "winner_mcse_target": float(winner_mcse_target),
+        "parameter_quantile_tolerance": float(parameter_quantile_tolerance),
+    }
+
+
+def _adaptive_stages(initial_paths_per_member: int, max_paths_per_member: int) -> tuple[int, ...]:
+    stages: list[int] = []
+    current = min(initial_paths_per_member, max_paths_per_member)
+    while True:
+        stages.append(current)
+        if current >= max_paths_per_member:
+            return tuple(stages)
+        current = min(current * 2, max_paths_per_member)
+
+
+def _diagnostic_from_dict(value: object) -> ConvergenceDiagnostics:
+    if not isinstance(value, Mapping):
+        raise ValueError("adaptive checkpoint convergence entry must be an object")
+    raw = dict(value)
+    expected = {field.name for field in fields(ConvergenceDiagnostics)}
+    if set(raw) - {"converged"} != expected:
+        raise ValueError("adaptive checkpoint convergence entry has invalid fields")
+    diagnostic = ConvergenceDiagnostics(
+        paths_per_member=int(raw["paths_per_member"]),
+        total_paths=int(raw["total_paths"]),
+        winner_process_mcse=float(raw["winner_process_mcse"]),
+        split_estimate_difference=float(raw["split_estimate_difference"]),
+        split_combined_mcse=float(raw["split_combined_mcse"]),
+        parameter_quantile_max_shift=float(raw["parameter_quantile_max_shift"]),
+        mcse_within_target=bool(raw["mcse_within_target"]),
+        headline_batches_stable=bool(raw["headline_batches_stable"]),
+        parameter_quantiles_stable=bool(raw["parameter_quantiles_stable"]),
+    )
+    if "converged" in raw and raw["converged"] is not diagnostic.converged:
+        raise ValueError("adaptive checkpoint convergence flag is invalid")
+    return diagnostic
+
+
+def _adaptive_checkpoint(
+    contract: Mapping[str, object],
+    accumulator: ForecastAccumulator,
+    forecast: AggregateForecast,
+    history: Iterable[ConvergenceDiagnostics],
+    *,
+    paths_per_member: int,
+) -> dict[str, object]:
+    accumulator_state = accumulator.to_checkpoint_dict()
+    payload: dict[str, object] = {
+        "schema_version": ADAPTIVE_CHECKPOINT_SCHEMA_VERSION,
+        "contract": dict(contract),
+        "paths_per_member": int(paths_per_member),
+        "total_paths": int(accumulator.total_paths),
+        "accumulator_sha256": canonical_sha256(accumulator_state),
+        "aggregate_sha256": canonical_sha256(forecast.to_dict()),
+        "convergence_history": [
+            {**asdict(diagnostic), "converged": diagnostic.converged}
+            for diagnostic in history
+        ],
+        "accumulator": accumulator_state,
+    }
+    payload["checkpoint_sha256"] = canonical_sha256(payload)
+    return payload
+
+
+def _restore_adaptive_checkpoint(
+    value: object,
+    *,
+    contract: Mapping[str, object],
+    winner_mcse_target: float,
+    parameter_quantile_tolerance: float,
+) -> tuple[ForecastAccumulator, AggregateForecast, list[ConvergenceDiagnostics], int]:
+    if not isinstance(value, Mapping):
+        raise ValueError("adaptive checkpoint must be an object")
+    checkpoint = dict(value)
+    supplied_hash = checkpoint.pop("checkpoint_sha256", None)
+    if supplied_hash != canonical_sha256(checkpoint):
+        raise ValueError("adaptive checkpoint hash is invalid")
+    if checkpoint.get("schema_version") != ADAPTIVE_CHECKPOINT_SCHEMA_VERSION:
+        raise ValueError("unsupported adaptive checkpoint schema")
+    if checkpoint.get("contract") != dict(contract):
+        raise ValueError("adaptive checkpoint run/spec contract differs")
+    accumulator_state = checkpoint.get("accumulator")
+    if checkpoint.get("accumulator_sha256") != canonical_sha256(accumulator_state):
+        raise ValueError("adaptive checkpoint accumulator hash is invalid")
+    accumulator = ForecastAccumulator.from_checkpoint_dict(accumulator_state)
+    forecast = accumulator.forecast()
+    if checkpoint.get("aggregate_sha256") != canonical_sha256(forecast.to_dict()):
+        raise ValueError("adaptive checkpoint aggregate hash is invalid")
+
+    current = int(checkpoint.get("paths_per_member") or 0)
+    stages = _adaptive_stages(
+        int(contract["initial_paths_per_member"]),
+        int(contract["max_paths_per_member"]),
+    )
+    if current not in stages:
+        raise ValueError("adaptive checkpoint path count is not a valid balanced stage")
+    expected_members = {int(member) for member in contract["bootstrap_members"]}
+    if set(accumulator.member_paths) != expected_members or any(
+        count != current for count in accumulator.member_paths.values()
+    ):
+        raise ValueError("adaptive checkpoint is not member-balanced")
+    if (
+        accumulator.total_paths != len(expected_members) * current
+        or int(checkpoint.get("total_paths") or 0) != accumulator.total_paths
+    ):
+        raise ValueError("adaptive checkpoint total path count is invalid")
+    raw_history = checkpoint.get("convergence_history")
+    if not isinstance(raw_history, list):
+        raise ValueError("adaptive checkpoint convergence history is invalid")
+    history = [_diagnostic_from_dict(item) for item in raw_history]
+    stage_index = stages.index(current)
+    if len(history) != stage_index + 1:
+        raise ValueError("adaptive checkpoint convergence history length is invalid")
+    if any(diagnostic.converged for diagnostic in history[:-1]):
+        raise ValueError("adaptive checkpoint continued after convergence")
+    expected_diagnostic = _convergence_from_accumulator(
+        accumulator,
+        forecast,
+        winner_mcse_target=winner_mcse_target,
+        parameter_quantile_tolerance=parameter_quantile_tolerance,
+    )
+    if history[-1] != expected_diagnostic:
+        raise ValueError("adaptive checkpoint convergence diagnostics are invalid")
+    return accumulator, forecast, history, current
+
+
 def run_adaptive_nested(
     specs: Iterable[SimulationRunSpec],
     *,
@@ -577,8 +729,10 @@ def run_adaptive_nested(
     parameter_quantile_tolerance: float = 0.01,
     retain_paths: bool | None = None,
     path_retention_limit: int = DEFAULT_PATH_RETENTION_LIMIT,
+    resume_checkpoint: Mapping[str, object] | None = None,
+    checkpoint_callback: Callable[[Mapping[str, object]], None] | None = None,
 ) -> MonteCarloResult:
-    """Double inner paths while merging exact bounded-memory accumulators."""
+    """Double balanced inner ranges with optional exact aggregate checkpoints."""
 
     values = _validate_specs(specs)
     if initial_paths_per_member <= 0 or max_paths_per_member < initial_paths_per_member:
@@ -586,7 +740,22 @@ def run_adaptive_nested(
     keep_paths = _retain_paths(
         retain_paths, len(values) * max_paths_per_member, path_retention_limit
     )
+    if (resume_checkpoint is not None or checkpoint_callback is not None) and (
+        keep_paths or max_traces != 0
+    ):
+        raise ValueError(
+            "adaptive checkpointing requires streaming paths and max_traces=0"
+        )
     run_id = ensemble_run_id_for(values)
+    contract = _adaptive_contract(
+        values,
+        run_id=run_id,
+        initial_paths_per_member=initial_paths_per_member,
+        max_paths_per_member=max_paths_per_member,
+        start_index=start_index,
+        winner_mcse_target=winner_mcse_target,
+        parameter_quantile_tolerance=parameter_quantile_tolerance,
+    )
     cumulative = ForecastAccumulator(values[0].bout.scheduled_rounds)
     candidates = _TraceCandidatePool(run_id, max_traces)
     retained: list[SimulationPath] = []
@@ -595,7 +764,22 @@ def run_adaptive_nested(
     max_in_flight_paths = 1
     current = min(initial_paths_per_member, max_paths_per_member)
     range_start = start_index
-    while True:
+    forecast: AggregateForecast | None = None
+    if resume_checkpoint is not None:
+        cumulative, forecast, history, current = _restore_adaptive_checkpoint(
+            resume_checkpoint,
+            contract=contract,
+            winner_mcse_target=winner_mcse_target,
+            parameter_quantile_tolerance=parameter_quantile_tolerance,
+        )
+        range_start = start_index + current
+        if not history[-1].converged and current < max_paths_per_member:
+            current = min(current * 2, max_paths_per_member)
+
+    while not history or (
+        not history[-1].converged
+        and history[-1].paths_per_member < max_paths_per_member
+    ):
         addition = _run_range(
             values,
             range_start,
@@ -621,11 +805,23 @@ def run_adaptive_nested(
             parameter_quantile_tolerance=parameter_quantile_tolerance,
         )
         history.append(diagnostics)
+        if checkpoint_callback is not None:
+            checkpoint_callback(
+                _adaptive_checkpoint(
+                    contract,
+                    cumulative,
+                    forecast,
+                    history,
+                    paths_per_member=current,
+                )
+            )
         if diagnostics.converged or current >= max_paths_per_member:
-            break
+            continue
         next_count = min(current * 2, max_paths_per_member)
         range_start = start_index + current
         current = next_count
+    if forecast is None:
+        raise RuntimeError("adaptive simulation produced no aggregate forecast")
     retained.sort(key=lambda path: (path.bootstrap_member, path.simulation_index))
     failures.sort(key=lambda item: (item.bootstrap_member, item.simulation_index))
     traces, manifest = _trace_selected(values, candidates.paths(), max_traces)

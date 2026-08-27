@@ -10,6 +10,7 @@ from __future__ import annotations
 from dataclasses import asdict
 from datetime import datetime, timezone
 import gzip
+from hashlib import sha256
 import json
 import os
 from pathlib import Path
@@ -21,7 +22,7 @@ import pandas as pd
 from fight_semantics import stable_ufcstats_id
 from market_tracker import matchup_id_for
 
-from .domain import SimulatorConfig
+from .domain import ENGINE_VERSION, RNG_CONTRACT_VERSION, SimulatorConfig
 from .monte_carlo import run_adaptive_nested
 from .parameters import (
     CausalParameterFitter,
@@ -46,6 +47,9 @@ from .research import (
 
 UPCOMING_WEBSITE_SCHEMA_VERSION = 1
 UPCOMING_WEBSITE_MODEL_VERSION = "candidate-fight-sim-card-v1"
+UPCOMING_RUN_SCHEMA_VERSION = 1
+UPCOMING_MATCHUP_RESULT_SCHEMA_VERSION = 1
+UPCOMING_ADAPTIVE_WRAPPER_SCHEMA_VERSION = 1
 DEFAULT_PARAMETER_CACHE = DEFAULT_ARTIFACT_ROOT / "parameter-materialized-cache"
 AVAILABLE = "available"
 WITHHELD_HISTORY = "withheld_insufficient_history"
@@ -195,7 +199,10 @@ def validate_website_simulation_publication(value: object) -> dict[str, object]:
 def compact_website_aggregate(value: object) -> dict[str, object]:
     """Strip local research detail that the read-only website never consumes."""
 
-    aggregate = compact_shadow_aggregate(value)
+    # Hash the JSON representation that is actually durable. Numeric mapping
+    # keys otherwise sort differently before and after a JSON round trip.
+    normalized = json.loads(canonical_json(value))
+    aggregate = compact_shadow_aggregate(normalized)
     for field in UPCOMING_WEBSITE_OMITTED_AGGREGATE_FIELDS:
         if "[]" not in field:
             aggregate.pop(field, None)
@@ -212,7 +219,7 @@ def compact_website_aggregate(value: object) -> dict[str, object]:
 
 
 def _write_authority(path: Path, aggregate: Mapping[str, object]) -> Path:
-    payload = dict(aggregate)
+    payload = json.loads(canonical_json(dict(aggregate)))
     digest = canonical_sha256(payload)
     destination = path / f"{payload['matchup_id']}-{digest}.json.gz"
     destination.parent.mkdir(parents=True, exist_ok=True)
@@ -244,6 +251,224 @@ def _write_authority(path: Path, aggregate: Mapping[str, object]) -> Path:
     return destination
 
 
+def _file_sha256(path: str | Path) -> str:
+    digest = sha256()
+    with Path(path).open("rb") as source:
+        while block := source.read(1024 * 1024):
+            digest.update(block)
+    return digest.hexdigest()
+
+
+def _atomic_write_gzip_json(path: str | Path, value: Mapping[str, object]) -> Path:
+    destination = Path(path)
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    encoded = gzip.compress(
+        (canonical_json(dict(value)) + "\n").encode("utf-8"),
+        compresslevel=6,
+        mtime=0,
+    )
+    descriptor, temporary_name = tempfile.mkstemp(
+        prefix=f".{destination.name}.", suffix=".tmp", dir=destination.parent
+    )
+    try:
+        with os.fdopen(descriptor, "wb") as output:
+            output.write(encoded)
+            output.flush()
+            os.fsync(output.fileno())
+        os.replace(temporary_name, destination)
+    except Exception:
+        try:
+            os.unlink(temporary_name)
+        except FileNotFoundError:
+            pass
+        raise
+    return destination
+
+
+def _read_gzip_json(path: str | Path) -> dict[str, object]:
+    value = json.loads(gzip.decompress(Path(path).read_bytes()))
+    if not isinstance(value, dict):
+        raise ValueError(f"compressed JSON must contain an object: {path}")
+    return value
+
+
+def _self_hashed(value: Mapping[str, object], field: str) -> dict[str, object]:
+    payload = dict(value)
+    payload[field] = canonical_sha256(payload)
+    return payload
+
+
+def _validate_self_hash(
+    value: object, *, field: str, label: str
+) -> dict[str, object]:
+    if not isinstance(value, Mapping):
+        raise ValueError(f"{label} must be an object")
+    payload = dict(value)
+    supplied = payload.pop(field, None)
+    if supplied != canonical_sha256(payload):
+        raise ValueError(f"{label} hash is invalid")
+    payload[field] = supplied
+    return payload
+
+
+def _load_run_manifest(path: Path) -> dict[str, object]:
+    manifest = _validate_self_hash(
+        json.loads(path.read_text(encoding="utf-8")),
+        field="manifest_sha256",
+        label="upcoming run manifest",
+    )
+    if manifest.get("schema_version") != UPCOMING_RUN_SCHEMA_VERSION:
+        raise ValueError("unsupported upcoming run manifest schema")
+    contract = manifest.get("run_contract")
+    if not isinstance(contract, dict):
+        raise ValueError("upcoming run manifest is missing its contract")
+    if manifest.get("run_contract_sha256") != canonical_sha256(contract):
+        raise ValueError("upcoming run contract hash is invalid")
+    return manifest
+
+
+def _matchup_result_path(destination: Path, matchup_id: object) -> Path:
+    return destination / "matchup-results" / f"{matchup_id}.json"
+
+
+def _write_matchup_result(
+    destination: Path,
+    *,
+    run_contract_sha256: str,
+    item: Mapping[str, object],
+) -> Path:
+    payload = _self_hashed(
+        {
+            "schema_version": UPCOMING_MATCHUP_RESULT_SCHEMA_VERSION,
+            "run_contract_sha256": run_contract_sha256,
+            "matchup_id": str(item["matchup_id"]),
+            "item": dict(item),
+        },
+        "result_sha256",
+    )
+    return atomic_write_json(
+        _matchup_result_path(destination, item["matchup_id"]), payload
+    )
+
+
+def _load_matchup_result(
+    path: Path,
+    *,
+    run_contract_sha256: str,
+    matchup_id: str,
+) -> dict[str, object]:
+    result = _validate_self_hash(
+        json.loads(path.read_text(encoding="utf-8")),
+        field="result_sha256",
+        label="upcoming matchup result",
+    )
+    if result.get("schema_version") != UPCOMING_MATCHUP_RESULT_SCHEMA_VERSION:
+        raise ValueError("unsupported upcoming matchup result schema")
+    if result.get("run_contract_sha256") != run_contract_sha256:
+        raise ValueError("upcoming matchup result belongs to another run")
+    if result.get("matchup_id") != matchup_id or not isinstance(result.get("item"), dict):
+        raise ValueError("upcoming matchup result identity is invalid")
+    item = dict(result["item"])
+    if item.get("matchup_id") != matchup_id:
+        raise ValueError("upcoming matchup result item identity is invalid")
+    status = item.get("status")
+    if status == AVAILABLE:
+        compact = compact_website_aggregate(item.get("aggregate"))
+        if compact != item.get("aggregate"):
+            raise ValueError("completed upcoming matchup aggregate is invalid")
+    elif status not in {WITHHELD_HISTORY, WITHHELD_NONCONVERGED}:
+        raise ValueError("completed upcoming matchup status is invalid")
+    return item
+
+
+def _reconcile_completed_authority(
+    destination: Path,
+    *,
+    run_contract_sha256: str,
+    item: Mapping[str, object],
+) -> dict[str, object]:
+    """Normalize legacy pre-JSON hashes without rerunning completed paths."""
+
+    completed = dict(item)
+    if completed.get("status") == WITHHELD_HISTORY:
+        return completed
+    matchup_id = str(completed["matchup_id"])
+    diagnostics_path = destination / "convergence-diagnostics" / f"{matchup_id}.json"
+    if not diagnostics_path.is_file():
+        raise ValueError("completed simulated matchup is missing convergence diagnostics")
+    diagnostics = json.loads(diagnostics_path.read_text(encoding="utf-8"))
+    if not isinstance(diagnostics, dict) or diagnostics.get("matchup_id") != matchup_id:
+        raise ValueError("completed matchup convergence diagnostics are invalid")
+    old_authority = Path(str(diagnostics.get("aggregate_authority") or ""))
+    if not old_authority.is_file():
+        raise ValueError("completed matchup aggregate authority is missing")
+    full = json.loads(gzip.decompress(old_authority.read_bytes()))
+    if not isinstance(full, dict) or full.get("matchup_id") != matchup_id:
+        raise ValueError("completed matchup aggregate authority identity is invalid")
+    authority_root = destination / "aggregate-authority"
+    normalized_authority = _write_authority(authority_root, full)
+    diagnostics["aggregate_authority"] = str(normalized_authority)
+    atomic_write_json(diagnostics_path, diagnostics)
+    if completed.get("status") == AVAILABLE:
+        completed["aggregate"] = compact_website_aggregate(full)
+    _write_matchup_result(
+        destination,
+        run_contract_sha256=run_contract_sha256,
+        item=completed,
+    )
+    if old_authority.resolve() != normalized_authority.resolve():
+        if old_authority.resolve().parent != authority_root.resolve():
+            raise ValueError("refusing to remove authority outside the upcoming run")
+        old_authority.unlink()
+    return completed
+
+
+def _adaptive_checkpoint_path(destination: Path, matchup_id: object) -> Path:
+    return destination / "adaptive-checkpoints" / f"{matchup_id}.json.gz"
+
+
+def _write_adaptive_checkpoint(
+    path: Path,
+    *,
+    run_contract_sha256: str,
+    matchup_id: str,
+    adaptive_checkpoint: Mapping[str, object],
+) -> Path:
+    wrapper = _self_hashed(
+        {
+            "schema_version": UPCOMING_ADAPTIVE_WRAPPER_SCHEMA_VERSION,
+            "run_contract_sha256": run_contract_sha256,
+            "matchup_id": matchup_id,
+            "adaptive_checkpoint": dict(adaptive_checkpoint),
+        },
+        "wrapper_sha256",
+    )
+    return _atomic_write_gzip_json(path, wrapper)
+
+
+def _load_adaptive_checkpoint(
+    path: Path,
+    *,
+    run_contract_sha256: str,
+    matchup_id: str,
+) -> dict[str, object]:
+    wrapper = _validate_self_hash(
+        _read_gzip_json(path),
+        field="wrapper_sha256",
+        label="upcoming adaptive checkpoint",
+    )
+    if wrapper.get("schema_version") != UPCOMING_ADAPTIVE_WRAPPER_SCHEMA_VERSION:
+        raise ValueError("unsupported upcoming adaptive checkpoint schema")
+    if wrapper.get("run_contract_sha256") != run_contract_sha256:
+        raise ValueError("upcoming adaptive checkpoint belongs to another run")
+    if wrapper.get("matchup_id") != matchup_id:
+        raise ValueError("upcoming adaptive checkpoint identity is invalid")
+    adaptive = wrapper.get("adaptive_checkpoint")
+    if not isinstance(adaptive, dict):
+        raise ValueError("upcoming adaptive checkpoint payload is invalid")
+    return dict(adaptive)
+
+
 def execute_upcoming_card(
     *,
     card_path: str | Path,
@@ -264,6 +489,7 @@ def execute_upcoming_card(
     parameter_artifact_path: str | Path | None = None,
     parameter_cache_dir: str | Path = DEFAULT_PARAMETER_CACHE,
     issued_at_utc: object | None = None,
+    resume: bool = False,
     progress: Callable[[str], None] | None = None,
 ) -> tuple[Path, dict[str, object]]:
     """Fit once and publish completed/withheld states for one upcoming card."""
@@ -275,10 +501,18 @@ def execute_upcoming_card(
     if initial_paths_per_member <= 0 or max_paths_per_member < initial_paths_per_member:
         raise ValueError("upcoming path bounds are invalid")
     destination = Path(output_dir)
-    if destination.exists() and any(destination.iterdir()):
+    manifest_path = destination / "run-manifest.json"
+    destination_has_files = destination.exists() and any(destination.iterdir())
+    existing_manifest: dict[str, object] | None = None
+    if destination_has_files and not resume:
         raise ValueError(
-            f"upcoming output directory is not empty: {destination}; choose a new directory"
+            f"upcoming output directory is not empty: {destination}; choose a new "
+            "directory or pass --resume"
         )
+    if resume:
+        if not manifest_path.is_file():
+            raise ValueError("upcoming-card --resume requires a valid run-manifest.json")
+        existing_manifest = _load_run_manifest(manifest_path)
     destination.mkdir(parents=True, exist_ok=True)
     card = json.loads(Path(card_path).read_text(encoding="utf-8"))
     outcomes = json.loads(Path(outcome_path).read_text(encoding="utf-8"))
@@ -288,7 +522,21 @@ def execute_upcoming_card(
     if not event_id:
         raise ValueError("upcoming card event ID is blank")
     event_date = pd.to_datetime(card.get("date"), errors="raise", utc=True)
-    issued = pd.Timestamp(issued_at_utc or datetime.now(timezone.utc))
+    if existing_manifest is not None:
+        existing_contract = dict(existing_manifest["run_contract"])
+        manifest_issued = existing_contract.get("forecast_issued_at_utc")
+        if issued_at_utc is not None:
+            requested = pd.Timestamp(issued_at_utc)
+            requested = (
+                requested.tz_localize("UTC")
+                if requested.tzinfo is None
+                else requested.tz_convert("UTC")
+            )
+            if requested.isoformat() != manifest_issued:
+                raise ValueError("resume issue time differs from the existing run")
+        issued = pd.Timestamp(manifest_issued)
+    else:
+        issued = pd.Timestamp(issued_at_utc or datetime.now(timezone.utc))
     issued = issued.tz_localize("UTC") if issued.tzinfo is None else issued.tz_convert("UTC")
     if not issued < event_date:
         raise ValueError("upcoming simulation must be issued before the event date")
@@ -333,10 +581,77 @@ def execute_upcoming_card(
                 f"({'materialized cache' if parameter_cache_hit else 'newly materialized'}) for "
                 f"{len(matchups)} card matchups."
             )
-    save_parameter_artifact(destination / "parameter_model.json.gz", artifact)
+    run_contract: dict[str, object] = {
+        "schema_version": UPCOMING_RUN_SCHEMA_VERSION,
+        "event_id": event_id,
+        "event_date": event_date.isoformat(),
+        "forecast_issued_at_utc": issued.isoformat(),
+        "card_sha256": _file_sha256(card_path),
+        "outcomes_sha256": _file_sha256(outcome_path),
+        "raw_sha256": _file_sha256(raw_path),
+        "profiles_sha256": _file_sha256(profiles_path),
+        "round_stats_sha256": (
+            _file_sha256(round_path) if Path(round_path).is_file() else None
+        ),
+        "matchups": matchups,
+        "minimum_prior_ufc_fights": minimum_prior_ufc_fights,
+        "bootstrap_members": bootstrap_members,
+        "initial_paths_per_member": initial_paths_per_member,
+        "max_paths_per_member": max_paths_per_member,
+        "random_seed": random_seed,
+        "mechanics_profile_id": mechanics_profile_id,
+        "simulator_config": base.to_dict(),
+        "parameter_artifact_sha256": artifact.artifact_sha256,
+        "parameter_input_sha256": artifact.input_sha256,
+        "engine_version": ENGINE_VERSION,
+        "rng_contract": RNG_CONTRACT_VERSION,
+    }
+    run_contract_sha256 = canonical_sha256(run_contract)
+    if existing_manifest is not None:
+        if (
+            existing_manifest.get("run_contract_sha256") != run_contract_sha256
+            or existing_manifest.get("run_contract") != run_contract
+        ):
+            raise ValueError(
+                "resume contract differs from the existing upcoming-card run"
+            )
+    else:
+        manifest = _self_hashed(
+            {
+                "schema_version": UPCOMING_RUN_SCHEMA_VERSION,
+                "run_contract_sha256": run_contract_sha256,
+                "run_contract": run_contract,
+            },
+            "manifest_sha256",
+        )
+        atomic_write_json(manifest_path, manifest)
+    parameter_model_path = destination / "parameter_model.json.gz"
+    if not parameter_model_path.is_file():
+        save_parameter_artifact(parameter_model_path, artifact)
     output_matchups: list[dict[str, object]] = []
     authority_root = destination / "aggregate-authority"
     for position, matchup in enumerate(matchups, start=1):
+        matchup_id = str(matchup["matchup_id"])
+        completed_path = _matchup_result_path(destination, matchup_id)
+        if completed_path.is_file():
+            completed = _load_matchup_result(
+                completed_path,
+                run_contract_sha256=run_contract_sha256,
+                matchup_id=matchup_id,
+            )
+            completed = _reconcile_completed_authority(
+                destination,
+                run_contract_sha256=run_contract_sha256,
+                item=completed,
+            )
+            output_matchups.append(completed)
+            if progress:
+                progress(
+                    f"Resumed {position}/{len(matchups)}: "
+                    f"{completed['fighter_name']} vs {completed['opponent_name']} "
+                    f"({completed['status']})."
+                )
+            continue
         item = dict(matchup)
         fighter_history = int(exposure.get(str(matchup["fighter_id"]), 0))
         opponent_history = int(exposure.get(str(matchup["opponent_id"]), 0))
@@ -350,6 +665,11 @@ def execute_upcoming_card(
                 f"{fighter_history} and {opponent_history}."
             )
             output_matchups.append(item)
+            _write_matchup_result(
+                destination,
+                run_contract_sha256=run_contract_sha256,
+                item=item,
+            )
             if progress:
                 progress(
                     f"Withheld {position}/{len(matchups)}: {item['fighter_name']} vs "
@@ -373,6 +693,22 @@ def execute_upcoming_card(
             simulator_base=base,
             _artifact_validated=True,
         )
+        adaptive_path = _adaptive_checkpoint_path(destination, matchup_id)
+        adaptive_checkpoint = (
+            _load_adaptive_checkpoint(
+                adaptive_path,
+                run_contract_sha256=run_contract_sha256,
+                matchup_id=matchup_id,
+            )
+            if adaptive_path.is_file()
+            else None
+        )
+        if adaptive_checkpoint is not None and progress:
+            progress(
+                f"Continuing {position}/{len(matchups)}: {item['fighter_name']} vs "
+                f"{item['opponent_name']} from "
+                f"{adaptive_checkpoint.get('paths_per_member', '?')} paths/member."
+            )
         result = run_adaptive_nested(
             specs,
             initial_paths_per_member=initial_paths_per_member,
@@ -381,6 +717,15 @@ def execute_upcoming_card(
             chunk_size=chunk_size,
             max_traces=0,
             retain_paths=False,
+            resume_checkpoint=adaptive_checkpoint,
+            checkpoint_callback=lambda checkpoint, path=adaptive_path, identity=matchup_id: (
+                _write_adaptive_checkpoint(
+                    path,
+                    run_contract_sha256=run_contract_sha256,
+                    matchup_id=identity,
+                    adaptive_checkpoint=checkpoint,
+                )
+            ),
         )
         full = result.forecast.to_dict()
         authority_path = _write_authority(authority_root, full)
@@ -419,6 +764,13 @@ def execute_upcoming_card(
                 int(result.forecast.total_paths) // bootstrap_members
             )
         output_matchups.append(item)
+        _write_matchup_result(
+            destination,
+            run_contract_sha256=run_contract_sha256,
+            item=item,
+        )
+        if adaptive_path.is_file():
+            adaptive_path.unlink()
         if progress:
             progress(
                 f"Completed {position}/{len(matchups)}: {item['fighter_name']} vs "

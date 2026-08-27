@@ -1,7 +1,7 @@
 # Fight simulation continuation TODO
 
-Status recorded 2026-08-26 after deliberately stopping a long local card run.
-This file is the handoff contract for the next simulation session.
+Status updated 2026-08-26 after resuming and completing the bounded Aug. 29
+card run. This file is the handoff contract for the next simulation session.
 
 ## Completed and safe to use
 
@@ -14,24 +14,28 @@ This file is the handoff contract for the next simulation session.
   comparison, side by method, finish time, settled over/under probabilities,
   method by round, decision type, bootstrap uncertainty, Monte Carlo error, and
   projected fight-stat summaries.
-- The current checked-in website publication is the earlier high-precision
-  action-calibrated profile `mechanics-0aaba4c675ce`: five matchups available,
-  seven withheld for fewer than three prior UFCStats bouts, and Tsuruya-Borjas
-  withheld for nonconvergence. The UI explicitly labels the final
-  finish-calibrated refresh as pending.
-- The interrupted final-profile run reproduced and saved the validated
-  200-member pre-event parameter artifact locally at:
+- The current checked-in website publication uses the retained
+  `mechanics-8ba01f34444f` profile. Four matchups are available, seven are
+  withheld because at least one fighter has fewer than three prior UFCStats
+  bouts, and Yan-Gomes plus Tsuruya-Borjas are withheld for maximum-path
+  nonconvergence. Its publication hash is
+  `f71326805d560c5d859b42a9ce2a87ae31fe0ba52fa868ff9868bba7d8fd6609`.
+- The final-profile run uses the validated 200-member pre-event parameter
+  artifact stored locally at:
 
   `artifacts/simulations/upcoming-2026-08-29-finish-200/parameter_model.json.gz`
 
-## Why the final card refresh was stopped
+## Completed Aug. 29 card refresh
 
-The compact artifact took about 25 minutes to deterministically re-materialize.
-Nurmagomedov-Song then completed 204,800 internal paths but missed the parameter
-quantile convergence gate, causing a third 204,800-path batch to start. The run
-was interrupted before that batch rather than holding the session open for the
-remaining card. The current runner writes authority only after a matchup's
-adaptive run returns, so no partial Nurmagomedov-Song forecast was published.
+The first legacy compact-artifact access took about 25 minutes to
+deterministically re-materialize and populated an 89 MiB content-addressed
+cache. The resumed card run is complete under
+`artifacts/simulations/upcoming-2026-08-29-finish-200-rerun/`. It produced four
+publishable forecasts: Nurmagomedov-Song and Aoriqileng-Asakura used 409,600
+paths each, Perez-Sumudaerji used 102,400, and Jenkins-Woodson used 204,800.
+Yan-Gomes and Tsuruya-Borjas each completed 409,600 paths and remain available
+locally for diagnosis, but were correctly withheld from the website after
+missing the parameter-quantile stability gate. No adaptive checkpoint remains.
 
 ## Next implementation work (in order)
 
@@ -39,35 +43,50 @@ adaptive run returns, so no partial Nurmagomedov-Song forecast was published.
    exact member commitments. A newly fitted card populates the cache directly;
    the first access to an older recipe artifact reconstructs it once and later
    accesses decode member columns without refitting.
-2. Checkpoint the exact nested aggregate after every member-balanced adaptive
-   batch. The checkpoint must include the run/spec hash, member counts, named
-   RNG contract, convergence history, and aggregate hash.
-3. Add `upcoming-card --resume` so it reuses validated completed matchups and
-   resumes the next exact simulation-index range. Prove direct-run/resume
-   equality in tests across worker counts and chunk sizes.
-4. Rerun all six history-eligible Aug. 29 matchups with
+2. **Completed:** the exact nested accumulator is atomically checkpointed after
+   every member-balanced adaptive batch, including the run/spec and engine/RNG
+   contracts, member counts, convergence history, and accumulator/aggregate
+   hashes.
+3. **Completed:** `upcoming-card --resume` validates an immutable run manifest,
+   reuses completed matchup records, and resumes the next exact simulation-index
+   range. Tests prove aggregate equality across direct/interrupted runs and
+   changed worker/chunk layouts, plus checkpoint corruption rejection.
+4. **Completed:** reran all six history-eligible Aug. 29 matchups with
    `mechanics-8ba01f34444f`, 200 bootstrap members, and 512 to 2,048 paths per
-   member. Continue withholding the seven low-history fights. Withhold any
-   maximum-path nonconvergence rather than publishing partial results.
-5. Atomically replace
-   `src/content/data/external/simulation_forecasts.json`, validate its hash and
-   compact/full authority linkage, retest the Simulation tab on desktop/mobile,
-   and confirm that the pending-refresh label disappears.
+   member. The seven low-history fights and both maximum-path nonconvergences
+   were withheld rather than publishing partial or unstable results.
+5. **Completed scientifically:** atomically replaced
+   `src/content/data/external/simulation_forecasts.json`, validated its hash and
+   compact/full authority linkage, and reran website contract/mobile-overflow
+   regression checks. JSON normalization now makes numeric mapping keys hash
+   identically before and after serialization; all six local full aggregates
+   match their content-addressed filenames and compact links. Live screenshot
+   verification remains outstanding because the in-app browser sandbox was
+   unavailable in this session; do not record that visual check as passed.
 6. Continue chronological research on the known remaining deficiencies:
    winner calibration, UFCStats-control versus simulated-ground-top-control
    semantics, total strike-attempt dispersion, and wide fighter parameter
-   intervals. Do not tune these on the upcoming card.
-7. Prototype a compiled bulk kernel only after a supported local C++ compiler
+   intervals. First audit the parameter-quantile convergence rule on historical
+   validation fights: measure retest stability and false-withhold frequency,
+   then compare any candidate convergence statistic under the existing
+   chronological selection/untouched split. Do not tune this or the mechanics
+   on the upcoming card.
+7. Profile materialized-artifact loading. Reconstruction is now cached, but
+   validating and decoding the 200-member cache still takes roughly two to
+   three minutes and peaks near 1.4 GiB. Optimize only with exact artifact and
+   aggregate parity tests.
+8. Prototype a compiled bulk kernel only after a supported local C++ compiler
    or Numba toolchain is installed. Keep Python telemetry/replay authoritative,
    require batched calls and at least a material measured speedup, and reject
    the backend unless deterministic/reference equivalence passes. The current
    machine has neither toolchain, so no untestable compiled path was added.
 
-## Current rerun command (before upcoming-card resume support exists)
+## Completed run resume/reproduction command
 
-Use a new empty output directory. This restarts the matchup simulations. The
-first access to the older recipe artifact also populates the shared materialized
-cache; later reruns avoid that reconstruction:
+The existing directory below is complete. The same command with `--resume`
+validates and reuses every durable result without rerunning simulations. To
+reproduce from scratch, choose a different empty output directory and omit
+`--resume` only for that first invocation:
 
 ```bash
 export PYTHONPATH="$PWD/src"
@@ -81,8 +100,11 @@ python -m fight_sim upcoming-card \
   --workers 8 \
   --chunk-size 64 \
   --output-dir artifacts/simulations/upcoming-2026-08-29-finish-200-rerun \
-  --website-output src/content/data/external/simulation_forecasts.json
+  --website-output src/content/data/external/simulation_forecasts.json \
+  --resume
 ```
+
+Worker and chunk settings may change without changing the run contract.
 
 All outputs remain candidate-only, paper-only, execution-disabled, and have no
 production influence. Do not blend them into the production model without the

@@ -182,6 +182,19 @@ recipe; only the local performance cache chooses the faster materialized
 representation. Phase timings separate input fingerprinting, causal fit/cache
 loads, and simulation.
 
+Upcoming-card runs add a finer restart boundary because one 200-member matchup
+can itself be expensive. After every adaptive doubling stage, all bootstrap
+members have completed the same contiguous simulation-index range. At that
+boundary the runner atomically stores exact integer counters, member-level
+counts, canonical packed duration values, convergence history, the full
+run/spec hash, engine and named-RNG contracts, and accumulator/aggregate hashes.
+`upcoming-card --resume` validates the immutable card/input/scientific contract,
+reuses durable matchup results, and continues only the next untouched index
+range. Worker and chunk settings are operational rather than scientific and may
+change. Half-completed batches are rerun, never merged as partial authority.
+The website file is written only after all matchups are available or explicitly
+withheld.
+
 The Python implementation remains the authoritative reference. Its bulk path
 uses cached immutable hazard bases, a direct lean-state clock/dynamics reducer,
 and a seed-prefix implementation that is byte-identical to the named RNG
@@ -204,6 +217,10 @@ committed nor uploaded, so the hash is a deterministic replay commitment. The
 immutable card JSON also hard-fails above 16 MiB. Historical seed ledgers use an
 analogous compact projection and authority hash. No large ledger, full trace
 population, or local authority file is retained as a paid workflow artifact.
+Both full and compact objects are normalized through their actual JSON scalar
+and mapping-key representation before hashing. This is required for numeric
+histogram keys: the committed hash must be independently reproducible from the
+stored JSON, not merely from the pre-serialization Python object.
 
 ## Evaluation and promotion
 
@@ -339,7 +356,7 @@ python -m fight_sim select-finishing BASELINE --candidate LABEL=REPORT ...
 python -m fight_sim validate-finishing BASELINE TUNED_HOLDOUT
 python -m fight_sim upcoming-card [--simulator-config PROFILE]
     [--parameter-artifact PATH] [--bootstrap-members 1..200]
-    [--minimum-prior-ufc-fights 0..100] [--website-output PATH]
+    [--minimum-prior-ufc-fights 0..100] [--website-output PATH] [--resume]
 python -m fight_sim run --red-fighter-id ID --blue-fighter-id ID --division NAME ...
 python -m fight_sim replay (--trace TRACE | --spec SPECS ...)
 python -m fight_sim reduce TRACE

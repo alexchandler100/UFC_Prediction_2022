@@ -388,6 +388,14 @@ def build_parser() -> argparse.ArgumentParser:
         "--website-output",
         default="src/content/data/external/simulation_forecasts.json",
     )
+    upcoming.add_argument(
+        "--resume",
+        action="store_true",
+        help=(
+            "Resume validated completed matchups and the next exact balanced "
+            "adaptive batch from the output directory"
+        ),
+    )
 
     tune = commands.add_parser(
         "derive-mechanics",
@@ -731,6 +739,7 @@ def main(argv: list[str] | None = None) -> int:
                 simulator_config=_load_simulator_config(args.simulator_config),
                 parameter_artifact_path=args.parameter_artifact,
                 parameter_cache_dir=args.parameter_cache_dir,
+                resume=args.resume,
                 progress=lambda message: print(message, file=sys.stderr, flush=True),
             )
             _print(

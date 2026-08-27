@@ -156,6 +156,7 @@ class FightSimulationCliTests(unittest.TestCase):
         upcoming = parser.parse_args(["upcoming-card"])
         self.assertEqual(upcoming.minimum_prior_ufc_fights, 3)
         self.assertEqual(upcoming.bootstrap_members, 200)
+        self.assertFalse(upcoming.resume)
         tune = parser.parse_args(["derive-mechanics", "population-run"])
         self.assertEqual(tune.holdout_latest_events, 5)
         self.assertEqual(parser.parse_args(["gui", "run-dir"]).run, "run-dir")

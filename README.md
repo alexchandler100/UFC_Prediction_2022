@@ -559,9 +559,28 @@ full aggregate remains available locally for diagnosis. `--parameter-artifact`
 pins the exact fitted inputs and members for a rerun. The first recipe load
 reconstructs those members and writes an ignored content-addressed materialized
 cache; later card/candidate runs validate both commitments and load the member
-columns directly. A newly fitted card also writes that cache immediately. Every
-website object carries `candidate_only`, `paper_only`, `execution_enabled:
-false`, and `production_influence: "none"`.
+columns directly. A newly fitted card also writes that cache immediately.
+
+The card runner writes a hash-bound immutable run manifest, one atomic result
+per completed or deliberately withheld matchup, and one compressed exact
+accumulator checkpoint after every member-balanced adaptive batch. Re-run the
+same command with `--resume`; completed matchups are reused and the interrupted
+matchup continues at the next simulation index even if worker count or chunk
+size changes. Scientific inputs or settings cannot change across a resume.
+In-progress checkpoints are removed after their matchup result is durable, and
+the website projection is never replaced with a partially completed card.
+Every website object carries `candidate_only`, `paper_only`,
+`execution_enabled: false`, and `production_influence: "none"`.
+
+The completed Aug. 29, 2026 refresh uses `mechanics-8ba01f34444f` and publication
+hash `f71326805d560c5d859b42a9ce2a87ae31fe0ba52fa868ff9868bba7d8fd6609`.
+Four of thirteen card matchups are published. Seven are withheld for the
+predeclared three-prior-bout coverage rule; Yan-Gomes and Tsuruya-Borjas each
+completed 409,600 paths but are withheld because their parameter quantiles did
+not stabilize at the maximum path budget. Those complete aggregates remain
+local research evidence, not website forecasts. Full and compact authority
+objects are JSON-normalized before hashing so numeric histogram keys reproduce
+the same commitment after serialization.
 
 ### Local simulation desktop explorer
 

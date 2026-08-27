@@ -3,9 +3,10 @@
 from __future__ import annotations
 
 from array import array
+import base64
 from collections import Counter, defaultdict
 import math
-from typing import Callable, Iterable
+from typing import Callable, Iterable, Mapping
 
 import numpy as np
 
@@ -27,6 +28,22 @@ from .domain import (
     TotalLineCount,
 )
 from .markets import Settlement, settle_total, valid_total_round_lines
+
+
+def _checkpoint_integer(value: object) -> int:
+    if isinstance(value, bool):
+        raise ValueError("checkpoint integer cannot be boolean")
+    parsed = int(value)
+    if parsed != value or parsed < 0:
+        raise ValueError("checkpoint integer must be nonnegative and exact")
+    return parsed
+
+
+def _checkpoint_float(value: object) -> float:
+    parsed = float(value)
+    if not math.isfinite(parsed):
+        raise ValueError("checkpoint number must be finite")
+    return parsed
 
 
 def _ordered_counts(counter: Counter[str]) -> tuple[OutcomeCount, ...]:
@@ -325,6 +342,255 @@ class ForecastAccumulator:
         self.split_paths.update(other.split_paths)
         self.split_red_wins.update(other.split_red_wins)
         return self
+
+    @staticmethod
+    def _counter_rows(counter: Counter[object]) -> list[list[object]]:
+        return [[key, int(counter[key])] for key in sorted(counter)]
+
+    def to_checkpoint_dict(self) -> dict[str, object]:
+        """Serialize exact mergeable authority without retaining simulation paths."""
+
+        # Duration order carries no statistical meaning. Canonical sorting makes
+        # checkpoint bytes invariant to worker completion and chunk boundaries.
+        durations = np.sort(
+            np.frombuffer(self.duration_values_us, dtype=np.int64), kind="stable"
+        )
+        duration_bytes = durations.astype("<i8", copy=False).tobytes()
+        return {
+            "schema_version": 1,
+            "scheduled_rounds": self.scheduled_rounds,
+            "duration_bin_seconds": self.duration_bin_seconds,
+            "survival_step_seconds": self.survival_step_seconds,
+            "matchup_id": self.matchup_id,
+            "total_paths": self.total_paths,
+            "member_paths": self._counter_rows(self.member_paths),
+            "outcomes": self._counter_rows(self.outcomes),
+            "member_outcomes": [
+                [member, self._counter_rows(self.member_outcomes[member])]
+                for member in sorted(self.member_outcomes)
+            ],
+            "duration_bins": self._counter_rows(self.duration_bins),
+            "duration_values_us_encoding": "base64-little-endian-int64-v1",
+            "duration_values_us": base64.b64encode(duration_bytes).decode("ascii"),
+            "method_rounds": [
+                [method, round_number, int(count)]
+                for (method, round_number), count in sorted(self.method_rounds.items())
+            ],
+            "decision_types": self._counter_rows(self.decision_types),
+            "total_settlements": [
+                [line, self._counter_rows(self.total_settlements[line])]
+                for line in sorted(self.total_settlements)
+            ],
+            "statistics": [
+                [name, self._counter_rows(self.statistics[name])]
+                for name in sorted(self.statistics)
+            ],
+            "member_statistics": [
+                [member, name, self._counter_rows(counter)]
+                for (member, name), counter in sorted(self.member_statistics.items())
+            ],
+            "split_paths": [
+                [member, parity, int(count)]
+                for (member, parity), count in sorted(self.split_paths.items())
+            ],
+            "split_red_wins": [
+                [member, parity, int(count)]
+                for (member, parity), count in sorted(self.split_red_wins.items())
+            ],
+        }
+
+    @staticmethod
+    def _parse_counter_rows(
+        value: object,
+        *,
+        key_parser: Callable[[object], object],
+        label: str,
+    ) -> Counter:
+        if not isinstance(value, list):
+            raise ValueError(f"checkpoint {label} must be a list")
+        result: Counter = Counter()
+        for row in value:
+            if not isinstance(row, list) or len(row) != 2:
+                raise ValueError(f"checkpoint {label} row is invalid")
+            key = key_parser(row[0])
+            if key in result:
+                raise ValueError(f"checkpoint {label} contains a duplicate key")
+            count = int(row[1])
+            if isinstance(row[1], bool) or count <= 0 or count != row[1]:
+                raise ValueError(f"checkpoint {label} count must be a positive integer")
+            result[key] = count
+        return result
+
+    @classmethod
+    def from_checkpoint_dict(cls, value: object) -> "ForecastAccumulator":
+        """Restore and validate exact accumulator state from a trusted JSON object."""
+
+        if not isinstance(value, Mapping):
+            raise ValueError("forecast accumulator checkpoint must be an object")
+        state = dict(value)
+        if state.get("schema_version") != 1:
+            raise ValueError("unsupported forecast accumulator checkpoint schema")
+        accumulator = cls(
+            int(state.get("scheduled_rounds") or 0),
+            duration_bin_seconds=int(state.get("duration_bin_seconds") or 0),
+            survival_step_seconds=int(state.get("survival_step_seconds") or 0),
+        )
+        matchup_id = state.get("matchup_id")
+        accumulator.matchup_id = None if matchup_id is None else str(matchup_id)
+        accumulator.total_paths = int(state.get("total_paths") or 0)
+        if accumulator.total_paths <= 0:
+            raise ValueError("checkpoint accumulator must contain completed paths")
+
+        integer = _checkpoint_integer
+        text = lambda item: str(item)
+        finite_float = _checkpoint_float
+        accumulator.member_paths = cls._parse_counter_rows(
+            state.get("member_paths"), key_parser=integer, label="member_paths"
+        )
+        accumulator.outcomes = cls._parse_counter_rows(
+            state.get("outcomes"), key_parser=text, label="outcomes"
+        )
+        accumulator.duration_bins = cls._parse_counter_rows(
+            state.get("duration_bins"), key_parser=integer, label="duration_bins"
+        )
+        accumulator.decision_types = cls._parse_counter_rows(
+            state.get("decision_types"), key_parser=text, label="decision_types"
+        )
+
+        def keyed_counters(
+            raw: object,
+            *,
+            outer_parser: Callable[[object], object],
+            inner_parser: Callable[[object], object],
+            label: str,
+        ) -> dict[object, Counter]:
+            if not isinstance(raw, list):
+                raise ValueError(f"checkpoint {label} must be a list")
+            parsed: dict[object, Counter] = {}
+            for row in raw:
+                if not isinstance(row, list) or len(row) != 2:
+                    raise ValueError(f"checkpoint {label} row is invalid")
+                key = outer_parser(row[0])
+                if key in parsed:
+                    raise ValueError(f"checkpoint {label} contains a duplicate key")
+                parsed[key] = cls._parse_counter_rows(
+                    row[1], key_parser=inner_parser, label=label
+                )
+            return parsed
+
+        accumulator.member_outcomes = keyed_counters(
+            state.get("member_outcomes"),
+            outer_parser=integer,
+            inner_parser=text,
+            label="member_outcomes",
+        )
+        accumulator.total_settlements = keyed_counters(
+            state.get("total_settlements"),
+            outer_parser=finite_float,
+            inner_parser=text,
+            label="total_settlements",
+        )
+        accumulator.statistics = keyed_counters(
+            state.get("statistics"),
+            outer_parser=text,
+            inner_parser=finite_float,
+            label="statistics",
+        )
+
+        member_statistics = state.get("member_statistics")
+        if not isinstance(member_statistics, list):
+            raise ValueError("checkpoint member_statistics must be a list")
+        accumulator.member_statistics = {}
+        for row in member_statistics:
+            if not isinstance(row, list) or len(row) != 3:
+                raise ValueError("checkpoint member_statistics row is invalid")
+            key = (int(row[0]), str(row[1]))
+            if key in accumulator.member_statistics:
+                raise ValueError("checkpoint member_statistics contains a duplicate key")
+            accumulator.member_statistics[key] = cls._parse_counter_rows(
+                row[2], key_parser=finite_float, label="member_statistics"
+            )
+
+        def tuple_counter(raw: object, label: str) -> Counter[tuple[int, int]]:
+            if not isinstance(raw, list):
+                raise ValueError(f"checkpoint {label} must be a list")
+            parsed: Counter[tuple[int, int]] = Counter()
+            for row in raw:
+                if not isinstance(row, list) or len(row) != 3:
+                    raise ValueError(f"checkpoint {label} row is invalid")
+                key = (int(row[0]), int(row[1]))
+                if key in parsed:
+                    raise ValueError(f"checkpoint {label} contains a duplicate key")
+                count = int(row[2])
+                if isinstance(row[2], bool) or count <= 0 or count != row[2]:
+                    raise ValueError(f"checkpoint {label} count is invalid")
+                parsed[key] = count
+            return parsed
+
+        accumulator.split_paths = tuple_counter(
+            state.get("split_paths"), "split_paths"
+        )
+        accumulator.split_red_wins = tuple_counter(
+            state.get("split_red_wins"), "split_red_wins"
+        )
+
+        method_rounds = state.get("method_rounds")
+        if not isinstance(method_rounds, list):
+            raise ValueError("checkpoint method_rounds must be a list")
+        accumulator.method_rounds = Counter()
+        for row in method_rounds:
+            if not isinstance(row, list) or len(row) != 3:
+                raise ValueError("checkpoint method_rounds row is invalid")
+            key = (str(row[0]), int(row[1]))
+            if key in accumulator.method_rounds:
+                raise ValueError("checkpoint method_rounds contains a duplicate key")
+            count = int(row[2])
+            if isinstance(row[2], bool) or count <= 0 or count != row[2]:
+                raise ValueError("checkpoint method_rounds count is invalid")
+            accumulator.method_rounds[key] = count
+
+        if state.get("duration_values_us_encoding") != "base64-little-endian-int64-v1":
+            raise ValueError("checkpoint duration encoding is unsupported")
+        try:
+            duration_bytes = base64.b64decode(
+                str(state.get("duration_values_us") or ""), validate=True
+            )
+        except (ValueError, TypeError) as exc:
+            raise ValueError("checkpoint duration payload is invalid") from exc
+        if len(duration_bytes) % 8:
+            raise ValueError("checkpoint duration payload has an invalid length")
+        durations = np.frombuffer(duration_bytes, dtype="<i8")
+        horizon_us = accumulator.scheduled_rounds * 300 * 1_000_000
+        if np.any(durations < 0) or np.any(durations > horizon_us):
+            raise ValueError("checkpoint contains an out-of-bounds fight duration")
+        accumulator.duration_values_us = array(
+            "q", (int(duration) for duration in durations)
+        )
+
+        expected_statistics = {name for name, _ in STATISTIC_EXTRACTORS}
+        expected_lines = set(valid_total_round_lines(accumulator.scheduled_rounds))
+        members = set(accumulator.member_paths)
+        if accumulator.matchup_id is None or not accumulator.matchup_id:
+            raise ValueError("checkpoint accumulator matchup ID is blank")
+        if set(accumulator.statistics) != expected_statistics:
+            raise ValueError("checkpoint statistic support is invalid")
+        if set(accumulator.total_settlements) != expected_lines:
+            raise ValueError("checkpoint total-line support is invalid")
+        if set(accumulator.member_outcomes) != members:
+            raise ValueError("checkpoint member outcome support is invalid")
+        if set(accumulator.member_statistics) != {
+            (member, name) for member in members for name in expected_statistics
+        }:
+            raise ValueError("checkpoint member statistic support is invalid")
+        if (
+            sum(accumulator.member_paths.values()) != accumulator.total_paths
+            or sum(accumulator.outcomes.values()) != accumulator.total_paths
+            or sum(accumulator.duration_bins.values()) != accumulator.total_paths
+            or len(accumulator.duration_values_us) != accumulator.total_paths
+        ):
+            raise ValueError("checkpoint accumulator path totals are incoherent")
+        accumulator.forecast()
+        return accumulator
 
     def _statistic_uncertainty(self, name: str) -> StatisticUncertainty:
         conditional: list[tuple[int, float]] = []
