@@ -734,6 +734,45 @@ python -m fight_sim posterior-backtest \
   --output-dir artifacts/simulations/broad-100paths
 ```
 
+For a much stronger whole-population diagnostic that can run unattended on the
+local Windows/Git Bash machine, use:
+
+```bash
+bash scripts/run_full_simulation_study.sh
+```
+
+The runner selects the newest 100 complete events and excludes fights where
+either fighter had fewer than three strictly prior UFC fights. It uses 64
+parameter replicas, 1,024 paths per matchup for each of two seeds, and the
+current retained website mechanics profile. This is enough precision to study
+population-level winner, method, duration, strike, takedown, submission,
+knockdown, and control distributions; it is not the 4,096-path promotion
+configuration. The runner snapshots its code and roughly 9 MiB of source inputs
+under `$HOME/.ufc-data-lab/simulation-studies/all-eligible-v1`, so Git operations
+in this repository do not touch the active study. It stores aggregate counters
+and at most one compressed checkpoint per fight/seed, never full path
+populations or traces.
+
+Each simulator slice checkpoints complete fights and lasts at most 55 minutes.
+The outer runner uses GNU `timeout`, stops launching work early enough to keep a
+terminal session below 22 hours, refuses an output path inside the repository,
+and stops before its external study tree reaches 4 GiB or free space falls below
+8 GiB. Based on measured runs on the current machine, the complete study should
+usually take about 8–15 hours and remain below 1 GiB; those are estimates, while
+the 22-hour and 4 GiB stops are enforced limits. If it reaches a limit first,
+re-running the same command resumes its completed fights. Override workers or
+the external location without editing the script, for example:
+
+```bash
+SIM_WORKERS=4 \
+SIM_STUDY_ROOT="/d/ufc-simulation-study" \
+bash scripts/run_full_simulation_study.sh
+```
+
+Use `bash scripts/run_full_simulation_study.sh --dry-run` to inspect the resolved
+path and scientific settings without creating files. Use a new
+`SIM_STUDY_NAME` rather than changing settings inside an existing resumable run.
+
 The August 27 audit completed 229 fights / 30 cards in 56.3 minutes. Winner
 accuracy was 52.63%, while log loss (0.72865) and Brier (0.26382) were worse
 than constant 50/50. It also overpredicted knockdowns and KO/TKO outcomes while
