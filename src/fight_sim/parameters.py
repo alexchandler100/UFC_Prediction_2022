@@ -76,7 +76,13 @@ PARAMETER_NAMES = (
 )
 
 SNAPSHOT_PARAMETER_MODES = frozenset(
-    {"full", "context_only", "opponent_adjusted_v1", "reliability_weighted"}
+    {
+        "full",
+        "context_only",
+        "opponent_adjusted_v1",
+        "opponent_adjusted_v2",
+        "reliability_weighted",
+    }
 )
 
 _OPPONENT_EFFECT_ITERATIONS = 12
@@ -1181,6 +1187,14 @@ class CausalParameterFitter:
             tuple[str, int], dict[str, dict[str, float]]
         ] = {}
         self._opponent_adjusted_cache_artifact_sha256: str | None = None
+        self._opponent_adjusted_v2_effect_cache: dict[
+            tuple[str, int], dict[str, dict[str, float]]
+        ] = {}
+        self._opponent_adjusted_v2_diagnostics_cache: dict[
+            tuple[str, int], dict[str, object]
+        ] = {}
+        self._opponent_adjusted_v2_cache_artifact_sha256: str | None = None
+        self._opponent_adjusted_v2_ridge_selector: object | None = None
 
     @property
     def parameter_model_version(self) -> str:
@@ -3214,6 +3228,266 @@ class CausalParameterFitter:
         )
         return result
 
+    def _opponent_adjusted_v2_effects(
+        self,
+        artifact: ParameterEnsembleArtifact,
+        member_index: int,
+        cutoff: pd.Timestamp,
+    ) -> dict[str, dict[str, float]]:
+        """Fit the cross-fitted, equal-bout v2 strike effects.
+
+        Only strike pace and strike accuracy passed their target-specific
+        held-out gates. Takedown and submission parameters deliberately remain
+        on the original snapshot in this bounded simulator screen.
+        """
+
+        from .opponent_audit import (
+            ChronologicalOpponentRidgeSelector,
+            OpponentAdjustmentAuditConfig,
+            fit_bout_clustered_two_way_effects,
+        )
+
+        if (
+            self._opponent_adjusted_v2_cache_artifact_sha256
+            != artifact.artifact_sha256
+        ):
+            self._opponent_adjusted_v2_effect_cache.clear()
+            self._opponent_adjusted_v2_diagnostics_cache.clear()
+            self._opponent_adjusted_v2_cache_artifact_sha256 = (
+                artifact.artifact_sha256
+            )
+        cache_key = (artifact.artifact_sha256, int(member_index))
+        cached = self._opponent_adjusted_v2_effect_cache.get(cache_key)
+        if cached is not None:
+            return cached
+        if self._opponent_adjusted_v2_ridge_selector is None:
+            self._opponent_adjusted_v2_ridge_selector = (
+                ChronologicalOpponentRidgeSelector(
+                    self.raw_fights,
+                    OpponentAdjustmentAuditConfig(
+                        min_prior_ufc_fights=3,
+                        inner_validation_events=8,
+                        minimum_training_fights=500,
+                        ridge_grid=(5.0, 10.0, 20.0, 40.0),
+                    ),
+                )
+            )
+        selected, inner_event_ids = (
+            self._opponent_adjusted_v2_ridge_selector.selected_for_cutoff(cutoff)
+        )
+        member = artifact.members[member_index]
+        fights = self.raw_fights.loc[self.raw_fights["date"].lt(cutoff)].copy()
+        event_ids = np.asarray(sorted(fights["event_id"].unique()), dtype=object)
+        if len(event_ids) != member.sampled_event_count:
+            raise ValueError(
+                "opponent adjustment training events disagree with fitted member"
+            )
+        rng = np.random.Generator(np.random.PCG64DXSM(member.bootstrap_seed))
+        sampled = rng.choice(event_ids, size=len(event_ids), replace=True)
+        unique, counts = np.unique(sampled, return_counts=True)
+        event_weights = {
+            str(key): int(value) for key, value in zip(unique, counts)
+        }
+        rows = self._prepare_member_rows(
+            fights, event_weights, cutoff, artifact.config
+        )
+        rows = self._attach_age(rows)
+        contexts = member.context_parameters
+        context_rows = [
+            contexts.get(
+                f"{str(division).strip() or 'Unknown'}|{era}",
+                contexts["__global__"],
+            )
+            for division, era in zip(rows["division"], rows["era"])
+        ]
+        actor_ids = rows["fighter_id"].astype(str).to_numpy(object)
+        opponent_ids = rows["opponent_id"].astype(str).to_numpy(object)
+        bout_weights = rows["_weight"].to_numpy(dtype=float)
+        minutes = pd.to_numeric(
+            rows["fight_seconds"], errors="coerce"
+        ).to_numpy(dtype=float) / 60.0
+        phase_names = ("distance", "clinch", "ground")
+        strike_baseline = np.asarray(
+            [
+                math.fsum(
+                    parameters[f"strike_rate_{phase}"]
+                    * parameters[f"{phase}_phase_share"]
+                    for phase in phase_names
+                )
+                for parameters in context_rows
+            ],
+            dtype=float,
+        )
+        covariates = member.covariate_effects
+        age = pd.to_numeric(rows["age_years"], errors="coerce").to_numpy(float)
+        experience = pd.to_numeric(
+            rows["experience_fights"], errors="coerce"
+        ).to_numpy(float)
+        layoff = pd.to_numeric(rows["layoff_days"], errors="coerce").to_numpy(
+            float
+        )
+        age_scaled = np.where(
+            np.isfinite(age),
+            (age - 30.0) / 10.0,
+            float(covariates.get("age_center", 0.0)),
+        )
+        experience_scaled = np.log1p(
+            np.maximum(np.nan_to_num(experience, nan=0.0), 0.0)
+        )
+        layoff_scaled = np.where(
+            np.isfinite(layoff),
+            np.log1p(np.maximum(layoff, 0.0) / 365.25),
+            float(covariates.get("log_layoff_years_center", 0.0)),
+        )
+        log_rate_adjustment = (
+            float(covariates.get("age_per_decade", 0.0))
+            * (age_scaled - float(covariates.get("age_center", 0.0)))
+            + float(covariates.get("log_experience", 0.0))
+            * (
+                experience_scaled
+                - float(covariates.get("log_experience_center", 0.0))
+            )
+            + float(covariates.get("log_layoff_years", 0.0))
+            * (
+                layoff_scaled
+                - float(covariates.get("log_layoff_years_center", 0.0))
+            )
+        )
+        strike_baseline *= np.clip(np.exp(log_rate_adjustment), 0.6, 1.4)
+
+        attempts = pd.to_numeric(
+            rows["sig_strikes_attempts"], errors="coerce"
+        ).to_numpy(dtype=float)
+        valid_rate = (
+            np.isfinite(attempts)
+            & np.isfinite(minutes)
+            & (minutes > 0)
+            & np.isfinite(strike_baseline)
+            & (strike_baseline > 0)
+            & np.isfinite(bout_weights)
+            & (bout_weights > 0)
+        )
+        stabilized_rate = (attempts[valid_rate] + 0.5) / (
+            minutes[valid_rate] + 0.5 / strike_baseline[valid_rate]
+        )
+        rate_residual = np.log(
+            stabilized_rate / strike_baseline[valid_rate]
+        )
+        pace_actor, pace_opponent = fit_bout_clustered_two_way_effects(
+            actor_ids[valid_rate],
+            opponent_ids[valid_rate],
+            rate_residual,
+            ridge=selected[("strike_pace", "opponent_adjusted")],
+            sample_weights=bout_weights[valid_rate],
+        )
+
+        landed = pd.to_numeric(
+            rows["sig_strikes_landed"], errors="coerce"
+        ).to_numpy(dtype=float)
+        accuracy_baseline = np.asarray(
+            [float(parameters["strike_accuracy"]) for parameters in context_rows],
+            dtype=float,
+        )
+        valid_accuracy = (
+            np.isfinite(landed)
+            & np.isfinite(attempts)
+            & (attempts > 0)
+            & (attempts >= landed)
+            & np.isfinite(accuracy_baseline)
+            & (accuracy_baseline > 0)
+            & (accuracy_baseline < 1)
+            & np.isfinite(bout_weights)
+            & (bout_weights > 0)
+        )
+        smoothed_accuracy = np.clip(
+            (landed[valid_accuracy] + 0.5) / (attempts[valid_accuracy] + 1.0),
+            1e-6,
+            1.0 - 1e-6,
+        )
+        accuracy_residual = np.log(
+            smoothed_accuracy / (1.0 - smoothed_accuracy)
+        ) - np.log(
+            accuracy_baseline[valid_accuracy]
+            / (1.0 - accuracy_baseline[valid_accuracy])
+        )
+        accuracy_actor, accuracy_opponent = fit_bout_clustered_two_way_effects(
+            actor_ids[valid_accuracy],
+            opponent_ids[valid_accuracy],
+            accuracy_residual,
+            ridge=selected[("strike_accuracy", "opponent_adjusted")],
+            sample_weights=bout_weights[valid_accuracy],
+        )
+        identities = sorted(set(actor_ids) | set(opponent_ids))
+        result = {
+            identity: {
+                "strike_pace_offense": float(pace_actor.get(identity, 0.0)),
+                "strike_pace_vulnerability": float(
+                    pace_opponent.get(identity, 0.0)
+                ),
+                "strike_accuracy_offense": float(
+                    accuracy_actor.get(identity, 0.0)
+                ),
+                "strike_accuracy_vulnerability": float(
+                    accuracy_opponent.get(identity, 0.0)
+                ),
+            }
+            for identity in identities
+        }
+        self._opponent_adjusted_v2_effect_cache[cache_key] = result
+        self._opponent_adjusted_v2_diagnostics_cache[cache_key] = {
+            "inner_event_ids": list(inner_event_ids),
+            "selected_strike_pace_ridge": float(
+                selected[("strike_pace", "opponent_adjusted")]
+            ),
+            "selected_strike_accuracy_ridge": float(
+                selected[("strike_accuracy", "opponent_adjusted")]
+            ),
+            "weighted_bout_sides": float(bout_weights.sum()),
+            "distinct_bout_sides": int(len(rows)),
+        }
+        return result
+
+    @classmethod
+    def _apply_opponent_adjusted_v2_snapshot(
+        cls,
+        fighter: Mapping[str, float],
+        context: Mapping[str, float],
+        effects: Mapping[str, float],
+    ) -> dict[str, float]:
+        """Replace only the two strike components that passed the v2 audit."""
+
+        result = dict(fighter)
+        phase_names = ("distance", "clinch", "ground")
+        context_rate = math.fsum(
+            float(context[f"strike_rate_{phase}"])
+            * float(fighter[f"{phase}_phase_share"])
+            for phase in phase_names
+        )
+        fighter_rate = math.fsum(
+            float(fighter[f"strike_rate_{phase}"])
+            * float(fighter[f"{phase}_phase_share"])
+            for phase in phase_names
+        )
+        target_rate = context_rate * math.exp(
+            float(effects.get("strike_pace_offense", 0.0))
+        )
+        multiplier = target_rate / max(fighter_rate, 1e-12)
+        for phase in phase_names:
+            result[f"strike_rate_{phase}"] = _clip(
+                float(fighter[f"strike_rate_{phase}"]) * multiplier,
+                0.01,
+                30.0,
+            )
+        result["strike_accuracy"] = cls._inverse_logit(
+            cls._logit(float(context["strike_accuracy"]))
+            + float(effects.get("strike_accuracy_offense", 0.0))
+        )
+        result["strike_defense"] = cls._inverse_logit(
+            cls._logit(float(context["strike_defense"]))
+            - float(effects.get("strike_accuracy_vulnerability", 0.0))
+        )
+        return result
+
     @staticmethod
     def _construct_domain_dataclass(cls: type, values: Mapping[str, object]) -> object:
         """Construct a domain dataclass while keeping this fitter schema-isolated."""
@@ -3260,7 +3534,7 @@ class CausalParameterFitter:
         if parameter_mode not in SNAPSHOT_PARAMETER_MODES:
             raise ValueError(
                 "parameter_mode must be full, context_only, opponent_adjusted_v1, "
-                "or reliability_weighted"
+                "opponent_adjusted_v2, or reliability_weighted"
             )
         stable_id = _identity_token(fighter_id)
         if not stable_id:
@@ -3285,6 +3559,16 @@ class CausalParameterFitter:
                 adjustments.get(stable_id, {}),
             )
             data_quality = "opponent_adjusted_fighter_history"
+        elif parameter_mode == "opponent_adjusted_v2":
+            adjustments = self._opponent_adjusted_v2_effects(
+                artifact, member_index, requested
+            )
+            parameters = self._apply_opponent_adjusted_v2_snapshot(
+                fighter_parameters,
+                context_parameters,
+                adjustments.get(stable_id, {}),
+            )
+            data_quality = "opponent_adjusted_v2_strike_history"
         elif parameter_mode == "reliability_weighted":
             parameters = self._blend_snapshot_parameters(
                 fighter_parameters,

@@ -538,11 +538,15 @@ parameter-specific exposure weight to the already pooled fighter deviation.
 bootstrap member and estimates two-way actor/opponent effects for supported
 strike, takedown, and submission observations. It is retained for reproducible
 research only and must not drive upcoming or website forecasts. The policies
+also include `opponent_adjusted_v2`, a rejected equal-bout, chronologically
+cross-fitted diagnostic that changes only strike pace and accuracy. It likewise
+cannot drive upcoming or website forecasts. The policies
 use natural log, logit, or normalized-composition scales as appropriate. The
 mode is committed in the resumable run contract and does not alter the shared
 fitted parameter artifact. See
 `SIMULATION_OPPONENT_ADJUSTMENT_REPORT_2026-08-27.md` for the failed 229-fight
-screen and the bout-clustered follow-up boundary.
+v1 screen and `SIMULATION_OPPONENT_ADJUSTMENT_V2_REPORT_2026-08-27.md` for the
+failed v2 screen and conditional-to-endogenous bridge-audit boundary.
 
 Before spending simulation paths on another opponent model, run the causal
 observation gate:
@@ -562,7 +566,10 @@ strengths from strictly earlier cards, scores Poisson/binomial observations on
 the next card, and block-bootstraps uncertainty by physical event. The first
 frozen 229-fight audit passed the pre-simulation gate; details and the limited
 authorization for one v2 development screen are in
-`SIMULATION_BOUT_CLUSTERED_OPPONENT_AUDIT_REPORT_2026-08-27.md`.
+`SIMULATION_BOUT_CLUSTERED_OPPONENT_AUDIT_REPORT_2026-08-27.md`. That screen
+subsequently failed: its winner, joint side/method, and strike-attempt forecasts
+worsened. Passing a direct-observation gate therefore does not by itself
+validate the simulator mapping.
 
 For a broad, low-precision diagnostic, 100 total paths can be split across ten
 bootstrap members. This is useful for aggregate accuracy, not precise

@@ -1,9 +1,33 @@
 # Fight simulation continuation TODO
 
-Status updated 2026-08-27 after the opponent-adjusted fighter-effect screen.
+Status updated 2026-08-27 after the bout-clustered v2 simulator screen.
 This file is the handoff contract for the next simulation session.
 
-## Frozen next action: bout-clustered v2 simulator screen
+## Frozen next action: conditional-to-endogenous strike bridge audit
+
+Do not run an `opponent_adjusted_v3` Monte Carlo screen yet. First implement a
+fast, causal bridge audit on the open `development_2024` cohort that explains
+why an opponent model that improved strike observation likelihood made the
+simulator's strike-attempt distribution and fight-outcome ranking worse.
+
+For every outer fight and bootstrap member, compare:
+
+1. the audit's conditional-on-observed-duration strike pace/accuracy forecast;
+2. the effective v2 snapshot matchup intensity after the exact engine offense,
+   defense, phase, and mechanics transforms, still evaluated at observed
+   exposure; and
+3. the existing full and v2 endogenous simulated attempts/landed distributions.
+
+Verify signs and magnitudes separately for actor offense and opponent
+vulnerability, quantify whether phase allocation or the endogenous finish
+clock causes the divergence, and measure whether each predicted strike
+differential ranks the actual winner. Use only strictly earlier cards and
+event-card uncertainty. This should execute no new fight trajectories and stay
+well below one hour. Another simulator screen is authorized only if this audit
+identifies a concrete translation error or a prospectively specified mapping
+that improves both conditional strike likelihood and winner ranking.
+
+## Completed: bout-clustered v2 simulator screen
 
 The outcome-engine v2.1 work remains frozen in
 `SIMULATION_MECHANICS_TWO_ROUTE_V2_1.json`. Its separate confirmation
@@ -59,6 +83,19 @@ member, and reuse the v2.1 mechanics/common seeds. Compare against both `full`
 and `reliability_weighted` at 100 paths/fight under a 3,300-second hard cap.
 Do not reuse v1's action-count reliability and do not tune away its adverse
 submission result using the outer observations.
+
+That screen is now complete and rejected. The separately named v2 mode applied
+only strike pace and accuracy because those were the two targets with wholly
+favorable audit intervals; takedown and submission parameters stayed on the
+full snapshot. All 229 fights / 30 cards completed at 100 paths per fight in
+20.1 minutes. Accuracy fell to 48.68%, winner log loss rose to 0.75362, Brier
+rose to 0.27666, calibration slope became -0.084, and joint side/method log
+loss rose to 2.13880. Against `reliability_weighted`, event-card intervals were
+wholly harmful for winner log loss, Brier, and joint loss. Strike-attempt CRPS
+also worsened and underprediction grew to 44.36 attempts. Do not make v2 the
+default, do not open either 2025 cohort, and do not tune its effect size on
+these same outer fights. Full results are in
+`SIMULATION_OPPONENT_ADJUSTMENT_V2_REPORT_2026-08-27.md`.
 
 Keep `confirmation_2025_a` and `final_holdout_2025_b` unopened until a single
 fighter-parameter model survives that development comparison. Then confirm the

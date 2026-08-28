@@ -247,6 +247,7 @@ def fit_bout_clustered_two_way_effects(
     residuals: Iterable[float],
     *,
     ridge: float,
+    sample_weights: Iterable[float] | None = None,
 ) -> tuple[dict[str, float], dict[str, float]]:
     """Fit equal-bout actor/opponent ridge effects.
 
@@ -260,12 +261,24 @@ def fit_bout_clustered_two_way_effects(
     actors = np.asarray([str(value) for value in actor_ids], dtype=object)
     opponents = np.asarray([str(value) for value in opponent_ids], dtype=object)
     values = np.asarray(list(residuals), dtype=float)
-    if not len(actors) == len(opponents) == len(values):
+    weights = (
+        np.ones(len(values), dtype=float)
+        if sample_weights is None
+        else np.asarray(list(sample_weights), dtype=float)
+    )
+    if not len(actors) == len(opponents) == len(values) == len(weights):
         raise ValueError("two-way effect inputs must have equal lengths")
-    valid = np.isfinite(values) & (actors != "") & (opponents != "")
+    valid = (
+        np.isfinite(values)
+        & np.isfinite(weights)
+        & (weights > 0)
+        & (actors != "")
+        & (opponents != "")
+    )
     actors = actors[valid]
     opponents = opponents[valid]
     values = values[valid]
+    weights = weights[valid]
     if len(values) == 0:
         return {}, {}
     identities = sorted(set(actors) | set(opponents))
@@ -278,16 +291,18 @@ def fit_bout_clustered_two_way_effects(
         dtype=np.int64,
         count=len(opponents),
     )
-    actor_counts = np.bincount(actor_index, minlength=len(identities)).astype(float)
+    actor_counts = np.bincount(
+        actor_index, weights=weights, minlength=len(identities)
+    ).astype(float)
     opponent_counts = np.bincount(
-        opponent_index, minlength=len(identities)
+        opponent_index, weights=weights, minlength=len(identities)
     ).astype(float)
     actor_effect = np.zeros(len(identities), dtype=float)
     opponent_effect = np.zeros(len(identities), dtype=float)
 
     def update(group_index: np.ndarray, targets: np.ndarray, counts: np.ndarray) -> np.ndarray:
         totals = np.bincount(
-            group_index, weights=targets, minlength=len(identities)
+            group_index, weights=weights * targets, minlength=len(identities)
         )
         effects = totals / (counts + ridge)
         active = counts > 0
@@ -540,6 +555,90 @@ def _select_ridges(
                 candidates, key=lambda item: (item[0], -item[1])
             )[1]
     return selected
+
+
+class ChronologicalOpponentRidgeSelector:
+    """Select audit-equivalent ridges using only cards before a cutoff.
+
+    The cache belongs to one causal fitter/run. It makes a sequence of outer
+    card selections reuse the same strictly historical inner-card scores,
+    while future rows remain invisible because every lookup applies an
+    explicit timestamp cutoff.
+    """
+
+    def __init__(
+        self,
+        raw_fights: pd.DataFrame,
+        config: OpponentAdjustmentAuditConfig | None = None,
+    ) -> None:
+        self.config = config or OpponentAdjustmentAuditConfig()
+        self.config.validate()
+        self.frame = _prepare_frame(raw_fights)
+        self._inner_cache: dict[
+            str, dict[tuple[str, str, float], tuple[float, int]] | None
+        ] = {}
+        self._selection_cache: dict[
+            str, tuple[dict[tuple[str, str], float], tuple[str, ...]]
+        ] = {}
+
+    def selected_for_cutoff(
+        self, cutoff: object
+    ) -> tuple[dict[tuple[str, str], float], tuple[str, ...]]:
+        timestamp = pd.to_datetime(cutoff, errors="raise", utc=True)
+        cache_key = timestamp.isoformat()
+        cached = self._selection_cache.get(cache_key)
+        if cached is not None:
+            return cached
+        preceding = (
+            self.frame.loc[
+                self.frame["date"].lt(timestamp), ["date", "event_id"]
+            ]
+            .drop_duplicates()
+            .sort_values(["date", "event_id"], ascending=False, kind="stable")
+        )
+        inner_scores: list[
+            Mapping[tuple[str, str, float], tuple[float, int]]
+        ] = []
+        inner_ids: list[str] = []
+        for internal in preceding.to_dict("records"):
+            if len(inner_scores) >= self.config.inner_validation_events:
+                break
+            event_id = str(internal["event_id"])
+            if event_id not in self._inner_cache:
+                training, validation = _eligible_event_sides(
+                    self.frame,
+                    event_id,
+                    pd.Timestamp(internal["date"]),
+                    minimum_prior=self.config.min_prior_ufc_fights,
+                )
+                if (
+                    training["fight_id"].nunique()
+                    < self.config.minimum_training_fights
+                    or validation.empty
+                ):
+                    self._inner_cache[event_id] = None
+                else:
+                    grids = [
+                        _predict_target_grid(
+                            training, validation, target, self.config
+                        )
+                        for target in OBSERVATION_TARGETS
+                    ]
+                    self._inner_cache[event_id] = _grid_scores(
+                        pd.concat(grids, ignore_index=True), self.config
+                    )
+            scores = self._inner_cache[event_id]
+            if scores is not None:
+                inner_scores.append(scores)
+                inner_ids.append(event_id)
+        if len(inner_scores) < self.config.inner_validation_events:
+            raise ValueError(
+                f"cutoff {timestamp.isoformat()} has only {len(inner_scores)} "
+                "eligible inner cards"
+            )
+        result = (_select_ridges(inner_scores, self.config), tuple(inner_ids))
+        self._selection_cache[cache_key] = result
+        return result
 
 
 def _event_interval(

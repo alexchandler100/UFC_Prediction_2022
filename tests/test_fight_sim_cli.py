@@ -168,6 +168,17 @@ class FightSimulationCliTests(unittest.TestCase):
         self.assertEqual(
             opponent_adjusted.snapshot_parameter_mode, "opponent_adjusted_v1"
         )
+        opponent_adjusted_v2 = parser.parse_args(
+            [
+                "posterior-backtest",
+                "--snapshot-parameter-mode",
+                "opponent_adjusted_v2",
+            ]
+        )
+        self.assertEqual(
+            opponent_adjusted_v2.snapshot_parameter_mode,
+            "opponent_adjusted_v2",
+        )
         audit = parser.parse_args(
             [
                 "opponent-adjustment-audit",

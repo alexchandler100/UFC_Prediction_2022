@@ -13,6 +13,7 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO_ROOT / "src"))
 
 from fight_sim.opponent_audit import (  # noqa: E402
+    ChronologicalOpponentRidgeSelector,
     OpponentAdjustmentAuditConfig,
     fit_bout_clustered_two_way_effects,
     run_opponent_adjustment_audit,
@@ -160,6 +161,36 @@ class OpponentAdjustmentAuditTests(unittest.TestCase):
             abs(opponent_low["vulnerable"]),
         )
 
+    def test_card_bootstrap_weights_count_bouts_not_actions(self):
+        actors = ["a", "a", "b", "b"]
+        opponents = ["c", "d", "c", "d"]
+        residuals = [0.4, 0.2, -0.4, -0.2]
+        weighted = fit_bout_clustered_two_way_effects(
+            actors,
+            opponents,
+            residuals,
+            ridge=2.0,
+            sample_weights=[3.0, 1.0, 3.0, 1.0],
+        )
+        repeated = fit_bout_clustered_two_way_effects(
+            [actors[0]] * 3 + [actors[1]] + [actors[2]] * 3 + [actors[3]],
+            [opponents[0]] * 3
+            + [opponents[1]]
+            + [opponents[2]] * 3
+            + [opponents[3]],
+            [residuals[0]] * 3
+            + [residuals[1]]
+            + [residuals[2]] * 3
+            + [residuals[3]],
+            ridge=2.0,
+        )
+        for weighted_effects, repeated_effects in zip(weighted, repeated):
+            self.assertEqual(set(weighted_effects), set(repeated_effects))
+            for identity in weighted_effects:
+                self.assertAlmostEqual(
+                    weighted_effects[identity], repeated_effects[identity]
+                )
+
     def test_audit_is_coherent_and_future_append_invariant(self):
         config = OpponentAdjustmentAuditConfig(
             min_prior_ufc_fights=1,
@@ -204,6 +235,21 @@ class OpponentAdjustmentAuditTests(unittest.TestCase):
             value.pop("report_sha256")
             value.pop("runtime")
         self.assertEqual(comparable, future_comparable)
+
+        selector = ChronologicalOpponentRidgeSelector(_raw(13), config)
+        selected, inner_ids = selector.selected_for_cutoff("2020-01-12")
+        event_rows = predictions.loc[predictions["event_id"].eq("event-12")]
+        for target in event_rows["target"].unique():
+            self.assertEqual(
+                selected[(str(target), "opponent_adjusted")],
+                float(
+                    event_rows.loc[
+                        event_rows["target"].eq(target),
+                        "opponent_adjusted_selected_ridge",
+                    ].iloc[0]
+                ),
+            )
+        self.assertEqual(len(inner_ids), config.inner_validation_events)
 
 
 if __name__ == "__main__":

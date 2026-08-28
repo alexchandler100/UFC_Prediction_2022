@@ -2315,7 +2315,7 @@ def execute_posterior_backtest(
     if snapshot_parameter_mode not in SNAPSHOT_PARAMETER_MODES:
         raise ValueError(
             "snapshot_parameter_mode must be full, context_only, "
-            "opponent_adjusted_v1, or reliability_weighted"
+            "opponent_adjusted_v1, opponent_adjusted_v2, or reliability_weighted"
         )
     fingerprint_started = time.perf_counter()
     source_sha256 = {

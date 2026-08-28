@@ -383,7 +383,8 @@ def build_parser() -> argparse.ArgumentParser:
         default="full",
         help=(
             "Research policy for fighter deviations: full, division/era "
-            "context only, causal opponent-adjusted v1, or a second causal "
+            "context only, rejected causal opponent-adjusted v1, cross-fitted "
+            "equal-bout opponent-adjusted v2 strikes, or a second causal "
             "exposure-weighted shrinkage step"
         ),
     )

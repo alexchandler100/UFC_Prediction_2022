@@ -532,6 +532,30 @@ class FightSimulationResearchTests(unittest.TestCase):
         )
         self.assertGreater(weighted.parameters.strike_accuracy, low)
         self.assertLess(weighted.parameters.strike_accuracy, high)
+        transformed = fitter._apply_opponent_adjusted_v2_snapshot(
+            full.parameters.to_dict(),
+            context.parameters.to_dict(),
+            {
+                "strike_pace_offense": 0.2,
+                "strike_accuracy_offense": 0.15,
+                "strike_accuracy_vulnerability": -0.1,
+            },
+        )
+        unchanged_v2_parameters = (
+            set(full.parameters.to_dict())
+            - {
+                "strike_rate_distance",
+                "strike_rate_clinch",
+                "strike_rate_ground",
+                "strike_accuracy",
+                "strike_defense",
+            }
+        )
+        for name in unchanged_v2_parameters:
+            self.assertEqual(transformed[name], full.parameters.to_dict()[name])
+        self.assertNotEqual(
+            transformed["strike_accuracy"], full.parameters.strike_accuracy
+        )
         self.assertAlmostEqual(
             sum(
                 (

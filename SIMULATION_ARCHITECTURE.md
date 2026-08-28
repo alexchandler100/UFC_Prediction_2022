@@ -92,7 +92,8 @@ accuracy audit are documented in
 `SIMULATION_CONDITIONAL_CONTROL_AND_BREADTH_REPORT_2026-08-27.md`.
 
 The snapshot layer also exposes research-only `full`, `context_only`,
-`reliability_weighted`, and `opponent_adjusted_v1` policies. Reliability
+`reliability_weighted`, `opponent_adjusted_v1`, and `opponent_adjusted_v2`
+policies. Reliability
 weighting applies a second parameter-specific causal exposure weight to the
 already pooled fighter deviation on the parameter's natural scale.
 `opponent_adjusted_v1` reconstructs each member's card bootstrap and estimates
@@ -115,7 +116,13 @@ or binomial next-card likelihood is compared with physical event-card block
 uncertainty. The first frozen audit passed overall and is documented in
 `SIMULATION_BOUT_CLUSTERED_OPPONENT_AUDIT_REPORT_2026-08-27.md`. Passing permits
 one bounded `opponent_adjusted_v2` development simulation screen, not production
-or confirmation use.
+or confirmation use. That v2 screen is complete and rejected. It retained
+equal-bout precision and changed only the strike targets with favorable audit
+intervals, but worsened winner, joint side/method, and strike-attempt
+performance. Details are in
+`SIMULATION_OPPONENT_ADJUSTMENT_V2_REPORT_2026-08-27.md`. No further opponent
+simulation mode may run until a causal conditional-to-endogenous bridge audit
+explains the failed parameter-to-engine translation.
 
 ## Data contract and causal fitting
 
