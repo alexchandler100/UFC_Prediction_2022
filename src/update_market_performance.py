@@ -25,6 +25,7 @@ from market_tracker import (
     QuoteSnapshot,
     QuoteSnapshotStore,
     QuoteSourceMetadataStore,
+    prospective_comparison_report,
     TotalRoundsPaperDecision,
     TotalRoundsPaperDecisionStore,
     TotalRoundsPaperSettlementStore,
@@ -1134,7 +1135,7 @@ def update_market_performance() -> dict[str, object]:
         if decision.decision_id in settled_decision_ids
     }
     report_body: dict[str, object] = {
-        "schema_version": 3,
+        "schema_version": 4,
         "betting_status": BETTING_STATUS,
         "paper_only": True,
         "execution_enabled": False,
@@ -1165,6 +1166,9 @@ def update_market_performance() -> dict[str, object]:
         "source_metadata_dataset_sha256": _dataset_hash(source_metadata),
         "paper_metrics": metrics.to_mapping(),
         "forecast_comparators": _forecast_comparators(decisions, settlements),
+        "prospective_model_market_comparison": prospective_comparison_report(
+            decisions, settlements
+        ),
         "market_relative_log_loss_intervals": {
             "independent_model_vs_market": model_vs_market,
             "locked_blend_vs_market": blend_vs_market,

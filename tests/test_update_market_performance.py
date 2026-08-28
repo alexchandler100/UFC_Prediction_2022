@@ -291,7 +291,15 @@ class MarketPerformanceTests(unittest.TestCase):
             persisted = json.loads(paths["REPORT_PATH"].read_text(encoding="utf-8"))
             self.assertEqual(persisted, second)
             self.assertFalse(persisted["execution_enabled"])
-            self.assertEqual(persisted["schema_version"], 3)
+            self.assertEqual(persisted["schema_version"], 4)
+            self.assertEqual(
+                persisted["prospective_model_market_comparison"]["status"],
+                "collecting_results",
+            )
+            self.assertEqual(
+                persisted["prospective_model_market_comparison"]["scored_fights"],
+                0,
+            )
             self.assertIn("entry_timing_experiment", persisted)
             self.assertIn("total_rounds", persisted)
             self.assertEqual(

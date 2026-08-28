@@ -491,10 +491,72 @@
     "settled_events": 1,
     "status": "collecting_prospective_evidence"
   },
+  "prospective_model_market_comparison": {
+    "blend": {
+      "formula": "logit(equal_blend) = 0.5*logit(market) + 0.5*logit(model)",
+      "gamma": 0.5,
+      "market_weight": 0.5,
+      "method": "equal_weight_log_odds",
+      "model_weight": 0.5,
+      "retuning_allowed": false
+    },
+    "checkpoint": {
+      "equal_blend_brier_not_worse_than_market_requirement_met": false,
+      "equal_blend_log_loss_better_than_market_requirement_met": false,
+      "execution_enabled": false,
+      "minimum_scored_fights": 200,
+      "minimum_settled_events": 20,
+      "review_required_before_any_production_change": true,
+      "sample_requirement_met": false
+    },
+    "cohort": {
+      "first_eligible_event_date": "2026-09-01",
+      "known_earlier_results_excluded": true,
+      "one_frozen_decision_per_matchup": true,
+      "source": "immutable_t24_paper_decisions"
+    },
+    "decision_dataset_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "eligible_frozen_decisions": 0,
+    "execution_enabled": false,
+    "model_ids": [],
+    "paired_event_intervals": {
+      "equal_blend_vs_market": null,
+      "equal_blend_vs_model": null
+    },
+    "paper_only": true,
+    "policy_version": "model-market-equal-logit-v1",
+    "purpose": "test whether the production model adds useful information to the market when both are frozen before the fight",
+    "score_notes": {
+      "accuracy_treats_an_exact_50_50_as_half_correct": true,
+      "calibration_measure": "expected_calibration_error",
+      "higher_is_better_for_accuracy_and_roc_auc": true,
+      "lower_is_better_for_log_loss_brier_and_calibration_error": true,
+      "primary_measure": "log_loss"
+    },
+    "scored_fights": 0,
+    "scored_input_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "scores": {
+      "fixed_equal_logit_blend": null,
+      "market": null,
+      "production_model": null
+    },
+    "settled_decisions_including_voids": 0,
+    "settled_events": 0,
+    "settlement_dataset_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "status": "collecting_results",
+    "void_or_unscored_decisions": 0,
+    "winner_disagreements": {
+      "equal_blend_correct_on_those_fights": 0,
+      "equal_blend_ties_on_those_fights": 0,
+      "fights_where_model_and_market_pick_different_winners": 0,
+      "market_correct_on_those_fights": 0,
+      "model_correct_on_those_fights": 0
+    }
+  },
   "quote_dataset_sha256": "9311b4b8c4549a509394d7062f57c9b302140f2b54238b93ac9e912e73cc699f",
-  "report_sha256": "fb62ce80ff14ff8232e3c4db1ce4c99a1083d5a9a66ed4455e9c80f9c002ad77",
-  "result_source_sha256": "14ccbaf2adb7dba78d5cb169cd2b3e393bde92e858f6b51d192ed3d8ac6415e5",
-  "schema_version": 3,
+  "report_sha256": "dfbace353808810131bde761eebdd266e463a564cb3bdf594c8c2323d47eb0f8",
+  "result_source_sha256": "6cfb14c9ebcaf2946d942447f4af0166df8b1e5cefa9111edb184b74d7197d49",
+  "schema_version": 4,
   "settlement_dataset_sha256": "746825ad480619345d0ec3d38170c080c09bbb46703bbf5702ba780a40382a4e",
   "settlements_total": 13,
   "source_metadata_dataset_sha256": "98b7794f4d295de0a7fb44a4a6141a1b130afec1b8be4ee5bb842303b8b33a29",

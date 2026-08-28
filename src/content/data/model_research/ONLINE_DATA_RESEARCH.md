@@ -94,15 +94,20 @@ small to establish a repeatable advantage or learn a production blend weight.
 
 ## Decision and next test
 
-Production remains unchanged. The most useful next step is to freeze the
-expanded-history-plus-rankings candidate now and evaluate it on later untouched
-events. In parallel, continue collecting the repository's timestamped market
-snapshots; a properly time-aligned market history is more likely to produce a
-first-order improvement than the narrow downloaded odds sample. Promotion
-requires the improvement to repeat on new fights, without worsening Brier
-score or calibration.
+Production remains unchanged. A fixed prospective model/market test now starts
+with events on or after September 1, 2026. It uses the existing immutable T-24
+records to compare the current production model, market consensus, and a 50/50
+blend of their log odds on exactly the same fights. The weight is never tuned
+from this test. Results are published in `market/performance_report.json` under
+`prospective_model_market_comparison`, with the first formal review after 200
+scored fights across 20 events. This adds no odds requests or paid services.
+
+The expanded-history-plus-rankings model is not part of that live test yet.
+Its historical improvement was uncertain, it worsened in the latest two years,
+and the repository does not yet have a validated weekly source for all seven
+rankings. Adding it now would mix a data-pipeline experiment into the cleaner
+model-versus-market question.
 
 Exact results and per-fight probabilities are stored in
 `online_data_challengers.json` and `online_data_challengers.csv` beside this
 file.
-

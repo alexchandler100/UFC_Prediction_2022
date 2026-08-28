@@ -64,6 +64,14 @@ from .prospective import (
     PaperDecisionBuild,
     build_locked_paper_decisions,
 )
+from .prospective_comparison import (
+    PROSPECTIVE_COMPARISON_FIRST_EVENT_DATE,
+    PROSPECTIVE_COMPARISON_POLICY_VERSION,
+    PROSPECTIVE_EQUAL_BLEND_GAMMA,
+    PROSPECTIVE_MINIMUM_SCORED_FIGHTS,
+    PROSPECTIVE_MINIMUM_SETTLED_EVENTS,
+    prospective_comparison_report,
+)
 from .timing import TIMING_POLICY_VERSION, evaluate_timing_policies
 from .opportunities import (
     OPPORTUNITY_POLICY_VERSION,
@@ -134,6 +142,11 @@ __all__ = (
     "PaperSettlement",
     "PaperSettlementStore",
     "PriorCardBlendEvaluator",
+    "PROSPECTIVE_COMPARISON_FIRST_EVENT_DATE",
+    "PROSPECTIVE_COMPARISON_POLICY_VERSION",
+    "PROSPECTIVE_EQUAL_BLEND_GAMMA",
+    "PROSPECTIVE_MINIMUM_SCORED_FIGHTS",
+    "PROSPECTIVE_MINIMUM_SETTLED_EVENTS",
     "QuoteSnapshot",
     "QuoteSnapshotStore",
     "QuoteSourceMetadata",
@@ -164,6 +177,7 @@ __all__ = (
     "RESIDUAL_WEIGHT_GRID",
     "consensus_as_of",
     "build_locked_paper_decisions",
+    "prospective_comparison_report",
     "build_current_opportunities",
     "build_prop_market_view",
     "build_locked_total_round_decisions",

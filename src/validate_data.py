@@ -60,6 +60,7 @@ from market_tracker import (
     TotalRoundsPaperDecisionStore,
     TotalRoundsPaperSettlementStore,
     QuoteSourceMetadataStore,
+    PROSPECTIVE_COMPARISON_POLICY_VERSION,
     StoreIntegrityError,
     TIMING_POLICY_VERSION,
     TOTAL_DECISION_TARGET_LEAD_SECONDS,
@@ -71,6 +72,7 @@ from market_tracker import (
     summarize_total_round_performance,
     select_residual_weight,
     validate_current_opportunities,
+    prospective_comparison_report,
 )
 from market_tracker._common import BETTING_STATUS, canonical_hash
 from market_tracker.prospective import (
@@ -2214,6 +2216,23 @@ def validate_market_data(
                         quotes,
                     ),
                     "Bayesian filtered performance report cannot be reproduced",
+                )
+            if int(performance.get("schema_version", 1)) >= 4:
+                prospective = performance.get(
+                    "prospective_model_market_comparison"
+                )
+                report.require(
+                    isinstance(prospective, dict)
+                    and prospective.get("policy_version")
+                    == PROSPECTIVE_COMPARISON_POLICY_VERSION
+                    and prospective.get("paper_only") is True
+                    and prospective.get("execution_enabled") is False,
+                    "prospective model/market comparison must remain paper-only",
+                )
+                report.require(
+                    prospective
+                    == prospective_comparison_report(decisions, settlements),
+                    "prospective model/market comparison cannot be reproduced",
                 )
             expected_metrics = summarize_paper_settlements(
                 decisions, settlements

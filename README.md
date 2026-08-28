@@ -237,6 +237,19 @@ encouraging but much too small for deployment. Production remains unchanged;
 the source rules, commands, full results, and next test are documented in
 `src/content/data/model_research/ONLINE_DATA_RESEARCH.md`.
 
+The follow-up is now a fixed prospective test beginning with events on or
+after September 1, 2026. For every eligible T-24 paper decision, the updater
+scores the production model, market consensus, and a permanently fixed 50/50
+blend of their log odds on the same fights. It reports accuracy, log loss,
+Brier score, calibration error, model/market winner disagreements, and 95%
+whole-card resampling ranges in
+`src/content/data/market/performance_report.json` under
+`prospective_model_market_comparison`. The first formal review is after at
+least 200 scored fights across 20 events. Earlier known results are excluded,
+the 50/50 weight cannot retune itself, and the test remains paper-only with
+execution disabled. It reuses the already-frozen market records, so it adds no
+API calls, storage service, or paid infrastructure.
+
 The auditable artifacts are:
 
 - `src/content/data/processed/ufc_fights_point_in_time.csv`
@@ -1122,8 +1135,8 @@ fresh MMA moneyline plus available full-fight total-round response from The
 Odds API, appends separate validated quote/forecast/source-timing ledgers,
 freezes any eligible T-24 paper decisions, and publishes a
 bounded audit report, settles any newly completed moneyline and totals
-decisions, and refreshes
-the return/CLV report before strict revalidation. The authoritative update job
+decisions, and refreshes the return/CLV report plus the fixed prospective
+model/market/blend comparison before strict revalidation. The authoritative update job
 and collector share one publisher concurrency group and exact path allowlists;
 the dependent paper-shadow job uses a separate group and cannot delay a price
 capture. The collector creates no live wager.
