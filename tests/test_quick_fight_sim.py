@@ -41,10 +41,19 @@ class QuickFightSimulationTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "more than one"):
             QUICK._matchup(self.publication, "Fighter", "Fighter")
 
-    def test_exact_path_total_uses_the_largest_available_divisor(self):
+    def test_exact_path_total_can_preserve_two_paths_per_member(self):
         self.assertEqual(QUICK._largest_divisor_at_most(100, 200), 100)
         self.assertEqual(QUICK._largest_divisor_at_most(1000, 200), 200)
         self.assertEqual(QUICK._largest_divisor_at_most(101, 64), 1)
+        members = QUICK._largest_divisor_at_most(100, min(200, 100 // 2))
+        self.assertEqual(members, 50)
+        self.assertEqual(100 // members, 2)
+
+    def test_current_card_prefers_materialized_members_over_refitting(self):
+        publication = QUICK._load_json(QUICK.DEFAULT_PUBLICATION)
+        path, members = QUICK._find_parameters(publication, None)
+        self.assertIn("parameter-materialized-cache", str(path))
+        self.assertEqual(members, int(publication["bootstrap_members"]))
 
 
 if __name__ == "__main__":

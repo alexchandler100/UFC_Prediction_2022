@@ -79,8 +79,21 @@ def _artifact_metadata(path: Path) -> dict[str, Any]:
 
 def _find_parameters(publication: Mapping[str, Any], explicit: Path | None) -> tuple[Path, int]:
     expected_sha = str(publication.get("parameter_artifact_sha256") or "")
+    materialized = (
+        REPO_ROOT
+        / "artifacts/simulations/parameter-materialized-cache"
+        / f"parameter-{expected_sha}.json.gz"
+    )
     if explicit is not None:
         candidates = [explicit]
+    elif expected_sha and materialized.is_file():
+        # The smaller publication artifact is a reproducible fit recipe: loading
+        # it refits all 200 members. Prefer the larger exact-member cache so a
+        # quick run only decodes parameters and never performs a hidden refit.
+        members = int(publication.get("bootstrap_members") or 0)
+        if members > 0:
+            return materialized.resolve(), members
+        candidates = [materialized]
     else:
         candidates = sorted(
             (
@@ -163,8 +176,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         return 0
     if not args.fighter_one or not args.fighter_two:
         raise SystemExit("provide two fighter names, or use --list")
-    if args.paths <= 0:
-        raise SystemExit("--paths must be positive")
+    if args.paths < 2:
+        raise SystemExit("--paths must be at least 2")
     if not 1 <= args.workers <= 64:
         raise SystemExit("--workers must be between 1 and 64")
     if not 0 <= args.traces <= 32:
@@ -181,7 +194,12 @@ def main(argv: Sequence[str] | None = None) -> int:
             "has fewer than three previous UFC fights"
         )
     parameter_path, available_members = _find_parameters(publication, args.parameters)
-    selected_members = _largest_divisor_at_most(args.paths, available_members)
+    # Two paths per member are the minimum needed for the simulator's
+    # deterministic odd/even convergence comparison. Keep the requested total
+    # exact while using as much of the parameter ensemble as that permits.
+    selected_members = _largest_divisor_at_most(
+        args.paths, min(available_members, args.paths // 2)
+    )
     paths_per_member = args.paths // selected_members
     if reversed_order:
         red_id, blue_id = str(row["opponent_id"]), str(row["fighter_id"])

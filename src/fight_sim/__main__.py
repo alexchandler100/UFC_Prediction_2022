@@ -207,10 +207,10 @@ def build_parser() -> argparse.ArgumentParser:
         ),
     )
     run.add_argument(
-        "--initial-paths-per-member", type=_bounded_integer(1, 8192), default=512
+        "--initial-paths-per-member", type=_bounded_integer(2, 8192), default=512
     )
     run.add_argument(
-        "--max-paths-per-member", type=_bounded_integer(1, 8192), default=2048
+        "--max-paths-per-member", type=_bounded_integer(2, 8192), default=2048
     )
     run.add_argument("--workers", type=_bounded_integer(1, 64), default=1)
     run.add_argument("--chunk-size", type=_bounded_integer(1, 4096), default=64)
