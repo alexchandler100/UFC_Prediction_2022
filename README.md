@@ -166,12 +166,40 @@ because one subgroup might look appealing. UFCStats profile stance is also not
 historically timestamped, which independently prevents direct promotion from
 this retrospective result.
 
+A subsequent round-cardio challenger tested 12 causal, antisymmetric features:
+Round 2 and Round 3 changes from a fighter's complete five-minute Round 1 in
+strike-attempt pace, accuracy, opponent pace, defense, and control share, plus
+the amount of qualifying evidence. Per-fight changes were shrunk toward no
+decay and partial rounds were never imputed. The round source currently covers
+only 1,000 fights from 2024-09-28 onward, so 2026 was predeclared as the first
+evidence-active fold: 2025 supplies feature-bearing training examples and 346
+terminal W/L fights are then evaluated.
+
+The cardio group failed. In 2026, log loss worsened from `0.626676` to
+`0.638954`, Brier score from `0.218368` to `0.223310`, AUC from `0.70611` to
+`0.69623`, and calibration error from `0.04758` to `0.06760`. Accuracy alone
+rose from `64.74%` to `65.32%`, illustrating why threshold accuracy is not an
+adequate betting objective. Adding cardio to external history similarly
+worsened log loss from `0.624341` to `0.637166`. Results remained worse among
+the 290 fights with prior Round-2 evidence on at least one side and the 182
+with evidence on both sides. The paired interval was wide and crossed zero,
+but no probability-quality metric supported retention.
+
+The broader replay exposed an additional deployment hazard: the 2025 fold had
+only a handful of feature-bearing training fights, and standardization let the
+sparse columns overfit badly. Future sparse-data challengers must specify a
+minimum feature-bearing training-support gate and fall back to their reference
+model below it. This does not rescue cardio in 2026, where support was much
+better and the predeclared primary result still failed. The cardio group is
+rejected and production remains unchanged.
+
 Reproduce these bounded comparisons with:
 
 ```console
 python -B src/evaluate_winner_feature_challengers.py
 python -B src/evaluate_external_mma_outcome.py
 python -B src/evaluate_stance_matchup_challenger.py
+python -B src/evaluate_round_cardio_challenger.py
 ```
 
 The auditable artifacts are:
@@ -186,6 +214,8 @@ The auditable artifacts are:
 - `src/content/data/external_mma/outcome_feature_comparison.json`
 - `src/content/data/external_mma/stance_matchup_factorial.json`
 - `src/content/data/external_mma/stance_matchup_factorial.csv`
+- `src/content/data/external_mma/round_cardio_factorial.json`
+- `src/content/data/external_mma/round_cardio_factorial.csv`
 - `src/content/data/external/winner_model.json`
 - `src/content/data/external/bayesian_winner_challenger.json` (paper-only Laplace posterior)
 - `src/content/data/external/vegas_odds.json`

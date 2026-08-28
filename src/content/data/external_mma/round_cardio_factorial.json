@@ -1,0 +1,803 @@
+{
+  "coverage": {
+    "evidence_active_horizon": {
+      "fights": 346,
+      "round_2_vs_1": {
+        "any_side_fraction": 0.838150289017341,
+        "any_side_has_prior_sample": 290,
+        "both_sides_fraction": 0.5260115606936416,
+        "both_sides_have_prior_sample": 182,
+        "both_sides_have_two_or_more": 41,
+        "side_sample_fraction": 0.6820809248554913
+      },
+      "round_3_vs_1": {
+        "any_side_fraction": 0.8121387283236994,
+        "any_side_has_prior_sample": 281,
+        "both_sides_fraction": 0.42485549132947975,
+        "both_sides_have_prior_sample": 147,
+        "both_sides_have_two_or_more": 27,
+        "side_sample_fraction": 0.6184971098265896
+      }
+    },
+    "market_paired": {
+      "fights": 503,
+      "round_2_vs_1": {
+        "any_side_fraction": 0.44930417495029823,
+        "any_side_has_prior_sample": 226,
+        "both_sides_fraction": 0.19483101391650098,
+        "both_sides_have_prior_sample": 98,
+        "both_sides_have_two_or_more": 12,
+        "side_sample_fraction": 0.3220675944333996
+      },
+      "round_3_vs_1": {
+        "any_side_fraction": 0.42147117296222664,
+        "any_side_has_prior_sample": 212,
+        "both_sides_fraction": 0.1550695825049702,
+        "both_sides_have_prior_sample": 78,
+        "both_sides_have_two_or_more": 8,
+        "side_sample_fraction": 0.2882703777335984
+      }
+    },
+    "production_horizon": {
+      "fights": 1877,
+      "round_2_vs_1": {
+        "any_side_fraction": 0.3196590303676079,
+        "any_side_has_prior_sample": 600,
+        "both_sides_fraction": 0.1561001598295152,
+        "both_sides_have_prior_sample": 293,
+        "both_sides_have_two_or_more": 49,
+        "side_sample_fraction": 0.23787959509856155
+      },
+      "round_3_vs_1": {
+        "any_side_fraction": 0.30207778369738947,
+        "any_side_has_prior_sample": 567,
+        "both_sides_fraction": 0.12360149174214172,
+        "both_sides_have_prior_sample": 232,
+        "both_sides_have_two_or_more": 32,
+        "side_sample_fraction": 0.21283963771976558
+      }
+    }
+  },
+  "created_at_utc": "2026-08-28T02:18:03+00:00",
+  "decision": {
+    "best_variant": "external_history",
+    "cardio_group_retained_for_leading_challenger": false,
+    "cardio_improved_baseline_log_loss_and_brier": false,
+    "cardio_improved_external_log_loss_and_brier": false,
+    "production_action": "none",
+    "ranked_by_primary_log_loss": [
+      "external_history",
+      "baseline",
+      "external_cardio",
+      "cardio"
+    ],
+    "recommendation": "reject round cardio from the leading winner challenger"
+  },
+  "evidence_active_coverage_slices": {
+    "any_side_has_prior_round_2_sample": {
+      "factorial_log_loss_effects": {
+        "cardio_effect_with_external": 0.015243899862725452,
+        "cardio_effect_without_external": 0.01453920843744605,
+        "external_effect_with_cardio": -0.001995865391144047,
+        "external_effect_without_cardio": -0.0027005568164234495,
+        "interaction": 0.0007046914252794023
+      },
+      "metrics": {
+        "baseline": {
+          "accuracy": 0.6413793103448275,
+          "auc": 0.6861313868613139,
+          "brier": 0.22423892151390973,
+          "ece_10_bin": 0.07062486347989402,
+          "fights": 290,
+          "log_loss": 0.6395665658676225
+        },
+        "cardio": {
+          "accuracy": 0.6448275862068965,
+          "auc": 0.6768761032393493,
+          "brier": 0.23007669983896922,
+          "ece_10_bin": 0.07719527047755903,
+          "fights": 290,
+          "log_loss": 0.6541057743050686
+        },
+        "external_cardio": {
+          "accuracy": 0.6413793103448275,
+          "auc": 0.6785458709031057,
+          "brier": 0.22918288618074342,
+          "ece_10_bin": 0.08219222120898617,
+          "fights": 290,
+          "log_loss": 0.6521099089139245
+        },
+        "external_history": {
+          "accuracy": 0.6517241379310345,
+          "auc": 0.6902342445494013,
+          "brier": 0.22306940111636395,
+          "ece_10_bin": 0.06965912837762875,
+          "fights": 290,
+          "log_loss": 0.6368660090511991
+        }
+      },
+      "paired_log_loss_intervals": {
+        "cardio_minus_baseline": {
+          "bootstrap_samples": 10000,
+          "ci_95_lower": -0.02230297149219202,
+          "ci_95_upper": 0.05016604810031218,
+          "definition": "cardio_probability minus baseline_probability paired log loss; negative favors candidate",
+          "event_count": 28,
+          "fight_count": 290,
+          "method": "nonparametric whole-event block bootstrap",
+          "point_difference": 0.014539208437445982,
+          "seed": 20260822
+        },
+        "external_cardio_minus_baseline": {
+          "bootstrap_samples": 10000,
+          "ci_95_lower": -0.024789189157000152,
+          "ci_95_upper": 0.04886632431858685,
+          "definition": "external_cardio_probability minus baseline_probability paired log loss; negative favors candidate",
+          "event_count": 28,
+          "fight_count": 290,
+          "method": "nonparametric whole-event block bootstrap",
+          "point_difference": 0.012543343046301905,
+          "seed": 20260822
+        },
+        "external_cardio_minus_cardio": {
+          "bootstrap_samples": 10000,
+          "ci_95_lower": -0.006100523552838906,
+          "ci_95_upper": 0.0017319112382629836,
+          "definition": "external_cardio_probability minus cardio_probability paired log loss; negative favors candidate",
+          "event_count": 28,
+          "fight_count": 290,
+          "method": "nonparametric whole-event block bootstrap",
+          "point_difference": -0.0019958653911440884,
+          "seed": 20260822
+        },
+        "external_cardio_minus_external_history": {
+          "bootstrap_samples": 10000,
+          "ci_95_lower": -0.021352039311164896,
+          "ci_95_upper": 0.05078543153303992,
+          "definition": "external_cardio_probability minus external_history_probability paired log loss; negative favors candidate",
+          "event_count": 28,
+          "fight_count": 290,
+          "method": "nonparametric whole-event block bootstrap",
+          "point_difference": 0.015243899862725502,
+          "seed": 20260822
+        },
+        "external_history_minus_baseline": {
+          "bootstrap_samples": 10000,
+          "ci_95_lower": -0.0069809821106918725,
+          "ci_95_upper": 0.0012462231051560383,
+          "definition": "external_history_probability minus baseline_probability paired log loss; negative favors candidate",
+          "event_count": 28,
+          "fight_count": 290,
+          "method": "nonparametric whole-event block bootstrap",
+          "point_difference": -0.0027005568164236,
+          "seed": 20260822
+        }
+      }
+    },
+    "both_sides_have_prior_round_2_sample": {
+      "factorial_log_loss_effects": {
+        "cardio_effect_with_external": 0.012474143441190688,
+        "cardio_effect_without_external": 0.011851236703827484,
+        "external_effect_with_cardio": -0.004133657972808957,
+        "external_effect_without_cardio": -0.004756564710172162,
+        "interaction": 0.0006229067373632047
+      },
+      "metrics": {
+        "baseline": {
+          "accuracy": 0.6208791208791209,
+          "auc": 0.66,
+          "brier": 0.23342697005210725,
+          "ece_10_bin": 0.07857566695534375,
+          "fights": 182,
+          "log_loss": 0.6611024271488702
+        },
+        "cardio": {
+          "accuracy": 0.6318681318681318,
+          "auc": 0.661219512195122,
+          "brier": 0.23798799990344172,
+          "ece_10_bin": 0.11297078017000552,
+          "fights": 182,
+          "log_loss": 0.6729536638526977
+        },
+        "external_cardio": {
+          "accuracy": 0.6318681318681318,
+          "auc": 0.6657317073170732,
+          "brier": 0.23617415546443582,
+          "ece_10_bin": 0.11904826924228153,
+          "fights": 182,
+          "log_loss": 0.6688200058798888
+        },
+        "external_history": {
+          "accuracy": 0.6318681318681318,
+          "auc": 0.6646341463414633,
+          "brier": 0.23140923400862146,
+          "ece_10_bin": 0.08968470830103979,
+          "fights": 182,
+          "log_loss": 0.6563458624386981
+        }
+      },
+      "paired_log_loss_intervals": {
+        "cardio_minus_baseline": {
+          "bootstrap_samples": 10000,
+          "ci_95_lower": -0.03486638695133129,
+          "ci_95_upper": 0.057040428123516916,
+          "definition": "cardio_probability minus baseline_probability paired log loss; negative favors candidate",
+          "event_count": 28,
+          "fight_count": 182,
+          "method": "nonparametric whole-event block bootstrap",
+          "point_difference": 0.011851236703827449,
+          "seed": 20260822
+        },
+        "external_cardio_minus_baseline": {
+          "bootstrap_samples": 10000,
+          "ci_95_lower": -0.03879136646786821,
+          "ci_95_upper": 0.052739142729672416,
+          "definition": "external_cardio_probability minus baseline_probability paired log loss; negative favors candidate",
+          "event_count": 28,
+          "fight_count": 182,
+          "method": "nonparametric whole-event block bootstrap",
+          "point_difference": 0.007717578731018442,
+          "seed": 20260822
+        },
+        "external_cardio_minus_cardio": {
+          "bootstrap_samples": 10000,
+          "ci_95_lower": -0.010087314521823315,
+          "ci_95_upper": 0.001226586880395877,
+          "definition": "external_cardio_probability minus cardio_probability paired log loss; negative favors candidate",
+          "event_count": 28,
+          "fight_count": 182,
+          "method": "nonparametric whole-event block bootstrap",
+          "point_difference": -0.004133657972809026,
+          "seed": 20260822
+        },
+        "external_cardio_minus_external_history": {
+          "bootstrap_samples": 10000,
+          "ci_95_lower": -0.033853272481066544,
+          "ci_95_upper": 0.05734972946056411,
+          "definition": "external_cardio_probability minus external_history_probability paired log loss; negative favors candidate",
+          "event_count": 28,
+          "fight_count": 182,
+          "method": "nonparametric whole-event block bootstrap",
+          "point_difference": 0.012474143441190721,
+          "seed": 20260822
+        },
+        "external_history_minus_baseline": {
+          "bootstrap_samples": 10000,
+          "ci_95_lower": -0.010947824162823317,
+          "ci_95_upper": 0.000803827661685665,
+          "definition": "external_history_probability minus baseline_probability paired log loss; negative favors candidate",
+          "event_count": 28,
+          "fight_count": 182,
+          "method": "nonparametric whole-event block bootstrap",
+          "point_difference": -0.00475656471017229,
+          "seed": 20260822
+        }
+      }
+    }
+  },
+  "evidence_active_walk_forward": {
+    "factorial_log_loss_effects": {
+      "cardio_effect_with_external": 0.012824389555556204,
+      "cardio_effect_without_external": 0.012278897987176629,
+      "external_effect_with_cardio": -0.0017888181508165513,
+      "external_effect_without_cardio": -0.002334309719196126,
+      "interaction": 0.0005454915683795747
+    },
+    "metrics": {
+      "baseline": {
+        "accuracy": 0.6473988439306358,
+        "auc": 0.7061108320776829,
+        "brier": 0.2183675430139528,
+        "ece_10_bin": 0.04758482226593102,
+        "fights": 346,
+        "log_loss": 0.6266755696373653
+      },
+      "cardio": {
+        "accuracy": 0.653179190751445,
+        "auc": 0.6962330487192365,
+        "brier": 0.22330954730726668,
+        "ece_10_bin": 0.0675977788592438,
+        "fights": 346,
+        "log_loss": 0.6389544676245419
+      },
+      "external_cardio": {
+        "accuracy": 0.6445086705202312,
+        "auc": 0.6985434455047714,
+        "brier": 0.2224939788628569,
+        "ece_10_bin": 0.06626563212595243,
+        "fights": 346,
+        "log_loss": 0.6371656494737253
+      },
+      "external_history": {
+        "accuracy": 0.6560693641618497,
+        "auc": 0.7099280093755231,
+        "brier": 0.2173395126146843,
+        "ece_10_bin": 0.05135436372367045,
+        "fights": 346,
+        "log_loss": 0.6243412599181691
+      }
+    },
+    "paired_log_loss_intervals": {
+      "cardio_minus_baseline": {
+        "bootstrap_samples": 10000,
+        "ci_95_lower": -0.018722013765657984,
+        "ci_95_upper": 0.041708112257469634,
+        "definition": "cardio_probability minus baseline_probability paired log loss; negative favors candidate",
+        "event_count": 28,
+        "fight_count": 346,
+        "method": "nonparametric whole-event block bootstrap",
+        "point_difference": 0.012278897987176556,
+        "seed": 20260822
+      },
+      "external_cardio_minus_baseline": {
+        "bootstrap_samples": 10000,
+        "ci_95_lower": -0.02107900251043857,
+        "ci_95_upper": 0.04046468796954392,
+        "definition": "external_cardio_probability minus baseline_probability paired log loss; negative favors candidate",
+        "event_count": 28,
+        "fight_count": 346,
+        "method": "nonparametric whole-event block bootstrap",
+        "point_difference": 0.010490079836360062,
+        "seed": 20260822
+      },
+      "external_cardio_minus_cardio": {
+        "bootstrap_samples": 10000,
+        "ci_95_lower": -0.005320424658169436,
+        "ci_95_upper": 0.0012821916585918853,
+        "definition": "external_cardio_probability minus cardio_probability paired log loss; negative favors candidate",
+        "event_count": 28,
+        "fight_count": 346,
+        "method": "nonparametric whole-event block bootstrap",
+        "point_difference": -0.0017888181508164992,
+        "seed": 20260822
+      },
+      "external_cardio_minus_external_history": {
+        "bootstrap_samples": 10000,
+        "ci_95_lower": -0.018113092484167037,
+        "ci_95_upper": 0.04214697483588853,
+        "definition": "external_cardio_probability minus external_history_probability paired log loss; negative favors candidate",
+        "event_count": 28,
+        "fight_count": 346,
+        "method": "nonparametric whole-event block bootstrap",
+        "point_difference": 0.012824389555556228,
+        "seed": 20260822
+      },
+      "external_history_minus_baseline": {
+        "bootstrap_samples": 10000,
+        "ci_95_lower": -0.006027099033824677,
+        "ci_95_upper": 0.0009509532831980606,
+        "definition": "external_history_probability minus baseline_probability paired log loss; negative favors candidate",
+        "event_count": 28,
+        "fight_count": 346,
+        "method": "nonparametric whole-event block bootstrap",
+        "point_difference": -0.002334309719196167,
+        "seed": 20260822
+      }
+    }
+  },
+  "experiment_version": "round-cardio-factorial-v1",
+  "extended_walk_forward": {
+    "factorial_log_loss_effects": {
+      "cardio_effect_with_external": 0.19586786235814513,
+      "cardio_effect_without_external": 0.18992923429317932,
+      "external_effect_with_cardio": 0.005396504314108874,
+      "external_effect_without_cardio": -0.0005421237508569376,
+      "interaction": 0.005938628064965812
+    },
+    "metrics": {
+      "baseline": {
+        "accuracy": 0.6399496433067562,
+        "auc": 0.6919034599898991,
+        "brier": 0.22200767387657214,
+        "ece_10_bin": 0.020415065226202535,
+        "fights": 2383,
+        "log_loss": 0.6340387984501521
+      },
+      "cardio": {
+        "accuracy": 0.6240033571128829,
+        "auc": 0.6537456654901064,
+        "brier": 0.244933379178047,
+        "ece_10_bin": 0.06548568054518325,
+        "fights": 2383,
+        "log_loss": 0.8239680327433314
+      },
+      "external_cardio": {
+        "accuracy": 0.6219051615610575,
+        "auc": 0.6544912435141061,
+        "brier": 0.24496617005398982,
+        "ece_10_bin": 0.06432793135447853,
+        "fights": 2383,
+        "log_loss": 0.8293645370574403
+      },
+      "external_history": {
+        "accuracy": 0.6412085606378515,
+        "auc": 0.6933078553028444,
+        "brier": 0.22172656174293215,
+        "ece_10_bin": 0.020395806166885015,
+        "fights": 2383,
+        "log_loss": 0.6334966746992952
+      }
+    },
+    "paired_log_loss_intervals": {
+      "cardio_minus_baseline": {
+        "bootstrap_samples": 10000,
+        "ci_95_lower": 0.11920963599654304,
+        "ci_95_upper": 0.2755441206442943,
+        "definition": "cardio_probability minus baseline_probability paired log loss; negative favors candidate",
+        "event_count": 197,
+        "fight_count": 2383,
+        "method": "nonparametric whole-event block bootstrap",
+        "point_difference": 0.19260157860243665,
+        "seed": 20260822
+      },
+      "external_cardio_minus_baseline": {
+        "bootstrap_samples": 10000,
+        "ci_95_lower": 0.12266312873741707,
+        "ci_95_upper": 0.28357418420331293,
+        "definition": "external_cardio_probability minus baseline_probability paired log loss; negative favors candidate",
+        "event_count": 197,
+        "fight_count": 2383,
+        "method": "nonparametric whole-event block bootstrap",
+        "point_difference": 0.1983522175547029,
+        "seed": 20260822
+      },
+      "external_cardio_minus_cardio": {
+        "bootstrap_samples": 10000,
+        "ci_95_lower": 0.003394151282417262,
+        "ci_95_upper": 0.0082361189455948,
+        "definition": "external_cardio_probability minus cardio_probability paired log loss; negative favors candidate",
+        "event_count": 197,
+        "fight_count": 2383,
+        "method": "nonparametric whole-event block bootstrap",
+        "point_difference": 0.005750638952266463,
+        "seed": 20260822
+      },
+      "external_cardio_minus_external_history": {
+        "bootstrap_samples": 10000,
+        "ci_95_lower": 0.12350542306111877,
+        "ci_95_upper": 0.2841630075926875,
+        "definition": "external_cardio_probability minus external_history_probability paired log loss; negative favors candidate",
+        "event_count": 197,
+        "fight_count": 2383,
+        "method": "nonparametric whole-event block bootstrap",
+        "point_difference": 0.19889434130556016,
+        "seed": 20260822
+      },
+      "external_history_minus_baseline": {
+        "bootstrap_samples": 10000,
+        "ci_95_lower": -0.0015747350374293553,
+        "ci_95_upper": 0.0005099551096968972,
+        "definition": "external_history_probability minus baseline_probability paired log loss; negative favors candidate",
+        "event_count": 197,
+        "fight_count": 2383,
+        "method": "nonparametric whole-event block bootstrap",
+        "point_difference": -0.000542123750856879,
+        "seed": 20260822
+      }
+    }
+  },
+  "feature_contract": {
+    "additional_feature_count": 12,
+    "additional_features": [
+      "cardio_r2_samples_log_diff",
+      "cardio_r2_sig_attempt_retention_log_diff",
+      "cardio_r2_sig_accuracy_change_diff",
+      "cardio_r2_opponent_sig_attempt_retention_log_diff",
+      "cardio_r2_sig_defence_change_diff",
+      "cardio_r2_control_share_change_diff",
+      "cardio_r3_samples_log_diff",
+      "cardio_r3_sig_attempt_retention_log_diff",
+      "cardio_r3_sig_accuracy_change_diff",
+      "cardio_r3_opponent_sig_attempt_retention_log_diff",
+      "cardio_r3_sig_defence_change_diff",
+      "cardio_r3_control_share_change_diff"
+    ],
+    "baseline_feature_count": 82,
+    "cardio_feature_count": 94,
+    "complete_five_minute_round_pairs_only": true,
+    "every_feature_antisymmetric": true,
+    "late_rounds": [
+      2,
+      3
+    ],
+    "metrics_per_round": [
+      "sig_attempt_retention_log",
+      "sig_accuracy_change",
+      "opponent_sig_attempt_retention_log",
+      "sig_defence_change",
+      "control_share_change"
+    ],
+    "partial_rounds_imputed": false,
+    "shrinkage_prior_fights_at_zero_change": 4.0,
+    "training_and_calibration": "identical nested expanding-year L2 logistic procedure",
+    "ufc_training_labels_identical": true,
+    "unmatched_or_discrepant_round_rows_used": false
+  },
+  "inherited_market_contract": {
+    "minimum_distinct_books": 3,
+    "probability": "mean of per-book two-sided no-vig probabilities",
+    "selection": "latest eligible pre-event capture per stable fight ID"
+  },
+  "market_paired": {
+    "challenger_log_loss_intervals": {
+      "cardio_minus_baseline": {
+        "bootstrap_samples": 10000,
+        "ci_95_lower": 0.2637512590368464,
+        "ci_95_upper": 0.7209030842298975,
+        "definition": "cardio_probability minus baseline_probability paired log loss; negative favors candidate",
+        "event_count": 58,
+        "fight_count": 503,
+        "method": "nonparametric whole-event block bootstrap",
+        "point_difference": 0.4819346433140058,
+        "seed": 20260822
+      },
+      "external_cardio_minus_baseline": {
+        "bootstrap_samples": 10000,
+        "ci_95_lower": 0.2723739683672813,
+        "ci_95_upper": 0.7420970648707014,
+        "definition": "external_cardio_probability minus baseline_probability paired log loss; negative favors candidate",
+        "event_count": 58,
+        "fight_count": 503,
+        "method": "nonparametric whole-event block bootstrap",
+        "point_difference": 0.49705049350831426,
+        "seed": 20260822
+      },
+      "external_cardio_minus_cardio": {
+        "bootstrap_samples": 10000,
+        "ci_95_lower": 0.008223651701749008,
+        "ci_95_upper": 0.022388682671455575,
+        "definition": "external_cardio_probability minus cardio_probability paired log loss; negative favors candidate",
+        "event_count": 58,
+        "fight_count": 503,
+        "method": "nonparametric whole-event block bootstrap",
+        "point_difference": 0.015115850194309041,
+        "seed": 20260822
+      },
+      "external_cardio_minus_external_history": {
+        "bootstrap_samples": 10000,
+        "ci_95_lower": 0.2728041882135,
+        "ci_95_upper": 0.741934426101924,
+        "definition": "external_cardio_probability minus external_history_probability paired log loss; negative favors candidate",
+        "event_count": 58,
+        "fight_count": 503,
+        "method": "nonparametric whole-event block bootstrap",
+        "point_difference": 0.49712924845295936,
+        "seed": 20260822
+      },
+      "external_history_minus_baseline": {
+        "bootstrap_samples": 10000,
+        "ci_95_lower": -0.0025150513951505285,
+        "ci_95_upper": 0.0025468132370680898,
+        "definition": "external_history_probability minus baseline_probability paired log loss; negative favors candidate",
+        "event_count": 58,
+        "fight_count": 503,
+        "method": "nonparametric whole-event block bootstrap",
+        "point_difference": -7.875494464496129e-05,
+        "seed": 20260822
+      }
+    },
+    "external_cardio_minus_market_interval": {
+      "bootstrap_samples": 10000,
+      "ci_95_lower": 0.29182908315006845,
+      "ci_95_upper": 0.766618199830523,
+      "definition": "external_cardio_probability minus market_probability paired log loss; negative favors candidate",
+      "event_count": 58,
+      "fight_count": 503,
+      "method": "nonparametric whole-event block bootstrap",
+      "point_difference": 0.519076700237782,
+      "seed": 20260822
+    },
+    "factorial_log_loss_effects": {
+      "cardio_effect_with_external": 0.49712924845295925,
+      "cardio_effect_without_external": 0.48193464331400415,
+      "external_effect_with_cardio": 0.015115850194309388,
+      "external_effect_without_cardio": -7.87549446457092e-05,
+      "interaction": 0.015194605138955097
+    },
+    "metrics": {
+      "baseline": {
+        "accuracy": 0.6560636182902585,
+        "brier_score": 0.21715380562536635,
+        "count": 503,
+        "expected_calibration_error": 0.045971703956958744,
+        "log_loss": 0.6235482743523593,
+        "positive_rate": 0.5009940357852882,
+        "roc_auc": 0.7108866122810346
+      },
+      "cardio": {
+        "accuracy": 0.5944333996023857,
+        "brier_score": 0.27805355827155964,
+        "count": 503,
+        "expected_calibration_error": 0.14310242909197893,
+        "log_loss": 1.1054829176663634,
+        "positive_rate": 0.5009940357852882,
+        "roc_auc": 0.6178618857901726
+      },
+      "external_cardio": {
+        "accuracy": 0.5944333996023857,
+        "brier_score": 0.27863904392272193,
+        "count": 503,
+        "expected_calibration_error": 0.1506271094424808,
+        "log_loss": 1.1205987678606728,
+        "positive_rate": 0.5009940357852882,
+        "roc_auc": 0.6172453044963006
+      },
+      "external_history": {
+        "accuracy": 0.6560636182902585,
+        "brier_score": 0.21707119301390104,
+        "count": 503,
+        "expected_calibration_error": 0.046261608458099616,
+        "log_loss": 0.6234695194077136,
+        "positive_rate": 0.5009940357852882,
+        "roc_auc": 0.7115031935749068
+      },
+      "market": {
+        "accuracy": 0.6779324055666004,
+        "brier_score": 0.20759785223485697,
+        "count": 503,
+        "expected_calibration_error": 0.027347517853471354,
+        "log_loss": 0.6015220676228911,
+        "positive_rate": 0.5009940357852882,
+        "roc_auc": 0.7367197875166003
+      }
+    }
+  },
+  "non_promotable_flags": [
+    "round_cardio_group_is_development_evidence",
+    "round_backfill_is_incomplete_before_2024_09_28",
+    "complete_late_round_conditioning_has_survivorship_selection",
+    "current_data_period_informed_candidate_selection",
+    "external_source_is_a_stale_bootstrap_through_2021_08_11",
+    "market_history_missing_2024",
+    "legacy_market_timestamps_are_not_verified_close_times"
+  ],
+  "paper_only": true,
+  "primary_horizon_predeclared_from_data_availability_not_outcomes": true,
+  "primary_metric": "evidence_active_2026_walk_forward_log_loss",
+  "production_walk_forward": {
+    "factorial_log_loss_effects": {
+      "cardio_effect_with_external": 0.24866974746907833,
+      "cardio_effect_without_external": 0.24113018930242236,
+      "external_effect_with_cardio": 0.006983386987685081,
+      "external_effect_without_cardio": -0.0005561711789708879,
+      "interaction": 0.0075395581666559686
+    },
+    "metrics": {
+      "baseline": {
+        "accuracy": 0.6403835908364411,
+        "auc": 0.6971739051327305,
+        "brier": 0.22070059107620524,
+        "ece_10_bin": 0.024517491163701752,
+        "fights": 1877,
+        "log_loss": 0.6313760447767583
+      },
+      "cardio": {
+        "accuracy": 0.6201385189131593,
+        "auc": 0.6494673495751533,
+        "brier": 0.24980658773758754,
+        "ece_10_bin": 0.07975264843078926,
+        "fights": 1877,
+        "log_loss": 0.8725062340791807
+      },
+      "external_cardio": {
+        "accuracy": 0.6196057538625466,
+        "auc": 0.6500131911719219,
+        "brier": 0.24992199001605941,
+        "ece_10_bin": 0.07908246712521164,
+        "fights": 1877,
+        "log_loss": 0.8794896210668658
+      },
+      "external_history": {
+        "accuracy": 0.6441129461907299,
+        "auc": 0.6985839959243829,
+        "brier": 0.22041746864938364,
+        "ece_10_bin": 0.02425077027216526,
+        "fights": 1877,
+        "log_loss": 0.6308198735977875
+      }
+    },
+    "paired_log_loss_intervals": {
+      "cardio_minus_baseline": {
+        "bootstrap_samples": 10000,
+        "ci_95_lower": 0.15586195029188407,
+        "ci_95_upper": 0.34368429002566486,
+        "definition": "cardio_probability minus baseline_probability paired log loss; negative favors candidate",
+        "event_count": 155,
+        "fight_count": 1877,
+        "method": "nonparametric whole-event block bootstrap",
+        "point_difference": 0.24452294182717452,
+        "seed": 20260822
+      },
+      "external_cardio_minus_baseline": {
+        "bootstrap_samples": 10000,
+        "ci_95_lower": 0.16106666588744217,
+        "ci_95_upper": 0.35417755442308696,
+        "definition": "external_cardio_probability minus baseline_probability paired log loss; negative favors candidate",
+        "event_count": 155,
+        "fight_count": 1877,
+        "method": "nonparametric whole-event block bootstrap",
+        "point_difference": 0.25195593075557843,
+        "seed": 20260822
+      },
+      "external_cardio_minus_cardio": {
+        "bootstrap_samples": 10000,
+        "ci_95_lower": 0.004580776693111789,
+        "ci_95_upper": 0.01050108462807768,
+        "definition": "external_cardio_probability minus cardio_probability paired log loss; negative favors candidate",
+        "event_count": 155,
+        "fight_count": 1877,
+        "method": "nonparametric whole-event block bootstrap",
+        "point_difference": 0.007432988928404196,
+        "seed": 20260822
+      },
+      "external_cardio_minus_external_history": {
+        "bootstrap_samples": 10000,
+        "ci_95_lower": 0.16170605890861892,
+        "ci_95_upper": 0.3547201784977963,
+        "definition": "external_cardio_probability minus external_history_probability paired log loss; negative favors candidate",
+        "event_count": 155,
+        "fight_count": 1877,
+        "method": "nonparametric whole-event block bootstrap",
+        "point_difference": 0.25251210193454976,
+        "seed": 20260822
+      },
+      "external_history_minus_baseline": {
+        "bootstrap_samples": 10000,
+        "ci_95_lower": -0.0017270653608140547,
+        "ci_95_upper": 0.0005956244664088999,
+        "definition": "external_history_probability minus baseline_probability paired log loss; negative favors candidate",
+        "event_count": 155,
+        "fight_count": 1877,
+        "method": "nonparametric whole-event block bootstrap",
+        "point_difference": -0.0005561711789708274,
+        "seed": 20260822
+      }
+    }
+  },
+  "promotable": false,
+  "report_schema_version": 1,
+  "round_source": {
+    "first_date": "2024-09-28",
+    "last_date": "2026-08-22",
+    "physical_fights": 1000,
+    "rows": 4798
+  },
+  "sample": {
+    "evidence_active_any_prior_round_2_sample": 290,
+    "evidence_active_both_prior_round_2_samples": 182,
+    "evidence_active_fights": 346,
+    "evidence_active_year": 2026,
+    "extended_fights": 2383,
+    "extended_years": [
+      2022,
+      2023,
+      2024,
+      2025,
+      2026
+    ],
+    "market_paired_fights": 503,
+    "production_fights": 1877,
+    "production_years": [
+      2023,
+      2024,
+      2025,
+      2026
+    ]
+  },
+  "source_sha256": {
+    "auxiliary": "b5038ab8c89fcd6f76ff6594d1070a364d06949fe9c1ac96e6b5b9bca75ae961",
+    "external_report": "0bf73f0d5c24dda45aee80c66dcb63928d4d393b3e8482e2e08145cbbf1888bd",
+    "fighter_stats": "88341fc47df0dac282a4c91c6f5df4d60e9e5905204eda4ce950459720c01230",
+    "market_detail": "ae533b317079019a86ab2b8de9ff79ac411b376b9e1f9531d0b7127691604bcb",
+    "market_report": "e6f6da84000dd45e326c4e3f24e4a5e3e3f2dcb5324ca73eea8f2ff4e3d2bf26",
+    "point_in_time": "f9ed863ea627318a3d55e1bf422536c0563fe2e22f8baedb71f6837b27530370",
+    "raw_fights": "6cfb14c9ebcaf2946d942447f4af0166df8b1e5cefa9111edb184b74d7197d49",
+    "round_stats": "2ca7e38eaf679ddcccd5a1b9d1e6d1943874072a9492eeaf2f2bdb3815e45cce"
+  },
+  "stored_baseline_drift_audit": {
+    "changed_fights": 1,
+    "current_recomputed_baseline_used_for_comparisons": true,
+    "maximum_absolute_probability_difference": 0.0035105032701805428,
+    "mean_absolute_probability_difference": 6.979131750105921e-06
+  }
+}
