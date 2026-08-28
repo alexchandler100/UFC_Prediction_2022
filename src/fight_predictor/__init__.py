@@ -8,6 +8,7 @@ from .point_in_time import (
     TemporalFightPredictor,
 )
 from .style_matchup import StyleMatchupDatasetBuilder
+from .stance_matchup import StanceMatchupDatasetBuilder
 from .outcome_model import (
     CompetingRiskPrediction,
     DiscreteTimeOutcomeModel,

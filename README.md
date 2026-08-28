@@ -150,11 +150,28 @@ results prevent an automatic feature-contract change: the frozen external
 history is the leading winner challenger, the combined style contract is not
 promoted, and prospective evidence remains necessary.
 
+The next bounded challenger tested stance without changing production: three
+Orthodox/Southpaw/Switch profile indicators and five antisymmetric open-stance
+interactions, evaluated both alone and on top of external history. Coverage was
+not the problem—both stances were known for 99.52% of the 1,877 production-
+horizon fights, and 489 were Orthodox-versus-Southpaw. Nevertheless, stance
+made every headline point estimate worse. Baseline log loss moved from
+`0.631376` to `0.632301`, accuracy fell from `64.04%` to `63.77%`, and Brier
+score moved from `0.220701` to `0.220917`. Adding the same group to external
+history moved log loss from `0.630820` to `0.631898`. The stance-minus-baseline
+event-block 95% interval was `[-0.00187, +0.00394]`, so it does not prove harm,
+but the extended horizon and 503-fight market subset also worsened. The stance
+group is therefore rejected from the leading challenger rather than retained
+because one subgroup might look appealing. UFCStats profile stance is also not
+historically timestamped, which independently prevents direct promotion from
+this retrospective result.
+
 Reproduce these bounded comparisons with:
 
 ```console
 python -B src/evaluate_winner_feature_challengers.py
 python -B src/evaluate_external_mma_outcome.py
+python -B src/evaluate_stance_matchup_challenger.py
 ```
 
 The auditable artifacts are:
@@ -167,6 +184,8 @@ The auditable artifacts are:
 - `src/content/data/external_mma/winner_feature_factorial.json`
 - `src/content/data/external_mma/winner_feature_factorial.csv`
 - `src/content/data/external_mma/outcome_feature_comparison.json`
+- `src/content/data/external_mma/stance_matchup_factorial.json`
+- `src/content/data/external_mma/stance_matchup_factorial.csv`
 - `src/content/data/external/winner_model.json`
 - `src/content/data/external/bayesian_winner_challenger.json` (paper-only Laplace posterior)
 - `src/content/data/external/vegas_odds.json`
