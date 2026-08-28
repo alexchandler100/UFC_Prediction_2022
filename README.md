@@ -129,6 +129,34 @@ export can use `import-canonical --source-key combat_registry_export
 --license-confirmed`; its required columns and validation rules are enforced by
 the adapter.
 
+A frozen 2x2 feature audit now compares the production baseline, external
+history, the 30-feature style-matchup challenger, and both candidates together
+under the same nested chronological procedure. On the current 2023-2026
+production horizon (1,877 fights), external history was the leading variant:
+log loss improved from `0.631376` to `0.630820`, accuracy from `64.04%` to
+`64.41%`, and Brier score from `0.220701` to `0.220417`. Style alone was
+essentially tied overall (`0.631331` log loss), and adding style to external
+history was slightly worse than external history alone (`0.630894`). Every
+event-block interval still crossed zero, so external history remains a small,
+uncertain challenger gain rather than a breakthrough.
+
+The same state replay was also checked for collateral effects on the candidate
+method/duration model. Joint side-by-method log loss improved by `0.002258`,
+method log loss improved by `0.000308`, and the common 1.5- and 2.5-round total
+lines improved slightly. Its internal winner marginal worsened by `0.000257`,
+while the separately calibrated production winner model improved. Rare
+five-round totals moved against the candidate on only 66 holdout fights. These
+results prevent an automatic feature-contract change: the frozen external
+history is the leading winner challenger, the combined style contract is not
+promoted, and prospective evidence remains necessary.
+
+Reproduce these bounded comparisons with:
+
+```console
+python -B src/evaluate_winner_feature_challengers.py
+python -B src/evaluate_external_mma_outcome.py
+```
+
 The auditable artifacts are:
 
 - `src/content/data/processed/ufc_fights_point_in_time.csv`
@@ -136,6 +164,9 @@ The auditable artifacts are:
 - `src/content/data/external_mma/bouts.jsonl`
 - `src/content/data/external_mma/snapshots.jsonl`
 - `src/content/data/external_mma/evaluation_report.json`
+- `src/content/data/external_mma/winner_feature_factorial.json`
+- `src/content/data/external_mma/winner_feature_factorial.csv`
+- `src/content/data/external_mma/outcome_feature_comparison.json`
 - `src/content/data/external/winner_model.json`
 - `src/content/data/external/bayesian_winner_challenger.json` (paper-only Laplace posterior)
 - `src/content/data/external/vegas_odds.json`

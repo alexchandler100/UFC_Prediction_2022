@@ -1,0 +1,410 @@
+{
+  "created_at_utc": "2026-08-28T00:55:44+00:00",
+  "decision": {
+    "best_variant": "external_history",
+    "combined_improved_on_both_single_candidates": false,
+    "external_history_improved_production_point_log_loss": true,
+    "production_action": "none; separately review dependent outcome-model effects and prospective evidence before changing the weekly feature contract",
+    "ranked_by_production_walk_forward_log_loss": [
+      "external_history",
+      "external_style",
+      "style",
+      "baseline"
+    ],
+    "recommendation": "retain external_history as the leading research challenger",
+    "style_improved_production_point_log_loss": true
+  },
+  "experiment_version": "winner-feature-factorial-v1",
+  "extended_walk_forward": {
+    "factorial_log_loss_effects": {
+      "external_effect_with_style": -0.00041422189639994667,
+      "external_effect_without_style": -0.0005421237508569376,
+      "interaction": 0.00012790185445699098,
+      "style_effect_with_external": -8.7547464275195e-05,
+      "style_effect_without_external": -0.00021544931873218598
+    },
+    "metrics": {
+      "baseline": {
+        "accuracy": 0.6399496433067562,
+        "auc": 0.6919034599898991,
+        "brier": 0.22200767387657214,
+        "ece_10_bin": 0.020415065226202535,
+        "fights": 2383,
+        "log_loss": 0.6340387984501521
+      },
+      "external_history": {
+        "accuracy": 0.6412085606378515,
+        "auc": 0.6933078553028444,
+        "brier": 0.22172656174293215,
+        "ece_10_bin": 0.020395806166885015,
+        "fights": 2383,
+        "log_loss": 0.6334966746992952
+      },
+      "external_style": {
+        "accuracy": 0.6386907259756609,
+        "auc": 0.6949492555505709,
+        "brier": 0.22155680262170474,
+        "ece_10_bin": 0.03738121651199884,
+        "fights": 2383,
+        "log_loss": 0.63340912723502
+      },
+      "style": {
+        "accuracy": 0.6416281997482165,
+        "auc": 0.69387074202295,
+        "brier": 0.2217735254977238,
+        "ece_10_bin": 0.03903544852672292,
+        "fights": 2383,
+        "log_loss": 0.6338233491314199
+      }
+    },
+    "paired_log_loss_intervals": {
+      "external_history_minus_baseline": {
+        "bootstrap_samples": 10000,
+        "ci_95_lower": -0.0015747350374293553,
+        "ci_95_upper": 0.0005099551096968972,
+        "definition": "external_history_probability minus baseline_probability paired log loss; negative favors candidate",
+        "event_count": 197,
+        "fight_count": 2383,
+        "method": "nonparametric whole-event block bootstrap",
+        "point_difference": -0.000542123750856879,
+        "seed": 20260822
+      },
+      "external_style_minus_baseline": {
+        "bootstrap_samples": 10000,
+        "ci_95_lower": -0.003445969470659876,
+        "ci_95_upper": 0.0022061027179618533,
+        "definition": "external_style_probability minus baseline_probability paired log loss; negative favors candidate",
+        "event_count": 197,
+        "fight_count": 2383,
+        "method": "nonparametric whole-event block bootstrap",
+        "point_difference": -0.0006296712151321466,
+        "seed": 20260822
+      },
+      "external_style_minus_external_history": {
+        "bootstrap_samples": 10000,
+        "ci_95_lower": -0.0027622067548353176,
+        "ci_95_upper": 0.0026015800821593688,
+        "definition": "external_style_probability minus external_history_probability paired log loss; negative favors candidate",
+        "event_count": 197,
+        "fight_count": 2383,
+        "method": "nonparametric whole-event block bootstrap",
+        "point_difference": -8.754746427526653e-05,
+        "seed": 20260822
+      },
+      "external_style_minus_style": {
+        "bootstrap_samples": 10000,
+        "ci_95_lower": -0.0012961374657434464,
+        "ci_95_upper": 0.0004954878781863189,
+        "definition": "external_style_probability minus style_probability paired log loss; negative favors candidate",
+        "event_count": 197,
+        "fight_count": 2383,
+        "method": "nonparametric whole-event block bootstrap",
+        "point_difference": -0.00041422189640000093,
+        "seed": 20260822
+      },
+      "style_minus_baseline": {
+        "bootstrap_samples": 10000,
+        "ci_95_lower": -0.002772237887020267,
+        "ci_95_upper": 0.0023765891800102833,
+        "definition": "style_probability minus baseline_probability paired log loss; negative favors candidate",
+        "event_count": 197,
+        "fight_count": 2383,
+        "method": "nonparametric whole-event block bootstrap",
+        "point_difference": -0.00021544931873214353,
+        "seed": 20260822
+      }
+    }
+  },
+  "external_history_contract": {
+    "auxiliary_sha256": "b5038ab8c89fcd6f76ff6594d1070a364d06949fe9c1ac96e6b5b9bca75ae961",
+    "detailed_statistics_fabricated": false,
+    "emit_training_target": false,
+    "perspective_rows": 8472,
+    "physical_bouts": 4236,
+    "production_policy_enabled_during_test": false
+  },
+  "feature_contract": {
+    "baseline_feature_count": 82,
+    "external_history_adds_feature_columns": false,
+    "style_additional_feature_count": 30,
+    "style_feature_count": 112,
+    "training_and_calibration": "identical nested expanding-year L2 logistic procedure",
+    "ufc_training_labels_identical": true
+  },
+  "inherited_market_contract": {
+    "minimum_distinct_books": 3,
+    "probability": "mean of per-book two-sided no-vig probabilities",
+    "selection": "latest eligible pre-event capture per stable fight ID"
+  },
+  "market_paired": {
+    "challenger_log_loss_intervals": {
+      "external_history_minus_baseline": {
+        "bootstrap_samples": 10000,
+        "ci_95_lower": -0.0025150513951505285,
+        "ci_95_upper": 0.0025468132370680898,
+        "definition": "external_history_probability minus baseline_probability paired log loss; negative favors candidate",
+        "event_count": 58,
+        "fight_count": 503,
+        "method": "nonparametric whole-event block bootstrap",
+        "point_difference": -7.875494464496129e-05,
+        "seed": 20260822
+      },
+      "external_style_minus_baseline": {
+        "bootstrap_samples": 10000,
+        "ci_95_lower": -0.012249891940732652,
+        "ci_95_upper": 0.0012023350035076422,
+        "definition": "external_style_probability minus baseline_probability paired log loss; negative favors candidate",
+        "event_count": 58,
+        "fight_count": 503,
+        "method": "nonparametric whole-event block bootstrap",
+        "point_difference": -0.005578153872234452,
+        "seed": 20260822
+      },
+      "external_style_minus_external_history": {
+        "bootstrap_samples": 10000,
+        "ci_95_lower": -0.01208944447675637,
+        "ci_95_upper": 0.0009816908457046308,
+        "definition": "external_style_probability minus external_history_probability paired log loss; negative favors candidate",
+        "event_count": 58,
+        "fight_count": 503,
+        "method": "nonparametric whole-event block bootstrap",
+        "point_difference": -0.005499398927589496,
+        "seed": 20260822
+      },
+      "external_style_minus_style": {
+        "bootstrap_samples": 10000,
+        "ci_95_lower": -0.0025222283342368427,
+        "ci_95_upper": 0.0019046893706570623,
+        "definition": "external_style_probability minus style_probability paired log loss; negative favors candidate",
+        "event_count": 58,
+        "fight_count": 503,
+        "method": "nonparametric whole-event block bootstrap",
+        "point_difference": -0.000397249910863397,
+        "seed": 20260822
+      },
+      "style_minus_baseline": {
+        "bootstrap_samples": 10000,
+        "ci_95_lower": -0.011526138328923637,
+        "ci_95_upper": 0.0010787317720111665,
+        "definition": "style_probability minus baseline_probability paired log loss; negative favors candidate",
+        "event_count": 58,
+        "fight_count": 503,
+        "method": "nonparametric whole-event block bootstrap",
+        "point_difference": -0.005180903961371058,
+        "seed": 20260822
+      }
+    },
+    "external_style_minus_market_interval": {
+      "bootstrap_samples": 10000,
+      "ci_95_lower": -0.005195353030349504,
+      "ci_95_upper": 0.037096652369034214,
+      "definition": "external_style_probability minus market_probability paired log loss; negative favors candidate",
+      "event_count": 58,
+      "fight_count": 503,
+      "method": "nonparametric whole-event block bootstrap",
+      "point_difference": 0.016448052857233414,
+      "seed": 20260822
+    },
+    "factorial_log_loss_effects": {
+      "external_effect_with_style": -0.00039724991086342865,
+      "external_effect_without_style": -7.87549446457092e-05,
+      "interaction": -0.00031849496621771944,
+      "style_effect_with_external": -0.005499398927588772,
+      "style_effect_without_external": -0.005180903961371053
+    },
+    "metrics": {
+      "baseline": {
+        "accuracy": 0.6560636182902585,
+        "brier_score": 0.21715380562536635,
+        "count": 503,
+        "expected_calibration_error": 0.045971703956958744,
+        "log_loss": 0.6235482743523593,
+        "positive_rate": 0.5009940357852882,
+        "roc_auc": 0.7108866122810346
+      },
+      "external_history": {
+        "accuracy": 0.6560636182902585,
+        "brier_score": 0.21707119301390104,
+        "count": 503,
+        "expected_calibration_error": 0.046261608458099616,
+        "log_loss": 0.6234695194077136,
+        "positive_rate": 0.5009940357852882,
+        "roc_auc": 0.7115031935749068
+      },
+      "external_style": {
+        "accuracy": 0.6660039761431411,
+        "brier_score": 0.21453151422848832,
+        "count": 503,
+        "expected_calibration_error": 0.05198157569818854,
+        "log_loss": 0.6179701204801248,
+        "positive_rate": 0.5009940357852882,
+        "roc_auc": 0.7199456143679251
+      },
+      "market": {
+        "accuracy": 0.6779324055666004,
+        "brier_score": 0.20759785223485697,
+        "count": 503,
+        "expected_calibration_error": 0.027347517853471354,
+        "log_loss": 0.6015220676228911,
+        "positive_rate": 0.5009940357852882,
+        "roc_auc": 0.7367197875166003
+      },
+      "style": {
+        "accuracy": 0.6600397614314115,
+        "brier_score": 0.2147415194559925,
+        "count": 503,
+        "expected_calibration_error": 0.053110694095613135,
+        "log_loss": 0.6183673703909882,
+        "positive_rate": 0.5009940357852882,
+        "roc_auc": 0.7188705495478404
+      }
+    }
+  },
+  "non_promotable_flags": [
+    "factorial_feature_test_is_development_evidence",
+    "current_data_period_informed_candidate_selection",
+    "external_source_is_a_stale_bootstrap_through_2021_08_11",
+    "market_history_missing_2024",
+    "legacy_market_timestamps_are_not_verified_close_times"
+  ],
+  "paper_only": true,
+  "production_walk_forward": {
+    "factorial_log_loss_effects": {
+      "external_effect_with_style": -0.00043670122239014564,
+      "external_effect_without_style": -0.0005561711789708879,
+      "interaction": 0.00011946995658074222,
+      "style_effect_with_external": 7.400033993265609e-05,
+      "style_effect_without_external": -4.546961664808613e-05
+    },
+    "metrics": {
+      "baseline": {
+        "accuracy": 0.6403835908364411,
+        "auc": 0.6971739051327305,
+        "brier": 0.22070059107620524,
+        "ece_10_bin": 0.024517491163701752,
+        "fights": 1877,
+        "log_loss": 0.6313760447767583
+      },
+      "external_history": {
+        "accuracy": 0.6441129461907299,
+        "auc": 0.6985839959243829,
+        "brier": 0.22041746864938364,
+        "ece_10_bin": 0.02425077027216526,
+        "fights": 1877,
+        "log_loss": 0.6308198735977875
+      },
+      "external_style": {
+        "accuracy": 0.6425146510388918,
+        "auc": 0.7000441221957387,
+        "brier": 0.22030790075089976,
+        "ece_10_bin": 0.041818803660052715,
+        "fights": 1877,
+        "log_loss": 0.6308938739377201
+      },
+      "style": {
+        "accuracy": 0.6446457112413426,
+        "auc": 0.698933107112316,
+        "brier": 0.22053082633578394,
+        "ece_10_bin": 0.04349943318756923,
+        "fights": 1877,
+        "log_loss": 0.6313305751601103
+      }
+    },
+    "paired_log_loss_intervals": {
+      "external_history_minus_baseline": {
+        "bootstrap_samples": 10000,
+        "ci_95_lower": -0.0017270653608140547,
+        "ci_95_upper": 0.0005956244664088999,
+        "definition": "external_history_probability minus baseline_probability paired log loss; negative favors candidate",
+        "event_count": 155,
+        "fight_count": 1877,
+        "method": "nonparametric whole-event block bootstrap",
+        "point_difference": -0.0005561711789708274,
+        "seed": 20260822
+      },
+      "external_style_minus_baseline": {
+        "bootstrap_samples": 10000,
+        "ci_95_lower": -0.003556012152068826,
+        "ci_95_upper": 0.0026800336266803327,
+        "definition": "external_style_probability minus baseline_probability paired log loss; negative favors candidate",
+        "event_count": 155,
+        "fight_count": 1877,
+        "method": "nonparametric whole-event block bootstrap",
+        "point_difference": -0.0004821708390383086,
+        "seed": 20260822
+      },
+      "external_style_minus_external_history": {
+        "bootstrap_samples": 10000,
+        "ci_95_lower": -0.002981807858120902,
+        "ci_95_upper": 0.0032287324536951823,
+        "definition": "external_style_probability minus external_history_probability paired log loss; negative favors candidate",
+        "event_count": 155,
+        "fight_count": 1877,
+        "method": "nonparametric whole-event block bootstrap",
+        "point_difference": 7.400033993251833e-05,
+        "seed": 20260822
+      },
+      "external_style_minus_style": {
+        "bootstrap_samples": 10000,
+        "ci_95_lower": -0.0014235166826784996,
+        "ci_95_upper": 0.0005277919778401111,
+        "definition": "external_style_probability minus style_probability paired log loss; negative favors candidate",
+        "event_count": 155,
+        "fight_count": 1877,
+        "method": "nonparametric whole-event block bootstrap",
+        "point_difference": -0.0004367012223901396,
+        "seed": 20260822
+      },
+      "style_minus_baseline": {
+        "bootstrap_samples": 10000,
+        "ci_95_lower": -0.0029550752771564997,
+        "ci_95_upper": 0.002970655010385571,
+        "definition": "style_probability minus baseline_probability paired log loss; negative favors candidate",
+        "event_count": 155,
+        "fight_count": 1877,
+        "method": "nonparametric whole-event block bootstrap",
+        "point_difference": -4.546961664816841e-05,
+        "seed": 20260822
+      }
+    }
+  },
+  "promotable": false,
+  "report_schema_version": 1,
+  "sample": {
+    "extended_events": 197,
+    "extended_fights": 2383,
+    "extended_years": [
+      2022,
+      2023,
+      2024,
+      2025,
+      2026
+    ],
+    "market_paired_events": 58,
+    "market_paired_fights": 503,
+    "production_events": 155,
+    "production_fights": 1877,
+    "production_years": [
+      2023,
+      2024,
+      2025,
+      2026
+    ]
+  },
+  "source_sha256": {
+    "auxiliary": "b5038ab8c89fcd6f76ff6594d1070a364d06949fe9c1ac96e6b5b9bca75ae961",
+    "external_report": "0bf73f0d5c24dda45aee80c66dcb63928d4d393b3e8482e2e08145cbbf1888bd",
+    "fighter_stats": "88341fc47df0dac282a4c91c6f5df4d60e9e5905204eda4ce950459720c01230",
+    "market_detail": "ae533b317079019a86ab2b8de9ff79ac411b376b9e1f9531d0b7127691604bcb",
+    "market_report": "e6f6da84000dd45e326c4e3f24e4a5e3e3f2dcb5324ca73eea8f2ff4e3d2bf26",
+    "point_in_time": "f9ed863ea627318a3d55e1bf422536c0563fe2e22f8baedb71f6837b27530370",
+    "raw_fights": "6cfb14c9ebcaf2946d942447f4af0166df8b1e5cefa9111edb184b74d7197d49"
+  },
+  "stored_baseline_drift_audit": {
+    "changed_fights": 1,
+    "current_recomputed_baseline_used_for_factorial_comparisons": true,
+    "definition": "absolute difference between the original market-replay baseline and the current-algorithm baseline rebuilt from current source bytes",
+    "maximum_absolute_probability_difference": 0.0035105032701805428,
+    "mean_absolute_probability_difference": 6.979131750105921e-06
+  }
+}

@@ -1,0 +1,196 @@
+{
+  "auxiliary_sha256": "b5038ab8c89fcd6f76ff6594d1070a364d06949fe9c1ac96e6b5b9bca75ae961",
+  "baseline": {
+    "holdout_end": "2026-08-22",
+    "holdout_fights": 998,
+    "holdout_start": "2024-09-28",
+    "joint_outcome": {
+      "accuracy": 0.3186372745490982,
+      "baseline_log_loss": 1.7230587193976032,
+      "classes": [
+        "fighter_ko_tko",
+        "fighter_submission",
+        "fighter_decision",
+        "fighter_other",
+        "opponent_ko_tko",
+        "opponent_submission",
+        "opponent_decision",
+        "opponent_other"
+      ],
+      "log_loss": 1.6216565155361138,
+      "model_minus_baseline_log_loss": -0.10140220386148946
+    },
+    "method": {
+      "accuracy": 0.49198396793587174,
+      "baseline_log_loss": 1.030190156906829,
+      "classes": [
+        "ko_tko",
+        "submission",
+        "decision",
+        "other"
+      ],
+      "log_loss": 1.0299856838975607,
+      "model_minus_baseline_log_loss": -0.00020447300926829115
+    },
+    "selected_c": 0.01,
+    "total_rounds": {
+      "over_1_5_rounds": {
+        "accuracy": 0.6663326653306614,
+        "baseline_log_loss": 0.6396298667560982,
+        "brier": 0.2196641781707144,
+        "development_base_rate": 0.6899087221095335,
+        "expected_calibration_error": 0.02565880069970902,
+        "log_loss": 0.6304889179921799,
+        "model_minus_baseline_log_loss": -0.009140948763918355,
+        "n": 998
+      },
+      "over_2_5_rounds": {
+        "accuracy": 0.5521042084168337,
+        "baseline_log_loss": 0.6925008871052305,
+        "brier": 0.2447668470663402,
+        "development_base_rate": 0.5562880324543611,
+        "expected_calibration_error": 0.030640373475701855,
+        "log_loss": 0.6827263330486079,
+        "model_minus_baseline_log_loss": -0.009774554056622642,
+        "n": 998
+      },
+      "over_3_5_rounds": {
+        "accuracy": 0.7575757575757576,
+        "baseline_log_loss": 0.8481470526128514,
+        "brier": 0.19298435446567466,
+        "development_base_rate": 0.9663461538461539,
+        "expected_calibration_error": 0.09762060230874703,
+        "log_loss": 0.587879993970513,
+        "model_minus_baseline_log_loss": -0.26026705864233834,
+        "n": 66
+      },
+      "over_4_5_rounds": {
+        "accuracy": 0.6666666666666666,
+        "baseline_log_loss": 0.7288449099301486,
+        "brier": 0.2396692275730176,
+        "development_base_rate": 0.8413461538461539,
+        "expected_calibration_error": 0.12845886808482182,
+        "log_loss": 0.6864214303246515,
+        "model_minus_baseline_log_loss": -0.04242347960549708,
+        "n": 66
+      }
+    },
+    "winner": {
+      "accuracy": 0.6462925851703407,
+      "baseline_log_loss": 0.6931471805599454,
+      "brier": 0.21782046605878233,
+      "expected_calibration_error": 0.046581601917988595,
+      "log_loss": 0.6255432606161001,
+      "model_minus_baseline_log_loss": -0.06760391994384529,
+      "n": 998
+    }
+  },
+  "candidate_only": true,
+  "created_at_utc": "2026-08-28T01:01:26+00:00",
+  "decision": {
+    "joint_outcome_point_log_loss_improved": true,
+    "method_point_log_loss_improved": true,
+    "production_action": "none; this checks for collateral degradation before a separate winner-model policy review",
+    "winner_point_log_loss_improved": false
+  },
+  "external_history": {
+    "holdout_end": "2026-08-22",
+    "holdout_fights": 998,
+    "holdout_start": "2024-09-28",
+    "joint_outcome": {
+      "accuracy": 0.32064128256513025,
+      "baseline_log_loss": 1.7230587193976032,
+      "classes": [
+        "fighter_ko_tko",
+        "fighter_submission",
+        "fighter_decision",
+        "fighter_other",
+        "opponent_ko_tko",
+        "opponent_submission",
+        "opponent_decision",
+        "opponent_other"
+      ],
+      "log_loss": 1.619398356569281,
+      "model_minus_baseline_log_loss": -0.10366036282832214
+    },
+    "method": {
+      "accuracy": 0.49498997995991983,
+      "baseline_log_loss": 1.030190156906829,
+      "classes": [
+        "ko_tko",
+        "submission",
+        "decision",
+        "other"
+      ],
+      "log_loss": 1.0296778036676066,
+      "model_minus_baseline_log_loss": -0.0005123532392223851
+    },
+    "selected_c": 0.01,
+    "total_rounds": {
+      "over_1_5_rounds": {
+        "accuracy": 0.6673346693386774,
+        "baseline_log_loss": 0.6396298667560982,
+        "brier": 0.21953816820342242,
+        "development_base_rate": 0.6899087221095335,
+        "expected_calibration_error": 0.02974868199977793,
+        "log_loss": 0.6302305163315205,
+        "model_minus_baseline_log_loss": -0.009399350424577735,
+        "n": 998
+      },
+      "over_2_5_rounds": {
+        "accuracy": 0.5490981963927856,
+        "baseline_log_loss": 0.6925008871052305,
+        "brier": 0.2446957854686095,
+        "development_base_rate": 0.5562880324543611,
+        "expected_calibration_error": 0.03355075011932191,
+        "log_loss": 0.6827091671425316,
+        "model_minus_baseline_log_loss": -0.009791719962698897,
+        "n": 998
+      },
+      "over_3_5_rounds": {
+        "accuracy": 0.7575757575757576,
+        "baseline_log_loss": 0.8481470526128514,
+        "brier": 0.19358238425764493,
+        "development_base_rate": 0.9663461538461539,
+        "expected_calibration_error": 0.10301044850050271,
+        "log_loss": 0.5900932091266973,
+        "model_minus_baseline_log_loss": -0.2580538434861541,
+        "n": 66
+      },
+      "over_4_5_rounds": {
+        "accuracy": 0.6666666666666666,
+        "baseline_log_loss": 0.7288449099301486,
+        "brier": 0.24025535078445562,
+        "development_base_rate": 0.8413461538461539,
+        "expected_calibration_error": 0.12826058099246648,
+        "log_loss": 0.688085774776849,
+        "model_minus_baseline_log_loss": -0.04075913515329965,
+        "n": 66
+      }
+    },
+    "winner": {
+      "accuracy": 0.6492985971943888,
+      "baseline_log_loss": 0.6931471805599454,
+      "brier": 0.2179165843853265,
+      "expected_calibration_error": 0.04291238558242235,
+      "log_loss": 0.6257998245502489,
+      "model_minus_baseline_log_loss": -0.06734735600969655,
+      "n": 998
+    }
+  },
+  "external_minus_baseline": {
+    "joint_outcome_log_loss": -0.0022581589668326796,
+    "method_log_loss": -0.0003078802299540939,
+    "total_round_log_loss": {
+      "over_1_5_rounds": -0.00025840166065937975,
+      "over_2_5_rounds": -1.7165906076255233e-05,
+      "over_3_5_rounds": 0.002213215156184223,
+      "over_4_5_rounds": 0.0016643444521974304
+    },
+    "winner_log_loss": 0.0002565639341487458
+  },
+  "feature_contract_unchanged": true,
+  "production_enabled": false,
+  "schema_version": 1,
+  "ufc_training_labels_unchanged": true
+}
