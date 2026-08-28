@@ -199,10 +199,18 @@ def build_parser() -> argparse.ArgumentParser:
     run.add_argument("--root-seed", default="20220813")
     run.add_argument("--output-dir")
     run.add_argument(
-        "--initial-paths-per-member", type=_bounded_integer(2, 8192), default=512
+        "--bootstrap-members",
+        type=_bounded_integer(1, 200),
+        help=(
+            "Use a deterministic, evenly spaced subset of parameter replicas; "
+            "primarily for low-path local GUI runs"
+        ),
     )
     run.add_argument(
-        "--max-paths-per-member", type=_bounded_integer(2, 8192), default=2048
+        "--initial-paths-per-member", type=_bounded_integer(1, 8192), default=512
+    )
+    run.add_argument(
+        "--max-paths-per-member", type=_bounded_integer(1, 8192), default=2048
     )
     run.add_argument("--workers", type=_bounded_integer(1, 64), default=1)
     run.add_argument("--chunk-size", type=_bounded_integer(1, 4096), default=64)
@@ -795,6 +803,7 @@ def main(argv: list[str] | None = None) -> int:
                 matchup_id=args.matchup_id,
                 root_seed=args.root_seed,
                 output_dir=args.output_dir,
+                bootstrap_member_limit=args.bootstrap_members,
                 initial_paths_per_member=args.initial_paths_per_member,
                 max_paths_per_member=args.max_paths_per_member,
                 workers=args.workers,

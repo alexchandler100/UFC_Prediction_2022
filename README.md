@@ -938,6 +938,23 @@ To run a matchup and open it immediately, add `--launch-gui` to the normal
 the individual Monte Carlo trace explorer; aggregate plots do not depend on
 full trace capture.
 
+For a fight on the current upcoming card, the Git Bash convenience command
+accepts fighter names, resolves their IDs/division/round count and the current
+parameter artifact, stores the small run outside the repository, and opens the
+GUI:
+
+```bash
+bash scripts/quick_fight_sim.sh --list
+bash scripts/quick_fight_sim.sh "Umar Nurmagomedov" "Song Yadong" --paths 100
+```
+
+The path count is the exact total across the selected parameter replicas. A
+100-path run is useful for quickly inspecting the GUI but has noisy probability
+estimates; use `--paths 2000` for a steadier view. The helper continues to reject
+fights where either fighter has fewer than three prior UFC fights. Add
+`--dry-run` to resolve everything without running, or `--no-gui` to generate
+the files without opening Qt.
+
 ```powershell
 python -m fight_sim run `
   --red-fighter-id <stable-id> `

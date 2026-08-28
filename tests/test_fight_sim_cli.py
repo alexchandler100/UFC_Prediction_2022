@@ -215,6 +215,26 @@ class FightSimulationCliTests(unittest.TestCase):
             ]
         )
         self.assertTrue(run_parser.launch_gui)
+        one_path_run = parser.parse_args(
+            [
+                "run",
+                "--red-fighter-id",
+                "red",
+                "--blue-fighter-id",
+                "blue",
+                "--division",
+                "Lightweight",
+                "--bootstrap-members",
+                "100",
+                "--initial-paths-per-member",
+                "1",
+                "--max-paths-per-member",
+                "1",
+            ]
+        )
+        self.assertEqual(one_path_run.bootstrap_members, 100)
+        self.assertEqual(one_path_run.initial_paths_per_member, 1)
+        self.assertEqual(one_path_run.max_paths_per_member, 1)
 
     def test_fit_run_trace_diagnostics_and_analysis_end_to_end(self):
         with tempfile.TemporaryDirectory() as directory:

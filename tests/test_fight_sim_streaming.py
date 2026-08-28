@@ -297,6 +297,23 @@ class StreamingAccumulatorTests(unittest.TestCase):
         self.assertEqual(adaptive.convergence[-1], one_shot.convergence[-1])
         self.assertEqual(adaptive.ledger.packed_duration_bytes, 16 * 8)
 
+    def test_one_path_per_parameter_member_supports_exact_quick_runs(self):
+        specs = (_spec(0), _spec(1), _spec(2))
+        result = run_adaptive_nested(
+            specs,
+            initial_paths_per_member=1,
+            max_paths_per_member=1,
+            workers=1,
+            chunk_size=1,
+            max_traces=1,
+            retain_paths=False,
+            winner_mcse_target=1e-12,
+            parameter_quantile_tolerance=0.0,
+        )
+        self.assertEqual(result.forecast.total_paths, 3)
+        self.assertEqual(len(result.forecast.bootstrap_outcome_counts), 3)
+        self.assertEqual(len(result.traces), 1)
+
     def test_adaptive_checkpoint_resume_is_exact_across_workers_and_chunks(self):
         specs = (_spec(0), _spec(1))
         direct = run_adaptive_nested(

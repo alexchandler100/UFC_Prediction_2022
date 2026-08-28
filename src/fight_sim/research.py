@@ -409,6 +409,7 @@ def execute_run(
     matchup_id: str | None = None,
     root_seed: str | int = "20220813",
     output_dir: str | Path | None = None,
+    bootstrap_member_limit: int | None = None,
     initial_paths_per_member: int = 512,
     max_paths_per_member: int = 2048,
     workers: int = 1,
@@ -434,6 +435,17 @@ def execute_run(
         matchup_id=matchup_id,
         simulator_base=simulator_config,
     )
+    if bootstrap_member_limit is not None:
+        if bootstrap_member_limit <= 0:
+            raise ValueError("bootstrap_member_limit must be positive")
+        if bootstrap_member_limit < len(specs):
+            # Cover the complete ordered ensemble instead of taking only its
+            # first members. The selection is deterministic and swap-neutral.
+            positions = tuple(
+                index * len(specs) // bootstrap_member_limit
+                for index in range(bootstrap_member_limit)
+            )
+            specs = tuple(specs[position] for position in positions)
     destination = Path(output_dir) if output_dir is not None else _default_run_dir(specs)
     if destination.exists() and any(destination.iterdir()):
         raise ValueError(
