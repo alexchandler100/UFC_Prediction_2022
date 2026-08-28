@@ -26,6 +26,10 @@ class FullSimulationStudyScriptTests(unittest.TestCase):
         self.assertIn("Refusing to store the study inside the Git repository", self.script)
         self.assertIn('cp -R "$REPO_ROOT/src/fight_sim"', self.script)
         self.assertIn('cp -R "$REPO_ROOT/src/market_tracker"', self.script)
+        self.assertIn('cp -p "$REPO_ROOT"/src/*.py "$CODE_DIR/"', self.script)
+        self.assertIn("fight_semantics.py", self.script)
+        self.assertIn("ufc_round_data.py", self.script)
+        self.assertIn("ufcstats_client.py", self.script)
         self.assertIn("input-snapshot", self.script)
         self.assertIn("causal-fit-cache", self.script)
         self.assertIn("max_traces=0", (
@@ -41,6 +45,12 @@ class FullSimulationStudyScriptTests(unittest.TestCase):
         self.assertIn("--resume", self.script)
         self.assertIn("completed_fight_seed_pairs", self.script)
         self.assertIn("planned_fight_seed_pairs", self.script)
+
+    def test_preflight_loads_the_exact_snapshotted_cli(self):
+        self.assertIn("--prepare-only", self.script)
+        self.assertIn(
+            '"$PYTHON_BIN" -m fight_sim posterior-backtest --help', self.script
+        )
 
 
 if __name__ == "__main__":

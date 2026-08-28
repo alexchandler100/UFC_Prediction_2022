@@ -8,7 +8,7 @@ set -Eeuo pipefail
 
 usage() {
   cat <<'EOF'
-Usage: bash scripts/run_full_simulation_study.sh [--dry-run]
+Usage: bash scripts/run_full_simulation_study.sh [--dry-run | --prepare-only]
 
 Defaults are chosen for a useful population study that remains bounded on the
 machine used for this repository:
@@ -37,9 +37,11 @@ EOF
 }
 
 DRY_RUN=0
+PREPARE_ONLY=0
 case "${1:-}" in
   "") ;;
   --dry-run) DRY_RUN=1 ;;
+  --prepare-only) PREPARE_ONLY=1 ;;
   -h|--help) usage; exit 0 ;;
   *) echo "Unknown argument: $1" >&2; usage >&2; exit 2 ;;
 esac
@@ -91,6 +93,7 @@ LOG_DIR="$STUDY_ROOT/logs"
 LOG_FILE="$LOG_DIR/runner.log"
 SETTINGS_FILE="$STUDY_ROOT/study-settings.txt"
 SNAPSHOT_MARKER="$STUDY_ROOT/.snapshot-complete"
+SNAPSHOT_VERSION=2
 
 RAW_SOURCE="$REPO_ROOT/src/content/data/processed/ufc_fights_reported_doubled.csv"
 PROFILES_SOURCE="$REPO_ROOT/src/content/data/processed/fighter_stats.csv"
@@ -143,6 +146,29 @@ if [[ -d "$STUDY_ROOT" && ! -f "$SNAPSHOT_MARKER" ]] && [[ -n "$(find "$STUDY_RO
   exit 2
 fi
 
+snapshot_dependencies_present() {
+  [[ -f "$CODE_DIR/fight_semantics.py" ]] &&
+    [[ -f "$CODE_DIR/ufc_round_data.py" ]] &&
+    [[ -f "$CODE_DIR/ufcstats_client.py" ]]
+}
+
+# Version 1 omitted shared top-level modules. It could not start the CLI, so it
+# is safe to repair that specific pre-run snapshot in place. Never alter a code
+# snapshot after a simulator run manifest exists.
+if [[ -f "$SNAPSHOT_MARKER" ]] && ! snapshot_dependencies_present; then
+  if [[ -f "$RESULT_DIR/run-manifest.json" ]]; then
+    echo "The saved code snapshot is incomplete but simulation results already exist." >&2
+    echo "Choose a new SIM_STUDY_NAME so the existing study remains immutable." >&2
+    exit 2
+  fi
+  cp -p "$REPO_ROOT"/src/*.py "$CODE_DIR/"
+  printf 'version=%s\n' "$SNAPSHOT_VERSION" >"$SNAPSHOT_MARKER"
+  if ! grep -q '^snapshot_version=' "$SETTINGS_FILE" 2>/dev/null; then
+    printf 'snapshot_version=%s\n' "$SNAPSHOT_VERSION" >>"$SETTINGS_FILE"
+  fi
+  echo "Repaired the pre-run code snapshot with its shared Python modules."
+fi
+
 if [[ ! -f "$SNAPSHOT_MARKER" ]]; then
   mkdir -p "$INPUT_DIR" "$CODE_DIR" "$CACHE_DIR" "$LOG_DIR"
   cp -p "$RAW_SOURCE" "$RAW_SNAPSHOT"
@@ -151,6 +177,7 @@ if [[ ! -f "$SNAPSHOT_MARKER" ]]; then
   cp -p "$CONFIG_SOURCE" "$CONFIG_SNAPSHOT"
   cp -R "$REPO_ROOT/src/fight_sim" "$CODE_DIR/fight_sim"
   cp -R "$REPO_ROOT/src/market_tracker" "$CODE_DIR/market_tracker"
+  cp -p "$REPO_ROOT"/src/*.py "$CODE_DIR/"
   printf '%s\n' \
     "created_utc=$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
     "source_repository=$REPO_ROOT_NATIVE" \
@@ -162,15 +189,22 @@ if [[ ! -f "$SNAPSHOT_MARKER" ]]; then
     "paths_per_matchup=$PATHS_PER_MATCHUP" \
     "seed_repeats=$SEED_REPEATS" \
     "workers=$WORKERS" \
+    "snapshot_version=$SNAPSHOT_VERSION" \
     "simulator_config=SIMULATION_MECHANICS_BASELINE_V1.json" >"$SETTINGS_FILE"
-  printf 'complete\n' >"$SNAPSHOT_MARKER"
+  printf 'version=%s\n' "$SNAPSHOT_VERSION" >"$SNAPSHOT_MARKER"
   echo "Created immutable input and simulator-code snapshots outside the repository."
 fi
 
 mkdir -p "$CACHE_DIR" "$LOG_DIR"
 export PYTHONPATH="$CODE_DIR"
 
+"$PYTHON_BIN" -m fight_sim posterior-backtest --help >/dev/null
 "$PYTHON_BIN" -c 'import fight_sim, numpy, pandas; print("Simulator environment ready.")'
+
+if (( PREPARE_ONLY )); then
+  echo "Preparation and full CLI import check passed; no simulations were run."
+  exit 0
+fi
 
 storage_check() {
   local status used_bytes free_bytes limit_bytes minimum_free_bytes
