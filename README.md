@@ -193,6 +193,28 @@ model below it. This does not rescue cardio in 2026, where support was much
 better and the predeclared primary result still failed. The cardio group is
 rejected and production remains unchanged.
 
+A broader feature-set search now tests whether the 82-variable model should be
+smaller or transformed before adding more data. For every test year, all
+choices are made from earlier fights only. The search compares the existing
+normalization, outlier-resistant normalization, removal of near-duplicate
+variables, automatic coefficient-based selection, every zero/one/two/three-way
+combination of seven derived-feature families, and uncentered SVD. SVD replaces
+correlated variables with a smaller set of combined numerical summaries; the
+uncentered form is required so swapping the two fighters still returns the
+complementary probability.
+
+Removing near-duplicate variables produced the best 2023-2026 result, using
+58-64 of the original 82 variables depending on the year. Log loss improved
+only from `0.631376` to `0.631215`, and Brier score from `0.220701` to
+`0.220637`; accuracy fell from `64.04%` to `63.88%`. It helped in three of four
+years but hurt in 2025. The event-level 95% interval for its log-loss change was
+`[-0.00199, +0.00160]`, so the data does not establish a repeatable gain. When
+2022 was also included, it was worse than the current model (`0.634507` versus
+`0.634039`). Robust normalization, SVD, and automatic smaller-subset selection
+also failed to improve the main 2023-2026 probability score. Derived-feature
+pairs and triples helped some years but not others. The practical result is a
+promising smaller-model research candidate, not a production model change.
+
 Reproduce these bounded comparisons with:
 
 ```console
@@ -200,7 +222,20 @@ python -B src/evaluate_winner_feature_challengers.py
 python -B src/evaluate_external_mma_outcome.py
 python -B src/evaluate_stance_matchup_challenger.py
 python -B src/evaluate_round_cardio_challenger.py
+python -B src/evaluate_feature_selection.py
+python -B src/evaluate_online_data_challengers.py --max-runtime-minutes 55
 ```
+
+The free-online-data comparison tests historical rankings, strictly validated
+non-UFC fight history, and genuinely pre-event odds. The best average result
+combined expanded history with all seven ranking variables: log loss improved
+from `0.63404` to `0.63181` over 2,383 fights, while its 95% range still
+included no improvement and it worsened in 2025-2026. On the only safely timed
+odds sample—45 fights across five events—the current model scored `0.59454`,
+market consensus `0.57790`, and an equal model/market blend `0.57029`. This is
+encouraging but much too small for deployment. Production remains unchanged;
+the source rules, commands, full results, and next test are documented in
+`src/content/data/model_research/ONLINE_DATA_RESEARCH.md`.
 
 The auditable artifacts are:
 
@@ -216,6 +251,11 @@ The auditable artifacts are:
 - `src/content/data/external_mma/stance_matchup_factorial.csv`
 - `src/content/data/external_mma/round_cardio_factorial.json`
 - `src/content/data/external_mma/round_cardio_factorial.csv`
+- `src/content/data/model_research/feature_selection.json`
+- `src/content/data/model_research/feature_selection.csv`
+- `src/content/data/model_research/online_data_challengers.json`
+- `src/content/data/model_research/online_data_challengers.csv`
+- `src/content/data/model_research/ONLINE_DATA_RESEARCH.md`
 - `src/content/data/external/winner_model.json`
 - `src/content/data/external/bayesian_winner_challenger.json` (paper-only Laplace posterior)
 - `src/content/data/external/vegas_odds.json`

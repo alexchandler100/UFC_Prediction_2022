@@ -1,0 +1,1104 @@
+{
+  "audit_only": false,
+  "created_at_utc": "2026-08-28T05:29:43+00:00",
+  "decision": {
+    "expanded_history": "had a small average improvement, but the data also support no improvement",
+    "expanded_history_plus_all_rankings": "had a small average improvement, but the data also support no improvement",
+    "market_note": "The market and fixed model-market blend look promising on only five events; this is much too small for a production decision.",
+    "predeclared_all_ranking_features": "had a small average improvement, but the data also support no improvement",
+    "production_action": "none; these sources remain research-only",
+    "training_selected_ranking_groups": "had a small average improvement, but the data also support no improvement"
+  },
+  "elapsed_seconds": 438.2030000000086,
+  "expanded_history": {
+    "results": {
+      "candidate": {
+        "accuracy": 0.6353336130927403,
+        "auc": 0.6927738888277566,
+        "brier": 0.22162049409396567,
+        "ece_10_bin": 0.018177132529387522,
+        "fights": 2383,
+        "log_loss": 0.6332004440885297
+      },
+      "candidate_minus_current_model": {
+        "bootstrap_samples": 10000,
+        "ci_95_lower": -0.0044998057292180375,
+        "ci_95_upper": 0.0026920519315788084,
+        "definition": "expanded_history_probability minus current_model_probability paired log loss; negative favors candidate",
+        "event_count": 197,
+        "fight_count": 2383,
+        "method": "nonparametric whole-event block bootstrap",
+        "point_difference": -0.0008383543616222868,
+        "seed": 20260822
+      },
+      "current_model": {
+        "accuracy": 0.6399496433067562,
+        "auc": 0.6919034599898991,
+        "brier": 0.22200767387657214,
+        "ece_10_bin": 0.020415065226202535,
+        "fights": 2383,
+        "log_loss": 0.6340387984501521
+      },
+      "fights_whose_features_changed": {
+        "candidate": {
+          "accuracy": 0.6385696040868455,
+          "auc": 0.6947716536347561,
+          "brier": 0.2211099035183208,
+          "ece_10_bin": 0.017256885878889707,
+          "fights": 2349,
+          "log_loss": 0.6321342733113045
+        },
+        "candidate_minus_current_model": {
+          "bootstrap_samples": 10000,
+          "ci_95_lower": -0.004583888065757478,
+          "ci_95_upper": 0.0027042303816909494,
+          "definition": "expanded_history_probability minus current_model_probability paired log loss; negative favors candidate",
+          "event_count": 197,
+          "fight_count": 2349,
+          "method": "nonparametric whole-event block bootstrap",
+          "point_difference": -0.000880730070722421,
+          "seed": 20260822
+        },
+        "current_model": {
+          "accuracy": 0.6428267347807578,
+          "auc": 0.6937786539918875,
+          "brier": 0.22151824427632522,
+          "ece_10_bin": 0.02060749382932889,
+          "fights": 2349,
+          "log_loss": 0.633015003382027
+        }
+      },
+      "one_sided_histories_made_two_sided": 1012,
+      "per_year": {
+        "2022": {
+          "current_model": {
+            "accuracy": 0.6383399209486166,
+            "auc": 0.6729987492182614,
+            "brier": 0.22685627944236,
+            "ece_10_bin": 0.06169471767246348,
+            "fights": 506,
+            "log_loss": 0.6439162463650924
+          },
+          "expanded_history": {
+            "accuracy": 0.6403162055335968,
+            "auc": 0.6805347091932458,
+            "brier": 0.22388815608969548,
+            "ece_10_bin": 0.05586255758530424,
+            "fights": 506,
+            "log_loss": 0.6370558136425348
+          }
+        },
+        "2023": {
+          "current_model": {
+            "accuracy": 0.6111111111111112,
+            "auc": 0.6633522727272727,
+            "brier": 0.2290923632199196,
+            "ece_10_bin": 0.03839619093539461,
+            "fights": 504,
+            "log_loss": 0.6485268842635094
+          },
+          "expanded_history": {
+            "accuracy": 0.6031746031746031,
+            "auc": 0.6640151515151516,
+            "brier": 0.22928728191480263,
+            "ece_10_bin": 0.04895057180440469,
+            "fights": 504,
+            "log_loss": 0.6493624630107392
+          }
+        },
+        "2024": {
+          "current_model": {
+            "accuracy": 0.6510721247563352,
+            "auc": 0.7064016316093878,
+            "brier": 0.21800131578382315,
+            "ece_10_bin": 0.055696688878456024,
+            "fights": 513,
+            "log_loss": 0.6256764848382201
+          },
+          "expanded_history": {
+            "accuracy": 0.6374269005847953,
+            "auc": 0.7148184225746552,
+            "brier": 0.21565449735925213,
+            "ece_10_bin": 0.051410844681919296,
+            "fights": 513,
+            "log_loss": 0.6204390400564838
+          }
+        },
+        "2025": {
+          "current_model": {
+            "accuracy": 0.6536964980544747,
+            "auc": 0.7117981359399863,
+            "brier": 0.2167366021542195,
+            "ece_10_bin": 0.04170481501081935,
+            "fights": 514,
+            "log_loss": 0.6234114835809953
+          },
+          "expanded_history": {
+            "accuracy": 0.6595330739299611,
+            "auc": 0.7043115859665074,
+            "brier": 0.21839358052672414,
+            "ece_10_bin": 0.028482844329871953,
+            "fights": 514,
+            "log_loss": 0.6265307275225892
+          }
+        },
+        "2026": {
+          "current_model": {
+            "accuracy": 0.6473988439306358,
+            "auc": 0.7061108320776829,
+            "brier": 0.2183675430139528,
+            "ece_10_bin": 0.04758482226593102,
+            "fights": 346,
+            "log_loss": 0.6266755696373653
+          },
+          "expanded_history": {
+            "accuracy": 0.6358381502890174,
+            "auc": 0.6995144818349238,
+            "brier": 0.2207756729001191,
+            "ece_10_bin": 0.06925872545951851,
+            "fights": 346,
+            "log_loss": 0.6328488835457924
+          }
+        }
+      },
+      "ufc_fights_with_any_feature_changed": 8368
+    }
+  },
+  "expanded_history_plus_all_rankings": {
+    "results": {
+      "candidate": {
+        "accuracy": 0.6407889215274863,
+        "auc": 0.6952857179133408,
+        "brier": 0.22096182955665203,
+        "ece_10_bin": 0.02027577367873274,
+        "fights": 2383,
+        "log_loss": 0.6318124217179497
+      },
+      "candidate_minus_current_model": {
+        "bootstrap_samples": 10000,
+        "ci_95_lower": -0.006044574607488723,
+        "ci_95_upper": 0.0016676719864763489,
+        "definition": "expanded_history_all_rankings_probability minus current_model_probability paired log loss; negative favors candidate",
+        "event_count": 197,
+        "fight_count": 2383,
+        "method": "nonparametric whole-event block bootstrap",
+        "point_difference": -0.002226376732202329,
+        "seed": 20260822
+      },
+      "current_model": {
+        "accuracy": 0.6399496433067562,
+        "auc": 0.6919034599898991,
+        "brier": 0.22200767387657214,
+        "ece_10_bin": 0.020415065226202535,
+        "fights": 2383,
+        "log_loss": 0.6340387984501521
+      },
+      "per_year": {
+        "2022": {
+          "current_model": {
+            "accuracy": 0.6383399209486166,
+            "auc": 0.6729987492182614,
+            "brier": 0.22685627944236,
+            "ece_10_bin": 0.06169471767246348,
+            "fights": 506,
+            "log_loss": 0.6439162463650924
+          },
+          "expanded_history_all_rankings": {
+            "accuracy": 0.6363636363636364,
+            "auc": 0.6827704815509694,
+            "brier": 0.22360720882617316,
+            "ece_10_bin": 0.04864834515905238,
+            "fights": 506,
+            "log_loss": 0.6367864959435295
+          }
+        },
+        "2023": {
+          "current_model": {
+            "accuracy": 0.6111111111111112,
+            "auc": 0.6633522727272727,
+            "brier": 0.2290923632199196,
+            "ece_10_bin": 0.03839619093539461,
+            "fights": 504,
+            "log_loss": 0.6485268842635094
+          },
+          "expanded_history_all_rankings": {
+            "accuracy": 0.626984126984127,
+            "auc": 0.6701704545454545,
+            "brier": 0.22762304478739942,
+            "ece_10_bin": 0.04586134091383504,
+            "fights": 504,
+            "log_loss": 0.6457479816862028
+          }
+        },
+        "2024": {
+          "current_model": {
+            "accuracy": 0.6510721247563352,
+            "auc": 0.7064016316093878,
+            "brier": 0.21800131578382315,
+            "ece_10_bin": 0.055696688878456024,
+            "fights": 513,
+            "log_loss": 0.6256764848382201
+          },
+          "expanded_history_all_rankings": {
+            "accuracy": 0.6374269005847953,
+            "auc": 0.7178320294663786,
+            "brier": 0.21519288739465803,
+            "ece_10_bin": 0.060371299946248715,
+            "fights": 513,
+            "log_loss": 0.6192622429404524
+          }
+        },
+        "2025": {
+          "current_model": {
+            "accuracy": 0.6536964980544747,
+            "auc": 0.7117981359399863,
+            "brier": 0.2167366021542195,
+            "ece_10_bin": 0.04170481501081935,
+            "fights": 514,
+            "log_loss": 0.6234114835809953
+          },
+          "expanded_history_all_rankings": {
+            "accuracy": 0.6614785992217899,
+            "auc": 0.7027506251420776,
+            "brier": 0.21844377702907536,
+            "ece_10_bin": 0.028787614971359926,
+            "fights": 514,
+            "log_loss": 0.626278556860579
+          }
+        },
+        "2026": {
+          "current_model": {
+            "accuracy": 0.6473988439306358,
+            "auc": 0.7061108320776829,
+            "brier": 0.2183675430139528,
+            "ece_10_bin": 0.04758482226593102,
+            "fights": 346,
+            "log_loss": 0.6266755696373653
+          },
+          "expanded_history_all_rankings": {
+            "accuracy": 0.6416184971098265,
+            "auc": 0.7030972710530721,
+            "brier": 0.2196841762086836,
+            "ece_10_bin": 0.051621382210693734,
+            "fights": 346,
+            "log_loss": 0.6310674635312493
+          }
+        }
+      },
+      "ranking_join": {
+        "fight_rows": 8669,
+        "fights_with_at_least_one_currently_ranked_fighter": 2227,
+        "fights_with_two_currently_ranked_fighters": 1449,
+        "strictly_prior_snapshot_verified": true
+      },
+      "training_by_test_year": {
+        "2022": {
+          "calibration_slope": 1.1072285972541431,
+          "selected_config": "standard:c=0.003",
+          "test_fights": 506,
+          "train_fights": 4512,
+          "training_validation_log_loss": 0.6509479772382891
+        },
+        "2023": {
+          "calibration_slope": 1.060558776815821,
+          "selected_config": "standard:c=0.003",
+          "test_fights": 504,
+          "train_fights": 4685,
+          "training_validation_log_loss": 0.6536418824330679
+        },
+        "2024": {
+          "calibration_slope": 1.1211920042948458,
+          "selected_config": "standard:c=0.003",
+          "test_fights": 513,
+          "train_fights": 4813,
+          "training_validation_log_loss": 0.650435222585256
+        },
+        "2025": {
+          "calibration_slope": 1.130902118228742,
+          "selected_config": "standard:c=0.01",
+          "test_fights": 514,
+          "train_fights": 4832,
+          "training_validation_log_loss": 0.6379080483358812
+        },
+        "2026": {
+          "calibration_slope": 1.0979901403603067,
+          "selected_config": "standard:c=0.01",
+          "test_fights": 346,
+          "train_fights": 4882,
+          "training_validation_log_loss": 0.6359630122974296
+        }
+      }
+    }
+  },
+  "experiment_version": "free-online-data-challengers-v1",
+  "identity_map_rows": 1889,
+  "market": {
+    "results": {
+      "current_model": {
+        "accuracy": 0.6666666666666666,
+        "auc": 0.754,
+        "brier": 0.20520522931068166,
+        "ece_10_bin": 0.10142632274276363,
+        "fights": 45,
+        "log_loss": 0.5945395529820904
+      },
+      "evaluable": true,
+      "fixed_blend_minus_current_model": {
+        "bootstrap_samples": 10000,
+        "ci_95_lower": -0.08951391494172202,
+        "ci_95_upper": 0.03873567653867423,
+        "definition": "fixed_equal_logit_blend_probability minus model_probability paired log loss; negative favors candidate",
+        "event_count": 5,
+        "fight_count": 45,
+        "method": "nonparametric whole-event block bootstrap",
+        "point_difference": -0.024247976926473135,
+        "seed": 20260822
+      },
+      "fixed_blend_minus_market": {
+        "bootstrap_samples": 10000,
+        "ci_95_lower": -0.06937305263150272,
+        "ci_95_upper": 0.04199120385354478,
+        "definition": "fixed_equal_logit_blend_probability minus market_probability paired log loss; negative favors candidate",
+        "event_count": 5,
+        "fight_count": 45,
+        "method": "nonparametric whole-event block bootstrap",
+        "point_difference": -0.0076052170817016845,
+        "seed": 20260822
+      },
+      "fixed_equal_logit_blend": {
+        "accuracy": 0.7555555555555555,
+        "auc": 0.78,
+        "brier": 0.19309078037130187,
+        "ece_10_bin": 0.1453356697149094,
+        "fights": 45,
+        "log_loss": 0.5702915760556171
+      },
+      "interpretation_limit": "This free archive only supports a narrow 2025 pre-event sample, so it cannot establish a historical production improvement by itself.",
+      "market": {
+        "accuracy": 0.7111111111111111,
+        "auc": 0.768,
+        "brier": 0.19702152175779414,
+        "ece_10_bin": 0.11021892818046783,
+        "fights": 45,
+        "log_loss": 0.577896793137319
+      },
+      "paired_events": 5,
+      "paired_fights": 45,
+      "rolling_blend": null,
+      "rolling_blend_evaluated_fights": 0,
+      "years": [
+        2025
+      ]
+    }
+  },
+  "non_promotable_reasons": [
+    "the same evaluation years were used to compare source ideas",
+    "ranking identity uses unique normalized names rather than provider fighter IDs",
+    "the expanded archive internally links bout names to its master IDs",
+    "the free odds archive has only a narrow truly pre-event collection window",
+    "a later untouched period is required before any production change"
+  ],
+  "paper_only": true,
+  "plain_language_method": "For each tested calendar year, train on earlier fights only. Ranking feature groups are chosen without seeing that test year. External fight history never supplies UFC labels or detailed statistics. Odds count only when their recorded collection day is before the event day.",
+  "production_action": "none",
+  "promotable": false,
+  "ranking_features": {
+    "families": {
+      "current_division_rank": [
+        "ranking_division_score_diff",
+        "ranking_division_known_diff",
+        "ranking_champion_diff"
+      ],
+      "current_pound_for_pound_rank": [
+        "ranking_p4p_score_diff"
+      ],
+      "ranking_history": [
+        "ranking_peak_score_diff",
+        "ranking_snapshots_log_diff",
+        "ranking_momentum_13w_diff"
+      ]
+    },
+    "results": {
+      "all_ranking_features": {
+        "candidate": {
+          "accuracy": 0.6370121695342006,
+          "auc": 0.6945810514554642,
+          "brier": 0.22139420312865193,
+          "ece_10_bin": 0.02318813968330683,
+          "fights": 2383,
+          "log_loss": 0.6327770924362704
+        },
+        "candidate_minus_current_model": {
+          "bootstrap_samples": 10000,
+          "ci_95_lower": -0.0035663233690255438,
+          "ci_95_upper": 0.001165253601764759,
+          "definition": "all_rankings_probability minus current_model_probability paired log loss; negative favors candidate",
+          "event_count": 197,
+          "fight_count": 2383,
+          "method": "nonparametric whole-event block bootstrap",
+          "point_difference": -0.0012617060138816018,
+          "seed": 20260822
+        },
+        "current_model": {
+          "accuracy": 0.6399496433067562,
+          "auc": 0.6919034599898991,
+          "brier": 0.22200767387657214,
+          "ece_10_bin": 0.020415065226202535,
+          "fights": 2383,
+          "log_loss": 0.6340387984501521
+        }
+      },
+      "per_year": {
+        "2022": {
+          "all_features": {
+            "accuracy": 0.6225296442687747,
+            "auc": 0.6758599124452782,
+            "brier": 0.22664680987063304,
+            "ece_10_bin": 0.054600356009745235,
+            "fights": 506,
+            "log_loss": 0.6438207896644095
+          },
+          "current_model": {
+            "accuracy": 0.6383399209486166,
+            "auc": 0.6729987492182614,
+            "brier": 0.22685627944236,
+            "ece_10_bin": 0.06169471767246348,
+            "fights": 506,
+            "log_loss": 0.6439162463650924
+          },
+          "selected_groups": {
+            "accuracy": 0.6264822134387352,
+            "auc": 0.6709193245778612,
+            "brier": 0.22734703768916648,
+            "ece_10_bin": 0.04900599307592412,
+            "fights": 506,
+            "log_loss": 0.6452522783346579
+          }
+        },
+        "2023": {
+          "all_features": {
+            "accuracy": 0.6170634920634921,
+            "auc": 0.6684816919191918,
+            "brier": 0.22744896347221288,
+            "ece_10_bin": 0.03526826844318566,
+            "fights": 504,
+            "log_loss": 0.6450947532278775
+          },
+          "current_model": {
+            "accuracy": 0.6111111111111112,
+            "auc": 0.6633522727272727,
+            "brier": 0.2290923632199196,
+            "ece_10_bin": 0.03839619093539461,
+            "fights": 504,
+            "log_loss": 0.6485268842635094
+          },
+          "selected_groups": {
+            "accuracy": 0.6130952380952381,
+            "auc": 0.662231691919192,
+            "brier": 0.22944177307091565,
+            "ece_10_bin": 0.04032848509614707,
+            "fights": 504,
+            "log_loss": 0.6493522762277867
+          }
+        },
+        "2024": {
+          "all_features": {
+            "accuracy": 0.6432748538011696,
+            "auc": 0.710602416973608,
+            "brier": 0.2176036332119773,
+            "ece_10_bin": 0.04303957555754201,
+            "fights": 513,
+            "log_loss": 0.6246378487672603
+          },
+          "current_model": {
+            "accuracy": 0.6510721247563352,
+            "auc": 0.7064016316093878,
+            "brier": 0.21800131578382315,
+            "ece_10_bin": 0.055696688878456024,
+            "fights": 513,
+            "log_loss": 0.6256764848382201
+          },
+          "selected_groups": {
+            "accuracy": 0.6374269005847953,
+            "auc": 0.7103588931843778,
+            "brier": 0.21740791954264846,
+            "ece_10_bin": 0.037329342414804775,
+            "fights": 513,
+            "log_loss": 0.6242250313611856
+          }
+        },
+        "2025": {
+          "all_features": {
+            "accuracy": 0.6556420233463035,
+            "auc": 0.7105705842236874,
+            "brier": 0.21692007141475605,
+            "ece_10_bin": 0.045723991672728906,
+            "fights": 514,
+            "log_loss": 0.6234957846451756
+          },
+          "current_model": {
+            "accuracy": 0.6536964980544747,
+            "auc": 0.7117981359399863,
+            "brier": 0.2167366021542195,
+            "ece_10_bin": 0.04170481501081935,
+            "fights": 514,
+            "log_loss": 0.6234114835809953
+          },
+          "selected_groups": {
+            "accuracy": 0.6653696498054474,
+            "auc": 0.7095703568992953,
+            "brier": 0.21707524851738985,
+            "ece_10_bin": 0.041364534085610534,
+            "fights": 514,
+            "log_loss": 0.6240162484999286
+          }
+        },
+        "2026": {
+          "all_features": {
+            "accuracy": 0.6502890173410405,
+            "auc": 0.7110329817512138,
+            "brier": 0.21715965932402584,
+            "ece_10_bin": 0.04161365696201685,
+            "fights": 346,
+            "log_loss": 0.6245395559345847
+          },
+          "current_model": {
+            "accuracy": 0.6473988439306358,
+            "auc": 0.7061108320776829,
+            "brier": 0.2183675430139528,
+            "ece_10_bin": 0.04758482226593102,
+            "fights": 346,
+            "log_loss": 0.6266755696373653
+          },
+          "selected_groups": {
+            "accuracy": 0.6473988439306358,
+            "auc": 0.714080026787209,
+            "brier": 0.2165770699252821,
+            "ece_10_bin": 0.04495715184600459,
+            "fights": 346,
+            "log_loss": 0.6232763550098299
+          }
+        }
+      },
+      "selected_groups": {
+        "candidate": {
+          "accuracy": 0.6374318086445657,
+          "auc": 0.6925848491773954,
+          "brier": 0.2218711126126414,
+          "ece_10_bin": 0.02121381527969574,
+          "fights": 2383,
+          "log_loss": 0.6338214904350794
+        },
+        "candidate_minus_current_model": {
+          "bootstrap_samples": 10000,
+          "ci_95_lower": -0.0018496528945835897,
+          "ci_95_upper": 0.001428036046438374,
+          "definition": "selected_rankings_probability minus current_model_probability paired log loss; negative favors candidate",
+          "event_count": 197,
+          "fight_count": 2383,
+          "method": "nonparametric whole-event block bootstrap",
+          "point_difference": -0.00021730801507273157,
+          "seed": 20260822
+        },
+        "current_model": {
+          "accuracy": 0.6399496433067562,
+          "auc": 0.6919034599898991,
+          "brier": 0.22200767387657214,
+          "ece_10_bin": 0.020415065226202535,
+          "fights": 2383,
+          "log_loss": 0.6340387984501521
+        }
+      },
+      "selection_by_test_year": {
+        "2022": {
+          "all_rankings_calibration_slope": 1.0721986871343687,
+          "all_rankings_config": "standard:c=0.003",
+          "calibration_slope": 1.141238071911098,
+          "elapsed_seconds": 5.89100000000326,
+          "family_combination_training_results": [
+            {
+              "families": [
+                "current_pound_for_pound_rank"
+              ],
+              "feature_count": 83,
+              "selected_config": "standard:c=0.003",
+              "training_validation_log_loss": 0.6531568851312319
+            },
+            {
+              "families": [
+                "current_division_rank",
+                "current_pound_for_pound_rank"
+              ],
+              "feature_count": 86,
+              "selected_config": "standard:c=0.003",
+              "training_validation_log_loss": 0.6536449330361912
+            },
+            {
+              "families": [],
+              "feature_count": 82,
+              "selected_config": "standard:c=0.003",
+              "training_validation_log_loss": 0.6537207386533057
+            },
+            {
+              "families": [
+                "current_division_rank"
+              ],
+              "feature_count": 85,
+              "selected_config": "standard:c=0.003",
+              "training_validation_log_loss": 0.6537668288443392
+            },
+            {
+              "families": [
+                "current_pound_for_pound_rank",
+                "ranking_history"
+              ],
+              "feature_count": 86,
+              "selected_config": "standard:c=0.003",
+              "training_validation_log_loss": 0.6541019708389245
+            },
+            {
+              "families": [
+                "current_division_rank",
+                "current_pound_for_pound_rank",
+                "ranking_history"
+              ],
+              "feature_count": 89,
+              "selected_config": "standard:c=0.003",
+              "training_validation_log_loss": 0.6542320954435417
+            },
+            {
+              "families": [
+                "current_division_rank",
+                "ranking_history"
+              ],
+              "feature_count": 88,
+              "selected_config": "standard:c=0.003",
+              "training_validation_log_loss": 0.6543536768244624
+            },
+            {
+              "families": [
+                "ranking_history"
+              ],
+              "feature_count": 85,
+              "selected_config": "standard:c=0.003",
+              "training_validation_log_loss": 0.6546180825121816
+            }
+          ],
+          "selected_config": "standard:c=0.003",
+          "selected_ranking_families": [
+            "current_pound_for_pound_rank"
+          ],
+          "selected_ranking_feature_count": 1,
+          "test_fights": 506,
+          "train_fights": 4512
+        },
+        "2023": {
+          "all_rankings_calibration_slope": 1.0558489630870591,
+          "all_rankings_config": "standard:c=0.003",
+          "calibration_slope": 1.0927745798835549,
+          "elapsed_seconds": 6.10999999998603,
+          "family_combination_training_results": [
+            {
+              "families": [
+                "current_pound_for_pound_rank"
+              ],
+              "feature_count": 83,
+              "selected_config": "standard:c=0.003",
+              "training_validation_log_loss": 0.6559444874951373
+            },
+            {
+              "families": [],
+              "feature_count": 82,
+              "selected_config": "standard:c=0.003",
+              "training_validation_log_loss": 0.656145276812345
+            },
+            {
+              "families": [
+                "current_division_rank"
+              ],
+              "feature_count": 85,
+              "selected_config": "standard:c=0.003",
+              "training_validation_log_loss": 0.6561538189210584
+            },
+            {
+              "families": [
+                "current_division_rank",
+                "current_pound_for_pound_rank"
+              ],
+              "feature_count": 86,
+              "selected_config": "standard:c=0.003",
+              "training_validation_log_loss": 0.6561724324420718
+            },
+            {
+              "families": [
+                "current_pound_for_pound_rank",
+                "ranking_history"
+              ],
+              "feature_count": 86,
+              "selected_config": "standard:c=0.003",
+              "training_validation_log_loss": 0.656627777728303
+            },
+            {
+              "families": [
+                "current_division_rank",
+                "ranking_history"
+              ],
+              "feature_count": 88,
+              "selected_config": "standard:c=0.003",
+              "training_validation_log_loss": 0.6567287553255948
+            },
+            {
+              "families": [
+                "current_division_rank",
+                "current_pound_for_pound_rank",
+                "ranking_history"
+              ],
+              "feature_count": 89,
+              "selected_config": "standard:c=0.003",
+              "training_validation_log_loss": 0.6567406539486927
+            },
+            {
+              "families": [
+                "ranking_history"
+              ],
+              "feature_count": 85,
+              "selected_config": "standard:c=0.003",
+              "training_validation_log_loss": 0.6568116539510769
+            }
+          ],
+          "selected_config": "standard:c=0.003",
+          "selected_ranking_families": [
+            "current_pound_for_pound_rank"
+          ],
+          "selected_ranking_feature_count": 1,
+          "test_fights": 504,
+          "train_fights": 4685
+        },
+        "2024": {
+          "all_rankings_calibration_slope": 1.0969820290971508,
+          "all_rankings_config": "standard:c=0.003",
+          "calibration_slope": 1.117720939452436,
+          "elapsed_seconds": 6.23499999998603,
+          "family_combination_training_results": [
+            {
+              "families": [
+                "ranking_history"
+              ],
+              "feature_count": 85,
+              "selected_config": "standard:c=0.003",
+              "training_validation_log_loss": 0.6536535885166245
+            },
+            {
+              "families": [
+                "current_pound_for_pound_rank",
+                "ranking_history"
+              ],
+              "feature_count": 86,
+              "selected_config": "standard:c=0.003",
+              "training_validation_log_loss": 0.6537776232914648
+            },
+            {
+              "families": [
+                "current_division_rank",
+                "ranking_history"
+              ],
+              "feature_count": 88,
+              "selected_config": "standard:c=0.003",
+              "training_validation_log_loss": 0.6538249623230307
+            },
+            {
+              "families": [
+                "current_division_rank",
+                "current_pound_for_pound_rank",
+                "ranking_history"
+              ],
+              "feature_count": 89,
+              "selected_config": "standard:c=0.003",
+              "training_validation_log_loss": 0.65393138190253
+            },
+            {
+              "families": [
+                "current_division_rank"
+              ],
+              "feature_count": 85,
+              "selected_config": "standard:c=0.003",
+              "training_validation_log_loss": 0.6542715654974102
+            },
+            {
+              "families": [
+                "current_division_rank",
+                "current_pound_for_pound_rank"
+              ],
+              "feature_count": 86,
+              "selected_config": "standard:c=0.003",
+              "training_validation_log_loss": 0.6543811443402413
+            },
+            {
+              "families": [],
+              "feature_count": 82,
+              "selected_config": "standard:c=0.003",
+              "training_validation_log_loss": 0.6546964510744754
+            },
+            {
+              "families": [
+                "current_pound_for_pound_rank"
+              ],
+              "feature_count": 83,
+              "selected_config": "standard:c=0.003",
+              "training_validation_log_loss": 0.6547932108439675
+            }
+          ],
+          "selected_config": "standard:c=0.003",
+          "selected_ranking_families": [
+            "ranking_history"
+          ],
+          "selected_ranking_feature_count": 3,
+          "test_fights": 513,
+          "train_fights": 4813
+        },
+        "2025": {
+          "all_rankings_calibration_slope": 1.1102343603228497,
+          "all_rankings_config": "standard:c=0.01",
+          "calibration_slope": 1.1201013769444086,
+          "elapsed_seconds": 6.312999999994645,
+          "family_combination_training_results": [
+            {
+              "families": [
+                "ranking_history"
+              ],
+              "feature_count": 85,
+              "selected_config": "standard:c=0.01",
+              "training_validation_log_loss": 0.641202182828793
+            },
+            {
+              "families": [
+                "current_division_rank",
+                "ranking_history"
+              ],
+              "feature_count": 88,
+              "selected_config": "standard:c=0.01",
+              "training_validation_log_loss": 0.6414412648946023
+            },
+            {
+              "families": [
+                "current_pound_for_pound_rank",
+                "ranking_history"
+              ],
+              "feature_count": 86,
+              "selected_config": "standard:c=0.01",
+              "training_validation_log_loss": 0.6415247799985693
+            },
+            {
+              "families": [
+                "current_division_rank",
+                "current_pound_for_pound_rank",
+                "ranking_history"
+              ],
+              "feature_count": 89,
+              "selected_config": "standard:c=0.01",
+              "training_validation_log_loss": 0.6416765166586886
+            },
+            {
+              "families": [
+                "current_division_rank"
+              ],
+              "feature_count": 85,
+              "selected_config": "standard:c=0.01",
+              "training_validation_log_loss": 0.6422169100013061
+            },
+            {
+              "families": [
+                "current_division_rank",
+                "current_pound_for_pound_rank"
+              ],
+              "feature_count": 86,
+              "selected_config": "standard:c=0.01",
+              "training_validation_log_loss": 0.642471743302297
+            },
+            {
+              "families": [],
+              "feature_count": 82,
+              "selected_config": "standard:c=0.01",
+              "training_validation_log_loss": 0.6429760540646242
+            },
+            {
+              "families": [
+                "current_pound_for_pound_rank"
+              ],
+              "feature_count": 83,
+              "selected_config": "standard:c=0.01",
+              "training_validation_log_loss": 0.6432747279126612
+            }
+          ],
+          "selected_config": "standard:c=0.01",
+          "selected_ranking_families": [
+            "ranking_history"
+          ],
+          "selected_ranking_feature_count": 3,
+          "test_fights": 514,
+          "train_fights": 4832
+        },
+        "2026": {
+          "all_rankings_calibration_slope": 1.1096434934457347,
+          "all_rankings_config": "standard:c=0.01",
+          "calibration_slope": 1.1233037796212466,
+          "elapsed_seconds": 6.64100000000326,
+          "family_combination_training_results": [
+            {
+              "families": [
+                "ranking_history"
+              ],
+              "feature_count": 85,
+              "selected_config": "standard:c=0.01",
+              "training_validation_log_loss": 0.6376789160267778
+            },
+            {
+              "families": [
+                "current_pound_for_pound_rank",
+                "ranking_history"
+              ],
+              "feature_count": 86,
+              "selected_config": "standard:c=0.01",
+              "training_validation_log_loss": 0.6382825416849388
+            },
+            {
+              "families": [
+                "current_division_rank",
+                "ranking_history"
+              ],
+              "feature_count": 88,
+              "selected_config": "standard:c=0.01",
+              "training_validation_log_loss": 0.638389175701334
+            },
+            {
+              "families": [
+                "current_division_rank",
+                "current_pound_for_pound_rank",
+                "ranking_history"
+              ],
+              "feature_count": 89,
+              "selected_config": "standard:c=0.01",
+              "training_validation_log_loss": 0.6384777507856636
+            },
+            {
+              "families": [
+                "current_division_rank"
+              ],
+              "feature_count": 85,
+              "selected_config": "standard:c=0.01",
+              "training_validation_log_loss": 0.6388392154389664
+            },
+            {
+              "families": [
+                "current_division_rank",
+                "current_pound_for_pound_rank"
+              ],
+              "feature_count": 86,
+              "selected_config": "standard:c=0.01",
+              "training_validation_log_loss": 0.6389428993397914
+            },
+            {
+              "families": [],
+              "feature_count": 82,
+              "selected_config": "standard:c=0.01",
+              "training_validation_log_loss": 0.6389963065340563
+            },
+            {
+              "families": [
+                "current_pound_for_pound_rank"
+              ],
+              "feature_count": 83,
+              "selected_config": "standard:c=0.01",
+              "training_validation_log_loss": 0.6396011284374273
+            }
+          ],
+          "selected_config": "standard:c=0.01",
+          "selected_ranking_families": [
+            "ranking_history"
+          ],
+          "selected_ranking_feature_count": 3,
+          "test_fights": 346,
+          "train_fights": 4882
+        }
+      }
+    }
+  },
+  "report_schema_version": 1,
+  "sample": {
+    "test_years": [
+      2022,
+      2023,
+      2024,
+      2025,
+      2026
+    ],
+    "tested_events": 197,
+    "tested_fights": 2383
+  },
+  "source_audits": {
+    "expanded_mma_history": {
+      "accepted_physical_bouts": 25078,
+      "accepted_source_fighters": 10183,
+      "ambiguous_master_names": 0,
+      "auxiliary_rows": 13288,
+      "conflicting_identity_mappings": 1,
+      "connected_non_ufc_physical_bouts": 6644,
+      "connected_source_bouts_including_ufc": 10727,
+      "duplicate_date_pair_rows_rejected": 26916,
+      "exact_ufc_witness_mappings": 1889,
+      "future_rows_rejected": 3,
+      "identity_rule": "participant display name must resolve to exactly one fighters_master ID",
+      "invalid_date_rows_rejected": 0,
+      "nondecisive_or_unresolved_result_rows": 2434,
+      "rows_without_two_unique_source_ids": 75797,
+      "schema_rows_rejected": 100,
+      "source_fights": 129285,
+      "source_master_fighters": 15801,
+      "source_sha256": "5a7cf73a01373ee54b2c73335f076b36db75565c830e228054a71058c4f1b29a",
+      "training_targets_emitted": false,
+      "ufc_results_excluded_from_auxiliary": true,
+      "unknown_same_day_order_rows_rejected": 447
+    },
+    "odds": {
+      "capture_rule": "UTC adding_date calendar day is before event_date",
+      "late_or_same_day_rows_rejected": 36875,
+      "minimum_books": 3,
+      "paired_fights_with_minimum_books": 45,
+      "quote_identity_rejections": 131,
+      "rows_with_parseable_ids_dates_and_prices": 75118,
+      "safely_pre_event_rows": 1131,
+      "side_orientation_rule": "fighter names must exactly match the two participants within a stable UFCStats fight ID; source fighter URLs are audited but not trusted because the archive swaps them on some rows",
+      "source_rows": 199392,
+      "source_url_name_mismatches": 512,
+      "warning": "The archive has authentic pre-event timestamps only for a narrow 2025 collection window; older backfilled rows are not causal inputs."
+    },
+    "rankings": {
+      "ambiguous_name_rows": 85,
+      "conflicting_snapshot_dates_rejected": 10,
+      "conflicting_snapshot_rows_rejected": 2978,
+      "exact_duplicate_rows_removed": 0,
+      "fight_join_rule": "latest complete ranking snapshot strictly before bout date",
+      "fight_rows": 8669,
+      "fights_with_at_least_one_currently_ranked_fighter": 2227,
+      "fights_with_two_currently_ranked_fighters": 1449,
+      "first_snapshot": "2013-02-04",
+      "identity_rule": "normalized name must resolve to exactly one UFCStats ID",
+      "invalid_rows_rejected": 3,
+      "last_snapshot": "2026-06-18",
+      "mapped_fighters": 611,
+      "mapped_rows": 94744,
+      "source_rows": 101559,
+      "strictly_prior_snapshot_verified": true,
+      "synthetic_top_rank_rows_rejected": 2516,
+      "unmatched_rows": 1233
+    }
+  },
+  "source_sha256": {
+    "expanded_mma_history": "5a7cf73a01373ee54b2c73335f076b36db75565c830e228054a71058c4f1b29a",
+    "fighter_stats": "88341fc47df0dac282a4c91c6f5df4d60e9e5905204eda4ce950459720c01230",
+    "odds": "9dc5ad30e485b2a146205d141455ec8167f5be916f9f3504e925beb9c370af81",
+    "point_in_time": "f9ed863ea627318a3d55e1bf422536c0563fe2e22f8baedb71f6837b27530370",
+    "rankings": "53a7ffd4ef5911b00c5c78afa3d719d9a83d89ce7618bb996d522c0498f59430",
+    "raw_fights": "6cfb14c9ebcaf2946d942447f4af0166df8b1e5cefa9111edb184b74d7197d49"
+  }
+}
