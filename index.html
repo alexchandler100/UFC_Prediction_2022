@@ -44,7 +44,7 @@
       </div>
 
       <div class="page-shell page-stack">
-        <section class="panel current-card-panel" aria-labelledby="current-card-title">
+        <section class="panel current-card-panel" id="current-card-results" tabindex="-1" aria-labelledby="current-card-title">
           <div class="section-heading">
             <div><p class="eyebrow">This week</p><h2 id="current-card-title">Current fight card</h2><p class="section-note" id="current-card-meta">Loading the current card…</p></div>
             <span class="research-badge">Research view</span>
@@ -74,7 +74,7 @@
             <button class="text-button" id="clear-matchup" type="button">Clear</button>
           </div>
         </section>
-        <section id="matchup-workbench" class="workbench" aria-live="polite"></section>
+        <section id="matchup-workbench" class="workbench" tabindex="-1" aria-live="polite"></section>
       </div>
     </section>
 
@@ -84,14 +84,14 @@
         <p>Search every fighter profile we have, then inspect UFCStats performance plus linked Bellator and ONE fight histories.</p>
       </div>
       <div class="page-shell page-stack">
-        <section class="panel directory-controls" aria-label="Fighter filters">
+        <section class="panel directory-controls" id="fighter-directory-controls" tabindex="-1" aria-label="Fighter filters">
           <div class="directory-search"><label for="fighter-directory-search">Search fighters</label><input id="fighter-directory-search" type="search" autocomplete="off" placeholder="Name, division, or stance"></div>
           <div class="filter-control"><label for="division-filter">Division</label><select id="division-filter"><option value="">All divisions</option></select></div>
           <div class="filter-control"><label for="stance-filter">Stance</label><select id="stance-filter"><option value="">All stances</option></select></div>
           <label class="check-control"><input type="checkbox" id="recorded-only" checked> Recorded MMA bouts only</label>
         </section>
         <section id="fighter-directory" aria-live="polite"></section>
-        <section id="fighter-profile" class="profile-view" aria-live="polite"></section>
+        <section id="fighter-profile" class="profile-view" tabindex="-1" aria-live="polite"></section>
       </div>
     </section>
 
@@ -101,7 +101,7 @@
         <p>Explore recorded fight history as a directed graph. Every arrow runs from the winner to the loser; hover, focus, or click an arrow for the fight details.</p>
       </div>
       <div class="page-shell page-stack">
-        <section class="panel fight-graph-controls" aria-label="Fight graph filters">
+        <section class="panel fight-graph-controls" id="fight-graph-controls" tabindex="-1" aria-label="Fight graph filters">
           <div class="graph-filter-modebar">
             <div>
               <p class="eyebrow">Graph filters</p>
@@ -211,7 +211,7 @@
           <p class="graph-filter-status" id="fight-graph-status" role="status" aria-live="polite">Choose a weight class, then draw the graph.</p>
         </section>
 
-        <section class="panel fight-graph-panel" aria-labelledby="fight-graph-heading">
+        <section class="panel fight-graph-panel" id="fight-graph-results" tabindex="-1" aria-labelledby="fight-graph-heading">
           <div class="section-heading">
             <div>
               <p class="eyebrow">Winner to loser</p>
@@ -264,7 +264,7 @@
         <p>Precomputed upcoming-fight simulations show winner, method, finish time, round totals, and projected fight-stat distributions. They are candidate-only evidence, not betting instructions.</p>
       </div>
       <div class="page-shell page-stack">
-        <section class="panel simulation-picker-panel" aria-labelledby="simulation-picker-title">
+        <section class="panel simulation-picker-panel" id="simulation-picker" tabindex="-1" aria-labelledby="simulation-picker-title">
           <div class="section-heading">
             <div><p class="eyebrow">Upcoming card</p><h2 id="simulation-picker-title">Fight-by-fight distributions</h2><p class="section-note" id="simulation-publication-status">Simulation forecasts load when this tab opens.</p></div>
             <span class="research-badge">Paper only</span>
@@ -273,7 +273,7 @@
             <div class="empty-state">Loading upcoming simulations...</div>
           </div>
         </section>
-        <section id="simulation-results" class="simulation-results" aria-live="polite">
+        <section id="simulation-results" class="simulation-results" tabindex="-1" aria-live="polite">
           <div class="empty-state">Choose an upcoming matchup to inspect its simulated distributions.</div>
         </section>
       </div>
@@ -286,7 +286,7 @@
       </div>
       <div class="page-shell page-stack">
         <section class="market-notice" id="market-notice"></section>
-        <section class="panel" aria-labelledby="profitability-title">
+        <section class="panel" id="market-research-results" tabindex="-1" aria-labelledby="profitability-title">
           <div class="section-heading">
             <div><p class="eyebrow">Prospective evidence</p><h2 id="profitability-title">Profitability and closing-line value</h2><p class="section-note">Frozen T-24 moneyline and totals decisions only. Repeated snapshots are not counted as independent bets.</p></div>
             <span class="research-badge">Audited paper ledger</span>
@@ -316,7 +316,7 @@
         <p class="eyebrow">Methodology &amp; provenance</p><h1 id="data-title">What the numbers mean.</h1>
         <p>The prediction model, market policy, evaluation history, data coverage, and missing-data rules are separated so their roles are never ambiguous.</p>
       </div>
-      <div class="page-shell page-stack" id="model-data-content"></div>
+      <div class="page-shell page-stack" id="model-data-content" tabindex="-1"></div>
     </section>
   </main>
 

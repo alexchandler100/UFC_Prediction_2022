@@ -97,9 +97,37 @@ class WebsiteExplorerContractTests(unittest.TestCase):
         self.assertIn('details[data-book-lines="moneyline"]', script)
         self.assertIn("if (prices) prices.open = true", script)
         self.assertIn("marketButton.disabled = !hasCurrentPrices", script)
-        self.assertIn("renderMatchup(fighterA, fighterB);\n      return;", script)
+        self.assertIn("renderMatchup(fighterA, fighterB);", script)
+        self.assertIn('focusRouteTarget("#matchup-workbench", expectedHash)', script)
         self.assertIn(".market-card.is-route-target", style)
-        self.assertIn("scroll-margin-top: 96px", style)
+        self.assertIn("--route-scroll-offset: 96px", style)
+        self.assertIn("--route-scroll-offset: 140px", style)
+
+    def test_routes_focus_the_requested_data_instead_of_the_tab_hero(self):
+        page = (REPO_ROOT / "index.html").read_text(encoding="utf-8")
+        script = (REPO_ROOT / "script.js").read_text(encoding="utf-8")
+
+        for target_id in (
+            "current-card-results",
+            "fighter-directory-controls",
+            "fighter-profile",
+            "matchup-workbench",
+            "fight-graph-controls",
+            "fight-graph-results",
+            "simulation-picker",
+            "simulation-results",
+            "market-research-results",
+            "model-data-content",
+        ):
+            self.assertIn(f'id="{target_id}"', page)
+        self.assertIn("function focusRouteTarget", script)
+        self.assertIn('matchupConfigured ? "#fight-graph-results" : "#fight-graph-controls"', script)
+        self.assertIn('focusRouteTarget(requestedMatchupId ? "#simulation-results"', script)
+        self.assertIn('focusRouteTarget("#market-research-results", expectedHash)', script)
+        self.assertIn(
+            'setRoute(`market/${matchup.fighter_id}/${matchup.opponent_id}`)',
+            script,
+        )
 
     def test_stale_market_capture_cannot_replace_the_current_card(self):
         script = (REPO_ROOT / "script.js").read_text(encoding="utf-8")

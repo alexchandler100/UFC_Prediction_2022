@@ -61,6 +61,8 @@ from market_tracker import (
     TotalRoundsPaperSettlementStore,
     QuoteSourceMetadataStore,
     PROSPECTIVE_COMPARISON_POLICY_VERSION,
+    SIMULATION_COMPARISON_POLICY_VERSION,
+    SimulationComparisonDecisionStore,
     StoreIntegrityError,
     TIMING_POLICY_VERSION,
     TOTAL_DECISION_TARGET_LEAD_SECONDS,
@@ -73,6 +75,7 @@ from market_tracker import (
     select_residual_weight,
     validate_current_opportunities,
     prospective_comparison_report,
+    simulation_comparison_report,
 )
 from market_tracker._common import BETTING_STATUS, canonical_hash
 from market_tracker.prospective import (
@@ -2028,6 +2031,66 @@ def validate_market_data(
                 f"Bayesian filtered decision cannot be reconstructed: {error}"
             )
 
+    simulation_comparison_csv = market_root / "simulation_comparisons.csv"
+    simulation_comparison_jsonl = market_root / "simulation_comparisons.jsonl"
+    simulation_comparison_exists = (
+        simulation_comparison_csv.exists(),
+        simulation_comparison_jsonl.exists(),
+    )
+    simulation_comparisons = ()
+    if any(simulation_comparison_exists) and not all(simulation_comparison_exists):
+        report.errors.append("simulation comparison mirrors are incomplete")
+    elif all(simulation_comparison_exists):
+        try:
+            simulation_comparisons = SimulationComparisonDecisionStore(
+                simulation_comparison_csv,
+                simulation_comparison_jsonl,
+            ).read()
+        except (OSError, UnicodeError, MarketDataError, StoreIntegrityError) as error:
+            report.errors.append(
+                f"simulation comparisons failed integrity validation: {error}"
+            )
+    report.require(
+        len({item.base_decision_id for item in simulation_comparisons})
+        == len(simulation_comparisons),
+        "more than one simulation comparison was frozen for a base decision",
+    )
+    for comparison in simulation_comparisons:
+        base = base_decision_by_id.get(comparison.base_decision_id)
+        report.require(
+            base is not None,
+            "simulation comparison references an unknown base decision",
+        )
+        if base is None:
+            continue
+        report.require(
+            (
+                comparison.matchup_id,
+                comparison.event_id,
+                comparison.fighter_id,
+                comparison.opponent_id,
+                comparison.event_date,
+                comparison.timing_precision,
+                comparison.event_start_utc,
+                comparison.base_decision_issued_at_utc,
+                comparison.market_probability,
+                comparison.model_probability,
+            )
+            == (
+                base.matchup_id,
+                base.event_id,
+                base.fighter_id,
+                base.opponent_id,
+                base.event_date,
+                base.timing_precision,
+                base.event_start_utc,
+                base.decision_issued_at_utc,
+                base.market_probability,
+                base.model_probability,
+            ),
+            "simulation comparison disagrees with its frozen base decision",
+        )
+
     opportunities_path = market_root / "current_opportunities.json"
     if opportunities_path.exists():
         try:
@@ -2233,6 +2296,34 @@ def validate_market_data(
                     prospective
                     == prospective_comparison_report(decisions, settlements),
                     "prospective model/market comparison cannot be reproduced",
+                )
+            if int(performance.get("schema_version", 1)) >= 5:
+                simulation_report = performance.get(
+                    "prospective_simulation_comparison"
+                )
+                report.require(
+                    isinstance(simulation_report, dict)
+                    and simulation_report.get("policy_version")
+                    == SIMULATION_COMPARISON_POLICY_VERSION
+                    and simulation_report.get("paper_only") is True
+                    and simulation_report.get("execution_enabled") is False,
+                    "prospective simulation comparison must remain paper-only",
+                )
+                report.require(
+                    performance.get("simulation_comparison_dataset_sha256")
+                    == canonical_hash(
+                        [item.to_mapping() for item in simulation_comparisons]
+                    ),
+                    "simulation comparison report hash is stale",
+                )
+                report.require(
+                    simulation_report
+                    == simulation_comparison_report(
+                        simulation_comparisons,
+                        settlements,
+                        decisions,
+                    ),
+                    "prospective simulation comparison cannot be reproduced",
                 )
             expected_metrics = summarize_paper_settlements(
                 decisions, settlements

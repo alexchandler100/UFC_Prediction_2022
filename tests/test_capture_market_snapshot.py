@@ -626,6 +626,8 @@ class CaptureMarketSnapshotTests(unittest.TestCase):
             "bayesian_filtered_paper_decisions.jsonl",
             "paper_settlements.csv",
             "paper_settlements.jsonl",
+            "simulation_comparisons.csv",
+            "simulation_comparisons.jsonl",
             "performance_report.json",
             "capture_report.json",
             "current_opportunities.json",
@@ -642,6 +644,7 @@ class CaptureMarketSnapshotTests(unittest.TestCase):
         ).read_text(encoding="utf-8")
         self.assertIn("python update_market_performance.py", updater_workflow)
         self.assertIn("paper_settlements.jsonl", updater_workflow)
+        self.assertIn("simulation_comparisons.jsonl", updater_workflow)
         self.assertIn("total_round_paper_settlements.jsonl", updater_workflow)
         self.assertIn("performance_report.json", updater_workflow)
         self.assertIn("outcome_model_evaluation.json", updater_workflow)

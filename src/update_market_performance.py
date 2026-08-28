@@ -26,6 +26,9 @@ from market_tracker import (
     QuoteSnapshotStore,
     QuoteSourceMetadataStore,
     prospective_comparison_report,
+    SimulationComparisonDecisionStore,
+    build_simulation_comparison_decisions,
+    simulation_comparison_report,
     TotalRoundsPaperDecision,
     TotalRoundsPaperDecisionStore,
     TotalRoundsPaperSettlementStore,
@@ -45,6 +48,9 @@ ROOT = Path(__file__).resolve().parent
 MARKET_ROOT = ROOT / "content" / "data" / "market"
 RAW_PATH = ROOT / "content" / "data" / "processed" / "ufc_fights_reported_doubled.csv"
 PREDICTION_HISTORY_PATH = ROOT / "content" / "data" / "external" / "prediction_history.json"
+SIMULATION_FORECAST_PATH = (
+    ROOT / "content" / "data" / "external" / "simulation_forecasts.json"
+)
 QUOTE_CSV_PATH = MARKET_ROOT / "quote_snapshots.csv"
 QUOTE_JSONL_PATH = MARKET_ROOT / "quote_snapshots.jsonl"
 SOURCE_METADATA_CSV_PATH = MARKET_ROOT / "quote_source_metadata.csv"
@@ -59,6 +65,8 @@ BAYESIAN_FILTER_DECISION_JSONL_PATH = (
 )
 SETTLEMENT_CSV_PATH = MARKET_ROOT / "paper_settlements.csv"
 SETTLEMENT_JSONL_PATH = MARKET_ROOT / "paper_settlements.jsonl"
+SIMULATION_COMPARISON_CSV_PATH = MARKET_ROOT / "simulation_comparisons.csv"
+SIMULATION_COMPARISON_JSONL_PATH = MARKET_ROOT / "simulation_comparisons.jsonl"
 TOTAL_ROUNDS_QUOTE_CSV_PATH = MARKET_ROOT / "total_round_quote_snapshots.csv"
 TOTAL_ROUNDS_QUOTE_JSONL_PATH = MARKET_ROOT / "total_round_quote_snapshots.jsonl"
 TOTAL_ROUNDS_DECISION_CSV_PATH = MARKET_ROOT / "total_round_paper_decisions.csv"
@@ -939,6 +947,30 @@ def update_market_performance() -> dict[str, object]:
         SOURCE_METADATA_CSV_PATH, SOURCE_METADATA_JSONL_PATH
     )
     decisions = decision_store.read()
+    simulation_comparison_store = SimulationComparisonDecisionStore(
+        SIMULATION_COMPARISON_CSV_PATH,
+        SIMULATION_COMPARISON_JSONL_PATH,
+    )
+    existing_simulation_comparisons = simulation_comparison_store.read()
+    simulation_publication: dict[str, object] | None = None
+    if SIMULATION_FORECAST_PATH.is_file():
+        try:
+            loaded_simulation = json.loads(
+                SIMULATION_FORECAST_PATH.read_text(encoding="utf-8")
+            )
+            simulation_publication = (
+                loaded_simulation if isinstance(loaded_simulation, dict) else {}
+            )
+        except (OSError, UnicodeError, json.JSONDecodeError):
+            simulation_publication = {}
+    comparison_build = build_simulation_comparison_decisions(
+        decisions,
+        existing_simulation_comparisons,
+        simulation_publication,
+        comparison_issued_at_utc=datetime.now(timezone.utc),
+    )
+    simulation_comparison_store.append(comparison_build.decisions)
+    simulation_comparisons = simulation_comparison_store.read()
     bayesian_filter_exists = (
         BAYESIAN_FILTER_DECISION_CSV_PATH.exists(),
         BAYESIAN_FILTER_DECISION_JSONL_PATH.exists(),
@@ -1135,7 +1167,7 @@ def update_market_performance() -> dict[str, object]:
         if decision.decision_id in settled_decision_ids
     }
     report_body: dict[str, object] = {
-        "schema_version": 4,
+        "schema_version": 5,
         "betting_status": BETTING_STATUS,
         "paper_only": True,
         "execution_enabled": False,
@@ -1168,6 +1200,14 @@ def update_market_performance() -> dict[str, object]:
         "forecast_comparators": _forecast_comparators(decisions, settlements),
         "prospective_model_market_comparison": prospective_comparison_report(
             decisions, settlements
+        ),
+        "prospective_simulation_comparison": simulation_comparison_report(
+            simulation_comparisons,
+            settlements,
+            decisions,
+        ),
+        "simulation_comparison_dataset_sha256": _dataset_hash(
+            simulation_comparisons
         ),
         "market_relative_log_loss_intervals": {
             "independent_model_vs_market": model_vs_market,

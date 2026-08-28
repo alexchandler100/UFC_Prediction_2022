@@ -250,6 +250,16 @@ the 50/50 weight cannot retune itself, and the test remains paper-only with
 execution disabled. It reuses the already-frozen market records, so it adds no
 API calls, storage service, or paid infrastructure.
 
+A companion paper test includes the simulator whenever its forecast was also
+published before that same T-24 decision. It scores market, model, and
+simulator separately; the three fixed 50/50 pairings; and one equal-third
+blend in log-odds space. Missing or withheld simulations are reported as
+missing coverage and are never filled in after the fight. The frozen records
+live in `market/simulation_comparisons.csv` and `.jsonl`, and their results are
+published under `prospective_simulation_comparison`. This is measurement only:
+no weights are searched, betting remains disabled, and simulator output still
+cannot change production predictions.
+
 The auditable artifacts are:
 
 - `src/content/data/processed/ufc_fights_point_in_time.csv`
@@ -444,8 +454,10 @@ The audit and ledgers are in `src/content/data/market_history_backfill/`.
 ## Evidence-first fight simulation research
 
 The event-sourced Monte Carlo simulator is an independent, candidate-only
-research challenger. It does not replace or blend with the production winner
-model, place wagers, or expose a public arbitrary-matchup service. The website
+research challenger. It does not replace or influence the production winner
+model, place wagers, or expose a public arbitrary-matchup service. Its frozen
+probability can participate in the fixed paper-only comparison described
+above, but that result cannot feed a prediction or market decision. The website
 may display a precomputed, read-only upcoming-card research publication, but
 that publication is explicitly paper-only and has no production influence.
 Its data, causal-fitting, deterministic RNG/replay, evaluation, and promotion
@@ -1136,7 +1148,7 @@ Odds API, appends separate validated quote/forecast/source-timing ledgers,
 freezes any eligible T-24 paper decisions, and publishes a
 bounded audit report, settles any newly completed moneyline and totals
 decisions, and refreshes the return/CLV report plus the fixed prospective
-model/market/blend comparison before strict revalidation. The authoritative update job
+model/market and simulator-inclusive comparisons before strict revalidation. The authoritative update job
 and collector share one publisher concurrency group and exact path allowlists;
 the dependent paper-shadow job uses a separate group and cannot delay a price
 capture. The collector creates no live wager.

@@ -1260,6 +1260,17 @@ function setRoute(route) {
   else window.location.hash = hash;
 }
 
+function focusRouteTarget(targetOrSelector, expectedHash = window.location.hash) {
+  const target = typeof targetOrSelector === "string" ? $(targetOrSelector) : targetOrSelector;
+  if (!target) return false;
+  window.requestAnimationFrame(() => {
+    if (!target.isConnected || window.location.hash !== expectedHash) return;
+    target.focus({ preventScroll: true });
+    target.scrollIntoView({ behavior: "smooth", block: "start" });
+  });
+  return true;
+}
+
 function configureGraphMatchup(fighterAId, fighterBId, depth = 1) {
   if (!state.fighterById.has(fighterAId) || !state.fighterById.has(fighterBId) || fighterAId === fighterBId) return false;
   setGraphFilterMode("matchup");
@@ -1649,22 +1660,38 @@ function applyRoute() {
   if (!state.explorer) return;
   const parts = window.location.hash.replace(/^#\/?/, "").split("/").filter(Boolean);
   const view = ["matchups", "fighters", "graph", "simulation", "market", "data"].includes(parts[0]) ? parts[0] : "matchups";
+  const expectedHash = window.location.hash || "#matchups";
   showView(view);
 
   if (view === "graph") {
-    const preparation = prepareFightGraph();
-    if (parts[1] && parts[2] && configureGraphMatchup(parts[1], parts[2], 1)) {
-      const expectedHash = `#graph/${parts[1]}/${parts[2]}`;
-      Promise.resolve(preparation).then(() => {
-        if (window.location.hash === expectedHash && state.fightGraphFilterMode === "matchup") drawFightGraph();
-      });
-    }
+    const matchupRequested = Boolean(parts[1] && parts[2]);
+    const matchupConfigured = matchupRequested && configureGraphMatchup(parts[1], parts[2], 1);
+    focusRouteTarget(matchupConfigured ? "#fight-graph-results" : "#fight-graph-controls", expectedHash);
+    Promise.resolve(prepareFightGraph()).then(async () => {
+      if (window.location.hash !== expectedHash) return;
+      if (matchupConfigured && state.fightGraphFilterMode === "matchup") {
+        await drawFightGraph();
+      }
+    });
+    return;
   }
 
-  if (view === "simulation") prepareSimulationView(parts[1] || "");
+  if (view === "simulation") {
+    const requestedMatchupId = parts[1] || "";
+    focusRouteTarget(requestedMatchupId ? "#simulation-results" : "#simulation-picker", expectedHash);
+    prepareSimulationView(requestedMatchupId);
+    return;
+  }
 
-  if (view === "fighters" && parts[1]) renderFighterProfile(parts[1]);
-  else if (view === "fighters") showFighterDirectory();
+  if (view === "fighters" && parts[1]) {
+    renderFighterProfile(parts[1]);
+    focusRouteTarget("#fighter-profile", expectedHash);
+    return;
+  } else if (view === "fighters") {
+    showFighterDirectory();
+    focusRouteTarget("#fighter-directory-controls", expectedHash);
+    return;
+  }
 
   if (view === "matchups" && parts[1] && parts[2]) {
     const fighterA = state.fighterById.get(parts[1]);
@@ -1673,14 +1700,21 @@ function applyRoute() {
       selectMatchupFighter("a", fighterA);
       selectMatchupFighter("b", fighterB);
       renderMatchup(fighterA, fighterB);
+      focusRouteTarget("#matchup-workbench", expectedHash);
       return;
     }
   }
   if (view === "market") {
     if (parts[1] && parts[2] && focusMarketMatchup(parts[1], parts[2])) return;
     clearMarketMatchupFocus();
+    focusRouteTarget("#market-research-results", expectedHash);
+    return;
   }
-  window.scrollTo({ top: 0, behavior: "smooth" });
+  if (view === "data") {
+    focusRouteTarget("#model-data-content", expectedHash);
+    return;
+  }
+  focusRouteTarget("#current-card-results", expectedHash);
 }
 
 function renderCoverage() {
@@ -2188,7 +2222,7 @@ function renderMatchupMarketContext(fighterA, fighterB) {
   const heading = element("div", "section-heading");
   const copy = element("div"); appendText(copy, "p", "eyebrow", "Current-card context"); appendText(copy, "h2", "", "Model and market");
   appendText(copy, "p", "section-note", "Displayed separately from historical performance so consensus price is never mistaken for the statistical profile.");
-  heading.append(copy, actionButton("Open market research", "secondary-button", () => setRoute("market"))); panel.append(heading);
+  heading.append(copy, actionButton("Open market research", "secondary-button", () => setRoute(`market/${matchup.fighter_id}/${matchup.opponent_id}`))); panel.append(heading);
   const modelFighter = finite(matchup.model_probability_for_fighter);
   const marketFighter = finite(matchup.full_market_consensus?.fighter_probability);
   const aIsFighter = matchup.fighter_id === fighterA.id;

@@ -113,7 +113,8 @@ class SimulationResearchWorkflowContractTests(unittest.TestCase):
         normalized_section = " ".join(section.split())
         for contract in (
             "candidate-only",
-            "does not replace or blend with the production winner model",
+            "does not replace or influence the production winner model",
+            "fixed paper-only comparison",
             "manual-only",
             "upload_compact_artifact",
             "5 MiB hard cap",

@@ -211,6 +211,7 @@ class MarketPerformanceTests(unittest.TestCase):
             paths = {
                 "RAW_PATH": raw_path,
                 "PREDICTION_HISTORY_PATH": prediction_history_path,
+                "SIMULATION_FORECAST_PATH": external_root / "simulation_forecasts.json",
                 "QUOTE_CSV_PATH": market_root / "quote_snapshots.csv",
                 "QUOTE_JSONL_PATH": market_root / "quote_snapshots.jsonl",
                 "SOURCE_METADATA_CSV_PATH": market_root / "quote_source_metadata.csv",
@@ -221,6 +222,8 @@ class MarketPerformanceTests(unittest.TestCase):
                 "BAYESIAN_FILTER_DECISION_JSONL_PATH": market_root / "bayesian_filtered_paper_decisions.jsonl",
                 "SETTLEMENT_CSV_PATH": market_root / "paper_settlements.csv",
                 "SETTLEMENT_JSONL_PATH": market_root / "paper_settlements.jsonl",
+                "SIMULATION_COMPARISON_CSV_PATH": market_root / "simulation_comparisons.csv",
+                "SIMULATION_COMPARISON_JSONL_PATH": market_root / "simulation_comparisons.jsonl",
                 "TOTAL_ROUNDS_QUOTE_CSV_PATH": market_root / "total_round_quote_snapshots.csv",
                 "TOTAL_ROUNDS_QUOTE_JSONL_PATH": market_root / "total_round_quote_snapshots.jsonl",
                 "TOTAL_ROUNDS_DECISION_CSV_PATH": market_root / "total_round_paper_decisions.csv",
@@ -291,13 +294,17 @@ class MarketPerformanceTests(unittest.TestCase):
             persisted = json.loads(paths["REPORT_PATH"].read_text(encoding="utf-8"))
             self.assertEqual(persisted, second)
             self.assertFalse(persisted["execution_enabled"])
-            self.assertEqual(persisted["schema_version"], 4)
+            self.assertEqual(persisted["schema_version"], 5)
             self.assertEqual(
                 persisted["prospective_model_market_comparison"]["status"],
                 "collecting_results",
             )
             self.assertEqual(
                 persisted["prospective_model_market_comparison"]["scored_fights"],
+                0,
+            )
+            self.assertEqual(
+                persisted["prospective_simulation_comparison"]["scored_fights"],
                 0,
             )
             self.assertIn("entry_timing_experiment", persisted)
@@ -436,6 +443,7 @@ class MarketPerformanceTests(unittest.TestCase):
             paths = {
                 "RAW_PATH": raw_path,
                 "PREDICTION_HISTORY_PATH": prediction_history_path,
+                "SIMULATION_FORECAST_PATH": external_root / "simulation_forecasts.json",
                 "QUOTE_CSV_PATH": market_root / "quote_snapshots.csv",
                 "QUOTE_JSONL_PATH": market_root / "quote_snapshots.jsonl",
                 "SOURCE_METADATA_CSV_PATH": market_root / "quote_source_metadata.csv",
@@ -446,6 +454,8 @@ class MarketPerformanceTests(unittest.TestCase):
                 "BAYESIAN_FILTER_DECISION_JSONL_PATH": market_root / "bayesian_filtered_paper_decisions.jsonl",
                 "SETTLEMENT_CSV_PATH": market_root / "paper_settlements.csv",
                 "SETTLEMENT_JSONL_PATH": market_root / "paper_settlements.jsonl",
+                "SIMULATION_COMPARISON_CSV_PATH": market_root / "simulation_comparisons.csv",
+                "SIMULATION_COMPARISON_JSONL_PATH": market_root / "simulation_comparisons.jsonl",
                 "TOTAL_ROUNDS_QUOTE_CSV_PATH": market_root / "total_round_quote_snapshots.csv",
                 "TOTAL_ROUNDS_QUOTE_JSONL_PATH": market_root / "total_round_quote_snapshots.jsonl",
                 "TOTAL_ROUNDS_DECISION_CSV_PATH": market_root / "total_round_paper_decisions.csv",

@@ -102,6 +102,15 @@ from this test. Results are published in `market/performance_report.json` under
 `prospective_model_market_comparison`, with the first formal review after 200
 scored fights across 20 events. This adds no odds requests or paid services.
 
+The same future-only checkpoint also has a separate simulator-inclusive paper
+comparison. On fights where a simulation was already published by T-24, it
+scores the three individual probabilities, all three fixed 50/50 log-odds
+pairings, and an equal-third market/model/simulator log-odds blend. Missing and
+withheld simulations stay missing, no blend weight is fitted after seeing the
+results, and the output cannot alter production. Its immutable records are in
+`market/simulation_comparisons.csv` and `.jsonl`; the aggregate is
+`prospective_simulation_comparison` in `market/performance_report.json`.
+
 The expanded-history-plus-rankings model is not part of that live test yet.
 Its historical improvement was uncertain, it worsened in the latest two years,
 and the repository does not yet have a validated weekly source for all seven

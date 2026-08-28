@@ -2,9 +2,11 @@
 
 ## Status and boundary
 
-The fight simulator is an independent research challenger. It does not replace,
-blend with, or otherwise affect the production winner model, the candidate
-competing-risk outcome model, or market decisions. A read-only website tab may
+The fight simulator is an independent research challenger. It does not replace
+or otherwise affect the production winner model, the candidate competing-risk
+outcome model, or market decisions. Its frozen pre-event winner probability may
+be included in predeclared paper-only comparisons with the model and market;
+those comparisons cannot feed a prediction or decision. A read-only website tab may
 show precomputed candidate distributions for an upcoming card, but it cannot run
 arbitrary public simulations or feed any production decision. The simulator's
 first job is to answer a scientific question: can one causally fitted generative
@@ -395,6 +397,14 @@ fold's coefficients, same-fight log loss/Brier/calibration, event-card block
 intervals, and sensitivity to independent simulation seeds. A favorable
 retrospective flag can freeze a research candidate only; it cannot enable
 production or execution.
+
+Beginning with events on or after 2026-09-01, a simpler prospective comparison
+also freezes the simulator probability at the immutable market T-24 decision,
+but only when that exact matchup's simulation already existed. It scores the
+three inputs, their three fixed equal-weight pairings, and an equal-third
+market/model/simulator pool in log-odds space. Withheld or late simulations are
+never imputed. This measures whether the simulator adds information; it is not
+the fitted stack above and has no production influence.
 
 Production promotion requires at least 200 prospectively settled physical
 fights across 20 events. At a predeclared checkpoint, the event-block 95%
