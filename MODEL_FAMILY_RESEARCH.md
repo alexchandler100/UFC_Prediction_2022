@@ -93,27 +93,44 @@ production posterior intervals.
 - UFC outcomes alone provide limited information for estimating thousands of
   fighter effects plus 82 coefficients.
 
-## Next Bayesian experiment
+## Second Bayesian experiment
 
-The next version should be designed and tuned only on earlier development
-years before it is rescored:
+The planned redesign is now complete. Nine versions were compared on 1,953
+fights from 2019 through 2022. They tested static versus changing fighter
+skill, inclusion versus removal of Elo, ordinary versus feature-group priors,
+and a model with no separate fighter-skill term. Each version used 300 warm-up
+and 300 retained samples in each of two chains for every test year.
 
-1. Replace static ability with a time-evolving fighter state whose uncertainty
-   increases during inactivity and whose mean can change after each fight.
-2. Partially pool fighter states by division and era while retaining one
-   identity across division changes.
-3. Remove Elo variables when latent fighter state is enabled, then compare
-   that version with a coefficients-only Bayesian model to measure whether
-   fighter effects add anything.
-4. Give ratings, physical attributes, activity, striking, and grappling groups
-   separate shrinkage priors. Perform prior-predictive checks before looking at
-   fight outcomes.
-5. Select prior scales and the Bayesian feature group using 2019–2022 only.
-   Treat 2023–2026 as reused development evidence, then require prospective
-   fights for any eventual promotion claim.
-6. Reproduce a bounded subset in PyMC or Stan and compare posterior means and
-   intervals with the direct sampler. This verifies inference; it is not
-   expected to improve predictions by itself.
+The best version kept all 82 variables, removed the extra fighter-skill term,
+and applied tighter priors to the many related strike and grappling variables.
+This matters: the data did not support an additional hidden fighter rating on
+top of the point-in-time variables. Changing that rating after each fight was
+also worse than keeping it static.
+
+The selected version and a 25.5% Bayesian blend weight were frozen before the
+later comparison:
+
+| 2023-August 2026 model | Log loss | Accuracy | Brier score |
+|---|---:|---:|---:|
+| Current logistic | **0.63138** | **64.04%** | **0.22070** |
+| Frozen logistic/Bayesian blend | 0.63164 | **64.04%** | 0.22078 |
+| Improved fully Bayesian probit | 0.63471 | 63.35% | 0.22204 |
+| First hierarchical Bayesian probit | 0.63880 | 62.81% | 0.22413 |
+
+The redesign recovered about 55% of the first Bayesian model's log-loss gap,
+but it did not beat logistic regression. Its point estimate was worse in every
+evaluated year. Whole-event resampling put the Bayesian-minus-logistic
+difference at `+0.00334`, with a 95% range from `-0.00029` to `+0.00707`.
+The blend difference was `+0.00026`, with a range from `-0.00067` to
+`+0.00122`. Those ranges include equal performance, so the new model is not
+proven worse, but there is no evidence to promote or blend it.
+
+This also gives a practical next decision. More elaborate hidden fighter-skill
+states are not the lowest-cost path to better forecasts. If Bayesian work
+continues, the bounded next test should use a logistic link and learn the
+amount of shrinkage for each feature group from the earlier development data.
+A small PyMC or Stan reproduction is still useful to verify the sampler, but
+changing sampler software by itself is not expected to improve predictions.
 
 The nonlinear models also deserve one second-pass experiment using
 family-specific variable selection and causally selected small blend weights.
@@ -132,9 +149,20 @@ python src/evaluate_model_families.py \
   --bayes-burn-in 300 \
   --bayes-draws 300 \
   --bayes-chains 2
+
+python src/evaluate_dynamic_bayes.py \
+  --development-years 2019 2020 2021 2022 \
+  --evaluation-years 2023 2024 2025 2026 \
+  --selection-burn-in 300 \
+  --selection-draws 300 \
+  --final-burn-in 300 \
+  --final-draws 300 \
+  --chains 2
 ```
 
 The run took about 5.2 minutes on the development machine. The JSON report and
 fight-level probabilities are stored under
 `src/content/data/model_research/model_family_comparison.*`. Production model
-artifacts, website predictions, and betting behavior are unchanged.
+artifacts, website predictions, and betting behavior are unchanged. The second
+experiment took 13.8 minutes and wrote
+`src/content/data/model_research/dynamic_bayes_*`.

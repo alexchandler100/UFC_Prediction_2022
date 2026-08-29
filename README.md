@@ -80,9 +80,17 @@ the same chronological fights. Logistic regression retained the best
 probability scores in the first 1,877-fight comparison. The Bayesian model
 samples fighter abilities and population priors rather than wrapping the
 production coefficients, but its first static-ability specification was worse
-in every evaluated year. See [MODEL_FAMILY_RESEARCH.md](MODEL_FAMILY_RESEARCH.md)
-for exact results, limitations, reproduction commands, and the planned dynamic
-Bayesian redesign.
+in every evaluated year.
+
+A second experiment selected among nine Bayesian designs using 1,953 fights
+from 2019–2022, then scored the frozen choice on the 1,877 fights from
+2023–August 2026. The best Bayesian version kept all 82 point-in-time inputs,
+used feature-group priors, and omitted an extra hidden fighter-skill rating.
+It improved log loss from `0.63880` to `0.63471`, but the current logistic model
+remained better at `0.63138`. A development-selected 25.5% Bayesian blend also
+failed to help (`0.63164`). Production behavior is unchanged. See
+[MODEL_FAMILY_RESEARCH.md](MODEL_FAMILY_RESEARCH.md) for exact results,
+limitations, and reproduction commands.
 
 ## External promotion history
 

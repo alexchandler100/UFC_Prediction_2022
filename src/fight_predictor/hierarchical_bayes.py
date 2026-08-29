@@ -29,6 +29,7 @@ class HierarchicalBayesConfig:
     thin: int = 1
     chains: int = 2
     coefficient_prior_scale: float = 0.35
+    grouped_coefficient_priors: bool = False
     ability_variance_shape: float = 2.0
     ability_variance_scale: float = 0.25
     seed: int = 20260829
@@ -48,6 +49,28 @@ class HierarchicalBayesConfig:
 
 
 @dataclass(frozen=True)
+class CoefficientBayesConfig:
+    burn_in: int = 120
+    posterior_draws: int = 120
+    thin: int = 1
+    chains: int = 2
+    coefficient_prior_scale: float = 0.35
+    grouped_coefficient_priors: bool = False
+    seed: int = 20260831
+
+    def __post_init__(self) -> None:
+        if self.burn_in < 1 or self.posterior_draws < 1:
+            raise ValueError("Bayesian burn-in and posterior draws must be positive")
+        if self.thin < 1 or self.chains < 1:
+            raise ValueError("Bayesian thinning and chains must be positive")
+        if not (
+            math.isfinite(self.coefficient_prior_scale)
+            and self.coefficient_prior_scale > 0.0
+        ):
+            raise ValueError("Bayesian coefficient prior must be finite and positive")
+
+
+@dataclass(frozen=True)
 class HierarchicalBayesPrediction:
     probability: np.ndarray
     lower_probability: np.ndarray
@@ -55,12 +78,48 @@ class HierarchicalBayesPrediction:
     diagnostics: dict[str, object]
 
 
+def coefficient_prior_scales(
+    feature_columns: Sequence[str],
+    *,
+    base_scale: float,
+    grouped: bool,
+) -> np.ndarray:
+    """Return fixed prior scales for the standardized feature differences."""
+
+    if not grouped:
+        return np.full(len(feature_columns), float(base_scale), dtype=float)
+    scales: list[float] = []
+    for feature in feature_columns:
+        value = feature.casefold()
+        if "elo" in value or "rating" in value:
+            scale = 0.45
+        elif any(token in value for token in ("age", "height", "reach")):
+            scale = 0.25
+        elif any(
+            token in value
+            for token in ("days_since", "has_history", "fights_log", "known")
+        ):
+            scale = 0.25
+        elif any(
+            token in value
+            for token in ("wins_log", "losses_log", "win_rate", "finish_")
+        ):
+            scale = 0.20
+        else:
+            # Detailed striking and grappling rates are numerous and correlated.
+            scale = 0.15
+        scales.append(scale)
+    return np.asarray(scales, dtype=float)
+
+
 def _rms_scale(values: np.ndarray) -> np.ndarray:
     scale = np.sqrt(np.mean(np.square(values), axis=0))
     return np.where(np.isfinite(scale) & (scale > 1e-12), scale, 1.0)
 
 
-def _validate_frame(frame: pd.DataFrame, features: Sequence[str], *, labels: bool) -> None:
+def _validate_frame(
+    frame: pd.DataFrame, features: Sequence[str], *, labels: bool
+) -> None:
     required = {"fighter_id", "opponent_id", *features}
     if labels:
         required.add("target")
@@ -164,6 +223,133 @@ def _sample_truncated_latent(
     return latent
 
 
+def _one_coefficient_chain(
+    *,
+    training_x: np.ndarray,
+    prediction_x: np.ndarray,
+    target: np.ndarray,
+    prior_scales: np.ndarray,
+    config: CoefficientBayesConfig,
+    seed: int,
+) -> np.ndarray:
+    """Sample a Bayesian probit model without a separate fighter-skill term."""
+
+    rng = np.random.Generator(np.random.PCG64DXSM(seed))
+    coefficient_count = training_x.shape[1]
+    precision = training_x.T @ training_x
+    precision.flat[:: coefficient_count + 1] += 1.0 / np.square(prior_scales)
+    try:
+        cholesky = np.linalg.cholesky(precision)
+    except np.linalg.LinAlgError as error:
+        raise ValueError(
+            "Bayesian coefficient precision is not positive definite"
+        ) from error
+    coefficients = np.zeros(coefficient_count, dtype=float)
+    total_iterations = config.burn_in + config.posterior_draws * config.thin
+    predictions: list[np.ndarray] = []
+    for iteration in range(total_iterations):
+        latent = _sample_truncated_latent(
+            rng, training_x @ coefficients, target
+        )
+        rhs = training_x.T @ latent
+        mean = np.linalg.solve(
+            cholesky.T,
+            np.linalg.solve(cholesky, rhs),
+        )
+        coefficients = mean + np.linalg.solve(
+            cholesky.T, rng.normal(size=coefficient_count)
+        )
+        if iteration < config.burn_in or (iteration - config.burn_in) % config.thin:
+            continue
+        predictions.append(ndtr(prediction_x @ coefficients))
+    draws = np.asarray(predictions, dtype=float)
+    if draws.shape != (config.posterior_draws, len(prediction_x)):
+        raise RuntimeError("Bayesian sampler retained an unexpected number of draws")
+    return draws
+
+
+def coefficient_bayes_predict(
+    training: pd.DataFrame,
+    prediction: pd.DataFrame,
+    feature_columns: Sequence[str],
+    *,
+    config: CoefficientBayesConfig | None = None,
+) -> HierarchicalBayesPrediction:
+    """Fit a fully Bayesian coefficient-only probit winner model."""
+
+    selected = config or CoefficientBayesConfig()
+    features = tuple(feature_columns)
+    if not features:
+        raise ValueError("Bayesian fight model needs at least one feature")
+    _validate_frame(training, features, labels=True)
+    _validate_frame(prediction, features, labels=False)
+    raw_training = _numeric_matrix(training, features)
+    raw_prediction = _numeric_matrix(prediction, features)
+    scale = _rms_scale(raw_training)
+    training_x = raw_training / scale
+    prediction_x = raw_prediction / scale
+    target = training["target"].to_numpy(dtype=int)
+    prior_scales = coefficient_prior_scales(
+        features,
+        base_scale=selected.coefficient_prior_scale,
+        grouped=selected.grouped_coefficient_priors,
+    )
+    chain_draws = [
+        _one_coefficient_chain(
+            training_x=training_x,
+            prediction_x=prediction_x,
+            target=target,
+            prior_scales=prior_scales,
+            config=selected,
+            seed=selected.seed + chain * 1_000_003,
+        )
+        for chain in range(selected.chains)
+    ]
+    all_draws = np.concatenate(chain_draws, axis=0)
+    chain_means = np.asarray([np.mean(draws, axis=0) for draws in chain_draws])
+    chain_differences = (
+        np.ptp(chain_means, axis=0)
+        if selected.chains > 1
+        else np.asarray([], dtype=float)
+    )
+    probability = np.mean(all_draws, axis=0)
+    lower = np.quantile(all_draws, 0.05, axis=0)
+    upper = np.quantile(all_draws, 0.95, axis=0)
+    if not (
+        np.isfinite(probability).all()
+        and np.isfinite(lower).all()
+        and np.isfinite(upper).all()
+    ):
+        raise RuntimeError("Bayesian posterior prediction is non-finite")
+    return HierarchicalBayesPrediction(
+        probability=probability,
+        lower_probability=lower,
+        upper_probability=upper,
+        diagnostics={
+            "model": "coefficient_only_bayesian_probit",
+            "training_fights": len(training),
+            "features": len(features),
+            "chains": selected.chains,
+            "burn_in_per_chain": selected.burn_in,
+            "posterior_draws_per_chain": selected.posterior_draws,
+            "thin": selected.thin,
+            "total_retained_draws": len(all_draws),
+            "grouped_coefficient_priors": selected.grouped_coefficient_priors,
+            "maximum_absolute_chain_mean_probability_difference": (
+                float(np.max(chain_differences)) if len(chain_differences) else None
+            ),
+            "mean_absolute_chain_mean_probability_difference": (
+                float(np.mean(chain_differences)) if len(chain_differences) else None
+            ),
+            "p95_absolute_chain_mean_probability_difference": (
+                float(np.quantile(chain_differences, 0.95))
+                if len(chain_differences)
+                else None
+            ),
+        },
+    )
+
+
 def _one_chain(
     *,
     training_x: np.ndarray,
@@ -175,18 +361,20 @@ def _one_chain(
     predict_opponent: np.ndarray,
     fighter_count: int,
     unseen_fighter_count: int,
+    prior_scales: np.ndarray,
     config: HierarchicalBayesConfig,
     seed: int,
 ) -> tuple[np.ndarray, np.ndarray, list[float]]:
     rng = np.random.Generator(np.random.PCG64DXSM(seed))
     coefficient_count = training_x.shape[1]
-    prior_precision = 1.0 / config.coefficient_prior_scale**2
     precision = training_x.T @ training_x
-    precision.flat[:: coefficient_count + 1] += prior_precision
+    precision.flat[:: coefficient_count + 1] += 1.0 / np.square(prior_scales)
     try:
         precision_cholesky = np.linalg.cholesky(precision)
     except np.linalg.LinAlgError as error:
-        raise ValueError("Bayesian coefficient precision is not positive definite") from error
+        raise ValueError(
+            "Bayesian coefficient precision is not positive definite"
+        ) from error
 
     as_fighter, as_opponent = _incidence_lists(
         train_fighter, train_opponent, fighter_count
@@ -311,6 +499,11 @@ def hierarchical_bayes_predict(
         unseen_identities,
     ) = _fighter_indices(training, prediction)
     target = training["target"].to_numpy(dtype=int)
+    prior_scales = coefficient_prior_scales(
+        features,
+        base_scale=selected.coefficient_prior_scale,
+        grouped=selected.grouped_coefficient_priors,
+    )
 
     chain_draws: list[np.ndarray] = []
     chain_means: list[np.ndarray] = []
@@ -326,6 +519,7 @@ def hierarchical_bayes_predict(
             predict_opponent=predict_opponent,
             fighter_count=len(identities),
             unseen_fighter_count=len(unseen_identities),
+            prior_scales=prior_scales,
             config=selected,
             seed=selected.seed + chain * 1_000_003,
         )
@@ -366,7 +560,9 @@ def hierarchical_bayes_predict(
             "thin": selected.thin,
             "total_retained_draws": int(len(all_draws)),
             "coefficient_prior": (
-                f"independent Normal(0, {selected.coefficient_prior_scale:g}^2)"
+                "predeclared feature-group scales"
+                if selected.grouped_coefficient_priors
+                else f"independent Normal(0, {selected.coefficient_prior_scale:g}^2)"
             ),
             "fighter_ability_prior": (
                 "Normal(0, population_variance); population variance has an "

@@ -1,0 +1,1532 @@
+{
+  "created_at_utc": "2026-08-29T18:58:05+00:00",
+  "development": {
+    "events": 168,
+    "fights": 1953,
+    "metrics": {
+      "coefficient_only_all_features": {
+        "accuracy": 0.6072708653353814,
+        "auc": 0.6407490701133486,
+        "brier": 0.23487315883312165,
+        "ece_10_bin": 0.022191140231244806,
+        "fights": 1953,
+        "log_loss": 0.6620836603709708
+      },
+      "coefficient_only_all_features_grouped_priors": {
+        "accuracy": 0.6026625704045059,
+        "auc": 0.6412494152151065,
+        "brier": 0.2347277269627437,
+        "ece_10_bin": 0.0192830018455942,
+        "fights": 1953,
+        "log_loss": 0.6617058609252774
+      },
+      "current_logistic": {
+        "accuracy": 0.6139272913466461,
+        "auc": 0.646908454678384,
+        "brier": 0.23374692806141528,
+        "ece_10_bin": 0.0390185222428356,
+        "fights": 1953,
+        "log_loss": 0.65970779395523
+      },
+      "dynamic_all_features": {
+        "accuracy": 0.5980542754736303,
+        "auc": 0.6386092294265857,
+        "brier": 0.23519985886780895,
+        "ece_10_bin": 0.016452785661116118,
+        "fights": 1953,
+        "log_loss": 0.6627408569491363
+      },
+      "dynamic_without_elo": {
+        "accuracy": 0.6036866359447005,
+        "auc": 0.6287470813202397,
+        "brier": 0.23722786627391845,
+        "ece_10_bin": 0.027951599508382836,
+        "fights": 1953,
+        "log_loss": 0.6668766113962893
+      },
+      "dynamic_without_elo_grouped_priors": {
+        "accuracy": 0.6067588325652842,
+        "auc": 0.6327687230815384,
+        "brier": 0.23635772207813474,
+        "ece_10_bin": 0.020654355437069945,
+        "fights": 1953,
+        "log_loss": 0.6650426576191233
+      },
+      "selected_blend": {
+        "accuracy": 0.6123911930363544,
+        "auc": 0.6462623067063026,
+        "brier": 0.23366145398815655,
+        "ece_10_bin": 0.035749434831921174,
+        "fights": 1953,
+        "log_loss": 0.6594524158552924
+      },
+      "static_all_features": {
+        "accuracy": 0.6041986687147978,
+        "auc": 0.6396036259810226,
+        "brier": 0.2354231574156261,
+        "ece_10_bin": 0.022141352992800532,
+        "fights": 1953,
+        "log_loss": 0.6633538220589268
+      },
+      "static_all_features_grouped_priors": {
+        "accuracy": 0.6006144393241167,
+        "auc": 0.6401826416962643,
+        "brier": 0.23504159832411334,
+        "ece_10_bin": 0.018211543175996686,
+        "fights": 1953,
+        "log_loss": 0.6624449202818877
+      },
+      "static_without_elo": {
+        "accuracy": 0.6041986687147978,
+        "auc": 0.6375949029833995,
+        "brier": 0.235928413735648,
+        "ece_10_bin": 0.032244735660089736,
+        "fights": 1953,
+        "log_loss": 0.6645204068913455
+      },
+      "static_without_elo_grouped_priors": {
+        "accuracy": 0.6062467997951869,
+        "auc": 0.6384833564450113,
+        "brier": 0.23549494605165736,
+        "ece_10_bin": 0.02521993425638095,
+        "fights": 1953,
+        "log_loss": 0.6634219512561861
+      }
+    },
+    "selected_bayes_weight_in_log_odds_blend": 0.2549993984286673,
+    "selected_variant": "coefficient_only_all_features_grouped_priors",
+    "selection_sampler": {
+      "burn_in_per_chain": 300,
+      "chains": 2,
+      "draws_per_chain": 300
+    },
+    "variants": {
+      "coefficient_only_all_features": {
+        "calibrated_metrics": {
+          "accuracy": 0.6072708653353814,
+          "auc": 0.6407490701133486,
+          "brier": 0.23487315883312165,
+          "ece_10_bin": 0.022191140231244806,
+          "fights": 1953,
+          "log_loss": 0.6620836603709708
+        },
+        "development_calibration_slope": 0.7436480774268,
+        "feature_count": 82,
+        "raw_metrics": {
+          "accuracy": 0.6072708653353814,
+          "auc": 0.6407490701133486,
+          "brier": 0.2359803561891564,
+          "ece_10_bin": 0.031248453080300845,
+          "fights": 1953,
+          "log_loss": 0.6652589642896938
+        },
+        "variant": {
+          "coefficient_only": true,
+          "dynamic": false,
+          "grouped_priors": false,
+          "include_elo": true,
+          "key": "coefficient_only_all_features"
+        },
+        "years": {
+          "2019": {
+            "sampler": {
+              "burn_in_per_chain": 300,
+              "chains": 2,
+              "features": 82,
+              "grouped_coefficient_priors": false,
+              "maximum_absolute_chain_mean_probability_difference": 0.030039243145659422,
+              "mean_absolute_chain_mean_probability_difference": 0.0054811914573049715,
+              "model": "coefficient_only_bayesian_probit",
+              "p95_absolute_chain_mean_probability_difference": 0.014226081064747043,
+              "posterior_draws_per_chain": 300,
+              "thin": 1,
+              "total_retained_draws": 600,
+              "training_fights": 3823
+            },
+            "test_fights": 506,
+            "training_fights": 3823,
+            "training_through": "2018-12-29"
+          },
+          "2020": {
+            "sampler": {
+              "burn_in_per_chain": 300,
+              "chains": 2,
+              "features": 82,
+              "grouped_coefficient_priors": false,
+              "maximum_absolute_chain_mean_probability_difference": 0.028881282290172283,
+              "mean_absolute_chain_mean_probability_difference": 0.006675343375954036,
+              "model": "coefficient_only_bayesian_probit",
+              "p95_absolute_chain_mean_probability_difference": 0.017339528494841154,
+              "posterior_draws_per_chain": 300,
+              "thin": 1,
+              "total_retained_draws": 600,
+              "training_fights": 4116
+            },
+            "test_fights": 444,
+            "training_fights": 4116,
+            "training_through": "2019-12-21"
+          },
+          "2021": {
+            "sampler": {
+              "burn_in_per_chain": 300,
+              "chains": 2,
+              "features": 82,
+              "grouped_coefficient_priors": false,
+              "maximum_absolute_chain_mean_probability_difference": 0.038072952123744064,
+              "mean_absolute_chain_mean_probability_difference": 0.0064833803877510435,
+              "model": "coefficient_only_bayesian_probit",
+              "p95_absolute_chain_mean_probability_difference": 0.016855994265670988,
+              "posterior_draws_per_chain": 300,
+              "thin": 1,
+              "total_retained_draws": 600,
+              "training_fights": 4310
+            },
+            "test_fights": 497,
+            "training_fights": 4310,
+            "training_through": "2020-12-19"
+          },
+          "2022": {
+            "sampler": {
+              "burn_in_per_chain": 300,
+              "chains": 2,
+              "features": 82,
+              "grouped_coefficient_priors": false,
+              "maximum_absolute_chain_mean_probability_difference": 0.03352909685815658,
+              "mean_absolute_chain_mean_probability_difference": 0.00602397368184039,
+              "model": "coefficient_only_bayesian_probit",
+              "p95_absolute_chain_mean_probability_difference": 0.015576426035196725,
+              "posterior_draws_per_chain": 300,
+              "thin": 1,
+              "total_retained_draws": 600,
+              "training_fights": 4512
+            },
+            "test_fights": 506,
+            "training_fights": 4512,
+            "training_through": "2021-12-18"
+          }
+        }
+      },
+      "coefficient_only_all_features_grouped_priors": {
+        "calibrated_metrics": {
+          "accuracy": 0.6026625704045059,
+          "auc": 0.6412494152151065,
+          "brier": 0.2347277269627437,
+          "ece_10_bin": 0.0192830018455942,
+          "fights": 1953,
+          "log_loss": 0.6617058609252774
+        },
+        "development_calibration_slope": 0.763860691453516,
+        "feature_count": 82,
+        "raw_metrics": {
+          "accuracy": 0.6026625704045059,
+          "auc": 0.6412494152151065,
+          "brier": 0.23566829279548,
+          "ece_10_bin": 0.03251609022231504,
+          "fights": 1953,
+          "log_loss": 0.664304006183626
+        },
+        "variant": {
+          "coefficient_only": true,
+          "dynamic": false,
+          "grouped_priors": true,
+          "include_elo": true,
+          "key": "coefficient_only_all_features_grouped_priors"
+        },
+        "years": {
+          "2019": {
+            "sampler": {
+              "burn_in_per_chain": 300,
+              "chains": 2,
+              "features": 82,
+              "grouped_coefficient_priors": true,
+              "maximum_absolute_chain_mean_probability_difference": 0.03742759345576552,
+              "mean_absolute_chain_mean_probability_difference": 0.007912804743301504,
+              "model": "coefficient_only_bayesian_probit",
+              "p95_absolute_chain_mean_probability_difference": 0.019643292628241826,
+              "posterior_draws_per_chain": 300,
+              "thin": 1,
+              "total_retained_draws": 600,
+              "training_fights": 3823
+            },
+            "test_fights": 506,
+            "training_fights": 3823,
+            "training_through": "2018-12-29"
+          },
+          "2020": {
+            "sampler": {
+              "burn_in_per_chain": 300,
+              "chains": 2,
+              "features": 82,
+              "grouped_coefficient_priors": true,
+              "maximum_absolute_chain_mean_probability_difference": 0.026683439409231235,
+              "mean_absolute_chain_mean_probability_difference": 0.006756111681593244,
+              "model": "coefficient_only_bayesian_probit",
+              "p95_absolute_chain_mean_probability_difference": 0.017116276138994392,
+              "posterior_draws_per_chain": 300,
+              "thin": 1,
+              "total_retained_draws": 600,
+              "training_fights": 4116
+            },
+            "test_fights": 444,
+            "training_fights": 4116,
+            "training_through": "2019-12-21"
+          },
+          "2021": {
+            "sampler": {
+              "burn_in_per_chain": 300,
+              "chains": 2,
+              "features": 82,
+              "grouped_coefficient_priors": true,
+              "maximum_absolute_chain_mean_probability_difference": 0.02533140509274512,
+              "mean_absolute_chain_mean_probability_difference": 0.005585085225926414,
+              "model": "coefficient_only_bayesian_probit",
+              "p95_absolute_chain_mean_probability_difference": 0.015808291612554527,
+              "posterior_draws_per_chain": 300,
+              "thin": 1,
+              "total_retained_draws": 600,
+              "training_fights": 4310
+            },
+            "test_fights": 497,
+            "training_fights": 4310,
+            "training_through": "2020-12-19"
+          },
+          "2022": {
+            "sampler": {
+              "burn_in_per_chain": 300,
+              "chains": 2,
+              "features": 82,
+              "grouped_coefficient_priors": true,
+              "maximum_absolute_chain_mean_probability_difference": 0.025748211998806336,
+              "mean_absolute_chain_mean_probability_difference": 0.005516386205102649,
+              "model": "coefficient_only_bayesian_probit",
+              "p95_absolute_chain_mean_probability_difference": 0.013898936884604668,
+              "posterior_draws_per_chain": 300,
+              "thin": 1,
+              "total_retained_draws": 600,
+              "training_fights": 4512
+            },
+            "test_fights": 506,
+            "training_fights": 4512,
+            "training_through": "2021-12-18"
+          }
+        }
+      },
+      "dynamic_all_features": {
+        "calibrated_metrics": {
+          "accuracy": 0.5980542754736303,
+          "auc": 0.6386092294265857,
+          "brier": 0.23519985886780895,
+          "ece_10_bin": 0.016452785661116118,
+          "fights": 1953,
+          "log_loss": 0.6627408569491363
+        },
+        "development_calibration_slope": 0.7182881018030857,
+        "feature_count": 82,
+        "raw_metrics": {
+          "accuracy": 0.5980542754736303,
+          "auc": 0.6386092294265857,
+          "brier": 0.23661590264680654,
+          "ece_10_bin": 0.030182750066927083,
+          "fights": 1953,
+          "log_loss": 0.666744238346807
+        },
+        "variant": {
+          "coefficient_only": false,
+          "dynamic": true,
+          "grouped_priors": false,
+          "include_elo": true,
+          "key": "dynamic_all_features"
+        },
+        "years": {
+          "2019": {
+            "sampler": {
+              "burn_in_per_chain": 300,
+              "chains": 2,
+              "features": 82,
+              "fighter_appearance_states": 7646,
+              "fighters_in_posterior": 1446,
+              "future_state_uncertainty": "known fighter variance grows with time since the last training fight; unseen fighters integrate over the initial population prior",
+              "grouped_coefficient_priors": false,
+              "maximum_absolute_chain_mean_probability_difference": 0.3012014624871435,
+              "mean_absolute_chain_mean_probability_difference": 0.051892340207592244,
+              "mean_annual_ability_drift_scale": 0.08666130351886521,
+              "mean_initial_fighter_scale": 0.16695522297230572,
+              "model": "dynamic_hierarchical_probit",
+              "p95_absolute_chain_mean_probability_difference": 0.17086316830120837,
+              "posterior_draws_per_chain": 300,
+              "total_retained_draws": 600,
+              "training_fights": 3823
+            },
+            "test_fights": 506,
+            "training_fights": 3823,
+            "training_through": "2018-12-29"
+          },
+          "2020": {
+            "sampler": {
+              "burn_in_per_chain": 300,
+              "chains": 2,
+              "features": 82,
+              "fighter_appearance_states": 8232,
+              "fighters_in_posterior": 1520,
+              "future_state_uncertainty": "known fighter variance grows with time since the last training fight; unseen fighters integrate over the initial population prior",
+              "grouped_coefficient_priors": false,
+              "maximum_absolute_chain_mean_probability_difference": 0.2949013424552757,
+              "mean_absolute_chain_mean_probability_difference": 0.05125574917560275,
+              "mean_annual_ability_drift_scale": 0.10076621983589171,
+              "mean_initial_fighter_scale": 0.18411877710348817,
+              "model": "dynamic_hierarchical_probit",
+              "p95_absolute_chain_mean_probability_difference": 0.15277945636296555,
+              "posterior_draws_per_chain": 300,
+              "total_retained_draws": 600,
+              "training_fights": 4116
+            },
+            "test_fights": 444,
+            "training_fights": 4116,
+            "training_through": "2019-12-21"
+          },
+          "2021": {
+            "sampler": {
+              "burn_in_per_chain": 300,
+              "chains": 2,
+              "features": 82,
+              "fighter_appearance_states": 8620,
+              "fighters_in_posterior": 1579,
+              "future_state_uncertainty": "known fighter variance grows with time since the last training fight; unseen fighters integrate over the initial population prior",
+              "grouped_coefficient_priors": false,
+              "maximum_absolute_chain_mean_probability_difference": 0.2519294326348611,
+              "mean_absolute_chain_mean_probability_difference": 0.053216658658781175,
+              "mean_annual_ability_drift_scale": 0.10398524651332121,
+              "mean_initial_fighter_scale": 0.1735997765005467,
+              "model": "dynamic_hierarchical_probit",
+              "p95_absolute_chain_mean_probability_difference": 0.16936438000024936,
+              "posterior_draws_per_chain": 300,
+              "total_retained_draws": 600,
+              "training_fights": 4310
+            },
+            "test_fights": 497,
+            "training_fights": 4310,
+            "training_through": "2020-12-19"
+          },
+          "2022": {
+            "sampler": {
+              "burn_in_per_chain": 300,
+              "chains": 2,
+              "features": 82,
+              "fighter_appearance_states": 9024,
+              "fighters_in_posterior": 1606,
+              "future_state_uncertainty": "known fighter variance grows with time since the last training fight; unseen fighters integrate over the initial population prior",
+              "grouped_coefficient_priors": false,
+              "maximum_absolute_chain_mean_probability_difference": 0.2209651957385092,
+              "mean_absolute_chain_mean_probability_difference": 0.04149501940391137,
+              "mean_annual_ability_drift_scale": 0.08607326826319955,
+              "mean_initial_fighter_scale": 0.13663893466265772,
+              "model": "dynamic_hierarchical_probit",
+              "p95_absolute_chain_mean_probability_difference": 0.11946232848950772,
+              "posterior_draws_per_chain": 300,
+              "total_retained_draws": 600,
+              "training_fights": 4512
+            },
+            "test_fights": 506,
+            "training_fights": 4512,
+            "training_through": "2021-12-18"
+          }
+        }
+      },
+      "dynamic_without_elo": {
+        "calibrated_metrics": {
+          "accuracy": 0.6036866359447005,
+          "auc": 0.6287470813202397,
+          "brier": 0.23722786627391845,
+          "ece_10_bin": 0.027951599508382836,
+          "fights": 1953,
+          "log_loss": 0.6668766113962893
+        },
+        "development_calibration_slope": 0.7416506199094576,
+        "feature_count": 73,
+        "raw_metrics": {
+          "accuracy": 0.6036866359447005,
+          "auc": 0.6287470813202397,
+          "brier": 0.238322193532129,
+          "ece_10_bin": 0.03272008864768233,
+          "fights": 1953,
+          "log_loss": 0.6696801299838879
+        },
+        "variant": {
+          "coefficient_only": false,
+          "dynamic": true,
+          "grouped_priors": false,
+          "include_elo": false,
+          "key": "dynamic_without_elo"
+        },
+        "years": {
+          "2019": {
+            "sampler": {
+              "burn_in_per_chain": 300,
+              "chains": 2,
+              "features": 73,
+              "fighter_appearance_states": 7646,
+              "fighters_in_posterior": 1446,
+              "future_state_uncertainty": "known fighter variance grows with time since the last training fight; unseen fighters integrate over the initial population prior",
+              "grouped_coefficient_priors": false,
+              "maximum_absolute_chain_mean_probability_difference": 0.25202001184783673,
+              "mean_absolute_chain_mean_probability_difference": 0.04702108902120778,
+              "mean_annual_ability_drift_scale": 0.10622959882981316,
+              "mean_initial_fighter_scale": 0.15797406371773975,
+              "model": "dynamic_hierarchical_probit",
+              "p95_absolute_chain_mean_probability_difference": 0.14260362349465544,
+              "posterior_draws_per_chain": 300,
+              "total_retained_draws": 600,
+              "training_fights": 3823
+            },
+            "test_fights": 506,
+            "training_fights": 3823,
+            "training_through": "2018-12-29"
+          },
+          "2020": {
+            "sampler": {
+              "burn_in_per_chain": 300,
+              "chains": 2,
+              "features": 73,
+              "fighter_appearance_states": 8232,
+              "fighters_in_posterior": 1520,
+              "future_state_uncertainty": "known fighter variance grows with time since the last training fight; unseen fighters integrate over the initial population prior",
+              "grouped_coefficient_priors": false,
+              "maximum_absolute_chain_mean_probability_difference": 0.22315840680338897,
+              "mean_absolute_chain_mean_probability_difference": 0.0470990114294841,
+              "mean_annual_ability_drift_scale": 0.10710642299671226,
+              "mean_initial_fighter_scale": 0.1720545631233789,
+              "model": "dynamic_hierarchical_probit",
+              "p95_absolute_chain_mean_probability_difference": 0.1441684454878543,
+              "posterior_draws_per_chain": 300,
+              "total_retained_draws": 600,
+              "training_fights": 4116
+            },
+            "test_fights": 444,
+            "training_fights": 4116,
+            "training_through": "2019-12-21"
+          },
+          "2021": {
+            "sampler": {
+              "burn_in_per_chain": 300,
+              "chains": 2,
+              "features": 73,
+              "fighter_appearance_states": 8620,
+              "fighters_in_posterior": 1579,
+              "future_state_uncertainty": "known fighter variance grows with time since the last training fight; unseen fighters integrate over the initial population prior",
+              "grouped_coefficient_priors": false,
+              "maximum_absolute_chain_mean_probability_difference": 0.2570716955360094,
+              "mean_absolute_chain_mean_probability_difference": 0.044160308842558005,
+              "mean_annual_ability_drift_scale": 0.09661159752318392,
+              "mean_initial_fighter_scale": 0.15833733404054404,
+              "model": "dynamic_hierarchical_probit",
+              "p95_absolute_chain_mean_probability_difference": 0.13805308697324917,
+              "posterior_draws_per_chain": 300,
+              "total_retained_draws": 600,
+              "training_fights": 4310
+            },
+            "test_fights": 497,
+            "training_fights": 4310,
+            "training_through": "2020-12-19"
+          },
+          "2022": {
+            "sampler": {
+              "burn_in_per_chain": 300,
+              "chains": 2,
+              "features": 73,
+              "fighter_appearance_states": 9024,
+              "fighters_in_posterior": 1606,
+              "future_state_uncertainty": "known fighter variance grows with time since the last training fight; unseen fighters integrate over the initial population prior",
+              "grouped_coefficient_priors": false,
+              "maximum_absolute_chain_mean_probability_difference": 0.3014779566339841,
+              "mean_absolute_chain_mean_probability_difference": 0.049840262770917604,
+              "mean_annual_ability_drift_scale": 0.1152010987110136,
+              "mean_initial_fighter_scale": 0.15943427416289915,
+              "model": "dynamic_hierarchical_probit",
+              "p95_absolute_chain_mean_probability_difference": 0.14949305319751724,
+              "posterior_draws_per_chain": 300,
+              "total_retained_draws": 600,
+              "training_fights": 4512
+            },
+            "test_fights": 506,
+            "training_fights": 4512,
+            "training_through": "2021-12-18"
+          }
+        }
+      },
+      "dynamic_without_elo_grouped_priors": {
+        "calibrated_metrics": {
+          "accuracy": 0.6067588325652842,
+          "auc": 0.6327687230815384,
+          "brier": 0.23635772207813474,
+          "ece_10_bin": 0.020654355437069945,
+          "fights": 1953,
+          "log_loss": 0.6650426576191233
+        },
+        "development_calibration_slope": 0.8024744283498625,
+        "feature_count": 73,
+        "raw_metrics": {
+          "accuracy": 0.6067588325652842,
+          "auc": 0.6327687230815384,
+          "brier": 0.2369501452496507,
+          "ece_10_bin": 0.02292276351472709,
+          "fights": 1953,
+          "log_loss": 0.6665496482139591
+        },
+        "variant": {
+          "coefficient_only": false,
+          "dynamic": true,
+          "grouped_priors": true,
+          "include_elo": false,
+          "key": "dynamic_without_elo_grouped_priors"
+        },
+        "years": {
+          "2019": {
+            "sampler": {
+              "burn_in_per_chain": 300,
+              "chains": 2,
+              "features": 73,
+              "fighter_appearance_states": 7646,
+              "fighters_in_posterior": 1446,
+              "future_state_uncertainty": "known fighter variance grows with time since the last training fight; unseen fighters integrate over the initial population prior",
+              "grouped_coefficient_priors": true,
+              "maximum_absolute_chain_mean_probability_difference": 0.2876576066963792,
+              "mean_absolute_chain_mean_probability_difference": 0.04827303324684675,
+              "mean_annual_ability_drift_scale": 0.10120899211786262,
+              "mean_initial_fighter_scale": 0.17443114658400455,
+              "model": "dynamic_hierarchical_probit",
+              "p95_absolute_chain_mean_probability_difference": 0.15715030971130364,
+              "posterior_draws_per_chain": 300,
+              "total_retained_draws": 600,
+              "training_fights": 3823
+            },
+            "test_fights": 506,
+            "training_fights": 3823,
+            "training_through": "2018-12-29"
+          },
+          "2020": {
+            "sampler": {
+              "burn_in_per_chain": 300,
+              "chains": 2,
+              "features": 73,
+              "fighter_appearance_states": 8232,
+              "fighters_in_posterior": 1520,
+              "future_state_uncertainty": "known fighter variance grows with time since the last training fight; unseen fighters integrate over the initial population prior",
+              "grouped_coefficient_priors": true,
+              "maximum_absolute_chain_mean_probability_difference": 0.3947083404968761,
+              "mean_absolute_chain_mean_probability_difference": 0.046146155375440194,
+              "mean_annual_ability_drift_scale": 0.10628125264454491,
+              "mean_initial_fighter_scale": 0.14897419414961316,
+              "model": "dynamic_hierarchical_probit",
+              "p95_absolute_chain_mean_probability_difference": 0.15320922444209528,
+              "posterior_draws_per_chain": 300,
+              "total_retained_draws": 600,
+              "training_fights": 4116
+            },
+            "test_fights": 444,
+            "training_fights": 4116,
+            "training_through": "2019-12-21"
+          },
+          "2021": {
+            "sampler": {
+              "burn_in_per_chain": 300,
+              "chains": 2,
+              "features": 73,
+              "fighter_appearance_states": 8620,
+              "fighters_in_posterior": 1579,
+              "future_state_uncertainty": "known fighter variance grows with time since the last training fight; unseen fighters integrate over the initial population prior",
+              "grouped_coefficient_priors": true,
+              "maximum_absolute_chain_mean_probability_difference": 0.22655391096611543,
+              "mean_absolute_chain_mean_probability_difference": 0.05016870604329717,
+              "mean_annual_ability_drift_scale": 0.09242032878481041,
+              "mean_initial_fighter_scale": 0.16588361134248508,
+              "model": "dynamic_hierarchical_probit",
+              "p95_absolute_chain_mean_probability_difference": 0.14489442520580392,
+              "posterior_draws_per_chain": 300,
+              "total_retained_draws": 600,
+              "training_fights": 4310
+            },
+            "test_fights": 497,
+            "training_fights": 4310,
+            "training_through": "2020-12-19"
+          },
+          "2022": {
+            "sampler": {
+              "burn_in_per_chain": 300,
+              "chains": 2,
+              "features": 73,
+              "fighter_appearance_states": 9024,
+              "fighters_in_posterior": 1606,
+              "future_state_uncertainty": "known fighter variance grows with time since the last training fight; unseen fighters integrate over the initial population prior",
+              "grouped_coefficient_priors": true,
+              "maximum_absolute_chain_mean_probability_difference": 0.3348178733501652,
+              "mean_absolute_chain_mean_probability_difference": 0.05147735570472266,
+              "mean_annual_ability_drift_scale": 0.10569082955889018,
+              "mean_initial_fighter_scale": 0.16154229027489406,
+              "model": "dynamic_hierarchical_probit",
+              "p95_absolute_chain_mean_probability_difference": 0.15519240986633503,
+              "posterior_draws_per_chain": 300,
+              "total_retained_draws": 600,
+              "training_fights": 4512
+            },
+            "test_fights": 506,
+            "training_fights": 4512,
+            "training_through": "2021-12-18"
+          }
+        }
+      },
+      "static_all_features": {
+        "calibrated_metrics": {
+          "accuracy": 0.6041986687147978,
+          "auc": 0.6396036259810226,
+          "brier": 0.2354231574156261,
+          "ece_10_bin": 0.022141352992800532,
+          "fights": 1953,
+          "log_loss": 0.6633538220589268
+        },
+        "development_calibration_slope": 0.695433230382083,
+        "feature_count": 82,
+        "raw_metrics": {
+          "accuracy": 0.6041986687147978,
+          "auc": 0.6396036259810226,
+          "brier": 0.23706120287933705,
+          "ece_10_bin": 0.029003502765203148,
+          "fights": 1953,
+          "log_loss": 0.6682418310506029
+        },
+        "variant": {
+          "coefficient_only": false,
+          "dynamic": false,
+          "grouped_priors": false,
+          "include_elo": true,
+          "key": "static_all_features"
+        },
+        "years": {
+          "2019": {
+            "sampler": {
+              "burn_in_per_chain": 300,
+              "chains": 2,
+              "coefficient_prior": "independent Normal(0, 0.35^2)",
+              "features": 82,
+              "fighter_ability_prior": "Normal(0, population_variance); population variance has an inverse-gamma prior and is sampled",
+              "fighters_in_posterior": 1446,
+              "maximum_absolute_chain_mean_probability_difference": 0.0697086566564235,
+              "mean_absolute_chain_mean_probability_difference": 0.017114076116778287,
+              "mean_posterior_fighter_ability_scale": 0.5515308519299916,
+              "model": "hierarchical_probit_with_fighter_random_effects",
+              "p95_absolute_chain_mean_probability_difference": 0.04008284275573962,
+              "posterior_draws_per_chain": 300,
+              "thin": 1,
+              "total_retained_draws": 600,
+              "training_fights": 3823,
+              "unseen_fighter_ability": "sampled from Normal(0, population_variance) in every posterior draw",
+              "unseen_prediction_fighters_integrated_over_population_prior": 136
+            },
+            "test_fights": 506,
+            "training_fights": 3823,
+            "training_through": "2018-12-29"
+          },
+          "2020": {
+            "sampler": {
+              "burn_in_per_chain": 300,
+              "chains": 2,
+              "coefficient_prior": "independent Normal(0, 0.35^2)",
+              "features": 82,
+              "fighter_ability_prior": "Normal(0, population_variance); population variance has an inverse-gamma prior and is sampled",
+              "fighters_in_posterior": 1520,
+              "maximum_absolute_chain_mean_probability_difference": 0.08077544424519001,
+              "mean_absolute_chain_mean_probability_difference": 0.022004529835817688,
+              "mean_posterior_fighter_ability_scale": 0.4278374170276844,
+              "model": "hierarchical_probit_with_fighter_random_effects",
+              "p95_absolute_chain_mean_probability_difference": 0.05348375342318837,
+              "posterior_draws_per_chain": 300,
+              "thin": 1,
+              "total_retained_draws": 600,
+              "training_fights": 4116,
+              "unseen_fighter_ability": "sampled from Normal(0, population_variance) in every posterior draw",
+              "unseen_prediction_fighters_integrated_over_population_prior": 125
+            },
+            "test_fights": 444,
+            "training_fights": 4116,
+            "training_through": "2019-12-21"
+          },
+          "2021": {
+            "sampler": {
+              "burn_in_per_chain": 300,
+              "chains": 2,
+              "coefficient_prior": "independent Normal(0, 0.35^2)",
+              "features": 82,
+              "fighter_ability_prior": "Normal(0, population_variance); population variance has an inverse-gamma prior and is sampled",
+              "fighters_in_posterior": 1579,
+              "maximum_absolute_chain_mean_probability_difference": 0.09033135386172031,
+              "mean_absolute_chain_mean_probability_difference": 0.020956334299001268,
+              "mean_posterior_fighter_ability_scale": 0.4143692756823326,
+              "model": "hierarchical_probit_with_fighter_random_effects",
+              "p95_absolute_chain_mean_probability_difference": 0.05193575109016173,
+              "posterior_draws_per_chain": 300,
+              "thin": 1,
+              "total_retained_draws": 600,
+              "training_fights": 4310,
+              "unseen_fighter_ability": "sampled from Normal(0, population_variance) in every posterior draw",
+              "unseen_prediction_fighters_integrated_over_population_prior": 94
+            },
+            "test_fights": 497,
+            "training_fights": 4310,
+            "training_through": "2020-12-19"
+          },
+          "2022": {
+            "sampler": {
+              "burn_in_per_chain": 300,
+              "chains": 2,
+              "coefficient_prior": "independent Normal(0, 0.35^2)",
+              "features": 82,
+              "fighter_ability_prior": "Normal(0, population_variance); population variance has an inverse-gamma prior and is sampled",
+              "fighters_in_posterior": 1606,
+              "maximum_absolute_chain_mean_probability_difference": 0.053534705064684884,
+              "mean_absolute_chain_mean_probability_difference": 0.013593025211958517,
+              "mean_posterior_fighter_ability_scale": 0.3494813353379117,
+              "model": "hierarchical_probit_with_fighter_random_effects",
+              "p95_absolute_chain_mean_probability_difference": 0.034427344683493524,
+              "posterior_draws_per_chain": 300,
+              "thin": 1,
+              "total_retained_draws": 600,
+              "training_fights": 4512,
+              "unseen_fighter_ability": "sampled from Normal(0, population_variance) in every posterior draw",
+              "unseen_prediction_fighters_integrated_over_population_prior": 97
+            },
+            "test_fights": 506,
+            "training_fights": 4512,
+            "training_through": "2021-12-18"
+          }
+        }
+      },
+      "static_all_features_grouped_priors": {
+        "calibrated_metrics": {
+          "accuracy": 0.6006144393241167,
+          "auc": 0.6401826416962643,
+          "brier": 0.23504159832411334,
+          "ece_10_bin": 0.018211543175996686,
+          "fights": 1953,
+          "log_loss": 0.6624449202818877
+        },
+        "development_calibration_slope": 0.7333117411562861,
+        "feature_count": 82,
+        "raw_metrics": {
+          "accuracy": 0.6006144393241167,
+          "auc": 0.6401826416962643,
+          "brier": 0.23626040879801521,
+          "ece_10_bin": 0.025504963433795,
+          "fights": 1953,
+          "log_loss": 0.6659373477799234
+        },
+        "variant": {
+          "coefficient_only": false,
+          "dynamic": false,
+          "grouped_priors": true,
+          "include_elo": true,
+          "key": "static_all_features_grouped_priors"
+        },
+        "years": {
+          "2019": {
+            "sampler": {
+              "burn_in_per_chain": 300,
+              "chains": 2,
+              "coefficient_prior": "predeclared feature-group scales",
+              "features": 82,
+              "fighter_ability_prior": "Normal(0, population_variance); population variance has an inverse-gamma prior and is sampled",
+              "fighters_in_posterior": 1446,
+              "maximum_absolute_chain_mean_probability_difference": 0.09911273024738187,
+              "mean_absolute_chain_mean_probability_difference": 0.025124973305938818,
+              "mean_posterior_fighter_ability_scale": 0.4094903974605032,
+              "model": "hierarchical_probit_with_fighter_random_effects",
+              "p95_absolute_chain_mean_probability_difference": 0.06412307011551445,
+              "posterior_draws_per_chain": 300,
+              "thin": 1,
+              "total_retained_draws": 600,
+              "training_fights": 3823,
+              "unseen_fighter_ability": "sampled from Normal(0, population_variance) in every posterior draw",
+              "unseen_prediction_fighters_integrated_over_population_prior": 136
+            },
+            "test_fights": 506,
+            "training_fights": 3823,
+            "training_through": "2018-12-29"
+          },
+          "2020": {
+            "sampler": {
+              "burn_in_per_chain": 300,
+              "chains": 2,
+              "coefficient_prior": "predeclared feature-group scales",
+              "features": 82,
+              "fighter_ability_prior": "Normal(0, population_variance); population variance has an inverse-gamma prior and is sampled",
+              "fighters_in_posterior": 1520,
+              "maximum_absolute_chain_mean_probability_difference": 0.061028327498083124,
+              "mean_absolute_chain_mean_probability_difference": 0.017101539584990687,
+              "mean_posterior_fighter_ability_scale": 0.4145309152110646,
+              "model": "hierarchical_probit_with_fighter_random_effects",
+              "p95_absolute_chain_mean_probability_difference": 0.043258263660528214,
+              "posterior_draws_per_chain": 300,
+              "thin": 1,
+              "total_retained_draws": 600,
+              "training_fights": 4116,
+              "unseen_fighter_ability": "sampled from Normal(0, population_variance) in every posterior draw",
+              "unseen_prediction_fighters_integrated_over_population_prior": 125
+            },
+            "test_fights": 444,
+            "training_fights": 4116,
+            "training_through": "2019-12-21"
+          },
+          "2021": {
+            "sampler": {
+              "burn_in_per_chain": 300,
+              "chains": 2,
+              "coefficient_prior": "predeclared feature-group scales",
+              "features": 82,
+              "fighter_ability_prior": "Normal(0, population_variance); population variance has an inverse-gamma prior and is sampled",
+              "fighters_in_posterior": 1579,
+              "maximum_absolute_chain_mean_probability_difference": 0.05394706394739851,
+              "mean_absolute_chain_mean_probability_difference": 0.01299418680274518,
+              "mean_posterior_fighter_ability_scale": 0.361373928467964,
+              "model": "hierarchical_probit_with_fighter_random_effects",
+              "p95_absolute_chain_mean_probability_difference": 0.030442737282042963,
+              "posterior_draws_per_chain": 300,
+              "thin": 1,
+              "total_retained_draws": 600,
+              "training_fights": 4310,
+              "unseen_fighter_ability": "sampled from Normal(0, population_variance) in every posterior draw",
+              "unseen_prediction_fighters_integrated_over_population_prior": 94
+            },
+            "test_fights": 497,
+            "training_fights": 4310,
+            "training_through": "2020-12-19"
+          },
+          "2022": {
+            "sampler": {
+              "burn_in_per_chain": 300,
+              "chains": 2,
+              "coefficient_prior": "predeclared feature-group scales",
+              "features": 82,
+              "fighter_ability_prior": "Normal(0, population_variance); population variance has an inverse-gamma prior and is sampled",
+              "fighters_in_posterior": 1606,
+              "maximum_absolute_chain_mean_probability_difference": 0.056127889791258045,
+              "mean_absolute_chain_mean_probability_difference": 0.011879189217081929,
+              "mean_posterior_fighter_ability_scale": 0.3465687105936601,
+              "model": "hierarchical_probit_with_fighter_random_effects",
+              "p95_absolute_chain_mean_probability_difference": 0.03056673228307849,
+              "posterior_draws_per_chain": 300,
+              "thin": 1,
+              "total_retained_draws": 600,
+              "training_fights": 4512,
+              "unseen_fighter_ability": "sampled from Normal(0, population_variance) in every posterior draw",
+              "unseen_prediction_fighters_integrated_over_population_prior": 97
+            },
+            "test_fights": 506,
+            "training_fights": 4512,
+            "training_through": "2021-12-18"
+          }
+        }
+      },
+      "static_without_elo": {
+        "calibrated_metrics": {
+          "accuracy": 0.6041986687147978,
+          "auc": 0.6375949029833995,
+          "brier": 0.235928413735648,
+          "ece_10_bin": 0.032244735660089736,
+          "fights": 1953,
+          "log_loss": 0.6645204068913455
+        },
+        "development_calibration_slope": 0.7345368147915058,
+        "feature_count": 73,
+        "raw_metrics": {
+          "accuracy": 0.6041986687147978,
+          "auc": 0.6375949029833995,
+          "brier": 0.23699071966740673,
+          "ece_10_bin": 0.0292182604720888,
+          "fights": 1953,
+          "log_loss": 0.6677799812197718
+        },
+        "variant": {
+          "coefficient_only": false,
+          "dynamic": false,
+          "grouped_priors": false,
+          "include_elo": false,
+          "key": "static_without_elo"
+        },
+        "years": {
+          "2019": {
+            "sampler": {
+              "burn_in_per_chain": 300,
+              "chains": 2,
+              "coefficient_prior": "independent Normal(0, 0.35^2)",
+              "features": 73,
+              "fighter_ability_prior": "Normal(0, population_variance); population variance has an inverse-gamma prior and is sampled",
+              "fighters_in_posterior": 1446,
+              "maximum_absolute_chain_mean_probability_difference": 0.05918472492885629,
+              "mean_absolute_chain_mean_probability_difference": 0.0166466503738537,
+              "mean_posterior_fighter_ability_scale": 0.5024945483379804,
+              "model": "hierarchical_probit_with_fighter_random_effects",
+              "p95_absolute_chain_mean_probability_difference": 0.038280627507085455,
+              "posterior_draws_per_chain": 300,
+              "thin": 1,
+              "total_retained_draws": 600,
+              "training_fights": 3823,
+              "unseen_fighter_ability": "sampled from Normal(0, population_variance) in every posterior draw",
+              "unseen_prediction_fighters_integrated_over_population_prior": 136
+            },
+            "test_fights": 506,
+            "training_fights": 3823,
+            "training_through": "2018-12-29"
+          },
+          "2020": {
+            "sampler": {
+              "burn_in_per_chain": 300,
+              "chains": 2,
+              "coefficient_prior": "independent Normal(0, 0.35^2)",
+              "features": 73,
+              "fighter_ability_prior": "Normal(0, population_variance); population variance has an inverse-gamma prior and is sampled",
+              "fighters_in_posterior": 1520,
+              "maximum_absolute_chain_mean_probability_difference": 0.06821796188617496,
+              "mean_absolute_chain_mean_probability_difference": 0.0181462127067845,
+              "mean_posterior_fighter_ability_scale": 0.5078054126885725,
+              "model": "hierarchical_probit_with_fighter_random_effects",
+              "p95_absolute_chain_mean_probability_difference": 0.04392764922006851,
+              "posterior_draws_per_chain": 300,
+              "thin": 1,
+              "total_retained_draws": 600,
+              "training_fights": 4116,
+              "unseen_fighter_ability": "sampled from Normal(0, population_variance) in every posterior draw",
+              "unseen_prediction_fighters_integrated_over_population_prior": 125
+            },
+            "test_fights": 444,
+            "training_fights": 4116,
+            "training_through": "2019-12-21"
+          },
+          "2021": {
+            "sampler": {
+              "burn_in_per_chain": 300,
+              "chains": 2,
+              "coefficient_prior": "independent Normal(0, 0.35^2)",
+              "features": 73,
+              "fighter_ability_prior": "Normal(0, population_variance); population variance has an inverse-gamma prior and is sampled",
+              "fighters_in_posterior": 1579,
+              "maximum_absolute_chain_mean_probability_difference": 0.0772228471568136,
+              "mean_absolute_chain_mean_probability_difference": 0.020364604786097126,
+              "mean_posterior_fighter_ability_scale": 0.5266277433130807,
+              "model": "hierarchical_probit_with_fighter_random_effects",
+              "p95_absolute_chain_mean_probability_difference": 0.05023598432629597,
+              "posterior_draws_per_chain": 300,
+              "thin": 1,
+              "total_retained_draws": 600,
+              "training_fights": 4310,
+              "unseen_fighter_ability": "sampled from Normal(0, population_variance) in every posterior draw",
+              "unseen_prediction_fighters_integrated_over_population_prior": 94
+            },
+            "test_fights": 497,
+            "training_fights": 4310,
+            "training_through": "2020-12-19"
+          },
+          "2022": {
+            "sampler": {
+              "burn_in_per_chain": 300,
+              "chains": 2,
+              "coefficient_prior": "independent Normal(0, 0.35^2)",
+              "features": 73,
+              "fighter_ability_prior": "Normal(0, population_variance); population variance has an inverse-gamma prior and is sampled",
+              "fighters_in_posterior": 1606,
+              "maximum_absolute_chain_mean_probability_difference": 0.0723593132584951,
+              "mean_absolute_chain_mean_probability_difference": 0.0169586203277392,
+              "mean_posterior_fighter_ability_scale": 0.46663743727955337,
+              "model": "hierarchical_probit_with_fighter_random_effects",
+              "p95_absolute_chain_mean_probability_difference": 0.041221927842863784,
+              "posterior_draws_per_chain": 300,
+              "thin": 1,
+              "total_retained_draws": 600,
+              "training_fights": 4512,
+              "unseen_fighter_ability": "sampled from Normal(0, population_variance) in every posterior draw",
+              "unseen_prediction_fighters_integrated_over_population_prior": 97
+            },
+            "test_fights": 506,
+            "training_fights": 4512,
+            "training_through": "2021-12-18"
+          }
+        }
+      },
+      "static_without_elo_grouped_priors": {
+        "calibrated_metrics": {
+          "accuracy": 0.6062467997951869,
+          "auc": 0.6384833564450113,
+          "brier": 0.23549494605165736,
+          "ece_10_bin": 0.02521993425638095,
+          "fights": 1953,
+          "log_loss": 0.6634219512561861
+        },
+        "development_calibration_slope": 0.7838728443746361,
+        "feature_count": 73,
+        "raw_metrics": {
+          "accuracy": 0.6062467997951869,
+          "auc": 0.6384833564450113,
+          "brier": 0.2361934061875292,
+          "ece_10_bin": 0.030205436512840196,
+          "fights": 1953,
+          "log_loss": 0.6654046219111329
+        },
+        "variant": {
+          "coefficient_only": false,
+          "dynamic": false,
+          "grouped_priors": true,
+          "include_elo": false,
+          "key": "static_without_elo_grouped_priors"
+        },
+        "years": {
+          "2019": {
+            "sampler": {
+              "burn_in_per_chain": 300,
+              "chains": 2,
+              "coefficient_prior": "predeclared feature-group scales",
+              "features": 73,
+              "fighter_ability_prior": "Normal(0, population_variance); population variance has an inverse-gamma prior and is sampled",
+              "fighters_in_posterior": 1446,
+              "maximum_absolute_chain_mean_probability_difference": 0.09083109937847228,
+              "mean_absolute_chain_mean_probability_difference": 0.020014258005994254,
+              "mean_posterior_fighter_ability_scale": 0.4919132783592646,
+              "model": "hierarchical_probit_with_fighter_random_effects",
+              "p95_absolute_chain_mean_probability_difference": 0.05137626209666277,
+              "posterior_draws_per_chain": 300,
+              "thin": 1,
+              "total_retained_draws": 600,
+              "training_fights": 3823,
+              "unseen_fighter_ability": "sampled from Normal(0, population_variance) in every posterior draw",
+              "unseen_prediction_fighters_integrated_over_population_prior": 136
+            },
+            "test_fights": 506,
+            "training_fights": 3823,
+            "training_through": "2018-12-29"
+          },
+          "2020": {
+            "sampler": {
+              "burn_in_per_chain": 300,
+              "chains": 2,
+              "coefficient_prior": "predeclared feature-group scales",
+              "features": 73,
+              "fighter_ability_prior": "Normal(0, population_variance); population variance has an inverse-gamma prior and is sampled",
+              "fighters_in_posterior": 1520,
+              "maximum_absolute_chain_mean_probability_difference": 0.0698175400006843,
+              "mean_absolute_chain_mean_probability_difference": 0.019308404168888037,
+              "mean_posterior_fighter_ability_scale": 0.4602298893211082,
+              "model": "hierarchical_probit_with_fighter_random_effects",
+              "p95_absolute_chain_mean_probability_difference": 0.04619080476004763,
+              "posterior_draws_per_chain": 300,
+              "thin": 1,
+              "total_retained_draws": 600,
+              "training_fights": 4116,
+              "unseen_fighter_ability": "sampled from Normal(0, population_variance) in every posterior draw",
+              "unseen_prediction_fighters_integrated_over_population_prior": 125
+            },
+            "test_fights": 444,
+            "training_fights": 4116,
+            "training_through": "2019-12-21"
+          },
+          "2021": {
+            "sampler": {
+              "burn_in_per_chain": 300,
+              "chains": 2,
+              "coefficient_prior": "predeclared feature-group scales",
+              "features": 73,
+              "fighter_ability_prior": "Normal(0, population_variance); population variance has an inverse-gamma prior and is sampled",
+              "fighters_in_posterior": 1579,
+              "maximum_absolute_chain_mean_probability_difference": 0.07323054695058967,
+              "mean_absolute_chain_mean_probability_difference": 0.01668462113386323,
+              "mean_posterior_fighter_ability_scale": 0.47330295229232755,
+              "model": "hierarchical_probit_with_fighter_random_effects",
+              "p95_absolute_chain_mean_probability_difference": 0.04403371299247719,
+              "posterior_draws_per_chain": 300,
+              "thin": 1,
+              "total_retained_draws": 600,
+              "training_fights": 4310,
+              "unseen_fighter_ability": "sampled from Normal(0, population_variance) in every posterior draw",
+              "unseen_prediction_fighters_integrated_over_population_prior": 94
+            },
+            "test_fights": 497,
+            "training_fights": 4310,
+            "training_through": "2020-12-19"
+          },
+          "2022": {
+            "sampler": {
+              "burn_in_per_chain": 300,
+              "chains": 2,
+              "coefficient_prior": "predeclared feature-group scales",
+              "features": 73,
+              "fighter_ability_prior": "Normal(0, population_variance); population variance has an inverse-gamma prior and is sampled",
+              "fighters_in_posterior": 1606,
+              "maximum_absolute_chain_mean_probability_difference": 0.06934814588037158,
+              "mean_absolute_chain_mean_probability_difference": 0.014388357971445387,
+              "mean_posterior_fighter_ability_scale": 0.4079029452466783,
+              "model": "hierarchical_probit_with_fighter_random_effects",
+              "p95_absolute_chain_mean_probability_difference": 0.034651934113710675,
+              "posterior_draws_per_chain": 300,
+              "thin": 1,
+              "total_retained_draws": 600,
+              "training_fights": 4512,
+              "unseen_fighter_ability": "sampled from Normal(0, population_variance) in every posterior draw",
+              "unseen_prediction_fighters_integrated_over_population_prior": 97
+            },
+            "test_fights": 506,
+            "training_fights": 4512,
+            "training_through": "2021-12-18"
+          }
+        }
+      }
+    },
+    "years": [
+      2019,
+      2020,
+      2021,
+      2022
+    ]
+  },
+  "elapsed_seconds": 830.0160000000033,
+  "evaluation": {
+    "bayes_minus_logistic_log_loss": 0.0033386905233797615,
+    "blend_minus_logistic_log_loss": 0.00026016816758722694,
+    "events": 155,
+    "feature_count": 82,
+    "fights": 1877,
+    "folds": {
+      "2023": {
+        "calibration_slope": 0.9310076769607469,
+        "final_sampler": {
+          "burn_in_per_chain": 300,
+          "chains": 2,
+          "features": 82,
+          "grouped_coefficient_priors": true,
+          "maximum_absolute_chain_mean_probability_difference": 0.02841685158491636,
+          "mean_absolute_chain_mean_probability_difference": 0.004077108486874739,
+          "model": "coefficient_only_bayesian_probit",
+          "p95_absolute_chain_mean_probability_difference": 0.010619368648388831,
+          "posterior_draws_per_chain": 300,
+          "thin": 1,
+          "total_retained_draws": 600,
+          "training_fights": 4685
+        },
+        "fit_fights": 4179,
+        "fit_through": "2021-12-18",
+        "inner_sampler": {
+          "burn_in_per_chain": 300,
+          "chains": 2,
+          "features": 82,
+          "grouped_coefficient_priors": true,
+          "maximum_absolute_chain_mean_probability_difference": 0.030296728305968634,
+          "mean_absolute_chain_mean_probability_difference": 0.006117899276450617,
+          "model": "coefficient_only_bayesian_probit",
+          "p95_absolute_chain_mean_probability_difference": 0.016123864508148206,
+          "posterior_draws_per_chain": 300,
+          "thin": 1,
+          "total_retained_draws": 600,
+          "training_fights": 4179
+        },
+        "test_fights": 504,
+        "training_fights": 4685,
+        "validation_fights": 506,
+        "validation_year": 2022
+      },
+      "2024": {
+        "calibration_slope": 0.8424477487301172,
+        "final_sampler": {
+          "burn_in_per_chain": 300,
+          "chains": 2,
+          "features": 82,
+          "grouped_coefficient_priors": true,
+          "maximum_absolute_chain_mean_probability_difference": 0.0307002707200007,
+          "mean_absolute_chain_mean_probability_difference": 0.0043136417706883725,
+          "model": "coefficient_only_bayesian_probit",
+          "p95_absolute_chain_mean_probability_difference": 0.01147977688843316,
+          "posterior_draws_per_chain": 300,
+          "thin": 1,
+          "total_retained_draws": 600,
+          "training_fights": 4813
+        },
+        "fit_fights": 4309,
+        "fit_through": "2022-12-17",
+        "inner_sampler": {
+          "burn_in_per_chain": 300,
+          "chains": 2,
+          "features": 82,
+          "grouped_coefficient_priors": true,
+          "maximum_absolute_chain_mean_probability_difference": 0.03292581077187928,
+          "mean_absolute_chain_mean_probability_difference": 0.005674215861991542,
+          "model": "coefficient_only_bayesian_probit",
+          "p95_absolute_chain_mean_probability_difference": 0.014878476972441051,
+          "posterior_draws_per_chain": 300,
+          "thin": 1,
+          "total_retained_draws": 600,
+          "training_fights": 4309
+        },
+        "test_fights": 513,
+        "training_fights": 4813,
+        "validation_fights": 504,
+        "validation_year": 2023
+      },
+      "2025": {
+        "calibration_slope": 1.2164423304987668,
+        "final_sampler": {
+          "burn_in_per_chain": 300,
+          "chains": 2,
+          "features": 82,
+          "grouped_coefficient_priors": true,
+          "maximum_absolute_chain_mean_probability_difference": 0.02384542408081325,
+          "mean_absolute_chain_mean_probability_difference": 0.004735813960260713,
+          "model": "coefficient_only_bayesian_probit",
+          "p95_absolute_chain_mean_probability_difference": 0.012137891980162052,
+          "posterior_draws_per_chain": 300,
+          "thin": 1,
+          "total_retained_draws": 600,
+          "training_fights": 4832
+        },
+        "fit_fights": 4319,
+        "fit_through": "2023-12-16",
+        "inner_sampler": {
+          "burn_in_per_chain": 300,
+          "chains": 2,
+          "features": 82,
+          "grouped_coefficient_priors": true,
+          "maximum_absolute_chain_mean_probability_difference": 0.028467691414487684,
+          "mean_absolute_chain_mean_probability_difference": 0.005293849941448286,
+          "model": "coefficient_only_bayesian_probit",
+          "p95_absolute_chain_mean_probability_difference": 0.013453065281877372,
+          "posterior_draws_per_chain": 300,
+          "thin": 1,
+          "total_retained_draws": 600,
+          "training_fights": 4319
+        },
+        "test_fights": 514,
+        "training_fights": 4832,
+        "validation_fights": 513,
+        "validation_year": 2024
+      },
+      "2026": {
+        "calibration_slope": 1.0377404316343672,
+        "final_sampler": {
+          "burn_in_per_chain": 300,
+          "chains": 2,
+          "features": 82,
+          "grouped_coefficient_priors": true,
+          "maximum_absolute_chain_mean_probability_difference": 0.03066605046677595,
+          "mean_absolute_chain_mean_probability_difference": 0.005079000562080999,
+          "model": "coefficient_only_bayesian_probit",
+          "p95_absolute_chain_mean_probability_difference": 0.013543476266340282,
+          "posterior_draws_per_chain": 300,
+          "thin": 1,
+          "total_retained_draws": 600,
+          "training_fights": 4882
+        },
+        "fit_fights": 4368,
+        "fit_through": "2024-12-14",
+        "inner_sampler": {
+          "burn_in_per_chain": 300,
+          "chains": 2,
+          "features": 82,
+          "grouped_coefficient_priors": true,
+          "maximum_absolute_chain_mean_probability_difference": 0.030355436244931477,
+          "mean_absolute_chain_mean_probability_difference": 0.005258364097826571,
+          "model": "coefficient_only_bayesian_probit",
+          "p95_absolute_chain_mean_probability_difference": 0.01332586707364758,
+          "posterior_draws_per_chain": 300,
+          "thin": 1,
+          "total_retained_draws": 600,
+          "training_fights": 4368
+        },
+        "test_fights": 346,
+        "training_fights": 4882,
+        "validation_fights": 514,
+        "validation_year": 2025
+      }
+    },
+    "metrics": {
+      "current_logistic": {
+        "accuracy": 0.6403835908364411,
+        "auc": 0.6971739051327305,
+        "brier": 0.22070059107620524,
+        "ece_10_bin": 0.024517491163701725,
+        "fights": 1877,
+        "log_loss": 0.6313760447767583
+      },
+      "development_selected_blend": {
+        "accuracy": 0.6403835908364411,
+        "auc": 0.6971955113626026,
+        "brier": 0.22078014577068072,
+        "ece_10_bin": 0.027189293491867716,
+        "fights": 1877,
+        "log_loss": 0.6316362129443456
+      },
+      "selected_bayes": {
+        "accuracy": 0.6334576451784762,
+        "auc": 0.6930846418369389,
+        "brier": 0.2220411153344091,
+        "ece_10_bin": 0.034668376591612676,
+        "fights": 1877,
+        "log_loss": 0.6347147353001381
+      }
+    },
+    "paired_log_loss_intervals": {
+      "development_selected_blend_minus_current_logistic": {
+        "bootstrap_samples": 10000,
+        "ci_95_lower": -0.0006693634000653264,
+        "ci_95_upper": 0.0012161608077396555,
+        "definition": "selected_logistic_bayes_blend_probability minus current_logistic_probability paired log loss; negative favors candidate",
+        "event_count": 155,
+        "fight_count": 1877,
+        "method": "nonparametric whole-event block bootstrap",
+        "point_difference": 0.0002601681675871433,
+        "seed": 20260822
+      },
+      "selected_bayes_minus_current_logistic": {
+        "bootstrap_samples": 10000,
+        "ci_95_lower": -0.0002889235135336294,
+        "ci_95_upper": 0.007067979526682459,
+        "definition": "selected_bayes_probability minus current_logistic_probability paired log loss; negative favors candidate",
+        "event_count": 155,
+        "fight_count": 1877,
+        "method": "nonparametric whole-event block bootstrap",
+        "point_difference": 0.003338690523379722,
+        "seed": 20260822
+      }
+    },
+    "per_year": {
+      "2023": {
+        "current_logistic": {
+          "accuracy": 0.6111111111111112,
+          "auc": 0.6633522727272727,
+          "brier": 0.22909236321991958,
+          "ece_10_bin": 0.038396190935394654,
+          "fights": 504,
+          "log_loss": 0.6485268842635092
+        },
+        "development_selected_blend": {
+          "accuracy": 0.6150793650793651,
+          "auc": 0.6621843434343434,
+          "brier": 0.2291641518159704,
+          "ece_10_bin": 0.03351591055782823,
+          "fights": 504,
+          "log_loss": 0.6486687355581768
+        },
+        "selected_bayes": {
+          "accuracy": 0.5952380952380952,
+          "auc": 0.6542455808080807,
+          "brier": 0.2307504919994699,
+          "ece_10_bin": 0.042739359081171505,
+          "fights": 504,
+          "log_loss": 0.6519758349293394
+        }
+      },
+      "2024": {
+        "current_logistic": {
+          "accuracy": 0.6510721247563352,
+          "auc": 0.7064016316093878,
+          "brier": 0.21800131578382315,
+          "ece_10_bin": 0.055696688878456024,
+          "fights": 513,
+          "log_loss": 0.6256764848382201
+        },
+        "development_selected_blend": {
+          "accuracy": 0.6413255360623782,
+          "auc": 0.7094913396852456,
+          "brier": 0.217905853761093,
+          "ece_10_bin": 0.05609164908476731,
+          "fights": 513,
+          "log_loss": 0.6257472222295358
+        },
+        "selected_bayes": {
+          "accuracy": 0.6432748538011696,
+          "auc": 0.7120026787616816,
+          "brier": 0.21873339573952452,
+          "ece_10_bin": 0.05509646510076385,
+          "fights": 513,
+          "log_loss": 0.6281455388070618
+        }
+      },
+      "2025": {
+        "current_logistic": {
+          "accuracy": 0.6536964980544747,
+          "auc": 0.7117981359399863,
+          "brier": 0.2167366021542195,
+          "ece_10_bin": 0.04170481501081931,
+          "fights": 514,
+          "log_loss": 0.6234114835809952
+        },
+        "development_selected_blend": {
+          "accuracy": 0.6556420233463035,
+          "auc": 0.710843373493976,
+          "brier": 0.21689475614477144,
+          "ece_10_bin": 0.03862078434089647,
+          "fights": 514,
+          "log_loss": 0.623761631746665
+        },
+        "selected_bayes": {
+          "accuracy": 0.6556420233463035,
+          "auc": 0.705236038493597,
+          "brier": 0.21838628289397913,
+          "ece_10_bin": 0.05174727863453412,
+          "fights": 514,
+          "log_loss": 0.6275896759638276
+        }
+      },
+      "2026": {
+        "current_logistic": {
+          "accuracy": 0.6473988439306358,
+          "auc": 0.7061108320776829,
+          "brier": 0.21836754301395275,
+          "ece_10_bin": 0.04758482226593102,
+          "fights": 346,
+          "log_loss": 0.6266755696373653
+        },
+        "development_selected_blend": {
+          "accuracy": 0.653179190751445,
+          "auc": 0.7056755399296836,
+          "brier": 0.21860113716319474,
+          "ece_10_bin": 0.039418455254974005,
+          "fights": 346,
+          "log_loss": 0.6272552752996464
+        },
+        "selected_bayes": {
+          "accuracy": 0.6416184971098265,
+          "auc": 0.7033986271555331,
+          "brier": 0.21968827772564054,
+          "ece_10_bin": 0.04912215337444234,
+          "fights": 346,
+          "log_loss": 0.6298959031807573
+        }
+      }
+    },
+    "selected_variant": {
+      "coefficient_only": true,
+      "dynamic": false,
+      "grouped_priors": true,
+      "include_elo": true,
+      "key": "coefficient_only_all_features_grouped_priors"
+    },
+    "years": [
+      2023,
+      2024,
+      2025,
+      2026
+    ]
+  },
+  "experiment_version": "dynamic-fully-bayesian-winner-v1",
+  "important_limits": [
+    "2019-2022 chose the design and blend weight, so its scores are not an independent result",
+    "2023-2026 was examined in earlier model research and is reused development evidence, not final promotion proof",
+    "posterior intervals omit uncertainty in the separately estimated calibration slope",
+    "production forecasts and betting behavior are unchanged"
+  ],
+  "paper_only": true,
+  "plain_language_conclusion": "The improved Bayesian design did not add useful probability information to the logistic model on the later evaluation fights.",
+  "plain_language_method": "Nine Bayesian designs were compared on 2019-2022 only. The best design and its logistic/Bayesian mixing weight were frozen before scoring 2023-2026. Every yearly forecast used only earlier fights.",
+  "production_action": "none",
+  "report_schema_version": 1,
+  "source_sha256": {
+    "development_detail_logical": "9c8e3cee095095c1db19bc8a4b5e41b19ecbd4bcaec228a1e1e12d1c4a51405f",
+    "evaluation_detail_logical": "e70e88c4e3902877e8df4a181ea867fa6dbd10fd11ed980acab28307b3135925",
+    "fighter_stats": "88341fc47df0dac282a4c91c6f5df4d60e9e5905204eda4ce950459720c01230",
+    "model_artifact": "ff068e2763ecd2a667462bc1afbc7691639719ac5ca049e2df61847ec049b725",
+    "point_in_time": "f9ed863ea627318a3d55e1bf422536c0563fe2e22f8baedb71f6837b27530370",
+    "raw_fights": "6cfb14c9ebcaf2946d942447f4af0166df8b1e5cefa9111edb184b74d7197d49"
+  }
+}
