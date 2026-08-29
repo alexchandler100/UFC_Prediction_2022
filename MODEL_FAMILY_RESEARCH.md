@@ -132,6 +132,48 @@ amount of shrinkage for each feature group from the earlier development data.
 A small PyMC or Stan reproduction is still useful to verify the sampler, but
 changing sampler software by itself is not expected to improve predictions.
 
+## Third Bayesian experiment
+
+The Bayesian logistic follow-up is complete. It keeps the logistic winner
+likelihood but samples all 82 coefficients and the amount of coefficient
+shrinkage. Five prior designs were compared on the same 1,953 fights from
+2019–2022. The selected design learns separate shrinkage amounts for ratings,
+physical attributes, activity/experience, records/results, striking, and
+grappling.
+
+The sampler uses Hamiltonian Monte Carlo with exact accept/reject correction,
+plus exact conditional draws for the six shrinkage variances. It does not need
+PyMC or Stan. On the four later yearly models, the two chains differed by only
+0.13–0.19 percentage points on an average forecast. This is much steadier than
+the earlier slice-sampling attempt and is adequate for the comparison.
+
+The selected Bayesian model and its 54.6% share of a log-odds blend were frozen
+before scoring 2023–August 2026:
+
+| Model | Log loss | Accuracy | Brier score |
+|---|---:|---:|---:|
+| Frozen logistic/Bayesian blend | **0.63132** | 63.83% | **0.22062** |
+| Current logistic | 0.63138 | **64.04%** | 0.22070 |
+| Fully Bayesian logistic | 0.63181 | 63.83% | 0.22076 |
+| Previous Bayesian probit | 0.63471 | 63.35% | 0.22204 |
+
+The blend's log-loss improvement is only `0.00006`. Whole-event resampling
+puts its 95% range from `-0.00128` to `+0.00118`, where negative favors the
+blend. The Bayesian model and blend were worse in 2023–2024 and better in
+2025–2026. Therefore this is an interesting point estimate, not reliable
+evidence of an improvement. It does not justify changing production.
+
+The learned standardized coefficient scales consistently gave physical
+attributes the most freedom (roughly `0.16–0.24`), ratings about `0.10`, and
+record/results the strongest shrinkage (roughly `0.06`). These are useful
+model diagnostics, but they are not standalone measures of feature importance.
+
+Further retrospective tuning on 2023–2026 would increasingly fit research
+choices to known results. The useful next step is to freeze this exact blend
+as paper-only and measure it on genuinely new fights. A production change
+would still require a separate reviewed decision after enough prospective
+evidence.
+
 The nonlinear models also deserve one second-pass experiment using
 family-specific variable selection and causally selected small blend weights.
 That work should remain separate from the Bayesian redesign so a gain can be
@@ -158,6 +200,15 @@ python src/evaluate_dynamic_bayes.py \
   --final-burn-in 300 \
   --final-draws 300 \
   --chains 2
+
+python src/evaluate_bayesian_logistic.py \
+  --development-years 2019 2020 2021 2022 \
+  --evaluation-years 2023 2024 2025 2026 \
+  --selection-burn-in 600 \
+  --selection-draws 600 \
+  --final-burn-in 1000 \
+  --final-draws 1000 \
+  --chains 2
 ```
 
 The run took about 5.2 minutes on the development machine. The JSON report and
@@ -165,4 +216,5 @@ fight-level probabilities are stored under
 `src/content/data/model_research/model_family_comparison.*`. Production model
 artifacts, website predictions, and betting behavior are unchanged. The second
 experiment took 13.8 minutes and wrote
-`src/content/data/model_research/dynamic_bayes_*`.
+`src/content/data/model_research/dynamic_bayes_*`. The third experiment took
+5.4 minutes and wrote `src/content/data/model_research/bayesian_logistic_*`.

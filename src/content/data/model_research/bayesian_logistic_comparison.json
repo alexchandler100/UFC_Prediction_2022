@@ -1,0 +1,2850 @@
+{
+  "created_at_utc": "2026-08-29T19:30:26+00:00",
+  "development": {
+    "events": 168,
+    "fights": 1953,
+    "metrics": {
+      "current_logistic": {
+        "accuracy": 0.6139272913466461,
+        "auc": 0.646908454678384,
+        "brier": 0.23374692806141528,
+        "ece_10_bin": 0.0390185222428356,
+        "fights": 1953,
+        "log_loss": 0.65970779395523
+      },
+      "global_moderate": {
+        "accuracy": 0.6036866359447005,
+        "auc": 0.6417602497319954,
+        "brier": 0.23429073511699217,
+        "ece_10_bin": 0.02622283993884481,
+        "fights": 1953,
+        "log_loss": 0.66059622763406
+      },
+      "grouped_heavy_tailed": {
+        "accuracy": 0.6113671274961597,
+        "auc": 0.6424840193760476,
+        "brier": 0.2340370498662994,
+        "ece_10_bin": 0.032426073441099816,
+        "fights": 1953,
+        "log_loss": 0.6599791733292587
+      },
+      "grouped_moderate": {
+        "accuracy": 0.6113671274961597,
+        "auc": 0.6414948675291763,
+        "brier": 0.23432697801570124,
+        "ece_10_bin": 0.02872907224265873,
+        "fights": 1953,
+        "log_loss": 0.6606324315793702
+      },
+      "grouped_tight": {
+        "accuracy": 0.6113671274961597,
+        "auc": 0.6433556897734496,
+        "brier": 0.2338375223403776,
+        "ece_10_bin": 0.033380437388947255,
+        "fights": 1953,
+        "log_loss": 0.6595397711393938
+      },
+      "grouped_weak": {
+        "accuracy": 0.6031746031746031,
+        "auc": 0.64039977258948,
+        "brier": 0.2346689831733078,
+        "ece_10_bin": 0.02633138435207249,
+        "fights": 1953,
+        "log_loss": 0.6614534091261103
+      },
+      "selected_blend": {
+        "accuracy": 0.611879160266257,
+        "auc": 0.6452689590933789,
+        "brier": 0.2336002882868053,
+        "ece_10_bin": 0.03715822565027452,
+        "fights": 1953,
+        "log_loss": 0.6591259577943183
+      }
+    },
+    "selected_bayesian_weight_in_log_odds_blend": 0.5462639465757038,
+    "selected_variant": "grouped_tight",
+    "selection_sampler": {
+      "burn_in_per_chain": 600,
+      "chains": 2,
+      "draws_per_chain": 600
+    },
+    "variants": {
+      "global_moderate": {
+        "calibrated_metrics": {
+          "accuracy": 0.6036866359447005,
+          "auc": 0.6417602497319954,
+          "brier": 0.23429073511699217,
+          "ece_10_bin": 0.02622283993884481,
+          "fights": 1953,
+          "log_loss": 0.66059622763406
+        },
+        "development_calibration_slope": 0.8200066667939485,
+        "raw_metrics": {
+          "accuracy": 0.6036866359447005,
+          "auc": 0.6417602497319954,
+          "brier": 0.23484940176688232,
+          "ece_10_bin": 0.029221986128381,
+          "fights": 1953,
+          "log_loss": 0.6619688578066731
+        },
+        "variant": {
+          "grouped": false,
+          "key": "global_moderate",
+          "variance_prior_scale": 0.08,
+          "variance_prior_shape": 3.0
+        },
+        "years": {
+          "2019": {
+            "sampler": {
+              "burn_in_per_chain": 600,
+              "chains": 2,
+              "feature_groups": [
+                "all_features"
+              ],
+              "features": 82,
+              "grouped_shrinkage": false,
+              "hmc_initial_step_size": 0.18,
+              "hmc_leapfrog_steps_center": 10,
+              "hmc_target_acceptance": 0.75,
+              "maximum_absolute_chain_mean_probability_difference": 0.006021491257837186,
+              "mean_absolute_chain_mean_probability_difference": 0.0014441291746777596,
+              "mean_lag_one_probability_autocorrelation": -0.6103792692321446,
+              "model": "fully_bayesian_logistic_learned_group_shrinkage",
+              "p95_absolute_chain_mean_probability_difference": 0.003749245253438574,
+              "p95_lag_one_probability_autocorrelation": -0.5274905344243134,
+              "posterior_draws_per_chain": 600,
+              "posterior_group_coefficient_scales": {
+                "all_features": {
+                  "feature_count": 82,
+                  "mean": 0.16340554108893757,
+                  "q05": 0.13631103278991896,
+                  "q95": 0.19560486516697453
+                }
+              },
+              "proposal_diagnostics": {
+                "optimizer_gradient_maximum": 0.0006241429922648756,
+                "optimizer_iterations": 90,
+                "precision_jitter": 1e-10
+              },
+              "sampler": "Laplace-preconditioned Hamiltonian Monte Carlo",
+              "sampler_chains": [
+                {
+                  "final_step_size": 0.4001836537906576,
+                  "mean_retained_acceptance_probability": 0.9373688908126758,
+                  "retained_acceptance_rate": 0.9316666666666666
+                },
+                {
+                  "final_step_size": 0.3996276925834153,
+                  "mean_retained_acceptance_probability": 0.932818077783215,
+                  "retained_acceptance_rate": 0.9316666666666666
+                }
+              ],
+              "thin": 1,
+              "total_retained_draws": 1200,
+              "training_fights": 3823,
+              "variance_prior_scale": 0.08,
+              "variance_prior_shape": 3.0
+            },
+            "test_fights": 506,
+            "training_fights": 3823,
+            "training_through": "2018-12-29"
+          },
+          "2020": {
+            "sampler": {
+              "burn_in_per_chain": 600,
+              "chains": 2,
+              "feature_groups": [
+                "all_features"
+              ],
+              "features": 82,
+              "grouped_shrinkage": false,
+              "hmc_initial_step_size": 0.18,
+              "hmc_leapfrog_steps_center": 10,
+              "hmc_target_acceptance": 0.75,
+              "maximum_absolute_chain_mean_probability_difference": 0.006349650492540548,
+              "mean_absolute_chain_mean_probability_difference": 0.0013280677199612957,
+              "mean_lag_one_probability_autocorrelation": -0.5967859978934023,
+              "model": "fully_bayesian_logistic_learned_group_shrinkage",
+              "p95_absolute_chain_mean_probability_difference": 0.003316861723660882,
+              "p95_lag_one_probability_autocorrelation": -0.5074699382153075,
+              "posterior_draws_per_chain": 600,
+              "posterior_group_coefficient_scales": {
+                "all_features": {
+                  "feature_count": 82,
+                  "mean": 0.15296174139081445,
+                  "q05": 0.12734892814200774,
+                  "q95": 0.1822890001675319
+                }
+              },
+              "proposal_diagnostics": {
+                "optimizer_gradient_maximum": 0.00308556345630695,
+                "optimizer_iterations": 81,
+                "precision_jitter": 1e-10
+              },
+              "sampler": "Laplace-preconditioned Hamiltonian Monte Carlo",
+              "sampler_chains": [
+                {
+                  "final_step_size": 0.40133498904439174,
+                  "mean_retained_acceptance_probability": 0.9343478523398749,
+                  "retained_acceptance_rate": 0.9366666666666666
+                },
+                {
+                  "final_step_size": 0.39959994104493585,
+                  "mean_retained_acceptance_probability": 0.9350476699990925,
+                  "retained_acceptance_rate": 0.9316666666666666
+                }
+              ],
+              "thin": 1,
+              "total_retained_draws": 1200,
+              "training_fights": 4116,
+              "variance_prior_scale": 0.08,
+              "variance_prior_shape": 3.0
+            },
+            "test_fights": 444,
+            "training_fights": 4116,
+            "training_through": "2019-12-21"
+          },
+          "2021": {
+            "sampler": {
+              "burn_in_per_chain": 600,
+              "chains": 2,
+              "feature_groups": [
+                "all_features"
+              ],
+              "features": 82,
+              "grouped_shrinkage": false,
+              "hmc_initial_step_size": 0.18,
+              "hmc_leapfrog_steps_center": 10,
+              "hmc_target_acceptance": 0.75,
+              "maximum_absolute_chain_mean_probability_difference": 0.0074386520577438,
+              "mean_absolute_chain_mean_probability_difference": 0.0013322511337337506,
+              "mean_lag_one_probability_autocorrelation": -0.5879169078984541,
+              "model": "fully_bayesian_logistic_learned_group_shrinkage",
+              "p95_absolute_chain_mean_probability_difference": 0.00339023716636746,
+              "p95_lag_one_probability_autocorrelation": -0.5000786436801615,
+              "posterior_draws_per_chain": 600,
+              "posterior_group_coefficient_scales": {
+                "all_features": {
+                  "feature_count": 82,
+                  "mean": 0.1477818419014541,
+                  "q05": 0.12378100805363941,
+                  "q95": 0.1778866483486033
+                }
+              },
+              "proposal_diagnostics": {
+                "optimizer_gradient_maximum": 0.0010221489564822273,
+                "optimizer_iterations": 89,
+                "precision_jitter": 1e-10
+              },
+              "sampler": "Laplace-preconditioned Hamiltonian Monte Carlo",
+              "sampler_chains": [
+                {
+                  "final_step_size": 0.3965694523209536,
+                  "mean_retained_acceptance_probability": 0.934861822791859,
+                  "retained_acceptance_rate": 0.935
+                },
+                {
+                  "final_step_size": 0.40215885456348277,
+                  "mean_retained_acceptance_probability": 0.9353076641743155,
+                  "retained_acceptance_rate": 0.9333333333333333
+                }
+              ],
+              "thin": 1,
+              "total_retained_draws": 1200,
+              "training_fights": 4310,
+              "variance_prior_scale": 0.08,
+              "variance_prior_shape": 3.0
+            },
+            "test_fights": 497,
+            "training_fights": 4310,
+            "training_through": "2020-12-19"
+          },
+          "2022": {
+            "sampler": {
+              "burn_in_per_chain": 600,
+              "chains": 2,
+              "feature_groups": [
+                "all_features"
+              ],
+              "features": 82,
+              "grouped_shrinkage": false,
+              "hmc_initial_step_size": 0.18,
+              "hmc_leapfrog_steps_center": 10,
+              "hmc_target_acceptance": 0.75,
+              "maximum_absolute_chain_mean_probability_difference": 0.004713329828761714,
+              "mean_absolute_chain_mean_probability_difference": 0.0012061458366715756,
+              "mean_lag_one_probability_autocorrelation": -0.5993235981192617,
+              "model": "fully_bayesian_logistic_learned_group_shrinkage",
+              "p95_absolute_chain_mean_probability_difference": 0.0031629601317742784,
+              "p95_lag_one_probability_autocorrelation": -0.5145537114200164,
+              "posterior_draws_per_chain": 600,
+              "posterior_group_coefficient_scales": {
+                "all_features": {
+                  "feature_count": 82,
+                  "mean": 0.13782403556030393,
+                  "q05": 0.11511535097377949,
+                  "q95": 0.16826182297743852
+                }
+              },
+              "proposal_diagnostics": {
+                "optimizer_gradient_maximum": 0.0013721916274569423,
+                "optimizer_iterations": 84,
+                "precision_jitter": 1e-10
+              },
+              "sampler": "Laplace-preconditioned Hamiltonian Monte Carlo",
+              "sampler_chains": [
+                {
+                  "final_step_size": 0.4010132183173035,
+                  "mean_retained_acceptance_probability": 0.9377125625992856,
+                  "retained_acceptance_rate": 0.9333333333333333
+                },
+                {
+                  "final_step_size": 0.39989798109560293,
+                  "mean_retained_acceptance_probability": 0.9334207592381012,
+                  "retained_acceptance_rate": 0.94
+                }
+              ],
+              "thin": 1,
+              "total_retained_draws": 1200,
+              "training_fights": 4512,
+              "variance_prior_scale": 0.08,
+              "variance_prior_shape": 3.0
+            },
+            "test_fights": 506,
+            "training_fights": 4512,
+            "training_through": "2021-12-18"
+          }
+        }
+      },
+      "grouped_heavy_tailed": {
+        "calibrated_metrics": {
+          "accuracy": 0.6113671274961597,
+          "auc": 0.6424840193760476,
+          "brier": 0.2340370498662994,
+          "ece_10_bin": 0.032426073441099816,
+          "fights": 1953,
+          "log_loss": 0.6599791733292587
+        },
+        "development_calibration_slope": 0.8604479019921041,
+        "raw_metrics": {
+          "accuracy": 0.6113671274961597,
+          "auc": 0.6424840193760476,
+          "brier": 0.23436516592045673,
+          "ece_10_bin": 0.033669042193467634,
+          "fights": 1953,
+          "log_loss": 0.660744960595642
+        },
+        "variant": {
+          "grouped": true,
+          "key": "grouped_heavy_tailed",
+          "variance_prior_scale": 0.02,
+          "variance_prior_shape": 1.5
+        },
+        "years": {
+          "2019": {
+            "sampler": {
+              "burn_in_per_chain": 600,
+              "chains": 2,
+              "feature_groups": [
+                "activity_experience",
+                "grappling",
+                "physical",
+                "rating",
+                "record_results",
+                "striking"
+              ],
+              "features": 82,
+              "grouped_shrinkage": true,
+              "hmc_initial_step_size": 0.18,
+              "hmc_leapfrog_steps_center": 10,
+              "hmc_target_acceptance": 0.75,
+              "maximum_absolute_chain_mean_probability_difference": 0.011599086516676294,
+              "mean_absolute_chain_mean_probability_difference": 0.0017346975032595457,
+              "mean_lag_one_probability_autocorrelation": -0.5581705172033976,
+              "model": "fully_bayesian_logistic_learned_group_shrinkage",
+              "p95_absolute_chain_mean_probability_difference": 0.004458151938151744,
+              "p95_lag_one_probability_autocorrelation": -0.47287135823125664,
+              "posterior_draws_per_chain": 600,
+              "posterior_group_coefficient_scales": {
+                "activity_experience": {
+                  "feature_count": 6,
+                  "mean": 0.15988371076023045,
+                  "q05": 0.09199571214876331,
+                  "q95": 0.25811844921695026
+                },
+                "grappling": {
+                  "feature_count": 16,
+                  "mean": 0.0973655415053793,
+                  "q05": 0.0679059444559615,
+                  "q95": 0.13939428815441704
+                },
+                "physical": {
+                  "feature_count": 7,
+                  "mean": 0.3819387849225446,
+                  "q05": 0.24528226593560634,
+                  "q95": 0.588679822238216
+                },
+                "rating": {
+                  "feature_count": 9,
+                  "mean": 0.14346712116041835,
+                  "q05": 0.08909503137800288,
+                  "q95": 0.2411481641542696
+                },
+                "record_results": {
+                  "feature_count": 28,
+                  "mean": 0.07589299099759185,
+                  "q05": 0.05526314468869413,
+                  "q95": 0.10321654452994014
+                },
+                "striking": {
+                  "feature_count": 16,
+                  "mean": 0.09769770602454694,
+                  "q05": 0.06533053497610879,
+                  "q95": 0.13928311093185625
+                }
+              },
+              "proposal_diagnostics": {
+                "optimizer_gradient_maximum": 0.0010370998023265798,
+                "optimizer_iterations": 270,
+                "precision_jitter": 1e-10
+              },
+              "sampler": "Laplace-preconditioned Hamiltonian Monte Carlo",
+              "sampler_chains": [
+                {
+                  "final_step_size": 0.3887186795639728,
+                  "mean_retained_acceptance_probability": 0.9209279685481812,
+                  "retained_acceptance_rate": 0.9016666666666666
+                },
+                {
+                  "final_step_size": 0.3952784528431792,
+                  "mean_retained_acceptance_probability": 0.9211351692502789,
+                  "retained_acceptance_rate": 0.9333333333333333
+                }
+              ],
+              "thin": 1,
+              "total_retained_draws": 1200,
+              "training_fights": 3823,
+              "variance_prior_scale": 0.02,
+              "variance_prior_shape": 1.5
+            },
+            "test_fights": 506,
+            "training_fights": 3823,
+            "training_through": "2018-12-29"
+          },
+          "2020": {
+            "sampler": {
+              "burn_in_per_chain": 600,
+              "chains": 2,
+              "feature_groups": [
+                "activity_experience",
+                "grappling",
+                "physical",
+                "rating",
+                "record_results",
+                "striking"
+              ],
+              "features": 82,
+              "grouped_shrinkage": true,
+              "hmc_initial_step_size": 0.18,
+              "hmc_leapfrog_steps_center": 10,
+              "hmc_target_acceptance": 0.75,
+              "maximum_absolute_chain_mean_probability_difference": 0.006039220764318121,
+              "mean_absolute_chain_mean_probability_difference": 0.0012694705360051356,
+              "mean_lag_one_probability_autocorrelation": -0.524919551932063,
+              "model": "fully_bayesian_logistic_learned_group_shrinkage",
+              "p95_absolute_chain_mean_probability_difference": 0.003206042178309212,
+              "p95_lag_one_probability_autocorrelation": -0.4207068407320294,
+              "posterior_draws_per_chain": 600,
+              "posterior_group_coefficient_scales": {
+                "activity_experience": {
+                  "feature_count": 6,
+                  "mean": 0.1589209304210599,
+                  "q05": 0.0857833787342921,
+                  "q95": 0.2691063840515737
+                },
+                "grappling": {
+                  "feature_count": 16,
+                  "mean": 0.091578698491956,
+                  "q05": 0.06068068614056558,
+                  "q95": 0.12949264457351348
+                },
+                "physical": {
+                  "feature_count": 7,
+                  "mean": 0.3489043776817987,
+                  "q05": 0.22617487473063846,
+                  "q95": 0.5135646557745782
+                },
+                "rating": {
+                  "feature_count": 9,
+                  "mean": 0.13639892503008763,
+                  "q05": 0.08129448869400593,
+                  "q95": 0.23140457657292915
+                },
+                "record_results": {
+                  "feature_count": 28,
+                  "mean": 0.07293721361052621,
+                  "q05": 0.052689634588550235,
+                  "q95": 0.09950677977271231
+                },
+                "striking": {
+                  "feature_count": 16,
+                  "mean": 0.10120388925755688,
+                  "q05": 0.06895803650739786,
+                  "q95": 0.14429363087046965
+                }
+              },
+              "proposal_diagnostics": {
+                "optimizer_gradient_maximum": 0.0018217696410811612,
+                "optimizer_iterations": 293,
+                "precision_jitter": 1e-10
+              },
+              "sampler": "Laplace-preconditioned Hamiltonian Monte Carlo",
+              "sampler_chains": [
+                {
+                  "final_step_size": 0.3952555780776461,
+                  "mean_retained_acceptance_probability": 0.9230514674791918,
+                  "retained_acceptance_rate": 0.9266666666666666
+                },
+                {
+                  "final_step_size": 0.4001767132695246,
+                  "mean_retained_acceptance_probability": 0.917632886684883,
+                  "retained_acceptance_rate": 0.9083333333333333
+                }
+              ],
+              "thin": 1,
+              "total_retained_draws": 1200,
+              "training_fights": 4116,
+              "variance_prior_scale": 0.02,
+              "variance_prior_shape": 1.5
+            },
+            "test_fights": 444,
+            "training_fights": 4116,
+            "training_through": "2019-12-21"
+          },
+          "2021": {
+            "sampler": {
+              "burn_in_per_chain": 600,
+              "chains": 2,
+              "feature_groups": [
+                "activity_experience",
+                "grappling",
+                "physical",
+                "rating",
+                "record_results",
+                "striking"
+              ],
+              "features": 82,
+              "grouped_shrinkage": true,
+              "hmc_initial_step_size": 0.18,
+              "hmc_leapfrog_steps_center": 10,
+              "hmc_target_acceptance": 0.75,
+              "maximum_absolute_chain_mean_probability_difference": 0.006105233679914557,
+              "mean_absolute_chain_mean_probability_difference": 0.001223067283065553,
+              "mean_lag_one_probability_autocorrelation": -0.5187805204216975,
+              "model": "fully_bayesian_logistic_learned_group_shrinkage",
+              "p95_absolute_chain_mean_probability_difference": 0.0031687473700286123,
+              "p95_lag_one_probability_autocorrelation": -0.4214043395715665,
+              "posterior_draws_per_chain": 600,
+              "posterior_group_coefficient_scales": {
+                "activity_experience": {
+                  "feature_count": 6,
+                  "mean": 0.1542941780636042,
+                  "q05": 0.09074188667508186,
+                  "q95": 0.24952255831228473
+                },
+                "grappling": {
+                  "feature_count": 16,
+                  "mean": 0.09281363829407811,
+                  "q05": 0.06357622533620734,
+                  "q95": 0.12862554563616793
+                },
+                "physical": {
+                  "feature_count": 7,
+                  "mean": 0.33187958681481117,
+                  "q05": 0.2135759627579614,
+                  "q95": 0.5091105219131817
+                },
+                "rating": {
+                  "feature_count": 9,
+                  "mean": 0.14381898946598823,
+                  "q05": 0.0873968346038514,
+                  "q95": 0.2344128869570774
+                },
+                "record_results": {
+                  "feature_count": 28,
+                  "mean": 0.0718612296179008,
+                  "q05": 0.051259085289925344,
+                  "q95": 0.09908585912873831
+                },
+                "striking": {
+                  "feature_count": 16,
+                  "mean": 0.10004094108675692,
+                  "q05": 0.06842090665673357,
+                  "q95": 0.14405211222193315
+                }
+              },
+              "proposal_diagnostics": {
+                "optimizer_gradient_maximum": 0.0010770231261609808,
+                "optimizer_iterations": 291,
+                "precision_jitter": 1e-10
+              },
+              "sampler": "Laplace-preconditioned Hamiltonian Monte Carlo",
+              "sampler_chains": [
+                {
+                  "final_step_size": 0.3934106514912619,
+                  "mean_retained_acceptance_probability": 0.9182217076609291,
+                  "retained_acceptance_rate": 0.9166666666666666
+                },
+                {
+                  "final_step_size": 0.39723983240054755,
+                  "mean_retained_acceptance_probability": 0.9222580845672478,
+                  "retained_acceptance_rate": 0.895
+                }
+              ],
+              "thin": 1,
+              "total_retained_draws": 1200,
+              "training_fights": 4310,
+              "variance_prior_scale": 0.02,
+              "variance_prior_shape": 1.5
+            },
+            "test_fights": 497,
+            "training_fights": 4310,
+            "training_through": "2020-12-19"
+          },
+          "2022": {
+            "sampler": {
+              "burn_in_per_chain": 600,
+              "chains": 2,
+              "feature_groups": [
+                "activity_experience",
+                "grappling",
+                "physical",
+                "rating",
+                "record_results",
+                "striking"
+              ],
+              "features": 82,
+              "grouped_shrinkage": true,
+              "hmc_initial_step_size": 0.18,
+              "hmc_leapfrog_steps_center": 10,
+              "hmc_target_acceptance": 0.75,
+              "maximum_absolute_chain_mean_probability_difference": 0.006033827120477342,
+              "mean_absolute_chain_mean_probability_difference": 0.0010943175765439164,
+              "mean_lag_one_probability_autocorrelation": -0.5657441056041085,
+              "model": "fully_bayesian_logistic_learned_group_shrinkage",
+              "p95_absolute_chain_mean_probability_difference": 0.0027895155107495184,
+              "p95_lag_one_probability_autocorrelation": -0.4666642080944892,
+              "posterior_draws_per_chain": 600,
+              "posterior_group_coefficient_scales": {
+                "activity_experience": {
+                  "feature_count": 6,
+                  "mean": 0.13661339656984087,
+                  "q05": 0.07886144497972819,
+                  "q95": 0.22164487157085783
+                },
+                "grappling": {
+                  "feature_count": 16,
+                  "mean": 0.09275397846423071,
+                  "q05": 0.06308739140239027,
+                  "q95": 0.13576872599385925
+                },
+                "physical": {
+                  "feature_count": 7,
+                  "mean": 0.33082856924682985,
+                  "q05": 0.20844411517054207,
+                  "q95": 0.5115834984564737
+                },
+                "rating": {
+                  "feature_count": 9,
+                  "mean": 0.13269206752573248,
+                  "q05": 0.07998719491543663,
+                  "q95": 0.21548408339091535
+                },
+                "record_results": {
+                  "feature_count": 28,
+                  "mean": 0.0729409516830991,
+                  "q05": 0.052134066892734185,
+                  "q95": 0.09992088549442017
+                },
+                "striking": {
+                  "feature_count": 16,
+                  "mean": 0.09827373061550881,
+                  "q05": 0.067242383023459,
+                  "q95": 0.14139394443318082
+                }
+              },
+              "proposal_diagnostics": {
+                "optimizer_gradient_maximum": 0.0016124908377435077,
+                "optimizer_iterations": 302,
+                "precision_jitter": 1e-10
+              },
+              "sampler": "Laplace-preconditioned Hamiltonian Monte Carlo",
+              "sampler_chains": [
+                {
+                  "final_step_size": 0.40178477639852384,
+                  "mean_retained_acceptance_probability": 0.9396142773817894,
+                  "retained_acceptance_rate": 0.9366666666666666
+                },
+                {
+                  "final_step_size": 0.40262455672772407,
+                  "mean_retained_acceptance_probability": 0.9346907172679827,
+                  "retained_acceptance_rate": 0.9316666666666666
+                }
+              ],
+              "thin": 1,
+              "total_retained_draws": 1200,
+              "training_fights": 4512,
+              "variance_prior_scale": 0.02,
+              "variance_prior_shape": 1.5
+            },
+            "test_fights": 506,
+            "training_fights": 4512,
+            "training_through": "2021-12-18"
+          }
+        }
+      },
+      "grouped_moderate": {
+        "calibrated_metrics": {
+          "accuracy": 0.6113671274961597,
+          "auc": 0.6414948675291763,
+          "brier": 0.23432697801570124,
+          "ece_10_bin": 0.02872907224265873,
+          "fights": 1953,
+          "log_loss": 0.6606324315793702
+        },
+        "development_calibration_slope": 0.8211016768768568,
+        "raw_metrics": {
+          "accuracy": 0.6113671274961597,
+          "auc": 0.6414948675291763,
+          "brier": 0.2348829037735702,
+          "ece_10_bin": 0.03415364952166301,
+          "fights": 1953,
+          "log_loss": 0.6619814248302616
+        },
+        "variant": {
+          "grouped": true,
+          "key": "grouped_moderate",
+          "variance_prior_scale": 0.08,
+          "variance_prior_shape": 3.0
+        },
+        "years": {
+          "2019": {
+            "sampler": {
+              "burn_in_per_chain": 600,
+              "chains": 2,
+              "feature_groups": [
+                "activity_experience",
+                "grappling",
+                "physical",
+                "rating",
+                "record_results",
+                "striking"
+              ],
+              "features": 82,
+              "grouped_shrinkage": true,
+              "hmc_initial_step_size": 0.18,
+              "hmc_leapfrog_steps_center": 10,
+              "hmc_target_acceptance": 0.75,
+              "maximum_absolute_chain_mean_probability_difference": 0.0067660667351503445,
+              "mean_absolute_chain_mean_probability_difference": 0.0013331518700457382,
+              "mean_lag_one_probability_autocorrelation": -0.5756298970134099,
+              "model": "fully_bayesian_logistic_learned_group_shrinkage",
+              "p95_absolute_chain_mean_probability_difference": 0.0036268732152071603,
+              "p95_lag_one_probability_autocorrelation": -0.4797916032055369,
+              "posterior_draws_per_chain": 600,
+              "posterior_group_coefficient_scales": {
+                "activity_experience": {
+                  "feature_count": 6,
+                  "mean": 0.1800655333890524,
+                  "q05": 0.12066317668949283,
+                  "q95": 0.26531848355130133
+                },
+                "grappling": {
+                  "feature_count": 16,
+                  "mean": 0.12946922087419713,
+                  "q05": 0.09558096319995196,
+                  "q95": 0.1760981447501734
+                },
+                "physical": {
+                  "feature_count": 7,
+                  "mean": 0.3370737960244869,
+                  "q05": 0.23446335774361998,
+                  "q95": 0.47831146702609084
+                },
+                "rating": {
+                  "feature_count": 9,
+                  "mean": 0.1720364732873054,
+                  "q05": 0.11755241417166805,
+                  "q95": 0.2525452336661966
+                },
+                "record_results": {
+                  "feature_count": 28,
+                  "mean": 0.10830529530231867,
+                  "q05": 0.08356445989484268,
+                  "q95": 0.14154970135784437
+                },
+                "striking": {
+                  "feature_count": 16,
+                  "mean": 0.1305724934057017,
+                  "q05": 0.09663218412467887,
+                  "q95": 0.1758252189981763
+                }
+              },
+              "proposal_diagnostics": {
+                "optimizer_gradient_maximum": 0.0005901628965561123,
+                "optimizer_iterations": 218,
+                "precision_jitter": 1e-10
+              },
+              "sampler": "Laplace-preconditioned Hamiltonian Monte Carlo",
+              "sampler_chains": [
+                {
+                  "final_step_size": 0.3861310072638683,
+                  "mean_retained_acceptance_probability": 0.9196206942651759,
+                  "retained_acceptance_rate": 0.94
+                },
+                {
+                  "final_step_size": 0.38391003794896933,
+                  "mean_retained_acceptance_probability": 0.9214550229103141,
+                  "retained_acceptance_rate": 0.9016666666666666
+                }
+              ],
+              "thin": 1,
+              "total_retained_draws": 1200,
+              "training_fights": 3823,
+              "variance_prior_scale": 0.08,
+              "variance_prior_shape": 3.0
+            },
+            "test_fights": 506,
+            "training_fights": 3823,
+            "training_through": "2018-12-29"
+          },
+          "2020": {
+            "sampler": {
+              "burn_in_per_chain": 600,
+              "chains": 2,
+              "feature_groups": [
+                "activity_experience",
+                "grappling",
+                "physical",
+                "rating",
+                "record_results",
+                "striking"
+              ],
+              "features": 82,
+              "grouped_shrinkage": true,
+              "hmc_initial_step_size": 0.18,
+              "hmc_leapfrog_steps_center": 10,
+              "hmc_target_acceptance": 0.75,
+              "maximum_absolute_chain_mean_probability_difference": 0.0057994158780620975,
+              "mean_absolute_chain_mean_probability_difference": 0.0014797542619767723,
+              "mean_lag_one_probability_autocorrelation": -0.5141511321440175,
+              "model": "fully_bayesian_logistic_learned_group_shrinkage",
+              "p95_absolute_chain_mean_probability_difference": 0.0033991242435553208,
+              "p95_lag_one_probability_autocorrelation": -0.43056796087611815,
+              "posterior_draws_per_chain": 600,
+              "posterior_group_coefficient_scales": {
+                "activity_experience": {
+                  "feature_count": 6,
+                  "mean": 0.18314451469802925,
+                  "q05": 0.1234966839266123,
+                  "q95": 0.2745129348148213
+                },
+                "grappling": {
+                  "feature_count": 16,
+                  "mean": 0.12484867300780453,
+                  "q05": 0.09154740452426985,
+                  "q95": 0.1679122555683178
+                },
+                "physical": {
+                  "feature_count": 7,
+                  "mean": 0.31120098715586303,
+                  "q05": 0.21231787593333712,
+                  "q95": 0.4358613532660942
+                },
+                "rating": {
+                  "feature_count": 9,
+                  "mean": 0.1671159804954362,
+                  "q05": 0.11670011641351366,
+                  "q95": 0.24427359828612918
+                },
+                "record_results": {
+                  "feature_count": 28,
+                  "mean": 0.10997835035594766,
+                  "q05": 0.08423208334534381,
+                  "q95": 0.14208104678870984
+                },
+                "striking": {
+                  "feature_count": 16,
+                  "mean": 0.1309967136971,
+                  "q05": 0.09641602766428711,
+                  "q95": 0.17694037009856206
+                }
+              },
+              "proposal_diagnostics": {
+                "optimizer_gradient_maximum": 0.0016447171846727393,
+                "optimizer_iterations": 238,
+                "precision_jitter": 1e-10
+              },
+              "sampler": "Laplace-preconditioned Hamiltonian Monte Carlo",
+              "sampler_chains": [
+                {
+                  "final_step_size": 0.39238887012941626,
+                  "mean_retained_acceptance_probability": 0.9109461042117031,
+                  "retained_acceptance_rate": 0.9033333333333333
+                },
+                {
+                  "final_step_size": 0.39247382368316963,
+                  "mean_retained_acceptance_probability": 0.9152415067552304,
+                  "retained_acceptance_rate": 0.895
+                }
+              ],
+              "thin": 1,
+              "total_retained_draws": 1200,
+              "training_fights": 4116,
+              "variance_prior_scale": 0.08,
+              "variance_prior_shape": 3.0
+            },
+            "test_fights": 444,
+            "training_fights": 4116,
+            "training_through": "2019-12-21"
+          },
+          "2021": {
+            "sampler": {
+              "burn_in_per_chain": 600,
+              "chains": 2,
+              "feature_groups": [
+                "activity_experience",
+                "grappling",
+                "physical",
+                "rating",
+                "record_results",
+                "striking"
+              ],
+              "features": 82,
+              "grouped_shrinkage": true,
+              "hmc_initial_step_size": 0.18,
+              "hmc_leapfrog_steps_center": 10,
+              "hmc_target_acceptance": 0.75,
+              "maximum_absolute_chain_mean_probability_difference": 0.006742957774624081,
+              "mean_absolute_chain_mean_probability_difference": 0.00136467009382612,
+              "mean_lag_one_probability_autocorrelation": -0.5701953648267916,
+              "model": "fully_bayesian_logistic_learned_group_shrinkage",
+              "p95_absolute_chain_mean_probability_difference": 0.0034530199999373455,
+              "p95_lag_one_probability_autocorrelation": -0.48640449018224025,
+              "posterior_draws_per_chain": 600,
+              "posterior_group_coefficient_scales": {
+                "activity_experience": {
+                  "feature_count": 6,
+                  "mean": 0.17991889774109807,
+                  "q05": 0.11938921535594822,
+                  "q95": 0.25865240767122083
+                },
+                "grappling": {
+                  "feature_count": 16,
+                  "mean": 0.12594175240037672,
+                  "q05": 0.0942388488231434,
+                  "q95": 0.16382211125092366
+                },
+                "physical": {
+                  "feature_count": 7,
+                  "mean": 0.30239717965403173,
+                  "q05": 0.20991045716912976,
+                  "q95": 0.43539824328289994
+                },
+                "rating": {
+                  "feature_count": 9,
+                  "mean": 0.1703566427842356,
+                  "q05": 0.11415784035171345,
+                  "q95": 0.24866108413563542
+                },
+                "record_results": {
+                  "feature_count": 28,
+                  "mean": 0.10977160576226234,
+                  "q05": 0.0836364814620138,
+                  "q95": 0.14306054329154666
+                },
+                "striking": {
+                  "feature_count": 16,
+                  "mean": 0.13141438534944702,
+                  "q05": 0.09657766211404842,
+                  "q95": 0.17527162898931523
+                }
+              },
+              "proposal_diagnostics": {
+                "optimizer_gradient_maximum": 0.0021550530584821814,
+                "optimizer_iterations": 245,
+                "precision_jitter": 1e-10
+              },
+              "sampler": "Laplace-preconditioned Hamiltonian Monte Carlo",
+              "sampler_chains": [
+                {
+                  "final_step_size": 0.3935150936658466,
+                  "mean_retained_acceptance_probability": 0.9172287893251633,
+                  "retained_acceptance_rate": 0.9283333333333333
+                },
+                {
+                  "final_step_size": 0.39389551861339384,
+                  "mean_retained_acceptance_probability": 0.918411810711256,
+                  "retained_acceptance_rate": 0.935
+                }
+              ],
+              "thin": 1,
+              "total_retained_draws": 1200,
+              "training_fights": 4310,
+              "variance_prior_scale": 0.08,
+              "variance_prior_shape": 3.0
+            },
+            "test_fights": 497,
+            "training_fights": 4310,
+            "training_through": "2020-12-19"
+          },
+          "2022": {
+            "sampler": {
+              "burn_in_per_chain": 600,
+              "chains": 2,
+              "feature_groups": [
+                "activity_experience",
+                "grappling",
+                "physical",
+                "rating",
+                "record_results",
+                "striking"
+              ],
+              "features": 82,
+              "grouped_shrinkage": true,
+              "hmc_initial_step_size": 0.18,
+              "hmc_leapfrog_steps_center": 10,
+              "hmc_target_acceptance": 0.75,
+              "maximum_absolute_chain_mean_probability_difference": 0.006742264050542124,
+              "mean_absolute_chain_mean_probability_difference": 0.0011910433911875148,
+              "mean_lag_one_probability_autocorrelation": -0.5600621829584035,
+              "model": "fully_bayesian_logistic_learned_group_shrinkage",
+              "p95_absolute_chain_mean_probability_difference": 0.0030201621584951543,
+              "p95_lag_one_probability_autocorrelation": -0.4724687770168554,
+              "posterior_draws_per_chain": 600,
+              "posterior_group_coefficient_scales": {
+                "activity_experience": {
+                  "feature_count": 6,
+                  "mean": 0.1691570374444994,
+                  "q05": 0.11357572975160954,
+                  "q95": 0.24803768154350095
+                },
+                "grappling": {
+                  "feature_count": 16,
+                  "mean": 0.12368960681968585,
+                  "q05": 0.09018749462695226,
+                  "q95": 0.16454654477898523
+                },
+                "physical": {
+                  "feature_count": 7,
+                  "mean": 0.28471412814495184,
+                  "q05": 0.19660904125745643,
+                  "q95": 0.41122498770211047
+                },
+                "rating": {
+                  "feature_count": 9,
+                  "mean": 0.1616705470100526,
+                  "q05": 0.11079983021712243,
+                  "q95": 0.2389858423300337
+                },
+                "record_results": {
+                  "feature_count": 28,
+                  "mean": 0.1074513117357001,
+                  "q05": 0.08213796934418115,
+                  "q95": 0.1402435861398393
+                },
+                "striking": {
+                  "feature_count": 16,
+                  "mean": 0.12856473964926968,
+                  "q05": 0.0940668362838197,
+                  "q95": 0.17409486370694227
+                }
+              },
+              "proposal_diagnostics": {
+                "optimizer_gradient_maximum": 0.0008008860496389048,
+                "optimizer_iterations": 237,
+                "precision_jitter": 1e-10
+              },
+              "sampler": "Laplace-preconditioned Hamiltonian Monte Carlo",
+              "sampler_chains": [
+                {
+                  "final_step_size": 0.39964982158964274,
+                  "mean_retained_acceptance_probability": 0.9271894744259039,
+                  "retained_acceptance_rate": 0.9333333333333333
+                },
+                {
+                  "final_step_size": 0.3955473408809688,
+                  "mean_retained_acceptance_probability": 0.9301665178104432,
+                  "retained_acceptance_rate": 0.9483333333333334
+                }
+              ],
+              "thin": 1,
+              "total_retained_draws": 1200,
+              "training_fights": 4512,
+              "variance_prior_scale": 0.08,
+              "variance_prior_shape": 3.0
+            },
+            "test_fights": 506,
+            "training_fights": 4512,
+            "training_through": "2021-12-18"
+          }
+        }
+      },
+      "grouped_tight": {
+        "calibrated_metrics": {
+          "accuracy": 0.6113671274961597,
+          "auc": 0.6433556897734496,
+          "brier": 0.2338375223403776,
+          "ece_10_bin": 0.033380437388947255,
+          "fights": 1953,
+          "log_loss": 0.6595397711393938
+        },
+        "development_calibration_slope": 0.89111955517234,
+        "raw_metrics": {
+          "accuracy": 0.6113671274961597,
+          "auc": 0.6433556897734496,
+          "brier": 0.23403336254826032,
+          "ece_10_bin": 0.03178670545577366,
+          "fights": 1953,
+          "log_loss": 0.6599816769264764
+        },
+        "variant": {
+          "grouped": true,
+          "key": "grouped_tight",
+          "variance_prior_scale": 0.02,
+          "variance_prior_shape": 3.0
+        },
+        "years": {
+          "2019": {
+            "sampler": {
+              "burn_in_per_chain": 600,
+              "chains": 2,
+              "feature_groups": [
+                "activity_experience",
+                "grappling",
+                "physical",
+                "rating",
+                "record_results",
+                "striking"
+              ],
+              "features": 82,
+              "grouped_shrinkage": true,
+              "hmc_initial_step_size": 0.18,
+              "hmc_leapfrog_steps_center": 10,
+              "hmc_target_acceptance": 0.75,
+              "maximum_absolute_chain_mean_probability_difference": 0.004670591290633297,
+              "mean_absolute_chain_mean_probability_difference": 0.001289884093996621,
+              "mean_lag_one_probability_autocorrelation": -0.5765725213408873,
+              "model": "fully_bayesian_logistic_learned_group_shrinkage",
+              "p95_absolute_chain_mean_probability_difference": 0.0031325916052736824,
+              "p95_lag_one_probability_autocorrelation": -0.48942676897367743,
+              "posterior_draws_per_chain": 600,
+              "posterior_group_coefficient_scales": {
+                "activity_experience": {
+                  "feature_count": 6,
+                  "mean": 0.11698830414724805,
+                  "q05": 0.06974646834698711,
+                  "q95": 0.18105437815138828
+                },
+                "grappling": {
+                  "feature_count": 16,
+                  "mean": 0.08169743051721495,
+                  "q05": 0.0552128490994319,
+                  "q95": 0.11363910917773054
+                },
+                "physical": {
+                  "feature_count": 7,
+                  "mean": 0.31173118709573266,
+                  "q05": 0.21401193322144077,
+                  "q95": 0.44453921085530973
+                },
+                "rating": {
+                  "feature_count": 9,
+                  "mean": 0.11199252786421086,
+                  "q05": 0.07252135416305612,
+                  "q95": 0.16813900517556787
+                },
+                "record_results": {
+                  "feature_count": 28,
+                  "mean": 0.06710194533039428,
+                  "q05": 0.04852982981156812,
+                  "q95": 0.09180131363773192
+                },
+                "striking": {
+                  "feature_count": 16,
+                  "mean": 0.08444043598799329,
+                  "q05": 0.05953026569891976,
+                  "q95": 0.11689271861394768
+                }
+              },
+              "proposal_diagnostics": {
+                "optimizer_gradient_maximum": 0.0031074486869187012,
+                "optimizer_iterations": 246,
+                "precision_jitter": 1e-10
+              },
+              "sampler": "Laplace-preconditioned Hamiltonian Monte Carlo",
+              "sampler_chains": [
+                {
+                  "final_step_size": 0.38993050366190213,
+                  "mean_retained_acceptance_probability": 0.9344994862995961,
+                  "retained_acceptance_rate": 0.9333333333333333
+                },
+                {
+                  "final_step_size": 0.3934120977377214,
+                  "mean_retained_acceptance_probability": 0.9260152501357262,
+                  "retained_acceptance_rate": 0.9283333333333333
+                }
+              ],
+              "thin": 1,
+              "total_retained_draws": 1200,
+              "training_fights": 3823,
+              "variance_prior_scale": 0.02,
+              "variance_prior_shape": 3.0
+            },
+            "test_fights": 506,
+            "training_fights": 3823,
+            "training_through": "2018-12-29"
+          },
+          "2020": {
+            "sampler": {
+              "burn_in_per_chain": 600,
+              "chains": 2,
+              "feature_groups": [
+                "activity_experience",
+                "grappling",
+                "physical",
+                "rating",
+                "record_results",
+                "striking"
+              ],
+              "features": 82,
+              "grouped_shrinkage": true,
+              "hmc_initial_step_size": 0.18,
+              "hmc_leapfrog_steps_center": 10,
+              "hmc_target_acceptance": 0.75,
+              "maximum_absolute_chain_mean_probability_difference": 0.006016825737384379,
+              "mean_absolute_chain_mean_probability_difference": 0.0014803596929462545,
+              "mean_lag_one_probability_autocorrelation": -0.5544152239935998,
+              "model": "fully_bayesian_logistic_learned_group_shrinkage",
+              "p95_absolute_chain_mean_probability_difference": 0.0036596200352856543,
+              "p95_lag_one_probability_autocorrelation": -0.4531553218077486,
+              "posterior_draws_per_chain": 600,
+              "posterior_group_coefficient_scales": {
+                "activity_experience": {
+                  "feature_count": 6,
+                  "mean": 0.11651416333176935,
+                  "q05": 0.06761980189227629,
+                  "q95": 0.18440253845813628
+                },
+                "grappling": {
+                  "feature_count": 16,
+                  "mean": 0.0802590851734465,
+                  "q05": 0.05576306824077726,
+                  "q95": 0.11044583668306682
+                },
+                "physical": {
+                  "feature_count": 7,
+                  "mean": 0.2872491224193501,
+                  "q05": 0.1966602736932972,
+                  "q95": 0.40649003949236456
+                },
+                "rating": {
+                  "feature_count": 9,
+                  "mean": 0.1055192174991586,
+                  "q05": 0.06943387952343467,
+                  "q95": 0.16035631538491754
+                },
+                "record_results": {
+                  "feature_count": 28,
+                  "mean": 0.0657140923477108,
+                  "q05": 0.0480903947113845,
+                  "q95": 0.09015566489423928
+                },
+                "striking": {
+                  "feature_count": 16,
+                  "mean": 0.08585530391300474,
+                  "q05": 0.06029376698079106,
+                  "q95": 0.11680584622717598
+                }
+              },
+              "proposal_diagnostics": {
+                "optimizer_gradient_maximum": 0.0011251221865233862,
+                "optimizer_iterations": 222,
+                "precision_jitter": 1e-10
+              },
+              "sampler": "Laplace-preconditioned Hamiltonian Monte Carlo",
+              "sampler_chains": [
+                {
+                  "final_step_size": 0.39453692448059036,
+                  "mean_retained_acceptance_probability": 0.9289622102237343,
+                  "retained_acceptance_rate": 0.9216666666666666
+                },
+                {
+                  "final_step_size": 0.39830178104923597,
+                  "mean_retained_acceptance_probability": 0.9260771922405786,
+                  "retained_acceptance_rate": 0.9316666666666666
+                }
+              ],
+              "thin": 1,
+              "total_retained_draws": 1200,
+              "training_fights": 4116,
+              "variance_prior_scale": 0.02,
+              "variance_prior_shape": 3.0
+            },
+            "test_fights": 444,
+            "training_fights": 4116,
+            "training_through": "2019-12-21"
+          },
+          "2021": {
+            "sampler": {
+              "burn_in_per_chain": 600,
+              "chains": 2,
+              "feature_groups": [
+                "activity_experience",
+                "grappling",
+                "physical",
+                "rating",
+                "record_results",
+                "striking"
+              ],
+              "features": 82,
+              "grouped_shrinkage": true,
+              "hmc_initial_step_size": 0.18,
+              "hmc_leapfrog_steps_center": 10,
+              "hmc_target_acceptance": 0.75,
+              "maximum_absolute_chain_mean_probability_difference": 0.006263357184808194,
+              "mean_absolute_chain_mean_probability_difference": 0.001623021987062106,
+              "mean_lag_one_probability_autocorrelation": -0.6015567742656165,
+              "model": "fully_bayesian_logistic_learned_group_shrinkage",
+              "p95_absolute_chain_mean_probability_difference": 0.0037306283676354023,
+              "p95_lag_one_probability_autocorrelation": -0.5100296376676584,
+              "posterior_draws_per_chain": 600,
+              "posterior_group_coefficient_scales": {
+                "activity_experience": {
+                  "feature_count": 6,
+                  "mean": 0.1161512998984096,
+                  "q05": 0.07103124795809257,
+                  "q95": 0.17887708185691475
+                },
+                "grappling": {
+                  "feature_count": 16,
+                  "mean": 0.08176905966098538,
+                  "q05": 0.05675066574884376,
+                  "q95": 0.11213954681482302
+                },
+                "physical": {
+                  "feature_count": 7,
+                  "mean": 0.2756415044263665,
+                  "q05": 0.18986180987489734,
+                  "q95": 0.4086345073648103
+                },
+                "rating": {
+                  "feature_count": 9,
+                  "mean": 0.11334920736631479,
+                  "q05": 0.0730649509341334,
+                  "q95": 0.17571558788365546
+                },
+                "record_results": {
+                  "feature_count": 28,
+                  "mean": 0.06395365532999439,
+                  "q05": 0.04801025488276573,
+                  "q95": 0.08579947712851398
+                },
+                "striking": {
+                  "feature_count": 16,
+                  "mean": 0.08598502370108295,
+                  "q05": 0.06079066191672299,
+                  "q95": 0.12036570630666472
+                }
+              },
+              "proposal_diagnostics": {
+                "optimizer_gradient_maximum": 0.0034341284550407636,
+                "optimizer_iterations": 221,
+                "precision_jitter": 1e-10
+              },
+              "sampler": "Laplace-preconditioned Hamiltonian Monte Carlo",
+              "sampler_chains": [
+                {
+                  "final_step_size": 0.3895558158530918,
+                  "mean_retained_acceptance_probability": 0.9334972108170454,
+                  "retained_acceptance_rate": 0.9416666666666667
+                },
+                {
+                  "final_step_size": 0.3835908668124686,
+                  "mean_retained_acceptance_probability": 0.9373342132610044,
+                  "retained_acceptance_rate": 0.925
+                }
+              ],
+              "thin": 1,
+              "total_retained_draws": 1200,
+              "training_fights": 4310,
+              "variance_prior_scale": 0.02,
+              "variance_prior_shape": 3.0
+            },
+            "test_fights": 497,
+            "training_fights": 4310,
+            "training_through": "2020-12-19"
+          },
+          "2022": {
+            "sampler": {
+              "burn_in_per_chain": 600,
+              "chains": 2,
+              "feature_groups": [
+                "activity_experience",
+                "grappling",
+                "physical",
+                "rating",
+                "record_results",
+                "striking"
+              ],
+              "features": 82,
+              "grouped_shrinkage": true,
+              "hmc_initial_step_size": 0.18,
+              "hmc_leapfrog_steps_center": 10,
+              "hmc_target_acceptance": 0.75,
+              "maximum_absolute_chain_mean_probability_difference": 0.005160272613837558,
+              "mean_absolute_chain_mean_probability_difference": 0.00120730893973155,
+              "mean_lag_one_probability_autocorrelation": -0.5729120922759309,
+              "model": "fully_bayesian_logistic_learned_group_shrinkage",
+              "p95_absolute_chain_mean_probability_difference": 0.0030252331248410425,
+              "p95_lag_one_probability_autocorrelation": -0.47782910477144197,
+              "posterior_draws_per_chain": 600,
+              "posterior_group_coefficient_scales": {
+                "activity_experience": {
+                  "feature_count": 6,
+                  "mean": 0.10010895967615904,
+                  "q05": 0.06386695711646383,
+                  "q95": 0.1513321059429141
+                },
+                "grappling": {
+                  "feature_count": 16,
+                  "mean": 0.07951292047450008,
+                  "q05": 0.055649282558548584,
+                  "q95": 0.10789671723422922
+                },
+                "physical": {
+                  "feature_count": 7,
+                  "mean": 0.2623255964153864,
+                  "q05": 0.17723120271867643,
+                  "q95": 0.3914212125417647
+                },
+                "rating": {
+                  "feature_count": 9,
+                  "mean": 0.10133582796970106,
+                  "q05": 0.06645195453313128,
+                  "q95": 0.14873686541167447
+                },
+                "record_results": {
+                  "feature_count": 28,
+                  "mean": 0.06478999831459707,
+                  "q05": 0.048088440580431865,
+                  "q95": 0.08682357667475966
+                },
+                "striking": {
+                  "feature_count": 16,
+                  "mean": 0.08584712076026703,
+                  "q05": 0.058659975631525446,
+                  "q95": 0.12187817761893836
+                }
+              },
+              "proposal_diagnostics": {
+                "optimizer_gradient_maximum": 0.0019771282060565554,
+                "optimizer_iterations": 238,
+                "precision_jitter": 1e-10
+              },
+              "sampler": "Laplace-preconditioned Hamiltonian Monte Carlo",
+              "sampler_chains": [
+                {
+                  "final_step_size": 0.4005284713006508,
+                  "mean_retained_acceptance_probability": 0.9372409471687,
+                  "retained_acceptance_rate": 0.9483333333333334
+                },
+                {
+                  "final_step_size": 0.3981211619121536,
+                  "mean_retained_acceptance_probability": 0.937276982548337,
+                  "retained_acceptance_rate": 0.9366666666666666
+                }
+              ],
+              "thin": 1,
+              "total_retained_draws": 1200,
+              "training_fights": 4512,
+              "variance_prior_scale": 0.02,
+              "variance_prior_shape": 3.0
+            },
+            "test_fights": 506,
+            "training_fights": 4512,
+            "training_through": "2021-12-18"
+          }
+        }
+      },
+      "grouped_weak": {
+        "calibrated_metrics": {
+          "accuracy": 0.6031746031746031,
+          "auc": 0.64039977258948,
+          "brier": 0.2346689831733078,
+          "ece_10_bin": 0.02633138435207249,
+          "fights": 1953,
+          "log_loss": 0.6614534091261103
+        },
+        "development_calibration_slope": 0.7726980308980749,
+        "raw_metrics": {
+          "accuracy": 0.6031746031746031,
+          "auc": 0.64039977258948,
+          "brier": 0.23559622281946663,
+          "ece_10_bin": 0.03097426695962634,
+          "fights": 1953,
+          "log_loss": 0.6638361123043134
+        },
+        "variant": {
+          "grouped": true,
+          "key": "grouped_weak",
+          "variance_prior_scale": 0.32,
+          "variance_prior_shape": 3.0
+        },
+        "years": {
+          "2019": {
+            "sampler": {
+              "burn_in_per_chain": 600,
+              "chains": 2,
+              "feature_groups": [
+                "activity_experience",
+                "grappling",
+                "physical",
+                "rating",
+                "record_results",
+                "striking"
+              ],
+              "features": 82,
+              "grouped_shrinkage": true,
+              "hmc_initial_step_size": 0.18,
+              "hmc_leapfrog_steps_center": 10,
+              "hmc_target_acceptance": 0.75,
+              "maximum_absolute_chain_mean_probability_difference": 0.007259536247285425,
+              "mean_absolute_chain_mean_probability_difference": 0.0016777612589898515,
+              "mean_lag_one_probability_autocorrelation": -0.5303085509666156,
+              "model": "fully_bayesian_logistic_learned_group_shrinkage",
+              "p95_absolute_chain_mean_probability_difference": 0.004290507886018258,
+              "p95_lag_one_probability_autocorrelation": -0.4551001737894031,
+              "posterior_draws_per_chain": 600,
+              "posterior_group_coefficient_scales": {
+                "activity_experience": {
+                  "feature_count": 6,
+                  "mean": 0.3056353869309195,
+                  "q05": 0.20925135072168533,
+                  "q95": 0.4509992663874371
+                },
+                "grappling": {
+                  "feature_count": 16,
+                  "mean": 0.21790807574819637,
+                  "q05": 0.1631610629831806,
+                  "q95": 0.28630008868143475
+                },
+                "physical": {
+                  "feature_count": 7,
+                  "mean": 0.4110068685097888,
+                  "q05": 0.2833814462206652,
+                  "q95": 0.5864707339734728
+                },
+                "rating": {
+                  "feature_count": 9,
+                  "mean": 0.30225682593452,
+                  "q05": 0.20884937181770208,
+                  "q95": 0.42474568372305205
+                },
+                "record_results": {
+                  "feature_count": 28,
+                  "mean": 0.19269561971179688,
+                  "q05": 0.14894353816821912,
+                  "q95": 0.25156643114908867
+                },
+                "striking": {
+                  "feature_count": 16,
+                  "mean": 0.2179602100889479,
+                  "q05": 0.16656950401616163,
+                  "q95": 0.2814747225203758
+                }
+              },
+              "proposal_diagnostics": {
+                "optimizer_gradient_maximum": 0.0011638411459289344,
+                "optimizer_iterations": 237,
+                "precision_jitter": 1e-10
+              },
+              "sampler": "Laplace-preconditioned Hamiltonian Monte Carlo",
+              "sampler_chains": [
+                {
+                  "final_step_size": 0.38023398227227273,
+                  "mean_retained_acceptance_probability": 0.8999375804623047,
+                  "retained_acceptance_rate": 0.9
+                },
+                {
+                  "final_step_size": 0.3856053402412044,
+                  "mean_retained_acceptance_probability": 0.8957125575716954,
+                  "retained_acceptance_rate": 0.9066666666666666
+                }
+              ],
+              "thin": 1,
+              "total_retained_draws": 1200,
+              "training_fights": 3823,
+              "variance_prior_scale": 0.32,
+              "variance_prior_shape": 3.0
+            },
+            "test_fights": 506,
+            "training_fights": 3823,
+            "training_through": "2018-12-29"
+          },
+          "2020": {
+            "sampler": {
+              "burn_in_per_chain": 600,
+              "chains": 2,
+              "feature_groups": [
+                "activity_experience",
+                "grappling",
+                "physical",
+                "rating",
+                "record_results",
+                "striking"
+              ],
+              "features": 82,
+              "grouped_shrinkage": true,
+              "hmc_initial_step_size": 0.18,
+              "hmc_leapfrog_steps_center": 10,
+              "hmc_target_acceptance": 0.75,
+              "maximum_absolute_chain_mean_probability_difference": 0.006548541020136134,
+              "mean_absolute_chain_mean_probability_difference": 0.0014214752134927011,
+              "mean_lag_one_probability_autocorrelation": -0.4948329152447076,
+              "model": "fully_bayesian_logistic_learned_group_shrinkage",
+              "p95_absolute_chain_mean_probability_difference": 0.003501306492813913,
+              "p95_lag_one_probability_autocorrelation": -0.4074064307473476,
+              "posterior_draws_per_chain": 600,
+              "posterior_group_coefficient_scales": {
+                "activity_experience": {
+                  "feature_count": 6,
+                  "mean": 0.29981516200317504,
+                  "q05": 0.21073518926382825,
+                  "q95": 0.4214505605504176
+                },
+                "grappling": {
+                  "feature_count": 16,
+                  "mean": 0.21403580875301997,
+                  "q05": 0.16504457625573926,
+                  "q95": 0.27718281455175864
+                },
+                "physical": {
+                  "feature_count": 7,
+                  "mean": 0.3911989847822745,
+                  "q05": 0.26884799552388083,
+                  "q95": 0.5615492800585992
+                },
+                "rating": {
+                  "feature_count": 9,
+                  "mean": 0.29528968968377833,
+                  "q05": 0.20249153048597704,
+                  "q95": 0.4244831039562872
+                },
+                "record_results": {
+                  "feature_count": 28,
+                  "mean": 0.19011796488840693,
+                  "q05": 0.14821541024115042,
+                  "q95": 0.24338822743913355
+                },
+                "striking": {
+                  "feature_count": 16,
+                  "mean": 0.21606164143225948,
+                  "q05": 0.16413593351767816,
+                  "q95": 0.28622087611557084
+                }
+              },
+              "proposal_diagnostics": {
+                "optimizer_gradient_maximum": 0.0008841829400991763,
+                "optimizer_iterations": 226,
+                "precision_jitter": 1e-10
+              },
+              "sampler": "Laplace-preconditioned Hamiltonian Monte Carlo",
+              "sampler_chains": [
+                {
+                  "final_step_size": 0.38348798420190355,
+                  "mean_retained_acceptance_probability": 0.897003137038416,
+                  "retained_acceptance_rate": 0.89
+                },
+                {
+                  "final_step_size": 0.3847960240991244,
+                  "mean_retained_acceptance_probability": 0.8830028106119395,
+                  "retained_acceptance_rate": 0.875
+                }
+              ],
+              "thin": 1,
+              "total_retained_draws": 1200,
+              "training_fights": 4116,
+              "variance_prior_scale": 0.32,
+              "variance_prior_shape": 3.0
+            },
+            "test_fights": 444,
+            "training_fights": 4116,
+            "training_through": "2019-12-21"
+          },
+          "2021": {
+            "sampler": {
+              "burn_in_per_chain": 600,
+              "chains": 2,
+              "feature_groups": [
+                "activity_experience",
+                "grappling",
+                "physical",
+                "rating",
+                "record_results",
+                "striking"
+              ],
+              "features": 82,
+              "grouped_shrinkage": true,
+              "hmc_initial_step_size": 0.18,
+              "hmc_leapfrog_steps_center": 10,
+              "hmc_target_acceptance": 0.75,
+              "maximum_absolute_chain_mean_probability_difference": 0.006987192132039466,
+              "mean_absolute_chain_mean_probability_difference": 0.0014730932688633172,
+              "mean_lag_one_probability_autocorrelation": -0.5742997151793554,
+              "model": "fully_bayesian_logistic_learned_group_shrinkage",
+              "p95_absolute_chain_mean_probability_difference": 0.003671644276840813,
+              "p95_lag_one_probability_autocorrelation": -0.499463282754965,
+              "posterior_draws_per_chain": 600,
+              "posterior_group_coefficient_scales": {
+                "activity_experience": {
+                  "feature_count": 6,
+                  "mean": 0.3036029130604895,
+                  "q05": 0.2059730593062932,
+                  "q95": 0.4413694058078053
+                },
+                "grappling": {
+                  "feature_count": 16,
+                  "mean": 0.21080736699514122,
+                  "q05": 0.16301605396418573,
+                  "q95": 0.2715235557857073
+                },
+                "physical": {
+                  "feature_count": 7,
+                  "mean": 0.3739961483698111,
+                  "q05": 0.2669865129403346,
+                  "q95": 0.5443407972733939
+                },
+                "rating": {
+                  "feature_count": 9,
+                  "mean": 0.30138987237710174,
+                  "q05": 0.20820085188753984,
+                  "q95": 0.4284238511280479
+                },
+                "record_results": {
+                  "feature_count": 28,
+                  "mean": 0.18979043222580524,
+                  "q05": 0.15029574206210525,
+                  "q95": 0.238099064167719
+                },
+                "striking": {
+                  "feature_count": 16,
+                  "mean": 0.21501213419966697,
+                  "q05": 0.16342211456231487,
+                  "q95": 0.2812183723330236
+                }
+              },
+              "proposal_diagnostics": {
+                "optimizer_gradient_maximum": 0.000593812441036512,
+                "optimizer_iterations": 230,
+                "precision_jitter": 1e-10
+              },
+              "sampler": "Laplace-preconditioned Hamiltonian Monte Carlo",
+              "sampler_chains": [
+                {
+                  "final_step_size": 0.37666144096880905,
+                  "mean_retained_acceptance_probability": 0.8968140538815303,
+                  "retained_acceptance_rate": 0.9083333333333333
+                },
+                {
+                  "final_step_size": 0.37300327106643677,
+                  "mean_retained_acceptance_probability": 0.9026139616608475,
+                  "retained_acceptance_rate": 0.9133333333333333
+                }
+              ],
+              "thin": 1,
+              "total_retained_draws": 1200,
+              "training_fights": 4310,
+              "variance_prior_scale": 0.32,
+              "variance_prior_shape": 3.0
+            },
+            "test_fights": 497,
+            "training_fights": 4310,
+            "training_through": "2020-12-19"
+          },
+          "2022": {
+            "sampler": {
+              "burn_in_per_chain": 600,
+              "chains": 2,
+              "feature_groups": [
+                "activity_experience",
+                "grappling",
+                "physical",
+                "rating",
+                "record_results",
+                "striking"
+              ],
+              "features": 82,
+              "grouped_shrinkage": true,
+              "hmc_initial_step_size": 0.18,
+              "hmc_leapfrog_steps_center": 10,
+              "hmc_target_acceptance": 0.75,
+              "maximum_absolute_chain_mean_probability_difference": 0.0063434897436578375,
+              "mean_absolute_chain_mean_probability_difference": 0.0013631208241063923,
+              "mean_lag_one_probability_autocorrelation": -0.5157473877279523,
+              "model": "fully_bayesian_logistic_learned_group_shrinkage",
+              "p95_absolute_chain_mean_probability_difference": 0.003626643039546129,
+              "p95_lag_one_probability_autocorrelation": -0.4281391399949362,
+              "posterior_draws_per_chain": 600,
+              "posterior_group_coefficient_scales": {
+                "activity_experience": {
+                  "feature_count": 6,
+                  "mean": 0.2943669778048482,
+                  "q05": 0.20660076201668418,
+                  "q95": 0.4262107336931056
+                },
+                "grappling": {
+                  "feature_count": 16,
+                  "mean": 0.21055472409858833,
+                  "q05": 0.16029596947964717,
+                  "q95": 0.27557197888745494
+                },
+                "physical": {
+                  "feature_count": 7,
+                  "mean": 0.3696455801447089,
+                  "q05": 0.2525715486245126,
+                  "q95": 0.5196608013919662
+                },
+                "rating": {
+                  "feature_count": 9,
+                  "mean": 0.2926037265918038,
+                  "q05": 0.19983070410660106,
+                  "q95": 0.4201763512070879
+                },
+                "record_results": {
+                  "feature_count": 28,
+                  "mean": 0.19047535270368232,
+                  "q05": 0.15113704050944848,
+                  "q95": 0.2409945367359562
+                },
+                "striking": {
+                  "feature_count": 16,
+                  "mean": 0.21549561679309884,
+                  "q05": 0.16516701726799757,
+                  "q95": 0.28095877556062254
+                }
+              },
+              "proposal_diagnostics": {
+                "optimizer_gradient_maximum": 0.0008136637652725875,
+                "optimizer_iterations": 229,
+                "precision_jitter": 1e-10
+              },
+              "sampler": "Laplace-preconditioned Hamiltonian Monte Carlo",
+              "sampler_chains": [
+                {
+                  "final_step_size": 0.3964649278359201,
+                  "mean_retained_acceptance_probability": 0.926468156838576,
+                  "retained_acceptance_rate": 0.94
+                },
+                {
+                  "final_step_size": 0.39269830465880967,
+                  "mean_retained_acceptance_probability": 0.9180340060318042,
+                  "retained_acceptance_rate": 0.8983333333333333
+                }
+              ],
+              "thin": 1,
+              "total_retained_draws": 1200,
+              "training_fights": 4512,
+              "variance_prior_scale": 0.32,
+              "variance_prior_shape": 3.0
+            },
+            "test_fights": 506,
+            "training_fights": 4512,
+            "training_through": "2021-12-18"
+          }
+        }
+      }
+    },
+    "years": [
+      2019,
+      2020,
+      2021,
+      2022
+    ]
+  },
+  "elapsed_seconds": 328.01600000000326,
+  "evaluation": {
+    "bayesian_logistic_minus_current_logistic_log_loss": 0.0004348540855453331,
+    "bayesian_logistic_minus_previous_probit_log_loss": -0.0029038364378344284,
+    "blend_minus_current_logistic_log_loss": -5.9603476985525816e-05,
+    "events": 155,
+    "fights": 1877,
+    "folds": {
+      "2023": {
+        "calibration_slope": 1.0864688924059982,
+        "final_sampler": {
+          "burn_in_per_chain": 1000,
+          "chains": 2,
+          "feature_groups": [
+            "activity_experience",
+            "grappling",
+            "physical",
+            "rating",
+            "record_results",
+            "striking"
+          ],
+          "features": 82,
+          "grouped_shrinkage": true,
+          "hmc_initial_step_size": 0.18,
+          "hmc_leapfrog_steps_center": 10,
+          "hmc_target_acceptance": 0.75,
+          "maximum_absolute_chain_mean_probability_difference": 0.005559905090179007,
+          "mean_absolute_chain_mean_probability_difference": 0.001316684465316284,
+          "mean_lag_one_probability_autocorrelation": -0.09325678506730282,
+          "model": "fully_bayesian_logistic_learned_group_shrinkage",
+          "p95_absolute_chain_mean_probability_difference": 0.0032578103329885667,
+          "p95_lag_one_probability_autocorrelation": 0.0809308559822671,
+          "posterior_draws_per_chain": 1000,
+          "posterior_group_coefficient_scales": {
+            "activity_experience": {
+              "feature_count": 6,
+              "mean": 0.0937282617044419,
+              "q05": 0.06017452663995859,
+              "q95": 0.14343118188959403
+            },
+            "grappling": {
+              "feature_count": 16,
+              "mean": 0.08054918882774288,
+              "q05": 0.057134118395863485,
+              "q95": 0.11167357626710589
+            },
+            "physical": {
+              "feature_count": 7,
+              "mean": 0.24065937319892663,
+              "q05": 0.16049917141476944,
+              "q95": 0.35906911652384044
+            },
+            "rating": {
+              "feature_count": 9,
+              "mean": 0.10092188827794243,
+              "q05": 0.0657818579034767,
+              "q95": 0.15045346591975517
+            },
+            "record_results": {
+              "feature_count": 28,
+              "mean": 0.062454041599322975,
+              "q05": 0.047155487336377165,
+              "q95": 0.082316123800784
+            },
+            "striking": {
+              "feature_count": 16,
+              "mean": 0.08340024888174094,
+              "q05": 0.05876162121956533,
+              "q95": 0.11686513873371325
+            }
+          },
+          "proposal_diagnostics": {
+            "optimizer_gradient_maximum": 0.001341772414179765,
+            "optimizer_iterations": 235,
+            "precision_jitter": 1e-10
+          },
+          "sampler": "Laplace-preconditioned Hamiltonian Monte Carlo",
+          "sampler_chains": [
+            {
+              "final_step_size": 0.48381342241192715,
+              "mean_retained_acceptance_probability": 0.88904357303374,
+              "retained_acceptance_rate": 0.906
+            },
+            {
+              "final_step_size": 0.48417730863203556,
+              "mean_retained_acceptance_probability": 0.8785573661675616,
+              "retained_acceptance_rate": 0.875
+            }
+          ],
+          "thin": 1,
+          "total_retained_draws": 2000,
+          "training_fights": 4685,
+          "variance_prior_scale": 0.02,
+          "variance_prior_shape": 3.0
+        },
+        "fit_fights": 4179,
+        "fit_through": "2021-12-18",
+        "inner_sampler": {
+          "burn_in_per_chain": 1000,
+          "chains": 2,
+          "feature_groups": [
+            "activity_experience",
+            "grappling",
+            "physical",
+            "rating",
+            "record_results",
+            "striking"
+          ],
+          "features": 82,
+          "grouped_shrinkage": true,
+          "hmc_initial_step_size": 0.18,
+          "hmc_leapfrog_steps_center": 10,
+          "hmc_target_acceptance": 0.75,
+          "maximum_absolute_chain_mean_probability_difference": 0.008568315355106715,
+          "mean_absolute_chain_mean_probability_difference": 0.0019331554046843036,
+          "mean_lag_one_probability_autocorrelation": -0.14971195878315338,
+          "model": "fully_bayesian_logistic_learned_group_shrinkage",
+          "p95_absolute_chain_mean_probability_difference": 0.004631280711619584,
+          "p95_lag_one_probability_autocorrelation": 0.018633188529036098,
+          "posterior_draws_per_chain": 1000,
+          "posterior_group_coefficient_scales": {
+            "activity_experience": {
+              "feature_count": 6,
+              "mean": 0.09433127324223191,
+              "q05": 0.060305167064794885,
+              "q95": 0.14495445364504952
+            },
+            "grappling": {
+              "feature_count": 16,
+              "mean": 0.08213105288709957,
+              "q05": 0.05721486215343145,
+              "q95": 0.11738784498700017
+            },
+            "physical": {
+              "feature_count": 7,
+              "mean": 0.2531747595468096,
+              "q05": 0.1661703663741191,
+              "q95": 0.3801210051080376
+            },
+            "rating": {
+              "feature_count": 9,
+              "mean": 0.09951085101604835,
+              "q05": 0.06754458647620931,
+              "q95": 0.1464695951937521
+            },
+            "record_results": {
+              "feature_count": 28,
+              "mean": 0.0628850711887907,
+              "q05": 0.04666826026007799,
+              "q95": 0.08443493045068243
+            },
+            "striking": {
+              "feature_count": 16,
+              "mean": 0.08666950172722826,
+              "q05": 0.05980558113306348,
+              "q95": 0.12219331404092848
+            }
+          },
+          "proposal_diagnostics": {
+            "optimizer_gradient_maximum": 0.0009704158668379925,
+            "optimizer_iterations": 227,
+            "precision_jitter": 1e-10
+          },
+          "sampler": "Laplace-preconditioned Hamiltonian Monte Carlo",
+          "sampler_chains": [
+            {
+              "final_step_size": 0.4812538248709467,
+              "mean_retained_acceptance_probability": 0.8905727253324505,
+              "retained_acceptance_rate": 0.892
+            },
+            {
+              "final_step_size": 0.48058293981666195,
+              "mean_retained_acceptance_probability": 0.8908697113763563,
+              "retained_acceptance_rate": 0.902
+            }
+          ],
+          "thin": 1,
+          "total_retained_draws": 2000,
+          "training_fights": 4179,
+          "variance_prior_scale": 0.02,
+          "variance_prior_shape": 3.0
+        },
+        "test_fights": 504,
+        "training_fights": 4685,
+        "validation_fights": 506,
+        "validation_year": 2022
+      },
+      "2024": {
+        "calibration_slope": 0.9766660655615717,
+        "final_sampler": {
+          "burn_in_per_chain": 1000,
+          "chains": 2,
+          "feature_groups": [
+            "activity_experience",
+            "grappling",
+            "physical",
+            "rating",
+            "record_results",
+            "striking"
+          ],
+          "features": 82,
+          "grouped_shrinkage": true,
+          "hmc_initial_step_size": 0.18,
+          "hmc_leapfrog_steps_center": 10,
+          "hmc_target_acceptance": 0.75,
+          "maximum_absolute_chain_mean_probability_difference": 0.006079813885714214,
+          "mean_absolute_chain_mean_probability_difference": 0.0013550875431078547,
+          "mean_lag_one_probability_autocorrelation": -0.09957466029024102,
+          "model": "fully_bayesian_logistic_learned_group_shrinkage",
+          "p95_absolute_chain_mean_probability_difference": 0.0035451829668200472,
+          "p95_lag_one_probability_autocorrelation": 0.056637544939875356,
+          "posterior_draws_per_chain": 1000,
+          "posterior_group_coefficient_scales": {
+            "activity_experience": {
+              "feature_count": 6,
+              "mean": 0.08752777328763622,
+              "q05": 0.057143153623158034,
+              "q95": 0.13323466526612976
+            },
+            "grappling": {
+              "feature_count": 16,
+              "mean": 0.07352277731543949,
+              "q05": 0.052281601578043915,
+              "q95": 0.10103745214686267
+            },
+            "physical": {
+              "feature_count": 7,
+              "mean": 0.22617692362036995,
+              "q05": 0.14972874040921472,
+              "q95": 0.34017555456338766
+            },
+            "rating": {
+              "feature_count": 9,
+              "mean": 0.10077345592533325,
+              "q05": 0.06693814541359135,
+              "q95": 0.1507908867391835
+            },
+            "record_results": {
+              "feature_count": 28,
+              "mean": 0.06105522269473312,
+              "q05": 0.045108755804137306,
+              "q95": 0.08221373939388589
+            },
+            "striking": {
+              "feature_count": 16,
+              "mean": 0.08149444285133242,
+              "q05": 0.05770901632408406,
+              "q95": 0.11160671304507826
+            }
+          },
+          "proposal_diagnostics": {
+            "optimizer_gradient_maximum": 0.000622819135710273,
+            "optimizer_iterations": 210,
+            "precision_jitter": 1e-10
+          },
+          "sampler": "Laplace-preconditioned Hamiltonian Monte Carlo",
+          "sampler_chains": [
+            {
+              "final_step_size": 0.4828594064351772,
+              "mean_retained_acceptance_probability": 0.882734554607893,
+              "retained_acceptance_rate": 0.867
+            },
+            {
+              "final_step_size": 0.48210573597341766,
+              "mean_retained_acceptance_probability": 0.8846025542338221,
+              "retained_acceptance_rate": 0.894
+            }
+          ],
+          "thin": 1,
+          "total_retained_draws": 2000,
+          "training_fights": 4813,
+          "variance_prior_scale": 0.02,
+          "variance_prior_shape": 3.0
+        },
+        "fit_fights": 4309,
+        "fit_through": "2022-12-17",
+        "inner_sampler": {
+          "burn_in_per_chain": 1000,
+          "chains": 2,
+          "feature_groups": [
+            "activity_experience",
+            "grappling",
+            "physical",
+            "rating",
+            "record_results",
+            "striking"
+          ],
+          "features": 82,
+          "grouped_shrinkage": true,
+          "hmc_initial_step_size": 0.18,
+          "hmc_leapfrog_steps_center": 10,
+          "hmc_target_acceptance": 0.75,
+          "maximum_absolute_chain_mean_probability_difference": 0.010354684164914363,
+          "mean_absolute_chain_mean_probability_difference": 0.0017975307173622643,
+          "mean_lag_one_probability_autocorrelation": -0.12856764644789673,
+          "model": "fully_bayesian_logistic_learned_group_shrinkage",
+          "p95_absolute_chain_mean_probability_difference": 0.004458643484270843,
+          "p95_lag_one_probability_autocorrelation": 0.04283858631700736,
+          "posterior_draws_per_chain": 1000,
+          "posterior_group_coefficient_scales": {
+            "activity_experience": {
+              "feature_count": 6,
+              "mean": 0.0896358455537671,
+              "q05": 0.057671479855825956,
+              "q95": 0.1342045643028336
+            },
+            "grappling": {
+              "feature_count": 16,
+              "mean": 0.07759906617816734,
+              "q05": 0.054359057919593765,
+              "q95": 0.1078162830670712
+            },
+            "physical": {
+              "feature_count": 7,
+              "mean": 0.22779187958127914,
+              "q05": 0.1510040512885338,
+              "q95": 0.33699714397087177
+            },
+            "rating": {
+              "feature_count": 9,
+              "mean": 0.10289419034592606,
+              "q05": 0.06686990579886076,
+              "q95": 0.15510117148116542
+            },
+            "record_results": {
+              "feature_count": 28,
+              "mean": 0.06243152583844331,
+              "q05": 0.04584141947714007,
+              "q95": 0.08282879376680836
+            },
+            "striking": {
+              "feature_count": 16,
+              "mean": 0.08102395639646331,
+              "q05": 0.0585159995924085,
+              "q95": 0.11264228538480583
+            }
+          },
+          "proposal_diagnostics": {
+            "optimizer_gradient_maximum": 0.001743828741545883,
+            "optimizer_iterations": 215,
+            "precision_jitter": 1e-10
+          },
+          "sampler": "Laplace-preconditioned Hamiltonian Monte Carlo",
+          "sampler_chains": [
+            {
+              "final_step_size": 0.47593438137364086,
+              "mean_retained_acceptance_probability": 0.8907500969102996,
+              "retained_acceptance_rate": 0.889
+            },
+            {
+              "final_step_size": 0.481686357461277,
+              "mean_retained_acceptance_probability": 0.8807787057974668,
+              "retained_acceptance_rate": 0.878
+            }
+          ],
+          "thin": 1,
+          "total_retained_draws": 2000,
+          "training_fights": 4309,
+          "variance_prior_scale": 0.02,
+          "variance_prior_shape": 3.0
+        },
+        "test_fights": 513,
+        "training_fights": 4813,
+        "validation_fights": 504,
+        "validation_year": 2023
+      },
+      "2025": {
+        "calibration_slope": 1.3588785680420299,
+        "final_sampler": {
+          "burn_in_per_chain": 1000,
+          "chains": 2,
+          "feature_groups": [
+            "activity_experience",
+            "grappling",
+            "physical",
+            "rating",
+            "record_results",
+            "striking"
+          ],
+          "features": 82,
+          "grouped_shrinkage": true,
+          "hmc_initial_step_size": 0.18,
+          "hmc_leapfrog_steps_center": 10,
+          "hmc_target_acceptance": 0.75,
+          "maximum_absolute_chain_mean_probability_difference": 0.01013131385722571,
+          "mean_absolute_chain_mean_probability_difference": 0.0019336406229942728,
+          "mean_lag_one_probability_autocorrelation": -0.08835484280509413,
+          "model": "fully_bayesian_logistic_learned_group_shrinkage",
+          "p95_absolute_chain_mean_probability_difference": 0.005048771518332428,
+          "p95_lag_one_probability_autocorrelation": 0.06471656518213081,
+          "posterior_draws_per_chain": 1000,
+          "posterior_group_coefficient_scales": {
+            "activity_experience": {
+              "feature_count": 6,
+              "mean": 0.0856005781822181,
+              "q05": 0.05559380881751776,
+              "q95": 0.12818055500510558
+            },
+            "grappling": {
+              "feature_count": 16,
+              "mean": 0.07390490768235353,
+              "q05": 0.05295302234395711,
+              "q95": 0.10181559685858174
+            },
+            "physical": {
+              "feature_count": 7,
+              "mean": 0.21682832192387927,
+              "q05": 0.1400525602413339,
+              "q95": 0.32687088186190955
+            },
+            "rating": {
+              "feature_count": 9,
+              "mean": 0.10549519043690228,
+              "q05": 0.06829547755888447,
+              "q95": 0.15435846779094098
+            },
+            "record_results": {
+              "feature_count": 28,
+              "mean": 0.0651289969889024,
+              "q05": 0.047830262753995385,
+              "q95": 0.08705814390885429
+            },
+            "striking": {
+              "feature_count": 16,
+              "mean": 0.08210187717534925,
+              "q05": 0.05867106432024566,
+              "q95": 0.11334915203551316
+            }
+          },
+          "proposal_diagnostics": {
+            "optimizer_gradient_maximum": 0.0009493241310494227,
+            "optimizer_iterations": 211,
+            "precision_jitter": 1e-10
+          },
+          "sampler": "Laplace-preconditioned Hamiltonian Monte Carlo",
+          "sampler_chains": [
+            {
+              "final_step_size": 0.48016900104028926,
+              "mean_retained_acceptance_probability": 0.8832183054114758,
+              "retained_acceptance_rate": 0.883
+            },
+            {
+              "final_step_size": 0.48405036805909357,
+              "mean_retained_acceptance_probability": 0.8749635479039028,
+              "retained_acceptance_rate": 0.872
+            }
+          ],
+          "thin": 1,
+          "total_retained_draws": 2000,
+          "training_fights": 4832,
+          "variance_prior_scale": 0.02,
+          "variance_prior_shape": 3.0
+        },
+        "fit_fights": 4319,
+        "fit_through": "2023-12-16",
+        "inner_sampler": {
+          "burn_in_per_chain": 1000,
+          "chains": 2,
+          "feature_groups": [
+            "activity_experience",
+            "grappling",
+            "physical",
+            "rating",
+            "record_results",
+            "striking"
+          ],
+          "features": 82,
+          "grouped_shrinkage": true,
+          "hmc_initial_step_size": 0.18,
+          "hmc_leapfrog_steps_center": 10,
+          "hmc_target_acceptance": 0.75,
+          "maximum_absolute_chain_mean_probability_difference": 0.009572370579105316,
+          "mean_absolute_chain_mean_probability_difference": 0.00146886453268887,
+          "mean_lag_one_probability_autocorrelation": -0.11138310792229222,
+          "model": "fully_bayesian_logistic_learned_group_shrinkage",
+          "p95_absolute_chain_mean_probability_difference": 0.003962432730731069,
+          "p95_lag_one_probability_autocorrelation": 0.05484339475948243,
+          "posterior_draws_per_chain": 1000,
+          "posterior_group_coefficient_scales": {
+            "activity_experience": {
+              "feature_count": 6,
+              "mean": 0.08437969534750134,
+              "q05": 0.055163014737899925,
+              "q95": 0.12714506459349767
+            },
+            "grappling": {
+              "feature_count": 16,
+              "mean": 0.07381152599821991,
+              "q05": 0.05261003385962115,
+              "q95": 0.10085145147517605
+            },
+            "physical": {
+              "feature_count": 7,
+              "mean": 0.22356139989863408,
+              "q05": 0.1480547537760014,
+              "q95": 0.3342476674852874
+            },
+            "rating": {
+              "feature_count": 9,
+              "mean": 0.10039025577539629,
+              "q05": 0.06537700139544245,
+              "q95": 0.15367788290366052
+            },
+            "record_results": {
+              "feature_count": 28,
+              "mean": 0.0633726952917659,
+              "q05": 0.046608792049911016,
+              "q95": 0.08498688460704246
+            },
+            "striking": {
+              "feature_count": 16,
+              "mean": 0.08431114284410676,
+              "q05": 0.05895975560662499,
+              "q95": 0.11898276495880108
+            }
+          },
+          "proposal_diagnostics": {
+            "optimizer_gradient_maximum": 0.0006292531834048987,
+            "optimizer_iterations": 233,
+            "precision_jitter": 1e-10
+          },
+          "sampler": "Laplace-preconditioned Hamiltonian Monte Carlo",
+          "sampler_chains": [
+            {
+              "final_step_size": 0.48168286416597655,
+              "mean_retained_acceptance_probability": 0.8813449225703346,
+              "retained_acceptance_rate": 0.877
+            },
+            {
+              "final_step_size": 0.485530845119585,
+              "mean_retained_acceptance_probability": 0.8789587490471101,
+              "retained_acceptance_rate": 0.873
+            }
+          ],
+          "thin": 1,
+          "total_retained_draws": 2000,
+          "training_fights": 4319,
+          "variance_prior_scale": 0.02,
+          "variance_prior_shape": 3.0
+        },
+        "test_fights": 514,
+        "training_fights": 4832,
+        "validation_fights": 513,
+        "validation_year": 2024
+      },
+      "2026": {
+        "calibration_slope": 1.2092708303779405,
+        "final_sampler": {
+          "burn_in_per_chain": 1000,
+          "chains": 2,
+          "feature_groups": [
+            "activity_experience",
+            "grappling",
+            "physical",
+            "rating",
+            "record_results",
+            "striking"
+          ],
+          "features": 82,
+          "grouped_shrinkage": true,
+          "hmc_initial_step_size": 0.18,
+          "hmc_leapfrog_steps_center": 10,
+          "hmc_target_acceptance": 0.75,
+          "maximum_absolute_chain_mean_probability_difference": 0.008348019053495137,
+          "mean_absolute_chain_mean_probability_difference": 0.001505295545143626,
+          "mean_lag_one_probability_autocorrelation": -0.091173154721477,
+          "model": "fully_bayesian_logistic_learned_group_shrinkage",
+          "p95_absolute_chain_mean_probability_difference": 0.003931157032846633,
+          "p95_lag_one_probability_autocorrelation": 0.06941840315808888,
+          "posterior_draws_per_chain": 1000,
+          "posterior_group_coefficient_scales": {
+            "activity_experience": {
+              "feature_count": 6,
+              "mean": 0.08212300615599608,
+              "q05": 0.05557501267957412,
+              "q95": 0.12117332053438841
+            },
+            "grappling": {
+              "feature_count": 16,
+              "mean": 0.07702776829243584,
+              "q05": 0.05532645343047626,
+              "q95": 0.10494920079660564
+            },
+            "physical": {
+              "feature_count": 7,
+              "mean": 0.16132978063503917,
+              "q05": 0.10672860173713507,
+              "q95": 0.2414467437897756
+            },
+            "rating": {
+              "feature_count": 9,
+              "mean": 0.10470272107823314,
+              "q05": 0.06893517751548464,
+              "q95": 0.154311537238097
+            },
+            "record_results": {
+              "feature_count": 28,
+              "mean": 0.06331596926605498,
+              "q05": 0.04721200568631909,
+              "q95": 0.08438278579083672
+            },
+            "striking": {
+              "feature_count": 16,
+              "mean": 0.07912608851018202,
+              "q05": 0.05679455180413683,
+              "q95": 0.10982236542736541
+            }
+          },
+          "proposal_diagnostics": {
+            "optimizer_gradient_maximum": 0.0006940697643784688,
+            "optimizer_iterations": 209,
+            "precision_jitter": 1e-10
+          },
+          "sampler": "Laplace-preconditioned Hamiltonian Monte Carlo",
+          "sampler_chains": [
+            {
+              "final_step_size": 0.4827954930233571,
+              "mean_retained_acceptance_probability": 0.8818110189265601,
+              "retained_acceptance_rate": 0.88
+            },
+            {
+              "final_step_size": 0.4750259158831072,
+              "mean_retained_acceptance_probability": 0.8871602095188192,
+              "retained_acceptance_rate": 0.884
+            }
+          ],
+          "thin": 1,
+          "total_retained_draws": 2000,
+          "training_fights": 4882,
+          "variance_prior_scale": 0.02,
+          "variance_prior_shape": 3.0
+        },
+        "fit_fights": 4368,
+        "fit_through": "2024-12-14",
+        "inner_sampler": {
+          "burn_in_per_chain": 1000,
+          "chains": 2,
+          "feature_groups": [
+            "activity_experience",
+            "grappling",
+            "physical",
+            "rating",
+            "record_results",
+            "striking"
+          ],
+          "features": 82,
+          "grouped_shrinkage": true,
+          "hmc_initial_step_size": 0.18,
+          "hmc_leapfrog_steps_center": 10,
+          "hmc_target_acceptance": 0.75,
+          "maximum_absolute_chain_mean_probability_difference": 0.006221119091561311,
+          "mean_absolute_chain_mean_probability_difference": 0.0016467018404111482,
+          "mean_lag_one_probability_autocorrelation": -0.12911437872386397,
+          "model": "fully_bayesian_logistic_learned_group_shrinkage",
+          "p95_absolute_chain_mean_probability_difference": 0.004140048031220906,
+          "p95_lag_one_probability_autocorrelation": 0.016207342466927437,
+          "posterior_draws_per_chain": 1000,
+          "posterior_group_coefficient_scales": {
+            "activity_experience": {
+              "feature_count": 6,
+              "mean": 0.08107726546018736,
+              "q05": 0.053778156366312134,
+              "q95": 0.11977611135814586
+            },
+            "grappling": {
+              "feature_count": 16,
+              "mean": 0.07621063134999315,
+              "q05": 0.053651167144896546,
+              "q95": 0.10381017491642536
+            },
+            "physical": {
+              "feature_count": 7,
+              "mean": 0.1617081992556395,
+              "q05": 0.10650889197378474,
+              "q95": 0.24506501489031768
+            },
+            "rating": {
+              "feature_count": 9,
+              "mean": 0.10341225571169922,
+              "q05": 0.06755100371632841,
+              "q95": 0.15665960890215516
+            },
+            "record_results": {
+              "feature_count": 28,
+              "mean": 0.06470744653680569,
+              "q05": 0.04792464577396793,
+              "q95": 0.08604163389614149
+            },
+            "striking": {
+              "feature_count": 16,
+              "mean": 0.08269183406443655,
+              "q05": 0.058126094010971525,
+              "q95": 0.11799626871475484
+            }
+          },
+          "proposal_diagnostics": {
+            "optimizer_gradient_maximum": 0.002971521241384778,
+            "optimizer_iterations": 209,
+            "precision_jitter": 1e-10
+          },
+          "sampler": "Laplace-preconditioned Hamiltonian Monte Carlo",
+          "sampler_chains": [
+            {
+              "final_step_size": 0.483144095828501,
+              "mean_retained_acceptance_probability": 0.8843638213600966,
+              "retained_acceptance_rate": 0.883
+            },
+            {
+              "final_step_size": 0.48079038015014486,
+              "mean_retained_acceptance_probability": 0.8856180392174609,
+              "retained_acceptance_rate": 0.886
+            }
+          ],
+          "thin": 1,
+          "total_retained_draws": 2000,
+          "training_fights": 4368,
+          "variance_prior_scale": 0.02,
+          "variance_prior_shape": 3.0
+        },
+        "test_fights": 346,
+        "training_fights": 4882,
+        "validation_fights": 514,
+        "validation_year": 2025
+      }
+    },
+    "metrics": {
+      "bayesian_logistic": {
+        "accuracy": 0.6382525306339905,
+        "auc": 0.69718072815269,
+        "brier": 0.2207572572939563,
+        "ece_10_bin": 0.02520238025282096,
+        "fights": 1877,
+        "log_loss": 0.6318108988623037
+      },
+      "current_logistic": {
+        "accuracy": 0.6403835908364411,
+        "auc": 0.6971739051327305,
+        "brier": 0.22070059107620524,
+        "ece_10_bin": 0.024517491163701725,
+        "fights": 1877,
+        "log_loss": 0.6313760447767583
+      },
+      "development_selected_blend": {
+        "accuracy": 0.6382525306339905,
+        "auc": 0.6974945870708321,
+        "brier": 0.22061861835893576,
+        "ece_10_bin": 0.02452783970013342,
+        "fights": 1877,
+        "log_loss": 0.6313164412997728
+      },
+      "previous_bayesian_probit": {
+        "accuracy": 0.6334576451784762,
+        "auc": 0.6930846418369389,
+        "brier": 0.2220411153344091,
+        "ece_10_bin": 0.0346683765916127,
+        "fights": 1877,
+        "log_loss": 0.6347147353001381
+      }
+    },
+    "paired_log_loss_intervals": {
+      "bayesian_logistic_minus_current_logistic": {
+        "bootstrap_samples": 10000,
+        "ci_95_lower": -0.001787905668637876,
+        "ci_95_upper": 0.002698895345241617,
+        "definition": "bayesian_logistic_probability minus current_logistic_probability paired log loss; negative favors candidate",
+        "event_count": 155,
+        "fight_count": 1877,
+        "method": "nonparametric whole-event block bootstrap",
+        "point_difference": 0.00043485408554535626,
+        "seed": 20260822
+      },
+      "bayesian_logistic_minus_previous_bayesian_probit": {
+        "bootstrap_samples": 10000,
+        "ci_95_lower": -0.005954554857867182,
+        "ci_95_upper": 0.00016033653492530294,
+        "definition": "bayesian_logistic_probability minus previous_bayesian_probit_probability paired log loss; negative favors candidate",
+        "event_count": 155,
+        "fight_count": 1877,
+        "method": "nonparametric whole-event block bootstrap",
+        "point_difference": -0.0029038364378343707,
+        "seed": 20260822
+      },
+      "blend_minus_current_logistic": {
+        "bootstrap_samples": 10000,
+        "ci_95_lower": -0.001278371428504746,
+        "ci_95_upper": 0.001176439515658794,
+        "definition": "selected_logistic_bayesian_blend_probability minus current_logistic_probability paired log loss; negative favors candidate",
+        "event_count": 155,
+        "fight_count": 1877,
+        "method": "nonparametric whole-event block bootstrap",
+        "point_difference": -5.9603476985611685e-05,
+        "seed": 20260822
+      }
+    },
+    "per_year": {
+      "2023": {
+        "bayesian_logistic": {
+          "accuracy": 0.6011904761904762,
+          "auc": 0.6612847222222222,
+          "brier": 0.22966179966114753,
+          "ece_10_bin": 0.05167089286303492,
+          "fights": 504,
+          "log_loss": 0.6495606169567244
+        },
+        "current_logistic": {
+          "accuracy": 0.6111111111111112,
+          "auc": 0.6633522727272727,
+          "brier": 0.22909236321991958,
+          "ece_10_bin": 0.038396190935394654,
+          "fights": 504,
+          "log_loss": 0.6485268842635092
+        },
+        "development_selected_blend": {
+          "accuracy": 0.6111111111111112,
+          "auc": 0.6618213383838384,
+          "brier": 0.22930833514296972,
+          "ece_10_bin": 0.03986752060733762,
+          "fights": 504,
+          "log_loss": 0.6488706503313671
+        },
+        "previous_bayesian_probit": {
+          "accuracy": 0.5952380952380952,
+          "auc": 0.6542455808080807,
+          "brier": 0.2307504919994699,
+          "ece_10_bin": 0.042739359081171546,
+          "fights": 504,
+          "log_loss": 0.6519758349293394
+        }
+      },
+      "2024": {
+        "bayesian_logistic": {
+          "accuracy": 0.6471734892787524,
+          "auc": 0.7073909470031354,
+          "brier": 0.21856233837359526,
+          "ece_10_bin": 0.057246759080640516,
+          "fights": 513,
+          "log_loss": 0.6272480089982077
+        },
+        "current_logistic": {
+          "accuracy": 0.6510721247563352,
+          "auc": 0.7064016316093878,
+          "brier": 0.21800131578382315,
+          "ece_10_bin": 0.055696688878456024,
+          "fights": 513,
+          "log_loss": 0.6256764848382201
+        },
+        "development_selected_blend": {
+          "accuracy": 0.645224171539961,
+          "auc": 0.7078323338711151,
+          "brier": 0.21825997807238331,
+          "ece_10_bin": 0.0567004671814084,
+          "fights": 513,
+          "log_loss": 0.6264353965444424
+        },
+        "previous_bayesian_probit": {
+          "accuracy": 0.6432748538011696,
+          "auc": 0.7120026787616816,
+          "brier": 0.21873339573952455,
+          "ece_10_bin": 0.05509646510076384,
+          "fights": 513,
+          "log_loss": 0.6281455388070617
+        }
+      },
+      "2025": {
+        "bayesian_logistic": {
+          "accuracy": 0.6595330739299611,
+          "auc": 0.7138743653860726,
+          "brier": 0.2160399488141561,
+          "ece_10_bin": 0.03741416897682481,
+          "fights": 514,
+          "log_loss": 0.622857536275533
+        },
+        "current_logistic": {
+          "accuracy": 0.6536964980544747,
+          "auc": 0.7117981359399863,
+          "brier": 0.2167366021542195,
+          "ece_10_bin": 0.04170481501081931,
+          "fights": 514,
+          "log_loss": 0.6234114835809952
+        },
+        "development_selected_blend": {
+          "accuracy": 0.6536964980544747,
+          "auc": 0.7130559975752064,
+          "brier": 0.2161171090622583,
+          "ece_10_bin": 0.04273047215738676,
+          "fights": 514,
+          "log_loss": 0.6224220266554811
+        },
+        "previous_bayesian_probit": {
+          "accuracy": 0.6556420233463035,
+          "auc": 0.705236038493597,
+          "brier": 0.2183862828939791,
+          "ece_10_bin": 0.05174727863453412,
+          "fights": 514,
+          "log_loss": 0.6275896759638276
+        }
+      },
+      "2026": {
+        "bayesian_logistic": {
+          "accuracy": 0.6473988439306358,
+          "auc": 0.7065796082370668,
+          "brier": 0.2180485885416387,
+          "ece_10_bin": 0.04160188311950562,
+          "fights": 346,
+          "log_loss": 0.6260216877359844
+        },
+        "current_logistic": {
+          "accuracy": 0.6473988439306358,
+          "auc": 0.7061108320776829,
+          "brier": 0.21836754301395275,
+          "ece_10_bin": 0.04758482226593102,
+          "fights": 346,
+          "log_loss": 0.6266755696373653
+        },
+        "development_selected_blend": {
+          "accuracy": 0.6445086705202312,
+          "auc": 0.7065461242256822,
+          "brier": 0.21814503739460198,
+          "ece_10_bin": 0.04203400755389991,
+          "fights": 346,
+          "log_loss": 0.6261961630764402
+        },
+        "previous_bayesian_probit": {
+          "accuracy": 0.6416184971098265,
+          "auc": 0.7033986271555331,
+          "brier": 0.21968827772564054,
+          "ece_10_bin": 0.049122153374442375,
+          "fights": 346,
+          "log_loss": 0.6298959031807573
+        }
+      }
+    },
+    "selected_variant": {
+      "grouped": true,
+      "key": "grouped_tight",
+      "variance_prior_scale": 0.02,
+      "variance_prior_shape": 3.0
+    },
+    "years": [
+      2023,
+      2024,
+      2025,
+      2026
+    ]
+  },
+  "experiment_version": "fully-bayesian-logistic-group-shrinkage-v1",
+  "fully_bayesian_contract": {
+    "likelihood": "logistic winner likelihood",
+    "not_laplace_or_point_estimate": true,
+    "sampled": [
+      "all 82 matchup coefficients",
+      "coefficient variance for every enabled feature group"
+    ],
+    "sampler": "Laplace-preconditioned Hamiltonian Monte Carlo with exact accept/reject correction plus conditional variance draws"
+  },
+  "important_limits": [
+    "2019-2022 chose the hyperprior and blend weight, so those scores are not independent evidence",
+    "2023-2026 has influenced earlier research and is reused development evidence rather than final promotion proof",
+    "posterior intervals omit uncertainty in the separately estimated calibration slope",
+    "production forecasts and betting behavior are unchanged"
+  ],
+  "paper_only": true,
+  "plain_language_conclusion": "The preselected blend had a tiny better point estimate, but its uncertainty range includes no improvement. It should not be promoted.",
+  "plain_language_method": "Five Bayesian logistic prior designs were compared on 2019-2022. The selected design learns separate shrinkage amounts for six feature groups. Its design and blend weight were frozen before 2023-2026.",
+  "production_action": "none",
+  "report_schema_version": 1,
+  "source_sha256": {
+    "development_detail_logical": "77a21241cd387baac8e4165a7520efaf009027babb87e907eb7847399aff0a51",
+    "evaluation_detail_logical": "e09aacc50c251c7daa85cb33e31cb1ed900daa18f2df6c831807d5dd5fd5d43d",
+    "fighter_stats": "88341fc47df0dac282a4c91c6f5df4d60e9e5905204eda4ce950459720c01230",
+    "model_artifact": "ff068e2763ecd2a667462bc1afbc7691639719ac5ca049e2df61847ec049b725",
+    "point_in_time": "f9ed863ea627318a3d55e1bf422536c0563fe2e22f8baedb71f6837b27530370",
+    "previous_bayesian_detail": "50d058fb714774a4195fa10b4b4554489719ae553f5939cc8bc3e6490bfb8c4d",
+    "raw_fights": "6cfb14c9ebcaf2946d942447f4af0166df8b1e5cefa9111edb184b74d7197d49"
+  }
+}

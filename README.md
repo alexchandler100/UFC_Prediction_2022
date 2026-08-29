@@ -92,6 +92,13 @@ failed to help (`0.63164`). Production behavior is unchanged. See
 [MODEL_FAMILY_RESEARCH.md](MODEL_FAMILY_RESEARCH.md) for exact results,
 limitations, and reproduction commands.
 
+The next fully Bayesian logistic experiment learned shrinkage separately for
+six feature groups. Its standalone log loss improved to `0.63181`. A blend
+whose 54.6% Bayesian weight was chosen using 2019–2022 scored `0.63132` on
+2023–August 2026, versus `0.63138` for production. That `0.00006` advantage is
+far inside the whole-event uncertainty range and accuracy was slightly worse,
+so it remains a paper-only result and production is unchanged.
+
 ## External promotion history
 
 The repository now has a source-attributed external-MMA collection layer for
