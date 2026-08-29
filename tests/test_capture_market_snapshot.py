@@ -210,6 +210,7 @@ class CaptureMarketSnapshotTests(unittest.TestCase):
                 "MODEL_PATH": model_path,
                 "BAYESIAN_MODEL_PATH": bayesian_model_path,
                 "OUTCOME_FORECAST_PATH": external / "outcome_forecasts.json",
+                "ALL_UPCOMING_FORECAST_PATH": external / "all_upcoming_forecasts.json",
                 "QUOTE_CSV_PATH": market / "quote_snapshots.csv",
                 "QUOTE_JSONL_PATH": market / "quote_snapshots.jsonl",
                 "FORECAST_CSV_PATH": market / "forecast_captures.csv",
@@ -234,6 +235,7 @@ class CaptureMarketSnapshotTests(unittest.TestCase):
                 "BAYESIAN_FILTER_DECISION_JSONL_PATH": market / "bayesian_filtered_paper_decisions.jsonl",
                 "REPORT_PATH": market / "capture_report.json",
                 "CURRENT_OPPORTUNITIES_PATH": market / "current_opportunities.json",
+                "UPCOMING_BET_BOARD_PATH": market / "upcoming_bet_board.json",
             }
             scrape_order = []
 

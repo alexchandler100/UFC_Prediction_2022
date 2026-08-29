@@ -64,6 +64,12 @@ from market_tracker import (
     validate_current_opportunities,
 )
 from odds_getter import OddsApiError, OddsApiResponse, OddsGetter, TheOddsApiClient
+from upcoming_bet_board import (
+    build_upcoming_bet_board,
+    validate_upcoming_bet_board,
+    validate_upcoming_forecast_publication,
+    write_upcoming_bet_board,
+)
 
 
 ODDS_API_SOURCE = "the-odds-api.com"
@@ -76,6 +82,7 @@ VEGAS_PATH = EXTERNAL_ROOT / "vegas_odds.json"
 MODEL_PATH = EXTERNAL_ROOT / "winner_model.json"
 BAYESIAN_MODEL_PATH = EXTERNAL_ROOT / "bayesian_winner_challenger.json"
 OUTCOME_FORECAST_PATH = EXTERNAL_ROOT / "outcome_forecasts.json"
+ALL_UPCOMING_FORECAST_PATH = EXTERNAL_ROOT / "all_upcoming_forecasts.json"
 QUOTE_CSV_PATH = MARKET_ROOT / "quote_snapshots.csv"
 QUOTE_JSONL_PATH = MARKET_ROOT / "quote_snapshots.jsonl"
 FORECAST_CSV_PATH = MARKET_ROOT / "forecast_captures.csv"
@@ -104,6 +111,7 @@ BAYESIAN_FILTER_DECISION_JSONL_PATH = (
 )
 REPORT_PATH = MARKET_ROOT / "capture_report.json"
 CURRENT_OPPORTUNITIES_PATH = MARKET_ROOT / "current_opportunities.json"
+UPCOMING_BET_BOARD_PATH = MARKET_ROOT / "upcoming_bet_board.json"
 REPORT_SIZE_LIMIT = 64 * 1024
 CURRENT_OPPORTUNITIES_SIZE_LIMIT = 256 * 1024
 SOURCE_RETRY_DELAYS_SECONDS = (15.0, 60.0)
@@ -232,6 +240,10 @@ def _publication_payloads() -> dict[Path, bytes]:
     }
     if OUTCOME_FORECAST_PATH.is_file():
         payloads[OUTCOME_FORECAST_PATH] = _read_bytes(OUTCOME_FORECAST_PATH)
+    if ALL_UPCOMING_FORECAST_PATH.is_file():
+        payloads[ALL_UPCOMING_FORECAST_PATH] = _read_bytes(
+            ALL_UPCOMING_FORECAST_PATH
+        )
     return payloads
 
 
@@ -1643,6 +1655,23 @@ def validate_generated_capture() -> dict[str, object]:
         raise CaptureError("capture report has a partial enhanced market contract")
     enhanced_contract = enhanced_fields <= set(report)
     opportunity_contract = "opportunity_publication_sha256" in report
+    upcoming_board_fields = {
+        "upcoming_bet_board_sha256",
+        "upcoming_bet_board_qualified_bets",
+        "upcoming_bet_board_announced_events",
+        "upcoming_bet_board_execution_enabled",
+    }
+    present_upcoming_board_fields = upcoming_board_fields & set(report)
+    if (
+        present_upcoming_board_fields
+        and present_upcoming_board_fields != upcoming_board_fields
+    ):
+        raise CaptureError("capture report has a partial upcoming-bet-board contract")
+    upcoming_board_contract = upcoming_board_fields <= set(report)
+    if upcoming_board_contract and report.get(
+        "upcoming_bet_board_execution_enabled"
+    ) is not False:
+        raise CaptureError("upcoming bet board must keep execution disabled")
     early_market_fields = {
         "early_market_contract",
         "early_market_source_scope",
@@ -2187,6 +2216,23 @@ def validate_generated_capture() -> dict[str, object]:
             raise CaptureError(
                 "opportunity publication fingerprint differs from capture report"
             )
+    if upcoming_board_contract:
+        board = validate_upcoming_bet_board(
+            _json_object(
+                _read_bytes(UPCOMING_BET_BOARD_PATH),
+                UPCOMING_BET_BOARD_PATH,
+            )
+        )
+        if board.get("publication_sha256") != report.get(
+            "upcoming_bet_board_sha256"
+        ):
+            raise CaptureError("upcoming bet board fingerprint differs from report")
+        if board.get("qualified_bet_count") != report.get(
+            "upcoming_bet_board_qualified_bets"
+        ) or board.get("announced_event_count") != report.get(
+            "upcoming_bet_board_announced_events"
+        ):
+            raise CaptureError("upcoming bet board counts differ from report")
     return report
 
 
@@ -2207,6 +2253,16 @@ def capture_market_snapshot() -> dict[str, object]:
     )
     if outcome_publication is not None:
         validate_outcome_forecast_publication(outcome_publication)
+    all_upcoming_forecasts = (
+        validate_upcoming_forecast_publication(
+            _json_object(
+                payloads[ALL_UPCOMING_FORECAST_PATH],
+                ALL_UPCOMING_FORECAST_PATH,
+            )
+        )
+        if ALL_UPCOMING_FORECAST_PATH in payloads
+        else None
+    )
     _skip_if_prior_capture_card_started(card, capture_started_at)
     try:
         vegas = pd.read_json(io.BytesIO(payloads[VEGAS_PATH]))
@@ -2443,6 +2499,16 @@ def capture_market_snapshot() -> dict[str, object]:
         ),
     )
     _atomic_write_current_opportunities(current_opportunities)
+    upcoming_bet_board = None
+    if all_upcoming_forecasts is not None:
+        upcoming_bet_board = build_upcoming_bet_board(
+            all_upcoming_forecasts,
+            early_market_observations,
+            observed_at_utc=observed_at,
+            source=retrieved_odds.source,
+            current_opportunities=current_opportunities,
+        )
+        write_upcoming_bet_board(upcoming_bet_board, UPCOMING_BET_BOARD_PATH)
     quote_matchups = len({item.matchup_id for item in quotes})
     paired_forecast_matchups = len({item.matchup_id for item in forecasts})
     published_without_stable_ids = sum(
@@ -2546,6 +2612,21 @@ def capture_market_snapshot() -> dict[str, object]:
         "betting_status": BETTING_STATUS,
         "publication_files_unchanged": True,
     }
+    if upcoming_bet_board is not None:
+        report_body.update(
+            {
+                "upcoming_bet_board_sha256": upcoming_bet_board[
+                    "publication_sha256"
+                ],
+                "upcoming_bet_board_qualified_bets": upcoming_bet_board[
+                    "qualified_bet_count"
+                ],
+                "upcoming_bet_board_announced_events": upcoming_bet_board[
+                    "announced_event_count"
+                ],
+                "upcoming_bet_board_execution_enabled": False,
+            }
+        )
     if total_round_result is not None:
         if (
             total_round_forecast_result is None

@@ -13,7 +13,7 @@
 [hidden] { display: none !important; }
 html { scroll-behavior: smooth; }
 body { margin: 0; min-width: 320px; background: var(--cream); color: var(--ink); font-family: "DM Sans", system-ui, sans-serif; line-height: 1.55; }
-#current-card-results, #fighter-directory-controls, #fighter-profile, #matchup-workbench, #fight-graph-controls, #fight-graph-results, #simulation-picker, #simulation-results, #market-research-results, #model-data-content, .market-card { scroll-margin-top: var(--route-scroll-offset); }
+#current-card-results, #fighter-directory-controls, #fighter-profile, #matchup-workbench, #fight-graph-controls, #fight-graph-results, #simulation-picker, #simulation-results, #qualified-upcoming-bets, #market-research-results, #model-data-content, .market-card { scroll-margin-top: var(--route-scroll-offset); }
 button, input, select { font: inherit; }
 button { color: inherit; }
 a { color: var(--blue); }
@@ -407,6 +407,21 @@ details[open] summary { border-bottom: 1px solid var(--line); }
 .market-notice p { margin: 0; color: #6c6043; }
 .market-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; }
 .opportunity-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; }
+.qualified-bet-list { display: grid; min-width: 0; gap: 7px; }
+.qualified-bet-row { display: grid; grid-template-columns: 46px minmax(210px, 1.65fr) minmax(82px, .42fr) minmax(105px, .55fr) minmax(105px, .55fr) minmax(175px, .9fr) auto; gap: 13px; align-items: center; min-width: 0; padding: 12px 13px; border: 1px solid var(--line); border-radius: 11px; background: var(--paper-2); }
+.qualified-bet-row > * { min-width: 0; }
+.qualified-bet-rank, .qualified-bet-stat { display: grid; gap: 2px; }
+.qualified-bet-rank span, .qualified-bet-stat span { color: var(--ink-soft); font-size: 9px; font-weight: 700; letter-spacing: .055em; text-transform: uppercase; }
+.qualified-bet-rank strong { font-family: "Manrope", sans-serif; font-size: 16px; }
+.qualified-bet-fight { display: grid; gap: 3px; }
+.qualified-bet-event, .qualified-bet-selection, .qualified-bet-model, .qualified-bet-source small { color: var(--ink-soft); font-size: 10px; overflow-wrap: anywhere; }
+.qualified-bet-fight strong { font-family: "Manrope", sans-serif; font-size: 13px; overflow-wrap: anywhere; }
+.qualified-bet-stat strong { font-variant-numeric: tabular-nums; font-size: 14px; }
+.qualified-bet-ev strong { color: #8ce0c5; font-size: 17px; }
+.qualified-bet-source { display: flex; flex-wrap: wrap; gap: 5px 7px; align-items: center; }
+.qualified-bet-source small { flex: 1 0 100%; }
+.qualified-bet-action { justify-self: end; }
+.qualified-bet-action button { white-space: nowrap; }
 .opportunity-card { display: grid; gap: 12px; padding: 18px; border: 1px solid var(--line); border-radius: var(--radius-md); background: #fbfaf7; }
 .opportunity-card h3 { margin: 0; font-family: "Manrope", sans-serif; font-size: 17px; }
 .wide-card { grid-column: 1 / -1; }
@@ -498,6 +513,9 @@ input[type="search"]:focus, select:focus { border-color: var(--teal); box-shadow
   .graph-rule-row { grid-template-columns: minmax(180px, 1.4fr) minmax(115px, .8fr) 90px auto 90px auto; }
   .fight-graph-layout { grid-template-columns: 1fr; }
   .fight-graph-details { position: static; }
+  .qualified-bet-row { grid-template-columns: 42px minmax(190px, 1.5fr) repeat(3, minmax(82px, .55fr)); }
+  .qualified-bet-source { grid-column: 2 / 5; }
+  .qualified-bet-action { grid-column: 5; grid-row: 2; }
 }
 @media (max-width: 600px) {
   :root { --shell: calc(100% - 20px); --radius-lg: 18px; }
@@ -583,6 +601,13 @@ input[type="search"]:focus, select:focus { border-color: var(--teal); box-shadow
   .fight-graph-viewport-controls button { min-width: 44px; height: 44px; }
   .fight-graph-canvas { height: clamp(440px, 68svh, 620px); min-height: 0; }
   .market-notice { grid-template-columns: 1fr; }
+  .qualified-bet-row { grid-template-columns: 38px minmax(0, 1fr) minmax(86px, auto); gap: 10px; padding: 12px; }
+  .qualified-bet-fight { grid-column: 2 / -1; }
+  .qualified-bet-stat { grid-row: 2; }
+  .qualified-bet-rank { grid-row: 1; }
+  .qualified-bet-source { grid-column: 1 / -1; grid-row: auto; }
+  .qualified-bet-action { grid-column: 1 / -1; grid-row: auto; justify-self: stretch; }
+  .qualified-bet-action button { width: 100%; }
   .fighter-row { align-items: flex-start; flex-direction: column; }
   .fight-row-badges { justify-content: flex-start; }
   .signal-line, .metric-row { grid-template-columns: 1fr; }

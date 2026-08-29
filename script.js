@@ -7,6 +7,7 @@ const DATA_PATHS = {
   model: "src/content/data/external/winner_model.json",
   bayesian: "src/content/data/external/bayesian_winner_challenger.json",
   market: "src/content/data/market/current_opportunities.json",
+  upcomingBetBoard: "src/content/data/market/upcoming_bet_board.json",
   methodMarkets: "src/content/data/market/current_method_markets.json",
   performance: "src/content/data/market/performance_report.json",
   outcomes: "src/content/data/external/outcome_forecasts.json",
@@ -22,6 +23,7 @@ const state = {
   model: null,
   bayesian: null,
   market: null,
+  upcomingBetBoard: null,
   methodMarkets: null,
   performance: null,
   outcomes: null,
@@ -1193,13 +1195,14 @@ async function fetchJson(path, required = true) {
 }
 
 async function loadData() {
-  const [explorer, vegas, card, model, bayesian, market, methodMarkets, performance, outcomes] = await Promise.all([
+  const [explorer, vegas, card, model, bayesian, market, upcomingBetBoard, methodMarkets, performance, outcomes] = await Promise.all([
     fetchJson(DATA_PATHS.explorer),
     fetchJson(DATA_PATHS.vegas, false),
     fetchJson(DATA_PATHS.card, false),
     fetchJson(DATA_PATHS.model, false),
     fetchJson(DATA_PATHS.bayesian, false),
     fetchJson(DATA_PATHS.market, false),
+    fetchJson(DATA_PATHS.upcomingBetBoard, false),
     fetchJson(DATA_PATHS.methodMarkets, false),
     fetchJson(DATA_PATHS.performance, false),
     fetchJson(DATA_PATHS.outcomes, false),
@@ -1210,6 +1213,7 @@ async function loadData() {
   state.model = model;
   state.bayesian = bayesian;
   state.market = market;
+  state.upcomingBetBoard = upcomingBetBoard;
   state.methodMarkets = methodMarkets;
   state.performance = performance;
   state.outcomes = outcomes;
@@ -1711,7 +1715,7 @@ function applyRoute() {
   if (view === "market") {
     if (parts[1] && parts[2] && focusMarketMatchup(parts[1], parts[2])) return;
     clearMarketMatchupFocus();
-    focusRouteTarget("#market-research-results", expectedHash);
+    focusRouteTarget("#qualified-upcoming-bets", expectedHash);
     return;
   }
   if (view === "data") {
@@ -2609,8 +2613,68 @@ function renderCurrentMethodPrices(container, publication) {
   return markets.length;
 }
 
+function renderQualifiedUpcomingBets() {
+  const status = $("#qualified-upcoming-status");
+  const container = $("#qualified-upcoming-list");
+  container.replaceChildren();
+  const board = state.upcomingBetBoard;
+  if (!board || board.paper_only !== true || board.execution_enabled !== false || !Array.isArray(board.bets)) {
+    status.textContent = "No valid all-upcoming paper-bet publication is available yet.";
+    container.append(element("div", "empty-state", "The board will appear after the next successful model update and market capture."));
+    return;
+  }
+  const threshold = finite(board.minimum_expected_return);
+  const bets = board.bets
+    .filter((bet) => bet?.threshold_met === true && finite(bet.estimated_expected_return) !== null && (threshold === null || Number(bet.estimated_expected_return) >= threshold))
+    .sort((left, right) => Number(right.estimated_expected_return) - Number(left.estimated_expected_return) || String(left.event_date).localeCompare(String(right.event_date)) || String(left.selection).localeCompare(String(right.selection)));
+  const eventCount = new Set(bets.map((bet) => bet.event_id).filter(Boolean)).size;
+  const captured = formatTimestamp(board.observed_at_utc);
+  status.textContent = bets.length
+    ? `${bets.length} price${bets.length === 1 ? "" : "s"} across ${eventCount} card${eventCount === 1 ? "" : "s"}, ranked by estimated return. Minimum ${formatPercent(threshold)} · captured ${captured}.`
+    : `No current price exceeds the ${formatPercent(threshold)} paper threshold. This is a valid result, not missing data.`;
+  if (!bets.length) {
+    container.append(element("div", "empty-state", "There are no theoretical paper bets to make at the currently published prices."));
+    return;
+  }
+  bets.forEach((bet, index) => {
+    const row = element("article", "qualified-bet-row");
+    const rank = element("div", "qualified-bet-rank");
+    appendText(rank, "span", "", "Rank");
+    appendText(rank, "strong", "", `#${index + 1}`);
+
+    const fight = element("div", "qualified-bet-fight");
+    appendText(fight, "span", "qualified-bet-event", `${formatDate(bet.event_date)} · ${bet.event_title || "UFC event"}`);
+    appendText(fight, "strong", "", `${bet.fighter_name} vs ${bet.opponent_name}`);
+    appendText(fight, "span", "qualified-bet-selection", `${bet.selection} at ${bet.target_book}`);
+
+    const price = element("div", "qualified-bet-stat");
+    appendText(price, "span", "", "Offered price");
+    appendText(price, "strong", "", formatOdds(bet.offered_moneyline));
+    const probability = element("div", "qualified-bet-stat");
+    appendText(probability, "span", "", "Estimated chance");
+    appendText(probability, "strong", "", formatPercent(bet.estimated_win_probability));
+    const expectedReturn = element("div", "qualified-bet-stat qualified-bet-ev");
+    appendText(expectedReturn, "span", "", "Estimated return");
+    appendText(expectedReturn, "strong", "", formatPercent(bet.estimated_expected_return));
+
+    const source = element("div", "qualified-bet-source");
+    const isCandidateTotal = bet.candidate_only === true || bet.probability_source === "candidate_duration_model" || bet.category === "Total rounds";
+    source.append(
+      element("span", `pill ${isCandidateTotal ? "orange" : "win"}`, bet.category || "Moneyline"),
+      element("span", "qualified-bet-model", isCandidateTotal ? "Experimental duration model" : "Other-book market consensus"),
+    );
+    if (finite(bet.consensus_book_count) !== null) appendText(source, "small", "", `${formatNumber(bet.consensus_book_count, 0)} comparison books; target book excluded`);
+    else if (isCandidateTotal) appendText(source, "small", "", "Candidate model has not passed a betting-performance gate");
+
+    const action = element("div", "qualified-bet-action");
+    if (bet.fighter_id && bet.opponent_id) action.append(actionButton("View fight research", "secondary-button small-button", () => setRoute(`matchups/${bet.fighter_id}/${bet.opponent_id}`)));
+    row.append(rank, fight, price, probability, expectedReturn, source, action);
+    container.append(row);
+  });
+}
+
 function renderMarket() {
-  const notice = $("#market-notice"); const container = $("#market-matchups"); const opportunityContainer = $("#market-opportunities"); const propContainer = $("#prop-market-details"); notice.replaceChildren(); container.replaceChildren(); opportunityContainer.replaceChildren(); propContainer.replaceChildren(); renderProfitabilityEvidence();
+  const notice = $("#market-notice"); const container = $("#market-matchups"); const opportunityContainer = $("#market-opportunities"); const propContainer = $("#prop-market-details"); notice.replaceChildren(); container.replaceChildren(); opportunityContainer.replaceChildren(); propContainer.replaceChildren(); renderQualifiedUpcomingBets(); renderProfitabilityEvidence();
   const market = currentMarket();
   const outcomes = currentOutcomes();
   const copy = element("div"); appendText(copy, "h2", "", "Paper research only—automatic betting is intentionally off.");

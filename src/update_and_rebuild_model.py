@@ -28,6 +28,12 @@ from fight_predictor.bayesian_logistic_shadow import (
     BayesianLogisticShadowStore,
     build_shadow_forecasts as build_bayesian_logistic_shadow_forecasts,
 )
+from upcoming_bet_board import (
+    build_upcoming_bet_board,
+    build_upcoming_forecast_publication,
+    write_upcoming_bet_board,
+    write_upcoming_forecast_publication,
+)
 
 
 def _forecast_source_revision() -> str:
@@ -160,21 +166,55 @@ print('Saving results of previous card to prediction_history.json')
 # vegas odds is always a week ahead of the prediction history, so we can use it to update the prediction history by comparing vegas_odds and ufc_fights_crap which contains the results from last week
 dh.update_prediction_history()
 
-print('Scraping the next UFC fight card from ufcstats.com')
+print('Scraping all announced UFC fight cards from ufcstats.com')
 print("###############################################################################################################")    
-card_date, card_title, fights_list = dh.update_card_info()
+upcoming_cards = dh.get_upcoming_fight_cards()
+card_date, card_title, fights_list = dh.update_card_info(upcoming_cards[0])
 prediction_history = dh.get('prediction_history', filetype='json')
-predicted_odds_df = fight_predictor.predict_upcoming_fights(prediction_history, fighter_stats, fights_list, card_date)
-predicted_odds_df = bayesian_challenger.annotate_upcoming_fights(
-    predicted_odds_df, card_date
-)
 # Freeze when this exact model/card forecast was issued. Market collectors run
 # independently later and must never confuse their retrieval time with the
 # timestamp of the stats probability they are evaluating.
-predicted_odds_df['forecast issued at'] = (
-    datetime.now(timezone.utc).replace(microsecond=0).isoformat()
+forecast_issued_at = datetime.now(timezone.utc).replace(microsecond=0).isoformat()
+forecast_source_revision = _forecast_source_revision()
+upcoming_frames = []
+for raw_date, event_title, event_fights in upcoming_cards:
+    event_date = dh.convert_scraped_date_to_standard_date(raw_date)
+    event_frame = fight_predictor.predict_upcoming_fights(
+        prediction_history,
+        fighter_stats,
+        event_fights,
+        event_date,
+    )
+    event_frame = bayesian_challenger.annotate_upcoming_fights(
+        event_frame, event_date
+    )
+    event_frame['forecast issued at'] = forecast_issued_at
+    event_frame['forecast source commit'] = forecast_source_revision
+    event_frame['event title'] = event_title
+    event_frame['bout order'] = list(range(len(event_frame)))
+    upcoming_frames.append(event_frame)
+predicted_odds_df = upcoming_frames[0].copy(deep=True)
+all_upcoming_forecasts = build_upcoming_forecast_publication(
+    pd.concat(upcoming_frames, ignore_index=True),
+    generated_at_utc=forecast_issued_at,
 )
-predicted_odds_df['forecast source commit'] = _forecast_source_revision()
+write_upcoming_forecast_publication(all_upcoming_forecasts)
+# A model refresh invalidates any board tied to the previous forecast bundle.
+# Publish an honest empty board until the independent market capture supplies
+# fresh, source-timestamped prices for these exact announced matchups.
+write_upcoming_bet_board(
+    build_upcoming_bet_board(
+        all_upcoming_forecasts,
+        (),
+        observed_at_utc=forecast_issued_at,
+        source='model-update-awaiting-market-capture',
+    )
+)
+print(
+    'Published all announced cards: '
+    f'{all_upcoming_forecasts["event_count"]} events / '
+    f'{all_upcoming_forecasts["matchup_count"]} matchups'
+)
 
 # Lock the newly evaluated Bayesian/logistic blend separately from production.
 # A date-only card can prove a forecast is prospective only before the UTC

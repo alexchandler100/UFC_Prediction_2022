@@ -2072,34 +2072,33 @@ class DataHandler:
             parsed = parsed + pd.DateOffset(years=1)
         return parsed.strftime('%B %d, %Y')
 
-    def get_next_fight_card(self):
-        url = 'http://ufcstats.com/statistics/events/upcoming'
-        page = ufcstats_client.get(url, expected_text='b-statistics__table-events')
-        soup = BeautifulSoup(page.content, "html.parser") 
-        mycards = soup.find_all("a", {"class": "b-link b-link_style_black"})
-        mydates = soup.find_all("span", {"class":"b-statistics__date"})
-        if not mycards or not mydates:
-            raise UFCStatsError(
-                f'No upcoming UFC card/date was found at {url}; page layout may have changed'
-            )
-        date = mydates[0]
-        card = mycards[0] 
-        card_date = date.get_text().strip()
-        card_title = card.get_text().strip()
-        card_link = card.attrs['href']
-        page = ufcstats_client.get(card_link, expected_text='b-fight-details__table')
+    def _upcoming_card_fights(self, card_link, card_title):
+        page = ufcstats_client.get(
+            card_link, expected_text='b-fight-details__table'
+        )
         soup = BeautifulSoup(page.content, "html.parser")
-        fights = soup.find_all("tr",{"class": "b-fight-details__table-row b-fight-details__table-row__hover js-fight-details-click"})
+        fights = soup.find_all(
+            "tr",
+            {
+                "class": (
+                    "b-fight-details__table-row "
+                    "b-fight-details__table-row__hover js-fight-details-click"
+                )
+            },
+        )
         if not fights:
-            raise UFCStatsError(
-                f'Upcoming card {card_title!r} contained no parseable fights at {card_link}'
-            )
+            return []
         fights_list = []
         for fight in fights:
-            entries = [entry.get_text().strip() for entry in fight.find_all('p') if entry.get_text().strip()]
+            entries = [
+                entry.get_text().strip()
+                for entry in fight.find_all('p')
+                if entry.get_text().strip()
+            ]
             if len(entries) != 4:
                 raise UFCStatsError(
-                    f'Expected four fields for an upcoming fight at {card_link}, got {entries!r}'
+                    f'Expected four fields for an upcoming fight at '
+                    f'{card_link}, got {entries!r}'
                 )
             fighter, opponent, _, weight_class = entries
             fighter_links = [
@@ -2121,4 +2120,50 @@ class DataHandler:
                     card_link,
                 ]
             )
-        return card_date, card_title, fights_list
+        return fights_list
+
+    def get_upcoming_fight_cards(self):
+        """Return every announced UFCStats card that has listed matchups."""
+
+        url = 'http://ufcstats.com/statistics/events/upcoming'
+        page = ufcstats_client.get(url, expected_text='b-statistics__table-events')
+        soup = BeautifulSoup(page.content, "html.parser")
+        mycards = soup.find_all("a", {"class": "b-link b-link_style_black"})
+        mydates = soup.find_all("span", {"class":"b-statistics__date"})
+        if not mycards or not mydates:
+            raise UFCStatsError(
+                f'No upcoming UFC card/date was found at {url}; page layout may have changed'
+            )
+        if len(mycards) != len(mydates):
+            raise UFCStatsError(
+                'Upcoming UFCStats event titles and dates have different counts'
+            )
+        cards = []
+        for date_element, card_element in zip(mydates, mycards):
+            card_date = date_element.get_text().strip()
+            card_title = card_element.get_text().strip()
+            card_link = str(card_element.attrs.get('href', '')).strip()
+            if not card_date or not card_title or not card_link:
+                raise UFCStatsError('Upcoming UFCStats event metadata is incomplete')
+            fights_list = self._upcoming_card_fights(card_link, card_title)
+            if not fights_list:
+                print(
+                    f'Skipping announced card without listed fights: '
+                    f'{card_title} ({card_date})'
+                )
+                continue
+            cards.append(
+                (card_date, card_title, fights_list)
+            )
+        if not cards:
+            raise UFCStatsError('No announced UFCStats card contains listed fights')
+        cards.sort(
+            key=lambda item: pd.to_datetime(
+                self.convert_scraped_date_to_standard_date(item[0]),
+                errors='raise',
+            )
+        )
+        return cards
+
+    def get_next_fight_card(self):
+        return self.get_upcoming_fight_cards()[0]

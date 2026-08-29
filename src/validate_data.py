@@ -1050,6 +1050,14 @@ def validate_publication(
     auxiliary_fights: pd.DataFrame | None = None,
     require_model_artifact: bool = False,
 ) -> ValidationReport:
+    # Keep the ordinary validator import lightweight. The all-upcoming module
+    # shares the legacy sportsbook name matcher, which in turn imports optional
+    # round-research helpers; load it only when publication checks actually run.
+    from upcoming_bet_board import (
+        validate_upcoming_bet_board,
+        validate_upcoming_forecast_publication,
+    )
+
     report = ValidationReport()
     external = data_root / "external"
     objects = {
@@ -1065,7 +1073,11 @@ def validate_publication(
         *(f"fighter_fights_{key}" for key in FIGHTER_EXPLORER_SHARD_KEYS),
     }
     if require_model_artifact:
-        required_json.update({"winner_model", "bayesian_winner_challenger"})
+        required_json.update({
+            "winner_model",
+            "bayesian_winner_challenger",
+            "all_upcoming_forecasts",
+        })
     report.require(
         required_json.issubset(objects),
         f"missing publication JSON files: {sorted(required_json - set(objects))}",
@@ -1109,6 +1121,59 @@ def validate_publication(
             )
         except (TypeError, ValueError) as error:
             report.errors.append(f"outcome_forecasts.json is invalid: {error}")
+
+    upcoming_forecasts = objects.get("all_upcoming_forecasts")
+    validated_upcoming = None
+    if upcoming_forecasts is not None:
+        try:
+            validated_upcoming = validate_upcoming_forecast_publication(
+                upcoming_forecasts
+            )
+            report.facts.append(
+                "all announced UFC forecasts: "
+                f"{validated_upcoming['event_count']:,} events / "
+                f"{validated_upcoming['matchup_count']:,} matchups"
+            )
+        except (TypeError, ValueError) as error:
+            report.errors.append(
+                f"all_upcoming_forecasts.json is invalid: {error}"
+            )
+
+    upcoming_board_path = data_root / "market" / "upcoming_bet_board.json"
+    if upcoming_board_path.exists():
+        try:
+            upcoming_board = validate_upcoming_bet_board(
+                json.loads(upcoming_board_path.read_text(encoding="utf-8"))
+            )
+            if validated_upcoming is None:
+                raise ValueError("board exists without an all-upcoming forecast")
+            if upcoming_board.get("forecast_publication_sha256") != validated_upcoming.get(
+                "publication_sha256"
+            ):
+                raise ValueError("board was built from a different forecast publication")
+            forecast_matchups = {
+                str(item.get("matchup_id"))
+                for item in validated_upcoming["matchups"]
+                if item.get("matchup_id")
+            }
+            forecast_events = {
+                str(item.get("event_id")) for item in validated_upcoming["events"]
+            }
+            if any(
+                str(bet.get("matchup_id")) not in forecast_matchups
+                or str(bet.get("event_id")) not in forecast_events
+                for bet in upcoming_board["bets"]
+            ):
+                raise ValueError("board contains a bet outside the announced forecasts")
+            report.facts.append(
+                "qualified all-upcoming paper bets: "
+                f"{upcoming_board['qualified_bet_count']:,} at or above "
+                f"{upcoming_board['minimum_expected_return']:.0%} EV"
+            )
+        except (OSError, UnicodeError, json.JSONDecodeError, TypeError, ValueError) as error:
+            report.errors.append(f"upcoming_bet_board.json is invalid: {error}")
+    elif require_model_artifact:
+        report.errors.append("upcoming_bet_board.json is missing")
 
     vegas_object = objects["vegas_odds"]
     try:

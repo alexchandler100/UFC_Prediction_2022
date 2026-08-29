@@ -286,6 +286,17 @@
       </div>
       <div class="page-shell page-stack">
         <section class="market-notice" id="market-notice"></section>
+        <section class="panel qualified-bet-board-panel" id="qualified-upcoming-bets" tabindex="-1" aria-labelledby="qualified-upcoming-title">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">All announced UFC cards · highest EV first</p>
+              <h2 id="qualified-upcoming-title">Qualified upcoming paper bets</h2>
+              <p class="section-note" id="qualified-upcoming-status">Loading prices that pass the paper threshold...</p>
+            </div>
+            <span class="research-badge">Threshold only · execution off</span>
+          </div>
+          <section class="qualified-bet-list" id="qualified-upcoming-list" aria-live="polite"></section>
+        </section>
         <section class="panel" id="market-research-results" tabindex="-1" aria-labelledby="profitability-title">
           <div class="section-heading">
             <div><p class="eyebrow">Prospective evidence</p><h2 id="profitability-title">Profitability and closing-line value</h2><p class="section-note">Frozen T-24 moneyline and totals decisions only. Repeated snapshots are not counted as independent bets.</p></div>

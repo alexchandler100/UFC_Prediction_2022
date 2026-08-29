@@ -329,6 +329,7 @@ The auditable artifacts are:
 - `src/content/data/external/winner_model.json`
 - `src/content/data/external/bayesian_winner_challenger.json` (paper-only Laplace posterior)
 - `src/content/data/external/vegas_odds.json`
+- `src/content/data/external/all_upcoming_forecasts.json` (every announced UFCStats card with listed fights)
 - `src/content/data/external/fighter_explorer.json` (searchable career/profile index)
 - `src/content/data/external/fighter_fights_*.json` (lazy-loaded complete fight logs)
 - `src/content/data/market/quote_snapshots.jsonl`
@@ -344,9 +345,20 @@ The auditable artifacts are:
 - `src/content/data/market/bayesian_filtered_paper_decisions.jsonl`
 - `src/content/data/market/paper_settlements.jsonl`
 - `src/content/data/market/performance_report.json`
+- `src/content/data/market/upcoming_bet_board.json` (bounded, threshold-only website list)
 - `src/content/data/external/outcome_model_evaluation.json` (candidate only)
 
 The website treats fighter history as its primary research surface. When complete two-sided lines are available, it shows the no-vig market consensus and the independent model probability as separate supporting context. Betting recommendations are disabled until timestamped rolling tests demonstrate a repeatable market-relative edge.
+
+The top of the Market tab also publishes one compact board across every
+officially announced UFC card that currently has listed fights and fresh
+prices. It contains only paper selections at or above the existing 5% expected-
+return threshold and sorts them from highest to lowest estimated return. A
+moneyline row uses the same leave-one-target-book-out consensus policy as the
+prospective tracker. A total-round row is explicitly marked as an experimental
+duration-model result because that model has not passed a betting-performance
+gate. The board never places a wager, never enables execution, and an empty
+board means no current price passed the threshold.
 
 ## Expected-return research
 
@@ -1257,7 +1269,10 @@ remain promotion-unknown. When a row later matches an official published UFC
 matchup, a separate append-only link records its UFCStats event and fighter
 IDs. Only linked rows are suitable for UFC timing research. Repeated unchanged
 states are not duplicated, and these early ledgers are research-only: they do
-not feed T-24 decisions, wagers, or the current website opportunity view.
+not feed T-24 decisions or wagers. Newly retrieved rows may feed the separate
+all-announced-card website board only after their names and dates uniquely
+match an official UFCStats forecast; unlinked promotion-unknown rows remain
+excluded.
 
 `.github/workflows/collect-market-snapshot.yml` runs separately Sunday at
 10:17 AM and 9:17 PM; Monday at 11:17 PM; Tuesday through Thursday at 12:17 PM
@@ -1270,7 +1285,8 @@ Odds API, appends separate validated quote/forecast/source-timing ledgers,
 freezes any eligible T-24 paper decisions, and publishes a
 bounded audit report, settles any newly completed moneyline and totals
 decisions, and refreshes the return/CLV report plus the fixed prospective
-model/market and simulator-inclusive comparisons before strict revalidation. The authoritative update job
+model/market and simulator-inclusive comparisons before strict revalidation.
+It also refreshes the bounded, threshold-only all-upcoming paper-bet board. The authoritative update job
 and collector share one publisher concurrency group and exact path allowlists;
 the dependent paper-shadow job uses a separate group and cannot delay a price
 capture. The collector creates no live wager.

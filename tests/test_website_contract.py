@@ -51,9 +51,15 @@ class WebsiteExplorerContractTests(unittest.TestCase):
 
         self.assertIn("Consensus, best price, and paper decisions", page)
         self.assertIn("Potentially profitable prices", page)
+        self.assertIn("Qualified upcoming paper bets", page)
+        self.assertIn("All announced UFC cards", page)
         self.assertIn("Total-round and method-of-victory prices", page)
         self.assertIn("automatic betting is intentionally off", script)
         self.assertIn("current_opportunities.json", script)
+        self.assertIn("upcoming_bet_board.json", script)
+        self.assertIn("function renderQualifiedUpcomingBets", script)
+        self.assertIn("ranked by estimated return", script)
+        self.assertIn("Candidate model has not passed a betting-performance gate", script)
         self.assertIn("target_book", script)
         self.assertIn("offered_moneyline", script)
         self.assertIn("estimated_expected_return", script)
@@ -78,6 +84,8 @@ class WebsiteExplorerContractTests(unittest.TestCase):
         self.assertIn("Bayesian model and expected-return uncertainty", script)
         self.assertIn("bayesian_winner_challenger.json", update_workflow)
         self.assertIn("current_opportunities.json", workflow)
+        self.assertIn("upcoming_bet_board.json", workflow)
+        self.assertIn("all_upcoming_forecasts.json", update_workflow)
         self.assertIn("current_method_markets.json", workflow)
         self.assertIn("bayesian_filtered_paper_decisions.jsonl", workflow)
 
@@ -119,6 +127,7 @@ class WebsiteExplorerContractTests(unittest.TestCase):
             "fight-graph-results",
             "simulation-picker",
             "simulation-results",
+            "qualified-upcoming-bets",
             "market-research-results",
             "model-data-content",
         ):
@@ -126,7 +135,7 @@ class WebsiteExplorerContractTests(unittest.TestCase):
         self.assertIn("function focusRouteTarget", script)
         self.assertIn('matchupConfigured ? "#fight-graph-results" : "#fight-graph-controls"', script)
         self.assertIn('focusRouteTarget(requestedMatchupId ? "#simulation-results"', script)
-        self.assertIn('focusRouteTarget("#market-research-results", expectedHash)', script)
+        self.assertIn('focusRouteTarget("#qualified-upcoming-bets", expectedHash)', script)
         self.assertIn(
             'setRoute(`market/${matchup.fighter_id}/${matchup.opponent_id}`)',
             script,
@@ -167,6 +176,18 @@ class WebsiteExplorerContractTests(unittest.TestCase):
         self.assertIn("grid-template-columns: minmax(0, 1fr);", style)
         self.assertIn(".simulation-card-row", style)
         self.assertIn(".matchup-history-columns", style)
+
+    def test_all_upcoming_bet_board_is_compact_and_mobile_safe(self):
+        page = (REPO_ROOT / "index.html").read_text(encoding="utf-8")
+        script = (REPO_ROOT / "script.js").read_text(encoding="utf-8")
+        style = (REPO_ROOT / "style.css").read_text(encoding="utf-8")
+
+        self.assertIn('id="qualified-upcoming-list"', page)
+        self.assertIn('bet?.threshold_met === true', script)
+        self.assertIn('Number(right.estimated_expected_return)', script)
+        self.assertIn('.qualified-bet-row', style)
+        self.assertIn('grid-template-columns: 38px minmax(0, 1fr) minmax(86px, auto)', style)
+        self.assertNotIn('.qualified-bet-row { min-width:', style)
 
     def test_fight_graph_has_zoom_and_pan_navigation(self):
         page = (REPO_ROOT / "index.html").read_text(encoding="utf-8")
