@@ -230,7 +230,8 @@ study_complete() {
 
 print_progress() {
   [[ -f "$RESULT_DIR/population-summary.json" ]] || return 0
-  "$PYTHON_BIN" -c 'import json,pathlib,sys; d=json.loads(pathlib.Path(sys.argv[1]).read_text()); s=d["selection"]; r=d["runtime"]; print(f"Progress: {s[\"completed_fights\"]}/{s[\"eligible_fights\"]} fights and {r[\"completed_fight_seed_pairs\"]}/{r[\"planned_fight_seed_pairs\"]} fight/seed pairs checkpointed.")' "$RESULT_DIR/population-summary.json"
+  "$PYTHON_BIN" "$SCRIPT_DIR/simulation_study_progress.py" \
+    "$RESULT_DIR/population-summary.json"
 }
 
 if study_complete; then

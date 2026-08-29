@@ -2777,8 +2777,10 @@ def execute_posterior_backtest(
 
     write_population_report(destination / "population-report.html", report_body)
     if progress:
+        status = "checkpoint written" if stopped_by_time_limit else "complete"
         progress(
-            f"Population study complete in {elapsed / 60.0:.1f} minutes: {report_path}"
+            f"Population study {status} in {elapsed / 60.0:.1f} minutes: "
+            f"{report_path}"
         )
     return destination, report_body
 

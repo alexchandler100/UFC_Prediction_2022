@@ -120,3 +120,20 @@ model-versus-market question.
 Exact results and per-fight probabilities are stored in
 `online_data_challengers.json` and `online_data_challengers.csv` beside this
 file.
+
+## Historical odds feasibility update (2026-08-28)
+
+A separate 50-event, 2012-2026 audit found that BestFightOdds' public
+line-movement chart contains absolute timestamps rather than only undated
+closing prices. Mean history was verified in every sampled year. Strict
+three-book history was verified from 2021 onward in this sample; older events
+often exposed only a mean or one or two legacy books, so the two periods must
+not be treated as equivalent.
+
+The reproducible audit is `src/audit_historical_odds_sources.py`; its concise
+result is `HISTORICAL_ODDS_FEASIBILITY.md` in this directory. No bulk backfill
+has been started. The source's robots policy allowed the bounded public-page
+audit, but its published terms do not explicitly address automated bulk reuse.
+The next step is permission/terms clarification followed, if acceptable, by a
+slow resumable backfill stored outside Git. Historical development still does
+not replace the frozen future-only 200-fight / 20-event confirmation.

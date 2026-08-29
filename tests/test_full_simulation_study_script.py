@@ -11,6 +11,9 @@ class FullSimulationStudyScriptTests(unittest.TestCase):
         cls.script = (
             REPO_ROOT / "scripts" / "run_full_simulation_study.sh"
         ).read_text(encoding="utf-8")
+        cls.progress_script = (
+            REPO_ROOT / "scripts" / "simulation_study_progress.py"
+        ).read_text(encoding="utf-8")
 
     def test_study_is_broad_precise_and_excludes_low_history_fights(self):
         self.assertIn("LAST_EVENTS=100", self.script)
@@ -51,6 +54,11 @@ class FullSimulationStudyScriptTests(unittest.TestCase):
         self.assertIn(
             '"$PYTHON_BIN" -m fight_sim posterior-backtest --help', self.script
         )
+
+    def test_progress_printer_does_not_use_invalid_escaped_f_string_keys(self):
+        self.assertIn("simulation_study_progress.py", self.script)
+        self.assertNotIn('print(f"Progress:', self.script)
+        self.assertIn("fight/seed pairs checkpointed", self.progress_script)
 
 
 if __name__ == "__main__":
