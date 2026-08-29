@@ -73,6 +73,17 @@ Rebuild this challenger without network access using:
 python -B src/rebuild_bayesian_challenger.py
 ```
 
+A separate paper-only benchmark now compares the production algorithm with
+Gaussian Naive Bayes, random forest, histogram gradient boosting, XGBoost, a
+small neural network, and a genuinely hierarchical Bayesian fight model on
+the same chronological fights. Logistic regression retained the best
+probability scores in the first 1,877-fight comparison. The Bayesian model
+samples fighter abilities and population priors rather than wrapping the
+production coefficients, but its first static-ability specification was worse
+in every evaluated year. See [MODEL_FAMILY_RESEARCH.md](MODEL_FAMILY_RESEARCH.md)
+for exact results, limitations, reproduction commands, and the planned dynamic
+Bayesian redesign.
+
 ## External promotion history
 
 The repository now has a source-attributed external-MMA collection layer for

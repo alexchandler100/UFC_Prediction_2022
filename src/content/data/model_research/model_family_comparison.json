@@ -1,0 +1,1239 @@
+{
+  "created_at_utc": "2026-08-29T17:21:19+00:00",
+  "elapsed_seconds": 316.094000000041,
+  "experiment_version": "chronological-winner-model-families-v1",
+  "fixed_equal_logit_blends_with_current_logistic": {
+    "metrics": {
+      "gaussian_naive_bayes": {
+        "accuracy": 0.6275972296217368,
+        "auc": 0.6882584923855096,
+        "brier": 0.22323513708063902,
+        "ece_10_bin": 0.028208313393365738,
+        "fights": 1877,
+        "log_loss": 0.6369093634581404
+      },
+      "hierarchical_bayes": {
+        "accuracy": 0.6270644645711241,
+        "auc": 0.6945015556485508,
+        "brier": 0.2216137699125214,
+        "ece_10_bin": 0.028766764143177005,
+        "fights": 1877,
+        "log_loss": 0.6333649271013456
+      },
+      "hist_gradient_boosting": {
+        "accuracy": 0.6382525306339905,
+        "auc": 0.6940614708611561,
+        "brier": 0.22174100229673444,
+        "ece_10_bin": 0.026163782016653644,
+        "fights": 1877,
+        "log_loss": 0.6337771241608138
+      },
+      "neural_net": {
+        "accuracy": 0.6435801811401172,
+        "auc": 0.6969669401939558,
+        "brier": 0.22087006503012108,
+        "ece_10_bin": 0.024473829412279217,
+        "fights": 1877,
+        "log_loss": 0.6320755232641642
+      },
+      "random_forest": {
+        "accuracy": 0.633990410229089,
+        "auc": 0.6936509524935863,
+        "brier": 0.22154265927589717,
+        "ece_10_bin": 0.025533374406455096,
+        "fights": 1877,
+        "log_loss": 0.6331649638117748
+      },
+      "xgboost": {
+        "accuracy": 0.6366542354821524,
+        "auc": 0.6956296282818726,
+        "brier": 0.22102835307059893,
+        "ece_10_bin": 0.031233846982570156,
+        "fights": 1877,
+        "log_loss": 0.632073522681212
+      }
+    },
+    "paired_log_loss_intervals": {
+      "gaussian_naive_bayes": {
+        "bootstrap_samples": 10000,
+        "ci_95_lower": 0.0008983043012712109,
+        "ci_95_upper": 0.010167433905906893,
+        "definition": "current_logistic_gaussian_naive_bayes_equal_blend_probability minus current_logistic_probability paired log loss; negative favors candidate",
+        "event_count": 155,
+        "fight_count": 1877,
+        "method": "nonparametric whole-event block bootstrap",
+        "point_difference": 0.005533318681382008,
+        "seed": 20260822
+      },
+      "hierarchical_bayes": {
+        "bootstrap_samples": 10000,
+        "ci_95_lower": -0.00042880098385939864,
+        "ci_95_upper": 0.0044789384817864285,
+        "definition": "current_logistic_hierarchical_bayes_equal_blend_probability minus current_logistic_probability paired log loss; negative favors candidate",
+        "event_count": 155,
+        "fight_count": 1877,
+        "method": "nonparametric whole-event block bootstrap",
+        "point_difference": 0.001988882324587216,
+        "seed": 20260822
+      },
+      "hist_gradient_boosting": {
+        "bootstrap_samples": 10000,
+        "ci_95_lower": -0.0006643377448099833,
+        "ci_95_upper": 0.005428616879547746,
+        "definition": "current_logistic_hist_gradient_boosting_equal_blend_probability minus current_logistic_probability paired log loss; negative favors candidate",
+        "event_count": 155,
+        "fight_count": 1877,
+        "method": "nonparametric whole-event block bootstrap",
+        "point_difference": 0.0024010793840553496,
+        "seed": 20260822
+      },
+      "neural_net": {
+        "bootstrap_samples": 10000,
+        "ci_95_lower": -0.0016872259223935755,
+        "ci_95_upper": 0.0030970449111204406,
+        "definition": "current_logistic_neural_net_equal_blend_probability minus current_logistic_probability paired log loss; negative favors candidate",
+        "event_count": 155,
+        "fight_count": 1877,
+        "method": "nonparametric whole-event block bootstrap",
+        "point_difference": 0.0006994784874057515,
+        "seed": 20260822
+      },
+      "random_forest": {
+        "bootstrap_samples": 10000,
+        "ci_95_lower": -0.001760270702726443,
+        "ci_95_upper": 0.005303357520567055,
+        "definition": "current_logistic_random_forest_equal_blend_probability minus current_logistic_probability paired log loss; negative favors candidate",
+        "event_count": 155,
+        "fight_count": 1877,
+        "method": "nonparametric whole-event block bootstrap",
+        "point_difference": 0.001788919035016313,
+        "seed": 20260822
+      },
+      "xgboost": {
+        "bootstrap_samples": 10000,
+        "ci_95_lower": -0.0019920286597823298,
+        "ci_95_upper": 0.0033591636212128655,
+        "definition": "current_logistic_xgboost_equal_blend_probability minus current_logistic_probability paired log loss; negative favors candidate",
+        "event_count": 155,
+        "fight_count": 1877,
+        "method": "nonparametric whole-event block bootstrap",
+        "point_difference": 0.0006974779044536173,
+        "seed": 20260822
+      }
+    },
+    "purpose": "check whether a model adds useful information even when it is worse by itself; weights are fixed at 50/50 and not tuned"
+  },
+  "folds": {
+    "gaussian_naive_bayes": {
+      "2023": {
+        "calibration_slope": 0.1270980247733398,
+        "candidate_validation_log_loss": {
+          "var_smoothing=0.0001": 1.3499387277134596,
+          "var_smoothing=0.01": 1.340227253679374,
+          "var_smoothing=1e-06": 1.3500367240562037,
+          "var_smoothing=1e-08": 1.3500377041071472
+        },
+        "fit_fights": 4179,
+        "fit_through": "2021-12-18",
+        "selected_config": "var_smoothing=0.01",
+        "selected_parameters": {
+          "var_smoothing": 0.01
+        },
+        "symmetry": "average direct prediction with complement of swapped prediction",
+        "test_fights": 504,
+        "training_fights": 4685,
+        "training_start": "2013-01-19",
+        "training_through": "2022-12-17",
+        "validation_fights": 506,
+        "validation_year": 2022
+      },
+      "2024": {
+        "calibration_slope": 0.08438599717784082,
+        "candidate_validation_log_loss": {
+          "var_smoothing=0.0001": 1.6821067349551366,
+          "var_smoothing=0.01": 1.6699035966171187,
+          "var_smoothing=1e-06": 1.6822297948159255,
+          "var_smoothing=1e-08": 1.6822310255160944
+        },
+        "fit_fights": 4309,
+        "fit_through": "2022-12-17",
+        "selected_config": "var_smoothing=0.01",
+        "selected_parameters": {
+          "var_smoothing": 0.01
+        },
+        "symmetry": "average direct prediction with complement of swapped prediction",
+        "test_fights": 513,
+        "training_fights": 4813,
+        "training_start": "2014-01-04",
+        "training_through": "2023-12-16",
+        "validation_fights": 504,
+        "validation_year": 2023
+      },
+      "2025": {
+        "calibration_slope": 0.12769479610519205,
+        "candidate_validation_log_loss": {
+          "var_smoothing=0.0001": 1.3896655626544099,
+          "var_smoothing=0.01": 1.3800976367509261,
+          "var_smoothing=1e-06": 1.3897620165601914,
+          "var_smoothing=1e-08": 1.3897629811749277
+        },
+        "fit_fights": 4319,
+        "fit_through": "2023-12-16",
+        "selected_config": "var_smoothing=0.01",
+        "selected_parameters": {
+          "var_smoothing": 0.01
+        },
+        "symmetry": "average direct prediction with complement of swapped prediction",
+        "test_fights": 514,
+        "training_fights": 4832,
+        "training_start": "2015-01-03",
+        "training_through": "2024-12-14",
+        "validation_fights": 513,
+        "validation_year": 2024
+      },
+      "2026": {
+        "calibration_slope": 0.12455993967558139,
+        "candidate_validation_log_loss": {
+          "var_smoothing=0.0001": 1.479621708774154,
+          "var_smoothing=0.01": 1.4682478007746418,
+          "var_smoothing=1e-06": 1.4797364800124235,
+          "var_smoothing=1e-08": 1.4797376278371086
+        },
+        "fit_fights": 4368,
+        "fit_through": "2024-12-14",
+        "selected_config": "var_smoothing=0.01",
+        "selected_parameters": {
+          "var_smoothing": 0.01
+        },
+        "symmetry": "average direct prediction with complement of swapped prediction",
+        "test_fights": 346,
+        "training_fights": 4882,
+        "training_start": "2016-01-02",
+        "training_through": "2025-12-13",
+        "validation_fights": 514,
+        "validation_year": 2025
+      }
+    },
+    "hierarchical_bayes": {
+      "2023": {
+        "calibration_slope": 0.894744636948614,
+        "final_sampler_diagnostics": {
+          "burn_in_per_chain": 300,
+          "chains": 2,
+          "coefficient_prior": "independent Normal(0, 0.35^2)",
+          "features": 82,
+          "fighter_ability_prior": "Normal(0, population_variance); population variance has an inverse-gamma prior and is sampled",
+          "fighters_in_posterior": 1625,
+          "maximum_absolute_chain_mean_probability_difference": 0.0647776748058258,
+          "mean_absolute_chain_mean_probability_difference": 0.015497625679028662,
+          "mean_posterior_fighter_ability_scale": 0.3999016878697986,
+          "model": "hierarchical_probit_with_fighter_random_effects",
+          "p95_absolute_chain_mean_probability_difference": 0.04089804403803152,
+          "posterior_draws_per_chain": 300,
+          "thin": 1,
+          "total_retained_draws": 600,
+          "training_fights": 4685,
+          "unseen_fighter_ability": "sampled from Normal(0, population_variance) in every posterior draw",
+          "unseen_prediction_fighters_integrated_over_population_prior": 128
+        },
+        "fit_fights": 4179,
+        "fit_through": "2021-12-18",
+        "inner_sampler_diagnostics": {
+          "burn_in_per_chain": 300,
+          "chains": 2,
+          "coefficient_prior": "independent Normal(0, 0.35^2)",
+          "features": 82,
+          "fighter_ability_prior": "Normal(0, population_variance); population variance has an inverse-gamma prior and is sampled",
+          "fighters_in_posterior": 1528,
+          "maximum_absolute_chain_mean_probability_difference": 0.055041846055356,
+          "mean_absolute_chain_mean_probability_difference": 0.01482630121230968,
+          "mean_posterior_fighter_ability_scale": 0.39554064437082465,
+          "model": "hierarchical_probit_with_fighter_random_effects",
+          "p95_absolute_chain_mean_probability_difference": 0.038903632820296616,
+          "posterior_draws_per_chain": 300,
+          "thin": 1,
+          "total_retained_draws": 600,
+          "training_fights": 4179,
+          "unseen_fighter_ability": "sampled from Normal(0, population_variance) in every posterior draw",
+          "unseen_prediction_fighters_integrated_over_population_prior": 97
+        },
+        "selected_config": "predeclared_hierarchical_probit",
+        "symmetry": "probit of feature and fighter-ability differences",
+        "test_fights": 504,
+        "training_fights": 4685,
+        "training_start": "2013-01-19",
+        "training_through": "2022-12-17",
+        "validation_fights": 506,
+        "validation_year": 2022
+      },
+      "2024": {
+        "calibration_slope": 0.776255564013302,
+        "final_sampler_diagnostics": {
+          "burn_in_per_chain": 300,
+          "chains": 2,
+          "coefficient_prior": "independent Normal(0, 0.35^2)",
+          "features": 82,
+          "fighter_ability_prior": "Normal(0, population_variance); population variance has an inverse-gamma prior and is sampled",
+          "fighters_in_posterior": 1648,
+          "maximum_absolute_chain_mean_probability_difference": 0.04907518293781776,
+          "mean_absolute_chain_mean_probability_difference": 0.012658245593617952,
+          "mean_posterior_fighter_ability_scale": 0.35983120892894466,
+          "model": "hierarchical_probit_with_fighter_random_effects",
+          "p95_absolute_chain_mean_probability_difference": 0.03326094847902693,
+          "posterior_draws_per_chain": 300,
+          "thin": 1,
+          "total_retained_draws": 600,
+          "training_fights": 4813,
+          "unseen_fighter_ability": "sampled from Normal(0, population_variance) in every posterior draw",
+          "unseen_prediction_fighters_integrated_over_population_prior": 102
+        },
+        "fit_fights": 4309,
+        "fit_through": "2022-12-17",
+        "inner_sampler_diagnostics": {
+          "burn_in_per_chain": 300,
+          "chains": 2,
+          "coefficient_prior": "independent Normal(0, 0.35^2)",
+          "features": 82,
+          "fighter_ability_prior": "Normal(0, population_variance); population variance has an inverse-gamma prior and is sampled",
+          "fighters_in_posterior": 1520,
+          "maximum_absolute_chain_mean_probability_difference": 0.05369113724797353,
+          "mean_absolute_chain_mean_probability_difference": 0.01443077638101802,
+          "mean_posterior_fighter_ability_scale": 0.37622593935142407,
+          "model": "hierarchical_probit_with_fighter_random_effects",
+          "p95_absolute_chain_mean_probability_difference": 0.03669874460770251,
+          "posterior_draws_per_chain": 300,
+          "thin": 1,
+          "total_retained_draws": 600,
+          "training_fights": 4309,
+          "unseen_fighter_ability": "sampled from Normal(0, population_variance) in every posterior draw",
+          "unseen_prediction_fighters_integrated_over_population_prior": 128
+        },
+        "selected_config": "predeclared_hierarchical_probit",
+        "symmetry": "probit of feature and fighter-ability differences",
+        "test_fights": 513,
+        "training_fights": 4813,
+        "training_start": "2014-01-04",
+        "training_through": "2023-12-16",
+        "validation_fights": 504,
+        "validation_year": 2023
+      },
+      "2025": {
+        "calibration_slope": 1.1196681713301568,
+        "final_sampler_diagnostics": {
+          "burn_in_per_chain": 300,
+          "chains": 2,
+          "coefficient_prior": "independent Normal(0, 0.35^2)",
+          "features": 82,
+          "fighter_ability_prior": "Normal(0, population_variance); population variance has an inverse-gamma prior and is sampled",
+          "fighters_in_posterior": 1666,
+          "maximum_absolute_chain_mean_probability_difference": 0.043310294569492536,
+          "mean_absolute_chain_mean_probability_difference": 0.01216800549895312,
+          "mean_posterior_fighter_ability_scale": 0.33289494676568615,
+          "model": "hierarchical_probit_with_fighter_random_effects",
+          "p95_absolute_chain_mean_probability_difference": 0.028955999201219516,
+          "posterior_draws_per_chain": 300,
+          "thin": 1,
+          "total_retained_draws": 600,
+          "training_fights": 4832,
+          "unseen_fighter_ability": "sampled from Normal(0, population_variance) in every posterior draw",
+          "unseen_prediction_fighters_integrated_over_population_prior": 96
+        },
+        "fit_fights": 4319,
+        "fit_through": "2023-12-16",
+        "inner_sampler_diagnostics": {
+          "burn_in_per_chain": 300,
+          "chains": 2,
+          "coefficient_prior": "independent Normal(0, 0.35^2)",
+          "features": 82,
+          "fighter_ability_prior": "Normal(0, population_variance); population variance has an inverse-gamma prior and is sampled",
+          "fighters_in_posterior": 1564,
+          "maximum_absolute_chain_mean_probability_difference": 0.05514284890911031,
+          "mean_absolute_chain_mean_probability_difference": 0.013722874059506207,
+          "mean_posterior_fighter_ability_scale": 0.3661431802469942,
+          "model": "hierarchical_probit_with_fighter_random_effects",
+          "p95_absolute_chain_mean_probability_difference": 0.03397146688933186,
+          "posterior_draws_per_chain": 300,
+          "thin": 1,
+          "total_retained_draws": 600,
+          "training_fights": 4319,
+          "unseen_fighter_ability": "sampled from Normal(0, population_variance) in every posterior draw",
+          "unseen_prediction_fighters_integrated_over_population_prior": 102
+        },
+        "selected_config": "predeclared_hierarchical_probit",
+        "symmetry": "probit of feature and fighter-ability differences",
+        "test_fights": 514,
+        "training_fights": 4832,
+        "training_start": "2015-01-03",
+        "training_through": "2024-12-14",
+        "validation_fights": 513,
+        "validation_year": 2024
+      },
+      "2026": {
+        "calibration_slope": 0.9429580297501949,
+        "final_sampler_diagnostics": {
+          "burn_in_per_chain": 300,
+          "chains": 2,
+          "coefficient_prior": "independent Normal(0, 0.35^2)",
+          "features": 82,
+          "fighter_ability_prior": "Normal(0, population_variance); population variance has an inverse-gamma prior and is sampled",
+          "fighters_in_posterior": 1617,
+          "maximum_absolute_chain_mean_probability_difference": 0.04177556533243454,
+          "mean_absolute_chain_mean_probability_difference": 0.012454456973044911,
+          "mean_posterior_fighter_ability_scale": 0.34442847927518105,
+          "model": "hierarchical_probit_with_fighter_random_effects",
+          "p95_absolute_chain_mean_probability_difference": 0.02837284671901044,
+          "posterior_draws_per_chain": 300,
+          "thin": 1,
+          "total_retained_draws": 600,
+          "training_fights": 4882,
+          "unseen_fighter_ability": "sampled from Normal(0, population_variance) in every posterior draw",
+          "unseen_prediction_fighters_integrated_over_population_prior": 96
+        },
+        "fit_fights": 4368,
+        "fit_through": "2024-12-14",
+        "inner_sampler_diagnostics": {
+          "burn_in_per_chain": 300,
+          "chains": 2,
+          "coefficient_prior": "independent Normal(0, 0.35^2)",
+          "features": 82,
+          "fighter_ability_prior": "Normal(0, population_variance); population variance has an inverse-gamma prior and is sampled",
+          "fighters_in_posterior": 1521,
+          "maximum_absolute_chain_mean_probability_difference": 0.0641036483264491,
+          "mean_absolute_chain_mean_probability_difference": 0.012940683821133475,
+          "mean_posterior_fighter_ability_scale": 0.3581516703866263,
+          "model": "hierarchical_probit_with_fighter_random_effects",
+          "p95_absolute_chain_mean_probability_difference": 0.0319387410164456,
+          "posterior_draws_per_chain": 300,
+          "thin": 1,
+          "total_retained_draws": 600,
+          "training_fights": 4368,
+          "unseen_fighter_ability": "sampled from Normal(0, population_variance) in every posterior draw",
+          "unseen_prediction_fighters_integrated_over_population_prior": 96
+        },
+        "selected_config": "predeclared_hierarchical_probit",
+        "symmetry": "probit of feature and fighter-ability differences",
+        "test_fights": 346,
+        "training_fights": 4882,
+        "training_start": "2016-01-02",
+        "training_through": "2025-12-13",
+        "validation_fights": 514,
+        "validation_year": 2025
+      }
+    },
+    "hist_gradient_boosting": {
+      "2023": {
+        "calibration_slope": 1.0302537568262715,
+        "candidate_validation_log_loss": {
+          "leaves=15,rate=.03": 0.655718409211726,
+          "leaves=15,rate=.07": 0.6595642953231452,
+          "leaves=31,rate=.03": 0.6585976586691573,
+          "leaves=31,rate=.07": 0.6831153226876588
+        },
+        "fit_fights": 4179,
+        "fit_through": "2021-12-18",
+        "selected_config": "leaves=15,rate=.03",
+        "selected_parameters": {
+          "learning_rate": 0.03,
+          "max_leaf_nodes": 15
+        },
+        "symmetry": "average direct prediction with complement of swapped prediction",
+        "test_fights": 504,
+        "training_fights": 4685,
+        "training_start": "2013-01-19",
+        "training_through": "2022-12-17",
+        "validation_fights": 506,
+        "validation_year": 2022
+      },
+      "2024": {
+        "calibration_slope": 0.8443568746732615,
+        "candidate_validation_log_loss": {
+          "leaves=15,rate=.03": 0.6634925827253153,
+          "leaves=15,rate=.07": 0.6827234138716995,
+          "leaves=31,rate=.03": 0.6740269065167369,
+          "leaves=31,rate=.07": 0.6900674017754388
+        },
+        "fit_fights": 4309,
+        "fit_through": "2022-12-17",
+        "selected_config": "leaves=15,rate=.03",
+        "selected_parameters": {
+          "learning_rate": 0.03,
+          "max_leaf_nodes": 15
+        },
+        "symmetry": "average direct prediction with complement of swapped prediction",
+        "test_fights": 513,
+        "training_fights": 4813,
+        "training_start": "2014-01-04",
+        "training_through": "2023-12-16",
+        "validation_fights": 504,
+        "validation_year": 2023
+      },
+      "2025": {
+        "calibration_slope": 1.2337326268234863,
+        "candidate_validation_log_loss": {
+          "leaves=15,rate=.03": 0.6374180831267007,
+          "leaves=15,rate=.07": 0.647790398711955,
+          "leaves=31,rate=.03": 0.6398607748268309,
+          "leaves=31,rate=.07": 0.6513633491632973
+        },
+        "fit_fights": 4319,
+        "fit_through": "2023-12-16",
+        "selected_config": "leaves=15,rate=.03",
+        "selected_parameters": {
+          "learning_rate": 0.03,
+          "max_leaf_nodes": 15
+        },
+        "symmetry": "average direct prediction with complement of swapped prediction",
+        "test_fights": 514,
+        "training_fights": 4832,
+        "training_start": "2015-01-03",
+        "training_through": "2024-12-14",
+        "validation_fights": 513,
+        "validation_year": 2024
+      },
+      "2026": {
+        "calibration_slope": 1.1354728982902411,
+        "candidate_validation_log_loss": {
+          "leaves=15,rate=.03": 0.6237395572362984,
+          "leaves=15,rate=.07": 0.6206163341966731,
+          "leaves=31,rate=.03": 0.6224876287162997,
+          "leaves=31,rate=.07": 0.6296678203722821
+        },
+        "fit_fights": 4368,
+        "fit_through": "2024-12-14",
+        "selected_config": "leaves=15,rate=.07",
+        "selected_parameters": {
+          "learning_rate": 0.07,
+          "max_leaf_nodes": 15
+        },
+        "symmetry": "average direct prediction with complement of swapped prediction",
+        "test_fights": 346,
+        "training_fights": 4882,
+        "training_start": "2016-01-02",
+        "training_through": "2025-12-13",
+        "validation_fights": 514,
+        "validation_year": 2025
+      }
+    },
+    "neural_net": {
+      "2023": {
+        "calibration_slope": 1.0160101097388432,
+        "candidate_validation_log_loss": {
+          "hidden=32,alpha=.001": 0.6514323957166598,
+          "hidden=32,alpha=.01": 0.6492903019133343,
+          "hidden=64x32,alpha=.001": 0.6785178301843514,
+          "hidden=64x32,alpha=.01": 0.6486664201967872
+        },
+        "fit_fights": 4179,
+        "fit_through": "2021-12-18",
+        "selected_config": "hidden=64x32,alpha=.01",
+        "selected_parameters": {
+          "alpha": 0.01,
+          "hidden_layer_sizes": [
+            64,
+            32
+          ]
+        },
+        "symmetry": "average direct prediction with complement of swapped prediction",
+        "test_fights": 504,
+        "training_fights": 4685,
+        "training_start": "2013-01-19",
+        "training_through": "2022-12-17",
+        "validation_fights": 506,
+        "validation_year": 2022
+      },
+      "2024": {
+        "calibration_slope": 0.8885506615169854,
+        "candidate_validation_log_loss": {
+          "hidden=32,alpha=.001": 0.6618949037606241,
+          "hidden=32,alpha=.01": 0.653567736141886,
+          "hidden=64x32,alpha=.001": 0.6616278721846074,
+          "hidden=64x32,alpha=.01": 0.6700945042663722
+        },
+        "fit_fights": 4309,
+        "fit_through": "2022-12-17",
+        "selected_config": "hidden=32,alpha=.01",
+        "selected_parameters": {
+          "alpha": 0.01,
+          "hidden_layer_sizes": [
+            32
+          ]
+        },
+        "symmetry": "average direct prediction with complement of swapped prediction",
+        "test_fights": 513,
+        "training_fights": 4813,
+        "training_start": "2014-01-04",
+        "training_through": "2023-12-16",
+        "validation_fights": 504,
+        "validation_year": 2023
+      },
+      "2025": {
+        "calibration_slope": 1.2436174128695936,
+        "candidate_validation_log_loss": {
+          "hidden=32,alpha=.001": 0.6254084010168097,
+          "hidden=32,alpha=.01": 0.630477448052261,
+          "hidden=64x32,alpha=.001": 0.635050162487456,
+          "hidden=64x32,alpha=.01": 0.6232759624227833
+        },
+        "fit_fights": 4319,
+        "fit_through": "2023-12-16",
+        "selected_config": "hidden=64x32,alpha=.01",
+        "selected_parameters": {
+          "alpha": 0.01,
+          "hidden_layer_sizes": [
+            64,
+            32
+          ]
+        },
+        "symmetry": "average direct prediction with complement of swapped prediction",
+        "test_fights": 514,
+        "training_fights": 4832,
+        "training_start": "2015-01-03",
+        "training_through": "2024-12-14",
+        "validation_fights": 513,
+        "validation_year": 2024
+      },
+      "2026": {
+        "calibration_slope": 1.1031272581498863,
+        "candidate_validation_log_loss": {
+          "hidden=32,alpha=.001": 0.6257996812098857,
+          "hidden=32,alpha=.01": 0.6245572091490454,
+          "hidden=64x32,alpha=.001": 0.6289061827608249,
+          "hidden=64x32,alpha=.01": 0.6239585430375649
+        },
+        "fit_fights": 4368,
+        "fit_through": "2024-12-14",
+        "selected_config": "hidden=64x32,alpha=.01",
+        "selected_parameters": {
+          "alpha": 0.01,
+          "hidden_layer_sizes": [
+            64,
+            32
+          ]
+        },
+        "symmetry": "average direct prediction with complement of swapped prediction",
+        "test_fights": 346,
+        "training_fights": 4882,
+        "training_start": "2016-01-02",
+        "training_through": "2025-12-13",
+        "validation_fights": 514,
+        "validation_year": 2025
+      }
+    },
+    "random_forest": {
+      "2023": {
+        "calibration_slope": 1.4160937445636832,
+        "candidate_validation_log_loss": {
+          "depth=10,leaf=10": 0.6504044921735797,
+          "depth=6,leaf=10": 0.6541346547274857,
+          "depth=none,leaf=10": 0.6459055219693283,
+          "depth=none,leaf=25": 0.6482639798799316
+        },
+        "fit_fights": 4179,
+        "fit_through": "2021-12-18",
+        "selected_config": "depth=none,leaf=10",
+        "selected_parameters": {
+          "max_depth": null,
+          "min_samples_leaf": 10
+        },
+        "symmetry": "average direct prediction with complement of swapped prediction",
+        "test_fights": 504,
+        "training_fights": 4685,
+        "training_start": "2013-01-19",
+        "training_through": "2022-12-17",
+        "validation_fights": 506,
+        "validation_year": 2022
+      },
+      "2024": {
+        "calibration_slope": 1.1767353486825687,
+        "candidate_validation_log_loss": {
+          "depth=10,leaf=10": 0.6631711066071188,
+          "depth=6,leaf=10": 0.6636030267448774,
+          "depth=none,leaf=10": 0.6640127636350315,
+          "depth=none,leaf=25": 0.6637015222975697
+        },
+        "fit_fights": 4309,
+        "fit_through": "2022-12-17",
+        "selected_config": "depth=10,leaf=10",
+        "selected_parameters": {
+          "max_depth": 10,
+          "min_samples_leaf": 10
+        },
+        "symmetry": "average direct prediction with complement of swapped prediction",
+        "test_fights": 513,
+        "training_fights": 4813,
+        "training_start": "2014-01-04",
+        "training_through": "2023-12-16",
+        "validation_fights": 504,
+        "validation_year": 2023
+      },
+      "2025": {
+        "calibration_slope": 1.4126061384818922,
+        "candidate_validation_log_loss": {
+          "depth=10,leaf=10": 0.6481607589304871,
+          "depth=6,leaf=10": 0.6524023214905862,
+          "depth=none,leaf=10": 0.648385606751324,
+          "depth=none,leaf=25": 0.6490746363255439
+        },
+        "fit_fights": 4319,
+        "fit_through": "2023-12-16",
+        "selected_config": "depth=10,leaf=10",
+        "selected_parameters": {
+          "max_depth": 10,
+          "min_samples_leaf": 10
+        },
+        "symmetry": "average direct prediction with complement of swapped prediction",
+        "test_fights": 514,
+        "training_fights": 4832,
+        "training_start": "2015-01-03",
+        "training_through": "2024-12-14",
+        "validation_fights": 513,
+        "validation_year": 2024
+      },
+      "2026": {
+        "calibration_slope": 1.5087113029339494,
+        "candidate_validation_log_loss": {
+          "depth=10,leaf=10": 0.6358225747975018,
+          "depth=6,leaf=10": 0.6379514204731902,
+          "depth=none,leaf=10": 0.6340245701091469,
+          "depth=none,leaf=25": 0.6353648336450004
+        },
+        "fit_fights": 4368,
+        "fit_through": "2024-12-14",
+        "selected_config": "depth=none,leaf=10",
+        "selected_parameters": {
+          "max_depth": null,
+          "min_samples_leaf": 10
+        },
+        "symmetry": "average direct prediction with complement of swapped prediction",
+        "test_fights": 346,
+        "training_fights": 4882,
+        "training_start": "2016-01-02",
+        "training_through": "2025-12-13",
+        "validation_fights": 514,
+        "validation_year": 2025
+      }
+    },
+    "xgboost": {
+      "2023": {
+        "calibration_slope": 1.306041560034203,
+        "candidate_validation_log_loss": {
+          "depth=2,rate=.03": 0.6500331651768559,
+          "depth=2,rate=.07": 0.6532670021149586,
+          "depth=3,rate=.03": 0.6501976624991808,
+          "depth=3,rate=.07": 0.6574319688258337
+        },
+        "fit_fights": 4179,
+        "fit_through": "2021-12-18",
+        "selected_config": "depth=2,rate=.03",
+        "selected_parameters": {
+          "learning_rate": 0.03,
+          "max_depth": 2
+        },
+        "symmetry": "average direct prediction with complement of swapped prediction",
+        "test_fights": 504,
+        "training_fights": 4685,
+        "training_start": "2013-01-19",
+        "training_through": "2022-12-17",
+        "validation_fights": 506,
+        "validation_year": 2022
+      },
+      "2024": {
+        "calibration_slope": 0.9138666610930888,
+        "candidate_validation_log_loss": {
+          "depth=2,rate=.03": 0.6534377585590943,
+          "depth=2,rate=.07": 0.6533699237915375,
+          "depth=3,rate=.03": 0.654052820941973,
+          "depth=3,rate=.07": 0.6644956971357894
+        },
+        "fit_fights": 4309,
+        "fit_through": "2022-12-17",
+        "selected_config": "depth=2,rate=.07",
+        "selected_parameters": {
+          "learning_rate": 0.07,
+          "max_depth": 2
+        },
+        "symmetry": "average direct prediction with complement of swapped prediction",
+        "test_fights": 513,
+        "training_fights": 4813,
+        "training_start": "2014-01-04",
+        "training_through": "2023-12-16",
+        "validation_fights": 504,
+        "validation_year": 2023
+      },
+      "2025": {
+        "calibration_slope": 1.2243399958227965,
+        "candidate_validation_log_loss": {
+          "depth=2,rate=.03": 0.6394506492540436,
+          "depth=2,rate=.07": 0.635616571135005,
+          "depth=3,rate=.03": 0.6383019239311299,
+          "depth=3,rate=.07": 0.6378903000252305
+        },
+        "fit_fights": 4319,
+        "fit_through": "2023-12-16",
+        "selected_config": "depth=2,rate=.07",
+        "selected_parameters": {
+          "learning_rate": 0.07,
+          "max_depth": 2
+        },
+        "symmetry": "average direct prediction with complement of swapped prediction",
+        "test_fights": 514,
+        "training_fights": 4832,
+        "training_start": "2015-01-03",
+        "training_through": "2024-12-14",
+        "validation_fights": 513,
+        "validation_year": 2024
+      },
+      "2026": {
+        "calibration_slope": 1.3548739246746897,
+        "candidate_validation_log_loss": {
+          "depth=2,rate=.03": 0.6319587612742239,
+          "depth=2,rate=.07": 0.6258039604355506,
+          "depth=3,rate=.03": 0.6255984223035453,
+          "depth=3,rate=.07": 0.6291356812873635
+        },
+        "fit_fights": 4368,
+        "fit_through": "2024-12-14",
+        "selected_config": "depth=3,rate=.03",
+        "selected_parameters": {
+          "learning_rate": 0.03,
+          "max_depth": 3
+        },
+        "symmetry": "average direct prediction with complement of swapped prediction",
+        "test_fights": 346,
+        "training_fights": 4882,
+        "training_start": "2016-01-02",
+        "training_through": "2025-12-13",
+        "validation_fights": 514,
+        "validation_year": 2025
+      }
+    }
+  },
+  "fully_bayesian_contract": {
+    "config": {
+      "ability_variance_scale": 0.25,
+      "ability_variance_shape": 2.0,
+      "burn_in_per_chain": 300,
+      "chains": 2,
+      "coefficient_prior_scale": 0.35,
+      "posterior_draws_per_chain": 300
+    },
+    "not_the_existing_laplace_model": true,
+    "posterior_components_sampled": [
+      "all feature coefficients",
+      "every observed fighter ability",
+      "population fighter-ability variance",
+      "latent fight performance"
+    ],
+    "sampler": "two-chain Albert-Chib Gibbs sampler"
+  },
+  "important_limits": [
+    "this development period has already influenced research choices and cannot be final promotion evidence",
+    "a single fixed feature set isolates model-family differences but does not find each family's ideal variables",
+    "the Bayesian sampler needs stronger convergence checks and prior sensitivity tests before promotion",
+    "sportsbook market probabilities remain a stronger practical reference where timestamp-aligned history exists"
+  ],
+  "metrics": {
+    "current_logistic": {
+      "accuracy": 0.6403835908364411,
+      "auc": 0.6971739051327305,
+      "brier": 0.22070059107620524,
+      "ece_10_bin": 0.024517491163701725,
+      "fights": 1877,
+      "log_loss": 0.6313760447767583
+    },
+    "gaussian_naive_bayes": {
+      "accuracy": 0.608950452850293,
+      "auc": 0.6589888739287858,
+      "brier": 0.23071471210876612,
+      "ece_10_bin": 0.022978384943751803,
+      "fights": 1877,
+      "log_loss": 0.653353143704313
+    },
+    "hierarchical_bayes": {
+      "accuracy": 0.6281299946723495,
+      "auc": 0.684856079765652,
+      "brier": 0.2241335016857018,
+      "ece_10_bin": 0.0354390755346225,
+      "fights": 1877,
+      "log_loss": 0.6387970852510018
+    },
+    "hist_gradient_boosting": {
+      "accuracy": 0.6297282898241875,
+      "auc": 0.6829865722967194,
+      "brier": 0.22499126454415158,
+      "ece_10_bin": 0.029462965123358522,
+      "fights": 1877,
+      "log_loss": 0.6412547321916423
+    },
+    "neural_net": {
+      "accuracy": 0.6446457112413426,
+      "auc": 0.691841715034297,
+      "brier": 0.22244407892932352,
+      "ece_10_bin": 0.026199292458409955,
+      "fights": 1877,
+      "log_loss": 0.6360149529654464
+    },
+    "random_forest": {
+      "accuracy": 0.6334576451784762,
+      "auc": 0.6812353305070868,
+      "brier": 0.2249883231295218,
+      "ece_10_bin": 0.021305422356689245,
+      "fights": 1877,
+      "log_loss": 0.6408166918839181
+    },
+    "xgboost": {
+      "accuracy": 0.6345231752797017,
+      "auc": 0.6890727061006896,
+      "brier": 0.22287614669877284,
+      "ece_10_bin": 0.027020072213000033,
+      "fights": 1877,
+      "log_loss": 0.6362572550053841
+    }
+  },
+  "model_meanings": {
+    "current_logistic": "the existing regularized production algorithm",
+    "gaussian_naive_bayes": "independent bell-shaped evidence per variable",
+    "hierarchical_bayes": "a fully Bayesian probit model with coefficient priors, partially pooled fighter abilities, and a sampled population ability variance",
+    "hist_gradient_boosting": "sequential boosted trees, similar in purpose to XGBoost",
+    "neural_net": "a small feed-forward network with early stopping",
+    "random_forest": "an average of many nonlinear decision trees",
+    "xgboost": "external gradient-boosted trees, run only when installed"
+  },
+  "paired_log_loss_intervals": {
+    "gaussian_naive_bayes_minus_current_logistic": {
+      "bootstrap_samples": 10000,
+      "ci_95_lower": 0.012755100234583282,
+      "ci_95_upper": 0.031186761497802966,
+      "definition": "gaussian_naive_bayes_probability minus current_logistic_probability paired log loss; negative favors candidate",
+      "event_count": 155,
+      "fight_count": 1877,
+      "method": "nonparametric whole-event block bootstrap",
+      "point_difference": 0.02197709892755448,
+      "seed": 20260822
+    },
+    "hierarchical_bayes_minus_current_logistic": {
+      "bootstrap_samples": 10000,
+      "ci_95_lower": 0.0026095264664675534,
+      "ci_95_upper": 0.012383652508629942,
+      "definition": "hierarchical_bayes_probability minus current_logistic_probability paired log loss; negative favors candidate",
+      "event_count": 155,
+      "fight_count": 1877,
+      "method": "nonparametric whole-event block bootstrap",
+      "point_difference": 0.007421040474243361,
+      "seed": 20260822
+    },
+    "hist_gradient_boosting_minus_current_logistic": {
+      "bootstrap_samples": 10000,
+      "ci_95_lower": 0.0037981838234311845,
+      "ci_95_upper": 0.0159698900172038,
+      "definition": "hist_gradient_boosting_probability minus current_logistic_probability paired log loss; negative favors candidate",
+      "event_count": 155,
+      "fight_count": 1877,
+      "method": "nonparametric whole-event block bootstrap",
+      "point_difference": 0.009878687414883892,
+      "seed": 20260822
+    },
+    "neural_net_minus_current_logistic": {
+      "bootstrap_samples": 10000,
+      "ci_95_lower": -0.00013488340886414713,
+      "ci_95_upper": 0.009441103369476938,
+      "definition": "neural_net_probability minus current_logistic_probability paired log loss; negative favors candidate",
+      "event_count": 155,
+      "fight_count": 1877,
+      "method": "nonparametric whole-event block bootstrap",
+      "point_difference": 0.004638908188688083,
+      "seed": 20260822
+    },
+    "random_forest_minus_current_logistic": {
+      "bootstrap_samples": 10000,
+      "ci_95_lower": 0.0023998673893075055,
+      "ci_95_upper": 0.01642184126957015,
+      "definition": "random_forest_probability minus current_logistic_probability paired log loss; negative favors candidate",
+      "event_count": 155,
+      "fight_count": 1877,
+      "method": "nonparametric whole-event block bootstrap",
+      "point_difference": 0.009440647107159651,
+      "seed": 20260822
+    },
+    "xgboost_minus_current_logistic": {
+      "bootstrap_samples": 10000,
+      "ci_95_lower": -0.0004139912777531853,
+      "ci_95_upper": 0.010133837364974956,
+      "definition": "xgboost_probability minus current_logistic_probability paired log loss; negative favors candidate",
+      "event_count": 155,
+      "fight_count": 1877,
+      "method": "nonparametric whole-event block bootstrap",
+      "point_difference": 0.004881210228625769,
+      "seed": 20260822
+    }
+  },
+  "paper_only": true,
+  "per_year": {
+    "2023": {
+      "current_logistic": {
+        "accuracy": 0.6111111111111112,
+        "auc": 0.6633522727272727,
+        "brier": 0.22909236321991958,
+        "ece_10_bin": 0.038396190935394654,
+        "fights": 504,
+        "log_loss": 0.6485268842635092
+      },
+      "gaussian_naive_bayes": {
+        "accuracy": 0.5753968253968254,
+        "auc": 0.6199179292929292,
+        "brier": 0.2401649944126427,
+        "ece_10_bin": 0.05417842277384248,
+        "fights": 504,
+        "log_loss": 0.6730080925258494
+      },
+      "hierarchical_bayes": {
+        "accuracy": 0.6031746031746031,
+        "auc": 0.6539772727272727,
+        "brier": 0.2316077925714623,
+        "ece_10_bin": 0.035936012409771345,
+        "fights": 504,
+        "log_loss": 0.6542660817186811
+      },
+      "hist_gradient_boosting": {
+        "accuracy": 0.5912698412698413,
+        "auc": 0.6415561868686869,
+        "brier": 0.23444450447417686,
+        "ece_10_bin": 0.04325496555900582,
+        "fights": 504,
+        "log_loss": 0.660440274800896
+      },
+      "neural_net": {
+        "accuracy": 0.621031746031746,
+        "auc": 0.6522569444444444,
+        "brier": 0.23261989289114765,
+        "ece_10_bin": 0.04249081172173722,
+        "fights": 504,
+        "log_loss": 0.6567231563454669
+      },
+      "random_forest": {
+        "accuracy": 0.5992063492063492,
+        "auc": 0.6480113636363636,
+        "brier": 0.23433463280634315,
+        "ece_10_bin": 0.04528207229751783,
+        "fights": 504,
+        "log_loss": 0.6611070725750751
+      },
+      "xgboost": {
+        "accuracy": 0.6011904761904762,
+        "auc": 0.6532828282828282,
+        "brier": 0.23143962541547367,
+        "ece_10_bin": 0.05286987058516213,
+        "fights": 504,
+        "log_loss": 0.6535788616191214
+      }
+    },
+    "2024": {
+      "current_logistic": {
+        "accuracy": 0.6510721247563352,
+        "auc": 0.7064016316093878,
+        "brier": 0.21800131578382315,
+        "ece_10_bin": 0.055696688878456024,
+        "fights": 513,
+        "log_loss": 0.6256764848382201
+      },
+      "gaussian_naive_bayes": {
+        "accuracy": 0.6062378167641326,
+        "auc": 0.6601168914188305,
+        "brier": 0.2309301590071997,
+        "ece_10_bin": 0.04036968892223043,
+        "fights": 513,
+        "log_loss": 0.6536143347333973
+      },
+      "hierarchical_bayes": {
+        "accuracy": 0.6549707602339181,
+        "auc": 0.7056558400048705,
+        "brier": 0.22065914490087823,
+        "ece_10_bin": 0.055146951406646515,
+        "fights": 513,
+        "log_loss": 0.6320691782469591
+      },
+      "hist_gradient_boosting": {
+        "accuracy": 0.6354775828460039,
+        "auc": 0.6929469422544215,
+        "brier": 0.22417577683547216,
+        "ece_10_bin": 0.04376586108801429,
+        "fights": 513,
+        "log_loss": 0.6396728234596172
+      },
+      "neural_net": {
+        "accuracy": 0.6471734892787524,
+        "auc": 0.7036163282700678,
+        "brier": 0.21837671768813313,
+        "ece_10_bin": 0.03928068178696506,
+        "fights": 513,
+        "log_loss": 0.6265060636750244
+      },
+      "random_forest": {
+        "accuracy": 0.621832358674464,
+        "auc": 0.6695382180146723,
+        "brier": 0.2273809120107045,
+        "ece_10_bin": 0.0427818409420589,
+        "fights": 513,
+        "log_loss": 0.6456267043964816
+      },
+      "xgboost": {
+        "accuracy": 0.6471734892787524,
+        "auc": 0.6954278408572037,
+        "brier": 0.2231252058025856,
+        "ece_10_bin": 0.05559927060593368,
+        "fights": 513,
+        "log_loss": 0.637238516449197
+      }
+    },
+    "2025": {
+      "current_logistic": {
+        "accuracy": 0.6536964980544747,
+        "auc": 0.7117981359399863,
+        "brier": 0.2167366021542195,
+        "ece_10_bin": 0.04170481501081931,
+        "fights": 514,
+        "log_loss": 0.6234114835809952
+      },
+      "gaussian_naive_bayes": {
+        "accuracy": 0.6284046692607004,
+        "auc": 0.6831249526407517,
+        "brier": 0.225253957487305,
+        "ece_10_bin": 0.030351235921193053,
+        "fights": 514,
+        "log_loss": 0.6422935285971678
+      },
+      "hierarchical_bayes": {
+        "accuracy": 0.6264591439688716,
+        "auc": 0.691066151398045,
+        "brier": 0.22218449171475865,
+        "ece_10_bin": 0.055514041838071466,
+        "fights": 514,
+        "log_loss": 0.6339246178450597
+      },
+      "hist_gradient_boosting": {
+        "accuracy": 0.6575875486381323,
+        "auc": 0.7092217928317041,
+        "brier": 0.2178040960356361,
+        "ece_10_bin": 0.04375851670603795,
+        "fights": 514,
+        "log_loss": 0.6256457329965218
+      },
+      "neural_net": {
+        "accuracy": 0.6712062256809338,
+        "auc": 0.7158748200348564,
+        "brier": 0.21563432175899136,
+        "ece_10_bin": 0.04102140591624648,
+        "fights": 514,
+        "log_loss": 0.623792347446248
+      },
+      "random_forest": {
+        "accuracy": 0.6634241245136187,
+        "auc": 0.704357050844889,
+        "brier": 0.21882297736583659,
+        "ece_10_bin": 0.04001279425932898,
+        "fights": 514,
+        "log_loss": 0.6282845577590414
+      },
+      "xgboost": {
+        "accuracy": 0.6498054474708171,
+        "auc": 0.7104341895885428,
+        "brier": 0.2169812556038575,
+        "ece_10_bin": 0.054558070678070295,
+        "fights": 514,
+        "log_loss": 0.6240347977715892
+      }
+    },
+    "2026": {
+      "current_logistic": {
+        "accuracy": 0.6473988439306358,
+        "auc": 0.7061108320776829,
+        "brier": 0.21836754301395275,
+        "ece_10_bin": 0.04758482226593102,
+        "fights": 346,
+        "log_loss": 0.6266755696373653
+      },
+      "gaussian_naive_bayes": {
+        "accuracy": 0.6329479768786127,
+        "auc": 0.6864222333835592,
+        "brier": 0.2247417679913695,
+        "ece_10_bin": 0.03819044652556456,
+        "fights": 346,
+        "log_loss": 0.6407651580427459
+      },
+      "hierarchical_bayes": {
+        "accuracy": 0.6271676300578035,
+        "auc": 0.7008203582789219,
+        "brier": 0.2212927315968464,
+        "ece_10_bin": 0.053135478562821525,
+        "fights": 346,
+        "log_loss": 0.6334776931123247
+      },
+      "hist_gradient_boosting": {
+        "accuracy": 0.6358381502890174,
+        "auc": 0.6959316926167755,
+        "brier": 0.22310720929327496,
+        "ece_10_bin": 0.0679422254350722,
+        "fights": 346,
+        "log_loss": 0.6388415278296683
+      },
+      "neural_net": {
+        "accuracy": 0.6358381502890174,
+        "auc": 0.6889335342374014,
+        "brier": 0.22376824443661267,
+        "ece_10_bin": 0.05865902316233146,
+        "fights": 346,
+        "log_loss": 0.6381061233103141
+      },
+      "random_forest": {
+        "accuracy": 0.6560693641618497,
+        "auc": 0.712941570400134,
+        "brier": 0.21698557616238168,
+        "ece_10_bin": 0.051384731349452734,
+        "fights": 346,
+        "log_loss": 0.6227462544645495
+      },
+      "xgboost": {
+        "accuracy": 0.6416184971098265,
+        "auc": 0.7068139963167588,
+        "brier": 0.21879005834418727,
+        "ece_10_bin": 0.055958586510122484,
+        "fights": 346,
+        "log_loss": 0.627727966462526
+      }
+    }
+  },
+  "plain_language_conclusion": "None of the tested model families beat the current logistic model on the combined untouched yearly tests.",
+  "plain_language_method": "Every model sees the same pre-fight 82 variables and the same future test fights. For each test year, settings and probability calibration use only earlier years. Trees, Naive Bayes, and neural nets are forced to give complementary probabilities when fighter sides are swapped.",
+  "production_action": "none",
+  "ranked_by_log_loss": [
+    "current_logistic",
+    "neural_net",
+    "xgboost",
+    "hierarchical_bayes",
+    "random_forest",
+    "hist_gradient_boosting",
+    "gaussian_naive_bayes"
+  ],
+  "report_schema_version": 1,
+  "sample": {
+    "events": 155,
+    "features": 82,
+    "fights": 1877,
+    "first_date": "2023-01-14",
+    "last_date": "2026-08-22"
+  },
+  "skipped": {},
+  "source_sha256": {
+    "detail_logical": "36aad2aad17d542e46125c44d167945d63505f1d6933208f9fb5b4088a51b010",
+    "fighter_stats": "88341fc47df0dac282a4c91c6f5df4d60e9e5905204eda4ce950459720c01230",
+    "model_artifact": "ff068e2763ecd2a667462bc1afbc7691639719ac5ca049e2df61847ec049b725",
+    "point_in_time": "f9ed863ea627318a3d55e1bf422536c0563fe2e22f8baedb71f6837b27530370",
+    "raw_fights": "6cfb14c9ebcaf2946d942447f4af0166df8b1e5cefa9111edb184b74d7197d49"
+  },
+  "years": [
+    2023,
+    2024,
+    2025,
+    2026
+  ]
+}
