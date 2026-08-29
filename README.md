@@ -110,6 +110,16 @@ across 20 events; it cannot automatically change production or enable betting.
 Same-day date-only forecasts are rejected because they cannot prove that they
 were made before the event began.
 
+A separate weight-group test found no benefit from fitting different winner
+models for smaller men, welterweight/middleweight men, heavier men, and women.
+The current shared model scored `0.63138` log loss and 64.04% accuracy on
+2023-August 2026; the earlier-selected partly shared group design scored
+`0.63319` and 63.72%, while fully separate models scored `0.63956` and 62.23%.
+Women were harder to predict in 2019-2022 but the easiest group in the later
+period, showing that division difficulty is not stable. Production remains
+shared. Exact group and division results are in
+[MODEL_FAMILY_RESEARCH.md](MODEL_FAMILY_RESEARCH.md).
+
 ## External promotion history
 
 The repository now has a source-attributed external-MMA collection layer for

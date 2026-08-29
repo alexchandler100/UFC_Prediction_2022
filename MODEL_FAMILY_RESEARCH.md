@@ -198,6 +198,43 @@ family-specific variable selection and causally selected small blend weights.
 That work should remain separate from the Bayesian redesign so a gain can be
 attributed to the model rather than an uncontrolled combination of changes.
 
+## Division-group experiment
+
+The production model already has division-specific Elo inputs, but it uses one
+shared set of logistic-regression coefficients for every division. An earlier
+notebook strategy of fitting separate weight-range models had not been carried
+into the production pipeline.
+
+The new experiment kept all 82 inputs and compared the shared model with four
+separate fits: men below welterweight, men from welterweight through
+middleweight, men at light heavyweight and above, and all women. It also tested
+partly shared versions so that the smaller groups could stay closer to the
+full-data model. The amount of sharing was selected on 1,953 fights from
+2019-2022 and then frozen before scoring 1,877 fights from 2023-August 2026.
+
+| Later-fight model | Log loss | Accuracy | Brier score |
+|---|---:|---:|---:|
+| Current shared logistic | **0.63138** | **64.04%** | **0.22070** |
+| Earlier-selected partly shared groups | 0.63319 | 63.72% | 0.22152 |
+| Fully separate groups | 0.63956 | 62.23% | 0.22468 |
+
+The partly shared version was worse by `0.00182` log loss. Whole-event
+resampling gave a 95% range from `-0.00136` to `+0.00499`, so the result does
+not prove that grouping is always harmful, but it gives no reason to change
+production. Fully separate models were clearly the weakest option.
+
+The predictability pattern also changed with time. In 2019-2022 the shared
+model was least accurate for women (58.2%) and heavier men (59.1%). In the later
+period, women were the easiest group (67.3%), while heavier men remained below
+average (62.1%). Light heavyweight was especially difficult at 57.7%, but
+heavyweight itself reached 66.4%. This instability explains why permanent
+division-specific models are risky: a pattern that looks convincing in one
+period may reverse in the next.
+
+This experiment is research-only. It changes no production probability. Exact
+group, division, and fight-level results are stored in
+`src/content/data/model_research/division_group_model_*`.
+
 ## Reproduction
 
 Install the optional free research dependency and run the comparison locally:
@@ -228,6 +265,8 @@ python src/evaluate_bayesian_logistic.py \
   --final-burn-in 1000 \
   --final-draws 1000 \
   --chains 2
+
+python src/evaluate_division_group_models.py
 ```
 
 The run took about 5.2 minutes on the development machine. The JSON report and
@@ -237,3 +276,5 @@ artifacts, website predictions, and betting behavior are unchanged. The second
 experiment took 13.8 minutes and wrote
 `src/content/data/model_research/dynamic_bayes_*`. The third experiment took
 5.4 minutes and wrote `src/content/data/model_research/bayesian_logistic_*`.
+The division-group experiment took about 20 seconds and wrote
+`src/content/data/model_research/division_group_model_*`.

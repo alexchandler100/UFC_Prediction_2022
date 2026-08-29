@@ -1,0 +1,1551 @@
+{
+  "created_at_utc": "2026-08-29T20:18:36+00:00",
+  "development": {
+    "by_division": {
+      "Bantamweight": {
+        "current_logistic": {
+          "accuracy": 0.6412556053811659,
+          "auc": 0.6940058008378988,
+          "brier": 0.22143892601666784,
+          "ece_10_bin": 0.05980323801893785,
+          "fights": 223,
+          "log_loss": 0.631814220260409
+        },
+        "fights": 223,
+        "selected_division_design": {
+          "accuracy": 0.6547085201793722,
+          "auc": 0.6874798582017402,
+          "brier": 0.2220319039070701,
+          "ece_10_bin": 0.06341786707941473,
+          "fights": 223,
+          "log_loss": 0.6327504650017775
+        },
+        "selected_minus_current_log_loss": 0.0009362447413684416
+      },
+      "Catch Weight": {
+        "current_logistic": {
+          "accuracy": 0.6,
+          "auc": 0.6294642857142857,
+          "brier": 0.24293742577035912,
+          "ece_10_bin": 0.21324482760358762,
+          "fights": 30,
+          "log_loss": 0.6865559902293571
+        },
+        "fights": 30,
+        "selected_division_design": {
+          "accuracy": 0.6,
+          "auc": 0.6294642857142857,
+          "brier": 0.2429374257703591,
+          "ece_10_bin": 0.2132448276035876,
+          "fights": 30,
+          "log_loss": 0.6865559902293571
+        },
+        "selected_minus_current_log_loss": 0.0
+      },
+      "Featherweight": {
+        "current_logistic": {
+          "accuracy": 0.6331877729257642,
+          "auc": 0.6270422965338219,
+          "brier": 0.239765497140894,
+          "ece_10_bin": 0.11195120739734599,
+          "fights": 229,
+          "log_loss": 0.6720872580136968
+        },
+        "fights": 229,
+        "selected_division_design": {
+          "accuracy": 0.6244541484716157,
+          "auc": 0.6270422965338219,
+          "brier": 0.23936642619871043,
+          "ece_10_bin": 0.11800374618050159,
+          "fights": 229,
+          "log_loss": 0.6708348517495768
+        },
+        "selected_minus_current_log_loss": -0.0012524062641200429
+      },
+      "Flyweight": {
+        "current_logistic": {
+          "accuracy": 0.631578947368421,
+          "auc": 0.699468085106383,
+          "brier": 0.22213920802364218,
+          "ece_10_bin": 0.06441104657010581,
+          "fights": 95,
+          "log_loss": 0.6349728130751228
+        },
+        "fights": 95,
+        "selected_division_design": {
+          "accuracy": 0.6210526315789474,
+          "auc": 0.7047872340425532,
+          "brier": 0.22125247587917748,
+          "ece_10_bin": 0.056249001945700476,
+          "fights": 95,
+          "log_loss": 0.6331748501938348
+        },
+        "selected_minus_current_log_loss": -0.0017979628812879733
+      },
+      "Heavyweight": {
+        "current_logistic": {
+          "accuracy": 0.6645161290322581,
+          "auc": 0.6911111111111112,
+          "brier": 0.22078518944271228,
+          "ece_10_bin": 0.06213768006522591,
+          "fights": 155,
+          "log_loss": 0.6326367869618938
+        },
+        "fights": 155,
+        "selected_division_design": {
+          "accuracy": 0.6580645161290323,
+          "auc": 0.7092307692307692,
+          "brier": 0.21794410148108984,
+          "ece_10_bin": 0.04851515453668907,
+          "fights": 155,
+          "log_loss": 0.6258799857616153
+        },
+        "selected_minus_current_log_loss": -0.0067568012002785505
+      },
+      "Light Heavyweight": {
+        "current_logistic": {
+          "accuracy": 0.5135135135135135,
+          "auc": 0.5393772893772893,
+          "brier": 0.26175409921967685,
+          "ece_10_bin": 0.120583147504829,
+          "fights": 148,
+          "log_loss": 0.7186728002784136
+        },
+        "fights": 148,
+        "selected_division_design": {
+          "accuracy": 0.4797297297297297,
+          "auc": 0.532051282051282,
+          "brier": 0.25639874192892087,
+          "ece_10_bin": 0.1338998624133792,
+          "fights": 148,
+          "log_loss": 0.7058273162409057
+        },
+        "selected_minus_current_log_loss": -0.01284548403750796
+      },
+      "Lightweight": {
+        "current_logistic": {
+          "accuracy": 0.65748031496063,
+          "auc": 0.6957196029776676,
+          "brier": 0.2208777765094865,
+          "ece_10_bin": 0.043325402093224274,
+          "fights": 254,
+          "log_loss": 0.6322011273765236
+        },
+        "fights": 254,
+        "selected_division_design": {
+          "accuracy": 0.6692913385826772,
+          "auc": 0.6972084367245658,
+          "brier": 0.22024508426739337,
+          "ece_10_bin": 0.0815274099585432,
+          "fights": 254,
+          "log_loss": 0.6309068731265877
+        },
+        "selected_minus_current_log_loss": -0.0012942542499359
+      },
+      "Middleweight": {
+        "current_logistic": {
+          "accuracy": 0.6372093023255814,
+          "auc": 0.6548250265111346,
+          "brier": 0.2310289758046667,
+          "ece_10_bin": 0.08786473448010058,
+          "fights": 215,
+          "log_loss": 0.6524476944840859
+        },
+        "fights": 215,
+        "selected_division_design": {
+          "accuracy": 0.6372093023255814,
+          "auc": 0.6548250265111346,
+          "brier": 0.2310289758046667,
+          "ece_10_bin": 0.08786473448010058,
+          "fights": 215,
+          "log_loss": 0.6524476944840859
+        },
+        "selected_minus_current_log_loss": 0.0
+      },
+      "Welterweight": {
+        "current_logistic": {
+          "accuracy": 0.576,
+          "auc": 0.6243833685694151,
+          "brier": 0.2392229447016974,
+          "ece_10_bin": 0.05803406059785118,
+          "fights": 250,
+          "log_loss": 0.6712665391243166
+        },
+        "fights": 250,
+        "selected_division_design": {
+          "accuracy": 0.576,
+          "auc": 0.6243833685694151,
+          "brier": 0.2392229447016974,
+          "ece_10_bin": 0.05803406059785118,
+          "fights": 250,
+          "log_loss": 0.6712665391243166
+        },
+        "selected_minus_current_log_loss": 0.0
+      },
+      "Women's Bantamweight": {
+        "current_logistic": {
+          "accuracy": 0.581081081081081,
+          "auc": 0.6498538011695907,
+          "brier": 0.23929529755645945,
+          "ece_10_bin": 0.11980831799535452,
+          "fights": 74,
+          "log_loss": 0.6796633393135754
+        },
+        "fights": 74,
+        "selected_division_design": {
+          "accuracy": 0.5675675675675675,
+          "auc": 0.6469298245614035,
+          "brier": 0.23686966089817707,
+          "ece_10_bin": 0.09403904518899232,
+          "fights": 74,
+          "log_loss": 0.6680302979187228
+        },
+        "selected_minus_current_log_loss": -0.01163304139485255
+      },
+      "Women's Featherweight": {
+        "current_logistic": {
+          "accuracy": 0.625,
+          "auc": 0.7301587301587302,
+          "brier": 0.20496242594357056,
+          "ece_10_bin": 0.15867120750193775,
+          "fights": 16,
+          "log_loss": 0.5906849403146628
+        },
+        "fights": 16,
+        "selected_division_design": {
+          "accuracy": 0.5625,
+          "auc": 0.7301587301587302,
+          "brier": 0.20769130284351175,
+          "ece_10_bin": 0.21938905055006272,
+          "fights": 16,
+          "log_loss": 0.6043313867747755
+        },
+        "selected_minus_current_log_loss": 0.013646446460112704
+      },
+      "Women's Flyweight": {
+        "current_logistic": {
+          "accuracy": 0.5972222222222222,
+          "auc": 0.6434362934362935,
+          "brier": 0.2364042121118347,
+          "ece_10_bin": 0.10482277916380861,
+          "fights": 144,
+          "log_loss": 0.6664306766750013
+        },
+        "fights": 144,
+        "selected_division_design": {
+          "accuracy": 0.5625,
+          "auc": 0.6281853281853281,
+          "brier": 0.23706367027152422,
+          "ece_10_bin": 0.07452390212805934,
+          "fights": 144,
+          "log_loss": 0.6665361203172767
+        },
+        "selected_minus_current_log_loss": 0.00010544364227538239
+      },
+      "Women's Strawweight": {
+        "current_logistic": {
+          "accuracy": 0.5583333333333333,
+          "auc": 0.5653759820426486,
+          "brier": 0.2521544499021369,
+          "ece_10_bin": 0.0942613974905482,
+          "fights": 120,
+          "log_loss": 0.6990112998150533
+        },
+        "fights": 120,
+        "selected_division_design": {
+          "accuracy": 0.5583333333333333,
+          "auc": 0.5869809203142538,
+          "brier": 0.24498715346632033,
+          "ece_10_bin": 0.07746286082187864,
+          "fights": 120,
+          "log_loss": 0.6829911485913202
+        },
+        "selected_minus_current_log_loss": -0.016020151223733126
+      }
+    },
+    "by_group": {
+      "mens_below_welterweight": {
+        "current_logistic": {
+          "accuracy": 0.6429463171036205,
+          "auc": 0.6752088789125826,
+          "brier": 0.2265834698409953,
+          "ece_10_bin": 0.05282278576384601,
+          "fights": 801,
+          "log_loss": 0.6438252893869931
+        },
+        "fights": 801,
+        "selected_division_design": {
+          "accuracy": 0.6466916354556804,
+          "auc": 0.6747911210874173,
+          "brier": 0.22632866764447077,
+          "ece_10_bin": 0.06482788669017135,
+          "fights": 801,
+          "log_loss": 0.6431042338184981
+        },
+        "selected_minus_current_log_loss": -0.0007210555684949993
+      },
+      "mens_light_heavy_plus": {
+        "current_logistic": {
+          "accuracy": 0.5907590759075908,
+          "auc": 0.617989417989418,
+          "brier": 0.24079640609944744,
+          "ece_10_bin": 0.05959161818767962,
+          "fights": 303,
+          "log_loss": 0.6746609782848144
+        },
+        "fights": 303,
+        "selected_division_design": {
+          "accuracy": 0.570957095709571,
+          "auc": 0.626278659611993,
+          "brier": 0.2367272261882812,
+          "ece_10_bin": 0.05115944618029812,
+          "fights": 303,
+          "log_loss": 0.6649301669858232
+        },
+        "selected_minus_current_log_loss": -0.009730811298991227
+      },
+      "mens_welter_to_middle": {
+        "current_logistic": {
+          "accuracy": 0.6043010752688172,
+          "auc": 0.6391683433936955,
+          "brier": 0.23543433542672623,
+          "ece_10_bin": 0.05615890454648934,
+          "fights": 465,
+          "log_loss": 0.662565352892812
+        },
+        "fights": 465,
+        "selected_division_design": {
+          "accuracy": 0.6043010752688172,
+          "auc": 0.6391683433936955,
+          "brier": 0.23543433542672623,
+          "ece_10_bin": 0.05615890454648934,
+          "fights": 465,
+          "log_loss": 0.662565352892812
+        },
+        "selected_minus_current_log_loss": 0.0
+      },
+      "unclassified": {
+        "current_logistic": {
+          "accuracy": 0.6,
+          "auc": 0.6294642857142857,
+          "brier": 0.24293742577035912,
+          "ece_10_bin": 0.21324482760358762,
+          "fights": 30,
+          "log_loss": 0.6865559902293571
+        },
+        "fights": 30,
+        "selected_division_design": {
+          "accuracy": 0.6,
+          "auc": 0.6294642857142857,
+          "brier": 0.2429374257703591,
+          "ece_10_bin": 0.2132448276035876,
+          "fights": 30,
+          "log_loss": 0.6865559902293571
+        },
+        "selected_minus_current_log_loss": 0.0
+      },
+      "womens_all": {
+        "current_logistic": {
+          "accuracy": 0.5819209039548022,
+          "auc": 0.6254753459240086,
+          "brier": 0.24092652928428182,
+          "ece_10_bin": 0.07841470915196531,
+          "fights": 354,
+          "log_loss": 0.6768175694159484
+        },
+        "fights": 354,
+        "selected_division_design": {
+          "accuracy": 0.5621468926553672,
+          "auc": 0.6277761799763526,
+          "brier": 0.23838147651700348,
+          "ece_10_bin": 0.04841290686473712,
+          "fights": 354,
+          "log_loss": 0.669614924833413
+        },
+        "selected_minus_current_log_loss": -0.007202644582535389
+      }
+    },
+    "events": 168,
+    "fights": 1953,
+    "folds": {
+      "2019": {
+        "mens_below_welterweight": {
+          "calibration_slope": 0.9517826516773061,
+          "rolling_log_loss_by_c": {
+            "0.001": 0.6488114022845388,
+            "0.003": 0.6316105554078382,
+            "0.01": 0.6185797089117389,
+            "0.03": 0.6172054347067621,
+            "0.1": 0.6252554056108998
+          },
+          "selected_c": 0.03,
+          "status": "separate_group_model",
+          "test_fights": 210,
+          "training_fights": 1680,
+          "training_start": "2009-01-17",
+          "training_through": "2018-12-29"
+        },
+        "mens_light_heavy_plus": {
+          "calibration_slope": 1.0030766971013294,
+          "rolling_log_loss_by_c": {
+            "0.001": 0.670117185036392,
+            "0.003": 0.657148871309643,
+            "0.01": 0.6459683339752392,
+            "0.03": 0.6468036261694045,
+            "0.1": 0.6619037956477769
+          },
+          "selected_c": 0.01,
+          "status": "separate_group_model",
+          "test_fights": 82,
+          "training_fights": 632,
+          "training_start": "2009-01-17",
+          "training_through": "2018-12-29"
+        },
+        "mens_welter_to_middle": {
+          "calibration_slope": 0.9265320956316109,
+          "rolling_log_loss_by_c": {
+            "0.001": 0.6644010816728028,
+            "0.003": 0.6526231460628348,
+            "0.01": 0.6440273770344453,
+            "0.03": 0.6424560861629575,
+            "0.1": 0.6469626663571054
+          },
+          "selected_c": 0.03,
+          "status": "separate_group_model",
+          "test_fights": 122,
+          "training_fights": 1219,
+          "training_start": "2009-01-17",
+          "training_through": "2018-12-29"
+        },
+        "unclassified": {
+          "status": "global_fallback_unclassified",
+          "test_fights": 1,
+          "training_fights": 0
+        },
+        "womens_all": {
+          "calibration_slope": 0.6276440635647813,
+          "rolling_log_loss_by_c": {
+            "0.001": 0.6895074984666425,
+            "0.003": 0.6864181812688014,
+            "0.01": 0.6810370164792898,
+            "0.03": 0.6801331313815423,
+            "0.1": 0.7011748238500571
+          },
+          "selected_c": 0.03,
+          "status": "separate_group_model",
+          "test_fights": 91,
+          "training_fights": 272,
+          "training_start": "2013-02-23",
+          "training_through": "2018-12-29"
+        }
+      },
+      "2020": {
+        "mens_below_welterweight": {
+          "calibration_slope": 1.1828428107375581,
+          "rolling_log_loss_by_c": {
+            "0.001": 0.6509015466056042,
+            "0.003": 0.6380607940048347,
+            "0.01": 0.6293169150409382,
+            "0.03": 0.6294994482028204,
+            "0.1": 0.6368831051838919
+          },
+          "selected_c": 0.01,
+          "status": "separate_group_model",
+          "test_fights": 177,
+          "training_fights": 1833,
+          "training_start": "2010-01-02",
+          "training_through": "2019-12-21"
+        },
+        "mens_light_heavy_plus": {
+          "calibration_slope": 0.9945331723293053,
+          "rolling_log_loss_by_c": {
+            "0.001": 0.674034127912711,
+            "0.003": 0.6636344764331468,
+            "0.01": 0.6556305820971903,
+            "0.03": 0.6594830802013922,
+            "0.1": 0.6766363468221502
+          },
+          "selected_c": 0.01,
+          "status": "separate_group_model",
+          "test_fights": 78,
+          "training_fights": 654,
+          "training_start": "2010-01-02",
+          "training_through": "2019-12-21"
+        },
+        "mens_welter_to_middle": {
+          "calibration_slope": 1.0038675652320916,
+          "rolling_log_loss_by_c": {
+            "0.001": 0.6697481288828383,
+            "0.003": 0.6614472277702096,
+            "0.01": 0.6573530586590227,
+            "0.03": 0.6592020881353948,
+            "0.1": 0.6662963681942019
+          },
+          "selected_c": 0.01,
+          "status": "separate_group_model",
+          "test_fights": 96,
+          "training_fights": 1249,
+          "training_start": "2010-01-02",
+          "training_through": "2019-12-21"
+        },
+        "unclassified": {
+          "status": "global_fallback_unclassified",
+          "test_fights": 12,
+          "training_fights": 0
+        },
+        "womens_all": {
+          "calibration_slope": 0.839266432484601,
+          "rolling_log_loss_by_c": {
+            "0.001": 0.690684117990711,
+            "0.003": 0.6913328829704216,
+            "0.01": 0.6929285911306534,
+            "0.03": 0.6965099551503828,
+            "0.1": 0.7084087705977175
+          },
+          "selected_c": 0.001,
+          "status": "separate_group_model",
+          "test_fights": 81,
+          "training_fights": 363,
+          "training_start": "2013-02-23",
+          "training_through": "2019-12-21"
+        }
+      },
+      "2021": {
+        "mens_below_welterweight": {
+          "calibration_slope": 1.0986112009886442,
+          "rolling_log_loss_by_c": {
+            "0.001": 0.6521208091876711,
+            "0.003": 0.6415869074604359,
+            "0.01": 0.638161826827445,
+            "0.03": 0.6451439611905435,
+            "0.1": 0.6603053683192618
+          },
+          "selected_c": 0.01,
+          "status": "separate_group_model",
+          "test_fights": 203,
+          "training_fights": 1942,
+          "training_start": "2011-01-01",
+          "training_through": "2020-12-19"
+        },
+        "mens_light_heavy_plus": {
+          "calibration_slope": 1.188000672058609,
+          "rolling_log_loss_by_c": {
+            "0.001": 0.6737417175595037,
+            "0.003": 0.662947001862136,
+            "0.01": 0.6538874469765897,
+            "0.03": 0.6559925932455208,
+            "0.1": 0.6714933675504695
+          },
+          "selected_c": 0.01,
+          "status": "separate_group_model",
+          "test_fights": 74,
+          "training_fights": 667,
+          "training_start": "2011-01-22",
+          "training_through": "2020-12-19"
+        },
+        "mens_welter_to_middle": {
+          "calibration_slope": 0.9514247246435457,
+          "rolling_log_loss_by_c": {
+            "0.001": 0.6675771516786791,
+            "0.003": 0.6611471448009707,
+            "0.01": 0.6605244407790064,
+            "0.03": 0.6664384361606149,
+            "0.1": 0.677794524677506
+          },
+          "selected_c": 0.01,
+          "status": "separate_group_model",
+          "test_fights": 121,
+          "training_fights": 1228,
+          "training_start": "2011-01-01",
+          "training_through": "2020-12-19"
+        },
+        "unclassified": {
+          "status": "global_fallback_unclassified",
+          "test_fights": 4,
+          "training_fights": 0
+        },
+        "womens_all": {
+          "calibration_slope": 0.32908632956760264,
+          "rolling_log_loss_by_c": {
+            "0.001": 0.6944369814351378,
+            "0.003": 0.6979019186962219,
+            "0.01": 0.7027929006777485,
+            "0.03": 0.7094805114155468,
+            "0.1": 0.7272921979217152
+          },
+          "selected_c": 0.001,
+          "status": "separate_group_model",
+          "test_fights": 95,
+          "training_fights": 444,
+          "training_start": "2013-02-23",
+          "training_through": "2020-12-19"
+        }
+      },
+      "2022": {
+        "mens_below_welterweight": {
+          "calibration_slope": 0.9714226623434041,
+          "rolling_log_loss_by_c": {
+            "0.001": 0.6566046627404737,
+            "0.003": 0.6492201675240953,
+            "0.01": 0.6487929945772777,
+            "0.03": 0.6567483689794577,
+            "0.1": 0.6706423095320484
+          },
+          "selected_c": 0.01,
+          "status": "separate_group_model",
+          "test_fights": 211,
+          "training_fights": 2003,
+          "training_start": "2012-01-14",
+          "training_through": "2021-12-18"
+        },
+        "mens_light_heavy_plus": {
+          "calibration_slope": 1.5456241694706288,
+          "rolling_log_loss_by_c": {
+            "0.001": 0.6746023343760292,
+            "0.003": 0.6689868040407275,
+            "0.01": 0.6693719644592907,
+            "0.03": 0.6805929513571362,
+            "0.1": 0.7031402110435288
+          },
+          "selected_c": 0.003,
+          "status": "separate_group_model",
+          "test_fights": 69,
+          "training_fights": 684,
+          "training_start": "2012-01-14",
+          "training_through": "2021-12-18"
+        },
+        "mens_welter_to_middle": {
+          "calibration_slope": 1.2792437935474787,
+          "rolling_log_loss_by_c": {
+            "0.001": 0.6695033642868151,
+            "0.003": 0.6658583782473296,
+            "0.01": 0.669325821755804,
+            "0.03": 0.6790043709269306,
+            "0.1": 0.6939904679491716
+          },
+          "selected_c": 0.003,
+          "status": "separate_group_model",
+          "test_fights": 126,
+          "training_fights": 1254,
+          "training_start": "2012-01-14",
+          "training_through": "2021-12-18"
+        },
+        "unclassified": {
+          "status": "global_fallback_unclassified",
+          "test_fights": 13,
+          "training_fights": 0
+        },
+        "womens_all": {
+          "calibration_slope": 0.6770578570209986,
+          "rolling_log_loss_by_c": {
+            "0.001": 0.6894655143523153,
+            "0.003": 0.6894343462140375,
+            "0.01": 0.6906758656400344,
+            "0.03": 0.6957696334808424,
+            "0.1": 0.710282327330111
+          },
+          "selected_c": 0.003,
+          "status": "separate_group_model",
+          "test_fights": 87,
+          "training_fights": 539,
+          "training_start": "2013-02-23",
+          "training_through": "2021-12-18"
+        }
+      }
+    },
+    "group_counts": {
+      "mens_below_welterweight": 801,
+      "mens_light_heavy_plus": 303,
+      "mens_welter_to_middle": 465,
+      "unclassified": 30,
+      "womens_all": 354
+    },
+    "metrics": {
+      "current_logistic": {
+        "accuracy": 0.6139272913466461,
+        "auc": 0.646908454678384,
+        "brier": 0.23374692806141528,
+        "ece_10_bin": 0.0390185222428356,
+        "fights": 1953,
+        "log_loss": 0.65970779395523
+      },
+      "fully_separate_groups": {
+        "accuracy": 0.5965181771633384,
+        "auc": 0.634225702843261,
+        "brier": 0.23558490616882874,
+        "ece_10_bin": 0.02718560325211773,
+        "fights": 1953,
+        "log_loss": 0.6628698784774077
+      },
+      "group_specific_pooling_weights": {
+        "accuracy": 0.6088069636456733,
+        "auc": 0.6493640267605959,
+        "brier": 0.23254979198762316,
+        "ece_10_bin": 0.01883033096686929,
+        "fights": 1953,
+        "log_loss": 0.6565968172444383
+      },
+      "shared_pooling_weight": {
+        "accuracy": 0.6052227342549923,
+        "auc": 0.6477727824851942,
+        "brier": 0.23288200810709156,
+        "ece_10_bin": 0.023223247643560638,
+        "fights": 1953,
+        "log_loss": 0.6573200250899915
+      }
+    },
+    "selection": {
+      "candidate_log_loss": {
+        "fully_separate_groups": 0.6628698784774077,
+        "global_only": 0.65970779395523,
+        "group_specific_pooling_weights": 0.6565968172444383,
+        "shared_pooling_weight": 0.6573200250899915
+      },
+      "group_weight_log_loss": {
+        "mens_below_welterweight": {
+          "0.0": 0.6438252893869931,
+          "0.25": 0.6431042338184981,
+          "0.5": 0.643343543534516,
+          "0.75": 0.644522616073831,
+          "1.0": 0.6466163143671383
+        },
+        "mens_light_heavy_plus": {
+          "0.0": 0.6746609782848143,
+          "0.25": 0.6694898256485123,
+          "0.5": 0.6662290580901971,
+          "0.75": 0.6649301669858232,
+          "1.0": 0.6656253184391093
+        },
+        "mens_welter_to_middle": {
+          "0.0": 0.662565352892812,
+          "0.25": 0.6628809495815908,
+          "0.5": 0.6643442213556291,
+          "0.75": 0.6669837843979747,
+          "1.0": 0.6708220557312771
+        },
+        "unclassified": {
+          "0.0": 0.6865559902293571
+        },
+        "womens_all": {
+          "0.0": 0.6768175694159484,
+          "0.25": 0.6706551455802836,
+          "0.5": 0.669614924833413,
+          "0.75": 0.6742106060480624,
+          "1.0": 0.6848355868624998
+        }
+      },
+      "selected_design": "group_specific_pooling_weights",
+      "selected_group_weights": {
+        "mens_below_welterweight": 0.25,
+        "mens_light_heavy_plus": 0.75,
+        "mens_welter_to_middle": 0.0,
+        "unclassified": 0.0,
+        "womens_all": 0.5
+      },
+      "selected_shared_group_weight": 0.5,
+      "shared_weight_log_loss": {
+        "0.0": 0.65970779395523,
+        "0.25": 0.6575679217910174,
+        "0.5": 0.6573200250899915,
+        "0.75": 0.6590635689015854,
+        "1.0": 0.6628698784774077
+      },
+      "weight_grid": [
+        0.0,
+        0.25,
+        0.5,
+        0.75,
+        1.0
+      ]
+    },
+    "years": [
+      2019,
+      2020,
+      2021,
+      2022
+    ]
+  },
+  "division_groups": {
+    "mens_below_welterweight": [
+      "Bantamweight",
+      "Featherweight",
+      "Flyweight",
+      "Lightweight"
+    ],
+    "mens_light_heavy_plus": [
+      "Heavyweight",
+      "Light Heavyweight",
+      "Super Heavyweight"
+    ],
+    "mens_welter_to_middle": [
+      "Middleweight",
+      "Welterweight"
+    ],
+    "unclassified": "catch weight and open weight; shared-model fallback",
+    "womens_all": "every division whose label starts with Women's"
+  },
+  "elapsed_seconds": 22.23399999999674,
+  "evaluation": {
+    "by_division": {
+      "Bantamweight": {
+        "current_logistic": {
+          "accuracy": 0.6201923076923077,
+          "auc": 0.7042613636363636,
+          "brier": 0.2158331832736919,
+          "ece_10_bin": 0.10736566393147466,
+          "fights": 208,
+          "log_loss": 0.619622429763119
+        },
+        "fights": 208,
+        "selected_division_design": {
+          "accuracy": 0.6201923076923077,
+          "auc": 0.706060606060606,
+          "brier": 0.21501843070139987,
+          "ece_10_bin": 0.10735127912582322,
+          "fights": 208,
+          "log_loss": 0.6176127759644925
+        },
+        "selected_minus_current_log_loss": -0.0020096537986264984
+      },
+      "Catch Weight": {
+        "current_logistic": {
+          "accuracy": 0.5714285714285714,
+          "auc": 0.6358974358974359,
+          "brier": 0.23350558308737024,
+          "ece_10_bin": 0.17611584097477112,
+          "fights": 28,
+          "log_loss": 0.6552509387265522
+        },
+        "fights": 28,
+        "selected_division_design": {
+          "accuracy": 0.5714285714285714,
+          "auc": 0.6358974358974359,
+          "brier": 0.23350558308737024,
+          "ece_10_bin": 0.17611584097477112,
+          "fights": 28,
+          "log_loss": 0.6552509387265522
+        },
+        "selected_minus_current_log_loss": 0.0
+      },
+      "Featherweight": {
+        "current_logistic": {
+          "accuracy": 0.6106194690265486,
+          "auc": 0.6806110458284372,
+          "brier": 0.22510296377493527,
+          "ece_10_bin": 0.05643923460800644,
+          "fights": 226,
+          "log_loss": 0.6400876293299749
+        },
+        "fights": 226,
+        "selected_division_design": {
+          "accuracy": 0.5973451327433629,
+          "auc": 0.6768507638072856,
+          "brier": 0.225842421183878,
+          "ece_10_bin": 0.053551485420251614,
+          "fights": 226,
+          "log_loss": 0.6413678094234513
+        },
+        "selected_minus_current_log_loss": 0.001280180093476413
+      },
+      "Flyweight": {
+        "current_logistic": {
+          "accuracy": 0.6643356643356644,
+          "auc": 0.7140889413616687,
+          "brier": 0.21680385253078693,
+          "ece_10_bin": 0.07885392457959829,
+          "fights": 143,
+          "log_loss": 0.6228700091117634
+        },
+        "fights": 143,
+        "selected_division_design": {
+          "accuracy": 0.6643356643356644,
+          "auc": 0.7125147579693034,
+          "brier": 0.2167496211468778,
+          "ece_10_bin": 0.07870961938321593,
+          "fights": 143,
+          "log_loss": 0.6228455129620551
+        },
+        "selected_minus_current_log_loss": -2.4496149708230774e-05
+      },
+      "Heavyweight": {
+        "current_logistic": {
+          "accuracy": 0.6641221374045801,
+          "auc": 0.7278688524590163,
+          "brier": 0.21091925491025712,
+          "ece_10_bin": 0.07829217897289129,
+          "fights": 131,
+          "log_loss": 0.6099399578043622
+        },
+        "fights": 131,
+        "selected_division_design": {
+          "accuracy": 0.6335877862595419,
+          "auc": 0.7105386416861827,
+          "brier": 0.21649066521944385,
+          "ece_10_bin": 0.07840858900223692,
+          "fights": 131,
+          "log_loss": 0.6223078069173672
+        },
+        "selected_minus_current_log_loss": 0.012367849113005036
+      },
+      "Light Heavyweight": {
+        "current_logistic": {
+          "accuracy": 0.5769230769230769,
+          "auc": 0.60727969348659,
+          "brier": 0.2434870608132932,
+          "ece_10_bin": 0.06756215763763435,
+          "fights": 130,
+          "log_loss": 0.6811098984830514
+        },
+        "fights": 130,
+        "selected_division_design": {
+          "accuracy": 0.5769230769230769,
+          "auc": 0.6008141762452107,
+          "brier": 0.2431193194249611,
+          "ece_10_bin": 0.08777571077499803,
+          "fights": 130,
+          "log_loss": 0.6798565186702014
+        },
+        "selected_minus_current_log_loss": -0.0012533798128500084
+      },
+      "Lightweight": {
+        "current_logistic": {
+          "accuracy": 0.6332046332046332,
+          "auc": 0.6765373134328359,
+          "brier": 0.22755382669215174,
+          "ece_10_bin": 0.08089695024449606,
+          "fights": 259,
+          "log_loss": 0.646647210384552
+        },
+        "fights": 259,
+        "selected_division_design": {
+          "accuracy": 0.637065637065637,
+          "auc": 0.6745671641791045,
+          "brier": 0.22822924889140112,
+          "ece_10_bin": 0.06940505507748247,
+          "fights": 259,
+          "log_loss": 0.6481722246537822
+        },
+        "selected_minus_current_log_loss": 0.0015250142692302404
+      },
+      "Middleweight": {
+        "current_logistic": {
+          "accuracy": 0.6437768240343348,
+          "auc": 0.7138540899042004,
+          "brier": 0.21544140716233573,
+          "ece_10_bin": 0.04190626010643682,
+          "fights": 233,
+          "log_loss": 0.6195578486285687
+        },
+        "fights": 233,
+        "selected_division_design": {
+          "accuracy": 0.6437768240343348,
+          "auc": 0.7138540899042004,
+          "brier": 0.21544140716233573,
+          "ece_10_bin": 0.04190626010643682,
+          "fights": 233,
+          "log_loss": 0.6195578486285687
+        },
+        "selected_minus_current_log_loss": 0.0
+      },
+      "Welterweight": {
+        "current_logistic": {
+          "accuracy": 0.6666666666666666,
+          "auc": 0.7034252297410193,
+          "brier": 0.22336750336290045,
+          "ece_10_bin": 0.08552673292938319,
+          "fights": 219,
+          "log_loss": 0.6399855650523121
+        },
+        "fights": 219,
+        "selected_division_design": {
+          "accuracy": 0.6666666666666666,
+          "auc": 0.7034252297410193,
+          "brier": 0.22336750336290048,
+          "ece_10_bin": 0.08552673292938319,
+          "fights": 219,
+          "log_loss": 0.6399855650523121
+        },
+        "selected_minus_current_log_loss": 0.0
+      },
+      "Women's Bantamweight": {
+        "current_logistic": {
+          "accuracy": 0.6666666666666666,
+          "auc": 0.7387883556254917,
+          "brier": 0.20826935871075827,
+          "ece_10_bin": 0.13315931370991868,
+          "fights": 72,
+          "log_loss": 0.6035034641369389
+        },
+        "fights": 72,
+        "selected_division_design": {
+          "accuracy": 0.6666666666666666,
+          "auc": 0.7214791502753737,
+          "brier": 0.21428943978093054,
+          "ece_10_bin": 0.13573066191663125,
+          "fights": 72,
+          "log_loss": 0.6177729282304099
+        },
+        "selected_minus_current_log_loss": 0.014269464093470963
+      },
+      "Women's Featherweight": {
+        "current_logistic": {
+          "accuracy": 0.8,
+          "auc": 1.0,
+          "brier": 0.19868129160681874,
+          "ece_10_bin": 0.42506654889885825,
+          "fights": 5,
+          "log_loss": 0.5801866877400327
+        },
+        "fights": 5,
+        "selected_division_design": {
+          "accuracy": 0.8,
+          "auc": 1.0,
+          "brier": 0.18519125567829237,
+          "ece_10_bin": 0.41624686113353504,
+          "fights": 5,
+          "log_loss": 0.5544304651536563
+        },
+        "selected_minus_current_log_loss": -0.02575622258637633
+      },
+      "Women's Flyweight": {
+        "current_logistic": {
+          "accuracy": 0.6938775510204082,
+          "auc": 0.7098844672657253,
+          "brier": 0.2159257605972229,
+          "ece_10_bin": 0.10216337833804888,
+          "fights": 98,
+          "log_loss": 0.6211858792281318
+        },
+        "fights": 98,
+        "selected_division_design": {
+          "accuracy": 0.6938775510204082,
+          "auc": 0.7073170731707317,
+          "brier": 0.21904343905334314,
+          "ece_10_bin": 0.11084510850457392,
+          "fights": 98,
+          "log_loss": 0.6282690319696386
+        },
+        "selected_minus_current_log_loss": 0.007083152741506726
+      },
+      "Women's Strawweight": {
+        "current_logistic": {
+          "accuracy": 0.656,
+          "auc": 0.7230769230769231,
+          "brier": 0.21169834349079977,
+          "ece_10_bin": 0.073852731305866,
+          "fights": 125,
+          "log_loss": 0.6117029086140017
+        },
+        "fights": 125,
+        "selected_division_design": {
+          "accuracy": 0.656,
+          "auc": 0.7374358974358974,
+          "brier": 0.21189813324132475,
+          "ece_10_bin": 0.09319123738281218,
+          "fights": 125,
+          "log_loss": 0.6125022385984508
+        },
+        "selected_minus_current_log_loss": 0.0007993299844490931
+      }
+    },
+    "by_group": {
+      "mens_below_welterweight": {
+        "current_logistic": {
+          "accuracy": 0.6291866028708134,
+          "auc": 0.6911463723122916,
+          "brier": 0.22213632052539842,
+          "ece_10_bin": 0.044652064387873766,
+          "fights": 836,
+          "log_loss": 0.6340829047989045
+        },
+        "fights": 836,
+        "selected_division_design": {
+          "accuracy": 0.6267942583732058,
+          "auc": 0.6900195469702197,
+          "brier": 0.22233348332574648,
+          "ece_10_bin": 0.04145555908861262,
+          "fights": 836,
+          "log_loss": 0.6343972450588732
+        },
+        "selected_minus_current_log_loss": 0.00031434025996868176
+      },
+      "mens_light_heavy_plus": {
+        "current_logistic": {
+          "accuracy": 0.6206896551724138,
+          "auc": 0.667771333885667,
+          "brier": 0.22714076742901076,
+          "ece_10_bin": 0.044907988383061585,
+          "fights": 261,
+          "log_loss": 0.6453885872611805
+        },
+        "fights": 261,
+        "selected_division_design": {
+          "accuracy": 0.6053639846743295,
+          "auc": 0.6559947922831103,
+          "brier": 0.22975397957468233,
+          "ece_10_bin": 0.04444173161336018,
+          "fights": 261,
+          "log_loss": 0.6509719162195451
+        },
+        "selected_minus_current_log_loss": 0.005583328958364553
+      },
+      "mens_welter_to_middle": {
+        "current_logistic": {
+          "accuracy": 0.6548672566371682,
+          "auc": 0.7073844165508058,
+          "brier": 0.2192817059851757,
+          "ece_10_bin": 0.04736320503044713,
+          "fights": 452,
+          "log_loss": 0.6294553484002496
+        },
+        "fights": 452,
+        "selected_division_design": {
+          "accuracy": 0.6548672566371682,
+          "auc": 0.7073844165508058,
+          "brier": 0.2192817059851757,
+          "ece_10_bin": 0.047363205030447136,
+          "fights": 452,
+          "log_loss": 0.6294553484002496
+        },
+        "selected_minus_current_log_loss": 0.0
+      },
+      "unclassified": {
+        "current_logistic": {
+          "accuracy": 0.5714285714285714,
+          "auc": 0.6358974358974359,
+          "brier": 0.23350558308737024,
+          "ece_10_bin": 0.17611584097477112,
+          "fights": 28,
+          "log_loss": 0.6552509387265522
+        },
+        "fights": 28,
+        "selected_division_design": {
+          "accuracy": 0.5714285714285714,
+          "auc": 0.6358974358974359,
+          "brier": 0.23350558308737024,
+          "ece_10_bin": 0.17611584097477112,
+          "fights": 28,
+          "log_loss": 0.6552509387265522
+        },
+        "selected_minus_current_log_loss": 0.0
+      },
+      "womens_all": {
+        "current_logistic": {
+          "accuracy": 0.6733333333333333,
+          "auc": 0.7239814979541007,
+          "brier": 0.21203939253362167,
+          "ece_10_bin": 0.049262031974486475,
+          "fights": 300,
+          "log_loss": 0.612307541992223
+        },
+        "fights": 300,
+        "selected_division_design": {
+          "accuracy": 0.6733333333333333,
+          "auc": 0.7251823518946806,
+          "brier": 0.21436106541670563,
+          "ece_10_bin": 0.06149501346527048,
+          "fights": 300,
+          "log_loss": 0.6179498270539624
+        },
+        "selected_minus_current_log_loss": 0.0056422850617393605
+      }
+    },
+    "events": 155,
+    "fights": 1877,
+    "folds": {
+      "2023": {
+        "mens_below_welterweight": {
+          "calibration_slope": 0.9746701727179702,
+          "rolling_log_loss_by_c": {
+            "0.001": 0.6529662322855966,
+            "0.003": 0.6459133431876798,
+            "0.01": 0.6448919511949758,
+            "0.03": 0.6497359966707162,
+            "0.1": 0.6579260930028176
+          },
+          "selected_c": 0.01,
+          "status": "separate_group_model",
+          "test_fights": 221,
+          "training_fights": 2043,
+          "training_start": "2013-01-19",
+          "training_through": "2022-12-17"
+        },
+        "mens_light_heavy_plus": {
+          "calibration_slope": 1.3235662264462575,
+          "rolling_log_loss_by_c": {
+            "0.001": 0.6733049242511545,
+            "0.003": 0.6701111061469821,
+            "0.01": 0.6754570701635096,
+            "0.03": 0.6906634843613101,
+            "0.1": 0.715306550386688
+          },
+          "selected_c": 0.003,
+          "status": "separate_group_model",
+          "test_fights": 67,
+          "training_fights": 702,
+          "training_start": "2013-01-19",
+          "training_through": "2022-12-10"
+        },
+        "mens_welter_to_middle": {
+          "calibration_slope": 1.4289794624214591,
+          "rolling_log_loss_by_c": {
+            "0.001": 0.6693236555034096,
+            "0.003": 0.6649348299498629,
+            "0.01": 0.6671556070037735,
+            "0.03": 0.6748392647856655,
+            "0.1": 0.6857987895168414
+          },
+          "selected_c": 0.003,
+          "status": "separate_group_model",
+          "test_fights": 115,
+          "training_fights": 1271,
+          "training_start": "2013-01-19",
+          "training_through": "2022-12-17"
+        },
+        "unclassified": {
+          "status": "global_fallback_unclassified",
+          "test_fights": 11,
+          "training_fights": 0
+        },
+        "womens_all": {
+          "calibration_slope": 1.058606989123554,
+          "rolling_log_loss_by_c": {
+            "0.001": 0.6846400047556118,
+            "0.003": 0.6833551973526711,
+            "0.01": 0.6879203592645883,
+            "0.03": 0.7005740951365028,
+            "0.1": 0.7249846207671021
+          },
+          "selected_c": 0.003,
+          "status": "separate_group_model",
+          "test_fights": 90,
+          "training_fights": 626,
+          "training_start": "2013-02-23",
+          "training_through": "2022-12-17"
+        }
+      },
+      "2024": {
+        "mens_below_welterweight": {
+          "calibration_slope": 0.94979627024194,
+          "rolling_log_loss_by_c": {
+            "0.001": 0.6526982871365944,
+            "0.003": 0.6459508733463201,
+            "0.01": 0.6456722399842555,
+            "0.03": 0.6508388634389206,
+            "0.1": 0.658229211288429
+          },
+          "selected_c": 0.01,
+          "status": "separate_group_model",
+          "test_fights": 235,
+          "training_fights": 2088,
+          "training_start": "2014-01-04",
+          "training_through": "2023-12-16"
+        },
+        "mens_light_heavy_plus": {
+          "calibration_slope": 1.0855221634596635,
+          "rolling_log_loss_by_c": {
+            "0.001": 0.669979200757311,
+            "0.003": 0.6634083381471806,
+            "0.01": 0.6632029726614024,
+            "0.03": 0.6727138687959132,
+            "0.1": 0.6937491176769928
+          },
+          "selected_c": 0.01,
+          "status": "separate_group_model",
+          "test_fights": 66,
+          "training_fights": 709,
+          "training_start": "2014-01-25",
+          "training_through": "2023-12-16"
+        },
+        "mens_welter_to_middle": {
+          "calibration_slope": 1.2004416900651786,
+          "rolling_log_loss_by_c": {
+            "0.001": 0.6701911412987341,
+            "0.003": 0.6669683499534363,
+            "0.01": 0.6708111073238896,
+            "0.03": 0.6803191847171585,
+            "0.1": 0.6941336871856367
+          },
+          "selected_c": 0.003,
+          "status": "separate_group_model",
+          "test_fights": 120,
+          "training_fights": 1261,
+          "training_start": "2014-01-04",
+          "training_through": "2023-12-16"
+        },
+        "unclassified": {
+          "status": "global_fallback_unclassified",
+          "test_fights": 4,
+          "training_fights": 0
+        },
+        "womens_all": {
+          "calibration_slope": 1.019250113878597,
+          "rolling_log_loss_by_c": {
+            "0.001": 0.6842457270220546,
+            "0.003": 0.6816620703067716,
+            "0.01": 0.6833613057566018,
+            "0.03": 0.6944796917379041,
+            "0.1": 0.7210750388713061
+          },
+          "selected_c": 0.003,
+          "status": "separate_group_model",
+          "test_fights": 88,
+          "training_fights": 701,
+          "training_start": "2014-02-22",
+          "training_through": "2023-12-16"
+        }
+      },
+      "2025": {
+        "mens_below_welterweight": {
+          "calibration_slope": 1.0142028026659,
+          "rolling_log_loss_by_c": {
+            "0.001": 0.6486853157026782,
+            "0.003": 0.6397761419197422,
+            "0.01": 0.6365206665844028,
+            "0.03": 0.6395254960421357,
+            "0.1": 0.645728661821765
+          },
+          "selected_c": 0.01,
+          "status": "separate_group_model",
+          "test_fights": 226,
+          "training_fights": 2068,
+          "training_start": "2015-01-03",
+          "training_through": "2024-12-14"
+        },
+        "mens_light_heavy_plus": {
+          "calibration_slope": 1.3312117005982673,
+          "rolling_log_loss_by_c": {
+            "0.001": 0.6716601060469154,
+            "0.003": 0.6673158293949903,
+            "0.01": 0.6697468362478354,
+            "0.03": 0.6796672728241889,
+            "0.1": 0.696638746948395
+          },
+          "selected_c": 0.003,
+          "status": "separate_group_model",
+          "test_fights": 71,
+          "training_fights": 713,
+          "training_start": "2015-01-03",
+          "training_through": "2024-12-14"
+        },
+        "mens_welter_to_middle": {
+          "calibration_slope": 1.6113652141844907,
+          "rolling_log_loss_by_c": {
+            "0.001": 0.6576557516533771,
+            "0.003": 0.6518838297243775,
+            "0.01": 0.6553032328571955,
+            "0.03": 0.6653927959658354,
+            "0.1": 0.6785119572567132
+          },
+          "selected_c": 0.003,
+          "status": "separate_group_model",
+          "test_fights": 131,
+          "training_fights": 1236,
+          "training_start": "2015-01-03",
+          "training_through": "2024-12-14"
+        },
+        "unclassified": {
+          "status": "global_fallback_unclassified",
+          "test_fights": 8,
+          "training_fights": 0
+        },
+        "womens_all": {
+          "calibration_slope": 0.8907446326944016,
+          "rolling_log_loss_by_c": {
+            "0.001": 0.6821420437206075,
+            "0.003": 0.6767949412298819,
+            "0.01": 0.6746894754565952,
+            "0.03": 0.6826562456886508,
+            "0.1": 0.7049877093125052
+          },
+          "selected_c": 0.01,
+          "status": "separate_group_model",
+          "test_fights": 78,
+          "training_fights": 759,
+          "training_start": "2015-01-03",
+          "training_through": "2024-12-14"
+        }
+      },
+      "2026": {
+        "mens_below_welterweight": {
+          "calibration_slope": 1.0879087035216353,
+          "rolling_log_loss_by_c": {
+            "0.001": 0.6423458892708623,
+            "0.003": 0.6320371711073585,
+            "0.01": 0.6284742435927919,
+            "0.03": 0.6314416191590082,
+            "0.1": 0.6372233561819053
+          },
+          "selected_c": 0.01,
+          "status": "separate_group_model",
+          "test_fights": 154,
+          "training_fights": 2070,
+          "training_start": "2016-01-02",
+          "training_through": "2025-12-13"
+        },
+        "mens_light_heavy_plus": {
+          "calibration_slope": 1.2226166580327447,
+          "rolling_log_loss_by_c": {
+            "0.001": 0.6683679651871308,
+            "0.003": 0.6655908898842468,
+            "0.01": 0.6716104624478103,
+            "0.03": 0.685381316000374,
+            "0.1": 0.7091336348990008
+          },
+          "selected_c": 0.003,
+          "status": "separate_group_model",
+          "test_fights": 57,
+          "training_fights": 730,
+          "training_start": "2016-01-02",
+          "training_through": "2025-12-13"
+        },
+        "mens_welter_to_middle": {
+          "calibration_slope": 1.5415579824018981,
+          "rolling_log_loss_by_c": {
+            "0.001": 0.6549989244746838,
+            "0.003": 0.6484429935562462,
+            "0.01": 0.6500541996316618,
+            "0.03": 0.6575670131262329,
+            "0.1": 0.669093271315334
+          },
+          "selected_c": 0.003,
+          "status": "separate_group_model",
+          "test_fights": 86,
+          "training_fights": 1227,
+          "training_start": "2016-01-02",
+          "training_through": "2025-12-13"
+        },
+        "unclassified": {
+          "status": "global_fallback_unclassified",
+          "test_fights": 5,
+          "training_fights": 0
+        },
+        "womens_all": {
+          "calibration_slope": 1.2312396445762346,
+          "rolling_log_loss_by_c": {
+            "0.001": 0.6730129453904259,
+            "0.003": 0.6624897049885244,
+            "0.01": 0.6545734281747979,
+            "0.03": 0.6557781587398632,
+            "0.1": 0.6671326957028053
+          },
+          "selected_c": 0.01,
+          "status": "separate_group_model",
+          "test_fights": 44,
+          "training_fights": 793,
+          "training_start": "2016-01-02",
+          "training_through": "2025-12-13"
+        }
+      }
+    },
+    "metrics": {
+      "current_logistic": {
+        "accuracy": 0.6403835908364411,
+        "auc": 0.6971739051327305,
+        "brier": 0.22070059107620524,
+        "ece_10_bin": 0.024517491163701725,
+        "fights": 1877,
+        "log_loss": 0.6313760447767583
+      },
+      "fully_separate_groups": {
+        "accuracy": 0.62226957911561,
+        "auc": 0.6816083222648787,
+        "brier": 0.22468352720184917,
+        "ece_10_bin": 0.027757256433757913,
+        "fights": 1877,
+        "log_loss": 0.6395634776260014
+      },
+      "group_specific_pooling_weights": {
+        "accuracy": 0.637187000532765,
+        "auc": 0.6952782427539528,
+        "brier": 0.22152284911351816,
+        "ece_10_bin": 0.02821498884330339,
+        "fights": 1877,
+        "log_loss": 0.6331942242301354
+      },
+      "shared_pooling_weight": {
+        "accuracy": 0.6350559403303143,
+        "auc": 0.6941979312603483,
+        "brier": 0.22147195332443542,
+        "ece_10_bin": 0.0270361251621499,
+        "fights": 1877,
+        "log_loss": 0.6328091526413342
+      }
+    },
+    "paired_log_loss_intervals": {
+      "fully_separate_groups": {
+        "bootstrap_samples": 10000,
+        "ci_95_lower": 0.0010756304427924344,
+        "ci_95_upper": 0.015278589542163521,
+        "definition": "fully_separate_groups_probability minus current_logistic_probability paired log loss; negative favors candidate",
+        "event_count": 155,
+        "fight_count": 1877,
+        "method": "nonparametric whole-event block bootstrap",
+        "point_difference": 0.008187432849242907,
+        "seed": 20260822
+      },
+      "group_specific_pooling_weights": {
+        "bootstrap_samples": 10000,
+        "ci_95_lower": -0.0013605840520892526,
+        "ci_95_upper": 0.004994438971118753,
+        "definition": "group_specific_pooling_weights_probability minus current_logistic_probability paired log loss; negative favors candidate",
+        "event_count": 155,
+        "fight_count": 1877,
+        "method": "nonparametric whole-event block bootstrap",
+        "point_difference": 0.0018181794533770222,
+        "seed": 20260822
+      },
+      "shared_pooling_weight": {
+        "bootstrap_samples": 10000,
+        "ci_95_lower": -0.0020900212066117764,
+        "ci_95_upper": 0.004942623577952031,
+        "definition": "shared_pooling_weight_probability minus current_logistic_probability paired log loss; negative favors candidate",
+        "event_count": 155,
+        "fight_count": 1877,
+        "method": "nonparametric whole-event block bootstrap",
+        "point_difference": 0.0014331078645756527,
+        "seed": 20260822
+      }
+    },
+    "selected_design": "group_specific_pooling_weights",
+    "selected_design_interval": {
+      "bootstrap_samples": 10000,
+      "ci_95_lower": -0.0013605840520892526,
+      "ci_95_upper": 0.004994438971118753,
+      "definition": "group_specific_pooling_weights_probability minus current_logistic_probability paired log loss; negative favors candidate",
+      "event_count": 155,
+      "fight_count": 1877,
+      "method": "nonparametric whole-event block bootstrap",
+      "point_difference": 0.0018181794533770222,
+      "seed": 20260822
+    },
+    "years": [
+      2023,
+      2024,
+      2025,
+      2026
+    ]
+  },
+  "experiment_version": "division-group-logistic-pooling-v1",
+  "important_limits": [
+    "2023-2026 has been reused by earlier research and is not a pristine final test",
+    "smaller groups estimate the same 82 coefficients from fewer fights",
+    "catch-weight and open-weight fights retain the shared model",
+    "predictability by division is descriptive and can change by era",
+    "production predictions and betting behavior are unchanged"
+  ],
+  "paper_only": true,
+  "plain_language_conclusion": "The selected division design was worse on the later fights and should not replace the shared production model.",
+  "plain_language_method": "Fit the same 82-input zero-intercept logistic model separately for three men's weight ranges and all women's divisions. Compare fully separate fits with fixed partial pooling back toward the shared model.",
+  "production_action": "none",
+  "report_schema_version": 1,
+  "source_sha256": {
+    "development_detail_logical": "4ba626f045ec4b78e8628b2fcace35249d9d69a0a79a7f95126730fe20d5cc94",
+    "evaluation_detail_logical": "b81e38a19927319c7a57e27ffcc497241e55b2e0e8dd4f64c99815278c48d682",
+    "evaluator": "972bd71f45d01cb9a839ceb182f805b4cb98375627df7777b4dfae10769880ac",
+    "fighter_stats": "88341fc47df0dac282a4c91c6f5df4d60e9e5905204eda4ce950459720c01230",
+    "model_artifact": "ff068e2763ecd2a667462bc1afbc7691639719ac5ca049e2df61847ec049b725",
+    "point_in_time": "f9ed863ea627318a3d55e1bf422536c0563fe2e22f8baedb71f6837b27530370",
+    "raw_fights": "6cfb14c9ebcaf2946d942447f4af0166df8b1e5cefa9111edb184b74d7197d49"
+  }
+}
