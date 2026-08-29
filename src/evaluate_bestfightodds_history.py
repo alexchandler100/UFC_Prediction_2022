@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import argparse
 from datetime import datetime, timezone
+from hashlib import sha256
 import json
 import math
 import os
@@ -53,6 +54,86 @@ HORIZON_ORDER = (
 )
 REPORT_SCHEMA_VERSION = 1
 MAX_RUNTIME_MINUTES = 60.0
+
+
+def load_precomputed_predictions(
+    path: Path,
+) -> tuple[pd.DataFrame, dict[str, object]]:
+    """Load a previously generated causal current-model prediction file.
+
+    Several research reports already contain the exact walk-forward logistic
+    probabilities needed here. Reusing them avoids refitting the same yearly
+    models for every odds experiment. Identity, orientation, probability, and
+    one-row-per-fight checks remain mandatory before prices are joined.
+    """
+
+    if not path.is_file():
+        raise FileNotFoundError(path)
+    payload = path.read_bytes()
+    frame = pd.read_csv(path, low_memory=False)
+    if (
+        "model_probability" not in frame
+        and "current_logistic_probability" in frame
+    ):
+        frame = frame.rename(
+            columns={"current_logistic_probability": "model_probability"}
+        )
+    required = {
+        "date",
+        "event_id",
+        "fight_id",
+        "fighter_id",
+        "opponent_id",
+        "fighter",
+        "opponent",
+        "target",
+        "model_probability",
+    }
+    missing = required - set(frame.columns)
+    if missing:
+        raise ValueError(
+            f"precomputed predictions are missing columns: {sorted(missing)}"
+        )
+    frame = frame.copy()
+    for column in ("event_id", "fight_id", "fighter_id", "opponent_id"):
+        frame[column] = frame[column].astype(str).str.strip()
+        if frame[column].eq("").any():
+            raise ValueError(f"precomputed predictions contain an empty {column}")
+    if frame["fight_id"].duplicated().any():
+        raise ValueError("precomputed predictions contain duplicate fight IDs")
+    if frame["fighter_id"].eq(frame["opponent_id"]).any():
+        raise ValueError("precomputed predictions contain a self-matchup")
+    frame["date"] = pd.to_datetime(frame["date"], errors="raise")
+    frame["target"] = pd.to_numeric(frame["target"], errors="raise").astype(int)
+    if not frame["target"].isin((0, 1)).all():
+        raise ValueError("precomputed prediction targets must be zero or one")
+    frame["model_probability"] = pd.to_numeric(
+        frame["model_probability"], errors="raise"
+    )
+    if not frame["model_probability"].map(math.isfinite).all():
+        raise ValueError("precomputed predictions contain a non-finite probability")
+    if not frame["model_probability"].between(0.0, 1.0, inclusive="neither").all():
+        raise ValueError("precomputed probabilities must be strictly within (0, 1)")
+    if "training_through" in frame:
+        training = frame["training_through"].fillna("").astype(str).str.strip()
+        populated = training.ne("")
+        if populated.any():
+            parsed_training = pd.to_datetime(training.loc[populated], errors="raise")
+            if (parsed_training >= frame.loc[populated, "date"]).any():
+                raise ValueError(
+                    "precomputed model training reaches or passes an event date"
+                )
+    frame = frame.sort_values(
+        ["date", "event_id", "fight_id"], kind="stable"
+    ).reset_index(drop=True)
+    return frame, {
+        "kind": "precomputed_causal_walk_forward_csv",
+        "path": str(path),
+        "sha256": sha256(payload).hexdigest(),
+        "fights": int(len(frame)),
+        "first_date": frame["date"].min().strftime("%Y-%m-%d"),
+        "last_date": frame["date"].max().strftime("%Y-%m-%d"),
+    }
 
 
 def _metrics(frame: pd.DataFrame, probability_column: str) -> dict[str, object]:
@@ -361,17 +442,24 @@ def build_evaluation(
     raw_fights_path: Path = DEFAULT_RAW_FIGHTS,
     fighter_stats_path: Path = DEFAULT_FIGHTERS,
     model_artifact_path: Path = DEFAULT_MODEL_ARTIFACT,
+    predictions_input_path: Path | None = None,
     max_runtime_minutes: float = 55.0,
 ) -> tuple[dict[str, object], pd.DataFrame]:
     if not 0 < max_runtime_minutes <= MAX_RUNTIME_MINUTES:
         raise ValueError("max runtime must be greater than zero and at most 60 minutes")
-    for path in (
-        database_path,
-        point_in_time_path,
-        raw_fights_path,
-        fighter_stats_path,
-        model_artifact_path,
-    ):
+    required_paths = [database_path]
+    if predictions_input_path is None:
+        required_paths.extend(
+            [
+                point_in_time_path,
+                raw_fights_path,
+                fighter_stats_path,
+                model_artifact_path,
+            ]
+        )
+    else:
+        required_paths.append(predictions_input_path)
+    for path in required_paths:
         if not path.is_file():
             raise FileNotFoundError(path)
     started = time.monotonic()
@@ -380,17 +468,30 @@ def build_evaluation(
         mode=mode,
         minimum_consensus_books=minimum_consensus_books,
     )
-    point = pd.read_csv(point_in_time_path, low_memory=False)
-    raw = pd.read_csv(raw_fights_path, low_memory=False)
-    fighters = pd.read_csv(fighter_stats_path, low_memory=False)
-    artifact = json.loads(model_artifact_path.read_text(encoding="utf-8"))
-    builder = PointInTimeDatasetBuilder(raw, fighters)
-    if list(builder.feature_columns) != list(artifact["feature_columns"]):
-        raise ValueError("current model artifact and feature builder do not agree")
     years = tuple(sorted({int(str(row["ufc_event_date"])[:4]) for row in consensus}))
-    if time.monotonic() - started > max_runtime_minutes * 60.0:
-        raise TimeoutError("evaluation exceeded its runtime limit before model fitting")
-    predictions = TemporalFightPredictor(point, builder).walk_forward_predictions(years)
+    if predictions_input_path is None:
+        point = pd.read_csv(point_in_time_path, low_memory=False)
+        raw = pd.read_csv(raw_fights_path, low_memory=False)
+        fighters = pd.read_csv(fighter_stats_path, low_memory=False)
+        artifact = json.loads(model_artifact_path.read_text(encoding="utf-8"))
+        builder = PointInTimeDatasetBuilder(raw, fighters)
+        if list(builder.feature_columns) != list(artifact["feature_columns"]):
+            raise ValueError("current model artifact and feature builder do not agree")
+        if time.monotonic() - started > max_runtime_minutes * 60.0:
+            raise TimeoutError(
+                "evaluation exceeded its runtime limit before model fitting"
+            )
+        predictions = TemporalFightPredictor(point, builder).walk_forward_predictions(
+            years
+        )
+        prediction_source = {
+            "kind": "computed_during_evaluation",
+            "fights": int(len(predictions)),
+        }
+    else:
+        predictions, prediction_source = load_precomputed_predictions(
+            predictions_input_path
+        )
     paired, coverage = pair_consensus_with_predictions(consensus, predictions)
     evaluation = evaluate_paired_snapshot(paired)
     elapsed = time.monotonic() - started
@@ -414,8 +515,12 @@ def build_evaluation(
             "the same historical sample must not be used both to invent and to confirm a new rule",
         ],
         "database_snapshot": database,
+        "prediction_source": prediction_source,
         "minimum_consensus_books": minimum_consensus_books,
-        "model_evaluation_years": list(years),
+        "market_database_years": list(years),
+        "model_evaluation_years": sorted(
+            paired["event_date"].str[:4].astype(int).unique().tolist()
+        ),
         "coverage": coverage,
         "consensus_snapshot_sha256": canonical_hash(consensus),
         "evaluation": evaluation,
@@ -449,6 +554,14 @@ def _parser() -> argparse.ArgumentParser:
     parser.add_argument("--raw-fights", type=Path, default=DEFAULT_RAW_FIGHTS)
     parser.add_argument("--fighter-stats", type=Path, default=DEFAULT_FIGHTERS)
     parser.add_argument("--model-artifact", type=Path, default=DEFAULT_MODEL_ARTIFACT)
+    parser.add_argument(
+        "--predictions-input",
+        type=Path,
+        help=(
+            "reuse a validated causal walk-forward CSV instead of refitting the "
+            "same yearly current models"
+        ),
+    )
     parser.add_argument("--max-runtime-minutes", type=float, default=55.0)
     parser.add_argument("--report", type=Path, default=DEFAULT_REPORT)
     parser.add_argument("--detail", type=Path, default=DEFAULT_DETAIL)
@@ -466,6 +579,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         raw_fights_path=arguments.raw_fights,
         fighter_stats_path=arguments.fighter_stats,
         model_artifact_path=arguments.model_artifact,
+        predictions_input_path=arguments.predictions_input,
         max_runtime_minutes=arguments.max_runtime_minutes,
     )
     if not arguments.dry_run:

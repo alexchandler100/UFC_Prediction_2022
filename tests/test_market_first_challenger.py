@@ -188,6 +188,19 @@ class MarketFirstChallengerTests(unittest.TestCase):
             changed_report["horizons"]["safe_t24"]["selection_winner"]["features"],
         )
 
+    def test_optional_missing_model_metadata_does_not_break_input_hash(self):
+        history = self._synthetic_history()
+        history["model_selected_c"] = float("nan")
+        report, _detail = evaluate_market_first(
+            history,
+            minimum_event_dates=20,
+            minimum_train_fights=50,
+            minimum_selection_fights=15,
+            minimum_test_fights=15,
+            minimum_feature_support=10,
+        )
+        self.assertEqual(len(report["input_sha256"]), 64)
+
 
 if __name__ == "__main__":
     unittest.main()

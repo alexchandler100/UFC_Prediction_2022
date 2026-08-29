@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 import sys
+import tempfile
 import unittest
 
 import pandas as pd
@@ -12,6 +13,7 @@ sys.path.insert(0, str(ROOT / "src"))
 
 from evaluate_bestfightodds_history import (  # noqa: E402
     evaluate_paired_snapshot,
+    load_precomputed_predictions,
     pair_consensus_with_predictions,
 )
 
@@ -64,6 +66,28 @@ def _predictions() -> pd.DataFrame:
 
 
 class BestFightOddsEvaluationTests(unittest.TestCase):
+    def test_precomputed_current_logistic_alias_is_validated(self):
+        source = _predictions().drop(
+            columns=["model_probability", "training_through"]
+        )
+        source["current_logistic_probability"] = 0.70
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "predictions.csv"
+            source.to_csv(path, index=False)
+            loaded, metadata = load_precomputed_predictions(path)
+        self.assertAlmostEqual(loaded.iloc[0]["model_probability"], 0.70)
+        self.assertEqual(metadata["fights"], 1)
+        self.assertEqual(len(metadata["sha256"]), 64)
+
+    def test_precomputed_future_trained_prediction_is_rejected(self):
+        source = _predictions()
+        source["training_through"] = source["date"]
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "predictions.csv"
+            source.to_csv(path, index=False)
+            with self.assertRaisesRegex(ValueError, "training reaches"):
+                load_precomputed_predictions(path)
+
     def test_stable_ids_align_reversed_market_orientation(self):
         paired, coverage = pair_consensus_with_predictions(
             _consensus(reversed_ids=True), _predictions()

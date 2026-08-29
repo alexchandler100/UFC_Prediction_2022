@@ -558,7 +558,14 @@ def evaluate_market_first(
         "input_rows": len(prepared),
         "input_fights": int(prepared["fight_id"].nunique()),
         "input_events": int(prepared["event_id"].nunique()),
-        "input_sha256": canonical_hash(prepared.to_dict("records")),
+        "input_sha256": canonical_hash(
+            prepared.to_csv(
+                index=False,
+                lineterminator="\n",
+                float_format="%.15g",
+                na_rep="",
+            )
+        ),
         "horizons": results,
     }
     return report, output
@@ -584,6 +591,14 @@ def _parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--database", type=Path, default=DEFAULT_DATABASE)
     parser.add_argument("--paired-input", type=Path)
+    parser.add_argument(
+        "--predictions-input",
+        type=Path,
+        help=(
+            "validated causal current-model predictions passed through to the "
+            "historical market evaluator"
+        ),
+    )
     parser.add_argument("--raw-fights", type=Path, default=DEFAULT_RAW_FIGHTS)
     parser.add_argument("--minimum-consensus-books", type=int, default=3)
     parser.add_argument("--max-runtime-minutes", type=float, default=55.0)
@@ -605,6 +620,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             database_path=arguments.database,
             minimum_consensus_books=arguments.minimum_consensus_books,
             raw_fights_path=arguments.raw_fights,
+            predictions_input_path=arguments.predictions_input,
             max_runtime_minutes=arguments.max_runtime_minutes,
         )
         source = {

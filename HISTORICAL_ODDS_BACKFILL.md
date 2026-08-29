@@ -98,6 +98,18 @@ Analyze a read-only snapshot without stopping an active backfill:
 python src/evaluate_bestfightodds_history.py
 ```
 
+When a causal walk-forward current-model CSV already exists, reuse it instead
+of fitting the same yearly models again:
+
+```bash
+python src/evaluate_bestfightodds_history.py \
+  --predictions-input src/content/data/model_research/model_family_comparison.csv
+```
+
+The reuse path validates stable identities, unique fights, dates, outcomes,
+finite probabilities, and any supplied training cutoff before joining prices.
+The report records the prediction file hash and covered date range.
+
 The evaluator writes its report and fight-level CSV outside Git under
 `~/.ufc-data-lab/historical-odds/bestfightodds/analysis/`. It compares the
 current model, three-or-more-book market consensus, and a fixed 50/50 log-odds
@@ -124,6 +136,32 @@ Running this command before the backfill finishes is useful for checking the
 code, but its performance result is provisional and must be rerun on the
 completed database. It is research-only and cannot change production odds,
 predictions, or betting behavior.
+
+## Provisional 2023-2026 research snapshot
+
+On August 29, 2026, a read-only snapshot paired 1,643 fights across 147 events
+with previously generated causal current-model probabilities. At the latest
+price before the event date, log loss was:
+
+- market: 0.58932;
+- current model: 0.63011;
+- fixed 50/50 log-odds blend: 0.59946.
+
+Market-only also beat both alternatives at opening, T-72, T-24, and T-6.
+
+The market-first experiment fit candidates on 976 T-24 fights through February
+1, 2025, selected one on 309 fights from February 8 through September 27,
+2025, and scored it once on 345 later fights from October 4, 2025 through June
+20, 2026. The chosen adjustment used model disagreement and disagreement among
+books. Its T-24 log loss was 0.58184 versus 0.58450 for market-only, a 0.00265
+improvement. The whole-event 95% uncertainty interval for the difference was
+-0.01456 to +0.01041, so no improvement remains a plausible explanation.
+
+The same adjustment was worse at T-72, T-6, and the latest price. It is not a
+production model or betting rule. The exact T-24 fit may be frozen for a new
+future paper comparison, while market-only remains the production reference.
+Because the winner backfill was still active when this snapshot was taken, the
+historical reports must be refreshed after collection finishes.
 
 To add the weaker older mean/single-book period after the 2021+ run, reuse the
 same database and extend the start year:
