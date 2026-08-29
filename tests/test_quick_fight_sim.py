@@ -1,6 +1,8 @@
 import importlib.util
 from pathlib import Path
+import tempfile
 import unittest
+from unittest.mock import patch
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -50,10 +52,31 @@ class QuickFightSimulationTests(unittest.TestCase):
         self.assertEqual(100 // members, 2)
 
     def test_current_card_prefers_materialized_members_over_refitting(self):
-        publication = QUICK._load_json(QUICK.DEFAULT_PUBLICATION)
-        path, members = QUICK._find_parameters(publication, None)
+        expected_sha = "a" * 64
+        publication = {
+            "parameter_artifact_sha256": expected_sha,
+            "bootstrap_members": 200,
+        }
+        with tempfile.TemporaryDirectory() as directory:
+            repository = Path(directory)
+            materialized = (
+                repository
+                / "artifacts"
+                / "simulations"
+                / "parameter-materialized-cache"
+                / f"parameter-{expected_sha}.json.gz"
+            )
+            materialized.parent.mkdir(parents=True)
+            # The fast path intentionally trusts the publication's exact hash
+            # and member count. This test only needs the file to exist; artifact
+            # decoding is covered by the fight_sim parameter tests.
+            materialized.write_bytes(b"fixture")
+            with patch.object(QUICK, "REPO_ROOT", repository):
+                path, members = QUICK._find_parameters(publication, None)
+
+        self.assertEqual(path, materialized.resolve())
         self.assertIn("parameter-materialized-cache", str(path))
-        self.assertEqual(members, int(publication["bootstrap_members"]))
+        self.assertEqual(members, 200)
 
 
 if __name__ == "__main__":

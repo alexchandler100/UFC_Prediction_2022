@@ -41,6 +41,9 @@ jobs:
       PYTHONUNBUFFERED: "1"
       MARKET_ODDS_SOURCE: "the-odds-api"
       ODDS_API_REGIONS: "us,us2"
+      # The user explicitly approved low-rate collection from the same public
+      # BestFightOdds paths used by the local historical research backfill.
+      BESTFIGHTODDS_SOURCE_POLICY_ACKNOWLEDGED: "1"
 
     steps:
       - name: Check out frozen publication
@@ -81,6 +84,13 @@ jobs:
           THE_ODDS_API_KEY: ${{ secrets.THE_ODDS_API_KEY }}
         run: python src/capture_market_snapshot.py
 
+      - name: Capture bounded method-of-victory prices
+        id: method_capture
+        # Method prices are useful enrichment, but an optional source outage
+        # must not discard a healthy moneyline/totals capture.
+        continue-on-error: true
+        run: python src/capture_method_market_snapshot.py
+
       - name: Settle completed paper decisions and refresh metrics
         run: python src/update_market_performance.py
 
@@ -88,6 +98,10 @@ jobs:
         run: |
           python src/capture_market_snapshot.py --validate-only
           python src/validate_data.py --require-model-artifact --require-market-data
+
+      - name: Revalidate optional method-price outputs
+        if: steps.method_capture.outcome == 'success'
+        run: python src/capture_method_market_snapshot.py --validate-only
 
       - name: Commit only market capture outputs
         shell: bash
@@ -114,9 +128,8 @@ jobs:
             src/content/data/market/capture_report.json \
             src/content/data/market/current_opportunities.json
 
-          # Totals are optional provider enrichment. Stage the new mirrors
-          # when the combined API market was available, but do not fail a
-          # healthy moneyline capture when the provider fell back to h2h.
+          # Totals and method prices are optional enrichment. Stage their
+          # validated outputs without failing a healthy moneyline capture.
           for optional_path in \
             src/content/data/market/total_round_quote_snapshots.csv \
             src/content/data/market/total_round_quote_snapshots.jsonl \
@@ -125,7 +138,11 @@ jobs:
             src/content/data/market/total_round_paper_decisions.csv \
             src/content/data/market/total_round_paper_decisions.jsonl \
             src/content/data/market/total_round_paper_settlements.csv \
-            src/content/data/market/total_round_paper_settlements.jsonl
+            src/content/data/market/total_round_paper_settlements.jsonl \
+            src/content/data/market/method_market_snapshots.csv \
+            src/content/data/market/method_market_snapshots.jsonl \
+            src/content/data/market/method_capture_report.json \
+            src/content/data/market/current_method_markets.json
           do
             if [ -f "$optional_path" ]; then
               git add -- "$optional_path"
@@ -148,6 +165,10 @@ jobs:
               src/content/data/market/total_round_paper_decisions.jsonl|\
               src/content/data/market/total_round_paper_settlements.csv|\
               src/content/data/market/total_round_paper_settlements.jsonl|\
+              src/content/data/market/method_market_snapshots.csv|\
+              src/content/data/market/method_market_snapshots.jsonl|\
+              src/content/data/market/method_capture_report.json|\
+              src/content/data/market/current_method_markets.json|\
               src/content/data/market/paper_decisions.csv|\
               src/content/data/market/paper_decisions.jsonl|\
               src/content/data/market/bayesian_filtered_paper_decisions.csv|\

@@ -55,6 +55,11 @@ from .props import (
     TotalRoundsQuoteSnapshot,
     TotalRoundsQuoteStore,
 )
+from .method_market import (
+    METHOD_MARKET_CONTRACT,
+    MethodMarketSnapshot,
+    MethodMarketStore,
+)
 from .prospective import (
     DECISION_TARGET_LEAD_SECONDS,
     DECISION_WINDOW_SECONDS,
@@ -140,6 +145,9 @@ __all__ = (
     "MAX_SOURCE_QUOTE_AGE_SECONDS",
     "MarketConsensus",
     "MarketDataError",
+    "METHOD_MARKET_CONTRACT",
+    "MethodMarketSnapshot",
+    "MethodMarketStore",
     "NATIVE_PROBABILITY",
     "OPPORTUNITY_POLICY_VERSION",
     "PROP_OPPORTUNITY_POLICY_VERSION",

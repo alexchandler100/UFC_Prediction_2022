@@ -4,6 +4,11 @@
 behind BestFightOdds' public line-movement charts. It is local research only:
 it does not modify production predictions or website data.
 
+Method-of-victory history uses a separate database and runner. Keep this
+winner-price backfill running; after it finishes or is cleanly paused, follow
+`METHOD_ODDS_COLLECTION.md`. The method runner refuses concurrent bulk access
+by default.
+
 ## Recommended Git Bash command
 
 Start with the stronger period, where the audit verified multi-book history:

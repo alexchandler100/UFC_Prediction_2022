@@ -51,7 +51,7 @@ class WebsiteExplorerContractTests(unittest.TestCase):
 
         self.assertIn("Consensus, best price, and paper decisions", page)
         self.assertIn("Potentially profitable prices", page)
-        self.assertIn("Total-round prices and model probabilities", page)
+        self.assertIn("Total-round and method-of-victory prices", page)
         self.assertIn("automatic betting is intentionally off", script)
         self.assertIn("current_opportunities.json", script)
         self.assertIn("target_book", script)
@@ -63,7 +63,9 @@ class WebsiteExplorerContractTests(unittest.TestCase):
         self.assertIn("outcome_forecasts.json", script)
         self.assertIn("positive_candidates", script)
         self.assertIn("Candidate duration-model probability", script)
-        self.assertIn("method EV is unavailable", script)
+        self.assertIn("current_method_markets.json", script)
+        self.assertIn("Missing outcomes remain unavailable", script)
+        self.assertIn("method-price-table", script)
         self.assertIn("Profitability and closing-line value", page)
         self.assertIn("renderProfitabilityEvidence", script)
         self.assertIn("Compare predeclared EV thresholds", script)
@@ -76,6 +78,7 @@ class WebsiteExplorerContractTests(unittest.TestCase):
         self.assertIn("Bayesian model and expected-return uncertainty", script)
         self.assertIn("bayesian_winner_challenger.json", update_workflow)
         self.assertIn("current_opportunities.json", workflow)
+        self.assertIn("current_method_markets.json", workflow)
         self.assertIn("bayesian_filtered_paper_decisions.jsonl", workflow)
 
     def test_layout_has_explicit_mobile_breakpoints(self):

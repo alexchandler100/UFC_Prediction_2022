@@ -7,6 +7,7 @@ const DATA_PATHS = {
   model: "src/content/data/external/winner_model.json",
   bayesian: "src/content/data/external/bayesian_winner_challenger.json",
   market: "src/content/data/market/current_opportunities.json",
+  methodMarkets: "src/content/data/market/current_method_markets.json",
   performance: "src/content/data/market/performance_report.json",
   outcomes: "src/content/data/external/outcome_forecasts.json",
   simulations: "src/content/data/external/simulation_forecasts.json",
@@ -21,6 +22,7 @@ const state = {
   model: null,
   bayesian: null,
   market: null,
+  methodMarkets: null,
   performance: null,
   outcomes: null,
   simulations: null,
@@ -1191,13 +1193,14 @@ async function fetchJson(path, required = true) {
 }
 
 async function loadData() {
-  const [explorer, vegas, card, model, bayesian, market, performance, outcomes] = await Promise.all([
+  const [explorer, vegas, card, model, bayesian, market, methodMarkets, performance, outcomes] = await Promise.all([
     fetchJson(DATA_PATHS.explorer),
     fetchJson(DATA_PATHS.vegas, false),
     fetchJson(DATA_PATHS.card, false),
     fetchJson(DATA_PATHS.model, false),
     fetchJson(DATA_PATHS.bayesian, false),
     fetchJson(DATA_PATHS.market, false),
+    fetchJson(DATA_PATHS.methodMarkets, false),
     fetchJson(DATA_PATHS.performance, false),
     fetchJson(DATA_PATHS.outcomes, false),
   ]);
@@ -1207,6 +1210,7 @@ async function loadData() {
   state.model = model;
   state.bayesian = bayesian;
   state.market = market;
+  state.methodMarkets = methodMarkets;
   state.performance = performance;
   state.outcomes = outcomes;
   state.fighters = explorer.fighters;
@@ -1821,6 +1825,10 @@ function currentMarket() {
 
 function currentOutcomes() {
   return publicationMatchesCurrentCard(state.outcomes?.event_date, state.outcomes?.event_id) ? state.outcomes : null;
+}
+
+function currentMethodMarkets() {
+  return publicationMatchesCurrentCard(state.methodMarkets?.event_date, state.methodMarkets?.event_id) ? state.methodMarkets : null;
 }
 
 function matchupIdentityKeys(matchup) {
@@ -2544,6 +2552,63 @@ function renderProfitabilityEvidence() {
   table.append(tbody); body.append(table); details.append(body); container.append(details);
 }
 
+function methodDisplayName(method) {
+  if (method === "ko_tko") return "KO/TKO";
+  if (method === "submission") return "Submission";
+  if (method === "decision") return "Decision";
+  return String(method || "Unknown").replaceAll("_", " ");
+}
+
+function methodPriceCell(row, label, value) {
+  const cell = appendText(row, "td", "", value);
+  cell.dataset.label = label;
+  return cell;
+}
+
+function renderCurrentMethodPrices(container, publication) {
+  const markets = orderedCardMatchups(publication?.method_markets || []);
+  markets.forEach((market) => {
+    const card = element("article", "market-card wide-card method-market-card");
+    appendText(card, "p", "eyebrow", boutOrderLabel(market));
+    appendText(card, "h3", "", `${market.fighter_name} vs ${market.opponent_name}`);
+    const selections = (market.book_quotes || []).flatMap((quote) => (quote.selections || []).map((selection) => ({ ...selection, book: quote.book, horizon: quote.horizon })));
+    const comparisons = selections.filter((selection) => finite(selection.candidate_model_estimated_return) !== null).sort((left, right) => Number(right.candidate_model_estimated_return) - Number(left.candidate_model_estimated_return));
+    const best = comparisons[0] || null;
+    appendText(card, "p", "signal-reason", `${selections.length} listed method price${selections.length === 1 ? "" : "s"} across ${market.book_count} book${market.book_count === 1 ? "" : "s"}. Missing outcomes remain unavailable; six-way no-vig values appear only for complete boards.`);
+    if (best) {
+      const stats = element("div", "signal-line");
+      [[best.selection, "Highest raw model comparison"], [`${formatOdds(best.moneyline)} at ${best.book}`, "Offered method price"], [formatPercent(best.candidate_model_estimated_return), "Unvalidated model EV"]].forEach(([value, label]) => {
+        const item = element("div", "signal-stat"); appendText(item, "strong", "", value); appendText(item, "span", "", label); stats.append(item);
+      });
+      card.append(stats);
+    }
+    appendText(card, "p", "simulation-warning", "The prices are observed sportsbook lines. The method probabilities are a research model that has not passed a betting-performance gate, so the EV column is a comparison—not a recommendation.");
+    const details = document.createElement("details");
+    details.append(element("summary", "", `View all ${selections.length} method selections`));
+    const body = element("div", "details-body method-price-wrap");
+    const table = element("table", "data-table method-price-table");
+    const head = document.createElement("thead"); const header = document.createElement("tr");
+    ["Book", "Selection", "Price", "Break-even", "Book no-vig", "Model", "Raw model EV"].forEach((value) => appendText(header, "th", "", value));
+    head.append(header); table.append(head);
+    const tbody = document.createElement("tbody");
+    (market.book_quotes || []).forEach((quote) => (quote.selections || []).forEach((selection) => {
+      const row = document.createElement("tr");
+      const modelProbability = finite(selection.candidate_model_probability);
+      const modelEv = finite(selection.candidate_model_estimated_return);
+      methodPriceCell(row, "Book", quote.book);
+      methodPriceCell(row, "Selection", `${selection.selected_fighter_name} by ${methodDisplayName(selection.method)}`);
+      methodPriceCell(row, "Price", formatOdds(selection.moneyline));
+      methodPriceCell(row, "Break-even", formatPercent(selection.break_even_probability));
+      methodPriceCell(row, "Book no-vig", formatPercent(selection.book_no_vig_probability));
+      methodPriceCell(row, "Model", modelProbability === null ? "—" : formatPercent(modelProbability));
+      methodPriceCell(row, "Raw model EV", modelEv === null ? "—" : formatPercent(modelEv));
+      tbody.append(row);
+    }));
+    table.append(tbody); body.append(table); details.append(body); card.append(details); container.append(card);
+  });
+  return markets.length;
+}
+
 function renderMarket() {
   const notice = $("#market-notice"); const container = $("#market-matchups"); const opportunityContainer = $("#market-opportunities"); const propContainer = $("#prop-market-details"); notice.replaceChildren(); container.replaceChildren(); opportunityContainer.replaceChildren(); propContainer.replaceChildren(); renderProfitabilityEvidence();
   const market = currentMarket();
@@ -2559,7 +2624,7 @@ function renderMarket() {
   const matchups = orderedCardMatchups(market?.matchups || []);
   const propMarkets = market?.prop_markets;
   const totalRounds = propMarkets?.total_rounds;
-  const methodMarket = propMarkets?.method_of_victory;
+  const methodMarket = currentMethodMarkets();
   const ranked = [];
   matchups.forEach((matchup) => {
     const signal = matchup.current_signal;
@@ -2638,7 +2703,9 @@ function renderMarket() {
   });
 
   const totalStatus = totalRounds?.price_status === "available" ? `${totalRounds.quote_count} book/line quotes and ${totalRounds.forecast_count} frozen model probabilities.` : "Awaiting the next successful total-round odds capture.";
-  const methodStatus = methodMarket?.expected_value_status === "available" ? "Method-of-victory EV is available." : "Method probabilities exist, but method EV is unavailable because the configured provider supplies no method prices.";
+  const methodStatus = methodMarket?.price_status === "available"
+    ? `${methodMarket.book_market_count} method-of-victory book boards are available; model comparisons remain research-only.`
+    : "Method probabilities exist; method prices are awaiting the next successful snapshot.";
   $("#prop-coverage-status").textContent = `${totalStatus} ${methodStatus}`;
   if (!(totalRounds?.markets || []).length) propContainer.append(element("div", "empty-state", "No synchronized total-round lines are published yet. The next market snapshot will populate this section when books expose totals."));
   orderedCardMatchups(totalRounds?.markets || []).forEach((market) => {
@@ -2657,8 +2724,9 @@ function renderMarket() {
     }
     const details = document.createElement("details"); details.append(element("summary", "", `All ${market.book_quotes.length} total prices`)); const body = element("div", "details-body book-table-wrap"); const table = element("table", "data-table"); const head = document.createElement("thead"); const header = document.createElement("tr"); ["Book", "Over", "Under", "No-vig over", "Quote age"].forEach((value) => appendText(header, "th", "", value)); head.append(header); table.append(head); const tbody = document.createElement("tbody"); market.book_quotes.forEach((quote) => { const row = document.createElement("tr"); [quote.book, formatOdds(quote.over_moneyline), formatOdds(quote.under_moneyline), formatPercent(quote.no_vig_over_probability), `${formatNumber(quote.source_quote_age_seconds, 0)}s`].forEach((value) => appendText(row, "td", "", value)); tbody.append(row); }); table.append(tbody); body.append(table); details.append(body); card.append(details); propContainer.append(card);
   });
+  const renderedMethodMarkets = renderCurrentMethodPrices(propContainer, methodMarket);
   const outcomeMatchups = orderedCardMatchups((outcomes?.matchups || []).filter((item) => item.matchup_id && item.terminal_probabilities));
-  if (outcomeMatchups.length) {
+  if (!renderedMethodMarkets && outcomeMatchups.length) {
     const methodCard = element("article", "market-card wide-card"); appendText(methodCard, "h3", "", "Candidate method-of-victory probabilities"); appendText(methodCard, "p", "signal-reason", "These are model probabilities, not expected values. A book-specific method price is required before any row can enter the positive-EV list.");
     const details = document.createElement("details"); details.append(element("summary", "", `View ${outcomeMatchups.length} matchup forecasts`)); const body = element("div", "details-body book-table-wrap"); const table = element("table", "data-table"); const head = document.createElement("thead"); const header = document.createElement("tr"); ["Matchup", "Exact outcome", "Model probability"].forEach((value) => appendText(header, "th", "", value)); head.append(header); table.append(head); const tbody = document.createElement("tbody");
     outcomeMatchups.forEach((matchup) => Object.entries(matchup.terminal_probabilities).sort((left, right) => right[1] - left[1]).forEach(([outcome, probability]) => { const side = outcome.startsWith("fighter_") ? matchup.fighter_name : matchup.opponent_name; const method = outcome.replace(/^fighter_|^opponent_/, "").replaceAll("_", " ").replace("ko tko", "KO/TKO"); const row = document.createElement("tr"); [ `${matchup.fighter_name} vs ${matchup.opponent_name}`, `${side} by ${method}`, formatPercent(probability) ].forEach((value) => appendText(row, "td", "", value)); tbody.append(row); }));

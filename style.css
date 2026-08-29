@@ -423,6 +423,8 @@ details[open] summary { border-bottom: 1px solid var(--line); }
 .signal-stat span { color: var(--ink-soft); font-size: 10px; }
 .signal-reason { margin: 0; color: var(--ink-soft); font-size: 13px; }
 .book-table-wrap { width: 100%; max-width: 100%; min-width: 0; overflow-x: auto; overscroll-behavior-inline: contain; -webkit-overflow-scrolling: touch; }
+.method-price-wrap { width: 100%; max-width: 100%; min-width: 0; }
+.method-price-table td:first-child, .method-price-table th:first-child { text-align: left; }
 .explain-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
 .explain-card { padding: 24px; border: 1px solid var(--line); border-radius: var(--radius-md); background: var(--paper); }
 .explain-card h2, .explain-card h3 { margin: 0 0 9px; font-family: "Manrope", sans-serif; letter-spacing: -.025em; }
@@ -556,6 +558,12 @@ input[type="search"]:focus, select:focus { border-color: var(--teal); box-shadow
   .data-table { table-layout: fixed; }
   .data-table th, .data-table td { overflow-wrap: anywhere; }
   .book-table-wrap .data-table, .details-body.book-table-wrap .data-table { min-width: 560px; table-layout: auto; }
+  .method-price-table, .method-price-table tbody, .method-price-table tr, .method-price-table td { display: block; width: 100%; }
+  .method-price-table thead { display: none; }
+  .method-price-table tbody { display: grid; gap: 8px; }
+  .method-price-table tr { padding: 9px 11px; border: 1px solid var(--line); border-radius: 9px; background: var(--paper-2); }
+  .method-price-table td, .method-price-table td:not(:first-child) { display: grid; grid-template-columns: minmax(90px, .8fr) minmax(0, 1.2fr); gap: 9px; padding: 4px 0; border: 0; text-align: right; overflow-wrap: anywhere; }
+  .method-price-table td::before { content: attr(data-label); color: var(--ink-soft); font-size: 10px; font-weight: 700; letter-spacing: .04em; text-align: left; text-transform: uppercase; }
   details, summary, .details-body { max-width: 100%; }
   .fight-graph-basic-grid { grid-template-columns: 1fr; }
   .graph-matchup-filters { grid-template-columns: 1fr; }

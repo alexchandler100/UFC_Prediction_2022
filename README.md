@@ -332,9 +332,14 @@ capture freezes the matching total-round probability in a separate immutable
 forecast ledger. The website ranks positive estimated-return total prices with
 the exact book, line, model probability, break-even probability, and price
 timestamp, but labels them paper-only candidate signals rather than validated
-recommendations. Method-of-victory probabilities are visible, but method EV is
-not calculated without a real book-specific method price; the configured API
-currently documents UFC winner and fight-total coverage, not method markets.
+recommendations. A separate low-rate collector now records primary
+method-of-victory prices from BestFightOdds: both fighters by KO/TKO,
+submission, and decision when listed. The Market tab shows those real
+prices beside the candidate method probabilities and labels the raw EV as
+unvalidated research. Six-way no-vig probabilities are produced only for
+complete book boards. Weekly snapshots retain first available, T-72, T-24, and
+T-6 observations; historical method collection is resumable and stored outside
+Git. See `METHOD_ODDS_COLLECTION.md` for commands and safeguards.
 Reproduce the evaluation report with
 `python -B src/evaluate_outcome_model.py`.
 
