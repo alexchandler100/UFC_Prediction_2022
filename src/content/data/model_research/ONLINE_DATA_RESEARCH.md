@@ -137,3 +137,12 @@ audit, but its published terms do not explicitly address automated bulk reuse.
 The next step is permission/terms clarification followed, if acceptable, by a
 slow resumable backfill stored outside Git. Historical development still does
 not replace the frozen future-only 200-fight / 20-event confirmation.
+
+The bounded downloader is now implemented in
+`src/backfill_bestfightodds_history.py`, with the Git Bash wrapper and operating
+instructions in `HISTORICAL_ODDS_BACKFILL.md` at the repository root. Two pilot
+events verified clean resume behavior, exact timestamp storage, UFCStats
+identity matching, disk caps, and real seven-sportsbook consensus exports. The
+external pilot database contains 5,378 quote points and 48 multi-book consensus
+rows. This technical readiness does not resolve the source-terms question or
+authorize production use.

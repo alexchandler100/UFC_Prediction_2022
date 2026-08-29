@@ -272,11 +272,16 @@ def parse_bestfightodds_event_page(
         headers = table.find_all("th", attrs={"data-b": True})
         if len(headers) > len(book_headers):
             odds_table = table
-            book_headers = {
-                int(header["data-b"]): header.get_text(" ", strip=True).split("\n")[0]
-                for header in headers
-                if str(header.get("data-b", "")).isdigit()
-            }
+            book_headers = {}
+            for header in headers:
+                if not str(header.get("data-b", "")).isdigit():
+                    continue
+                label = header.find("a") or header.find("span")
+                book_headers[int(header["data-b"])] = (
+                    label.get_text(" ", strip=True)
+                    if label is not None
+                    else header.get_text(" ", strip=True)
+                )
 
     matchups: dict[str, dict[str, Any]] = {}
     if odds_table is not None:
