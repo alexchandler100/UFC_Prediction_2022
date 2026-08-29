@@ -232,6 +232,8 @@ class BestFightOddsBackfillTests(unittest.TestCase):
             "ufc_event_date": "2023-08-20",
             "ufc_event_id": "event-id",
             "ufc_fight_id": "fight-id",
+            "ufc_fighter_1_id": "ufc-a",
+            "ufc_fighter_2_id": "ufc-b",
             "fighter_1_name": "Fighter A",
             "fighter_2_name": "Fighter B",
             "source_matchup_id": 9001,
@@ -252,6 +254,8 @@ class BestFightOddsBackfillTests(unittest.TestCase):
         consensus = derive_consensus_rows(rows, minimum_books=3)
         self.assertEqual(len(consensus), 1)
         self.assertAlmostEqual(consensus[0]["fighter_1_market_probability"], 0.56)
+        self.assertEqual(consensus[0]["ufc_fighter_1_id"], "ufc-a")
+        self.assertEqual(consensus[0]["ufc_fighter_2_id"], "ufc-b")
         self.assertEqual(
             derive_consensus_rows(rows[:2], minimum_books=3), []
         )

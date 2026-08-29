@@ -92,6 +92,20 @@ Rebuild CSV exports from the existing database without downloading odds:
 bash scripts/backfill_historical_odds.sh --export-only --mode both
 ```
 
+Analyze a read-only snapshot without stopping an active backfill:
+
+```bash
+python src/evaluate_bestfightodds_history.py
+```
+
+The evaluator writes its report and fight-level CSV outside Git under
+`~/.ufc-data-lab/historical-odds/bestfightodds/analysis/`. It compares the
+current model, three-or-more-book market consensus, and a fixed 50/50 log-odds
+blend separately at opening, T-72, T-24, T-6, and the latest price before the
+event date. It also compares market movement only on the same fights. The model
+is retrained using earlier years only; the result remains retrospective
+research and cannot change production predictions.
+
 To add the weaker older mean/single-book period after the 2021+ run, reuse the
 same database and extend the start year:
 

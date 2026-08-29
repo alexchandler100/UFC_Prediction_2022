@@ -1080,6 +1080,8 @@ def derive_consensus_rows(
                 "ufc_event_date": base["ufc_event_date"],
                 "ufc_event_id": base["ufc_event_id"],
                 "ufc_fight_id": base["ufc_fight_id"],
+                "ufc_fighter_1_id": base["ufc_fighter_1_id"],
+                "ufc_fighter_2_id": base["ufc_fighter_2_id"],
                 "fighter_1_name": base["fighter_1_name"],
                 "fighter_2_name": base["fighter_2_name"],
                 "horizon": horizon,
