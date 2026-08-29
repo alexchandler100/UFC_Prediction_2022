@@ -286,6 +286,8 @@ The auditable artifacts are:
 - `src/content/data/external/fighter_fights_*.json` (lazy-loaded complete fight logs)
 - `src/content/data/market/quote_snapshots.jsonl`
 - `src/content/data/market/quote_source_metadata.jsonl`
+- `src/content/data/market/early_market_observations.jsonl`
+- `src/content/data/market/early_market_ufc_links.jsonl`
 - `src/content/data/market/total_round_quote_snapshots.jsonl`
 - `src/content/data/market/total_round_forecast_captures.jsonl`
 - `src/content/data/market/total_round_paper_decisions.jsonl`
@@ -1152,7 +1154,9 @@ python -B src/capture_market_snapshot.py --validate-only
 ```
 
 This consumes Odds API credits and appends a new timestamped observation. It
-does not place a wager.
+does not place a wager. The same provider response also preserves distinct
+farther-out moneyline and total-round price states; it does not make an extra
+API request for them.
 
 From PowerShell, the equivalent current-card refresh is:
 
@@ -1197,6 +1201,15 @@ before T-24. It uses pinned dependencies, tests before mutation, strict
 post-build validation, a shallow checkout, scoped staging, a no-op commit
 guard, and a starting-commit check so artifacts built from stale code are
 never rebased onto newer code.
+
+The market collector retains every distinct pre-fight price state returned by
+the existing The Odds API MMA request, including matchups beyond the currently
+published UFC card. The provider does not label promotions, so these raw rows
+remain promotion-unknown. When a row later matches an official published UFC
+matchup, a separate append-only link records its UFCStats event and fighter
+IDs. Only linked rows are suitable for UFC timing research. Repeated unchanged
+states are not duplicated, and these early ledgers are research-only: they do
+not feed T-24 decisions, wagers, or the current website opportunity view.
 
 `.github/workflows/collect-market-snapshot.yml` runs separately Sunday at
 10:17 AM and 9:17 PM; Monday at 11:17 PM; Tuesday through Thursday at 12:17 PM

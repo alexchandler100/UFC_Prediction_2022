@@ -128,9 +128,14 @@ jobs:
             src/content/data/market/capture_report.json \
             src/content/data/market/current_opportunities.json
 
-          # Totals and method prices are optional enrichment. Stage their
-          # validated outputs without failing a healthy moneyline capture.
+          # Stage newly introduced research ledgers and optional prop
+          # enrichment when present. Their own validators still require
+          # complete mirrors after a capture creates their contract.
           for optional_path in \
+            src/content/data/market/early_market_observations.csv \
+            src/content/data/market/early_market_observations.jsonl \
+            src/content/data/market/early_market_ufc_links.csv \
+            src/content/data/market/early_market_ufc_links.jsonl \
             src/content/data/market/total_round_quote_snapshots.csv \
             src/content/data/market/total_round_quote_snapshots.jsonl \
             src/content/data/market/total_round_forecast_captures.csv \
@@ -157,6 +162,10 @@ jobs:
               src/content/data/market/forecast_captures.jsonl|\
               src/content/data/market/quote_source_metadata.csv|\
               src/content/data/market/quote_source_metadata.jsonl|\
+              src/content/data/market/early_market_observations.csv|\
+              src/content/data/market/early_market_observations.jsonl|\
+              src/content/data/market/early_market_ufc_links.csv|\
+              src/content/data/market/early_market_ufc_links.jsonl|\
               src/content/data/market/total_round_quote_snapshots.csv|\
               src/content/data/market/total_round_quote_snapshots.jsonl|\
               src/content/data/market/total_round_forecast_captures.csv|\

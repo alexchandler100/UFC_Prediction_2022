@@ -38,6 +38,11 @@ from market_tracker import (
     BAYESIAN_FILTER_POLICY_VERSION,
     BayesianFilteredDecision,
     BayesianFilteredDecisionStore,
+    EARLY_MARKET_CONTRACT,
+    EarlyMarketLink,
+    EarlyMarketLinkStore,
+    EarlyMarketObservation,
+    EarlyMarketObservationStore,
     ForecastCapture,
     ForecastCaptureStore,
     MarketDataError,
@@ -85,6 +90,10 @@ TOTAL_ROUNDS_DECISION_CSV_PATH = MARKET_ROOT / "total_round_paper_decisions.csv"
 TOTAL_ROUNDS_DECISION_JSONL_PATH = MARKET_ROOT / "total_round_paper_decisions.jsonl"
 TOTAL_ROUNDS_SETTLEMENT_CSV_PATH = MARKET_ROOT / "total_round_paper_settlements.csv"
 TOTAL_ROUNDS_SETTLEMENT_JSONL_PATH = MARKET_ROOT / "total_round_paper_settlements.jsonl"
+EARLY_MARKET_CSV_PATH = MARKET_ROOT / "early_market_observations.csv"
+EARLY_MARKET_JSONL_PATH = MARKET_ROOT / "early_market_observations.jsonl"
+EARLY_LINK_CSV_PATH = MARKET_ROOT / "early_market_ufc_links.csv"
+EARLY_LINK_JSONL_PATH = MARKET_ROOT / "early_market_ufc_links.jsonl"
 DECISION_CSV_PATH = MARKET_ROOT / "paper_decisions.csv"
 DECISION_JSONL_PATH = MARKET_ROOT / "paper_decisions.jsonl"
 BAYESIAN_FILTER_DECISION_CSV_PATH = (
@@ -99,6 +108,7 @@ REPORT_SIZE_LIMIT = 64 * 1024
 CURRENT_OPPORTUNITIES_SIZE_LIMIT = 256 * 1024
 SOURCE_RETRY_DELAYS_SECONDS = (15.0, 60.0)
 API_RETRY_DELAYS_SECONDS = (5.0, 30.0)
+MAX_EARLY_PRICE_STATES_PER_CAPTURE = 10_000
 
 
 class CaptureError(RuntimeError):
@@ -1024,6 +1034,236 @@ def _book_columns(odds: pd.DataFrame) -> tuple[SourceBookColumns, ...]:
     )
 
 
+def _build_early_market_observations(
+    odds: pd.DataFrame,
+    total_rounds: pd.DataFrame | None,
+    book_columns: tuple[SourceBookColumns, ...],
+    existing: tuple[EarlyMarketObservation, ...],
+    *,
+    capture_id: str,
+    observed_at: datetime,
+    source: str,
+    source_payload_sha256: str,
+    published_event_day: str,
+) -> tuple[tuple[EarlyMarketObservation, ...], dict[str, int]]:
+    """Preserve every distinct pre-fight price state from the existing call.
+
+    The provider labels these only as MMA.  Promotion is deliberately left
+    unknown until a separate official-UFC link can be established.
+    """
+
+    counters = {
+        "early_source_matchups_seen": 0,
+        "early_source_matchups_beyond_published_card": 0,
+        "early_h2h_price_states_seen": 0,
+        "early_total_round_price_states_seen": 0,
+        "early_incomplete_price_pairs_skipped": 0,
+        "early_invalid_price_pairs_skipped": 0,
+        "early_commenced_source_rows_skipped": 0,
+    }
+    if source != ODDS_API_SOURCE:
+        return (), counters
+
+    existing_by_id = {item.observation_id: item for item in existing}
+    candidates: dict[str, EarlyMarketObservation] = {}
+    future_event_ids: set[str] = set()
+    beyond_card_event_ids: set[str] = set()
+    expected_day = pd.to_datetime(published_event_day, errors="coerce", utc=True)
+
+    def add(candidate: EarlyMarketObservation) -> None:
+        prior = candidates.get(candidate.observation_id)
+        if prior is not None and prior != candidate:
+            raise CaptureError("one source price state produced conflicting records")
+        candidates[candidate.observation_id] = existing_by_id.get(
+            candidate.observation_id, candidate
+        )
+        if len(candidates) > MAX_EARLY_PRICE_STATES_PER_CAPTURE:
+            raise CaptureError(
+                "The Odds API response exceeds the bounded early-price ledger limit"
+            )
+
+    for row in odds.to_dict("records"):
+        source_event_id = _text(row.get("source event id"))
+        commence_text = _text(row.get("source commence time"))
+        commence = pd.to_datetime(commence_text, errors="coerce", utc=True)
+        if not source_event_id or pd.isna(commence):
+            counters["early_invalid_price_pairs_skipped"] += len(book_columns)
+            continue
+        if commence.to_pydatetime() <= observed_at:
+            counters["early_commenced_source_rows_skipped"] += 1
+            continue
+        future_event_ids.add(source_event_id)
+        if not pd.isna(expected_day) and commence.normalize() > (
+            expected_day.normalize() + pd.Timedelta(days=1)
+        ):
+            beyond_card_event_ids.add(source_event_id)
+        fighter_name = _text(row.get("fighter name"))
+        opponent_name = _text(row.get("opponent name"))
+        for columns in book_columns:
+            fighter_price = _text(row.get(columns.fighter_column))
+            opponent_price = _text(row.get(columns.opponent_column))
+            if not fighter_price and not opponent_price:
+                continue
+            source_book_key = (
+                _text(row.get(columns.source_key_column))
+                if columns.source_key_column
+                else ""
+            )
+            source_update = (
+                _text(row.get(columns.source_update_column))
+                if columns.source_update_column
+                else ""
+            )
+            if (
+                not fighter_price
+                or not opponent_price
+                or not source_book_key
+                or not source_update
+            ):
+                counters["early_incomplete_price_pairs_skipped"] += 1
+                continue
+            try:
+                observation = EarlyMarketObservation.create(
+                    first_capture_id=capture_id,
+                    first_observed_at_utc=observed_at,
+                    source=source,
+                    source_payload_sha256=source_payload_sha256,
+                    source_event_id=source_event_id,
+                    source_commence_time_utc=commence_text,
+                    source_fighter_name=fighter_name,
+                    source_opponent_name=opponent_name,
+                    book=columns.book,
+                    source_book_key=source_book_key,
+                    source_quote_updated_at_utc=source_update,
+                    market="h2h",
+                    outcome_a=fighter_name,
+                    outcome_b=opponent_name,
+                    outcome_a_moneyline=fighter_price,
+                    outcome_b_moneyline=opponent_price,
+                )
+            except MarketDataError:
+                counters["early_invalid_price_pairs_skipped"] += 1
+                continue
+            add(observation)
+            counters["early_h2h_price_states_seen"] += 1
+
+    if total_rounds is not None:
+        for row in total_rounds.to_dict("records"):
+            source_event_id = _text(row.get("source event id"))
+            commence_text = _text(row.get("source commence time"))
+            commence = pd.to_datetime(commence_text, errors="coerce", utc=True)
+            if not source_event_id or pd.isna(commence):
+                counters["early_invalid_price_pairs_skipped"] += 1
+                continue
+            if commence.to_pydatetime() <= observed_at:
+                counters["early_commenced_source_rows_skipped"] += 1
+                continue
+            future_event_ids.add(source_event_id)
+            if not pd.isna(expected_day) and commence.normalize() > (
+                expected_day.normalize() + pd.Timedelta(days=1)
+            ):
+                beyond_card_event_ids.add(source_event_id)
+            required = (
+                "fighter name",
+                "opponent name",
+                "book",
+                "source book key",
+                "source last update",
+                "line",
+                "over moneyline",
+                "under moneyline",
+            )
+            if any(not _text(row.get(field)) for field in required):
+                counters["early_incomplete_price_pairs_skipped"] += 1
+                continue
+            try:
+                observation = EarlyMarketObservation.create(
+                    first_capture_id=capture_id,
+                    first_observed_at_utc=observed_at,
+                    source=source,
+                    source_payload_sha256=source_payload_sha256,
+                    source_event_id=source_event_id,
+                    source_commence_time_utc=commence_text,
+                    source_fighter_name=row.get("fighter name"),
+                    source_opponent_name=row.get("opponent name"),
+                    book=row.get("book"),
+                    source_book_key=row.get("source book key"),
+                    source_quote_updated_at_utc=row.get("source last update"),
+                    market="total_rounds",
+                    line=row.get("line"),
+                    outcome_a="Over",
+                    outcome_b="Under",
+                    outcome_a_moneyline=row.get("over moneyline"),
+                    outcome_b_moneyline=row.get("under moneyline"),
+                )
+            except MarketDataError:
+                counters["early_invalid_price_pairs_skipped"] += 1
+                continue
+            add(observation)
+            counters["early_total_round_price_states_seen"] += 1
+
+    counters["early_source_matchups_seen"] = len(future_event_ids)
+    counters["early_source_matchups_beyond_published_card"] = len(
+        beyond_card_event_ids
+    )
+    return tuple(candidates.values()), counters
+
+
+def _build_early_market_links(
+    source_matches: tuple[SourceMatch, ...],
+    existing: tuple[EarlyMarketLink, ...],
+    *,
+    capture_id: str,
+    observed_at: datetime,
+    source: str,
+    event_id: str,
+) -> tuple[EarlyMarketLink, ...]:
+    if source != ODDS_API_SOURCE:
+        return ()
+    existing_by_id = {item.link_id: item for item in existing}
+    candidates: dict[str, EarlyMarketLink] = {}
+    for source_match in source_matches:
+        row = source_match.source_row
+        published = source_match.published
+        if (
+            not _text(row.get("source event id"))
+            or not _text(row.get("source commence time"))
+            or published.matchup_id is None
+            or published.fighter_id is None
+            or published.opponent_id is None
+        ):
+            continue
+        source_fighter_id = (
+            published.opponent_id
+            if source_match.source_is_reversed
+            else published.fighter_id
+        )
+        source_opponent_id = (
+            published.fighter_id
+            if source_match.source_is_reversed
+            else published.opponent_id
+        )
+        try:
+            link = EarlyMarketLink.create(
+                first_linked_at_utc=observed_at,
+                first_capture_id=capture_id,
+                source=source,
+                source_event_id=row.get("source event id"),
+                source_commence_time_utc=row.get("source commence time"),
+                source_fighter_name=row.get("fighter name"),
+                source_opponent_name=row.get("opponent name"),
+                ufc_event_id=event_id,
+                matchup_id=published.matchup_id,
+                source_fighter_ufcstats_id=source_fighter_id,
+                source_opponent_ufcstats_id=source_opponent_id,
+                source_is_reversed=source_match.source_is_reversed,
+            )
+        except MarketDataError as error:
+            raise CaptureError(f"official early-price link is invalid: {error}") from error
+        candidates[link.link_id] = existing_by_id.get(link.link_id, link)
+    return tuple(candidates.values())
+
+
 def _prior_first_seen(
     existing: tuple[QuoteSnapshot, ...],
     candidate: QuoteSnapshot,
@@ -1403,6 +1643,44 @@ def validate_generated_capture() -> dict[str, object]:
         raise CaptureError("capture report has a partial enhanced market contract")
     enhanced_contract = enhanced_fields <= set(report)
     opportunity_contract = "opportunity_publication_sha256" in report
+    early_market_fields = {
+        "early_market_contract",
+        "early_market_source_scope",
+        "early_source_matchups_seen",
+        "early_source_matchups_beyond_published_card",
+        "early_h2h_price_states_seen",
+        "early_total_round_price_states_seen",
+        "early_incomplete_price_pairs_skipped",
+        "early_invalid_price_pairs_skipped",
+        "early_commenced_source_rows_skipped",
+        "early_price_states_in_response",
+        "early_price_states_added",
+        "early_price_states_duplicate",
+        "early_price_states_total",
+        "early_ufc_links_in_response",
+        "early_ufc_links_added",
+        "early_ufc_links_duplicate",
+        "early_ufc_links_total",
+        "early_market_dataset_sha256",
+        "early_market_link_dataset_sha256",
+        "early_market_paper_only",
+        "early_market_execution_enabled",
+    }
+    present_early_market_fields = early_market_fields & set(report)
+    if (
+        present_early_market_fields
+        and present_early_market_fields != early_market_fields
+    ):
+        raise CaptureError("capture report has a partial early-market contract")
+    early_market_contract = early_market_fields <= set(report)
+    if early_market_contract and (
+        report.get("early_market_contract") != EARLY_MARKET_CONTRACT
+        or report.get("early_market_source_scope")
+        != "all_mma_promotion_unknown_until_official_ufc_link"
+        or report.get("early_market_paper_only") is not True
+        or report.get("early_market_execution_enabled") is not False
+    ):
+        raise CaptureError("capture report early-market policy is invalid")
     bayesian_filter_fields = {
         "bayesian_model_id",
         "bayesian_filtered_decision_dataset_sha256",
@@ -1489,6 +1767,16 @@ def validate_generated_capture() -> dict[str, object]:
         missing = [str(path) for path in extended_paths if not path.is_file()]
         if missing:
             raise CaptureError(f"enhanced market capture outputs are missing: {missing}")
+    if early_market_contract:
+        early_paths = (
+            EARLY_MARKET_CSV_PATH,
+            EARLY_MARKET_JSONL_PATH,
+            EARLY_LINK_CSV_PATH,
+            EARLY_LINK_JSONL_PATH,
+        )
+        missing = [str(path) for path in early_paths if not path.is_file()]
+        if missing:
+            raise CaptureError(f"early-market capture outputs are missing: {missing}")
     if opportunity_contract:
         if not CURRENT_OPPORTUNITIES_PATH.is_file():
             raise CaptureError("current opportunity publication is missing")
@@ -1568,6 +1856,20 @@ def validate_generated_capture() -> dict[str, object]:
         if enhanced_contract
         else ()
     )
+    early_market = (
+        EarlyMarketObservationStore(
+            EARLY_MARKET_CSV_PATH, EARLY_MARKET_JSONL_PATH
+        ).read()
+        if early_market_contract
+        else ()
+    )
+    early_links = (
+        EarlyMarketLinkStore(EARLY_LINK_CSV_PATH, EARLY_LINK_JSONL_PATH).read()
+        if early_market_contract
+        else ()
+    )
+
+
     bayesian_filtered_decisions = (
         BayesianFilteredDecisionStore(
             BAYESIAN_FILTER_DECISION_CSV_PATH,
@@ -1607,6 +1909,44 @@ def validate_generated_capture() -> dict[str, object]:
         raise CaptureError("source metadata fingerprint differs from capture report")
     if enhanced_contract and _dataset_hash(decisions) != report.get("paper_decision_dataset_sha256"):
         raise CaptureError("paper decision fingerprint differs from capture report")
+    if early_market_contract:
+        if _dataset_hash(early_market) != report.get("early_market_dataset_sha256"):
+            raise CaptureError("early-market ledger fingerprint differs from report")
+        if _dataset_hash(early_links) != report.get(
+            "early_market_link_dataset_sha256"
+        ):
+            raise CaptureError("early-market link fingerprint differs from report")
+        integer_fields = early_market_fields - {
+            "early_market_contract",
+            "early_market_source_scope",
+            "early_market_dataset_sha256",
+            "early_market_link_dataset_sha256",
+            "early_market_paper_only",
+            "early_market_execution_enabled",
+        }
+        if any(
+            type(report.get(field)) is not int or int(report[field]) < 0
+            for field in integer_fields
+        ):
+            raise CaptureError("early-market report counts must be nonnegative integers")
+        if int(report["early_price_states_total"]) != len(early_market):
+            raise CaptureError("early-market report total differs from ledger")
+        if int(report["early_ufc_links_total"]) != len(early_links):
+            raise CaptureError("early-market link total differs from ledger")
+        if int(report["early_price_states_in_response"]) != (
+            int(report["early_price_states_added"])
+            + int(report["early_price_states_duplicate"])
+        ):
+            raise CaptureError("early-market response accounting is inconsistent")
+        if int(report["early_ufc_links_in_response"]) != (
+            int(report["early_ufc_links_added"])
+            + int(report["early_ufc_links_duplicate"])
+        ):
+            raise CaptureError("early-market link accounting is inconsistent")
+        if any(
+            not item.paper_only or item.execution_enabled for item in early_market
+        ) or any(not item.paper_only or item.execution_enabled for item in early_links):
+            raise CaptureError("an early-market record is not research-only")
     if bayesian_filter_contract and _dataset_hash(
         bayesian_filtered_decisions
     ) != report.get("bayesian_filtered_decision_dataset_sha256"):
@@ -1906,6 +2246,12 @@ def capture_market_snapshot() -> dict[str, object]:
     metadata_store = QuoteSourceMetadataStore(
         SOURCE_METADATA_CSV_PATH, SOURCE_METADATA_JSONL_PATH
     )
+    early_market_store = EarlyMarketObservationStore(
+        EARLY_MARKET_CSV_PATH, EARLY_MARKET_JSONL_PATH
+    )
+    early_link_store = EarlyMarketLinkStore(
+        EARLY_LINK_CSV_PATH, EARLY_LINK_JSONL_PATH
+    )
     decision_store = PaperDecisionStore(DECISION_CSV_PATH, DECISION_JSONL_PATH)
     bayesian_filter_store = BayesianFilteredDecisionStore(
         BAYESIAN_FILTER_DECISION_CSV_PATH,
@@ -1915,6 +2261,8 @@ def capture_market_snapshot() -> dict[str, object]:
     # Fail closed on either mirror before constructing any new records.
     forecast_store.read()
     existing_metadata = metadata_store.read()
+    existing_early_market = early_market_store.read()
+    existing_early_links = early_link_store.read()
     existing_decisions = decision_store.read()
     bayesian_filter_store.read()
     quotes, forecasts, source_metadata, counters = _build_captures(
@@ -1930,6 +2278,27 @@ def capture_market_snapshot() -> dict[str, object]:
         source=retrieved_odds.source,
         timing_precision=timing_precision,
         event_start_utc=event_start_utc,
+    )
+    early_market_observations, early_market_counters = (
+        _build_early_market_observations(
+            fresh_odds,
+            retrieved_odds.total_rounds_frame,
+            books,
+            existing_early_market,
+            capture_id=capture_id,
+            observed_at=observed_at,
+            source=retrieved_odds.source,
+            source_payload_sha256=source_payload_sha256,
+            published_event_day=event_day,
+        )
+    )
+    early_market_links = _build_early_market_links(
+        source_matches,
+        existing_early_links,
+        capture_id=capture_id,
+        observed_at=observed_at,
+        source=retrieved_odds.source,
+        event_id=event_id,
     )
 
     total_round_store: TotalRoundsQuoteStore | None = None
@@ -2015,6 +2384,8 @@ def capture_market_snapshot() -> dict[str, object]:
     forecast_result = forecast_store.append(forecasts)
     quote_result = quote_store.append(quotes)
     metadata_result = metadata_store.append(source_metadata)
+    early_market_result = early_market_store.append(early_market_observations)
+    early_link_result = early_link_store.append(early_market_links)
     decision_result = decision_store.append(paper_build.decisions)
     bayesian_filter_result = bayesian_filter_store.append(
         bayesian_filtered_decisions
@@ -2038,6 +2409,8 @@ def capture_market_snapshot() -> dict[str, object]:
     final_quotes = quote_store.read()
     final_forecasts = forecast_store.read()
     final_metadata = metadata_store.read()
+    final_early_market = early_market_store.read()
+    final_early_links = early_link_store.read()
     final_decisions = decision_store.read()
     final_bayesian_filtered_decisions = bayesian_filter_store.read()
     final_total_rounds = (
@@ -2122,6 +2495,21 @@ def capture_market_snapshot() -> dict[str, object]:
         "source_metadata_records_added": len(metadata_result.added_ids),
         "source_metadata_records_duplicate": len(metadata_result.duplicate_ids),
         "source_metadata_records_total": metadata_result.total_records,
+        "early_market_contract": EARLY_MARKET_CONTRACT,
+        "early_market_source_scope": "all_mma_promotion_unknown_until_official_ufc_link",
+        **early_market_counters,
+        "early_price_states_in_response": len(early_market_observations),
+        "early_price_states_added": len(early_market_result.added_ids),
+        "early_price_states_duplicate": len(early_market_result.duplicate_ids),
+        "early_price_states_total": early_market_result.total_records,
+        "early_ufc_links_in_response": len(early_market_links),
+        "early_ufc_links_added": len(early_link_result.added_ids),
+        "early_ufc_links_duplicate": len(early_link_result.duplicate_ids),
+        "early_ufc_links_total": early_link_result.total_records,
+        "early_market_dataset_sha256": _dataset_hash(final_early_market),
+        "early_market_link_dataset_sha256": _dataset_hash(final_early_links),
+        "early_market_paper_only": True,
+        "early_market_execution_enabled": False,
         "quote_dataset_sha256": _dataset_hash(final_quotes),
         "forecast_dataset_sha256": _dataset_hash(final_forecasts),
         "source_metadata_dataset_sha256": _dataset_hash(final_metadata),
@@ -2243,6 +2631,14 @@ def capture_market_snapshot() -> dict[str, object]:
             f"- Quote ledger: {quote_result.total_records} records",
             f"- Forecast ledger: {forecast_result.total_records} records",
             f"- Source metadata ledger: {metadata_result.total_records} records",
+            (
+                "- Distinct early MMA price states: "
+                f"{early_market_result.total_records} total "
+                f"({len(early_market_result.added_ids)} new; "
+                f"{early_market_counters['early_source_matchups_beyond_published_card']} "
+                "farther-out matchups seen)"
+            ),
+            f"- Official UFC early-price links: {early_link_result.total_records}",
             (
                 f"- T-24 paper decisions: {len(paper_build.decisions)} "
                 f"(`{BETTING_STATUS}`)"

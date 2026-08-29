@@ -17,6 +17,8 @@ sys.path.insert(0, str(REPO_ROOT / "src"))
 import capture_market_snapshot as collector  # noqa: E402
 from market_tracker import (  # noqa: E402
     BayesianFilteredDecisionStore,
+    EarlyMarketLinkStore,
+    EarlyMarketObservationStore,
     ForecastCaptureStore,
     PaperDecisionStore,
     QuoteSnapshotStore,
@@ -25,6 +27,7 @@ from market_tracker import (  # noqa: E402
     matchup_id_for,
 )
 from odds_getter import OddsApiResponse  # noqa: E402
+from validate_data import validate_market_data  # noqa: E402
 
 
 CAPTURE_STARTED = datetime(2026, 8, 14, 17, 0, 0, tzinfo=timezone.utc)
@@ -180,15 +183,23 @@ class CaptureMarketSnapshotTests(unittest.TestCase):
                         "fighter name": "Other Card Fighter",
                         "opponent name": "Other Card Opponent",
                         "source event id": "another-api-event",
-                        "source commence time": "2026-08-16T18:00:00Z",
+                        "source commence time": "2026-08-30T18:00:00Z",
                         "fighter BookA": "-110",
                         "opponent BookA": "-110",
+                        "source BookA key": "book-a",
+                        "source BookA last update": "2026-08-14T16:59:30Z",
                         "fighter BookB": "-110",
                         "opponent BookB": "-110",
+                        "source BookB key": "book-b",
+                        "source BookB last update": "2026-08-14T16:59:30Z",
                         "fighter BookC": "-110",
                         "opponent BookC": "-110",
+                        "source BookC key": "book-c",
+                        "source BookC last update": "2026-08-14T16:59:30Z",
                         "fighter BookD": "-110",
                         "opponent BookD": "-110",
+                        "source BookD key": "book-d",
+                        "source BookD last update": "2026-08-14T16:59:30Z",
                     },
                 ]
             )
@@ -205,6 +216,10 @@ class CaptureMarketSnapshotTests(unittest.TestCase):
                 "FORECAST_JSONL_PATH": market / "forecast_captures.jsonl",
                 "SOURCE_METADATA_CSV_PATH": market / "quote_source_metadata.csv",
                 "SOURCE_METADATA_JSONL_PATH": market / "quote_source_metadata.jsonl",
+                "EARLY_MARKET_CSV_PATH": market / "early_market_observations.csv",
+                "EARLY_MARKET_JSONL_PATH": market / "early_market_observations.jsonl",
+                "EARLY_LINK_CSV_PATH": market / "early_market_ufc_links.csv",
+                "EARLY_LINK_JSONL_PATH": market / "early_market_ufc_links.jsonl",
                 "TOTAL_ROUNDS_CSV_PATH": market / "total_round_quote_snapshots.csv",
                 "TOTAL_ROUNDS_JSONL_PATH": market / "total_round_quote_snapshots.jsonl",
                 "TOTAL_ROUNDS_FORECAST_CSV_PATH": market / "total_round_forecast_captures.csv",
@@ -300,6 +315,14 @@ class CaptureMarketSnapshotTests(unittest.TestCase):
             self.assertEqual(report["source_unmatched_matchup_count"], 1)
             self.assertEqual(report["quote_records_in_capture"], 4)
             self.assertEqual(report["forecast_records_in_capture"], 1)
+            self.assertEqual(report["early_source_matchups_seen"], 2)
+            self.assertEqual(
+                report["early_source_matchups_beyond_published_card"], 1
+            )
+            self.assertEqual(report["early_h2h_price_states_seen"], 8)
+            self.assertEqual(report["early_total_round_price_states_seen"], 1)
+            self.assertEqual(report["early_price_states_added"], 9)
+            self.assertEqual(report["early_ufc_links_added"], 1)
 
             quotes = QuoteSnapshotStore(
                 output_paths["QUOTE_CSV_PATH"],
@@ -316,6 +339,27 @@ class CaptureMarketSnapshotTests(unittest.TestCase):
                 output_paths["SOURCE_METADATA_JSONL_PATH"],
             ).read()
             self.assertEqual(len(metadata), 4)
+            early_market = EarlyMarketObservationStore(
+                output_paths["EARLY_MARKET_CSV_PATH"],
+                output_paths["EARLY_MARKET_JSONL_PATH"],
+            ).read()
+            early_links = EarlyMarketLinkStore(
+                output_paths["EARLY_LINK_CSV_PATH"],
+                output_paths["EARLY_LINK_JSONL_PATH"],
+            ).read()
+            self.assertEqual(len(early_market), 9)
+            self.assertEqual(
+                {item.source_event_id for item in early_market},
+                {"api-event-fixture", "another-api-event"},
+            )
+            self.assertEqual(len(early_links), 1)
+            self.assertEqual(early_links[0].source_event_id, "api-event-fixture")
+            self.assertTrue(all(item.paper_only for item in early_market))
+            self.assertTrue(
+                all(not item.execution_enabled for item in early_market)
+            )
+            market_validation = validate_market_data(market, required=True)
+            self.assertEqual(market_validation.errors, [])
             total_rounds = TotalRoundsQuoteStore(
                 output_paths["TOTAL_ROUNDS_CSV_PATH"],
                 output_paths["TOTAL_ROUNDS_JSONL_PATH"],
@@ -612,6 +656,10 @@ class CaptureMarketSnapshotTests(unittest.TestCase):
             "forecast_captures.jsonl",
             "quote_source_metadata.csv",
             "quote_source_metadata.jsonl",
+            "early_market_observations.csv",
+            "early_market_observations.jsonl",
+            "early_market_ufc_links.csv",
+            "early_market_ufc_links.jsonl",
             "total_round_quote_snapshots.csv",
             "total_round_quote_snapshots.jsonl",
             "total_round_forecast_captures.csv",

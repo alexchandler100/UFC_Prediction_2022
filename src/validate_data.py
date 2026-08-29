@@ -50,6 +50,8 @@ from market_tracker import (
     BAYESIAN_FILTER_POLICY_VERSION,
     BayesianFilteredDecision,
     BayesianFilteredDecisionStore,
+    EarlyMarketLinkStore,
+    EarlyMarketObservationStore,
     ForecastCaptureStore,
     MarketDataError,
     PaperDecisionStore,
@@ -1528,6 +1530,34 @@ def validate_market_data(
         report.errors.append(f"market ledgers failed integrity validation: {error}")
         return report
 
+    early_market_csv = market_root / "early_market_observations.csv"
+    early_market_jsonl = market_root / "early_market_observations.jsonl"
+    early_link_csv = market_root / "early_market_ufc_links.csv"
+    early_link_jsonl = market_root / "early_market_ufc_links.jsonl"
+    early_paths = (
+        early_market_csv,
+        early_market_jsonl,
+        early_link_csv,
+        early_link_jsonl,
+    )
+    early_exists = tuple(path.exists() for path in early_paths)
+    early_market = ()
+    early_links = ()
+    if any(early_exists) and not all(early_exists):
+        report.errors.append("early-market ledger mirrors are incomplete")
+    elif all(early_exists):
+        try:
+            early_market = EarlyMarketObservationStore(
+                early_market_csv, early_market_jsonl
+            ).read()
+            early_links = EarlyMarketLinkStore(
+                early_link_csv, early_link_jsonl
+            ).read()
+        except (OSError, UnicodeError, MarketDataError, StoreIntegrityError) as error:
+            report.errors.append(
+                f"early-market ledgers failed integrity validation: {error}"
+            )
+
     total_round_csv = market_root / "total_round_quote_snapshots.csv"
     total_round_jsonl = market_root / "total_round_quote_snapshots.jsonl"
     total_round_exists = (total_round_csv.exists(), total_round_jsonl.exists())
@@ -2351,7 +2381,9 @@ def validate_market_data(
         f"{len(total_round_settlements):,} total settlements / "
         f"{len(capture_contracts):,} captures / {len(decisions):,} paper decisions / "
         f"{len(settlements):,} settlements / "
-        f"{len(bayesian_filtered_decisions):,} Bayesian-filtered decisions"
+        f"{len(bayesian_filtered_decisions):,} Bayesian-filtered decisions / "
+        f"{len(early_market):,} distinct early price states / "
+        f"{len(early_links):,} official UFC links"
     )
     unmatched = len(quote_keys - forecast_keys)
     if unmatched:
