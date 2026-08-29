@@ -106,6 +106,25 @@ event date. It also compares market movement only on the same fights. The model
 is retrained using earlier years only; the result remains retrospective
 research and cannot change production predictions.
 
+After the winner-price backfill is complete, run the market-first experiment:
+
+```bash
+python src/evaluate_market_first_challenger.py
+```
+
+This starts with the three-or-more-book market probability and tests every
+combination of four possible additions: disagreement with the point-in-time
+UFC model, movement from the opening price, disagreement among sportsbooks,
+and whether either fighter has fewer than three prior UFC fights. The earliest
+60% of event dates fit the combinations, the next 20% choose one, and the
+latest 20% are not examined until the final score. Results and fight-level
+detail are written beside the database under `analysis/`, outside Git.
+
+Running this command before the backfill finishes is useful for checking the
+code, but its performance result is provisional and must be rerun on the
+completed database. It is research-only and cannot change production odds,
+predictions, or betting behavior.
+
 To add the weaker older mean/single-book period after the 2021+ run, reuse the
 same database and extend the start year:
 
