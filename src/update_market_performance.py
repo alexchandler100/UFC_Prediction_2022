@@ -14,6 +14,10 @@ import tempfile
 
 import pandas as pd
 
+from fight_predictor.bayesian_logistic_shadow import (
+    BayesianLogisticShadowStore,
+    score_shadow_forecasts as score_bayesian_logistic_shadow_forecasts,
+)
 from market_tracker import (
     BAYESIAN_FILTER_POLICY_VERSION,
     BETTING_STATUS,
@@ -74,6 +78,12 @@ TOTAL_ROUNDS_DECISION_JSONL_PATH = MARKET_ROOT / "total_round_paper_decisions.js
 TOTAL_ROUNDS_SETTLEMENT_CSV_PATH = MARKET_ROOT / "total_round_paper_settlements.csv"
 TOTAL_ROUNDS_SETTLEMENT_JSONL_PATH = MARKET_ROOT / "total_round_paper_settlements.jsonl"
 REPORT_PATH = MARKET_ROOT / "performance_report.json"
+BAYESIAN_LOGISTIC_SHADOW_CSV_PATH = (
+    MARKET_ROOT / "bayesian_logistic_shadow_forecasts.csv"
+)
+BAYESIAN_LOGISTIC_SHADOW_JSONL_PATH = (
+    MARKET_ROOT / "bayesian_logistic_shadow_forecasts.jsonl"
+)
 REPORT_SIZE_LIMIT = 64 * 1024
 
 
@@ -1008,6 +1018,30 @@ def update_market_performance() -> dict[str, object]:
         prediction_history
     )
     outcomes, completed_events, ambiguous_matchups = _result_index(raw)
+    bayesian_logistic_shadow_exists = (
+        BAYESIAN_LOGISTIC_SHADOW_CSV_PATH.exists(),
+        BAYESIAN_LOGISTIC_SHADOW_JSONL_PATH.exists(),
+    )
+    if any(bayesian_logistic_shadow_exists) and not all(
+        bayesian_logistic_shadow_exists
+    ):
+        raise ValueError("Bayesian logistic shadow mirrors are incomplete")
+    bayesian_logistic_shadows = (
+        BayesianLogisticShadowStore(
+            BAYESIAN_LOGISTIC_SHADOW_CSV_PATH,
+            BAYESIAN_LOGISTIC_SHADOW_JSONL_PATH,
+        ).read()
+        if all(bayesian_logistic_shadow_exists)
+        else ()
+    )
+    bayesian_logistic_shadow_performance = (
+        score_bayesian_logistic_shadow_forecasts(
+            bayesian_logistic_shadows,
+            outcomes,
+            completed_events,
+            ambiguous_matchups,
+        )
+    )
     total_durations, ambiguous_total_matchups = (
         _total_duration_index(raw) if total_decision_contract else ({}, set())
     )
@@ -1167,7 +1201,7 @@ def update_market_performance() -> dict[str, object]:
         if decision.decision_id in settled_decision_ids
     }
     report_body: dict[str, object] = {
-        "schema_version": 5,
+        "schema_version": 6,
         "betting_status": BETTING_STATUS,
         "paper_only": True,
         "execution_enabled": False,
@@ -1217,6 +1251,9 @@ def update_market_performance() -> dict[str, object]:
         "latest_available_price_clv": clv,
         "entry_timing_experiment": timing_experiment,
         "bayesian_moneyline_challenger": bayesian_performance,
+        "prospective_bayesian_logistic_blend": (
+            bayesian_logistic_shadow_performance
+        ),
         "bayesian_filtered_moneyline_policy": bayesian_filtered_performance,
         "promotion_gate": {
             "status": "collecting_prospective_evidence",

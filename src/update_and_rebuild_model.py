@@ -24,6 +24,10 @@ from fight_predictor import (
     evaluate_outcome_model,
     write_outcome_forecast_publication,
 )
+from fight_predictor.bayesian_logistic_shadow import (
+    BayesianLogisticShadowStore,
+    build_shadow_forecasts as build_bayesian_logistic_shadow_forecasts,
+)
 
 
 def _forecast_source_revision() -> str:
@@ -171,6 +175,52 @@ predicted_odds_df['forecast issued at'] = (
     datetime.now(timezone.utc).replace(microsecond=0).isoformat()
 )
 predicted_odds_df['forecast source commit'] = _forecast_source_revision()
+
+# Lock the newly evaluated Bayesian/logistic blend separately from production.
+# A date-only card can prove a forecast is prospective only before the UTC
+# event date, so a stale same-day updater is skipped instead of backdating it.
+bayesian_shadow_root = (
+    Path(__file__).resolve().parent / 'content/data/market'
+)
+bayesian_shadow_store = BayesianLogisticShadowStore(
+    bayesian_shadow_root / 'bayesian_logistic_shadow_forecasts.csv',
+    bayesian_shadow_root / 'bayesian_logistic_shadow_forecasts.jsonl',
+)
+bayesian_shadow_event_day = pd.to_datetime(card_date, errors='raise').date()
+bayesian_shadow_issued = datetime.fromisoformat(
+    str(predicted_odds_df['forecast issued at'].iloc[0])
+)
+if bayesian_shadow_issued.date() >= bayesian_shadow_event_day:
+    print(
+        'Skipping Bayesian/logistic paper shadow: date-only event timing '
+        'cannot prove this same-day forecast preceded the event.'
+    )
+else:
+    existing_bayesian_shadows = bayesian_shadow_store.read()
+    experiment_path = (
+        Path(__file__).resolve().parent
+        / 'content/data/model_research/bayesian_logistic_comparison.json'
+    )
+    new_bayesian_shadows = build_bayesian_logistic_shadow_forecasts(
+        candidate_predictor.training_data,
+        feature_builder,
+        predicted_odds_df,
+        forecast_issued_at_utc=predicted_odds_df['forecast issued at'].iloc[0],
+        source_commit_sha=predicted_odds_df['forecast source commit'].iloc[0],
+        experiment_sha256=sha256(experiment_path.read_bytes()).hexdigest(),
+        existing_matchup_ids={
+            item.matchup_id for item in existing_bayesian_shadows
+        },
+    )
+    if new_bayesian_shadows:
+        append_result = bayesian_shadow_store.append(new_bayesian_shadows)
+        print(
+            'Locked Bayesian/logistic paper forecasts: '
+            f'{len(append_result.added_ids)} new; '
+            f'{append_result.total_records} total.'
+        )
+    else:
+        print('Bayesian/logistic paper forecasts were already locked.')
 outcome_publication = build_outcome_forecast_publication(
     outcome_model,
     feature_builder,

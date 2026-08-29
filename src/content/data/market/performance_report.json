@@ -491,6 +491,53 @@
     "settled_events": 1,
     "status": "collecting_prospective_evidence"
   },
+  "prospective_bayesian_logistic_blend": {
+    "candidate_only": true,
+    "execution_enabled": false,
+    "forecast_dataset_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "locked_forecasts": 0,
+    "metrics": {
+      "bayesian_logistic": null,
+      "frozen_blend": null,
+      "published_production": null
+    },
+    "paired_log_loss_intervals": {
+      "bayesian_minus_production": {
+        "bootstrap_samples": 0,
+        "ci_95_lower": null,
+        "ci_95_upper": null,
+        "definition": "bayesian_probability minus published production log loss",
+        "event_count": 0,
+        "fight_count": 0,
+        "point_difference": null
+      },
+      "blend_minus_production": {
+        "bootstrap_samples": 0,
+        "ci_95_lower": null,
+        "ci_95_upper": null,
+        "definition": "frozen_blend_probability minus published production log loss",
+        "event_count": 0,
+        "fight_count": 0,
+        "point_difference": null
+      }
+    },
+    "paper_only": true,
+    "policy_version": "bayesian-logistic-blend-shadow-v1",
+    "promotion_gate": {
+      "automatic_production_change": false,
+      "brier_not_worse_requirement_met": false,
+      "count_requirements_met": false,
+      "execution_enabled": false,
+      "log_loss_improvement_requirement_met": false,
+      "minimum_scored_fights": 200,
+      "minimum_settled_events": 20,
+      "status": "collecting_prospective_evidence"
+    },
+    "scored_dataset_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "scored_fights": 0,
+    "settled_events": 0,
+    "unresolved_completed_forecasts": 0
+  },
   "prospective_model_market_comparison": {
     "blend": {
       "formula": "logit(equal_blend) = 0.5*logit(market) + 0.5*logit(model)",
@@ -608,9 +655,9 @@
     "status": "collecting_results"
   },
   "quote_dataset_sha256": "93ab8e624bc2e75f51d2b174cb2ce994e0ca40f27363c7d9439498d484571a39",
-  "report_sha256": "619c14a67baf8b7e43ea3156f363deaa905cfb3f5e2ea3ba14d46daf157a07be",
-  "result_source_sha256": "14ccbaf2adb7dba78d5cb169cd2b3e393bde92e858f6b51d192ed3d8ac6415e5",
-  "schema_version": 5,
+  "report_sha256": "2278ce89aeed827fa3f5d852769afa17ec789214e6523bdb4795be6eb8220162",
+  "result_source_sha256": "6cfb14c9ebcaf2946d942447f4af0166df8b1e5cefa9111edb184b74d7197d49",
+  "schema_version": 6,
   "settlement_dataset_sha256": "746825ad480619345d0ec3d38170c080c09bbb46703bbf5702ba780a40382a4e",
   "settlements_total": 13,
   "simulation_comparison_dataset_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",

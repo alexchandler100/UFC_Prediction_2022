@@ -99,6 +99,17 @@ whose 54.6% Bayesian weight was chosen using 2019–2022 scored `0.63132` on
 far inside the whole-event uncertainty range and accuracy was slightly worse,
 so it remains a paper-only result and production is unchanged.
 
+That exact choice is now locked for a genuinely prospective comparison. The
+scheduled updater refits the selected tight-prior Bayesian model using only
+completed fights, applies the permanently fixed `0.5462639465757038` Bayesian
+log-odds weight, and preserves the first pre-event forecast for each matchup in
+`market/bayesian_logistic_shadow_forecasts.csv` and `.jsonl`. Settled results
+are reported under `prospective_bayesian_logistic_blend` in
+`market/performance_report.json`. The first review requires 200 new fights
+across 20 events; it cannot automatically change production or enable betting.
+Same-day date-only forecasts are rejected because they cannot prove that they
+were made before the event began.
+
 ## External promotion history
 
 The repository now has a source-attributed external-MMA collection layer for
@@ -313,6 +324,7 @@ The auditable artifacts are:
 - `src/content/data/market/quote_snapshots.jsonl`
 - `src/content/data/market/quote_source_metadata.jsonl`
 - `src/content/data/market/early_market_observations.jsonl`
+- `src/content/data/market/bayesian_logistic_shadow_forecasts.jsonl`
 - `src/content/data/market/early_market_ufc_links.jsonl`
 - `src/content/data/market/total_round_quote_snapshots.jsonl`
 - `src/content/data/market/total_round_forecast_captures.jsonl`

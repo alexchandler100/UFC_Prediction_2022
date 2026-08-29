@@ -231,6 +231,12 @@ class MarketPerformanceTests(unittest.TestCase):
                 "TOTAL_ROUNDS_SETTLEMENT_CSV_PATH": market_root / "total_round_paper_settlements.csv",
                 "TOTAL_ROUNDS_SETTLEMENT_JSONL_PATH": market_root / "total_round_paper_settlements.jsonl",
                 "REPORT_PATH": market_root / "performance_report.json",
+                "BAYESIAN_LOGISTIC_SHADOW_CSV_PATH": (
+                    market_root / "bayesian_logistic_shadow_forecasts.csv"
+                ),
+                "BAYESIAN_LOGISTIC_SHADOW_JSONL_PATH": (
+                    market_root / "bayesian_logistic_shadow_forecasts.jsonl"
+                ),
             }
             QuoteSnapshotStore(
                 paths["QUOTE_CSV_PATH"], paths["QUOTE_JSONL_PATH"]
@@ -294,7 +300,7 @@ class MarketPerformanceTests(unittest.TestCase):
             persisted = json.loads(paths["REPORT_PATH"].read_text(encoding="utf-8"))
             self.assertEqual(persisted, second)
             self.assertFalse(persisted["execution_enabled"])
-            self.assertEqual(persisted["schema_version"], 5)
+            self.assertEqual(persisted["schema_version"], 6)
             self.assertEqual(
                 persisted["prospective_model_market_comparison"]["status"],
                 "collecting_results",
@@ -305,6 +311,12 @@ class MarketPerformanceTests(unittest.TestCase):
             )
             self.assertEqual(
                 persisted["prospective_simulation_comparison"]["scored_fights"],
+                0,
+            )
+            self.assertEqual(
+                persisted["prospective_bayesian_logistic_blend"][
+                    "scored_fights"
+                ],
                 0,
             )
             self.assertIn("entry_timing_experiment", persisted)
@@ -463,6 +475,12 @@ class MarketPerformanceTests(unittest.TestCase):
                 "TOTAL_ROUNDS_SETTLEMENT_CSV_PATH": market_root / "total_round_paper_settlements.csv",
                 "TOTAL_ROUNDS_SETTLEMENT_JSONL_PATH": market_root / "total_round_paper_settlements.jsonl",
                 "REPORT_PATH": market_root / "performance_report.json",
+                "BAYESIAN_LOGISTIC_SHADOW_CSV_PATH": (
+                    market_root / "bayesian_logistic_shadow_forecasts.csv"
+                ),
+                "BAYESIAN_LOGISTIC_SHADOW_JSONL_PATH": (
+                    market_root / "bayesian_logistic_shadow_forecasts.jsonl"
+                ),
             }
             TotalRoundsQuoteStore(
                 paths["TOTAL_ROUNDS_QUOTE_CSV_PATH"],

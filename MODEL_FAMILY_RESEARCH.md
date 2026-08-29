@@ -174,6 +174,25 @@ as paper-only and measure it on genuinely new fights. A production change
 would still require a separate reviewed decision after enough prospective
 evidence.
 
+That prospective test is now implemented. The prior design and the
+`0.5462639465757038` Bayesian share of the log-odds blend are constants in
+code. On each scheduled data update, the Bayesian coefficients may learn from
+newly completed fights under the same fixed procedure, just as the production
+model is refreshed, but the model recipe and blend weight cannot be selected
+again. The first pre-event forecast for a matchup is kept permanently in
+`src/content/data/market/bayesian_logistic_shadow_forecasts.csv` and `.jsonl`.
+
+After results arrive, the performance report compares the production
+probability, Bayesian probability, and frozen blend on exactly the same fights.
+It reports accuracy, log loss, Brier score, and a whole-card resampling range
+for the paired log-loss difference. Formal review waits for at least 200 fights
+across 20 events, and even a passing result only supports a separate reviewed
+production change. Betting and automatic promotion remain disabled. A
+date-only forecast made on the event's UTC date is refused rather than being
+misrepresented as prospective; consequently the first record begins with the
+next future card after this code is deployed, not the already-started August
+29 card.
+
 The nonlinear models also deserve one second-pass experiment using
 family-specific variable selection and causally selected small blend weights.
 That work should remain separate from the Bayesian redesign so a gain can be

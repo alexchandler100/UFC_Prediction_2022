@@ -20,6 +20,7 @@ import re
 
 import numpy as np
 import pandas as pd
+import update_market_performance as performance_updater
 
 from build_fighter_explorer import SHARD_KEYS as FIGHTER_EXPLORER_SHARD_KEYS
 from build_fighter_explorer import SHARD_SIZE_LIMIT as FIGHTER_SHARD_SIZE_LIMIT
@@ -43,6 +44,11 @@ from fight_predictor.bayesian import (
 )
 from fight_predictor.outcome_publication import (
     validate_outcome_forecast_publication,
+)
+from fight_predictor.bayesian_logistic_shadow import (
+    POLICY_VERSION as BAYESIAN_LOGISTIC_SHADOW_POLICY_VERSION,
+    BayesianLogisticShadowStore,
+    score_shadow_forecasts as score_bayesian_logistic_shadow_forecasts,
 )
 from external_mma import ExternalMmaStore, load_approved_auxiliary
 from external_mma.schema import ExternalDataError
@@ -1530,6 +1536,34 @@ def validate_market_data(
         report.errors.append(f"market ledgers failed integrity validation: {error}")
         return report
 
+    bayesian_shadow_csv = (
+        market_root / "bayesian_logistic_shadow_forecasts.csv"
+    )
+    bayesian_shadow_jsonl = (
+        market_root / "bayesian_logistic_shadow_forecasts.jsonl"
+    )
+    bayesian_shadow_exists = (
+        bayesian_shadow_csv.exists(),
+        bayesian_shadow_jsonl.exists(),
+    )
+    bayesian_logistic_shadows = ()
+    if any(bayesian_shadow_exists) and not all(bayesian_shadow_exists):
+        report.errors.append("Bayesian logistic shadow mirrors are incomplete")
+    elif all(bayesian_shadow_exists):
+        try:
+            bayesian_logistic_shadows = BayesianLogisticShadowStore(
+                bayesian_shadow_csv, bayesian_shadow_jsonl
+            ).read()
+        except (
+            OSError,
+            UnicodeError,
+            MarketDataError,
+            StoreIntegrityError,
+        ) as error:
+            report.errors.append(
+                f"Bayesian logistic shadow ledger is invalid: {error}"
+            )
+
     early_market_csv = market_root / "early_market_observations.csv"
     early_market_jsonl = market_root / "early_market_observations.jsonl"
     early_link_csv = market_root / "early_market_ufc_links.csv"
@@ -2355,6 +2389,35 @@ def validate_market_data(
                     ),
                     "prospective simulation comparison cannot be reproduced",
                 )
+            if int(performance.get("schema_version", 1)) >= 6:
+                bayesian_logistic_report = performance.get(
+                    "prospective_bayesian_logistic_blend"
+                )
+                report.require(
+                    isinstance(bayesian_logistic_report, dict)
+                    and bayesian_logistic_report.get("policy_version")
+                    == BAYESIAN_LOGISTIC_SHADOW_POLICY_VERSION
+                    and bayesian_logistic_report.get("paper_only") is True
+                    and bayesian_logistic_report.get("execution_enabled") is False,
+                    "prospective Bayesian logistic blend must remain paper-only",
+                )
+                raw_results = pd.read_csv(
+                    performance_updater.RAW_PATH, low_memory=False
+                )
+                result_index = performance_updater._result_index(raw_results)
+                expected_bayesian_logistic_report = (
+                    score_bayesian_logistic_shadow_forecasts(
+                        bayesian_logistic_shadows,
+                        result_index[0],
+                        result_index[1],
+                        result_index[2],
+                    )
+                )
+                report.require(
+                    bayesian_logistic_report
+                    == expected_bayesian_logistic_report,
+                    "prospective Bayesian logistic blend cannot be reproduced",
+                )
             expected_metrics = summarize_paper_settlements(
                 decisions, settlements
             ).to_mapping()
@@ -2382,6 +2445,7 @@ def validate_market_data(
         f"{len(capture_contracts):,} captures / {len(decisions):,} paper decisions / "
         f"{len(settlements):,} settlements / "
         f"{len(bayesian_filtered_decisions):,} Bayesian-filtered decisions / "
+        f"{len(bayesian_logistic_shadows):,} Bayesian-blend shadows / "
         f"{len(early_market):,} distinct early price states / "
         f"{len(early_links):,} official UFC links"
     )
