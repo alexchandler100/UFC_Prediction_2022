@@ -22,6 +22,7 @@ from backfill_bestfightodds_history import (  # noqa: E402
     open_database_readonly,
     pending_downloads_for_event,
     store_download,
+    store_download_failure,
     validate_external_database_path,
 )
 
@@ -226,6 +227,43 @@ class BestFightOddsBackfillTests(unittest.TestCase):
             "2023-08-19T22:00:00Z",
         )
         self.assertFalse(by_horizon["opening"]["actual_event_start_time_known"])
+
+    def test_repeated_download_failure_is_recorded_but_not_retried_forever(self):
+        _upsert_event_page(
+            self.connection, page=self.page(), fight_index=self.index
+        )
+        spec = pending_downloads_for_event(
+            self.connection,
+            event_url=self.page()["url"],
+            mode="mean",
+        )[0]
+        store_download_failure(self.connection, spec=spec, error=ValueError("bad"))
+        self.assertIn(
+            spec,
+            pending_downloads_for_event(
+                self.connection,
+                event_url=self.page()["url"],
+                mode="mean",
+            ),
+        )
+        store_download_failure(self.connection, spec=spec, error=ValueError("bad"))
+        self.assertNotIn(
+            spec,
+            pending_downloads_for_event(
+                self.connection,
+                event_url=self.page()["url"],
+                mode="mean",
+            ),
+        )
+        self.assertIn(
+            spec,
+            pending_downloads_for_event(
+                self.connection,
+                event_url=self.page()["url"],
+                mode="mean",
+                maximum_attempts=3,
+            ),
+        )
 
     def test_consensus_requires_three_distinct_sportsbooks(self):
         base = {

@@ -260,6 +260,12 @@ def pair_consensus_with_predictions(
         training_through = str(prediction.get("training_through", ""))
         if training_through and training_through >= event_date:
             raise ValueError(f"model training reaches the event date for fight {fight_id}")
+        training_fights_value = prediction.get("training_fights", 0)
+        training_fights = (
+            0
+            if training_fights_value is None or pd.isna(training_fights_value)
+            else int(training_fights_value)
+        )
         paired.append(
             {
                 "event_date": event_date,
@@ -277,7 +283,9 @@ def pair_consensus_with_predictions(
                 "maximum_book_probability": maximum,
                 "book_probability_range": maximum - minimum,
                 "model_probability": float(prediction["model_probability"]),
+                "model_training_start": str(prediction.get("training_start", "")),
                 "model_training_through": training_through,
+                "model_training_fights": training_fights,
                 "model_selected_c": float(prediction.get("selected_c", math.nan)),
                 "model_calibration_slope": float(
                     prediction.get("calibration_slope", math.nan)

@@ -28,6 +28,11 @@ free-space limit, it commits the current event and exports everything collected
 so far. Run the identical command again to continue. Completed pages and chart
 series are not downloaded again.
 
+A source page or chart series that fails twice is retained in the database as
+unavailable, but no longer keeps every later run in a false `paused` state.
+Raise `--max-source-attempts` if you deliberately want to retry those failures.
+Missing series are never filled in or treated as prices.
+
 The source's public robots policy allows the paths used by the script, but its
 short published terms do not explicitly address automated bulk research reuse.
 Running the wrapper acknowledges that uncertainty. Seeking clarification from
@@ -98,6 +103,19 @@ Analyze a read-only snapshot without stopping an active backfill:
 python src/evaluate_bestfightodds_history.py
 ```
 
+Do not reuse the shorter 2023+ prediction file when the database contains
+earlier years. The command above computes fresh point-in-time predictions for
+every covered year. Then run the broad rolling profitability check:
+
+```bash
+python src/evaluate_rolling_moneyline_profitability.py
+```
+
+For each test year this fits only on earlier years, uses the latest 25% of the
+earlier event dates to choose a value cutoff, and scores the next year. It
+pools only those out-of-sample yearly results and also reports each year
+separately. The default requires T-24 prices to be no more than 24 hours old.
+
 When a causal walk-forward current-model CSV already exists, reuse it instead
 of fitting the same yearly models again:
 
@@ -160,8 +178,7 @@ improvement. The whole-event 95% uncertainty interval for the difference was
 The same adjustment was worse at T-72, T-6, and the latest price. It is not a
 production model or betting rule. The exact T-24 fit may be frozen for a new
 future paper comparison, while market-only remains the production reference.
-Because the winner backfill was still active when this snapshot was taken, the
-historical reports must be refreshed after collection finishes.
+That snapshot has now been superseded by the broader rolling result below.
 
 ## Historical moneyline profitability check
 
@@ -214,6 +231,46 @@ exact card start time. The test also assumes access to the best recorded book,
 with no stake limits, fees, slippage, or account restrictions. Reports and the
 fight-level ledger remain outside Git under the `analysis/` directory described
 above.
+
+## Expanded rolling 2021-2026 result
+
+The completed August 29, 2026 refresh generated new point-in-time model
+probabilities for all covered years instead of reusing the shorter 2023+
+convenience file. The main horizon comparison covers 2,610 fights across 235
+events. At T-24, log loss was 0.59408 for the multi-book market, 0.63581 for
+the UFC model, and 0.60515 for their fixed 50/50 log-odds blend.
+
+The stricter rolling study required each recorded T-24 offer to be no more
+than 24 hours old and required three other books for its leave-one-out fair
+price. It scored 904 fights from 2022 through 2026. Each year used only prior
+years for fitting and the latest 25% of the prior event dates for selecting a
+betting cutoff:
+
+| Probability source | Accuracy | Log loss |
+| --- | ---: | ---: |
+| Leave-one-book-out market | 66.98% | 0.59820 |
+| Current UFC model | 63.83% | 0.63639 |
+| Fixed 50/50 market/model blend | 67.92% | 0.60723 |
+| Small market-first adjustment | 67.92% | 0.59790 |
+
+The market-first adjustment's 0.00029 log-loss advantage over market-only is
+too small to distinguish from chance: its whole-event 95% interval runs from
+-0.00396 to +0.00354. The 50/50 blend's higher accuracy did not mean better
+probabilities; its log-loss disadvantage was 0.00903, with a 95% interval of
++0.00047 to +0.01734.
+
+Early folds did not contain enough qualifying prior bets to learn a stable
+cutoff and therefore used the predeclared fixed 5% reference. Across all 113
+market-first selections, including those fallback folds, profit was -6.66
+units (-5.90%). Restricting the summary to years with enough earlier cutoff
+examples left 35 bets across 27 events and was almost exactly break-even:
+-0.03 units (-0.09%), with a 95% ROI interval from -35.01% to +36.31%.
+
+This broader test does not support a profitable historical rule. It does
+suggest that the small market-first probability adjustment is worth keeping
+in the already-frozen prospective paper comparison, while market-only remains
+the standard to beat. The reports and ledgers are stored outside Git under
+`analysis/` with `rolling_` filenames.
 
 To add the weaker older mean/single-book period after the 2021+ run, reuse the
 same database and extend the start year:

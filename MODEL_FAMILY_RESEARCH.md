@@ -1,5 +1,14 @@
 # Winner model family research
 
+## Evaluation scope rule
+
+Before an experiment, inventory every year and fight that can be used without
+looking into the future, and use all valid coverage by default. If runtime,
+missing inputs, or a clean holdout requires a smaller period, state the reason
+and report the exact training, selection, and test dates and fight counts.
+Never silently reuse a shorter convenience file when broader causal data can
+be generated. Prefer rolling yearly tests when they score more fights honestly.
+
 ## What was tested
 
 `src/evaluate_model_families.py` compares materially different winner models

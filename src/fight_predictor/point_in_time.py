@@ -1213,6 +1213,7 @@ class TemporalFightPredictor:
             prediction_frame["training_through"] = train["date"].max().strftime(
                 "%Y-%m-%d"
             )
+            prediction_frame["training_fights"] = int(len(train))
             prediction_frame["selected_c"] = float(selected_c)
             prediction_frame["calibration_slope"] = float(slope)
             prediction_frame["model_probability"] = probability

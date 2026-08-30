@@ -149,6 +149,7 @@ class CurrentModelMarketReplayTests(unittest.TestCase):
 
         self.assertEqual(predictions["fight_id"].tolist(), ["fight-600", "fight-601"])
         self.assertEqual(set(predictions["training_through"]), {"2020-10-26"})
+        self.assertEqual(set(predictions["training_fights"]), {600})
         self.assertEqual(set(predictions["evaluation_year"]), {2021})
         self.assertTrue(np.allclose(predictions["model_probability"], 0.60))
 
