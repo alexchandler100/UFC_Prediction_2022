@@ -43,23 +43,26 @@ Check progress without downloading anything:
 bash scripts/backfill_historical_method_odds.sh --status-only --mode mean
 ```
 
-After the mean pass finishes, compare the market and causal outcome model:
+After the mean pass finishes, compare each historical fighter-by-method price
+with the causal outcome model:
 
 ```bash
 python src/backfill_bestfightodds_method_history.py --export-only --mode mean
-python src/evaluate_historical_method_markets.py
+python src/evaluate_historical_method_selections.py
 ```
 
 Always run the export-only command with the current code before evaluation. It
 is local and makes no web requests. The evaluator refuses older exports that
 do not preserve the quote cutoff needed to calculate quote age honestly.
 
-The evaluator fits a separate outcome model for every test year using only
-earlier fights. It reports joint fighter-by-method, method-only, and winner
-probability quality for market-only, model-only, fixed blends, and a blend
-weight chosen from earlier years. It repeats the comparison with 24-, 72-, and
-168-hour quote-age limits. Mean histories are never treated as executable
-prices.
+The historical source usually exposes three binary props for one fighter, not
+one complete six-way board for both fighters. The evaluator therefore scores
+each quoted KO/TKO, submission, or decision selection as a yes/no prediction.
+It fits a separate outcome model for every test year using only earlier fights,
+removes the mean source's average price markup using earlier price years only,
+and compares market-only, model-only, fixed blends, and a blend weight chosen
+from earlier years. It repeats the comparison with 24-, 72-, and 168-hour
+quote-age limits. Mean histories are never treated as executable prices.
 
 Then add individual-book histories without redownloading the completed mean
 series:

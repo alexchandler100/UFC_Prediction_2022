@@ -402,6 +402,11 @@ unvalidated research. Six-way no-vig probabilities are produced only for
 complete book boards. Weekly snapshots retain first available, T-72, T-24, and
 T-6 observations; historical method collection is resumable and stored outside
 Git. See `METHOD_ODDS_COLLECTION.md` for commands and safeguards.
+Historical mean method prices are evaluated as individual yes/no props because
+the source usually quotes only one fighter's three methods, not a complete
+six-way board. The August 2026 study found that the market beat the outcome
+model in every test year and that a causally selected blend did not improve it;
+see `HISTORICAL_METHOD_PRICE_EVALUATION_2026-08-30.md`.
 Reproduce the evaluation report with
 `python -B src/evaluate_outcome_model.py`.
 
