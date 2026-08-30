@@ -67,6 +67,12 @@ from .method_market import (
     MethodMarketSnapshot,
     MethodMarketStore,
 )
+from .method_forecast import (
+    METHOD_FORECAST_CONTRACT,
+    METHOD_FORECAST_OUTCOMES,
+    MethodForecastCapture,
+    MethodForecastStore,
+)
 from .expert_signals import (
     EXPERT_SIGNAL_CONTRACT,
     ExpertPick,
@@ -183,8 +189,12 @@ __all__ = (
     "MarketFirstPaperDecision",
     "MarketFirstPaperDecisionStore",
     "METHOD_MARKET_CONTRACT",
+    "METHOD_FORECAST_CONTRACT",
+    "METHOD_FORECAST_OUTCOMES",
     "MethodMarketSnapshot",
     "MethodMarketStore",
+    "MethodForecastCapture",
+    "MethodForecastStore",
     "NATIVE_PROBABILITY",
     "OPPORTUNITY_POLICY_VERSION",
     "PROP_OPPORTUNITY_POLICY_VERSION",

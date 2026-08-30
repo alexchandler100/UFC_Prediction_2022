@@ -48,7 +48,14 @@ from capture_market_snapshot import (
     _text,
 )
 from fight_stat_helpers import same_name
-from market_tracker import METHOD_MARKET_CONTRACT, MethodMarketSnapshot, MethodMarketStore
+from fight_predictor.outcome_publication import validate_outcome_forecast_publication
+from market_tracker import (
+    METHOD_MARKET_CONTRACT,
+    MethodForecastCapture,
+    MethodForecastStore,
+    MethodMarketSnapshot,
+    MethodMarketStore,
+)
 from market_tracker._common import StoreIntegrityError, canonical_hash
 from market_tracker._storage import atomic_write_text
 
@@ -57,6 +64,8 @@ ROOT = Path(__file__).resolve().parent
 MARKET_ROOT = ROOT / "content" / "data" / "market"
 METHOD_CSV_PATH = MARKET_ROOT / "method_market_snapshots.csv"
 METHOD_JSONL_PATH = MARKET_ROOT / "method_market_snapshots.jsonl"
+METHOD_FORECAST_CSV_PATH = MARKET_ROOT / "method_forecast_captures.csv"
+METHOD_FORECAST_JSONL_PATH = MARKET_ROOT / "method_forecast_captures.jsonl"
 REPORT_PATH = MARKET_ROOT / "method_capture_report.json"
 CURRENT_METHOD_PATH = MARKET_ROOT / "current_method_markets.json"
 OUTCOME_FORECAST_PATH = ROOT / "content" / "data" / "external" / "outcome_forecasts.json"
@@ -356,12 +365,80 @@ def _decimal_odds(moneyline: int) -> float:
 def _outcome_forecasts(event_id: str) -> dict[str, object] | None:
     if not OUTCOME_FORECAST_PATH.is_file():
         return None
-    publication = _json_object(
+    publication = validate_outcome_forecast_publication(_json_object(
         OUTCOME_FORECAST_PATH.read_bytes(), OUTCOME_FORECAST_PATH
-    )
+    ))
     if _text(publication.get("event_id")) != event_id:
         return None
     return publication
+
+
+def _build_method_forecast_captures(
+    snapshots: Sequence[MethodMarketSnapshot],
+    *,
+    outcome_forecasts: Mapping[str, object] | None,
+    existing: Sequence[MethodForecastCapture],
+) -> tuple[list[MethodForecastCapture], int]:
+    """Freeze the exact candidate probabilities paired with new price rows."""
+
+    if outcome_forecasts is None:
+        return [], len({(row.matchup_id, row.horizon) for row in snapshots})
+    raw_matchups = outcome_forecasts.get("matchups")
+    if not isinstance(raw_matchups, list):
+        raise CaptureError("outcome forecast matchups must be a list")
+    by_pair: dict[frozenset[str], Mapping[str, object]] = {}
+    for raw in raw_matchups:
+        if not isinstance(raw, Mapping):
+            continue
+        fighter_id = _text(raw.get("fighter_id"))
+        opponent_id = _text(raw.get("opponent_id"))
+        if not fighter_id or not opponent_id or fighter_id == opponent_id:
+            continue
+        pair = frozenset((fighter_id, opponent_id))
+        if pair in by_pair:
+            raise CaptureError("outcome forecasts repeat one fighter pair")
+        by_pair[pair] = raw
+    unique_prices: dict[tuple[str, str], MethodMarketSnapshot] = {}
+    for snapshot in snapshots:
+        unique_prices.setdefault((snapshot.matchup_id, snapshot.horizon), snapshot)
+    existing_keys = {record.natural_key for record in existing}
+    output: list[MethodForecastCapture] = []
+    missing = 0
+    for natural_key, snapshot in sorted(unique_prices.items()):
+        if natural_key in existing_keys:
+            continue
+        forecast = by_pair.get(frozenset((snapshot.fighter_id, snapshot.opponent_id)))
+        if forecast is None:
+            missing += 1
+            continue
+        terminal = forecast.get("terminal_probabilities")
+        if not isinstance(terminal, Mapping):
+            raise CaptureError("one outcome forecast lacks terminal probabilities")
+        output.append(
+            MethodForecastCapture.create(
+                capture_id=snapshot.capture_id,
+                matchup_id=snapshot.matchup_id,
+                event_id=snapshot.event_id,
+                fighter_id=forecast.get("fighter_id"),
+                opponent_id=forecast.get("opponent_id"),
+                fighter_name=forecast.get("fighter_name"),
+                opponent_name=forecast.get("opponent_name"),
+                event_date=snapshot.event_date,
+                event_start_utc=snapshot.event_start_utc,
+                observed_at_utc=snapshot.observed_at_utc,
+                horizon=snapshot.horizon,
+                forecast_issued_at_utc=outcome_forecasts.get("forecast_issued_at_utc"),
+                model_id=outcome_forecasts.get("model_id"),
+                model_version=outcome_forecasts.get("model_version"),
+                model_trained_through=outcome_forecasts.get("model_trained_through"),
+                source_commit_sha=outcome_forecasts.get("source_commit_sha"),
+                training_input_sha256=outcome_forecasts.get("training_input_sha256"),
+                source_publication_sha256=outcome_forecasts.get("publication_sha256"),
+                scheduled_rounds=forecast.get("scheduled_rounds"),
+                terminal_probabilities=terminal,
+            )
+        )
+    return output, missing
 
 
 def _build_current_method_publication(
@@ -652,12 +729,31 @@ def capture_method_snapshot() -> dict[str, object]:
     )
     result = store.append(snapshots)
     final = store.read()
+    outcome_publication = _outcome_forecasts(event_id)
+    forecast_store = MethodForecastStore(
+        METHOD_FORECAST_CSV_PATH, METHOD_FORECAST_JSONL_PATH
+    )
+    existing_forecasts = forecast_store.read()
+    forecast_rows, unmatched_forecasts = _build_method_forecast_captures(
+        snapshots,
+        outcome_forecasts=outcome_publication,
+        existing=existing_forecasts,
+    )
+    if forecast_rows:
+        forecast_result = forecast_store.append(forecast_rows)
+        final_forecasts = forecast_store.read()
+        forecast_added = len(forecast_result.added_ids)
+        forecast_duplicates = len(forecast_result.duplicate_ids)
+    else:
+        final_forecasts = existing_forecasts
+        forecast_added = 0
+        forecast_duplicates = 0
     method_publication = _build_current_method_publication(
         final,
         event_id=event_id,
         event_date=event_day,
         event_start_utc=event_start,
-        outcome_forecasts=_outcome_forecasts(event_id),
+        outcome_forecasts=outcome_publication,
     )
     _write_current_method_publication(method_publication)
     report: dict[str, object] = {
@@ -682,6 +778,14 @@ def capture_method_snapshot() -> dict[str, object]:
         "records_duplicate": len(result.duplicate_ids),
         "records_total": len(final),
         "dataset_sha256": MethodMarketStore.dataset_sha256(final),
+        "method_forecasts_built": len(forecast_rows),
+        "method_forecasts_added": forecast_added,
+        "method_forecasts_duplicate": forecast_duplicates,
+        "method_forecasts_unmatched": unmatched_forecasts,
+        "method_forecasts_total": len(final_forecasts),
+        "method_forecast_dataset_sha256": MethodForecastStore.dataset_sha256(
+            final_forecasts
+        ),
         "current_publication_sha256": method_publication["publication_sha256"],
         "stored_horizons": sorted(
             {item.horizon for item in final if item.event_id == event_id}
@@ -703,6 +807,16 @@ def validate_generated_capture() -> dict[str, object]:
         raise CaptureError("method report record count differs from the ledger")
     if report.get("dataset_sha256") != MethodMarketStore.dataset_sha256(records):
         raise CaptureError("method report hash differs from the ledger")
+    if "method_forecasts_total" in report:
+        forecasts = MethodForecastStore(
+            METHOD_FORECAST_CSV_PATH, METHOD_FORECAST_JSONL_PATH
+        ).read()
+        if int(report.get("method_forecasts_total", -1)) != len(forecasts):
+            raise CaptureError("method report forecast count differs from the ledger")
+        if report.get(
+            "method_forecast_dataset_sha256"
+        ) != MethodForecastStore.dataset_sha256(forecasts):
+            raise CaptureError("method report forecast hash differs from the ledger")
     if report.get("paper_only") is not True or report.get("execution_enabled") is not False:
         raise CaptureError("method capture must remain paper-only with execution disabled")
     if not CURRENT_METHOD_PATH.is_file():

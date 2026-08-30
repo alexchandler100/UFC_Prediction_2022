@@ -90,6 +90,8 @@ moneyline/totals capture.
 Validated files are small and checked into the market-data directory:
 
 - `method_market_snapshots.csv` and `.jsonl`: append-only source observations;
+- `method_forecast_captures.csv` and `.jsonl`: the exact candidate outcome
+  probabilities available at each new method-price horizon;
 - `method_capture_report.json`: counts and integrity hashes;
 - `current_method_markets.json`: bounded website view with real prices beside
   the candidate method model.
