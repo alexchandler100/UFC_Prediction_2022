@@ -1,0 +1,60 @@
+{
+  "candidate_only": true,
+  "execution_enabled": false,
+  "features": [
+    {
+      "coefficient": 0.11205825243703335,
+      "name": "model_disagreement",
+      "scale": 0.6042406350000243
+    },
+    {
+      "coefficient": 0.27596003625481824,
+      "name": "book_disagreement_market_strength",
+      "scale": 0.01997338794459617
+    }
+  ],
+  "fit": {
+    "l2": 0.001,
+    "selection_period": {
+      "first_event_date": "2025-02-08",
+      "last_event_date": "2025-09-27"
+    },
+    "training_period": {
+      "first_event_date": "2023-01-14",
+      "last_event_date": "2025-02-01"
+    }
+  },
+  "frozen_at_utc": "2026-08-30T00:20:36Z",
+  "historical_check": {
+    "event_block_roi_95_interval": [
+      -0.08259508064516127,
+      0.5275198296568626
+    ],
+    "later_bets": 35,
+    "later_events": 22,
+    "later_profit_units": 8.550379999999999,
+    "later_roi": 0.2442965714285714,
+    "maximum_historical_quote_age_hours": 24.0,
+    "period_first_event_date": "2025-10-04",
+    "period_last_event_date": "2026-06-20",
+    "status": "promising_but_not_proven"
+  },
+  "minimum_expected_return": 0.025,
+  "minimum_other_books": 3,
+  "paper_only": true,
+  "policy_version": "market-first-t24-paper-v1",
+  "prospective_capture": {
+    "decision_maximum_latency_seconds": 300.0,
+    "maximum_source_quote_age_seconds": 1800.0,
+    "prospective_first_capture_utc": "2026-08-30T00:20:36Z",
+    "target_lead_seconds": 86400.0,
+    "window_seconds": 14400.0
+  },
+  "provenance": {
+    "challenger_input_canonical_sha256": "339959f1af18194601b30e569686e30c046b62b11f47817c21e773217dec890a",
+    "challenger_report_file_sha256_at_freeze": "f247e0b5bc5208c0ec4556ed1d82e646759c63d1c913d1ed7a86c08a7963ed42",
+    "historical_profitability_ledger_sha256": "53e648cde221185abb7cf87bb684b9f7d974e2cde483d5be7947e19a6fdd85cd",
+    "historical_profitability_report_file_sha256": "bf9309061d42ca535279deaec8dc1c5e51fad9b37b9de810f7cd0ce5511761f8"
+  },
+  "schema_version": 1
+}

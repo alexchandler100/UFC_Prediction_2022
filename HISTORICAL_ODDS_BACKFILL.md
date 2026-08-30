@@ -163,6 +163,58 @@ future paper comparison, while market-only remains the production reference.
 Because the winner backfill was still active when this snapshot was taken, the
 historical reports must be refreshed after collection finishes.
 
+## Historical moneyline profitability check
+
+Use the actual recorded sportsbook prices to test whether the T-24 probability
+estimates would have made money:
+
+```bash
+python src/evaluate_historical_moneyline_profitability.py
+```
+
+For each offered price, the fair market probability excludes that sportsbook
+and requires at least three other books. The evaluator takes no more than one
+side per fight, risks one unit per selection, chooses an estimated-value cutoff
+using the earlier selection period, and applies it once to the untouched later
+period. It reports profit, ROI, maximum drawdown, movement toward the closing
+market, and a whole-event bootstrap uncertainty interval. The default rejects
+quotes more than 168 hours old. Freshness checks can be reproduced with
+`--maximum-quote-age-hours 72` or `24` and separate report paths.
+
+The August 29, 2026 provisional snapshot produced this later-period result for
+the selected market-first adjustment:
+
+| Maximum quote age | Earlier cutoff and result | Later result | Event-block 95% interval |
+| --- | --- | --- | --- |
+| 168 hours | 1%; 172 bets, +14.75 units (8.57%) | 194 bets, -5.27 units (-2.72%) | -14.63% to +8.62% ROI |
+| 72 hours | 1%; 147 bets, +10.10 units (6.87%) | 152 bets, +1.25 units (0.82%) | -16.00% to +17.46% ROI |
+| 24 hours | 2.5%; 41 bets, +4.87 units (11.87%) | 35 bets, +8.55 units (24.43%) | -8.26% to +52.75% ROI |
+
+The 24-hour result is promising, and its average available movement toward the
+later market was +1.32 probability points. It is not proof of an edge: there
+were only 35 later bets across 22 events, the uncertainty interval includes a
+loss, and this historical sample has already influenced research decisions.
+The 72-hour result was essentially break-even and the week-old-price result was
+negative. This may mean the adjustment is useful only when prices are actively
+updating, or simply that stale chart prices were no longer genuinely available.
+
+The current model and fixed 50/50 model/market blend did not find a profitable
+cutoff in the earlier period and lost money at the documented 5% fallback in
+all three freshness checks. Nothing from this retrospective test changes the
+website, production probabilities, or betting behavior. The useful next test
+is a frozen prospective paper ledger using prices captured before each event.
+That ledger is now implemented as `market-first-t24-paper-v1`. It begins only
+with captures at or after August 30, 2026 at 00:20:36 UTC, stores its decisions
+and settlements separately under `src/content/data/market/`, and is updated by
+both standard GitHub workflows. Run `python src/update_market_first_paper.py`
+to update it locally or add `--validate-only` to inspect it without writing.
+
+Historical T-24 remains relative to the source event date at 00:00 UTC, not an
+exact card start time. The test also assumes access to the best recorded book,
+with no stake limits, fees, slippage, or account restrictions. Reports and the
+fight-level ledger remain outside Git under the `analysis/` directory described
+above.
+
 To add the weaker older mean/single-book period after the 2021+ run, reuse the
 same database and extend the start year:
 

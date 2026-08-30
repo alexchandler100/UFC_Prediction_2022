@@ -94,9 +94,13 @@ jobs:
       - name: Settle completed paper decisions and refresh metrics
         run: python src/update_market_performance.py
 
+      - name: Update frozen market-first prospective paper test
+        run: python src/update_market_first_paper.py
+
       - name: Revalidate market ledgers and bounded report
         run: |
           python src/capture_market_snapshot.py --validate-only
+          python src/update_market_first_paper.py --validate-only
           python src/validate_data.py --require-model-artifact --require-market-data
 
       - name: Revalidate optional method-price outputs
@@ -148,7 +152,12 @@ jobs:
             src/content/data/market/method_market_snapshots.csv \
             src/content/data/market/method_market_snapshots.jsonl \
             src/content/data/market/method_capture_report.json \
-            src/content/data/market/current_method_markets.json
+            src/content/data/market/current_method_markets.json \
+            src/content/data/market/market_first_paper_decisions.csv \
+            src/content/data/market/market_first_paper_decisions.jsonl \
+            src/content/data/market/market_first_paper_settlements.csv \
+            src/content/data/market/market_first_paper_settlements.jsonl \
+            src/content/data/market/market_first_paper_report.json
           do
             if [ -f "$optional_path" ]; then
               git add -- "$optional_path"
@@ -179,6 +188,11 @@ jobs:
               src/content/data/market/method_market_snapshots.jsonl|\
               src/content/data/market/method_capture_report.json|\
               src/content/data/market/current_method_markets.json|\
+              src/content/data/market/market_first_paper_decisions.csv|\
+              src/content/data/market/market_first_paper_decisions.jsonl|\
+              src/content/data/market/market_first_paper_settlements.csv|\
+              src/content/data/market/market_first_paper_settlements.jsonl|\
+              src/content/data/market/market_first_paper_report.json|\
               src/content/data/market/paper_decisions.csv|\
               src/content/data/market/paper_decisions.jsonl|\
               src/content/data/market/bayesian_filtered_paper_decisions.csv|\

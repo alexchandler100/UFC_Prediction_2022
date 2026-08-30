@@ -1,0 +1,140 @@
+{
+  "betting_status": "disabled_paper_only_no_execution",
+  "candidate_only": true,
+  "decision_dataset_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+  "decisions_total": 0,
+  "evidence_gate": {
+    "automatic_promotion": false,
+    "candidate_beats_market_interval_met": false,
+    "count_requirements_met": false,
+    "execution_enabled": false,
+    "minimum_recommended_bets": 100,
+    "minimum_settled_events": 40,
+    "positive_price_movement_interval_met": false,
+    "positive_return_interval_met": false,
+    "status": "collecting_new_fights"
+  },
+  "execution_enabled": false,
+  "last_build": {
+    "captures_at_locked_horizon": 0,
+    "captures_considered": 16,
+    "matchups_already_frozen": 0,
+    "matchups_considered": 208,
+    "matchups_without_forecast": 0,
+    "matchups_without_fresh_quotes": 0
+  },
+  "last_update_utc": "2026-08-30T00:25:54Z",
+  "latest_available_same_book_price_movement": {
+    "count": 0,
+    "definition": "later implied probability minus locked break-even probability; positive means the recorded paper price was better",
+    "interval": {
+      "bootstrap_samples": 0,
+      "ci_95_lower": null,
+      "ci_95_upper": null,
+      "event_count": 0,
+      "point": null
+    },
+    "mean_probability_advantage": null,
+    "positive_rate": null
+  },
+  "paper_only": true,
+  "paper_return_interval": {
+    "bootstrap_samples": 0,
+    "ci_95_lower": null,
+    "ci_95_upper": null,
+    "event_count": 0,
+    "point": null
+  },
+  "policy": {
+    "candidate_only": true,
+    "execution_enabled": false,
+    "features": [
+      {
+        "coefficient": 0.11205825243703335,
+        "name": "model_disagreement",
+        "scale": 0.6042406350000243
+      },
+      {
+        "coefficient": 0.27596003625481824,
+        "name": "book_disagreement_market_strength",
+        "scale": 0.01997338794459617
+      }
+    ],
+    "fit": {
+      "l2": 0.001,
+      "selection_period": {
+        "first_event_date": "2025-02-08",
+        "last_event_date": "2025-09-27"
+      },
+      "training_period": {
+        "first_event_date": "2023-01-14",
+        "last_event_date": "2025-02-01"
+      }
+    },
+    "frozen_at_utc": "2026-08-30T00:20:36Z",
+    "historical_check": {
+      "event_block_roi_95_interval": [
+        -0.08259508064516127,
+        0.5275198296568626
+      ],
+      "later_bets": 35,
+      "later_events": 22,
+      "later_profit_units": 8.550379999999999,
+      "later_roi": 0.2442965714285714,
+      "maximum_historical_quote_age_hours": 24.0,
+      "period_first_event_date": "2025-10-04",
+      "period_last_event_date": "2026-06-20",
+      "status": "promising_but_not_proven"
+    },
+    "minimum_expected_return": 0.025,
+    "minimum_other_books": 3,
+    "paper_only": true,
+    "policy_version": "market-first-t24-paper-v1",
+    "prospective_capture": {
+      "decision_maximum_latency_seconds": 300.0,
+      "maximum_source_quote_age_seconds": 1800.0,
+      "prospective_first_capture_utc": "2026-08-30T00:20:36Z",
+      "target_lead_seconds": 86400.0,
+      "window_seconds": 14400.0
+    },
+    "provenance": {
+      "challenger_input_canonical_sha256": "339959f1af18194601b30e569686e30c046b62b11f47817c21e773217dec890a",
+      "challenger_report_file_sha256_at_freeze": "f247e0b5bc5208c0ec4556ed1d82e646759c63d1c913d1ed7a86c08a7963ed42",
+      "historical_profitability_ledger_sha256": "53e648cde221185abb7cf87bb684b9f7d974e2cde483d5be7947e19a6fdd85cd",
+      "historical_profitability_report_file_sha256": "bf9309061d42ca535279deaec8dc1c5e51fad9b37b9de810f7cd0ce5511761f8"
+    },
+    "schema_version": 1
+  },
+  "policy_artifact_sha256": null,
+  "policy_version": null,
+  "probability_quality_on_all_scored_fights": {
+    "candidate_minus_market_log_loss": {
+      "bootstrap_samples": 0,
+      "ci_95_lower": null,
+      "ci_95_upper": null,
+      "event_count": 0,
+      "point": null
+    },
+    "current_model": null,
+    "leave_one_out_market": null,
+    "market_first_candidate": null
+  },
+  "prospective_first_capture_utc": "2026-08-30T00:20:36.000000Z",
+  "report_sha256": "20b1f1d24c7e1a7f58f0f705d9cb72ab4282bb121a3a76770afc6b11baaf46b6",
+  "results": {
+    "losses": 0,
+    "maximum_drawdown_units": 0.0,
+    "profit_units": 0,
+    "recommended_bets": 0,
+    "risk_units": 0,
+    "roi": null,
+    "scored_fights": 0,
+    "voids": 0,
+    "wins": 0
+  },
+  "schema_version": 1,
+  "settled_events": 0,
+  "settlement_dataset_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+  "settlements_total": 0,
+  "unsettled_decisions": 0
+}

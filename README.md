@@ -436,6 +436,17 @@ and publishes paper ROI, drawdown, forecast scores, coverage, and a latest-
 available same-book CLV proxy. This remains research only; no order, account,
 bankroll, or wager-execution code exists.
 
+A separate `market-first-t24-paper-v1` ledger now tests the promising historical
+adjustment without changing that baseline. Near T-24 it compares every offered
+sportsbook price with at least three other books, applies the frozen adjustment,
+and records the best side only when its estimated return is at least 2.5%. The
+rule and coefficients were frozen before the first allowed capture at
+`2026-08-30T00:20:36Z`; older captures can never be added retroactively. Its
+report uses plain counts—recommendations, wins, losses, units won or lost, ROI,
+and drawdown—alongside probability quality and later same-book price movement.
+It remains disabled until at least 100 recommendations across 40 settled events
+and positive uncertainty checks; even passing those checks cannot enable bets.
+
 The Bayesian-filtered moneyline challenger is evaluated only on new immutable
 T-24 decisions made after its deployment; older paper decisions are not
 retroactively labeled. Its promotion gate requires at least 500 paired settled
@@ -1210,7 +1221,9 @@ After setting the API variables shown above, run:
 ```bash
 python -B src/capture_market_snapshot.py
 python -B src/update_market_performance.py
+python -B src/update_market_first_paper.py
 python -B src/capture_market_snapshot.py --validate-only
+python -B src/update_market_first_paper.py --validate-only
 ```
 
 This consumes Odds API credits and appends a new timestamped observation. It
@@ -1231,7 +1244,9 @@ $env:ODDS_API_REGIONS = "us,us2"
 
 python -B src/capture_market_snapshot.py
 python -B src/update_market_performance.py
+python -B src/update_market_first_paper.py
 python -B src/capture_market_snapshot.py --validate-only
+python -B src/update_market_first_paper.py --validate-only
 python -B src/validate_data.py --require-model-artifact --require-market-data
 
 Remove-Item Env:THE_ODDS_API_KEY
