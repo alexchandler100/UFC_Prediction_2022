@@ -14,7 +14,10 @@ from backfill_bestfightodds_method_history import (  # noqa: E402
     DownloadSpec,
     _coherent_rows,
     _open_database,
+    _pending_downloads,
+    _store_download_failure,
     _winner_run_active,
+    database_summary,
 )
 
 
@@ -90,13 +93,87 @@ class BestFightOddsMethodBackfillTests(unittest.TestCase):
         rows[-1]["observed_at_utc"] = "2026-08-21T02:00:00Z"
         self.assertEqual(_coherent_rows(rows, max_skew_seconds=600), [])
 
-    def test_database_mode_is_immutable(self):
+    def test_database_can_upgrade_from_mean_to_both_without_losing_data(self):
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "method.sqlite3"
             first = _open_database(path, mode="mean")
             first.close()
-            with self.assertRaises(Exception):
-                _open_database(path, mode="both")
+            upgraded = _open_database(path, mode="both")
+            stored_mode = upgraded.execute(
+                "SELECT value FROM metadata WHERE key='download_mode'"
+            ).fetchone()[0]
+            upgraded.close()
+            self.assertEqual(stored_mode, "both")
+
+    def test_mode_specific_pending_downloads_stop_after_retry_cap(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "method.sqlite3"
+            connection = _open_database(path, mode="mean")
+            connection.execute(
+                """
+                INSERT INTO events(
+                    event_url, source_event_date, page_status, page_attempts,
+                    updated_at_utc
+                ) VALUES ('event', '2025-01-01', 'parsed', 1, 'now')
+                """
+            )
+            connection.execute(
+                """
+                INSERT INTO selections(
+                    selection_id, event_url, source_matchup_id,
+                    source_fighter_side, source_prop_type_id,
+                    source_outcome_number, market, method, raw_label,
+                    fighter_1_name, fighter_2_name, ufc_event_date,
+                    ufc_event_id, ufc_fight_id, ufc_fighter_1_id,
+                    ufc_fighter_2_id, selected_fighter_id,
+                    mean_history_available, updated_at_utc
+                ) VALUES (
+                    'selection', 'event', 1, 1, 8, 1, 'method', 'ko_tko',
+                    'A wins by KO', 'A', 'B', '2025-01-01', 'ufc-event',
+                    'fight', 'a', 'b', 'a', 1, 'now'
+                )
+                """
+            )
+            connection.executemany(
+                """
+                INSERT INTO selection_books(
+                    selection_id, book_key, book_id, book_name
+                ) VALUES ('selection', ?, ?, ?)
+                """,
+                (("mean", None, "Mean"), ("book:21", 21, "Book A")),
+            )
+            connection.commit()
+
+            mean_spec = _pending_downloads(
+                connection, event_url="event", mode="mean"
+            )[0]
+            self.assertEqual(mean_spec.book_key, "mean")
+            self.assertEqual(
+                _pending_downloads(connection, event_url="event", mode="books")[0].book_key,
+                "book:21",
+            )
+            _store_download_failure(
+                connection, spec=mean_spec, error=ValueError("bad chart")
+            )
+            _store_download_failure(
+                connection, spec=mean_spec, error=ValueError("bad chart")
+            )
+            self.assertEqual(
+                _pending_downloads(connection, event_url="event", mode="mean"),
+                [],
+            )
+            summary = database_summary(
+                connection, database_path=path, mode="mean"
+            )
+            self.assertEqual(summary["pending_downloads"], 0)
+            self.assertEqual(
+                summary["source_failures_at_retry_cap"]["chart_series"], 1
+            )
+            books_summary = database_summary(
+                connection, database_path=path, mode="books"
+            )
+            self.assertEqual(books_summary["pending_downloads"], 1)
+            connection.close()
 
 
 if __name__ == "__main__":

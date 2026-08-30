@@ -1,0 +1,95 @@
+{
+  "contract": "prospective_free_public_pick_v1",
+  "sources": [
+    {
+      "analyst_id": "lucrative-mma-betting",
+      "display_name": "Lucrative MMA Betting",
+      "enabled": false,
+      "free_public": false,
+      "timestamp_verifiable": false,
+      "allowed_hosts": ["fightodds.io"],
+      "notes": "FightOdds profile claims are not a free timestamped pick feed."
+    },
+    {
+      "analyst_id": "fightingstats",
+      "display_name": "FightingStats",
+      "enabled": false,
+      "free_public": false,
+      "timestamp_verifiable": false,
+      "allowed_hosts": ["fightodds.io"],
+      "notes": "No verified free public pre-fight pick feed has been registered."
+    },
+    {
+      "analyst_id": "technical-tim",
+      "display_name": "Technical Tim",
+      "enabled": false,
+      "free_public": false,
+      "timestamp_verifiable": false,
+      "allowed_hosts": ["fightodds.io"],
+      "notes": "No verified free public pre-fight pick feed has been registered."
+    },
+    {
+      "analyst_id": "vb-mma-picks",
+      "display_name": "VB MMA Picks",
+      "enabled": false,
+      "free_public": false,
+      "timestamp_verifiable": false,
+      "allowed_hosts": ["fightodds.io"],
+      "notes": "No verified free public pre-fight pick feed has been registered."
+    },
+    {
+      "analyst_id": "couch-picks-live-mma",
+      "display_name": "Couch Picks (Live MMA)",
+      "enabled": false,
+      "free_public": false,
+      "timestamp_verifiable": false,
+      "allowed_hosts": ["fightodds.io", "discord.com", "discord.gg"],
+      "notes": "Live or paid-group picks are outside the pre-fight free-source contract."
+    },
+    {
+      "analyst_id": "rob-brown-mma",
+      "display_name": "Rob Brown Betting",
+      "enabled": false,
+      "free_public": true,
+      "timestamp_verifiable": false,
+      "allowed_hosts": ["betmma.tips", "robbrownbetting.com"],
+      "notes": "Promising third-party public record, but exact pick timestamps and permitted automated access still need verification."
+    },
+    {
+      "analyst_id": "cageside-model",
+      "display_name": "CageSide model picks",
+      "enabled": false,
+      "free_public": true,
+      "timestamp_verifiable": false,
+      "allowed_hosts": ["cagesidepicks.com"],
+      "notes": "Free public forward picks, but this is a model rather than an expert and its terms/timestamp contract still need verification."
+    },
+    {
+      "analyst_id": "fightiq-expert-consensus",
+      "display_name": "FightIQ expert consensus",
+      "enabled": false,
+      "free_public": true,
+      "timestamp_verifiable": false,
+      "allowed_hosts": ["fightiq.dev"],
+      "notes": "Public expert consensus candidate; exact pre-fight timestamps and permitted automated access still need verification."
+    },
+    {
+      "analyst_id": "tapology-community",
+      "display_name": "Tapology community consensus",
+      "enabled": false,
+      "free_public": true,
+      "timestamp_verifiable": false,
+      "allowed_hosts": ["tapology.com"],
+      "notes": "Potential crowd baseline rather than an expert; prospective snapshot permissions and identity matching need verification."
+    },
+    {
+      "analyst_id": "mma-prophecy-consensus",
+      "display_name": "MMA Prophecy consensus streams",
+      "enabled": false,
+      "free_public": true,
+      "timestamp_verifiable": false,
+      "allowed_hosts": ["mmaprophecy.com"],
+      "notes": "Potential aggregate baseline; underlying stream definitions, timestamps, and permitted access need verification."
+    }
+  ]
+}

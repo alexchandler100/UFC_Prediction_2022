@@ -31,11 +31,53 @@ The run is resumable. Its database and exports remain outside Git under
 lowest-request first pass. A later `--mode both` run can add per-book history
 where it exists.
 
+The same database safely upgrades from `mean` to `both`; it does not redownload
+completed mean histories. A source page or chart series that fails twice stays
+recorded as unavailable but no longer makes every resume look unfinished. Use
+`--max-source-attempts` only when deliberately retrying those failures. Missing
+prices are never imputed.
+
 Check progress without downloading anything:
 
 ```bash
 bash scripts/backfill_historical_method_odds.sh --status-only --mode mean
 ```
+
+After the mean pass finishes, compare the market and causal outcome model:
+
+```bash
+python src/backfill_bestfightodds_method_history.py --export-only --mode mean
+python src/evaluate_historical_method_markets.py
+```
+
+Always run the export-only command with the current code before evaluation. It
+is local and makes no web requests. The evaluator refuses older exports that
+do not preserve the quote cutoff needed to calculate quote age honestly.
+
+The evaluator fits a separate outcome model for every test year using only
+earlier fights. It reports joint fighter-by-method, method-only, and winner
+probability quality for market-only, model-only, fixed blends, and a blend
+weight chosen from earlier years. It repeats the comparison with 24-, 72-, and
+168-hour quote-age limits. Mean histories are never treated as executable
+prices.
+
+Then add individual-book histories without redownloading the completed mean
+series:
+
+```bash
+bash scripts/backfill_historical_method_odds.sh \
+  --from-year 2021 \
+  --to-year 2026 \
+  --mode both \
+  --delay-seconds 1 \
+  --max-runtime-hours 6 \
+  --max-requests 25000
+```
+
+Rerun the evaluator after the book pass. Only then does it create a paper
+profit ledger using actual book prices, one best offer per fight, and a value
+cutoff selected from earlier years. Non-primary outcomes are excluded because
+their historical settlement rules are not yet verified.
 
 ## Weekly collection
 

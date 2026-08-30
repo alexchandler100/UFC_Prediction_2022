@@ -67,6 +67,14 @@ from .method_market import (
     MethodMarketSnapshot,
     MethodMarketStore,
 )
+from .expert_signals import (
+    EXPERT_SIGNAL_CONTRACT,
+    ExpertPick,
+    ExpertPickStore,
+    ExpertSourcePolicy,
+    load_expert_source_registry,
+    validate_expert_pick,
+)
 from .prospective import (
     DECISION_TARGET_LEAD_SECONDS,
     DECISION_WINDOW_SECONDS,
@@ -154,10 +162,14 @@ __all__ = (
     "DECISION_TARGET_LEAD_SECONDS",
     "DECISION_WINDOW_SECONDS",
     "EARLY_MARKET_CONTRACT",
+    "EXPERT_SIGNAL_CONTRACT",
     "EarlyMarketLink",
     "EarlyMarketLinkStore",
     "EarlyMarketObservation",
     "EarlyMarketObservationStore",
+    "ExpertPick",
+    "ExpertPickStore",
+    "ExpertSourcePolicy",
     "ForecastCapture",
     "ForecastCaptureStore",
     "ForecastMetrics",
@@ -235,6 +247,7 @@ __all__ = (
     "evaluate_timing_policies",
     "equal_logit_pool",
     "matchup_id_for",
+    "load_expert_source_registry",
     "settle_paper_decision",
     "settle_market_first_decision",
     "simulation_comparison_report",
@@ -246,4 +259,5 @@ __all__ = (
     "summarize_total_round_performance",
     "symmetric_logit_blend",
     "validate_current_opportunities",
+    "validate_expert_pick",
 )

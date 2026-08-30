@@ -55,6 +55,7 @@ DEFAULT_MODE = "mean"
 DEFAULT_DELAY_SECONDS = 1.0
 DEFAULT_MAX_RUNTIME_HOURS = 6.0
 DEFAULT_MAX_REQUESTS = 25_000
+DEFAULT_MAX_SOURCE_ATTEMPTS = 2
 DEFAULT_MAX_DATABASE_MIB = 1024.0
 DEFAULT_MINIMUM_FREE_GIB = 5.0
 DEFAULT_MAX_QUOTE_SKEW_SECONDS = 600
@@ -174,7 +175,6 @@ def _open_database(path: Path, *, mode: str) -> sqlite3.Connection:
     expected = {
         "schema_version": str(SCHEMA_VERSION),
         "collector_version": str(COLLECTOR_VERSION),
-        "download_mode": mode,
     }
     existing = {
         row["key"]: row["value"]
@@ -191,6 +191,29 @@ def _open_database(path: Path, *, mode: str) -> sqlite3.Connection:
             "INSERT OR IGNORE INTO metadata(key, value) VALUES (?, ?)",
             (key, value),
         )
+    requested_parts = {
+        "mean": {"mean"},
+        "books": {"books"},
+        "both": {"mean", "books"},
+    }[mode]
+    existing_mode = existing.get("download_mode")
+    existing_parts = (
+        {
+            "mean": {"mean"},
+            "books": {"books"},
+            "both": {"mean", "books"},
+        }.get(existing_mode, set())
+    )
+    combined_parts = existing_parts | requested_parts
+    combined_mode = (
+        "both"
+        if combined_parts == {"mean", "books"}
+        else next(iter(combined_parts))
+    )
+    connection.execute(
+        "INSERT OR REPLACE INTO metadata(key, value) VALUES ('download_mode', ?)",
+        (combined_mode,),
+    )
     connection.execute(
         "INSERT OR IGNORE INTO metadata(key, value) VALUES ('created_at_utc', ?)",
         (_utc_text(),),
@@ -421,14 +444,20 @@ class DownloadSpec:
 
 
 def _pending_downloads(
-    connection: sqlite3.Connection, *, event_url: str, mode: str
+    connection: sqlite3.Connection,
+    *,
+    event_url: str,
+    mode: str,
+    maximum_attempts: int = DEFAULT_MAX_SOURCE_ATTEMPTS,
 ) -> list[DownloadSpec]:
+    if maximum_attempts < 1:
+        raise ValueError("maximum attempts must be at least one")
     rows = connection.execute(
         """
         SELECT s.selection_id, s.event_url, s.source_matchup_id,
                s.source_fighter_side, s.source_prop_type_id,
                s.source_outcome_number, b.book_key, b.book_id, b.book_name,
-               d.status
+               d.status, d.attempts
         FROM selections AS s
         JOIN selection_books AS b ON b.selection_id=s.selection_id
         LEFT JOIN downloads AS d
@@ -447,6 +476,11 @@ def _pending_downloads(
         ):
             continue
         if row["status"] in {"complete", "empty"}:
+            continue
+        if (
+            row["status"] == "failed"
+            and int(row["attempts"] or 0) >= maximum_attempts
+        ):
             continue
         output.append(
             DownloadSpec(
@@ -688,6 +722,11 @@ def _coherent_rows(
                     "book_key": base["book_key"],
                     "book_name": base["book_name"],
                     "horizon": base["horizon"],
+                    "cutoff_utc": (
+                        base["cutoff_utc"]
+                        if "cutoff_utc" in base.keys()
+                        else base["observed_at_utc"]
+                    ),
                     "selected_fighter": slot,
                     "selected_fighter_id": row["selected_fighter_id"],
                     "method": method,
@@ -719,8 +758,10 @@ def database_summary(
     connection: sqlite3.Connection,
     *,
     database_path: Path,
+    mode: str = DEFAULT_MODE,
     session_requests: int = 0,
     session_response_bytes: int = 0,
+    maximum_source_attempts: int = DEFAULT_MAX_SOURCE_ATTEMPTS,
 ) -> dict[str, object]:
     scalar = lambda sql: int(connection.execute(sql).fetchone()[0])
     return {
@@ -737,14 +778,44 @@ def database_summary(
         "selections": scalar("SELECT COUNT(*) FROM selections"),
         "fights": scalar("SELECT COUNT(DISTINCT ufc_fight_id) FROM selections"),
         "quote_points": scalar("SELECT COUNT(*) FROM quotes"),
-        "pending_downloads": scalar(
-            """
+        "pending_downloads": int(
+            connection.execute(
+                """
             SELECT COUNT(*) FROM selection_books AS b
             LEFT JOIN downloads AS d
               ON d.selection_id=b.selection_id AND d.book_key=b.book_key
-            WHERE d.status IS NULL OR d.status NOT IN ('complete', 'empty')
-            """
+            WHERE ((? IN ('mean', 'both') AND b.book_key='mean')
+                OR (? IN ('books', 'both') AND b.book_key!='mean'))
+              AND (d.status IS NULL
+                OR (d.status NOT IN ('complete', 'empty')
+                    AND NOT (d.status='failed' AND d.attempts>=?)))
+            """,
+                (mode, mode, maximum_source_attempts),
+            ).fetchone()[0]
         ),
+        "source_failures_at_retry_cap": {
+            "event_pages": int(
+                connection.execute(
+                    "SELECT COUNT(*) FROM events "
+                    "WHERE page_status='failed' AND page_attempts>=?",
+                    (maximum_source_attempts,),
+                ).fetchone()[0]
+            ),
+            "chart_series": int(
+                connection.execute(
+                    """
+                    SELECT COUNT(*) FROM selection_books AS b
+                    JOIN downloads AS d
+                      ON d.selection_id=b.selection_id AND d.book_key=b.book_key
+                    WHERE ((? IN ('mean', 'both') AND b.book_key='mean')
+                        OR (? IN ('books', 'both') AND b.book_key!='mean'))
+                      AND d.status='failed' AND d.attempts>=?
+                    """,
+                    (mode, mode, maximum_source_attempts),
+                ).fetchone()[0]
+            ),
+            "retry_cap": maximum_source_attempts,
+        },
         "session_requests": session_requests,
         "session_response_bytes": session_response_bytes,
     }
@@ -755,8 +826,10 @@ def export_database(
     *,
     database_path: Path,
     max_quote_skew_seconds: int,
+    mode: str = DEFAULT_MODE,
     session_requests: int = 0,
     session_response_bytes: int = 0,
+    maximum_source_attempts: int = DEFAULT_MAX_SOURCE_ATTEMPTS,
 ) -> dict[str, object]:
     export_dir = database_path.parent / "method_exports"
     horizons = _horizon_rows(connection)
@@ -766,8 +839,10 @@ def export_database(
     summary = database_summary(
         connection,
         database_path=database_path,
+        mode=mode,
         session_requests=session_requests,
         session_response_bytes=session_response_bytes,
+        maximum_source_attempts=maximum_source_attempts,
     )
     summary["exports"] = {
         "horizon_rows": len(horizons),
@@ -790,6 +865,16 @@ def _print_summary(summary: Mapping[str, object]) -> None:
         f"Events: {summary['parsed_events']} parsed, {summary['failed_events']} failed; "
         f"method selections: {summary['selections']} across {summary['fights']} fights"
     )
+    failures = summary.get("source_failures_at_retry_cap", {})
+    if isinstance(failures, Mapping) and (
+        failures.get("event_pages") or failures.get("chart_series")
+    ):
+        print(
+            "Unavailable after retry cap: "
+            f"{int(failures.get('event_pages', 0)):,} event pages, "
+            f"{int(failures.get('chart_series', 0)):,} chart series "
+            f"({failures.get('retry_cap')} attempts each)."
+        )
     print(
         f"Quotes: {int(summary['quote_points']):,}; "
         f"pending downloads: {int(summary['pending_downloads']):,}; "
@@ -804,6 +889,47 @@ def _print_summary(summary: Mapping[str, object]) -> None:
             f"{int(exports['coherent_markets']):,} complete six-way markets"
         )
         print(f"Export directory: {exports['directory']}")
+
+
+def _event_page_needs_work(
+    connection: sqlite3.Connection,
+    *,
+    event_url: str,
+    maximum_attempts: int,
+) -> bool:
+    row = connection.execute(
+        "SELECT page_status, page_attempts FROM events WHERE event_url=?",
+        (event_url,),
+    ).fetchone()
+    if row is None:
+        return True
+    if row["page_status"] == "parsed":
+        return False
+    return not (
+        row["page_status"] == "failed"
+        and int(row["page_attempts"] or 0) >= maximum_attempts
+    )
+
+
+def _event_needs_work(
+    connection: sqlite3.Connection,
+    *,
+    event_url: str,
+    mode: str,
+    maximum_attempts: int,
+) -> bool:
+    return _event_page_needs_work(
+        connection,
+        event_url=event_url,
+        maximum_attempts=maximum_attempts,
+    ) or bool(
+        _pending_downloads(
+            connection,
+            event_url=event_url,
+            mode=mode,
+            maximum_attempts=maximum_attempts,
+        )
+    )
 
 
 def run_backfill(args: argparse.Namespace) -> tuple[str, dict[str, object]]:
@@ -839,6 +965,7 @@ def run_backfill(args: argparse.Namespace) -> tuple[str, dict[str, object]]:
         "max_events": args.max_events,
         "max_runtime_hours": args.max_runtime_hours,
         "max_requests": args.max_requests,
+        "maximum_source_attempts": args.max_source_attempts,
     }
     cursor = connection.execute(
         "INSERT INTO runs(started_at_utc, status, config_json) VALUES (?, 'running', ?)",
@@ -853,26 +980,40 @@ def run_backfill(args: argparse.Namespace) -> tuple[str, dict[str, object]]:
         robots = fetcher.get(f"{BESTFIGHTODDS_ROOT}/robots.txt").text
         if not _robots_allows_public_paths(robots):
             raise BackfillError("BestFightOdds robots policy no longer allows this collector")
-        events = _eligible_winner_events(
+        eligible_events = _eligible_winner_events(
             winner,
             from_year=args.from_year,
             to_year=args.to_year,
             order=args.order,
         )
+        events = [
+            event
+            for event in eligible_events
+            if _event_needs_work(
+                connection,
+                event_url=event["event_url"],
+                mode=args.mode,
+                maximum_attempts=args.max_source_attempts,
+            )
+        ]
+        if args.max_events:
+            events = events[: args.max_events]
+        print(
+            f"Eligible events: {len(eligible_events)}; "
+            f"events needing work this session: {len(events)}",
+            flush=True,
+        )
         for event in events:
-            if args.max_events and events_processed >= args.max_events:
-                status, message = "paused", "event cap reached"
-                break
             check_storage_budget(
                 database_path,
                 max_database_mib=args.max_database_mib,
                 minimum_free_gib=args.minimum_free_gib,
             )
-            parsed = connection.execute(
-                "SELECT page_status FROM events WHERE event_url=?",
-                (event["event_url"],),
-            ).fetchone()
-            if parsed is None or parsed["page_status"] != "parsed":
+            if _event_page_needs_work(
+                connection,
+                event_url=event["event_url"],
+                maximum_attempts=args.max_source_attempts,
+            ):
                 try:
                     response = fetcher.get(event["event_url"])
                     selections = parse_bestfightodds_method_props(response.text)
@@ -899,7 +1040,10 @@ def run_backfill(args: argparse.Namespace) -> tuple[str, dict[str, object]]:
                     events_processed += 1
                     continue
             for spec in _pending_downloads(
-                connection, event_url=event["event_url"], mode=args.mode
+                connection,
+                event_url=event["event_url"],
+                mode=args.mode,
+                maximum_attempts=args.max_source_attempts,
             ):
                 check_storage_budget(
                     database_path,
@@ -923,6 +1067,18 @@ def run_backfill(args: argparse.Namespace) -> tuple[str, dict[str, object]]:
                 f"{event['source_event_date']} {event['title']}",
                 flush=True,
             )
+        remaining = sum(
+            _event_needs_work(
+                connection,
+                event_url=event["event_url"],
+                mode=args.mode,
+                maximum_attempts=args.max_source_attempts,
+            )
+            for event in eligible_events
+        )
+        if remaining:
+            status = "paused"
+            message = f"{remaining} eligible events still need work"
     except BudgetReached as error:
         status, message = "paused", str(error)
     except KeyboardInterrupt:
@@ -951,8 +1107,10 @@ def run_backfill(args: argparse.Namespace) -> tuple[str, dict[str, object]]:
         connection,
         database_path=database_path,
         max_quote_skew_seconds=args.max_quote_skew_seconds,
+        mode=args.mode,
         session_requests=fetcher.requests,
         session_response_bytes=fetcher.response_bytes,
+        maximum_source_attempts=args.max_source_attempts,
     )
     connection.close()
     return status, summary
@@ -970,6 +1128,15 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--order", choices=("oldest", "newest"), default="newest")
     parser.add_argument("--max-events", type=int, default=0)
     parser.add_argument("--max-requests", type=int, default=DEFAULT_MAX_REQUESTS)
+    parser.add_argument(
+        "--max-source-attempts",
+        type=int,
+        default=DEFAULT_MAX_SOURCE_ATTEMPTS,
+        help=(
+            "stop retrying an unavailable event page or chart series after this "
+            "many failed attempts (default: 2)"
+        ),
+    )
     parser.add_argument(
         "--max-runtime-hours", type=float, default=DEFAULT_MAX_RUNTIME_HOURS
     )
@@ -998,6 +1165,8 @@ def _validate_args(args: argparse.Namespace) -> None:
         raise BackfillError("year range must be valid and start in 2007 or later")
     if args.max_events < 0:
         raise BackfillError("max events cannot be negative")
+    if not 1 <= args.max_source_attempts <= 10:
+        raise BackfillError("maximum source attempts must be within [1, 10]")
     if not 0 < args.max_quote_skew_seconds <= 86_400:
         raise BackfillError("max quote skew must be within (0, 86400] seconds")
     if args.max_database_mib <= 0 or args.minimum_free_gib < 0:
@@ -1019,9 +1188,16 @@ def main(argv: Sequence[str] | None = None) -> int:
                     connection,
                     database_path=database_path,
                     max_quote_skew_seconds=args.max_quote_skew_seconds,
+                    mode=args.mode,
+                    maximum_source_attempts=args.max_source_attempts,
                 )
                 if args.export_only
-                else database_summary(connection, database_path=database_path)
+                else database_summary(
+                    connection,
+                    database_path=database_path,
+                    mode=args.mode,
+                    maximum_source_attempts=args.max_source_attempts,
+                )
             )
             connection.close()
             _print_summary(summary)
