@@ -25,6 +25,7 @@
       <button class="nav-button" type="button" data-nav="graph">Fight graph</button>
       <button class="nav-button" type="button" data-nav="simulation">Simulation</button>
       <button class="nav-button" type="button" data-nav="market">Market</button>
+      <button class="nav-button" type="button" data-nav="performance">Performance</button>
       <button class="nav-button" type="button" data-nav="data">Model &amp; data</button>
     </nav>
     <div class="header-status" id="header-status" aria-live="polite"><span class="status-dot"></span>Loading data</div>
@@ -319,6 +320,39 @@
         </section>
         <div class="section-heading"><div><p class="eyebrow">Moneyline audit</p><h2>Every matchup and book</h2><p class="section-note">Open a fight's odds-movement chart to switch between the consensus and any individual oddsmaker.</p></div></div>
         <section class="market-grid" id="market-matchups" aria-live="polite"></section>
+      </div>
+    </section>
+
+    <section class="view" id="view-performance" data-view="performance" aria-labelledby="performance-title">
+      <div class="compact-hero page-shell">
+        <p class="eyebrow">Published paper bets</p><h1 id="performance-title">What would the bankroll have done?</h1>
+        <p>Replay only timestamped, above-threshold bets that were actually published. Change the starting bankroll, stake size, and price timing without using a fight result to choose a bet. Earlier fight-total estimates came from an experimental model, so this history is evidence—not proof of an edge.</p>
+      </div>
+      <div class="page-shell page-stack">
+        <section class="panel performance-controls" id="performance-controls" tabindex="-1" aria-labelledby="performance-controls-title">
+          <div class="section-heading">
+            <div><p class="eyebrow">Paper strategy</p><h2 id="performance-controls-title">Bankroll assumptions</h2><p class="section-note">Kelly sizes a stake from the published win probability and offered odds. Fractional Kelly reduces that amount because probability estimates can be wrong.</p></div>
+            <span class="research-badge">Historical simulation only</span>
+          </div>
+          <div class="performance-filter-grid">
+            <div class="filter-control"><label for="performance-bankroll">Initial bankroll</label><input id="performance-bankroll" type="number" min="1" step="100" value="1000" inputmode="decimal"></div>
+            <div class="filter-control"><label for="performance-staking">Bet size</label><select id="performance-staking"><option value="half_kelly">Half Kelly</option><option value="third_kelly">One-third Kelly</option><option value="full_kelly">Full Kelly</option><option value="flat_one_percent">Flat 1% of bankroll</option></select></div>
+            <div class="filter-control"><label for="performance-timing">Bet timing</label><select id="performance-timing"><option value="first_qualifying">First published qualifying price</option><option value="official_t24">Official locked T-24 only</option><option value="nearest_t48">Published price nearest T-48</option><option value="nearest_t24">Published price nearest T-24</option><option value="favorite_early_underdog_late">Favorite early / underdog late</option><option value="latest_qualifying">Latest published qualifying price</option></select></div>
+            <div class="filter-control"><label for="performance-market">Market</label><select id="performance-market"><option value="all">All tracked markets</option><option value="Moneyline">Moneyline</option><option value="Total rounds">Fight totals</option></select></div>
+          </div>
+          <p class="performance-data-note" id="performance-data-note" role="status" aria-live="polite"></p>
+        </section>
+        <section class="panel performance-results" id="performance-results" tabindex="-1" aria-labelledby="performance-results-title">
+          <div class="section-heading"><div><p class="eyebrow">Settled results</p><h2 id="performance-results-title">Paper bankroll history</h2><p class="section-note" id="performance-summary-note">Loading published bets...</p></div></div>
+          <div class="stats-grid" id="performance-summary"></div>
+          <div class="performance-chart" id="performance-chart" aria-label="Bankroll over time"></div>
+          <div class="performance-table-wrap">
+            <table class="performance-table">
+              <thead><tr><th>Date</th><th>Fight / bet</th><th>Published price</th><th>Result</th><th>Stake</th><th>Profit</th><th>Bankroll</th></tr></thead>
+              <tbody id="performance-rows"></tbody>
+            </table>
+          </div>
+        </section>
       </div>
     </section>
 

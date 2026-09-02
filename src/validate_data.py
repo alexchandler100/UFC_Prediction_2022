@@ -86,6 +86,10 @@ from market_tracker import (
     simulation_comparison_report,
 )
 from market_tracker._common import BETTING_STATUS, canonical_hash
+from market_tracker.bankroll import (
+    validate_bet_performance_publication,
+    validate_published_bet_archive,
+)
 from market_tracker.prospective import (
     DECISION_TARGET_LEAD_SECONDS,
     DECISION_WINDOW_SECONDS,
@@ -2499,6 +2503,67 @@ def validate_market_data(
             StoreIntegrityError,
         ) as error:
             report.errors.append(f"paper performance report is invalid: {error}")
+
+    published_archive_path = market_root / "published_bet_snapshots.json"
+    bet_performance_path = market_root / "bet_performance.json"
+    if published_archive_path.exists() and bet_performance_path.exists():
+        try:
+            if published_archive_path.stat().st_size > 4 * 1024 * 1024:
+                raise ValueError("published bet archive exceeds 4 MiB")
+            if bet_performance_path.stat().st_size > 2 * 1024 * 1024:
+                raise ValueError("bet performance publication exceeds 2 MiB")
+            archive = validate_published_bet_archive(
+                json.loads(published_archive_path.read_text(encoding="utf-8"))
+            )
+            bet_performance = validate_bet_performance_publication(
+                json.loads(bet_performance_path.read_text(encoding="utf-8"))
+            )
+            hashes = bet_performance.get("source_hashes", {})
+            report.require(
+                hashes.get("published_archive") == archive.get("archive_sha256"),
+                "bet performance publication is stale relative to its published archive",
+            )
+            report.require(
+                hashes.get("official_decisions")
+                == canonical_hash([item.to_mapping() for item in decisions]),
+                "bet performance publication is stale relative to paper decisions",
+            )
+            report.require(
+                hashes.get("official_settlements")
+                == canonical_hash([item.to_mapping() for item in settlements]),
+                "bet performance publication is stale relative to paper settlements",
+            )
+            report.require(
+                hashes.get("official_total_decisions")
+                == canonical_hash([item.to_mapping() for item in total_round_decisions]),
+                "bet performance publication is stale relative to total decisions",
+            )
+            report.require(
+                hashes.get("official_total_settlements")
+                == canonical_hash([item.to_mapping() for item in total_round_settlements]),
+                "bet performance publication is stale relative to total settlements",
+            )
+            report.facts.append(
+                "published paper-bet history: "
+                f"{bet_performance['record_count']:,} timestamped records / "
+                f"{bet_performance['official_settled_count']:,} settled locked bets"
+            )
+        except (
+            OSError,
+            UnicodeError,
+            json.JSONDecodeError,
+            TypeError,
+            ValueError,
+        ) as error:
+            report.errors.append(f"bet performance publication is invalid: {error}")
+    elif published_archive_path.exists() or bet_performance_path.exists():
+        missing = [
+            path.name for path in (published_archive_path, bet_performance_path)
+            if not path.exists()
+        ]
+        report.errors.append(f"published bet performance files are incomplete: {missing}")
+    elif required:
+        report.warnings.append("published bet performance files have not been created yet")
 
     report.facts.append(
         "market ledger: "

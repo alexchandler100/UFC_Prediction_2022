@@ -70,6 +70,7 @@ from upcoming_bet_board import (
     validate_upcoming_forecast_publication,
     write_upcoming_bet_board,
 )
+from market_tracker.bankroll import archive_upcoming_bet_board
 
 
 ODDS_API_SOURCE = "the-odds-api.com"
@@ -112,6 +113,7 @@ BAYESIAN_FILTER_DECISION_JSONL_PATH = (
 REPORT_PATH = MARKET_ROOT / "capture_report.json"
 CURRENT_OPPORTUNITIES_PATH = MARKET_ROOT / "current_opportunities.json"
 UPCOMING_BET_BOARD_PATH = MARKET_ROOT / "upcoming_bet_board.json"
+PUBLISHED_BET_ARCHIVE_PATH = MARKET_ROOT / "published_bet_snapshots.json"
 REPORT_SIZE_LIMIT = 64 * 1024
 CURRENT_OPPORTUNITIES_SIZE_LIMIT = 256 * 1024
 SOURCE_RETRY_DELAYS_SECONDS = (15.0, 60.0)
@@ -2509,6 +2511,9 @@ def capture_market_snapshot() -> dict[str, object]:
             current_opportunities=current_opportunities,
         )
         write_upcoming_bet_board(upcoming_bet_board, UPCOMING_BET_BOARD_PATH)
+        archive_upcoming_bet_board(
+            upcoming_bet_board, PUBLISHED_BET_ARCHIVE_PATH
+        )
     quote_matchups = len({item.matchup_id for item in quotes})
     paired_forecast_matchups = len({item.matchup_id for item in forecasts})
     published_without_stable_ids = sum(

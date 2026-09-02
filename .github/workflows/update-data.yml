@@ -80,6 +80,9 @@ jobs:
         working-directory: src
         run: python update_market_performance.py
 
+      - name: Publish paper-bet bankroll history
+        run: python src/update_bet_performance.py
+
       - name: Update frozen market-first prospective paper test
         working-directory: src
         run: python update_market_first_paper.py
@@ -90,6 +93,7 @@ jobs:
       - name: Validate generated snapshot
         run: |
           python src/update_odds_history.py --validate-only
+          python src/update_bet_performance.py --validate-only
           python src/update_market_first_paper.py --validate-only
           python src/validate_data.py --require-model-artifact --require-market-data
 
@@ -123,7 +127,9 @@ jobs:
             src/content/data/market/paper_settlements.jsonl \
             src/content/data/market/simulation_comparisons.csv \
             src/content/data/market/simulation_comparisons.jsonl \
-            src/content/data/market/performance_report.json
+            src/content/data/market/performance_report.json \
+            src/content/data/market/published_bet_snapshots.json \
+            src/content/data/market/bet_performance.json
 
           for optional_path in \
             src/content/data/processed/ufc_fight_round_stats_doubled.csv \

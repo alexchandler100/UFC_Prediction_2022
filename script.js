@@ -11,6 +11,7 @@ const DATA_PATHS = {
   upcomingBetBoard: "src/content/data/market/upcoming_bet_board.json",
   methodMarkets: "src/content/data/market/current_method_markets.json",
   performance: "src/content/data/market/performance_report.json",
+  betPerformance: "src/content/data/market/bet_performance.json",
   outcomes: "src/content/data/external/outcome_forecasts.json",
   simulations: "src/content/data/external/simulation_forecasts.json",
 };
@@ -28,6 +29,7 @@ const state = {
   upcomingBetBoard: null,
   methodMarkets: null,
   performance: null,
+  betPerformance: null,
   outcomes: null,
   simulations: null,
   simulationPromise: null,
@@ -150,10 +152,24 @@ function formatOdds(value) {
   return number > 0 ? `+${Math.round(number)}` : `${Math.round(number)}`;
 }
 
+function formatCurrency(value) {
+  const number = finite(value);
+  if (number === null) return "—";
+  return number.toLocaleString(undefined, { style: "currency", currency: "USD", minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
 function decimalOdds(value) {
   const odds = finite(value);
   if (odds === null || odds === 0 || Math.abs(odds) < 100) return null;
   return odds > 0 ? 1 + odds / 100 : 1 + 100 / Math.abs(odds);
+}
+
+function kellyFraction(probability, moneyline) {
+  const chance = finite(probability);
+  const decimal = decimalOdds(moneyline);
+  if (chance === null || decimal === null || chance <= 0 || chance >= 1) return null;
+  const profit = decimal - 1;
+  return Math.max(0, Math.min(1, (profit * chance - (1 - chance)) / profit));
 }
 
 function normalCdf(value) {
@@ -1197,7 +1213,7 @@ async function fetchJson(path, required = true) {
 }
 
 async function loadData() {
-  const [explorer, vegas, card, model, bayesian, market, oddsHistory, upcomingBetBoard, methodMarkets, performance, outcomes] = await Promise.all([
+  const [explorer, vegas, card, model, bayesian, market, oddsHistory, upcomingBetBoard, methodMarkets, performance, betPerformance, outcomes] = await Promise.all([
     fetchJson(DATA_PATHS.explorer),
     fetchJson(DATA_PATHS.vegas, false),
     fetchJson(DATA_PATHS.card, false),
@@ -1208,6 +1224,7 @@ async function loadData() {
     fetchJson(DATA_PATHS.upcomingBetBoard, false),
     fetchJson(DATA_PATHS.methodMarkets, false),
     fetchJson(DATA_PATHS.performance, false),
+    fetchJson(DATA_PATHS.betPerformance, false),
     fetchJson(DATA_PATHS.outcomes, false),
   ]);
   state.explorer = explorer;
@@ -1220,6 +1237,7 @@ async function loadData() {
   state.upcomingBetBoard = upcomingBetBoard;
   state.methodMarkets = methodMarkets;
   state.performance = performance;
+  state.betPerformance = betPerformance;
   state.outcomes = outcomes;
   state.fighters = explorer.fighters;
   state.fighterById = new Map(state.fighters.map((fighter) => [fighter.id, fighter]));
@@ -1665,13 +1683,20 @@ async function prepareSimulationView(requestedMatchupId = "") {
 function showView(name) {
   document.querySelectorAll("[data-view]").forEach((view) => view.classList.toggle("is-active", view.dataset.view === name));
   document.querySelectorAll("[data-nav]").forEach((button) => button.classList.toggle("is-active", button.dataset.nav === name));
-  document.title = `${name === "matchups" ? "Matchups" : name === "fighters" ? "Fighters" : name === "graph" ? "Fight graph" : name === "simulation" ? "Simulation" : name === "market" ? "Market" : "Model & data"} · UFC Data Lab`;
+  requestAnimationFrame(() => {
+    const activeNav = document.querySelector(`.primary-nav [data-nav="${name}"]`);
+    const nav = activeNav?.closest(".primary-nav");
+    if (activeNav && nav && nav.scrollWidth > nav.clientWidth) {
+      nav.scrollLeft = Math.max(0, activeNav.offsetLeft - (nav.clientWidth - activeNav.offsetWidth) / 2);
+    }
+  });
+  document.title = `${name === "matchups" ? "Matchups" : name === "fighters" ? "Fighters" : name === "graph" ? "Fight graph" : name === "simulation" ? "Simulation" : name === "market" ? "Market" : name === "performance" ? "Performance" : "Model & data"} · UFC Data Lab`;
 }
 
 function applyRoute() {
   if (!state.explorer) return;
   const parts = window.location.hash.replace(/^#\/?/, "").split("/").filter(Boolean);
-  const view = ["matchups", "fighters", "graph", "simulation", "market", "data"].includes(parts[0]) ? parts[0] : "matchups";
+  const view = ["matchups", "fighters", "graph", "simulation", "market", "performance", "data"].includes(parts[0]) ? parts[0] : "matchups";
   const expectedHash = window.location.hash || "#matchups";
   showView(view);
 
@@ -1720,6 +1745,10 @@ function applyRoute() {
     if (parts[1] && parts[2] && focusMarketMatchup(parts[1], parts[2])) return;
     clearMarketMatchupFocus();
     focusRouteTarget("#qualified-upcoming-bets", expectedHash);
+    return;
+  }
+  if (view === "performance") {
+    focusRouteTarget("#performance-controls", expectedHash);
     return;
   }
   if (view === "data") {
@@ -2675,6 +2704,9 @@ function renderQualifiedUpcomingBets() {
     const expectedReturn = element("div", "qualified-bet-stat qualified-bet-ev");
     appendText(expectedReturn, "span", "", "Estimated return");
     appendText(expectedReturn, "strong", "", formatPercent(bet.estimated_expected_return));
+    const halfKelly = element("div", "qualified-bet-stat");
+    appendText(halfKelly, "span", "", "½ Kelly stake");
+    appendText(halfKelly, "strong", "", formatPercent((kellyFraction(bet.estimated_win_probability, bet.offered_moneyline) || 0) / 2));
 
     const source = element("div", "qualified-bet-source");
     const isCandidateTotal = bet.candidate_only === true || bet.probability_source === "candidate_duration_model" || bet.category === "Total rounds";
@@ -2687,8 +2719,169 @@ function renderQualifiedUpcomingBets() {
 
     const action = element("div", "qualified-bet-action");
     if (bet.fighter_id && bet.opponent_id) action.append(actionButton("View fight research", "secondary-button small-button", () => setRoute(`matchups/${bet.fighter_id}/${bet.opponent_id}`)));
-    row.append(rank, fight, price, probability, expectedReturn, source, action);
+    row.append(rank, fight, price, probability, expectedReturn, halfKelly, source, action);
     container.append(row);
+  });
+}
+
+function selectPerformanceRecords(records, timing) {
+  const official = records.filter((record) => record.official === true);
+  if (timing === "official_t24") return official;
+  const published = records.filter((record) => record.record_type === "published_snapshot");
+  const groups = new Map();
+  published.forEach((record) => {
+    const key = String(record.market_key || record.record_id);
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key).push(record);
+  });
+  const selected = [];
+  groups.forEach((group) => {
+    const ordered = group.sort((left, right) => String(left.published_at_utc).localeCompare(String(right.published_at_utc)) || String(left.record_id).localeCompare(String(right.record_id)));
+    let choice = ordered[0];
+    if (timing === "latest_qualifying") choice = ordered[ordered.length - 1];
+    else if (timing === "nearest_t24" || timing === "nearest_t48") {
+      const target = timing === "nearest_t48" ? 48 : 24;
+      const timed = ordered.filter((record) => finite(record.hours_before_start) !== null);
+      if (timed.length) choice = timed.sort((left, right) => Math.abs(Number(left.hours_before_start) - target) - Math.abs(Number(right.hours_before_start) - target) || String(left.published_at_utc).localeCompare(String(right.published_at_utc)))[0];
+    } else if (timing === "favorite_early_underdog_late") {
+      choice = ordered[0].selection_role === "underdog" ? ordered[ordered.length - 1] : ordered[0];
+    }
+    selected.push(choice);
+  });
+  const archivedKeys = new Set(published.map((record) => String(record.market_key)));
+  official.filter((record) => !archivedKeys.has(String(record.market_key))).forEach((record) => selected.push(record));
+  return selected.sort((left, right) => String(left.event_date).localeCompare(String(right.event_date)) || Number(right.bout_order ?? -1) - Number(left.bout_order ?? -1) || String(left.record_id).localeCompare(String(right.record_id)));
+}
+
+function simulatePaperBankroll(records, initialBankroll, staking) {
+  const settled = records.filter((record) => ["won", "lost", "void"].includes(record.status));
+  const pending = records.filter((record) => record.status === "pending");
+  const events = new Map();
+  settled.forEach((record) => {
+    const key = `${record.event_date}|${record.event_id}`;
+    if (!events.has(key)) events.set(key, []);
+    events.get(key).push(record);
+  });
+  let bankroll = initialBankroll;
+  let peak = bankroll;
+  let maxDrawdown = 0;
+  let totalStaked = 0;
+  const rows = [];
+  const curve = [{ label: "Start", date: "", bankroll }];
+  [...events.entries()].sort(([left], [right]) => left.localeCompare(right)).forEach(([, eventRecords]) => {
+    const eventBankroll = bankroll;
+    const factor = staking === "full_kelly" ? 1 : staking === "half_kelly" ? 0.5 : staking === "third_kelly" ? 1 / 3 : null;
+    const proposed = eventRecords.map((record) => staking === "flat_one_percent" ? 0.01 : Math.max(0, Number(record.kelly_fraction) * factor));
+    const proposedTotal = proposed.reduce((sum, value) => sum + value, 0);
+    const scale = proposedTotal > 1 ? 1 / proposedTotal : 1;
+    let cardProfit = 0;
+    eventRecords.forEach((record, index) => {
+      const fraction = proposed[index] * scale;
+      const stake = eventBankroll * fraction;
+      const profit = stake * Number(record.unit_profit || 0);
+      cardProfit += profit;
+      totalStaked += stake;
+      rows.push({ ...record, stake_fraction: fraction, stake, profit, bankroll_before_event: eventBankroll });
+    });
+    bankroll = Math.max(0, eventBankroll + cardProfit);
+    rows.slice(-eventRecords.length).forEach((row) => { row.bankroll_after_event = bankroll; });
+    peak = Math.max(peak, bankroll);
+    if (peak > 0) maxDrawdown = Math.max(maxDrawdown, (peak - bankroll) / peak);
+    curve.push({ label: eventRecords[0].event_title || formatDate(eventRecords[0].event_date), date: eventRecords[0].event_date, bankroll });
+  });
+  return {
+    rows,
+    pending,
+    curve,
+    endingBankroll: bankroll,
+    profit: bankroll - initialBankroll,
+    totalStaked,
+    roi: totalStaked ? (bankroll - initialBankroll) / totalStaked : null,
+    maxDrawdown,
+    wins: settled.filter((record) => record.status === "won").length,
+    losses: settled.filter((record) => record.status === "lost").length,
+    voids: settled.filter((record) => record.status === "void").length,
+  };
+}
+
+function renderPerformanceChart(curve, initialBankroll) {
+  const container = $("#performance-chart"); container.replaceChildren();
+  if (curve.length < 2) {
+    container.append(element("div", "empty-state", "A bankroll line will appear after a selected strategy has settled bets."));
+    return;
+  }
+  const width = 720, height = 260, left = 62, right = 20, top = 20, bottom = 42;
+  const values = curve.map((point) => point.bankroll);
+  let minimum = Math.min(...values, initialBankroll), maximum = Math.max(...values, initialBankroll);
+  const padding = Math.max((maximum - minimum) * 0.15, Math.max(initialBankroll * 0.03, 1));
+  minimum = Math.max(0, minimum - padding); maximum += padding;
+  const x = (index) => left + index / Math.max(1, curve.length - 1) * (width - left - right);
+  const y = (value) => top + (maximum - value) / Math.max(1e-9, maximum - minimum) * (height - top - bottom);
+  const svg = document.createElementNS(SVG_NAMESPACE, "svg");
+  svg.setAttribute("viewBox", `0 0 ${width} ${height}`); svg.setAttribute("class", "performance-svg"); svg.setAttribute("role", "img");
+  svg.setAttribute("aria-label", `Bankroll changed from ${formatCurrency(initialBankroll)} to ${formatCurrency(curve[curve.length - 1].bankroll)}`);
+  [0, 0.5, 1].forEach((ratio) => {
+    const value = maximum - ratio * (maximum - minimum); const line = document.createElementNS(SVG_NAMESPACE, "line");
+    line.setAttribute("x1", left); line.setAttribute("x2", width - right); line.setAttribute("y1", y(value)); line.setAttribute("y2", y(value)); line.setAttribute("class", "performance-gridline"); svg.append(line);
+    const label = document.createElementNS(SVG_NAMESPACE, "text"); label.setAttribute("x", left - 9); label.setAttribute("y", y(value) + 4); label.setAttribute("text-anchor", "end"); label.setAttribute("class", "performance-axis-label"); label.textContent = formatCurrency(value); svg.append(label);
+  });
+  const path = document.createElementNS(SVG_NAMESPACE, "path"); path.setAttribute("d", curve.map((point, index) => `${index ? "L" : "M"} ${x(index)} ${y(point.bankroll)}`).join(" ")); path.setAttribute("class", `performance-line ${curve[curve.length - 1].bankroll >= initialBankroll ? "is-positive" : "is-negative"}`); svg.append(path);
+  curve.forEach((point, index) => {
+    const circle = document.createElementNS(SVG_NAMESPACE, "circle"); circle.setAttribute("cx", x(index)); circle.setAttribute("cy", y(point.bankroll)); circle.setAttribute("r", 5); circle.setAttribute("class", "performance-point");
+    const title = document.createElementNS(SVG_NAMESPACE, "title"); title.textContent = `${point.label}: ${formatCurrency(point.bankroll)}`; circle.append(title); svg.append(circle);
+    const label = document.createElementNS(SVG_NAMESPACE, "text"); label.setAttribute("x", x(index)); label.setAttribute("y", height - 14); label.setAttribute("text-anchor", "middle"); label.setAttribute("class", "performance-axis-label"); label.textContent = point.date ? formatDate(point.date, { month: "short", day: "numeric" }) : "Start"; svg.append(label);
+  });
+  container.append(svg);
+}
+
+function appendPerformanceCell(row, label, content, className = "") {
+  const cell = element("td", className); cell.dataset.label = label;
+  if (content instanceof Node) cell.append(content); else cell.textContent = content;
+  row.append(cell);
+}
+
+function renderBetPerformance() {
+  const publication = state.betPerformance;
+  const summary = $("#performance-summary"); const rows = $("#performance-rows");
+  summary.replaceChildren(); rows.replaceChildren();
+  if (!publication || publication.paper_only !== true || publication.execution_enabled !== false || !Array.isArray(publication.records)) {
+    $("#performance-data-note").textContent = "No valid timestamped paper-bet history is available yet.";
+    $("#performance-summary-note").textContent = "The history will populate after a successful settlement update.";
+    $("#performance-chart").replaceChildren(element("div", "empty-state", "No bankroll history is available."));
+    return;
+  }
+  const initial = Math.max(1, finite($("#performance-bankroll").value) || 1000);
+  const staking = $("#performance-staking").value;
+  const timing = $("#performance-timing").value;
+  const market = $("#performance-market").value;
+  const candidates = publication.records.filter((record) => market === "all" || record.category === market);
+  const selected = selectPerformanceRecords(candidates, timing);
+  const result = simulatePaperBankroll(selected, initial, staking);
+  const archiveStart = publication.archive_started_at_utc ? formatDate(publication.archive_started_at_utc) : "the next archived board";
+  $("#performance-data-note").textContent = timing === "official_t24"
+    ? `Exact locked T-24 ledger · ${publication.official_settled_count} settled bets. Earlier website totals are intentionally included only in the published-price strategies.`
+    : `Published-price replay includes recovered website boards and automatic archives from ${archiveStart}. Official locked bets before that archive are retained.`;
+  $("#performance-summary-note").textContent = `${result.rows.length} settled bet${result.rows.length === 1 ? "" : "s"} · ${result.wins}-${result.losses}${result.voids ? ` · ${result.voids} void` : ""}${result.pending.length ? ` · ${result.pending.length} pending` : ""}. Bets from one card are sized from the same pre-card bankroll; stakes are scaled together if they would exceed available cash.`;
+  [
+    [formatCurrency(result.endingBankroll), "Ending bankroll", `${formatCurrency(result.profit)} total profit`],
+    [formatCurrency(result.totalStaked), "Total amount risked", `${formatPercent(result.roi)} return on amount risked`],
+    [`${result.wins}-${result.losses}`, "Win-loss record", `${result.voids} void · ${result.pending.length} pending`],
+    [formatPercent(result.maxDrawdown), "Largest drawdown", "Largest decline from an earlier bankroll high"],
+  ].forEach(([value, label, note]) => summary.append(statTile(value, label, note)));
+  renderPerformanceChart(result.curve, initial);
+  if (!result.rows.length) {
+    const row = document.createElement("tr"); const cell = element("td", "", "No settled bets match these assumptions."); cell.colSpan = 7; row.append(cell); rows.append(row); return;
+  }
+  result.rows.forEach((record) => {
+    const row = document.createElement("tr");
+    appendPerformanceCell(row, "Date", formatDate(record.event_date));
+    const bet = element("div", "performance-bet"); appendText(bet, "strong", "", `${record.fighter_name} vs ${record.opponent_name}`); appendText(bet, "span", "", `${record.selection} · ${record.category}`); appendPerformanceCell(row, "Fight / bet", bet);
+    const price = element("div", "performance-price"); appendText(price, "strong", "", `${formatOdds(record.offered_moneyline)} · ${record.target_book}`); appendText(price, "span", "", `${formatTimestamp(record.published_at_utc)} · ${formatPercent(record.estimated_win_probability)} estimated`); appendPerformanceCell(row, "Published price", price);
+    appendPerformanceCell(row, "Result", element("span", `pill ${record.status === "won" ? "win" : record.status === "lost" ? "loss" : "neutral"}`, record.status.toUpperCase()));
+    appendPerformanceCell(row, "Stake", `${formatCurrency(record.stake)} (${formatPercent(record.stake_fraction)})`, "numeric");
+    appendPerformanceCell(row, "Profit", `${record.profit >= 0 ? "+" : ""}${formatCurrency(record.profit)}`, `numeric ${record.profit >= 0 ? "is-profit" : "is-loss"}`);
+    appendPerformanceCell(row, "Bankroll", formatCurrency(record.bankroll_after_event), "numeric");
+    rows.append(row);
   });
 }
 
@@ -3051,6 +3244,7 @@ function bindEvents() {
   $("#graph-zoom-fit").addEventListener("click", fitFightGraph);
   $("#graph-fighter-search").addEventListener("keydown", (event) => { if (event.key === "Enter") drawFightGraph(); });
   ["#fighter-directory-search", "#division-filter", "#stance-filter", "#recorded-only"].forEach((selector) => { const input = $(selector); input.addEventListener(input.tagName === "INPUT" && input.type === "search" ? "input" : "change", () => { state.directoryLimit = 48; renderFighterDirectory(); }); });
+  ["#performance-bankroll", "#performance-staking", "#performance-timing", "#performance-market"].forEach((selector) => { const input = $(selector); input.addEventListener(input.tagName === "INPUT" ? "input" : "change", renderBetPerformance); });
   document.addEventListener("click", (event) => { ["a", "b"].forEach((side) => { const picker = $(`[data-picker="${side}"]`); if (!picker.contains(event.target)) closeAutocomplete($(`#matchup-fighter-${side}`), $(`#matchup-results-${side}`)); }); });
   window.addEventListener("hashchange", applyRoute);
 }
@@ -3058,7 +3252,7 @@ function bindEvents() {
 async function start() {
   try {
     await loadData();
-    renderCoverage(); populateFilters(); renderCurrentCard(); renderFighterDirectory(); renderMarket(); renderModelData(); bindEvents();
+    renderCoverage(); populateFilters(); renderCurrentCard(); renderFighterDirectory(); renderMarket(); renderBetPerformance(); renderModelData(); bindEvents();
     $("#publication-stamp").textContent = `Dataset through ${formatDate(state.explorer.data_through)} · schema v${state.explorer.schema_version}`;
     const status = $("#header-status"); status.classList.add("is-ready"); status.lastChild.textContent = " Data ready";
     $("#load-message").hidden = true; applyRoute();

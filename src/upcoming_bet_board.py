@@ -368,8 +368,9 @@ def _qualified_moneyline(
     reversed_orientation: bool,
     observed_at: datetime,
 ) -> dict[str, object] | None:
+    observation_records = tuple(observations)
     quotes = _book_quotes(
-        observations,
+        observation_records,
         reversed_orientation=reversed_orientation,
         observed_at=observed_at,
     )
@@ -425,6 +426,7 @@ def _qualified_moneyline(
                     "source_quote_age_seconds": target[
                         "source_quote_age_seconds"
                     ],
+                    "event_start_utc": observation_records[0].source_commence_time_utc,
                 }
             )
     if not candidates:
@@ -474,6 +476,7 @@ def _base_bet(
         "event_url": matchup.get("event_url"),
         "event_title": matchup.get("event_title"),
         "event_date": matchup.get("event_date"),
+        "event_start_utc": candidate.get("event_start_utc"),
         "bout_order": matchup.get("bout_order"),
         "matchup_id": matchup.get("matchup_id"),
         "fighter_id": matchup.get("fighter_id"),
@@ -555,6 +558,7 @@ def _current_opportunity_bets(
             "source_quote_age_seconds": target_quote.get(
                 "source_quote_age_seconds"
             ),
+            "event_start_utc": matchup.get("event_start_utc"),
         }
         rows.append(
             _base_bet(forecast, candidate, observed_at=observed, source=source)
@@ -576,6 +580,7 @@ def _current_opportunity_bets(
         body = {
             **{key: forecast.get(key) for key in (
                 "event_id", "event_url", "event_title", "event_date",
+                "event_start_utc",
                 "bout_order", "matchup_id", "fighter_id", "opponent_id",
                 "fighter_name", "opponent_name",
             )},
