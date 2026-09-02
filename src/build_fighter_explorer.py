@@ -25,6 +25,7 @@ VEGAS_PATH = ROOT / "content" / "data" / "external" / "vegas_odds.json"
 EXTERNAL_MMA_ROOT = ROOT / "content" / "data" / "external_mma"
 EXTERNAL_BOUTS_PATH = EXTERNAL_MMA_ROOT / "bouts.jsonl"
 EXTERNAL_IDENTITY_PATH = EXTERNAL_MMA_ROOT / "identity_map.csv"
+EXTERNAL_SUPPLEMENTS_PATH = EXTERNAL_MMA_ROOT / "fighter_history_supplements.jsonl"
 SCHEMA_VERSION = 3
 SIZE_LIMIT = 12 * 1024 * 1024
 SHARD_SIZE_LIMIT = 4 * 1024 * 1024
@@ -150,6 +151,7 @@ CAREER_DEFINITIONS = {
 SOURCE_LABELS = {
     "ufcstats": "UFCStats",
     "kaggle_pro_mma_fights_v1": "All Pro MMA Fights v1 (CC0)",
+    "wikipedia_cc_by_sa_v4": "Wikipedia record supplement (CC BY-SA 4.0)",
 }
 
 # The CC0 source uses this fighter's older Sherdog display name. Keep the
@@ -501,6 +503,156 @@ def _external_history_rows(
     return output, linked_observations, linked_perspectives
 
 
+def _supplement_history_rows(
+    supplements: Iterable[object],
+    identity_map: Mapping[tuple[str, str], str],
+) -> list[pd.Series]:
+    """Convert reviewed, source-attributed gap fills into fighter perspectives."""
+
+    required = {
+        "source",
+        "source_bout_id",
+        "source_event_id",
+        "source_url",
+        "event_date",
+        "event_name",
+        "promotion",
+        "fighter_profile_source",
+        "fighter_source_id",
+        "fighter_name",
+        "opponent_profile_source",
+        "opponent_source_id",
+        "opponent_name",
+        "result",
+        "method",
+    }
+    output: list[pd.Series] = []
+    seen_bouts: set[tuple[str, str]] = set()
+    for supplement in supplements:
+        missing = sorted(
+            field
+            for field in required
+            if not _clean_text(_external_value(supplement, field))
+        )
+        if missing:
+            raise ValueError(f"external history supplement has blank fields: {missing}")
+        source = _clean_text(_external_value(supplement, "source"))
+        source_bout_id = _clean_text(_external_value(supplement, "source_bout_id"))
+        bout_key = (source, source_bout_id)
+        if bout_key in seen_bouts:
+            raise ValueError(f"duplicate external history supplement bout: {bout_key}")
+        seen_bouts.add(bout_key)
+        event_date = _iso_date(_external_value(supplement, "event_date"))
+        if event_date is None:
+            raise ValueError(f"external history supplement has invalid date: {bout_key}")
+        result = _clean_text(_external_value(supplement, "result")).upper()
+        if result not in {"W", "L", "D", "NC"}:
+            raise ValueError(f"external history supplement has invalid result: {bout_key}")
+
+        source_url = _clean_text(_external_value(supplement, "source_url"))
+        event_source_id = _clean_text(_external_value(supplement, "source_event_id"))
+        promotion = _clean_text(_external_value(supplement, "promotion"))
+        if re.sub(r"[^a-z0-9]+", " ", promotion.casefold()).strip() == "one championship":
+            promotion = "One Championship"
+        fight_seed = f"{source}\0{source_bout_id}"
+        event_seed = f"{source}\0{event_source_id}"
+        fight_id = f"external_{sha256(fight_seed.encode('utf-8')).hexdigest()[:32]}"
+        event_id = f"external_{sha256(event_seed.encode('utf-8')).hexdigest()[:32]}"
+        finish_seconds = _number(_external_value(supplement, "finish_clock_seconds"))
+        finish_clock = (
+            ""
+            if finish_seconds is None
+            else f"{int(finish_seconds) // 60}:{int(finish_seconds) % 60:02d}"
+        )
+        scheduled_rounds = _number(_external_value(supplement, "scheduled_rounds"))
+        common = {
+            "date": event_date,
+            "fight_id": fight_id,
+            "fight_url": source_url,
+            "event_id": event_id,
+            "event_url": source_url,
+            "event_name": _external_value(supplement, "event_name"),
+            "promotion": promotion,
+            "source": source,
+            "source_label": SOURCE_LABELS.get(source, source),
+            "source_url": source_url,
+            "stats_available": False,
+            "division": _external_value(supplement, "division"),
+            "method": _external_value(supplement, "method"),
+            "round": _external_value(supplement, "finish_round"),
+            "time": finish_clock,
+            "total_fight_time": None,
+            "source_card_index": None,
+            "bout_order": _external_value(supplement, "source_bout_order"),
+            "time_format": (
+                f"{int(scheduled_rounds)} scheduled rounds"
+                if scheduled_rounds is not None
+                else ""
+            ),
+            **dict.fromkeys(STAT_FIELDS, None),
+        }
+        participants = (
+            (
+                _clean_text(_external_value(supplement, "fighter_profile_source")),
+                _clean_text(_external_value(supplement, "fighter_source_id")),
+                _clean_text(_external_value(supplement, "fighter_name")),
+                _clean_text(_external_value(supplement, "opponent_profile_source")),
+                _clean_text(_external_value(supplement, "opponent_source_id")),
+                _clean_text(_external_value(supplement, "opponent_name")),
+                result,
+            ),
+            (
+                _clean_text(_external_value(supplement, "opponent_profile_source")),
+                _clean_text(_external_value(supplement, "opponent_source_id")),
+                _clean_text(_external_value(supplement, "opponent_name")),
+                _clean_text(_external_value(supplement, "fighter_profile_source")),
+                _clean_text(_external_value(supplement, "fighter_source_id")),
+                _clean_text(_external_value(supplement, "fighter_name")),
+                {"W": "L", "L": "W", "D": "D", "NC": "NC"}[result],
+            ),
+        )
+        for (
+            profile_source,
+            fighter_source_id,
+            fighter_name,
+            opponent_profile_source,
+            opponent_source_id,
+            opponent_name,
+            perspective_result,
+        ) in participants:
+            mapped_fighter_id = identity_map.get((profile_source, fighter_source_id))
+            mapped_opponent_id = identity_map.get(
+                (opponent_profile_source, opponent_source_id)
+            )
+            fighter_id = mapped_fighter_id or _external_fighter_id(
+                profile_source, fighter_source_id
+            )
+            opponent_id = mapped_opponent_id or _external_fighter_id(
+                opponent_profile_source, opponent_source_id
+            )
+            output.append(
+                pd.Series(
+                    {
+                        **common,
+                        "fighter": fighter_name,
+                        "opponent": opponent_name,
+                        "fighter_url": (
+                            f"http://ufcstats.com/fighter-details/{fighter_id}"
+                            if mapped_fighter_id
+                            else f"https://external-mma.invalid/fighter-details/{fighter_id}"
+                        ),
+                        "opponent_url": (
+                            f"http://ufcstats.com/fighter-details/{opponent_id}"
+                            if mapped_opponent_id
+                            else f"https://external-mma.invalid/fighter-details/{opponent_id}"
+                        ),
+                        "result": perspective_result,
+                    }
+                )
+            )
+    return output
+
+
 def _sum_stats(rows: Iterable[pd.Series]) -> dict[str, float | None]:
     """Sum observed values without representing wholly missing fields as zero."""
 
@@ -794,6 +946,7 @@ def build_fighter_explorer(
     upcoming_fighters: pd.DataFrame | None = None,
     external_bouts: Iterable[object] | None = None,
     identity_map: Mapping[tuple[str, str], str] | None = None,
+    external_supplements: Iterable[object] | None = None,
 ) -> dict[str, object]:
     required_raw = {
         "date",
@@ -883,6 +1036,10 @@ def build_fighter_explorer(
     external_rows, linked_external_fights, linked_external_fighter_rows = _external_history_rows(
         external_bouts or [], identity_map or {}
     )
+    supplement_rows = _supplement_history_rows(
+        external_supplements or [], identity_map or {}
+    )
+    external_rows.extend(supplement_rows)
     for row in external_rows:
         fighter_id = _stable_id(row["fighter_url"])
         opponent_id = _stable_id(row["opponent_url"])
@@ -1042,6 +1199,8 @@ def build_fighter_explorer(
             "linked_external_fighter_rows": linked_external_fighter_rows,
             "external_metadata_fights": len(external_rows) // 2,
             "external_metadata_fighter_rows": len(external_rows),
+            "supplement_metadata_fights": len(supplement_rows) // 2,
+            "supplement_metadata_fighter_rows": len(supplement_rows),
             "published_fighter_fight_rows": len(raw_fights) + len(external_rows),
         },
         "fight_columns": list(FIGHT_COLUMNS),
@@ -1066,8 +1225,8 @@ def build_fighter_explorer(
                 for key, value in STAT_DEFINITIONS.items()
             },
             "notes": [
-                "The directory includes external-only historical profiles where the source has a Bellator or ONE result; UFCStats career rates remain UFC-only.",
-                "The external bootstrap is an incomplete CC0 dataset through 2021-08-11 and is not a current roster or weekly feed.",
+                "The directory includes external-only historical profiles where a reusable source has a Bellator or ONE result; UFCStats career rates remain UFC-only.",
+                "The broad external bootstrap is an incomplete CC0 dataset through 2021-08-11; reviewed, source-attributed supplements can close documented gaps without changing model inputs.",
                 "Absorbed and defensive statistics use the paired opponent row for the same stable fight ID.",
                 "Each rate uses only bouts where both its statistic and fight duration are known; bouts with unknown duration never contribute a numerator without exposure.",
                 "Wholly missing statistics remain null rather than becoming zero, and coverage counts show how many bouts support duration and control-time rates.",
@@ -1088,6 +1247,7 @@ def validate_fighter_explorer(
     fight_shards: dict[str, object] | None = None,
     external_bouts: Iterable[object] | None = None,
     identity_map: Mapping[tuple[str, str], str] | None = None,
+    external_supplements: Iterable[object] | None = None,
 ) -> dict[str, object]:
     if not isinstance(publication, dict):
         raise ValueError("fighter explorer publication must be an object")
@@ -1097,6 +1257,7 @@ def validate_fighter_explorer(
         upcoming_fighters,
         external_bouts,
         identity_map,
+        external_supplements,
     )
     if fight_shards is None:
         expected_publication = rebuilt
@@ -1247,6 +1408,30 @@ def load_external_history_inputs(
     return observations, mapping
 
 
+def load_fighter_history_supplements(
+    supplements_path: str | Path = EXTERNAL_SUPPLEMENTS_PATH,
+) -> list[dict[str, object]]:
+    """Load reviewed website-only history rows; these never enter model features."""
+
+    supplements_file = Path(supplements_path)
+    if not supplements_file.exists():
+        return []
+    supplements: list[dict[str, object]] = []
+    for line_number, line in enumerate(
+        supplements_file.read_text(encoding="utf-8").splitlines(), 1
+    ):
+        if not line.strip():
+            continue
+        value = json.loads(line)
+        if not isinstance(value, dict):
+            raise ValueError(
+                f"fighter history supplement at {supplements_file}:{line_number} "
+                "is not an object"
+            )
+        supplements.append(value)
+    return supplements
+
+
 def main() -> int:
     raw = pd.read_csv(RAW_PATH, low_memory=False)
     fighters = pd.read_csv(FIGHTER_PATH, low_memory=False)
@@ -1254,8 +1439,14 @@ def main() -> int:
     if VEGAS_PATH.exists():
         upcoming = pd.DataFrame(json.loads(VEGAS_PATH.read_text(encoding="utf-8")))
     external_bouts, identity_map = load_external_history_inputs()
+    external_supplements = load_fighter_history_supplements()
     publication = build_fighter_explorer(
-        raw, fighters, upcoming, external_bouts, identity_map
+        raw,
+        fighters,
+        upcoming,
+        external_bouts,
+        identity_map,
+        external_supplements,
     )
     write_fighter_explorer(publication)
     print(

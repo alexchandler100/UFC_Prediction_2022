@@ -36,9 +36,20 @@
       "notes": "No automated collector until ONE grants permission or offers a licensed feed; discipline filtering would be mandatory."
     },
     {
+      "key": "wikipedia_cc_by_sa_v4",
+      "name": "Wikipedia reviewed record supplements",
+      "priority": 4,
+      "collection_status": "manual_import",
+      "license": "Creative Commons Attribution-ShareAlike 4.0",
+      "source_page": "https://en.wikipedia.org/wiki/Stamp_Fairtex",
+      "coverage": "Reviewed professional MMA record gaps for named external-only fighter profiles",
+      "adapter": "fighter_history_supplements_jsonl",
+      "notes": "Website result metadata only. Each row pins a source revision, preserves attribution, and is excluded from prediction-model inputs."
+    },
+    {
       "key": "sportradar_mma",
       "name": "Sportradar MMA API",
-      "priority": 4,
+      "priority": 5,
       "collection_status": "reference_only",
       "license": "Commercial API agreement",
       "source_page": "https://developer.sportradar.com/mma/reference/mma-overview",

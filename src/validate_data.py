@@ -26,6 +26,7 @@ from build_fighter_explorer import SHARD_KEYS as FIGHTER_EXPLORER_SHARD_KEYS
 from build_fighter_explorer import SHARD_SIZE_LIMIT as FIGHTER_SHARD_SIZE_LIMIT
 from build_fighter_explorer import SIZE_LIMIT as FIGHTER_EXPLORER_SIZE_LIMIT
 from build_fighter_explorer import load_external_history_inputs
+from build_fighter_explorer import load_fighter_history_supplements
 from build_fighter_explorer import validate_fighter_explorer
 
 from fight_predictor.point_in_time import (
@@ -1197,6 +1198,9 @@ def validate_publication(
             data_root / "external_mma" / "bouts.jsonl",
             data_root / "external_mma" / "identity_map.csv",
         )
+        external_supplements = load_fighter_history_supplements(
+            data_root / "external_mma" / "fighter_history_supplements.jsonl"
+        )
         report.require(
             explorer_path.stat().st_size <= FIGHTER_EXPLORER_SIZE_LIMIT,
             "fighter explorer index exceeds its 8 MiB limit",
@@ -1215,6 +1219,7 @@ def validate_publication(
             fight_shards,
             external_bouts,
             identity_map,
+            external_supplements,
         )
         report.facts.append(
             "fighter explorer: "

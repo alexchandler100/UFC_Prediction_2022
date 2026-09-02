@@ -233,6 +233,11 @@ function record(fighter) {
   return value;
 }
 
+function recordWithBoutCount(fighter) {
+  const bouts = Number(fullRecord(fighter).recorded_bouts || 0);
+  return `${record(fighter)} · ${bouts} recorded MMA fight${bouts === 1 ? "" : "s"}`;
+}
+
 function fullRecord(fighter) {
   const results = fighter?.record || fighter?.career;
   if (!results) return { recorded_bouts: 0, promotions: [], metadata_only_bouts: 0 };
@@ -1796,7 +1801,7 @@ function makeAutocomplete(input, results, side) {
       const identity = element("span");
       appendText(identity, "strong", "", fighter.name);
       appendText(identity, "small", "", [fighterDivision(fighter), fighter.stance].filter(Boolean).join(" · ") || "Profile only");
-      button.append(identity, element("span", "record", record(fighter)));
+      button.append(identity, element("span", "record", recordWithBoutCount(fighter)));
       button.addEventListener("click", () => selectMatchupFighter(side, fighter));
       results.append(button);
     });
@@ -2397,9 +2402,9 @@ function renderFighterDirectory() {
     const card = element("article", "fighter-card");
     const title = element("div"); appendText(title, "h3", "", fighter.name);
     const externalOnly = fighter.profile_scope === "external_result_metadata";
-    appendText(title, "div", "fighter-card-sub", externalOnly ? "Historical result metadata only · source ends Aug. 2021" : ([fighterDivision(fighter), fighter.stance, fighter.reach ? `${fighter.reach} reach` : ""].filter(Boolean).join(" · ") || "Profile information only")); card.append(title);
+    appendText(title, "div", "fighter-card-sub", externalOnly ? "External MMA result metadata · source shown per fight" : ([fighterDivision(fighter), fighter.stance, fighter.reach ? `${fighter.reach} reach` : ""].filter(Boolean).join(" · ") || "Profile information only")); card.append(title);
     const stats = element("div", "mini-stats");
-    [[record(fighter), "record"], [formatNumber(fighter.career.sig_strikes_landed_per_minute), "SLpM"], [formatNumber(fighter.career.takedowns_landed_per_15), "TD / 15"]].forEach(([value, label]) => {
+    [[record(fighter), `${fullRecord(fighter).recorded_bouts || 0} recorded MMA fights`], [formatNumber(fighter.career.sig_strikes_landed_per_minute), "SLpM"], [formatNumber(fighter.career.takedowns_landed_per_15), "TD / 15"]].forEach(([value, label]) => {
       const stat = element("div", "mini-stat"); appendText(stat, "strong", "", value); appendText(stat, "span", "", label); stats.append(stat);
     }); card.append(stats, actionButton("Open full profile", "secondary-button", () => setRoute(`fighters/${fighter.id}`))); grid.append(card);
   });
@@ -2473,12 +2478,22 @@ function renderFightDetails(body, fight, opponentFight, fighterName) {
   const eventLink = element("a", "", "Open official event page"); eventLink.href = fight.event_url; eventLink.target = "_blank"; eventLink.rel = "noreferrer"; source.append(eventLink);
 }
 
+function compareFightsNewestFirst(left, right) {
+  const leftTime = Date.parse(`${left.date || ""}T00:00:00Z`);
+  const rightTime = Date.parse(`${right.date || ""}T00:00:00Z`);
+  const leftRank = Number.isFinite(leftTime) ? leftTime : Number.NEGATIVE_INFINITY;
+  const rightRank = Number.isFinite(rightTime) ? rightTime : Number.NEGATIVE_INFINITY;
+  return rightRank - leftRank
+    || Number(right.bout_order ?? -1) - Number(left.bout_order ?? -1)
+    || String(left.fight_id || "").localeCompare(String(right.fight_id || ""));
+}
+
 function renderFightHistory(fighter, options = {}) {
   const panel = element("section", `panel${options.compact ? " matchup-history-panel" : ""}`);
   const heading = element("div", "section-heading"); const copy = element("div"); appendText(copy, "p", "eyebrow", "Bout-level data"); appendText(copy, "h2", "", "Recorded fight history");
   copy.querySelector("h2").textContent = options.title || "Recorded fight history";
   appendText(copy, "p", "section-note", options.compact ? "UFCStats rows open to detailed statistics; other linked promotions show their available result metadata." : "UFCStats bouts include detailed performance data. Linked Bellator and ONE bouts include the result metadata actually available from the external source."); heading.append(copy);
-  const decoded = fighter.fights.map(decodeFight).sort((left, right) => String(right.date || "").localeCompare(String(left.date || "")));
+  const decoded = fighter.fights.map(decodeFight).sort(compareFightsNewestFirst);
   const promotions = [...new Set(decoded.map((fight) => fight.promotion).filter(Boolean))].sort();
   const controls = element("div", "history-controls"); appendText(controls, "label", "", "Promotion");
   const promotionFilter = document.createElement("select"); const allOption = element("option", "", "All promotions"); allOption.value = ""; promotionFilter.append(allOption);
@@ -2490,6 +2505,7 @@ function renderFightHistory(fighter, options = {}) {
     if (!visible.length) history.append(element("div", "empty-state", "No recorded fights match this promotion filter."));
     visible.forEach((fight) => {
     const details = document.createElement("details");
+    details.dataset.fightDate = fight.date || "";
     const summary = element("summary", "fight-summary"); appendText(summary, "time", "", formatDate(fight.date, { year: "numeric", month: "short", day: "numeric" }));
     const resultKey = String(fight.result).toLowerCase(); appendText(summary, "span", `result ${resultKey === "w" ? "win" : resultKey === "l" ? "loss" : "neutral"}`, fight.result || "—");
     const opponentName = element("strong", "", fight.opponent_name); summary.append(opponentName);
@@ -2532,11 +2548,11 @@ async function renderFighterProfile(fighterId) {
   const allResults = fullRecord(fighter);
   const header = element("section", "profile-header"); const identity = element("div"); identity.append(actionButton("← Back to fighter directory", "back-button", () => setRoute("fighters")));
   appendText(identity, "p", "eyebrow", fighterDivision(fighter) || "Fighter profile"); appendText(identity, "h2", "", fighter.name);
-  appendText(identity, "p", "", `${record(fighter)} across recorded promotions · ${allResults.recorded_bouts} bouts · ${fighter.career.recorded_bouts} with UFCStats detail`); header.append(identity);
+  appendText(identity, "p", "", `${record(fighter)} · ${allResults.recorded_bouts} recorded MMA fights across listed promotions · ${fighter.career.recorded_bouts} with UFCStats detail`); header.append(identity);
   if (hasUfcStatsDetail) {
     const sourceLink = element("a", "", "Open official UFCStats profile ↗"); sourceLink.href = fighter.url; sourceLink.target = "_blank"; sourceLink.rel = "noreferrer"; identity.append(sourceLink);
   } else {
-    appendText(identity, "p", "section-note", "Historical result metadata only. The external source is incomplete and ends on August 11, 2021.");
+    appendText(identity, "p", "section-note", "External result metadata only. Coverage dates and the contributing source are shown in the fight history.");
   }
   const bio = element("div", "profile-bio");
   [[fighter.height || "—", "Height"], [fighter.reach || "—", "Reach"], [fighter.stance || "—", "Stance"], [ageOn(fighter, state.card?.date) ?? "—", "Age at current card"], [fighter.dob_iso ? formatDate(fighter.dob_iso) : fighter.dob || "—", "Date of birth"], [fighter.id, "Stable fighter ID"]].forEach(([value, label]) => bio.append(bioItem(value, label))); header.append(bio); container.append(header);
@@ -2559,7 +2575,7 @@ async function renderFighterProfile(fighterId) {
     [["First linked fight", allResults.first_fight_date ? formatDate(allResults.first_fight_date) : "—"], ["Most recent linked fight", allResults.last_fight_date ? formatDate(allResults.last_fight_date) : "—"], ["Recent form across promotions", allResults.recent_form.join(" · ") || "—"], ["Current W/L streak", allResults.current_streak_result ? `${allResults.current_streak} ${allResults.current_streak_result}` : "—"], ["Promotions", allResults.promotions.map((item) => `${item.name} (${item.bouts})`).join(", ") || "—"], ["UFC divisions", fighter.career.divisions.map((item) => `${item.name} (${item.bouts})`).join(", ") || "—"]].forEach(([label, value]) => { const row = document.createElement("tr"); appendText(row, "td", "", label); appendText(row, "td", "", value); metadataRows.append(row); });
     metadataTable.append(metadataRows); metadataBody.append(metadataTable); metadata.append(metadataBody); careerPanel.append(metadata, renderRawTotals(fighter)); container.append(careerPanel);
   } else {
-    const notice = element("section", "panel coverage-notice"); appendText(notice, "strong", "", "Detailed statistics unavailable"); appendText(notice, "p", "", "This fighter has no UFCStats profile in our data. The recorded results below must not be treated as a complete career record, and the profile cannot be used in the prediction matchup tool."); container.append(notice);
+    const notice = element("section", "panel coverage-notice"); appendText(notice, "strong", "", "Detailed statistics unavailable"); appendText(notice, "p", "", "This fighter has no UFCStats profile in our data. Result coverage depends on the listed sources, and this profile cannot be used in the prediction matchup tool."); container.append(notice);
   }
   const historyLoading = element("div", "empty-state", "Loading complete fight log…"); container.append(historyLoading);
   try {

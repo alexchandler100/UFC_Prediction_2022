@@ -160,6 +160,8 @@ class FighterExplorerTests(unittest.TestCase):
                 "linked_external_fighter_rows": 0,
                 "external_metadata_fights": 0,
                 "external_metadata_fighter_rows": 0,
+                "supplement_metadata_fights": 0,
+                "supplement_metadata_fighter_rows": 0,
                 "published_fighter_fight_rows": 2,
             },
         )
@@ -332,6 +334,84 @@ class FighterExplorerTests(unittest.TestCase):
             fighters,
             external_bouts=external,
             identity_map=identities,
+        )
+
+    def test_reviewed_supplement_extends_same_profile_newest_first(self) -> None:
+        fights, fighters = _inputs()
+        external = [
+            {
+                "observation_id": "a" * 64,
+                "source": "kaggle_pro_mma_fights_v1",
+                "source_bout_id": "old-bout",
+                "source_bout_order": 0,
+                "source_event_id": "old-event",
+                "source_url": "https://example.test/old",
+                "event_date": "2020-01-01",
+                "event_name": "Old Event",
+                "promotion": "One Championship",
+                "fighter_source_id": "/fighter/Nong-Stamp-292745",
+                "fighter_name": "Nong Stamp",
+                "opponent_source_id": "/fighter/Old-Opponent-1",
+                "opponent_name": "Old Opponent",
+                "result": "W",
+                "method": "U-DEC",
+                "finish_round": 3,
+                "finish_clock_seconds": 300,
+                "scheduled_rounds": 3,
+            }
+        ]
+        supplements = [
+            {
+                "source": "wikipedia_cc_by_sa_v4",
+                "source_bout_id": "new-bout",
+                "source_event_id": "new-event",
+                "source_url": "https://example.test/revision",
+                "event_date": "2023-09-30",
+                "event_name": "New Event",
+                "promotion": "ONE Championship",
+                "fighter_profile_source": "kaggle_pro_mma_fights_v1",
+                "fighter_source_id": "/fighter/Nong-Stamp-292745",
+                "fighter_name": "Stamp Fairtex",
+                "opponent_profile_source": "wikipedia_cc_by_sa_v4",
+                "opponent_source_id": "new-opponent",
+                "opponent_name": "New Opponent",
+                "result": "W",
+                "method": "TKO",
+                "division": "Atomweight",
+                "finish_round": 3,
+                "finish_clock_seconds": 64,
+                "scheduled_rounds": 5,
+            }
+        ]
+
+        publication = build_fighter_explorer(
+            fights,
+            fighters,
+            external_bouts=external,
+            external_supplements=supplements,
+        )
+        stamp = next(
+            item for item in publication["fighters"] if item["name"] == "Stamp Fairtex"
+        )
+        decoded = [
+            dict(zip(FIGHT_COLUMNS, values, strict=True)) for values in stamp["fights"]
+        ]
+
+        self.assertEqual(stamp["record"]["recorded_bouts"], 2)
+        self.assertEqual([fight["date"] for fight in decoded], ["2023-09-30", "2020-01-01"])
+        self.assertEqual(
+            decoded[0]["source_label"],
+            "Wikipedia record supplement (CC BY-SA 4.0)",
+        )
+        self.assertEqual(publication["counts"]["supplement_metadata_fights"], 1)
+        self.assertEqual(publication["counts"]["supplement_metadata_fighter_rows"], 2)
+        self.assertEqual(publication["counts"]["external_metadata_fights"], 2)
+        validate_fighter_explorer(
+            publication,
+            fights,
+            fighters,
+            external_bouts=external,
+            external_supplements=supplements,
         )
 
     def test_sharded_publication_keeps_complete_logs_out_of_the_index(self) -> None:

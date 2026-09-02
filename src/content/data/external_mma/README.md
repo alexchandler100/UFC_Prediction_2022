@@ -29,3 +29,10 @@ never accepted as identities.
 generated auxiliary CSV unless the policy explicitly enables it and pins its
 exact SHA-256. This lets collection and backtesting proceed without silently
 changing the published model.
+
+`fighter_history_supplements.jsonl` contains small, manually reviewed,
+source-attributed website history gap fills. It is not part of `bouts.jsonl`
+and never enters model training or prediction features. Each row identifies the
+existing source profile it extends so the website does not create a duplicate
+fighter. The source registry must allow manual import and the row must link to
+the exact reusable source revision.
