@@ -7,6 +7,7 @@ const DATA_PATHS = {
   model: "src/content/data/external/winner_model.json",
   bayesian: "src/content/data/external/bayesian_winner_challenger.json",
   market: "src/content/data/market/current_opportunities.json",
+  oddsHistory: "src/content/data/market/odds_history.json",
   upcomingBetBoard: "src/content/data/market/upcoming_bet_board.json",
   methodMarkets: "src/content/data/market/current_method_markets.json",
   performance: "src/content/data/market/performance_report.json",
@@ -23,6 +24,7 @@ const state = {
   model: null,
   bayesian: null,
   market: null,
+  oddsHistory: null,
   upcomingBetBoard: null,
   methodMarkets: null,
   performance: null,
@@ -1195,13 +1197,14 @@ async function fetchJson(path, required = true) {
 }
 
 async function loadData() {
-  const [explorer, vegas, card, model, bayesian, market, upcomingBetBoard, methodMarkets, performance, outcomes] = await Promise.all([
+  const [explorer, vegas, card, model, bayesian, market, oddsHistory, upcomingBetBoard, methodMarkets, performance, outcomes] = await Promise.all([
     fetchJson(DATA_PATHS.explorer),
     fetchJson(DATA_PATHS.vegas, false),
     fetchJson(DATA_PATHS.card, false),
     fetchJson(DATA_PATHS.model, false),
     fetchJson(DATA_PATHS.bayesian, false),
     fetchJson(DATA_PATHS.market, false),
+    fetchJson(DATA_PATHS.oddsHistory, false),
     fetchJson(DATA_PATHS.upcomingBetBoard, false),
     fetchJson(DATA_PATHS.methodMarkets, false),
     fetchJson(DATA_PATHS.performance, false),
@@ -1213,6 +1216,7 @@ async function loadData() {
   state.model = model;
   state.bayesian = bayesian;
   state.market = market;
+  state.oddsHistory = oddsHistory;
   state.upcomingBetBoard = upcomingBetBoard;
   state.methodMarkets = methodMarkets;
   state.performance = performance;
@@ -1833,6 +1837,21 @@ function currentOutcomes() {
 
 function currentMethodMarkets() {
   return publicationMatchesCurrentCard(state.methodMarkets?.event_date, state.methodMarkets?.event_id) ? state.methodMarkets : null;
+}
+
+function currentOddsHistory() {
+  return publicationMatchesCurrentCard(state.oddsHistory?.event_date, state.oddsHistory?.event_id) ? state.oddsHistory : null;
+}
+
+function oddsHistoryForMatchup(matchup) {
+  const history = currentOddsHistory();
+  if (!history?.matchups?.length) return null;
+  if (matchup.matchup_id) {
+    const exact = history.matchups.find((item) => item.matchup_id === matchup.matchup_id);
+    if (exact) return exact;
+  }
+  const wanted = [String(matchup.fighter_id || ""), String(matchup.opponent_id || "")].sort().join("|");
+  return history.matchups.find((item) => [String(item.fighter_id || ""), String(item.opponent_id || "")].sort().join("|") === wanted) || null;
 }
 
 function matchupIdentityKeys(matchup) {
@@ -2673,6 +2692,120 @@ function renderQualifiedUpcomingBets() {
   });
 }
 
+function orientedOddsPoint(point, historyMatchup, marketMatchup) {
+  const reversed = String(historyMatchup.fighter_id) === String(marketMatchup.opponent_id)
+    && String(historyMatchup.opponent_id) === String(marketMatchup.fighter_id);
+  return {
+    observed_at_utc: point.observed_at_utc,
+    fighter_probability: finite(reversed ? point.opponent_probability : point.fighter_probability),
+    opponent_probability: finite(reversed ? point.fighter_probability : point.opponent_probability),
+    fighter_moneyline: reversed ? point.opponent_moneyline : point.fighter_moneyline,
+    opponent_moneyline: reversed ? point.fighter_moneyline : point.opponent_moneyline,
+    book_count: finite(point.book_count),
+  };
+}
+
+function oddsHistoryChart(container, readout, series, historyMatchup, matchup) {
+  container.replaceChildren();
+  const points = (series.points || [])
+    .map((point) => orientedOddsPoint(point, historyMatchup, matchup))
+    .filter((point) => point.fighter_probability !== null && point.opponent_probability !== null && !Number.isNaN(new Date(point.observed_at_utc).getTime()));
+  if (!points.length) {
+    container.append(element("div", "empty-state", "No valid captures are available for this source."));
+    readout.textContent = "";
+    return;
+  }
+
+  const width = 720; const height = 320;
+  const margin = { left: 54, right: 20, top: 32, bottom: 48 };
+  const plotWidth = width - margin.left - margin.right;
+  const plotHeight = height - margin.top - margin.bottom;
+  const times = points.map((point) => new Date(point.observed_at_utc).getTime());
+  const minimumTime = Math.min(...times); const maximumTime = Math.max(...times);
+  const probabilities = points.flatMap((point) => [point.fighter_probability, point.opponent_probability]);
+  let minimumProbability = Math.max(0, Math.min(...probabilities) - 0.035);
+  let maximumProbability = Math.min(1, Math.max(...probabilities) + 0.035);
+  if (maximumProbability - minimumProbability < 0.12) {
+    const center = (maximumProbability + minimumProbability) / 2;
+    minimumProbability = Math.max(0, center - 0.06);
+    maximumProbability = Math.min(1, center + 0.06);
+  }
+  const x = (time, index) => maximumTime === minimumTime ? margin.left + plotWidth / 2 : margin.left + ((time - minimumTime) / (maximumTime - minimumTime)) * plotWidth;
+  const y = (probability) => margin.top + ((maximumProbability - probability) / (maximumProbability - minimumProbability)) * plotHeight;
+  const svg = document.createElementNS(SVG_NAMESPACE, "svg");
+  svg.classList.add("odds-history-svg");
+  svg.setAttribute("viewBox", `0 0 ${width} ${height}`);
+  svg.setAttribute("role", "img");
+  svg.setAttribute("aria-label", `${series.label} no-vig win probability over time for ${matchup.fighter_name} and ${matchup.opponent_name}`);
+  const title = document.createElementNS(SVG_NAMESPACE, "title");
+  title.textContent = `${series.label} odds movement: ${matchup.fighter_name} versus ${matchup.opponent_name}`;
+  svg.append(title);
+
+  for (let tick = 0; tick <= 4; tick += 1) {
+    const probability = minimumProbability + ((maximumProbability - minimumProbability) * tick) / 4;
+    const tickY = y(probability);
+    const line = document.createElementNS(SVG_NAMESPACE, "line");
+    line.classList.add("odds-history-gridline");
+    line.setAttribute("x1", margin.left); line.setAttribute("x2", width - margin.right);
+    line.setAttribute("y1", tickY); line.setAttribute("y2", tickY); svg.append(line);
+    const label = document.createElementNS(SVG_NAMESPACE, "text");
+    label.classList.add("odds-history-axis-label"); label.setAttribute("x", margin.left - 8);
+    label.setAttribute("y", tickY + 4); label.setAttribute("text-anchor", "end");
+    label.textContent = formatPercent(probability, 0); svg.append(label);
+  }
+
+  const lineFor = (key, className) => {
+    const path = document.createElementNS(SVG_NAMESPACE, "path");
+    const commands = points.map((point, index) => `${index ? "L" : "M"} ${x(times[index], index).toFixed(2)} ${y(point[key]).toFixed(2)}`);
+    path.classList.add("odds-history-line", className); path.setAttribute("d", commands.join(" ")); svg.append(path);
+  };
+  lineFor("fighter_probability", "is-fighter");
+  lineFor("opponent_probability", "is-opponent");
+
+  const showPoint = (point) => {
+    const priceText = series.kind === "book"
+      ? ` · prices ${matchup.fighter_name} ${formatOdds(point.fighter_moneyline)}, ${matchup.opponent_name} ${formatOdds(point.opponent_moneyline)}`
+      : ` · ${formatNumber(point.book_count, 0)} books`;
+    readout.textContent = `${formatTimestamp(point.observed_at_utc)} · ${matchup.fighter_name} ${formatPercent(point.fighter_probability)} · ${matchup.opponent_name} ${formatPercent(point.opponent_probability)}${priceText}`;
+  };
+  points.forEach((point, index) => {
+    [["fighter_probability", "is-fighter", matchup.fighter_name], ["opponent_probability", "is-opponent", matchup.opponent_name]].forEach(([key, className, name]) => {
+      const circle = document.createElementNS(SVG_NAMESPACE, "circle");
+      circle.classList.add("odds-history-point", className); circle.setAttribute("cx", x(times[index], index)); circle.setAttribute("cy", y(point[key])); circle.setAttribute("r", 5); circle.setAttribute("tabindex", "0");
+      circle.setAttribute("aria-label", `${formatTimestamp(point.observed_at_utc)}, ${name} ${formatPercent(point[key])}`);
+      ["pointerenter", "pointerdown", "focus", "click"].forEach((eventName) => circle.addEventListener(eventName, () => showPoint(point)));
+      svg.append(circle);
+    });
+  });
+
+  const firstLabel = document.createElementNS(SVG_NAMESPACE, "text");
+  firstLabel.classList.add("odds-history-axis-label"); firstLabel.setAttribute("x", margin.left); firstLabel.setAttribute("y", height - 17); firstLabel.setAttribute("text-anchor", "start"); firstLabel.textContent = formatDate(points[0].observed_at_utc);
+  const lastLabel = document.createElementNS(SVG_NAMESPACE, "text");
+  lastLabel.classList.add("odds-history-axis-label"); lastLabel.setAttribute("x", width - margin.right); lastLabel.setAttribute("y", height - 17); lastLabel.setAttribute("text-anchor", "end"); lastLabel.textContent = formatDate(points[points.length - 1].observed_at_utc);
+  svg.append(firstLabel, lastLabel); container.append(svg); showPoint(points[points.length - 1]);
+}
+
+function renderOddsHistory(matchup) {
+  const details = document.createElement("details"); details.classList.add("odds-history-details"); details.dataset.oddsHistory = "moneyline";
+  const historyMatchup = oddsHistoryForMatchup(matchup);
+  const captureCount = finite(historyMatchup?.capture_count) || 0;
+  details.append(element("summary", "", captureCount ? `Odds movement over time · ${captureCount} capture${captureCount === 1 ? "" : "s"}` : "Odds movement over time"));
+  const body = element("div", "details-body odds-history-panel");
+  if (!historyMatchup?.series?.length) {
+    body.append(element("div", "empty-state odds-history-empty", "No price history has been captured for this fight yet. Scheduled collections will add points here.")); details.append(body); return details;
+  }
+  const controls = element("div", "odds-history-controls"); const control = element("label", "odds-history-source");
+  appendText(control, "span", "", "Show source"); const select = document.createElement("select"); select.setAttribute("aria-label", `Odds history source for ${matchup.fighter_name} versus ${matchup.opponent_name}`);
+  historyMatchup.series.forEach((series) => { const option = element("option", "", series.label); option.value = series.key; select.append(option); }); control.append(select);
+  const legend = element("div", "odds-history-legend"); legend.append(element("span", "is-fighter", matchup.fighter_name), element("span", "is-opponent", matchup.opponent_name)); controls.append(control, legend);
+  const chart = element("div", "odds-history-chart"); const readout = element("p", "odds-history-readout"); body.append(controls, chart, readout); details.append(body);
+  const renderSelected = () => {
+    const series = historyMatchup.series.find((item) => item.key === select.value) || historyMatchup.series[0];
+    oddsHistoryChart(chart, readout, series, historyMatchup, matchup);
+  };
+  select.addEventListener("change", renderSelected); renderSelected(); return details;
+}
+
 function renderMarket() {
   const notice = $("#market-notice"); const container = $("#market-matchups"); const opportunityContainer = $("#market-opportunities"); const propContainer = $("#prop-market-details"); notice.replaceChildren(); container.replaceChildren(); opportunityContainer.replaceChildren(); propContainer.replaceChildren(); renderQualifiedUpcomingBets(); renderProfitabilityEvidence();
   const market = currentMarket();
@@ -2835,6 +2968,7 @@ function renderMarket() {
       posteriorRows.forEach(([label, value]) => { const posteriorRow = document.createElement("tr"); appendText(posteriorRow, "td", "", label); appendText(posteriorRow, "td", "", value); bayesianRows.append(posteriorRow); });
       bayesianTable.append(bayesianRows); bayesianBody.append(bayesianTable); bayesianDetails.append(bayesianBody); card.append(bayesianDetails);
     }
+    card.append(renderOddsHistory(matchup));
     const details = document.createElement("details"); details.dataset.bookLines = "moneyline"; details.append(element("summary", "", `All ${matchup.book_quotes.length} book lines`));
     const body = element("div", "details-body book-table-wrap"); const table = element("table", "data-table");
     const head = document.createElement("thead"); const header = document.createElement("tr"); ["Book", matchup.fighter_name, matchup.opponent_name, "Quote age", "Consensus"].forEach((value) => appendText(header, "th", "", value)); head.append(header); table.append(head);

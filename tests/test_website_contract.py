@@ -56,6 +56,7 @@ class WebsiteExplorerContractTests(unittest.TestCase):
         self.assertIn("Total-round and method-of-victory prices", page)
         self.assertIn("automatic betting is intentionally off", script)
         self.assertIn("current_opportunities.json", script)
+        self.assertIn("odds_history.json", script)
         self.assertIn("upcoming_bet_board.json", script)
         self.assertIn("function renderQualifiedUpcomingBets", script)
         self.assertIn("ranked by estimated return", script)
@@ -84,10 +85,28 @@ class WebsiteExplorerContractTests(unittest.TestCase):
         self.assertIn("Bayesian model and expected-return uncertainty", script)
         self.assertIn("bayesian_winner_challenger.json", update_workflow)
         self.assertIn("current_opportunities.json", workflow)
+        self.assertIn("odds_history.json", workflow)
+        self.assertIn("odds_history.json", update_workflow)
         self.assertIn("upcoming_bet_board.json", workflow)
         self.assertIn("all_upcoming_forecasts.json", update_workflow)
         self.assertIn("current_method_markets.json", workflow)
         self.assertIn("bayesian_filtered_paper_decisions.jsonl", workflow)
+
+    def test_each_moneyline_fight_has_consensus_and_book_odds_history(self):
+        page = (REPO_ROOT / "index.html").read_text(encoding="utf-8")
+        script = (REPO_ROOT / "script.js").read_text(encoding="utf-8")
+        style = (REPO_ROOT / "style.css").read_text(encoding="utf-8")
+
+        self.assertIn("consensus moved over time", page)
+        self.assertIn("function renderOddsHistory", script)
+        self.assertIn("function oddsHistoryChart", script)
+        self.assertIn("Odds movement over time", script)
+        self.assertIn("Show source", script)
+        self.assertIn("series.kind === \"book\"", script)
+        self.assertIn("pointerdown", script)
+        self.assertIn(".odds-history-svg", style)
+        self.assertIn("width: 100%", style)
+        self.assertIn(".odds-history-controls { align-items: stretch; flex-direction: column; }", style)
 
     def test_layout_has_explicit_mobile_breakpoints(self):
         style = (REPO_ROOT / "style.css").read_text(encoding="utf-8")

@@ -26,7 +26,7 @@ a { color: var(--blue); }
 .brand strong, .brand small { display: block; }
 .brand strong { font-family: "Manrope", sans-serif; font-size: 16px; }
 .brand small { color: #aeb9c3; font-size: 11px; }
-.primary-nav { display: flex; justify-content: center; gap: 4px; }
+.primary-nav { display: flex; justify-content: center; gap: 4px; min-width: 0; max-width: 100%; }
 .nav-button { padding: 10px 13px; border: 0; border-radius: 9px; color: #b9c3ca; background: transparent; cursor: pointer; font-size: 14px; font-weight: 600; }
 .nav-button:hover, .nav-button:focus-visible { color: white; background: rgba(255,255,255,.07); }
 .nav-button.is-active { color: white; background: rgba(255,255,255,.12); }
@@ -438,6 +438,28 @@ details[open] summary { border-bottom: 1px solid var(--line); }
 .signal-stat span { color: var(--ink-soft); font-size: 10px; }
 .signal-reason { margin: 0; color: var(--ink-soft); font-size: 13px; }
 .book-table-wrap { width: 100%; max-width: 100%; min-width: 0; overflow-x: auto; overscroll-behavior-inline: contain; -webkit-overflow-scrolling: touch; }
+.odds-history-details, .odds-history-panel, .odds-history-chart { width: 100%; max-width: 100%; min-width: 0; }
+.odds-history-panel { display: grid; gap: 12px; }
+.odds-history-controls { display: flex; align-items: end; justify-content: space-between; gap: 12px; min-width: 0; }
+.odds-history-source { display: grid; flex: 1 1 260px; gap: 5px; min-width: 0; color: var(--ink-soft); font-size: 10px; font-weight: 700; letter-spacing: .045em; text-transform: uppercase; }
+.odds-history-source select { width: min(100%, 360px); min-width: 0; }
+.odds-history-legend { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px 14px; min-width: 0; font-size: 11px; }
+.odds-history-legend span { display: inline-flex; align-items: center; gap: 6px; min-width: 0; overflow-wrap: anywhere; }
+.odds-history-legend span::before { width: 9px; height: 9px; border-radius: 50%; background: var(--orange); content: ""; }
+.odds-history-legend span.is-opponent::before { background: var(--teal); }
+.odds-history-chart { overflow: hidden; border: 1px solid var(--line); border-radius: 10px; background: #0d151d; }
+.odds-history-svg { display: block; width: 100%; height: clamp(230px, 42vw, 320px); min-width: 0; }
+.odds-history-gridline { stroke: #33414d; stroke-width: 1; vector-effect: non-scaling-stroke; }
+.odds-history-axis-label { fill: var(--ink-soft); font: 11px system-ui, sans-serif; }
+.odds-history-line { fill: none; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; vector-effect: non-scaling-stroke; }
+.odds-history-line.is-fighter { stroke: var(--orange); }
+.odds-history-line.is-opponent { stroke: var(--teal); }
+.odds-history-point { stroke: #0d151d; stroke-width: 2; cursor: pointer; touch-action: manipulation; vector-effect: non-scaling-stroke; }
+.odds-history-point.is-fighter { fill: var(--orange); }
+.odds-history-point.is-opponent { fill: var(--teal); }
+.odds-history-point:focus { stroke: #fff; outline: none; }
+.odds-history-readout { min-height: 34px; margin: 0; color: var(--ink-soft); font-size: 12px; line-height: 1.45; overflow-wrap: anywhere; }
+.odds-history-empty { padding: 20px; }
 .method-price-wrap { width: 100%; max-width: 100%; min-width: 0; }
 .method-price-table td:first-child, .method-price-table th:first-child { text-align: left; }
 .explain-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
@@ -521,7 +543,7 @@ input[type="search"]:focus, select:focus { border-color: var(--teal); box-shadow
   :root { --shell: calc(100% - 20px); --radius-lg: 18px; }
   .brand small, .header-status { display: none; }
   .site-header { grid-template-columns: 1fr; min-height: auto; }
-  .primary-nav { grid-column: auto; }
+  .primary-nav { grid-column: auto; width: 100%; justify-content: flex-start; }
   .nav-button { flex: 0 0 auto; padding-inline: 11px; }
   .page-hero h1, .compact-hero h1 { font-size: 38px; }
   .compact-hero { padding-block: 38px 23px; }
@@ -533,10 +555,13 @@ input[type="search"]:focus, select:focus { border-color: var(--teal); box-shadow
   .research-badge { margin-top: 12px; }
   .matchup-card-grid, .fighter-grid, .insight-grid { grid-template-columns: 1fr; }
   .matchup-card-row { grid-template-columns: minmax(0, 1fr); gap: 13px; padding: 15px; }
+  .matchup-pair { grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); gap: 8px; }
+  .matchup-side { min-width: 0; }
+  .matchup-side button, .matchup-side small { max-width: 100%; overflow-wrap: anywhere; }
   .matchup-card-row .matchup-card-top { display: flex; justify-content: space-between; }
   .matchup-card-row .matchup-row-data, .matchup-card-row .card-actions { grid-column: auto; }
   .matchup-card .card-actions { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .matchup-row-data .matchup-market { align-items: flex-start; }
+  .matchup-row-data .matchup-market { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: flex-start; }
   .matchup-row-data .matchup-market > span { min-width: 0; overflow-wrap: anywhere; }
   .matchup-selectors { grid-template-columns: 1fr; }
   .versus-mark { margin: 0 auto; }
@@ -601,6 +626,11 @@ input[type="search"]:focus, select:focus { border-color: var(--teal); box-shadow
   .fight-graph-viewport-controls button { min-width: 44px; height: 44px; }
   .fight-graph-canvas { height: clamp(440px, 68svh, 620px); min-height: 0; }
   .market-notice { grid-template-columns: 1fr; }
+  .odds-history-controls { align-items: stretch; flex-direction: column; }
+  .odds-history-source, .odds-history-source select { width: 100%; }
+  .odds-history-source { flex-basis: auto; }
+  .odds-history-legend { justify-content: flex-start; }
+  .odds-history-svg { height: 240px; }
   .qualified-bet-row { grid-template-columns: 38px minmax(0, 1fr) minmax(86px, auto); gap: 10px; padding: 12px; }
   .qualified-bet-fight { grid-column: 2 / -1; }
   .qualified-bet-stat { grid-row: 2; }

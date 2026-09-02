@@ -931,6 +931,34 @@ class PointInTimeFeatureTests(unittest.TestCase):
             np.isfinite(priced.loc[0, "bayesian posterior mean ev"])
         )
 
+        # A newly built card is schema-aligned with the previous prediction
+        # table, so these columns can exist but contain blanks.  Pricing must
+        # initialize the new rows rather than preserve those stale blanks.
+        blank_decisions = price_frame.copy()
+        for column in (
+            "bayesian decision policy",
+            "bayesian paper action",
+            "bayesian paper threshold met",
+            "bayesian decision status",
+        ):
+            blank_decisions[column] = ""
+        repriced = challenger.annotate_best_price_expected_returns(
+            blank_decisions, ["TestBook"]
+        )
+        self.assertEqual(
+            repriced.loc[0, "bayesian decision policy"],
+            "bayesian-moneyline-shadow-v1",
+        )
+        self.assertIn(
+            repriced.loc[0, "bayesian paper action"],
+            {"fighter", "opponent", "pass"},
+        )
+        self.assertIsInstance(
+            repriced.loc[0, "bayesian paper threshold met"],
+            (bool, np.bool_),
+        )
+        self.assertTrue(repriced.loc[0, "bayesian decision status"])
+
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "bayesian.json"
             challenger.save_artifact(path)

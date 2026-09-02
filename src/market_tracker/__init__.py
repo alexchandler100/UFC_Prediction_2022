@@ -123,6 +123,12 @@ from .opportunities import (
     build_current_opportunities,
     validate_current_opportunities,
 )
+from .odds_history import (
+    CONSENSUS_MIN_BOOKS,
+    ODDS_HISTORY_CONTRACT,
+    build_odds_history,
+    validate_odds_history,
+)
 from .prop_opportunities import (
     MIN_PROP_EXPECTED_RETURN,
     PROP_OPPORTUNITY_POLICY_VERSION,
@@ -167,7 +173,9 @@ __all__ = (
     "DEFAULT_GAMMA_GRID",
     "DECISION_TARGET_LEAD_SECONDS",
     "DECISION_WINDOW_SECONDS",
+    "CONSENSUS_MIN_BOOKS",
     "EARLY_MARKET_CONTRACT",
+    "ODDS_HISTORY_CONTRACT",
     "EXPERT_SIGNAL_CONTRACT",
     "EarlyMarketLink",
     "EarlyMarketLinkStore",
@@ -251,6 +259,7 @@ __all__ = (
     "build_simulation_comparison_decisions",
     "prospective_comparison_report",
     "build_current_opportunities",
+    "build_odds_history",
     "build_prop_market_view",
     "build_locked_total_round_decisions",
     "forecast_metrics",
@@ -269,5 +278,6 @@ __all__ = (
     "summarize_total_round_performance",
     "symmetric_logit_blend",
     "validate_current_opportunities",
+    "validate_odds_history",
     "validate_expert_pick",
 )

@@ -97,9 +97,13 @@ jobs:
       - name: Update frozen market-first prospective paper test
         run: python src/update_market_first_paper.py
 
+      - name: Publish compact current-card odds history
+        run: python src/update_odds_history.py
+
       - name: Revalidate market ledgers and bounded report
         run: |
           python src/capture_market_snapshot.py --validate-only
+          python src/update_odds_history.py --validate-only
           python src/update_market_first_paper.py --validate-only
           python src/validate_data.py --require-model-artifact --require-market-data
 
@@ -131,6 +135,7 @@ jobs:
             src/content/data/market/performance_report.json \
             src/content/data/market/capture_report.json \
             src/content/data/market/current_opportunities.json \
+            src/content/data/market/odds_history.json \
             src/content/data/market/upcoming_bet_board.json
 
           # Stage newly introduced research ledgers and optional prop
@@ -208,6 +213,7 @@ jobs:
               src/content/data/market/performance_report.json|\
               src/content/data/market/capture_report.json|\
               src/content/data/market/current_opportunities.json|\
+              src/content/data/market/odds_history.json|\
               src/content/data/market/upcoming_bet_board.json)
                 ;;
               *)

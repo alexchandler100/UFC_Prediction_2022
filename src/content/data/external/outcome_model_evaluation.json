@@ -1,26 +1,26 @@
 {
   "candidate_only": true,
-  "development_fights": 3942,
+  "development_fights": 3946,
   "execution_enabled": false,
   "feature_count": 82,
-  "holdout_end": "2026-08-22",
+  "holdout_end": "2026-08-29",
   "holdout_fights": 997,
   "holdout_schedule_basis": {
-    "assumed_three_round_early_finish": 335,
-    "explicit_time_format": 309,
+    "assumed_three_round_early_finish": 329,
+    "explicit_time_format": 322,
     "inferred_five_round_late_finish": 6,
-    "inferred_from_decision_duration": 348
+    "inferred_from_decision_duration": 340
   },
-  "holdout_start": "2024-09-28",
+  "holdout_start": "2024-10-05",
   "inner_validation_log_loss_by_c": {
-    "0.01": 1.6443450205660708,
-    "0.1": 1.6662657338712306,
-    "1.0": 1.69115857218336
+    "0.01": 1.6386560904854173,
+    "0.1": 1.66138763529032,
+    "1.0": 1.6848965901643025
   },
   "interval_seconds": 150,
   "joint_outcome": {
     "accuracy": 0.31895687061183553,
-    "baseline_log_loss": 1.7233377239376915,
+    "baseline_log_loss": 1.7251741261552007,
     "classes": [
       "fighter_ko_tko",
       "fighter_submission",
@@ -31,74 +31,74 @@
       "opponent_decision",
       "opponent_other"
     ],
-    "log_loss": 1.6219110547974138,
-    "model_minus_baseline_log_loss": -0.10142666914027765
+    "log_loss": 1.6221084670773895,
+    "model_minus_baseline_log_loss": -0.10306565907781118
   },
   "method": {
     "accuracy": 0.49047141424272817,
-    "baseline_log_loss": 1.030468638087786,
+    "baseline_log_loss": 1.0324291592621284,
     "classes": [
       "ko_tko",
       "submission",
       "decision",
       "other"
     ],
-    "log_loss": 1.0302418571019871,
-    "model_minus_baseline_log_loss": -0.00022678098579897998
+    "log_loss": 1.0308529657923076,
+    "model_minus_baseline_log_loss": -0.0015761934698208524
   },
-  "omitted_holdout_unknown_schedule": 1,
+  "omitted_holdout_unknown_schedule": 0,
   "production_enabled": false,
   "selected_c": 0.01,
   "total_rounds": {
     "over_1_5_rounds": {
-      "accuracy": 0.6670010030090271,
-      "baseline_log_loss": 0.6398424183938127,
-      "brier": 0.2197926399980133,
-      "development_base_rate": 0.6894362620619604,
-      "expected_calibration_error": 0.02967431923861661,
-      "log_loss": 0.6307596053046604,
-      "model_minus_baseline_log_loss": -0.009082813089152375,
+      "accuracy": 0.6579739217652959,
+      "baseline_log_loss": 0.6447972056800474,
+      "brier": 0.22246113397466122,
+      "development_base_rate": 0.6904761904761905,
+      "expected_calibration_error": 0.03412365052342202,
+      "log_loss": 0.6368469632868973,
+      "model_minus_baseline_log_loss": -0.00795024239315012,
       "n": 997
     },
     "over_2_5_rounds": {
-      "accuracy": 0.5496489468405216,
-      "baseline_log_loss": 0.6924146670480389,
-      "brier": 0.24487548642170484,
-      "development_base_rate": 0.5566277298120873,
-      "expected_calibration_error": 0.03329678505948021,
-      "log_loss": 0.6829481928052035,
-      "model_minus_baseline_log_loss": -0.009466474242835421,
+      "accuracy": 0.5576730190571715,
+      "baseline_log_loss": 0.6936000101320785,
+      "brier": 0.24498530218852066,
+      "development_base_rate": 0.5569908814589666,
+      "expected_calibration_error": 0.02599795176877361,
+      "log_loss": 0.683392160263969,
+      "model_minus_baseline_log_loss": -0.01020784986810952,
       "n": 997
     },
     "over_3_5_rounds": {
-      "accuracy": 0.7575757575757576,
-      "baseline_log_loss": 0.8481470526128514,
-      "brier": 0.19299314081991686,
+      "accuracy": 0.746268656716418,
+      "baseline_log_loss": 0.8861094537775253,
+      "brier": 0.1987747105020954,
       "development_base_rate": 0.9663461538461539,
-      "expected_calibration_error": 0.09746420380859822,
-      "log_loss": 0.5878160799233466,
-      "model_minus_baseline_log_loss": -0.2603309726895048,
-      "n": 66
+      "expected_calibration_error": 0.10165271265258125,
+      "log_loss": 0.5992457127876272,
+      "model_minus_baseline_log_loss": -0.2868637409898981,
+      "n": 67
     },
     "over_4_5_rounds": {
-      "accuracy": 0.6666666666666666,
-      "baseline_log_loss": 0.7288449099301486,
-      "brier": 0.2399272213757173,
+      "accuracy": 0.6567164179104478,
+      "baseline_log_loss": 0.7454446951287261,
+      "brier": 0.24215746026820045,
       "development_base_rate": 0.8413461538461539,
-      "expected_calibration_error": 0.12914547919417574,
-      "log_loss": 0.6871404297820507,
-      "model_minus_baseline_log_loss": -0.04170448014809791,
-      "n": 66
+      "expected_calibration_error": 0.12971667867511721,
+      "log_loss": 0.6895413708896452,
+      "model_minus_baseline_log_loss": -0.055903324239080954,
+      "n": 67
     }
   },
-  "training_input_sha256": "fc05239b2c766200090cf2f1b8a101b26cdd22c0e3b3a8732ab02fa381f3447e",
+  "training_input_sha256": "da687db9393633910ebd95d09dd9d897925a05787a5c7b4300db0559b6964f2d",
   "winner": {
-    "accuracy": 0.6449348044132397,
+    "accuracy": 0.6479438314944834,
     "baseline_log_loss": 0.6931471805599453,
-    "brier": 0.21795647850367394,
-    "expected_calibration_error": 0.04652808837376125,
-    "log_loss": 0.6258569426412497,
-    "model_minus_baseline_log_loss": -0.0672902379186956,
+    "brier": 0.21815231244268643,
+    "expected_calibration_error": 0.04441476542939625,
+    "log_loss": 0.6263384967285685,
+    "model_minus_baseline_log_loss": -0.06680868383137684,
     "n": 997
   }
 }

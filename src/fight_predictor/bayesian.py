@@ -531,9 +531,12 @@ class BayesianLogisticChallenger:
             "bayesian paper threshold met": False,
             "bayesian decision status": "pass_no_eligible_price",
         }
+        # These fields describe a newly priced card and must never inherit the
+        # preceding card's values.  The prediction frame can already contain
+        # the columns (filled with blanks by schema alignment), so checking
+        # only for missing columns leaves an invalid decision publication.
         for column, default in defaults.items():
-            if column not in output:
-                output[column] = default
+            output[column] = default
         ordered_bookies = tuple(str(book).strip() for book in bookies if str(book).strip())
         for index, row in output.iterrows():
             if row.get("bayesian status") != "paper_only_challenger":
