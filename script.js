@@ -2818,7 +2818,12 @@ function renderMarket() {
       : "No current book-by-book market capture is published. Fighter and matchup research remains available.";
   appendText(copy, "p", "", marketNotice);
   notice.append(copy, element("span", "pill orange", market ? "Execution disabled" : "Current prices unavailable"));
-  const matchups = orderedCardMatchups(market?.matchups || []);
+  const capturedMatchups = market?.matchups || [];
+  const capturedIdentities = new Set(capturedMatchups.flatMap(matchupIdentityKeys));
+  const uncapturedMatchups = legacyRows()
+    .filter((matchup) => !matchupIdentityKeys(matchup).some((key) => capturedIdentities.has(key)))
+    .map((matchup) => ({ ...matchup, book_quotes: [], current_signal_unavailable_reason: "No timestamped book capture is available for this fight yet." }));
+  const matchups = orderedCardMatchups([...capturedMatchups, ...uncapturedMatchups]);
   const propMarkets = market?.prop_markets;
   const totalRounds = propMarkets?.total_rounds;
   const methodMarket = currentMethodMarkets();

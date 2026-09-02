@@ -100,6 +100,8 @@ class WebsiteExplorerContractTests(unittest.TestCase):
         self.assertIn("consensus moved over time", page)
         self.assertIn("function renderOddsHistory", script)
         self.assertIn("function oddsHistoryChart", script)
+        self.assertIn("const uncapturedMatchups = legacyRows()", script)
+        self.assertIn("No timestamped book capture is available for this fight yet", script)
         self.assertIn("Odds movement over time", script)
         self.assertIn("Show source", script)
         self.assertIn("series.kind === \"book\"", script)
