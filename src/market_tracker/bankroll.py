@@ -11,6 +11,7 @@ import json
 import math
 import os
 from pathlib import Path
+import re
 import tempfile
 from typing import Iterable, Mapping
 
@@ -21,6 +22,12 @@ ARCHIVE_SCHEMA_VERSION = 1
 PERFORMANCE_SCHEMA_VERSION = 1
 ARCHIVE_POLICY_VERSION = "published-qualified-paper-bets-v1"
 PERFORMANCE_POLICY_VERSION = "published-paper-bankroll-replay-v1"
+RESEARCH_STAKING_STRATEGIES = (
+    "half_kelly_model_blend",
+    "half_kelly_sim_blend",
+    "half_kelly_model_sim_blend",
+)
+SUPPORT_SOURCES = ("model", "simulation")
 
 
 def profit_multiple(moneyline: object) -> float:
@@ -41,6 +48,60 @@ def kelly_fraction(probability: object, moneyline: object) -> float:
     profit = profit_multiple(moneyline)
     fraction = (profit * chance - (1.0 - chance)) / profit
     return min(1.0, max(0.0, fraction))
+
+
+def bet_support_key(
+    *, event_id: object, fighter_id: object, opponent_id: object,
+    category: object, side: object, selection: object,
+) -> tuple[str, ...]:
+    """Stable key for a saved prediction that supports one published bet."""
+
+    fighter = str(fighter_id or "")
+    opponent = str(opponent_id or "")
+    event = str(event_id or "")
+    if not event or not fighter or not opponent or fighter == opponent:
+        raise ValueError("bet support identity is incomplete")
+    pair = tuple(sorted((fighter, opponent)))
+    market = str(category or "")
+    bet_side = str(side or "").casefold()
+    if market == "Moneyline":
+        if bet_side not in {"fighter", "opponent"}:
+            raise ValueError("moneyline support side is invalid")
+        selected = fighter if bet_side == "fighter" else opponent
+        return (event, *pair, "moneyline", selected)
+    if market == "Total rounds":
+        match = re.search(
+            r"(Over|Under)\s+([0-9]+(?:\.[0-9]+)?)",
+            str(selection or ""),
+            re.I,
+        )
+        if match is None:
+            raise ValueError("total-round support selection is invalid")
+        return (
+            event,
+            *pair,
+            "total_rounds",
+            f"{float(match.group(2)):g}",
+            match.group(1).casefold(),
+        )
+    raise ValueError("unsupported bet category")
+
+
+def _support_fields(source: str, value: Mapping[str, object] | None) -> dict[str, object]:
+    probability_key = f"{source}_support_probability"
+    source_key = f"{source}_support_source"
+    issued_key = f"{source}_support_issued_at_utc"
+    if value is None:
+        return {probability_key: None, source_key: None, issued_key: None}
+    chance = float(value.get("probability"))
+    if not math.isfinite(chance) or not 0.0 < chance < 1.0:
+        raise ValueError(f"{source} support probability is invalid")
+    issued = str(value.get("issued_at_utc") or "")
+    utc_datetime(issued, f"{source}_support_issued_at_utc")
+    label = str(value.get("source") or "").strip()
+    if not label:
+        raise ValueError(f"{source} support source is missing")
+    return {probability_key: chance, source_key: label, issued_key: issued}
 
 
 def _atomic_json(path: Path, value: Mapping[str, object]) -> None:
@@ -226,6 +287,9 @@ def _official_moneyline_records(
             raise ValueError("official moneyline bet lacks its forecast or quote")
         fighter_selected = decision.paper_action == "fighter"
         probability = float(decision.action_probability)
+        model_probability = float(forecast.model_probability)
+        if not fighter_selected:
+            model_probability = 1.0 - model_probability
         line = int(decision.action_reference_moneyline)
         status, unit_profit, settled_at = _status(
             settlement_by_decision.get(decision.decision_id)
@@ -268,6 +332,10 @@ def _official_moneyline_records(
                 if float(decision.selected_gamma) == 0.0
                 else "locked_market_model_log_odds_blend"
             ),
+            "model_support_probability": model_probability,
+            "model_support_source": "production_winner_model",
+            "model_support_issued_at_utc": forecast.forecast_issued_at_utc,
+            **_support_fields("simulation", None),
         })
     return rows
 
@@ -321,6 +389,8 @@ def _official_total_records(
             "unit_profit": unit_profit,
             "settled_at_utc": settled_at,
             "probability_source": "locked_residual_duration_model",
+            **_support_fields("model", None),
+            **_support_fields("simulation", None),
         })
     return rows
 
@@ -399,8 +469,54 @@ def _archive_records(
             "unit_profit": unit_profit,
             "settled_at_utc": None,
             "probability_source": item.get("probability_source"),
+            **_support_fields("model", None),
+            **_support_fields("simulation", None),
         })
     return rows
+
+
+def _attach_research_support(
+    records: list[dict[str, object]],
+    *,
+    model_support: Mapping[tuple[str, ...], Mapping[str, object]],
+    simulation_support: Mapping[tuple[str, ...], Mapping[str, object]],
+    prior_support: Mapping[str, Mapping[str, object]],
+) -> None:
+    support_maps = {"model": model_support, "simulation": simulation_support}
+    for record in records:
+        key = bet_support_key(
+            event_id=record["event_id"],
+            fighter_id=record["fighter_id"],
+            opponent_id=record["opponent_id"],
+            category=record["category"],
+            side=record["side"],
+            selection=record["selection"],
+        )
+        prior = prior_support.get(str(record["record_id"]), {})
+        published = utc_datetime(record["published_at_utc"], "published_at_utc")
+        for source, support_map in support_maps.items():
+            probability_key = f"{source}_support_probability"
+            existing = None
+            if record.get(probability_key) is not None:
+                existing = {
+                    "probability": record[probability_key],
+                    "source": record.get(f"{source}_support_source"),
+                    "issued_at_utc": record.get(f"{source}_support_issued_at_utc"),
+                }
+            candidate = support_map.get(key) or existing
+            if candidate is None and prior.get(probability_key) is not None:
+                candidate = {
+                    "probability": prior[probability_key],
+                    "source": prior.get(f"{source}_support_source"),
+                    "issued_at_utc": prior.get(f"{source}_support_issued_at_utc"),
+                }
+            fields = _support_fields(source, candidate)
+            issued = fields[f"{source}_support_issued_at_utc"]
+            if issued is not None and utc_datetime(
+                issued, f"{source}_support_issued_at_utc"
+            ) > published:
+                fields = _support_fields(source, None)
+            record.update(fields)
 
 
 def build_bet_performance_publication(
@@ -410,6 +526,9 @@ def build_bet_performance_publication(
     archive: Mapping[str, object],
     outcomes: Mapping[tuple[str, str, str], int | None] | None = None,
     durations: Mapping[tuple[str, str, str], float] | None = None,
+    model_support: Mapping[tuple[str, ...], Mapping[str, object]] | None = None,
+    simulation_support: Mapping[tuple[str, ...], Mapping[str, object]] | None = None,
+    prior_support: Mapping[str, Mapping[str, object]] | None = None,
 ) -> dict[str, object]:
     decisions = tuple(decisions)
     settlements = tuple(settlements)
@@ -424,6 +543,12 @@ def build_bet_performance_publication(
         *_official_total_records(total_decisions, total_settlements),
         *_archive_records(archive, outcomes, durations),
     ]
+    _attach_research_support(
+        records,
+        model_support=model_support or {},
+        simulation_support=simulation_support or {},
+        prior_support=prior_support or {},
+    )
     records.sort(key=lambda item: (str(item["published_at_utc"]), str(item["record_id"])))
     official = [item for item in records if item["official"]]
     body: dict[str, object] = {
@@ -443,7 +568,27 @@ def build_bet_performance_publication(
         "official_settled_count": sum(item["status"] in {"won", "lost", "void"} for item in official),
         "official_wins": sum(item["status"] == "won" for item in official),
         "official_losses": sum(item["status"] == "lost" for item in official),
-        "staking_strategies": ["full_kelly", "half_kelly", "third_kelly", "flat_one_percent"],
+        "staking_strategies": [
+            "full_kelly", "half_kelly", "third_kelly", "flat_one_percent",
+            *RESEARCH_STAKING_STRATEGIES,
+        ],
+        "research_support": {
+            "model_supported_records": sum(
+                item["model_support_probability"] is not None for item in records
+            ),
+            "simulation_supported_records": sum(
+                item["simulation_support_probability"] is not None for item in records
+            ),
+            "both_supported_records": sum(
+                item["model_support_probability"] is not None
+                and item["simulation_support_probability"] is not None
+                for item in records
+            ),
+            "rule": (
+                "Research strategies combine probabilities in log-odds space, "
+                "then apply half Kelly; unsupported bets are excluded."
+            ),
+        },
         "timing_strategies": ["official_t24", "first_qualifying", "nearest_t48", "nearest_t24", "favorite_early_underdog_late", "latest_qualifying"],
         "records": records,
         "source_hashes": {
@@ -495,6 +640,23 @@ def validate_bet_performance_publication(value: object) -> dict[str, object]:
         expected = kelly_fraction(record["estimated_win_probability"], record["offered_moneyline"])
         if abs(fraction - expected) > 1e-12:
             raise ValueError("bet performance Kelly fraction is inconsistent")
+        for source in SUPPORT_SOURCES:
+            chance = record.get(f"{source}_support_probability")
+            label = record.get(f"{source}_support_source")
+            issued = record.get(f"{source}_support_issued_at_utc")
+            if chance is None and label is None and issued is None:
+                continue
+            if chance is None or label is None or issued is None:
+                raise ValueError(f"bet performance {source} support is incomplete")
+            numeric = float(chance)
+            if not math.isfinite(numeric) or not 0.0 < numeric < 1.0:
+                raise ValueError(f"bet performance {source} support is invalid")
+            if utc_datetime(issued, f"{source}_support_issued_at_utc") > utc_datetime(
+                record["published_at_utc"], "published_at_utc"
+            ):
+                raise ValueError(f"bet performance {source} support is from the future")
+        if record["category"] != "Moneyline" and record.get("model_support_probability") is not None:
+            raise ValueError("winner-model support cannot size a total-round bet")
     return value
 
 

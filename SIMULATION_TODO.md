@@ -125,6 +125,18 @@ authorized by this research.
 
   `artifacts/simulations/upcoming-2026-08-29-finish-200/parameter_model.json.gz`
 
+## Prediction-retention gap
+
+The production winner history broadly preserves model forecasts, although old
+rows before stable-ID publication retain only rounded predicted American odds.
+Simulation forecasts are not preserved for every historical matchup: the
+checked-in compact simulation file is the latest frozen card, and the
+Performance publication now retains its available model/simulation support only
+for bets that were actually published. Add a bounded, hash-validated,
+append-only simulation forecast history for every eligible upcoming matchup
+before using simulation/model agreement in any general historical study. Do
+not reconstruct missing pre-fight simulations after results are known.
+
 ## Completed Aug. 29 card refresh
 
 The first legacy compact-artifact access took about 25 minutes to

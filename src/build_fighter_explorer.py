@@ -26,7 +26,7 @@ EXTERNAL_MMA_ROOT = ROOT / "content" / "data" / "external_mma"
 EXTERNAL_BOUTS_PATH = EXTERNAL_MMA_ROOT / "bouts.jsonl"
 EXTERNAL_IDENTITY_PATH = EXTERNAL_MMA_ROOT / "identity_map.csv"
 SCHEMA_VERSION = 3
-SIZE_LIMIT = 8 * 1024 * 1024
+SIZE_LIMIT = 12 * 1024 * 1024
 SHARD_SIZE_LIMIT = 4 * 1024 * 1024
 SHARD_KEYS = tuple("0123456789abcdefx")
 
@@ -152,6 +152,12 @@ SOURCE_LABELS = {
     "kaggle_pro_mma_fights_v1": "All Pro MMA Fights v1 (CC0)",
 }
 
+# The CC0 source uses this fighter's older Sherdog display name. Keep the
+# stable source identity while publishing the name users actually search for.
+EXTERNAL_DISPLAY_NAMES = {
+    ("kaggle_pro_mma_fights_v1", "/fighter/Nong-Stamp-292745"): "Stamp Fairtex",
+}
+
 
 def _canonical_json(value: object) -> str:
     return json.dumps(
@@ -223,7 +229,12 @@ def _method_bucket(method: object) -> str:
 
 
 def _shard_key(fighter_id: str) -> str:
-    first = fighter_id[:1].lower()
+    normalized = fighter_id.lower()
+    first = (
+        normalized[len("external_"):len("external_") + 1]
+        if normalized.startswith("external_")
+        else normalized[:1]
+    )
     return first if first in SHARD_KEYS[:-1] else "x"
 
 
@@ -343,6 +354,12 @@ def _external_fighter_id(source: str, source_fighter_id: str) -> str:
     return f"external_{digest}"
 
 
+def _external_display_name(source: str, source_fighter_id: str, name: object) -> str:
+    return EXTERNAL_DISPLAY_NAMES.get(
+        (source, source_fighter_id), _clean_text(name)
+    )
+
+
 def _is_ufc_promotion(value: object) -> bool:
     text = re.sub(r"[^a-z0-9]+", " ", _clean_text(value).casefold()).strip()
     return text == "ufc" or "ultimate fighting championship" in text
@@ -351,11 +368,12 @@ def _is_ufc_promotion(value: object) -> bool:
 def _external_history_rows(
     observations: Iterable[object],
     identity_map: Mapping[tuple[str, str], str],
-) -> tuple[list[pd.Series], int]:
-    """Return linked, non-UFC history perspectives for public fighter profiles."""
+) -> tuple[list[pd.Series], int, int]:
+    """Return non-UFC history, while counting rows linked to UFCStats profiles."""
 
     output: list[pd.Series] = []
     linked_observations = 0
+    linked_perspectives = 0
     for observation in observations:
         if _is_ufc_promotion(_external_value(observation, "promotion")):
             continue
@@ -369,9 +387,8 @@ def _external_history_rows(
                 "external identity mapping collapses both participants in "
                 f"{_external_value(observation, 'observation_id')}"
             )
-        if not first_id and not second_id:
-            continue
-        linked_observations += 1
+        if first_id or second_id:
+            linked_observations += 1
         observation_id = _clean_text(_external_value(observation, "observation_id"))
         event_seed = (
             f"{source}\0{_clean_text(_external_value(observation, 'source_event_id'))}"
@@ -416,35 +433,62 @@ def _external_history_rows(
             (
                 first_id,
                 first_source_id,
-                _external_value(observation, "fighter_name"),
+                _external_display_name(
+                    source,
+                    first_source_id,
+                    _external_value(observation, "fighter_name"),
+                ),
                 second_id,
                 second_source_id,
-                _external_value(observation, "opponent_name"),
+                _external_display_name(
+                    source,
+                    second_source_id,
+                    _external_value(observation, "opponent_name"),
+                ),
                 _clean_text(_external_value(observation, "result")).upper(),
             ),
             (
                 second_id,
                 second_source_id,
-                _external_value(observation, "opponent_name"),
+                _external_display_name(
+                    source,
+                    second_source_id,
+                    _external_value(observation, "opponent_name"),
+                ),
                 first_id,
                 first_source_id,
-                _external_value(observation, "fighter_name"),
+                _external_display_name(
+                    source,
+                    first_source_id,
+                    _external_value(observation, "fighter_name"),
+                ),
                 {"W": "L", "L": "W", "D": "D", "NC": "NC"}.get(
                     _clean_text(_external_value(observation, "result")).upper(), "NC"
                 ),
             ),
         )
         for fighter_id, fighter_source_id, fighter_name, opponent_id, opponent_source_id, opponent_name, result in participants:
-            if not fighter_id:
-                continue
-            resolved_opponent_id = opponent_id or _external_fighter_id(source, opponent_source_id)
+            mapped_fighter = bool(fighter_id)
+            resolved_fighter_id = fighter_id or _external_fighter_id(
+                source, fighter_source_id
+            )
+            resolved_opponent_id = opponent_id or _external_fighter_id(
+                source, opponent_source_id
+            )
+            linked_perspectives += int(mapped_fighter)
             output.append(
                 pd.Series(
                     {
                         **common,
                         "fighter": fighter_name,
                         "opponent": opponent_name,
-                        "fighter_url": f"http://ufcstats.com/fighter-details/{fighter_id}",
+                        "fighter_url": (
+                            "http://ufcstats.com/fighter-details/"
+                            f"{resolved_fighter_id}"
+                            if mapped_fighter
+                            else "https://external-mma.invalid/fighter-details/"
+                            f"{resolved_fighter_id}"
+                        ),
                         "opponent_url": (
                             f"http://ufcstats.com/fighter-details/{resolved_opponent_id}"
                             if opponent_id
@@ -454,7 +498,7 @@ def _external_history_rows(
                     }
                 )
             )
-    return output, linked_observations
+    return output, linked_observations, linked_perspectives
 
 
 def _sum_stats(rows: Iterable[pd.Series]) -> dict[str, float | None]:
@@ -786,6 +830,7 @@ def build_fighter_explorer(
             "id": fighter_id,
             "name": _clean_text(row["name"]),
             "url": _clean_text(row["url"]),
+            "profile_scope": "ufcstats",
             "height": _clean_text(row["height"]),
             "height_inches": _inches(row["height"]),
             "reach": _clean_text(row["reach"]),
@@ -823,6 +868,7 @@ def build_fighter_explorer(
                     "id": identity,
                     "name": _clean_text(name),
                     "url": _clean_text(url),
+                    "profile_scope": "ufcstats",
                     "height": "",
                     "height_inches": None,
                     "reach": "",
@@ -834,7 +880,7 @@ def build_fighter_explorer(
                 },
             )
 
-    external_rows, linked_external_fights = _external_history_rows(
+    external_rows, linked_external_fights, linked_external_fighter_rows = _external_history_rows(
         external_bouts or [], identity_map or {}
     )
     for row in external_rows:
@@ -852,6 +898,7 @@ def build_fighter_explorer(
                 "id": fighter_id,
                 "name": _clean_text(row.get("fighter")),
                 "url": _clean_text(row.get("fighter_url")),
+                "profile_scope": "external_result_metadata",
                 "height": "",
                 "height_inches": None,
                 "reach": "",
@@ -898,6 +945,7 @@ def build_fighter_explorer(
                             "http://ufcstats.com/fighter-details/"
                             f"{fighter_id}"
                         ),
+                        "profile_scope": "ufcstats",
                         "height": "",
                         "height_inches": None,
                         "reach": "",
@@ -937,9 +985,24 @@ def build_fighter_explorer(
             )
             if paired is not None:
                 opponent_rows.append(paired)
+        career = (
+            _career(ordered_ufc_rows, opponent_rows)
+            if ordered_ufc_rows or profile.get("profile_scope") == "ufcstats"
+            else {
+                "recorded_bouts": 0,
+                "wins": 0,
+                "losses": 0,
+                "draws": 0,
+                "no_contests": 0,
+                "divisions": [],
+                "recent_form": [],
+                "totals": {},
+                "opponent_totals": {},
+            }
+        )
         fighter = {
             **profile,
-            "career": _career(ordered_ufc_rows, opponent_rows),
+            "career": career,
             "fights": [_fight_array(row) for row in ordered_rows],
         }
         # Most profiles are UFC-only; their existing career object is already a
@@ -955,7 +1018,10 @@ def build_fighter_explorer(
         "data_through": (
             pd.to_datetime(raw_fights["date"], errors="coerce").max().date().isoformat()
         ),
-        "identity_contract": "UFCStats fighter and fight URL IDs",
+        "identity_contract": (
+            "UFCStats URL IDs for UFC profiles; deterministic source IDs for "
+            "external-only historical profiles"
+        ),
         "counts": {
             "fighters": len(fighters),
             "fighters_with_recorded_bouts": sum(
@@ -965,11 +1031,17 @@ def build_fighter_explorer(
             "fighters_with_ufcstats_bouts": sum(
                 int(item["career"]["recorded_bouts"] > 0) for item in fighters
             ),
+            "external_only_fighters": sum(
+                int(item.get("profile_scope") == "external_result_metadata")
+                for item in fighters
+            ),
             "scheduled_fighters": len(scheduled_ids),
             "fighter_fight_rows": len(raw_fights),
             "unique_fights": int(raw_fights["fight_url"].nunique()),
             "linked_external_fights": linked_external_fights,
-            "linked_external_fighter_rows": len(external_rows),
+            "linked_external_fighter_rows": linked_external_fighter_rows,
+            "external_metadata_fights": len(external_rows) // 2,
+            "external_metadata_fighter_rows": len(external_rows),
             "published_fighter_fight_rows": len(raw_fights) + len(external_rows),
         },
         "fight_columns": list(FIGHT_COLUMNS),
@@ -994,8 +1066,8 @@ def build_fighter_explorer(
                 for key, value in STAT_DEFINITIONS.items()
             },
             "notes": [
-                "The all-promotion record includes linked Bellator and ONE result metadata; UFCStats career rates remain UFC-only.",
-                "The external bootstrap is a CC0 dataset through 2021-08-11 and is not a current weekly feed.",
+                "The directory includes external-only historical profiles where the source has a Bellator or ONE result; UFCStats career rates remain UFC-only.",
+                "The external bootstrap is an incomplete CC0 dataset through 2021-08-11 and is not a current roster or weekly feed.",
                 "Absorbed and defensive statistics use the paired opponent row for the same stable fight ID.",
                 "Each rate uses only bouts where both its statistic and fight duration are known; bouts with unknown duration never contribute a numerator without exposure.",
                 "Wholly missing statistics remain null rather than becoming zero, and coverage counts show how many bouts support duration and control-time rates.",

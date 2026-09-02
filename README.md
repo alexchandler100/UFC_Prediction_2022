@@ -15,7 +15,7 @@ The weekly job:
 4. Tunes and evaluates a regularized logistic model with nested chronological folds, adds pre-bout Elo/state features, applies symmetric temperature calibration, and refits on the full ten-year window.
 5. Saves and reloads a content-hashed JSON model artifact before forecasting the next card.
 6. Builds a paper-only Bayesian logistic challenger around the same MAP coefficients, evaluates its posterior mean chronologically, and publishes probability intervals.
-7. Builds a compact stable-ID fighter explorer publication with UFCStats performance plus linked Bellator/ONE history.
+7. Builds a compact stable-ID fighter explorer publication with UFCStats performance plus incomplete historical Bellator/ONE result metadata.
 8. Adds timestamped no-vig multi-book consensus from The Odds API when valid lines are available and publishes the website JSON.
 
 The 82-feature model is antisymmetric: swapping the fighters produces the complementary probability. Historical features use only information available before that bout; appending future fights cannot change an existing training row. Split decisions are valid W/L labels, while draws and no-contests are retained as state/history events but are not binary training labels.
@@ -149,13 +149,15 @@ UFC label set unchanged and improved final-holdout log loss from `0.62284` to
 improved from `0.63133` to `0.63071`. This is a small predictive gain, not
 evidence of positive betting return.
 
-The fighter website publishes the 925 non-UFC bouts that can be linked safely
-to a UFCStats identity, covering 377 profiles. Each history row identifies its
-promotion, event, dataset, and upstream source page. Bellator/ONE result,
-method, round, and clock metadata contribute to the all-promotion record;
+The fighter website publishes all 4,236 non-UFC bouts in that historical
+bootstrap. It includes 2,994 external-only fighter profiles in addition to the
+925 bouts linked safely to 377 UFCStats profiles. Each history row identifies
+its promotion, event, dataset, and upstream source page. Bellator/ONE result,
+method, round, and clock metadata contribute to the recorded-promotion record;
 detailed striking/grappling rates remain explicitly UFCStats-only. The site
-labels the 1,045 linked fighter perspectives with unavailable detailed stats
-as metadata-only rather than showing fabricated zeroes.
+labels all 8,472 external fighter perspectives as metadata-only rather than
+showing fabricated zeroes, and plainly warns that the source is incomplete and
+ends on August 11, 2021.
 
 Reproduce the collection and evaluation with:
 
@@ -440,6 +442,16 @@ weekly updater later settles these immutable records from stable UFCStats IDs
 and publishes paper ROI, drawdown, forecast scores, coverage, and a latest-
 available same-book CLV proxy. This remains research only; no order, account,
 bankroll, or wager-execution code exists.
+
+The Performance tab also offers research-only bankroll replays that combine a
+published probability with the production winner model, the frozen Monte Carlo
+forecast, or both. Probabilities are averaged in log-odds space before half
+Kelly is calculated, so disagreement reduces the stake. A bet is excluded when
+the required pre-fight prediction was not saved; the interface reports that
+excluded count rather than substituting another estimate. The current archive
+has model support for four moneyline records, simulation support for five of
+the fifteen total records, and both for one record, so these results are far too
+small to choose a live staking policy.
 
 A separate `market-first-t24-paper-v1` ledger now tests the promising historical
 adjustment without changing that baseline. Near T-24 it compares every offered

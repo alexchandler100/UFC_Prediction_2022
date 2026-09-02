@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Explore UFC fighter statistics, linked Bellator and ONE histories, model forecasts, and book-by-book market data.">
+  <meta name="description" content="Explore UFC fighter statistics, incomplete historical Bellator and ONE results, model forecasts, and book-by-book market data.">
   <meta name="theme-color" content="#111b26">
   <title>UFC Data Lab</title>
   <link rel="icon" href="favicon.png">
@@ -82,7 +82,7 @@
     <section class="view" id="view-fighters" data-view="fighters" aria-labelledby="fighters-title">
       <div class="compact-hero page-shell">
         <p class="eyebrow">Fighter database</p><h1 id="fighters-title">Find anyone. Inspect everything.</h1>
-        <p>Search every fighter profile we have, then inspect UFCStats performance plus linked Bellator and ONE fight histories.</p>
+        <p>Search UFCStats profiles plus fighters found in our incomplete historical Bellator and ONE result file, which ends in August 2021. Outside-UFC coverage is not a current or complete roster.</p>
       </div>
       <div class="page-shell page-stack">
         <section class="panel directory-controls" id="fighter-directory-controls" tabindex="-1" aria-label="Fighter filters">
@@ -336,7 +336,7 @@
           </div>
           <div class="performance-filter-grid">
             <div class="filter-control"><label for="performance-bankroll">Initial bankroll</label><input id="performance-bankroll" type="number" min="1" step="100" value="1000" inputmode="decimal"></div>
-            <div class="filter-control"><label for="performance-staking">Bet size</label><select id="performance-staking"><option value="half_kelly">Half Kelly</option><option value="third_kelly">One-third Kelly</option><option value="full_kelly">Full Kelly</option><option value="flat_one_percent">Flat 1% of bankroll</option></select></div>
+            <div class="filter-control"><label for="performance-staking">Bet size</label><select id="performance-staking"><optgroup label="Published probability"><option value="half_kelly">Half Kelly</option><option value="third_kelly">One-third Kelly</option><option value="full_kelly">Full Kelly</option><option value="flat_one_percent">Flat 1% of bankroll</option></optgroup><optgroup label="Research: combine probability estimates"><option value="half_kelly_model_blend">½ Kelly · published + winner model</option><option value="half_kelly_sim_blend">½ Kelly · published + simulation</option><option value="half_kelly_model_sim_blend">½ Kelly · published + model + simulation</option></optgroup></select></div>
             <div class="filter-control"><label for="performance-timing">Bet timing</label><select id="performance-timing"><option value="first_qualifying">First published qualifying price</option><option value="official_t24">Official locked T-24 only</option><option value="nearest_t48">Published price nearest T-48</option><option value="nearest_t24">Published price nearest T-24</option><option value="favorite_early_underdog_late">Favorite early / underdog late</option><option value="latest_qualifying">Latest published qualifying price</option></select></div>
             <div class="filter-control"><label for="performance-market">Market</label><select id="performance-market"><option value="all">All tracked markets</option><option value="Moneyline">Moneyline</option><option value="Total rounds">Fight totals</option></select></div>
           </div>

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
 from pathlib import Path
 import subprocess
 
@@ -19,6 +20,7 @@ from market_tracker import (
 )
 from market_tracker.bankroll import (
     archive_upcoming_bet_board,
+    bet_support_key,
     build_bet_performance_publication,
     empty_published_bet_archive,
     validate_bet_performance_publication,
@@ -33,6 +35,8 @@ MARKET = ROOT / "content" / "data" / "market"
 RAW = ROOT / "content" / "data" / "processed" / "ufc_fights_reported_doubled.csv"
 ARCHIVE = MARKET / "published_bet_snapshots.json"
 OUTPUT = MARKET / "bet_performance.json"
+PREDICTION_HISTORY = ROOT / "content" / "data" / "external" / "prediction_history.json"
+SIMULATION_FORECASTS = ROOT / "content" / "data" / "external" / "simulation_forecasts.json"
 REPOSITORY = ROOT.parent
 BOARD_REPOSITORY_PATH = "src/content/data/market/upcoming_bet_board.json"
 
@@ -91,6 +95,125 @@ def _stores() -> dict[str, object]:
     }
 
 
+def _model_support() -> dict[tuple[str, ...], dict[str, object]]:
+    if not PREDICTION_HISTORY.exists():
+        return {}
+    frame = pd.read_json(PREDICTION_HISTORY)
+    required = {
+        "event id", "fighter id", "opponent id", "model probability",
+        "forecast issued at",
+    }
+    if not required.issubset(frame.columns):
+        return {}
+    output: dict[tuple[str, ...], dict[str, object]] = {}
+    for _, row in frame.iterrows():
+        event_id = _identity(row.get("event id"))
+        fighter_id = _identity(row.get("fighter id"))
+        opponent_id = _identity(row.get("opponent id"))
+        probability = pd.to_numeric(row.get("model probability"), errors="coerce")
+        issued = str(row.get("forecast issued at") or "")
+        if (
+            not event_id or not fighter_id or not opponent_id
+            or pd.isna(probability) or not 0.0 < float(probability) < 1.0
+            or not issued or issued == "NaT"
+        ):
+            continue
+        for side, chance in (
+            ("fighter", float(probability)),
+            ("opponent", 1.0 - float(probability)),
+        ):
+            key = bet_support_key(
+                event_id=event_id,
+                fighter_id=fighter_id,
+                opponent_id=opponent_id,
+                category="Moneyline",
+                side=side,
+                selection="",
+            )
+            output[key] = {
+                "probability": chance,
+                "source": "production_winner_model",
+                "issued_at_utc": issued,
+            }
+    return output
+
+
+def _simulation_support() -> dict[tuple[str, ...], dict[str, object]]:
+    if not SIMULATION_FORECASTS.exists():
+        return {}
+    publication = json.loads(SIMULATION_FORECASTS.read_text(encoding="utf-8"))
+    event_id = _identity(publication.get("event_id"))
+    issued = str(publication.get("forecast_issued_at_utc") or "")
+    if not event_id or not issued:
+        return {}
+    output: dict[tuple[str, ...], dict[str, object]] = {}
+    for matchup in publication.get("matchups", []):
+        if not isinstance(matchup, dict) or matchup.get("status") != "available":
+            continue
+        fighter_id = _identity(matchup.get("fighter_id"))
+        opponent_id = _identity(matchup.get("opponent_id"))
+        aggregate = matchup.get("aggregate")
+        probabilities = aggregate.get("outcome_probabilities") if isinstance(aggregate, dict) else None
+        if not fighter_id or not opponent_id or not isinstance(probabilities, dict):
+            continue
+        red = math.fsum(
+            float(value) for key, value in probabilities.items()
+            if str(key).startswith("red_")
+        )
+        blue = math.fsum(
+            float(value) for key, value in probabilities.items()
+            if str(key).startswith("blue_")
+        )
+        if red <= 0.0 or blue <= 0.0:
+            continue
+        for side, chance in (("fighter", red / (red + blue)), ("opponent", blue / (red + blue))):
+            key = bet_support_key(
+                event_id=event_id,
+                fighter_id=fighter_id,
+                opponent_id=opponent_id,
+                category="Moneyline",
+                side=side,
+                selection="",
+            )
+            output[key] = {
+                "probability": chance,
+                "source": "frozen_pre_event_monte_carlo",
+                "issued_at_utc": issued,
+            }
+        for total in aggregate.get("total_lines", []):
+            if not isinstance(total, dict):
+                continue
+            over = float(total.get("over") or 0.0)
+            under = float(total.get("under") or 0.0)
+            if over <= 0.0 or under <= 0.0:
+                continue
+            line = float(total.get("half_rounds"))
+            for side, chance in (("over", over / (over + under)), ("under", under / (over + under))):
+                key = bet_support_key(
+                    event_id=event_id,
+                    fighter_id=fighter_id,
+                    opponent_id=opponent_id,
+                    category="Total rounds",
+                    side=side,
+                    selection=f"{side.title()} {line:g} rounds",
+                )
+                output[key] = {
+                    "probability": chance,
+                    "source": "frozen_pre_event_monte_carlo",
+                    "issued_at_utc": issued,
+                }
+    return output
+
+
+def _prior_support() -> dict[str, dict[str, object]]:
+    if not OUTPUT.exists():
+        return {}
+    publication = validate_bet_performance_publication(
+        json.loads(OUTPUT.read_text(encoding="utf-8"))
+    )
+    return {str(item["record_id"]): item for item in publication["records"]}
+
+
 def update_bet_performance() -> dict[str, object]:
     stores = _stores()
     records = {key: store.read() for key, store in stores.items()}
@@ -106,6 +229,9 @@ def update_bet_performance() -> dict[str, object]:
         archive=archive,
         outcomes=outcomes,
         durations=durations,
+        model_support=_model_support(),
+        simulation_support=_simulation_support(),
+        prior_support=_prior_support(),
     )
     write_bet_performance_publication(publication, OUTPUT)
     return publication

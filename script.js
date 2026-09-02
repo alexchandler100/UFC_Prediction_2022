@@ -188,6 +188,13 @@ function probabilityLogit(value) {
   return Math.log(probability / (1 - probability));
 }
 
+function equalLogitPool(values) {
+  const logits = values.map(probabilityLogit);
+  if (!logits.length || logits.some((value) => value === null)) return null;
+  const mean = logits.reduce((sum, value) => sum + value, 0) / logits.length;
+  return 1 / (1 + Math.exp(-mean));
+}
+
 function formatDate(value, options = { year: "numeric", month: "short", day: "numeric" }) {
   if (!value) return "Unknown";
   const date = new Date(`${String(value).slice(0, 10)}T12:00:00Z`);
@@ -1266,15 +1273,18 @@ async function loadData() {
 
 function fighterByName(name) {
   const key = normalize(name);
-  return state.fighters.find((fighter) => normalize(fighter.name) === key) || null;
+  return state.fighters.find((fighter) => normalize(fighter.name) === key && fighter.profile_scope !== "external_result_metadata")
+    || state.fighters.find((fighter) => normalize(fighter.name) === key)
+    || null;
 }
 
 function findFighters(query, limit = 24) {
   const terms = normalize(query).split(" ").filter(Boolean);
-  const candidates = terms.length ? state.fighters.filter((fighter) => {
+  const eligible = state.fighters.filter((fighter) => Number(fighter.career?.recorded_bouts || 0) > 0);
+  const candidates = terms.length ? eligible.filter((fighter) => {
     const haystack = normalize(`${fighter.name} ${fighterDivision(fighter)} ${fighter.stance || ""}`);
     return terms.every((term) => haystack.includes(term));
-  }) : [...state.fighters];
+  }) : [...eligible];
   return candidates
     .sort((left, right) => {
       const leftStarts = normalize(left.name).startsWith(terms.join(" ")) ? 1 : 0;
@@ -1764,7 +1774,7 @@ function renderCoverage() {
   const values = [
     [state.explorer.counts.fighters.toLocaleString(), "fighter profiles"],
     [state.explorer.counts.unique_fights.toLocaleString(), "UFCStats fights"],
-    [(state.explorer.counts.linked_external_fights || 0).toLocaleString(), "linked Bellator / ONE fights"],
+    [(state.explorer.counts.external_metadata_fights || state.explorer.counts.linked_external_fights || 0).toLocaleString(), "historical external fights"],
     [formatDate(state.explorer.data_through), "data through"],
   ];
   values.forEach(([value, label]) => {
@@ -2386,7 +2396,8 @@ function renderFighterDirectory() {
   fighters.slice(0, state.directoryLimit).forEach((fighter) => {
     const card = element("article", "fighter-card");
     const title = element("div"); appendText(title, "h3", "", fighter.name);
-    appendText(title, "div", "fighter-card-sub", [fighterDivision(fighter), fighter.stance, fighter.reach ? `${fighter.reach} reach` : ""].filter(Boolean).join(" · ") || "Profile information only"); card.append(title);
+    const externalOnly = fighter.profile_scope === "external_result_metadata";
+    appendText(title, "div", "fighter-card-sub", externalOnly ? "Historical result metadata only · source ends Aug. 2021" : ([fighterDivision(fighter), fighter.stance, fighter.reach ? `${fighter.reach} reach` : ""].filter(Boolean).join(" · ") || "Profile information only")); card.append(title);
     const stats = element("div", "mini-stats");
     [[record(fighter), "record"], [formatNumber(fighter.career.sig_strikes_landed_per_minute), "SLpM"], [formatNumber(fighter.career.takedowns_landed_per_15), "TD / 15"]].forEach(([value, label]) => {
       const stat = element("div", "mini-stat"); appendText(stat, "strong", "", value); appendText(stat, "span", "", label); stats.append(stat);
@@ -2515,13 +2526,18 @@ function renderRawTotals(fighter) {
 async function renderFighterProfile(fighterId) {
   const fighter = state.fighterById.get(fighterId);
   if (!fighter) { setRoute("fighters"); return; }
+  const hasUfcStatsDetail = Number(fighter.career?.recorded_bouts || 0) > 0;
   $(".directory-controls").hidden = true; $("#fighter-directory").hidden = true;
   const container = $("#fighter-profile"); container.replaceChildren();
   const allResults = fullRecord(fighter);
   const header = element("section", "profile-header"); const identity = element("div"); identity.append(actionButton("← Back to fighter directory", "back-button", () => setRoute("fighters")));
   appendText(identity, "p", "eyebrow", fighterDivision(fighter) || "Fighter profile"); appendText(identity, "h2", "", fighter.name);
-  appendText(identity, "p", "", `${record(fighter)} across linked promotions · ${allResults.recorded_bouts} bouts · ${fighter.career.recorded_bouts} with UFCStats detail`); header.append(identity);
-  const sourceLink = element("a", "", "Open official UFCStats profile ↗"); sourceLink.href = fighter.url; sourceLink.target = "_blank"; sourceLink.rel = "noreferrer"; identity.append(sourceLink);
+  appendText(identity, "p", "", `${record(fighter)} across recorded promotions · ${allResults.recorded_bouts} bouts · ${fighter.career.recorded_bouts} with UFCStats detail`); header.append(identity);
+  if (hasUfcStatsDetail) {
+    const sourceLink = element("a", "", "Open official UFCStats profile ↗"); sourceLink.href = fighter.url; sourceLink.target = "_blank"; sourceLink.rel = "noreferrer"; identity.append(sourceLink);
+  } else {
+    appendText(identity, "p", "section-note", "Historical result metadata only. The external source is incomplete and ends on August 11, 2021.");
+  }
   const bio = element("div", "profile-bio");
   [[fighter.height || "—", "Height"], [fighter.reach || "—", "Reach"], [fighter.stance || "—", "Stance"], [ageOn(fighter, state.card?.date) ?? "—", "Age at current card"], [fighter.dob_iso ? formatDate(fighter.dob_iso) : fighter.dob || "—", "Date of birth"], [fighter.id, "Stable fighter ID"]].forEach(([value, label]) => bio.append(bioItem(value, label))); header.append(bio); container.append(header);
 
@@ -2529,14 +2545,22 @@ async function renderFighterProfile(fighterId) {
   const coverageStats = element("div", "stats-grid"); [[allResults.recorded_bouts, "All recorded MMA bouts", record(fighter)], [fighter.career.recorded_bouts, "UFCStats detail", "Striking and grappling available"], [promotionBouts(fighter, /bellator/i), "Bellator history", "Result metadata"], [promotionBouts(fighter, /one championship/i), "ONE history", "Result metadata"], [allResults.metadata_only_bouts || 0, "Metadata-only bouts", "Never included in UFC performance rates"]].forEach(([value, label, note]) => coverageStats.append(statTile(formatNumber(value, 0), label, note))); coverage.append(coverageStats); container.append(coverage);
 
   const keyStats = element("section", "stats-grid");
-  [[formatNumber(fighter.career.sig_strikes_landed_per_minute), "Sig. strikes landed / min", `${formatNumber(fighter.career.sig_strikes_absorbed_per_minute)} absorbed · UFC only`], [formatMetric(fighter.career.significant_strike_differential_per_minute, "signed"), "Sig. strike differential / min", `${formatPercent(fighter.career.sig_strike_defense)} defense · UFC only`], [formatNumber(fighter.career.takedowns_landed_per_15), "Takedowns / 15 min", `${formatPercent(fighter.career.takedown_accuracy)} accuracy · UFC only`], [formatNumber(fighter.career.control_minutes_per_15), "Control min / 15", `${formatPercent(fighter.career.control_share)} control share · UFC only`], [formatNumber(fighter.career.submission_attempts_per_15), "Sub attempts / 15", "UFCStats detail"], [formatNumber(fighter.career.knockdowns_per_15), "Knockdowns / 15", `${formatNumber(fighter.career.knockdowns_absorbed_per_15)} absorbed · UFC only`], [formatPercent(allResults.finish_rate), "Finish rate in wins", `${allResults.ko_tko_wins} KO · ${allResults.submission_wins} SUB · all promotions`], [allResults.recent_form.join(" · ") || "—", "Last five results", allResults.last_fight_date ? `Last fought ${formatDate(allResults.last_fight_date)}` : "No fight date"]].forEach(([value, label, note]) => keyStats.append(statTile(value, label, note))); container.append(keyStats);
+  const keyStatRows = hasUfcStatsDetail
+    ? [[formatNumber(fighter.career.sig_strikes_landed_per_minute), "Sig. strikes landed / min", `${formatNumber(fighter.career.sig_strikes_absorbed_per_minute)} absorbed · UFC only`], [formatMetric(fighter.career.significant_strike_differential_per_minute, "signed"), "Sig. strike differential / min", `${formatPercent(fighter.career.sig_strike_defense)} defense · UFC only`], [formatNumber(fighter.career.takedowns_landed_per_15), "Takedowns / 15 min", `${formatPercent(fighter.career.takedown_accuracy)} accuracy · UFC only`], [formatNumber(fighter.career.control_minutes_per_15), "Control min / 15", `${formatPercent(fighter.career.control_share)} control share · UFC only`], [formatNumber(fighter.career.submission_attempts_per_15), "Sub attempts / 15", "UFCStats detail"], [formatNumber(fighter.career.knockdowns_per_15), "Knockdowns / 15", `${formatNumber(fighter.career.knockdowns_absorbed_per_15)} absorbed · UFC only`]]
+    : [];
+  keyStatRows.push([formatPercent(allResults.finish_rate), "Finish rate in wins", `${allResults.ko_tko_wins} KO · ${allResults.submission_wins} SUB · recorded promotions`], [allResults.recent_form.join(" · ") || "—", "Last five results", allResults.last_fight_date ? `Last fought ${formatDate(allResults.last_fight_date)}` : "No fight date"]);
+  keyStatRows.forEach(([value, label, note]) => keyStats.append(statTile(value, label, note))); container.append(keyStats);
 
-  const careerPanel = element("section", "panel"); const heading = element("div", "section-heading"); const copy = element("div"); appendText(copy, "p", "eyebrow", "UFCStats performance"); appendText(copy, "h2", "", "Detailed fighter statistics"); appendText(copy, "p", "section-note", "These rates use UFCStats fight time only. Bellator and ONE metadata affects the all-promotion record above, never these detailed rates."); heading.append(copy); careerPanel.append(heading);
-  const careerColumns = element("div", "explain-grid"); ["Record", "Striking", "Grappling", "Style", "Data quality"].forEach((group) => careerColumns.append(renderCareerTable(fighter, group))); careerPanel.append(careerColumns);
-  const metadata = document.createElement("details"); metadata.append(element("summary", "", "Career dates, divisions, form, and streak metadata")); const metadataBody = element("div", "details-body");
-  const metadataTable = element("table", "data-table"); const metadataRows = document.createElement("tbody");
-  [["First linked fight", allResults.first_fight_date ? formatDate(allResults.first_fight_date) : "—"], ["Most recent linked fight", allResults.last_fight_date ? formatDate(allResults.last_fight_date) : "—"], ["Recent form across promotions", allResults.recent_form.join(" · ") || "—"], ["Current W/L streak", allResults.current_streak_result ? `${allResults.current_streak} ${allResults.current_streak_result}` : "—"], ["Promotions", allResults.promotions.map((item) => `${item.name} (${item.bouts})`).join(", ") || "—"], ["UFC divisions", fighter.career.divisions.map((item) => `${item.name} (${item.bouts})`).join(", ") || "—"]].forEach(([label, value]) => { const row = document.createElement("tr"); appendText(row, "td", "", label); appendText(row, "td", "", value); metadataRows.append(row); });
-  metadataTable.append(metadataRows); metadataBody.append(metadataTable); metadata.append(metadataBody); careerPanel.append(metadata, renderRawTotals(fighter)); container.append(careerPanel);
+  if (hasUfcStatsDetail) {
+    const careerPanel = element("section", "panel"); const heading = element("div", "section-heading"); const copy = element("div"); appendText(copy, "p", "eyebrow", "UFCStats performance"); appendText(copy, "h2", "", "Detailed fighter statistics"); appendText(copy, "p", "section-note", "These rates use UFCStats fight time only. Bellator and ONE metadata affects the all-promotion record above, never these detailed rates."); heading.append(copy); careerPanel.append(heading);
+    const careerColumns = element("div", "explain-grid"); ["Record", "Striking", "Grappling", "Style", "Data quality"].forEach((group) => careerColumns.append(renderCareerTable(fighter, group))); careerPanel.append(careerColumns);
+    const metadata = document.createElement("details"); metadata.append(element("summary", "", "Career dates, divisions, form, and streak metadata")); const metadataBody = element("div", "details-body");
+    const metadataTable = element("table", "data-table"); const metadataRows = document.createElement("tbody");
+    [["First linked fight", allResults.first_fight_date ? formatDate(allResults.first_fight_date) : "—"], ["Most recent linked fight", allResults.last_fight_date ? formatDate(allResults.last_fight_date) : "—"], ["Recent form across promotions", allResults.recent_form.join(" · ") || "—"], ["Current W/L streak", allResults.current_streak_result ? `${allResults.current_streak} ${allResults.current_streak_result}` : "—"], ["Promotions", allResults.promotions.map((item) => `${item.name} (${item.bouts})`).join(", ") || "—"], ["UFC divisions", fighter.career.divisions.map((item) => `${item.name} (${item.bouts})`).join(", ") || "—"]].forEach(([label, value]) => { const row = document.createElement("tr"); appendText(row, "td", "", label); appendText(row, "td", "", value); metadataRows.append(row); });
+    metadataTable.append(metadataRows); metadataBody.append(metadataTable); metadata.append(metadataBody); careerPanel.append(metadata, renderRawTotals(fighter)); container.append(careerPanel);
+  } else {
+    const notice = element("section", "panel coverage-notice"); appendText(notice, "strong", "", "Detailed statistics unavailable"); appendText(notice, "p", "", "This fighter has no UFCStats profile in our data. The recorded results below must not be treated as a complete career record, and the profile cannot be used in the prediction matchup tool."); container.append(notice);
+  }
   const historyLoading = element("div", "empty-state", "Loading complete fight log…"); container.append(historyLoading);
   try {
     await ensureFighterFights(fighter);
@@ -2753,14 +2777,40 @@ function selectPerformanceRecords(records, timing) {
   return selected.sort((left, right) => String(left.event_date).localeCompare(String(right.event_date)) || Number(right.bout_order ?? -1) - Number(left.bout_order ?? -1) || String(left.record_id).localeCompare(String(right.record_id)));
 }
 
+function performanceStakePlan(record, staking) {
+  const published = finite(record.estimated_win_probability);
+  if (published === null) return null;
+  if (staking === "flat_one_percent") return { fraction: 0.01, probability: published, label: "Published estimate" };
+  const ordinaryFactor = staking === "full_kelly" ? 1 : staking === "half_kelly" ? 0.5 : staking === "third_kelly" ? 1 / 3 : null;
+  if (ordinaryFactor !== null) return { fraction: Math.max(0, Number(record.kelly_fraction) * ordinaryFactor), probability: published, label: "Published estimate" };
+  const model = finite(record.model_support_probability);
+  const simulation = finite(record.simulation_support_probability);
+  let values = null; let label = "";
+  if (staking === "half_kelly_model_blend" && model !== null) {
+    values = [published, model]; label = "Published + winner model";
+  } else if (staking === "half_kelly_sim_blend" && simulation !== null) {
+    values = [published, simulation]; label = "Published + simulation";
+  } else if (staking === "half_kelly_model_sim_blend" && model !== null && simulation !== null) {
+    values = [published, model, simulation]; label = "Published + model + simulation";
+  }
+  if (!values) return null;
+  const probability = equalLogitPool(values);
+  const fullKelly = kellyFraction(probability, record.offered_moneyline);
+  return probability === null || fullKelly === null ? null : { fraction: Math.max(0, fullKelly * 0.5), probability, label };
+}
+
 function simulatePaperBankroll(records, initialBankroll, staking) {
-  const settled = records.filter((record) => ["won", "lost", "void"].includes(record.status));
-  const pending = records.filter((record) => record.status === "pending");
+  const planned = records.map((record) => ({ record, plan: performanceStakePlan(record, staking) }));
+  const unsupported = planned.filter((item) => item.plan === null).map((item) => item.record);
+  const supported = planned.filter((item) => item.plan !== null);
+  const settled = supported.filter((item) => ["won", "lost", "void"].includes(item.record.status));
+  const pending = supported.filter((item) => item.record.status === "pending").map((item) => item.record);
   const events = new Map();
-  settled.forEach((record) => {
+  settled.forEach((item) => {
+    const record = item.record;
     const key = `${record.event_date}|${record.event_id}`;
     if (!events.has(key)) events.set(key, []);
-    events.get(key).push(record);
+    events.get(key).push(item);
   });
   let bankroll = initialBankroll;
   let peak = bankroll;
@@ -2768,39 +2818,39 @@ function simulatePaperBankroll(records, initialBankroll, staking) {
   let totalStaked = 0;
   const rows = [];
   const curve = [{ label: "Start", date: "", bankroll }];
-  [...events.entries()].sort(([left], [right]) => left.localeCompare(right)).forEach(([, eventRecords]) => {
+  [...events.entries()].sort(([left], [right]) => left.localeCompare(right)).forEach(([, eventItems]) => {
     const eventBankroll = bankroll;
-    const factor = staking === "full_kelly" ? 1 : staking === "half_kelly" ? 0.5 : staking === "third_kelly" ? 1 / 3 : null;
-    const proposed = eventRecords.map((record) => staking === "flat_one_percent" ? 0.01 : Math.max(0, Number(record.kelly_fraction) * factor));
+    const proposed = eventItems.map((item) => item.plan.fraction);
     const proposedTotal = proposed.reduce((sum, value) => sum + value, 0);
     const scale = proposedTotal > 1 ? 1 / proposedTotal : 1;
     let cardProfit = 0;
-    eventRecords.forEach((record, index) => {
+    eventItems.forEach(({ record, plan }, index) => {
       const fraction = proposed[index] * scale;
       const stake = eventBankroll * fraction;
       const profit = stake * Number(record.unit_profit || 0);
       cardProfit += profit;
       totalStaked += stake;
-      rows.push({ ...record, stake_fraction: fraction, stake, profit, bankroll_before_event: eventBankroll });
+      rows.push({ ...record, sizing_probability: plan.probability, sizing_label: plan.label, stake_fraction: fraction, stake, profit, bankroll_before_event: eventBankroll });
     });
     bankroll = Math.max(0, eventBankroll + cardProfit);
-    rows.slice(-eventRecords.length).forEach((row) => { row.bankroll_after_event = bankroll; });
+    rows.slice(-eventItems.length).forEach((row) => { row.bankroll_after_event = bankroll; });
     peak = Math.max(peak, bankroll);
     if (peak > 0) maxDrawdown = Math.max(maxDrawdown, (peak - bankroll) / peak);
-    curve.push({ label: eventRecords[0].event_title || formatDate(eventRecords[0].event_date), date: eventRecords[0].event_date, bankroll });
+    curve.push({ label: eventItems[0].record.event_title || formatDate(eventItems[0].record.event_date), date: eventItems[0].record.event_date, bankroll });
   });
   return {
     rows,
     pending,
+    unsupported,
     curve,
     endingBankroll: bankroll,
     profit: bankroll - initialBankroll,
     totalStaked,
     roi: totalStaked ? (bankroll - initialBankroll) / totalStaked : null,
     maxDrawdown,
-    wins: settled.filter((record) => record.status === "won").length,
-    losses: settled.filter((record) => record.status === "lost").length,
-    voids: settled.filter((record) => record.status === "void").length,
+    wins: settled.filter((item) => item.record.status === "won").length,
+    losses: settled.filter((item) => item.record.status === "lost").length,
+    voids: settled.filter((item) => item.record.status === "void").length,
   };
 }
 
@@ -2858,10 +2908,14 @@ function renderBetPerformance() {
   const selected = selectPerformanceRecords(candidates, timing);
   const result = simulatePaperBankroll(selected, initial, staking);
   const archiveStart = publication.archive_started_at_utc ? formatDate(publication.archive_started_at_utc) : "the next archived board";
-  $("#performance-data-note").textContent = timing === "official_t24"
+  const baseDataNote = timing === "official_t24"
     ? `Exact locked T-24 ledger · ${publication.official_settled_count} settled bets. Earlier website totals are intentionally included only in the published-price strategies.`
     : `Published-price replay includes recovered website boards and automatic archives from ${archiveStart}. Official locked bets before that archive are retained.`;
-  $("#performance-summary-note").textContent = `${result.rows.length} settled bet${result.rows.length === 1 ? "" : "s"} · ${result.wins}-${result.losses}${result.voids ? ` · ${result.voids} void` : ""}${result.pending.length ? ` · ${result.pending.length} pending` : ""}. Bets from one card are sized from the same pre-card bankroll; stakes are scaled together if they would exceed available cash.`;
+  const researchStrategy = staking.includes("_blend");
+  $("#performance-data-note").textContent = researchStrategy
+    ? `${baseDataNote} Research blend: probabilities are averaged in log-odds space before half Kelly is calculated; a bet is excluded when a required saved prediction is unavailable.`
+    : baseDataNote;
+  $("#performance-summary-note").textContent = `${result.rows.length} settled bet${result.rows.length === 1 ? "" : "s"} · ${result.wins}-${result.losses}${result.voids ? ` · ${result.voids} void` : ""}${result.pending.length ? ` · ${result.pending.length} pending` : ""}${result.unsupported.length ? ` · ${result.unsupported.length} excluded because the required saved prediction is missing` : ""}. Bets from one card are sized from the same pre-card bankroll; stakes are scaled together if they would exceed available cash.`;
   [
     [formatCurrency(result.endingBankroll), "Ending bankroll", `${formatCurrency(result.profit)} total profit`],
     [formatCurrency(result.totalStaked), "Total amount risked", `${formatPercent(result.roi)} return on amount risked`],
@@ -2870,13 +2924,14 @@ function renderBetPerformance() {
   ].forEach(([value, label, note]) => summary.append(statTile(value, label, note)));
   renderPerformanceChart(result.curve, initial);
   if (!result.rows.length) {
-    const row = document.createElement("tr"); const cell = element("td", "", "No settled bets match these assumptions."); cell.colSpan = 7; row.append(cell); rows.append(row); return;
+    const message = result.unsupported.length ? "No settled bets have every prediction required by this research strategy." : "No settled bets match these assumptions.";
+    const row = document.createElement("tr"); const cell = element("td", "", message); cell.colSpan = 7; row.append(cell); rows.append(row); return;
   }
   result.rows.forEach((record) => {
     const row = document.createElement("tr");
     appendPerformanceCell(row, "Date", formatDate(record.event_date));
     const bet = element("div", "performance-bet"); appendText(bet, "strong", "", `${record.fighter_name} vs ${record.opponent_name}`); appendText(bet, "span", "", `${record.selection} · ${record.category}`); appendPerformanceCell(row, "Fight / bet", bet);
-    const price = element("div", "performance-price"); appendText(price, "strong", "", `${formatOdds(record.offered_moneyline)} · ${record.target_book}`); appendText(price, "span", "", `${formatTimestamp(record.published_at_utc)} · ${formatPercent(record.estimated_win_probability)} estimated`); appendPerformanceCell(row, "Published price", price);
+    const price = element("div", "performance-price"); appendText(price, "strong", "", `${formatOdds(record.offered_moneyline)} · ${record.target_book}`); appendText(price, "span", "", `${formatTimestamp(record.published_at_utc)} · ${formatPercent(record.estimated_win_probability)} published`); if (researchStrategy) appendText(price, "span", "", `${formatPercent(record.sizing_probability)} used for sizing · ${record.sizing_label}`); appendPerformanceCell(row, "Published price", price);
     appendPerformanceCell(row, "Result", element("span", `pill ${record.status === "won" ? "win" : record.status === "lost" ? "loss" : "neutral"}`, record.status.toUpperCase()));
     appendPerformanceCell(row, "Stake", `${formatCurrency(record.stake)} (${formatPercent(record.stake_fraction)})`, "numeric");
     appendPerformanceCell(row, "Profit", `${record.profit >= 0 ? "+" : ""}${formatCurrency(record.profit)}`, `numeric ${record.profit >= 0 ? "is-profit" : "is-loss"}`);

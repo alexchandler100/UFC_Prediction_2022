@@ -152,11 +152,14 @@ class FighterExplorerTests(unittest.TestCase):
                 "fighters": 3,
                 "fighters_with_recorded_bouts": 2,
                 "fighters_with_ufcstats_bouts": 2,
+                "external_only_fighters": 0,
                 "scheduled_fighters": 0,
                 "fighter_fight_rows": 2,
                 "unique_fights": 1,
                 "linked_external_fights": 0,
                 "linked_external_fighter_rows": 0,
+                "external_metadata_fights": 0,
+                "external_metadata_fighter_rows": 0,
                 "published_fighter_fight_rows": 2,
             },
         )
@@ -312,6 +315,17 @@ class FighterExplorerTests(unittest.TestCase):
         self.assertIsNone(external_fight["sig_strikes_landed"])
         self.assertEqual(publication["counts"]["linked_external_fights"], 1)
         self.assertEqual(publication["counts"]["linked_external_fighter_rows"], 1)
+        self.assertEqual(publication["counts"]["external_metadata_fights"], 1)
+        self.assertEqual(publication["counts"]["external_metadata_fighter_rows"], 2)
+        charlie = next(
+            item for item in publication["fighters"]
+            if item["name"] == "Charlie Challenger"
+        )
+        self.assertEqual(charlie["profile_scope"], "external_result_metadata")
+        self.assertEqual(charlie["career"]["recorded_bouts"], 0)
+        self.assertEqual(charlie["record"]["recorded_bouts"], 1)
+        self.assertEqual(charlie["record"]["losses"], 1)
+        self.assertEqual(publication["counts"]["external_only_fighters"], 1)
         validate_fighter_explorer(
             publication,
             fights,
