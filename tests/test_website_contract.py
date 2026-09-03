@@ -1,3 +1,4 @@
+import json
 import unittest
 from pathlib import Path
 
@@ -140,6 +141,28 @@ class WebsiteExplorerContractTests(unittest.TestCase):
         self.assertIn(".market-card.is-route-target", style)
         self.assertIn("--route-scroll-offset: 96px", style)
         self.assertIn("--route-scroll-offset: 140px", style)
+
+    def test_matchups_lists_every_announced_event_as_compact_expandable_rows(self):
+        page = (REPO_ROOT / "index.html").read_text(encoding="utf-8")
+        script = (REPO_ROOT / "script.js").read_text(encoding="utf-8")
+        style = (REPO_ROOT / "style.css").read_text(encoding="utf-8")
+        publication = json.loads(
+            (REPO_ROOT / "src/content/data/external/all_upcoming_forecasts.json").read_text(
+                encoding="utf-8"
+            )
+        )
+
+        self.assertGreater(len(publication["events"]), 1)
+        self.assertIn("All upcoming UFC fights", page)
+        self.assertIn("all_upcoming_forecasts.json", script)
+        self.assertIn("function allUpcomingEventGroups", script)
+        self.assertIn('element("details", "upcoming-bout")', script)
+        self.assertIn("upcoming-bout-summary", script)
+        self.assertIn("upcoming-bout-details", script)
+        self.assertIn("main event first within each card", script)
+        self.assertIn(".upcoming-event-group", style)
+        self.assertIn(".upcoming-bout-summary", style)
+        self.assertIn(".upcoming-bout-details", style)
 
     def test_routes_focus_the_requested_data_instead_of_the_tab_hero(self):
         page = (REPO_ROOT / "index.html").read_text(encoding="utf-8")

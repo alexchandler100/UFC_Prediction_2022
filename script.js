@@ -9,6 +9,7 @@ const DATA_PATHS = {
   market: "src/content/data/market/current_opportunities.json",
   oddsHistory: "src/content/data/market/odds_history.json",
   upcomingBetBoard: "src/content/data/market/upcoming_bet_board.json",
+  allUpcoming: "src/content/data/external/all_upcoming_forecasts.json",
   methodMarkets: "src/content/data/market/current_method_markets.json",
   performance: "src/content/data/market/performance_report.json",
   betPerformance: "src/content/data/market/bet_performance.json",
@@ -27,6 +28,7 @@ const state = {
   market: null,
   oddsHistory: null,
   upcomingBetBoard: null,
+  allUpcoming: null,
   methodMarkets: null,
   performance: null,
   betPerformance: null,
@@ -1225,7 +1227,7 @@ async function fetchJson(path, required = true) {
 }
 
 async function loadData() {
-  const [explorer, vegas, card, model, bayesian, market, oddsHistory, upcomingBetBoard, methodMarkets, performance, betPerformance, outcomes] = await Promise.all([
+  const [explorer, vegas, card, model, bayesian, market, oddsHistory, upcomingBetBoard, allUpcoming, methodMarkets, performance, betPerformance, outcomes] = await Promise.all([
     fetchJson(DATA_PATHS.explorer),
     fetchJson(DATA_PATHS.vegas, false),
     fetchJson(DATA_PATHS.card, false),
@@ -1234,6 +1236,7 @@ async function loadData() {
     fetchJson(DATA_PATHS.market, false),
     fetchJson(DATA_PATHS.oddsHistory, false),
     fetchJson(DATA_PATHS.upcomingBetBoard, false),
+    fetchJson(DATA_PATHS.allUpcoming, false),
     fetchJson(DATA_PATHS.methodMarkets, false),
     fetchJson(DATA_PATHS.performance, false),
     fetchJson(DATA_PATHS.betPerformance, false),
@@ -1247,6 +1250,7 @@ async function loadData() {
   state.market = market;
   state.oddsHistory = oddsHistory;
   state.upcomingBetBoard = upcomingBetBoard;
+  state.allUpcoming = allUpcoming;
   state.methodMarkets = methodMarkets;
   state.performance = performance;
   state.betPerformance = betPerformance;
@@ -2052,95 +2056,173 @@ function bayesianFilteredCandidate(matchup) {
   };
 }
 
+function allUpcomingEventGroups() {
+  const publishedRows = Array.isArray(state.allUpcoming?.matchups) ? state.allUpcoming.matchups : [];
+  if (!publishedRows.length) {
+    const matchups = currentMatchups();
+    return matchups.length ? [{
+      event_id: state.card?.event_id || "current-event",
+      event_date: dateKey(state.card?.date),
+      event_title: state.card?.title || "Current fight card",
+      event_url: state.card?.event_url || "",
+      matchups,
+    }] : [];
+  }
+
+  const currentByIdentity = new Map();
+  currentMatchups().forEach((matchup) => matchupIdentityKeys(matchup).forEach((key) => currentByIdentity.set(key, matchup)));
+  const eventMetadata = new Map((state.allUpcoming.events || []).map((event) => [
+    String(event.event_id || `${event.event_date}|${event.event_title}`),
+    event,
+  ]));
+  const grouped = new Map();
+  publishedRows.forEach((published) => {
+    const eventKey = String(published.event_id || `${published.event_date}|${published.event_title}`);
+    const event = eventMetadata.get(eventKey) || published;
+    if (!grouped.has(eventKey)) grouped.set(eventKey, {
+      event_id: published.event_id || event.event_id || "",
+      event_date: published.event_date || event.event_date || "",
+      event_title: published.event_title || event.event_title || "Upcoming UFC event",
+      event_url: published.event_url || event.event_url || "",
+      matchups: [],
+    });
+    let current = null;
+    if (publicationMatchesCurrentCard(published.event_date, published.event_id)) {
+      for (const key of matchupIdentityKeys(published)) {
+        if (currentByIdentity.has(key)) { current = currentByIdentity.get(key); break; }
+      }
+    }
+    grouped.get(eventKey).matchups.push(current ? {
+      ...published,
+      ...current,
+      bout_order: published.bout_order,
+      division: published.division,
+      event_date: published.event_date,
+      event_id: published.event_id,
+      event_title: published.event_title,
+      event_url: published.event_url,
+    } : published);
+  });
+  return Array.from(grouped.values())
+    .map((event) => ({ ...event, matchups: orderedCardMatchups(event.matchups) }))
+    .sort((left, right) => String(left.event_date).localeCompare(String(right.event_date)) || left.event_title.localeCompare(right.event_title));
+}
+
+function upcomingBoutDetails(matchup, fighter, opponent) {
+  const body = element("div", "upcoming-bout-details");
+  const matchupData = element("div", "matchup-row-data");
+  const market = element("div", "matchup-market");
+  const probability = finite(matchup.full_market_consensus?.fighter_probability);
+  const modelProbability = finite(matchup.model_probability_for_fighter);
+  const left = element("span");
+  appendText(left, "strong", "", probability === null ? "Market unavailable" : `${formatPercent(probability)} / ${formatPercent(1 - probability)}`);
+  appendText(left, "span", "", " no-vig market");
+  const right = element("span");
+  appendText(right, "strong", "", modelProbability === null ? "Model unavailable" : `${formatPercent(modelProbability)} / ${formatPercent(1 - modelProbability)}`);
+  appendText(right, "span", "", " model");
+  market.append(left, right);
+  matchupData.append(market);
+
+  const bayesian = bayesianForMatchup(matchup);
+  if (bayesian) {
+    const posterior = element("div", "matchup-market");
+    const posteriorValue = element("span");
+    appendText(posteriorValue, "strong", "", formatPercent(bayesian.mean));
+    appendText(posteriorValue, "span", "", ` posterior mean for ${matchup.fighter_name}`);
+    const posteriorRange = element("span");
+    appendText(posteriorRange, "strong", "", `${formatPercent(bayesian.lower)}-${formatPercent(bayesian.upper)}`);
+    appendText(posteriorRange, "span", "", bayesian.status === "paper_only_challenger" ? ` ${formatPercent(bayesian.credible_level, 0)} credible interval` : " parameter interval · EV abstains for low history");
+    posterior.append(posteriorValue, posteriorRange);
+    matchupData.append(posterior);
+  }
+  appendText(matchupData, "p", "matchup-history-count", `${fullRecord(fighter).recorded_bouts || 0} / ${fullRecord(opponent).recorded_bouts || 0} recorded bouts`);
+  body.append(matchupData);
+
+  const actions = element("div", "card-actions");
+  [fighter, opponent].forEach((person) => {
+    if (person) actions.append(actionButton(`${person.name} profile`, "text-button small-button", () => setRoute(`fighters/${person.id}`)));
+  });
+  const analyze = actionButton("Research matchup", "primary-button small-button", () => {
+    if (fighter && opponent) setRoute(`matchups/${fighter.id}/${opponent.id}`);
+  });
+  analyze.disabled = !fighter || !opponent;
+  const graphButton = actionButton("View fight graph", "secondary-button small-button", () => {
+    if (fighter && opponent) setRoute(`graph/${fighter.id}/${opponent.id}`);
+  });
+  graphButton.disabled = !fighter || !opponent;
+  if (!fighter || !opponent) graphButton.title = "Both fighters need linked profiles to build their fight graph.";
+  const hasSimulation = Boolean(matchup.matchup_id && publicationMatchesCurrentCard(matchup.event_date, matchup.event_id));
+  const simulationButton = actionButton(hasSimulation ? "Simulation distributions" : "Simulation unavailable", "secondary-button small-button", () => {
+    if (hasSimulation) setRoute(`simulation/${matchup.matchup_id}`);
+  });
+  simulationButton.disabled = !hasSimulation;
+  if (!hasSimulation) simulationButton.title = "A simulation has not been published for this later event yet.";
+  const quoteCount = Array.isArray(matchup.book_quotes) ? matchup.book_quotes.length : 0;
+  const hasCurrentPrices = Boolean(matchup.fighter_id && matchup.opponent_id && quoteCount);
+  const marketButton = actionButton(
+    hasCurrentPrices ? `View ${quoteCount} book prices` : "Prices unavailable",
+    "text-button small-button",
+    () => {
+      if (hasCurrentPrices) setRoute(`market/${matchup.fighter_id}/${matchup.opponent_id}`);
+    },
+  );
+  marketButton.disabled = !hasCurrentPrices;
+  if (!hasCurrentPrices) marketButton.title = "No current book-price capture is published for this matchup.";
+  actions.append(analyze, graphButton, simulationButton, marketButton);
+  body.append(actions);
+  return body;
+}
+
+function renderUpcomingBout(matchup, fallbackIndex) {
+  const fighter = state.fighterById.get(matchup.fighter_id) || fighterByName(matchup.fighter_name);
+  const opponent = state.fighterById.get(matchup.opponent_id) || fighterByName(matchup.opponent_name);
+  const details = element("details", "upcoming-bout");
+  details.dataset.matchupId = matchup.matchup_id || matchupIdentityKeys(matchup)[0] || `bout-${fallbackIndex + 1}`;
+  const summary = element("summary", "upcoming-bout-summary");
+  summary.setAttribute("aria-label", `Bout ${Number(boutOrderFor(matchup) ?? fallbackIndex) + 1}: ${matchup.fighter_name} versus ${matchup.opponent_name}. Expand fight details.`);
+  const order = element("span", "upcoming-bout-order");
+  appendText(order, "strong", "", `Bout ${Number(boutOrderFor(matchup) ?? fallbackIndex) + 1}`);
+  appendText(order, "small", "", matchup.division || fighterDivision(fighter) || fighterDivision(opponent) || "Division unavailable");
+  const pair = element("span", "upcoming-bout-pair");
+  [[fighter, matchup.fighter_name], [opponent, matchup.opponent_name]].forEach(([person, fallbackName], personIndex) => {
+    if (personIndex) pair.append(element("span", "vs", "VS"));
+    const side = element("span", "upcoming-bout-fighter");
+    appendText(side, "strong", "", person?.name || fallbackName);
+    appendText(side, "small", "", person ? record(person) : "Record unavailable");
+    pair.append(side);
+  });
+  summary.append(order, pair, element("span", "upcoming-bout-expand"));
+  details.append(summary, upcomingBoutDetails(matchup, fighter, opponent));
+  return details;
+}
+
 function renderCurrentCard() {
   const container = $("#upcoming-matchups");
   container.replaceChildren();
-  $("#current-card-title").textContent = state.card?.title || "Current fight card";
-  $("#current-card-meta").textContent = state.card ? `${state.card.date} · ${currentMatchups().length} scheduled matchups` : "Current card metadata is unavailable.";
-  const matchups = currentMatchups();
-  if (!matchups.length) {
-    container.append(element("div", "empty-state", "No current-card matchups are published yet. Use the matchup builder below to research any two fighters."));
+  container.className = "upcoming-event-list";
+  const events = allUpcomingEventGroups();
+  const matchupCount = events.reduce((total, event) => total + event.matchups.length, 0);
+  $("#current-card-title").textContent = "All upcoming UFC fights";
+  $("#current-card-meta").textContent = events.length
+    ? `${events.length} events · ${matchupCount} scheduled matchups · main event first within each card`
+    : "No announced event schedule is currently published.";
+  if (!events.length) {
+    container.append(element("div", "empty-state", "No upcoming matchups are published yet. Use the matchup builder below to research any two fighters."));
     return;
   }
-  matchups.forEach((matchup, index) => {
-    const fighter = state.fighterById.get(matchup.fighter_id) || fighterByName(matchup.fighter_name);
-    const opponent = state.fighterById.get(matchup.opponent_id) || fighterByName(matchup.opponent_name);
-    const card = element("article", "matchup-card matchup-card-row");
-    const top = element("div", "matchup-card-top");
-    appendText(top, "strong", "bout-order-label", boutOrderLabel(matchup, index));
-    appendText(top, "span", "", fighterDivision(fighter) || fighterDivision(opponent) || "Division unavailable");
-    card.append(top);
-
-    const pair = element("div", "matchup-pair");
-    [fighter, opponent].forEach((person, personIndex) => {
-      if (personIndex) pair.append(element("span", "vs", "VS"));
-      const side = element("div", "matchup-side");
-      const name = person?.name || (personIndex ? matchup.opponent_name : matchup.fighter_name);
-      if (person) side.append(actionButton(name, "", () => setRoute(`fighters/${person.id}`)));
-      else appendText(side, "strong", "", name);
-      appendText(side, "small", "", person ? `${record(person)} · ${formatNumber(person.career.sig_strikes_landed_per_minute)} SLpM` : "No profile match");
-      pair.append(side);
-    });
-    card.append(pair);
-
-    const matchupData = element("div", "matchup-row-data");
-    const market = element("div", "matchup-market");
-    const probability = finite(matchup.full_market_consensus?.fighter_probability);
-    const modelProbability = finite(matchup.model_probability_for_fighter);
-    const left = element("span");
-    appendText(left, "strong", "", probability === null ? "Market unavailable" : `${formatPercent(probability)} / ${formatPercent(1 - probability)}`);
-    appendText(left, "span", "", " no-vig market");
-    const right = element("span");
-    appendText(right, "strong", "", modelProbability === null ? "Model unavailable" : `${formatPercent(modelProbability)} / ${formatPercent(1 - modelProbability)}`);
-    appendText(right, "span", "", " model");
-    market.append(left, right);
-    matchupData.append(market);
-
-    const bayesian = bayesianForMatchup(matchup);
-    if (bayesian) {
-      const posterior = element("div", "matchup-market");
-      const posteriorValue = element("span");
-      appendText(posteriorValue, "strong", "", formatPercent(bayesian.mean));
-      appendText(posteriorValue, "span", "", ` posterior mean for ${matchup.fighter_name}`);
-      const posteriorRange = element("span");
-      appendText(posteriorRange, "strong", "", `${formatPercent(bayesian.lower)}-${formatPercent(bayesian.upper)}`);
-      appendText(posteriorRange, "span", "", bayesian.status === "paper_only_challenger" ? ` ${formatPercent(bayesian.credible_level, 0)} credible interval` : " parameter interval · EV abstains for low history");
-      posterior.append(posteriorValue, posteriorRange);
-      matchupData.append(posterior);
-    }
-    const history = element("p", "matchup-history-count");
-    history.textContent = `${fullRecord(fighter).recorded_bouts || 0} / ${fullRecord(opponent).recorded_bouts || 0} recorded bouts`;
-    matchupData.append(history);
-    card.append(matchupData);
-
-    const actions = element("div", "card-actions");
-    const analyze = actionButton("Research matchup", "primary-button small-button", () => {
-      if (fighter && opponent) setRoute(`matchups/${fighter.id}/${opponent.id}`);
-    });
-    analyze.disabled = !fighter || !opponent;
-    const graphButton = actionButton("View fight graph", "secondary-button small-button", () => {
-      if (fighter && opponent) setRoute(`graph/${fighter.id}/${opponent.id}`);
-    });
-    graphButton.disabled = !fighter || !opponent;
-    if (!fighter || !opponent) graphButton.title = "Both fighters need linked profiles to build their fight graph.";
-    const simulationButton = actionButton("Simulation distributions", "secondary-button small-button", () => {
-      if (matchup.matchup_id) setRoute(`simulation/${matchup.matchup_id}`);
-    });
-    simulationButton.disabled = !matchup.matchup_id;
-    const quoteCount = Array.isArray(matchup.book_quotes) ? matchup.book_quotes.length : 0;
-    const hasCurrentPrices = Boolean(matchup.fighter_id && matchup.opponent_id && quoteCount);
-    const marketButton = actionButton(
-      hasCurrentPrices ? `View ${quoteCount} book prices` : "Prices unavailable",
-      "text-button small-button",
-      () => {
-        if (hasCurrentPrices) setRoute(`market/${matchup.fighter_id}/${matchup.opponent_id}`);
-      },
-    );
-    marketButton.disabled = !hasCurrentPrices;
-    if (!hasCurrentPrices) marketButton.title = "No current book-price capture is published for this matchup.";
-    actions.append(analyze, graphButton, simulationButton, marketButton);
-    card.append(actions);
-    container.append(card);
+  events.forEach((event) => {
+    const group = element("section", "upcoming-event-group");
+    group.dataset.eventId = event.event_id || "";
+    const header = element("header", "upcoming-event-header");
+    const heading = element("div");
+    appendText(heading, "p", "eyebrow", formatDate(event.event_date));
+    appendText(heading, "h3", "", event.event_title);
+    appendText(header, "span", "upcoming-event-count", `${event.matchups.length} bouts`);
+    header.prepend(heading);
+    const bouts = element("div", "upcoming-event-bouts");
+    event.matchups.forEach((matchup, index) => bouts.append(renderUpcomingBout(matchup, index)));
+    group.append(header, bouts);
+    container.append(group);
   });
 }
 

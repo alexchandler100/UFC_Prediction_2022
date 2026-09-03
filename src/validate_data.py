@@ -27,6 +27,7 @@ from build_fighter_explorer import SHARD_SIZE_LIMIT as FIGHTER_SHARD_SIZE_LIMIT
 from build_fighter_explorer import SIZE_LIMIT as FIGHTER_EXPLORER_SIZE_LIMIT
 from build_fighter_explorer import load_external_history_inputs
 from build_fighter_explorer import load_fighter_history_supplements
+from build_fighter_explorer import load_upcoming_fighter_inputs
 from build_fighter_explorer import validate_fighter_explorer
 
 from fight_predictor.point_in_time import (
@@ -1194,6 +1195,10 @@ def validate_publication(
         for key in FIGHTER_EXPLORER_SHARD_KEYS
     }
     try:
+        upcoming_fighters = load_upcoming_fighter_inputs(
+            external / "vegas_odds.json",
+            external / "all_upcoming_forecasts.json",
+        )
         external_bouts, identity_map = load_external_history_inputs(
             data_root / "external_mma" / "bouts.jsonl",
             data_root / "external_mma" / "identity_map.csv",
@@ -1215,7 +1220,7 @@ def validate_publication(
             explorer,
             raw,
             fighters,
-            vegas,
+            upcoming_fighters,
             fight_shards,
             external_bouts,
             identity_map,

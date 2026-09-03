@@ -22,6 +22,7 @@ RAW_PATH = ROOT / "content" / "data" / "processed" / "ufc_fights_reported_double
 FIGHTER_PATH = ROOT / "content" / "data" / "processed" / "fighter_stats.csv"
 OUTPUT_PATH = ROOT / "content" / "data" / "external" / "fighter_explorer.json"
 VEGAS_PATH = ROOT / "content" / "data" / "external" / "vegas_odds.json"
+ALL_UPCOMING_PATH = ROOT / "content" / "data" / "external" / "all_upcoming_forecasts.json"
 EXTERNAL_MMA_ROOT = ROOT / "content" / "data" / "external_mma"
 EXTERNAL_BOUTS_PATH = EXTERNAL_MMA_ROOT / "bouts.jsonl"
 EXTERNAL_IDENTITY_PATH = EXTERNAL_MMA_ROOT / "identity_map.csv"
@@ -1432,12 +1433,53 @@ def load_fighter_history_supplements(
     return supplements
 
 
+def load_upcoming_fighter_inputs(
+    vegas_path: str | Path = VEGAS_PATH,
+    all_upcoming_path: str | Path = ALL_UPCOMING_PATH,
+) -> pd.DataFrame | None:
+    """Load every announced fighter, while retaining the current-card fallback."""
+
+    columns = [
+        "fighter name",
+        "opponent name",
+        "fighter id",
+        "opponent id",
+        "division",
+    ]
+    frames: list[pd.DataFrame] = []
+    vegas_file = Path(vegas_path)
+    if vegas_file.exists():
+        frames.append(pd.DataFrame(json.loads(vegas_file.read_text(encoding="utf-8"))))
+    upcoming_file = Path(all_upcoming_path)
+    if upcoming_file.exists():
+        publication = json.loads(upcoming_file.read_text(encoding="utf-8"))
+        matchups = publication.get("matchups", []) if isinstance(publication, dict) else []
+        frames.append(
+            pd.DataFrame(matchups).rename(
+                columns={
+                    "fighter_name": "fighter name",
+                    "opponent_name": "opponent name",
+                    "fighter_id": "fighter id",
+                    "opponent_id": "opponent id",
+                }
+            )
+        )
+    if not frames:
+        return None
+    normalized = []
+    for frame in frames:
+        copy = frame.copy(deep=True)
+        for column in columns:
+            if column not in copy:
+                copy[column] = None
+        normalized.append(copy[columns])
+    return pd.concat(normalized, ignore_index=True).drop_duplicates().reset_index(drop=True)
+
+
 def main() -> int:
     raw = pd.read_csv(RAW_PATH, low_memory=False)
     fighters = pd.read_csv(FIGHTER_PATH, low_memory=False)
-    upcoming = None
-    if VEGAS_PATH.exists():
-        upcoming = pd.DataFrame(json.loads(VEGAS_PATH.read_text(encoding="utf-8")))
+    upcoming = load_upcoming_fighter_inputs()
     external_bouts, identity_map = load_external_history_inputs()
     external_supplements = load_fighter_history_supplements()
     publication = build_fighter_explorer(

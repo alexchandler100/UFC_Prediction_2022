@@ -193,9 +193,10 @@ for raw_date, event_title, event_fights in upcoming_cards:
     event_frame['event title'] = event_title
     event_frame['bout order'] = list(range(len(event_frame)))
     upcoming_frames.append(event_frame)
+all_upcoming_frame = pd.concat(upcoming_frames, ignore_index=True)
 predicted_odds_df = upcoming_frames[0].copy(deep=True)
 all_upcoming_forecasts = build_upcoming_forecast_publication(
-    pd.concat(upcoming_frames, ignore_index=True),
+    all_upcoming_frame,
     generated_at_utc=forecast_issued_at,
 )
 write_upcoming_forecast_publication(all_upcoming_forecasts)
@@ -298,7 +299,7 @@ write_fighter_explorer(
     build_fighter_explorer(
         raw_fights,
         fighter_stats,
-        predicted_odds_df_with_vegas_odds,
+        all_upcoming_frame,
         external_history,
         external_identity_map,
     )

@@ -1,6 +1,9 @@
 from __future__ import annotations
 
 from copy import deepcopy
+import json
+from pathlib import Path
+import tempfile
 import unittest
 
 import pandas as pd
@@ -9,6 +12,7 @@ from src.build_fighter_explorer import (
     FIGHT_COLUMNS,
     STAT_FIELDS,
     build_fighter_explorer,
+    load_upcoming_fighter_inputs,
     split_fighter_explorer,
     validate_fighter_explorer,
 )
@@ -457,6 +461,46 @@ class FighterExplorerTests(unittest.TestCase):
         self.assertEqual(debutant["scheduled_division"], "Welterweight")
         self.assertEqual(debutant["career"]["recorded_bouts"], 0)
         self.assertEqual(debutant["fights"], [])
+
+    def test_all_announced_cards_supply_scheduled_fighters(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            root = Path(temporary_directory)
+            vegas_path = root / "vegas.json"
+            upcoming_path = root / "upcoming.json"
+            vegas_path.write_text(
+                json.dumps(
+                    {
+                        "fighter name": {"0": "Current Alpha"},
+                        "opponent name": {"0": "Current Beta"},
+                        "fighter id": {"0": "current-alpha"},
+                        "opponent id": {"0": "current-beta"},
+                        "division": {"0": "Lightweight"},
+                    }
+                ),
+                encoding="utf-8",
+            )
+            upcoming_path.write_text(
+                json.dumps(
+                    {
+                        "matchups": [
+                            {
+                                "fighter_name": "Future Alpha",
+                                "opponent_name": "Future Beta",
+                                "fighter_id": "future-alpha",
+                                "opponent_id": "future-beta",
+                                "division": "Welterweight",
+                            }
+                        ]
+                    }
+                ),
+                encoding="utf-8",
+            )
+
+            loaded = load_upcoming_fighter_inputs(vegas_path, upcoming_path)
+
+        self.assertIsNotNone(loaded)
+        self.assertEqual(set(loaded["fighter name"]), {"Current Alpha", "Future Alpha"})
+        self.assertEqual(set(loaded["opponent name"]), {"Current Beta", "Future Beta"})
 
 
 if __name__ == "__main__":
