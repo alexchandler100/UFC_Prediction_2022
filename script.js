@@ -2071,6 +2071,14 @@ function allUpcomingEventGroups() {
 
   const currentByIdentity = new Map();
   currentMatchups().forEach((matchup) => matchupIdentityKeys(matchup).forEach((key) => currentByIdentity.set(key, matchup)));
+  const oddsByMatchup = new Map();
+  (state.upcomingBetBoard?.market_matchups || []).forEach((matchup) => {
+    if (matchup.matchup_id) oddsByMatchup.set(String(matchup.matchup_id), Number(matchup.book_count) || 0);
+  });
+  (state.upcomingBetBoard?.bets || []).forEach((bet) => {
+    if (!bet.matchup_id || oddsByMatchup.has(String(bet.matchup_id))) return;
+    oddsByMatchup.set(String(bet.matchup_id), Math.max(1, Number(bet.consensus_book_count) || 0));
+  });
   const eventMetadata = new Map((state.allUpcoming.events || []).map((event) => [
     String(event.event_id || `${event.event_date}|${event.event_title}`),
     event,
@@ -2092,7 +2100,7 @@ function allUpcomingEventGroups() {
         if (currentByIdentity.has(key)) { current = currentByIdentity.get(key); break; }
       }
     }
-    grouped.get(eventKey).matchups.push(current ? {
+    const merged = current ? {
       ...published,
       ...current,
       bout_order: published.bout_order,
@@ -2101,7 +2109,12 @@ function allUpcomingEventGroups() {
       event_id: published.event_id,
       event_title: published.event_title,
       event_url: published.event_url,
-    } : published);
+    } : { ...published };
+    merged.market_book_count = Math.max(
+      oddsByMatchup.get(String(published.matchup_id)) || 0,
+      new Set((merged.book_quotes || []).map((quote) => String(quote.book || "")).filter(Boolean)).size,
+    );
+    grouped.get(eventKey).matchups.push(merged);
   });
   return Array.from(grouped.values())
     .map((event) => ({ ...event, matchups: orderedCardMatchups(event.matchups) }))
@@ -2173,15 +2186,24 @@ function upcomingBoutDetails(matchup, fighter, opponent) {
   return body;
 }
 
-function renderUpcomingBout(matchup, fallbackIndex) {
+function renderUpcomingBout(matchup, fallbackIndex, eventBoutCount) {
   const fighter = state.fighterById.get(matchup.fighter_id) || fighterByName(matchup.fighter_name);
   const opponent = state.fighterById.get(matchup.opponent_id) || fighterByName(matchup.opponent_name);
+  const boutNumber = eventBoutCount - fallbackIndex;
+  const bookCount = Number(matchup.market_book_count) || 0;
+  const oddsLabel = bookCount ? `Bookie odds available from ${bookCount} book${bookCount === 1 ? "" : "s"}` : "No bookie odds collected";
   const details = element("details", "upcoming-bout");
   details.dataset.matchupId = matchup.matchup_id || matchupIdentityKeys(matchup)[0] || `bout-${fallbackIndex + 1}`;
   const summary = element("summary", "upcoming-bout-summary");
-  summary.setAttribute("aria-label", `Bout ${Number(boutOrderFor(matchup) ?? fallbackIndex) + 1}: ${matchup.fighter_name} versus ${matchup.opponent_name}. Expand fight details.`);
+  summary.setAttribute("aria-label", `Bout ${boutNumber}: ${matchup.fighter_name} versus ${matchup.opponent_name}. ${oddsLabel}. Expand fight details.`);
   const order = element("span", "upcoming-bout-order");
-  appendText(order, "strong", "", `Bout ${Number(boutOrderFor(matchup) ?? fallbackIndex) + 1}`);
+  const numberLine = element("span", "upcoming-bout-number-line");
+  appendText(numberLine, "strong", "", `Bout ${boutNumber}`);
+  const oddsIndicator = element("span", `upcoming-odds-indicator ${bookCount ? "has-odds" : "no-odds"}`, bookCount ? "✓" : "—");
+  oddsIndicator.title = oddsLabel;
+  oddsIndicator.setAttribute("aria-label", oddsLabel);
+  numberLine.append(oddsIndicator);
+  order.append(numberLine);
   appendText(order, "small", "", matchup.division || fighterDivision(fighter) || fighterDivision(opponent) || "Division unavailable");
   const pair = element("span", "upcoming-bout-pair");
   [[fighter, matchup.fighter_name], [opponent, matchup.opponent_name]].forEach(([person, fallbackName], personIndex) => {
@@ -2220,7 +2242,7 @@ function renderCurrentCard() {
     appendText(header, "span", "upcoming-event-count", `${event.matchups.length} bouts`);
     header.prepend(heading);
     const bouts = element("div", "upcoming-event-bouts");
-    event.matchups.forEach((matchup, index) => bouts.append(renderUpcomingBout(matchup, index)));
+    event.matchups.forEach((matchup, index) => bouts.append(renderUpcomingBout(matchup, index, event.matchups.length)));
     group.append(header, bouts);
     container.append(group);
   });

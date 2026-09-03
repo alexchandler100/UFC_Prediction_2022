@@ -95,7 +95,11 @@ a { color: var(--blue); }
 .upcoming-bout-summary::-webkit-details-marker { display: none; }
 .upcoming-bout-summary:hover, .upcoming-bout-summary:focus-visible, .upcoming-bout[open] > .upcoming-bout-summary { background: #17232d; }
 .upcoming-bout-order, .upcoming-bout-fighter { display: grid; min-width: 0; gap: 1px; }
+.upcoming-bout-number-line { display: flex; align-items: center; gap: 6px; min-width: 0; }
 .upcoming-bout-order strong { color: var(--orange); font-size: 12px; text-transform: uppercase; }
+.upcoming-odds-indicator { display: inline-grid; flex: 0 0 auto; width: 17px; height: 17px; place-items: center; border-radius: 50%; font-size: 11px; font-weight: 900; line-height: 1; }
+.upcoming-odds-indicator.has-odds { color: #8ce0c5; background: #153b32; }
+.upcoming-odds-indicator.no-odds { color: #73818c; background: #202c36; }
 .upcoming-bout-order small, .upcoming-bout-fighter small { color: var(--ink-soft); font-size: 11px; font-weight: 500; }
 .upcoming-bout-pair { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: center; gap: 11px; min-width: 0; }
 .upcoming-bout-pair .vs { color: #778690; font-size: 10px; font-weight: 800; }

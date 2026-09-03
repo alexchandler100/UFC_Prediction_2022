@@ -161,6 +161,8 @@ class UpcomingBetBoardTests(unittest.TestCase):
 
         self.assertEqual(board["announced_event_count"], 2)
         self.assertEqual(board["market_matched_matchup_count"], 2)
+        self.assertEqual(len(board["market_matchups"]), 2)
+        self.assertTrue(all(item["book_count"] == 4 for item in board["market_matchups"]))
         self.assertEqual(board["qualified_bet_count"], 2)
         self.assertEqual(
             [bet["estimated_expected_return"] for bet in board["bets"]],

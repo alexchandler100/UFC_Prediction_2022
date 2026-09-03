@@ -1171,6 +1171,14 @@ def validate_publication(
                 for bet in upcoming_board["bets"]
             ):
                 raise ValueError("board contains a bet outside the announced forecasts")
+            if any(
+                str(matchup.get("matchup_id")) not in forecast_matchups
+                or str(matchup.get("event_id")) not in forecast_events
+                for matchup in upcoming_board.get("market_matchups", [])
+            ):
+                raise ValueError(
+                    "board contains market availability outside the announced forecasts"
+                )
             report.facts.append(
                 "qualified all-upcoming paper bets: "
                 f"{upcoming_board['qualified_bet_count']:,} at or above "

@@ -640,6 +640,7 @@ def build_upcoming_bet_board(
         if item.market == "h2h":
             grouped.setdefault(item.source_event_id, []).append(item)
     bets_by_key: dict[tuple[str, str, str, str], dict[str, object]] = {}
+    market_matchups: list[dict[str, object]] = []
     matched = evaluable = 0
     for matchup in official:
         event_day = pd.Timestamp(str(matchup["event_date"]))
@@ -657,6 +658,18 @@ def build_upcoming_bet_board(
             continue
         matched += 1
         rows, reversed_orientation = source_groups[0]
+        market_matchups.append(
+            {
+                "event_id": matchup["event_id"],
+                "matchup_id": matchup["matchup_id"],
+                "book_count": len(
+                    {
+                        (item.source_book_key or item.book).casefold()
+                        for item in rows
+                    }
+                ),
+            }
+        )
         candidate = _qualified_moneyline(
             matchup,
             rows,
@@ -712,6 +725,10 @@ def build_upcoming_bet_board(
         "announced_matchup_count": len(official),
         "market_matched_matchup_count": matched,
         "market_evaluable_matchup_count": evaluable,
+        "market_matchups": sorted(
+            market_matchups,
+            key=lambda item: (str(item["event_id"]), str(item["matchup_id"])),
+        ),
         "qualified_bet_count": len(bets),
         "bets": bets,
     }
@@ -740,6 +757,31 @@ def validate_upcoming_bet_board(publication: object) -> dict[str, object]:
         raise ValueError("upcoming bet board count is inconsistent")
     if len(bets) > MAX_BOARD_BETS:
         raise ValueError("upcoming bet board exceeds its size bound")
+    market_matchups = publication.get("market_matchups")
+    if market_matchups is not None:
+        if not isinstance(market_matchups, list) or publication.get(
+            "market_matched_matchup_count"
+        ) != len(market_matchups):
+            raise ValueError("upcoming bet board market-matchup count is inconsistent")
+        identities: list[tuple[str, str]] = []
+        for matchup in market_matchups:
+            if not isinstance(matchup, dict):
+                raise ValueError("upcoming bet board contains a non-object market matchup")
+            identity = (
+                _text(matchup.get("event_id")),
+                _text(matchup.get("matchup_id")),
+            )
+            book_count = _integer(matchup.get("book_count"))
+            if not all(identity) or book_count is None or book_count < 1:
+                raise ValueError("upcoming bet board contains invalid market availability")
+            identities.append(identity)
+        if len(set(identities)) != len(identities):
+            raise ValueError("upcoming bet board repeats market availability")
+        if market_matchups != sorted(
+            market_matchups,
+            key=lambda item: (str(item.get("event_id")), str(item.get("matchup_id"))),
+        ):
+            raise ValueError("upcoming bet board market availability is not sorted")
     values: list[float] = []
     ids: list[str] = []
     for bet in bets:
