@@ -1,72 +1,72 @@
 {
   "betting_status": "disabled_paper_only_no_execution",
-  "capture_id": "capture_20260902T232647549677Z_33694851135_1_501060e71dbe",
-  "capture_lead_time_seconds": 232392.083069,
+  "capture_id": "capture_20260903T172810099053Z_33784441292_1_1199c180c261",
+  "capture_lead_time_seconds": 167509.471709,
   "decision_target_lead_seconds": 86400.0,
   "decision_window_seconds": 14400.0,
   "event_date": "2026-09-05",
   "event_id": "2144954270be834d",
   "event_start_utc": "2026-09-05T16:00:00.000000Z",
   "execution_enabled": false,
-  "matchup_count": 12,
+  "matchup_count": 13,
   "matchups": [
     {
       "book_quotes": [
         {
           "book": "BetAnything",
           "eligible_for_consensus": true,
-          "fighter_moneyline": 355,
-          "opponent_moneyline": -610,
-          "source_quote_age_seconds": 34.916931,
-          "source_quote_updated_at_utc": "2026-09-02T23:26:13.000000Z"
+          "fighter_moneyline": 360,
+          "opponent_moneyline": -615,
+          "source_quote_age_seconds": 153.528291,
+          "source_quote_updated_at_utc": "2026-09-03T17:25:37.000000Z"
         },
         {
           "book": "BetOnline.ag",
           "eligible_for_consensus": true,
           "fighter_moneyline": 450,
           "opponent_moneyline": -625,
-          "source_quote_age_seconds": 46.916931,
-          "source_quote_updated_at_utc": "2026-09-02T23:26:01.000000Z"
+          "source_quote_age_seconds": 43.528291,
+          "source_quote_updated_at_utc": "2026-09-03T17:27:27.000000Z"
         },
         {
           "book": "BetUS",
           "eligible_for_consensus": true,
           "fighter_moneyline": 440,
           "opponent_moneyline": -625,
-          "source_quote_age_seconds": 60.916931,
-          "source_quote_updated_at_utc": "2026-09-02T23:25:47.000000Z"
+          "source_quote_age_seconds": 31.528291,
+          "source_quote_updated_at_utc": "2026-09-03T17:27:39.000000Z"
         },
         {
           "book": "Bovada",
           "eligible_for_consensus": true,
-          "fighter_moneyline": 425,
-          "opponent_moneyline": -575,
-          "source_quote_age_seconds": 238.916931,
-          "source_quote_updated_at_utc": "2026-09-02T23:22:49.000000Z"
+          "fighter_moneyline": 450,
+          "opponent_moneyline": -600,
+          "source_quote_age_seconds": 331.528291,
+          "source_quote_updated_at_utc": "2026-09-03T17:22:39.000000Z"
         },
         {
           "book": "DraftKings",
           "eligible_for_consensus": true,
           "fighter_moneyline": 440,
           "opponent_moneyline": -600,
-          "source_quote_age_seconds": 84.916931,
-          "source_quote_updated_at_utc": "2026-09-02T23:25:23.000000Z"
+          "source_quote_age_seconds": 31.528291,
+          "source_quote_updated_at_utc": "2026-09-03T17:27:39.000000Z"
         },
         {
           "book": "FanDuel",
           "eligible_for_consensus": true,
           "fighter_moneyline": 440,
           "opponent_moneyline": -700,
-          "source_quote_age_seconds": 8.916931,
-          "source_quote_updated_at_utc": "2026-09-02T23:26:39.000000Z"
+          "source_quote_age_seconds": 3.528291,
+          "source_quote_updated_at_utc": "2026-09-03T17:28:07.000000Z"
         },
         {
           "book": "Hard Rock Bet",
           "eligible_for_consensus": true,
           "fighter_moneyline": 400,
           "opponent_moneyline": -650,
-          "source_quote_age_seconds": 61.916931,
-          "source_quote_updated_at_utc": "2026-09-02T23:25:46.000000Z"
+          "source_quote_age_seconds": 1.528291,
+          "source_quote_updated_at_utc": "2026-09-03T17:28:09.000000Z"
         }
       ],
       "current_signal": {
@@ -83,19 +83,19 @@
           "FanDuel",
           "Hard Rock Bet"
         ],
-        "decision_id": "8bfdb2820e0da142ba41ada46792e7ce114f80de8ba91d241893cbd723b40ba7",
-        "estimated_expected_return": 0.01118315461325703,
-        "market_fair_moneyline": 444,
-        "market_probability": 0.18385148265695583,
+        "decision_id": "2abb9cd04e4e383d504f9ff0557ec17b125a24a495101293659ab0d727c4fe56",
+        "estimated_expected_return": 0.002298153689117788,
+        "market_fair_moneyline": 449,
+        "market_probability": 0.18223602794347596,
         "minimum_expected_return": 0.05,
         "model_probability_for_fighter": 0.8890807601,
         "model_weight": 0.0,
-        "observed_at_utc": "2026-09-02T23:26:47.916931Z",
+        "observed_at_utc": "2026-09-03T17:28:10.528291Z",
         "offered_moneyline": 450,
         "paper_action": "pass",
-        "probability_edge": 0.0020333008387740104,
+        "probability_edge": 0.0004178461252941357,
         "probability_source": "leave_one_book_out_no_vig_market_consensus",
-        "reason": "Pass: best estimated EV is 1.1%, below the 5.0% paper threshold.",
+        "reason": "Pass: best estimated EV is 0.2%, below the 5.0% paper threshold.",
         "target_book": "BetOnline.ag",
         "target_book_excluded_from_consensus": true
       },
@@ -113,10 +113,10 @@
           "FanDuel",
           "Hard Rock Bet"
         ],
-        "fighter_fair_moneyline": 448,
-        "fighter_probability": 0.18246901001655846,
-        "opponent_fair_moneyline": -448,
-        "opponent_probability": 0.8175309899834415
+        "fighter_fair_moneyline": 452,
+        "fighter_probability": 0.18108433454786146,
+        "opponent_fair_moneyline": -452,
+        "opponent_probability": 0.8189156654521386
       },
       "locked_t24_bayesian_filter": null,
       "locked_t24_decision": null,
@@ -133,80 +133,80 @@
           "eligible_for_consensus": true,
           "fighter_moneyline": 102,
           "opponent_moneyline": -127,
-          "source_quote_age_seconds": 62.916931,
-          "source_quote_updated_at_utc": "2026-09-02T23:25:45.000000Z"
+          "source_quote_age_seconds": 4.528291,
+          "source_quote_updated_at_utc": "2026-09-03T17:28:06.000000Z"
         },
         {
           "book": "BetAnything",
           "eligible_for_consensus": true,
           "fighter_moneyline": -109,
           "opponent_moneyline": -121,
-          "source_quote_age_seconds": 34.916931,
-          "source_quote_updated_at_utc": "2026-09-02T23:26:13.000000Z"
+          "source_quote_age_seconds": 153.528291,
+          "source_quote_updated_at_utc": "2026-09-03T17:25:37.000000Z"
         },
         {
           "book": "BetOnline.ag",
           "eligible_for_consensus": true,
           "fighter_moneyline": 104,
           "opponent_moneyline": -121,
-          "source_quote_age_seconds": 46.916931,
-          "source_quote_updated_at_utc": "2026-09-02T23:26:01.000000Z"
+          "source_quote_age_seconds": 43.528291,
+          "source_quote_updated_at_utc": "2026-09-03T17:27:27.000000Z"
         },
         {
           "book": "betPARX",
           "eligible_for_consensus": true,
           "fighter_moneyline": 102,
           "opponent_moneyline": -127,
-          "source_quote_age_seconds": 62.916931,
-          "source_quote_updated_at_utc": "2026-09-02T23:25:45.000000Z"
+          "source_quote_age_seconds": 30.528291,
+          "source_quote_updated_at_utc": "2026-09-03T17:27:40.000000Z"
         },
         {
           "book": "BetRivers",
           "eligible_for_consensus": true,
           "fighter_moneyline": 102,
           "opponent_moneyline": -127,
-          "source_quote_age_seconds": 139.916931,
-          "source_quote_updated_at_utc": "2026-09-02T23:24:28.000000Z"
+          "source_quote_age_seconds": 53.528291,
+          "source_quote_updated_at_utc": "2026-09-03T17:27:17.000000Z"
         },
         {
           "book": "BetUS",
           "eligible_for_consensus": true,
           "fighter_moneyline": 100,
           "opponent_moneyline": -120,
-          "source_quote_age_seconds": 60.916931,
-          "source_quote_updated_at_utc": "2026-09-02T23:25:47.000000Z"
+          "source_quote_age_seconds": 31.528291,
+          "source_quote_updated_at_utc": "2026-09-03T17:27:39.000000Z"
         },
         {
           "book": "Bovada",
           "eligible_for_consensus": true,
           "fighter_moneyline": 100,
           "opponent_moneyline": -120,
-          "source_quote_age_seconds": 239.916931,
-          "source_quote_updated_at_utc": "2026-09-02T23:22:48.000000Z"
+          "source_quote_age_seconds": 331.528291,
+          "source_quote_updated_at_utc": "2026-09-03T17:22:39.000000Z"
         },
         {
           "book": "DraftKings",
           "eligible_for_consensus": true,
           "fighter_moneyline": -105,
           "opponent_moneyline": -115,
-          "source_quote_age_seconds": 84.916931,
-          "source_quote_updated_at_utc": "2026-09-02T23:25:23.000000Z"
+          "source_quote_age_seconds": 31.528291,
+          "source_quote_updated_at_utc": "2026-09-03T17:27:39.000000Z"
         },
         {
           "book": "FanDuel",
           "eligible_for_consensus": true,
-          "fighter_moneyline": 106,
-          "opponent_moneyline": -136,
-          "source_quote_age_seconds": 8.916931,
-          "source_quote_updated_at_utc": "2026-09-02T23:26:39.000000Z"
+          "fighter_moneyline": 100,
+          "opponent_moneyline": -122,
+          "source_quote_age_seconds": 3.528291,
+          "source_quote_updated_at_utc": "2026-09-03T17:28:07.000000Z"
         },
         {
           "book": "Hard Rock Bet",
           "eligible_for_consensus": true,
           "fighter_moneyline": 100,
           "opponent_moneyline": -125,
-          "source_quote_age_seconds": 61.916931,
-          "source_quote_updated_at_utc": "2026-09-02T23:25:46.000000Z"
+          "source_quote_age_seconds": 1.528291,
+          "source_quote_updated_at_utc": "2026-09-03T17:28:09.000000Z"
         }
       ],
       "current_signal": {
@@ -226,19 +226,19 @@
           "FanDuel",
           "Hard Rock Bet"
         ],
-        "decision_id": "8e02c2d1aa37b4a7042f674054a2ebfe9f5d3242f59e4d9bd735120ee9ad5223",
-        "estimated_expected_return": -0.014536469006091068,
+        "decision_id": "d7994f5a8f092b0d913a154c22040a92638de80fbf2f35a116bccf0d4afe470d",
+        "estimated_expected_return": -0.01851911719447019,
         "market_fair_moneyline": -111,
-        "market_probability": 0.5271084002990676,
+        "market_probability": 0.5249781466169113,
         "minimum_expected_return": 0.05,
         "model_probability_for_fighter": 0.6553684336,
         "model_weight": 0.0,
-        "observed_at_utc": "2026-09-02T23:26:47.916931Z",
+        "observed_at_utc": "2026-09-03T17:28:10.528291Z",
         "offered_moneyline": -115,
         "paper_action": "pass",
-        "probability_edge": -0.007775320631164928,
+        "probability_edge": -0.009905574313321175,
         "probability_source": "leave_one_book_out_no_vig_market_consensus",
-        "reason": "Pass: best estimated EV is -1.5%, below the 5.0% paper threshold.",
+        "reason": "Pass: best estimated EV is -1.9%, below the 5.0% paper threshold.",
         "target_book": "DraftKings",
         "target_book_excluded_from_consensus": true
       },
@@ -259,10 +259,10 @@
           "FanDuel",
           "Hard Rock Bet"
         ],
-        "fighter_fair_moneyline": 111,
-        "fighter_probability": 0.47451901611220426,
-        "opponent_fair_moneyline": -111,
-        "opponent_probability": 0.5254809838877957
+        "fighter_fair_moneyline": 110,
+        "fighter_probability": 0.4764362444261449,
+        "opponent_fair_moneyline": -110,
+        "opponent_probability": 0.523563755573855
       },
       "locked_t24_bayesian_filter": null,
       "locked_t24_decision": null,
@@ -279,72 +279,72 @@
           "eligible_for_consensus": true,
           "fighter_moneyline": -107,
           "opponent_moneyline": -115,
-          "source_quote_age_seconds": 62.916931,
-          "source_quote_updated_at_utc": "2026-09-02T23:25:45.000000Z"
+          "source_quote_age_seconds": 4.528291,
+          "source_quote_updated_at_utc": "2026-09-03T17:28:06.000000Z"
         },
         {
           "book": "BetAnything",
           "eligible_for_consensus": true,
           "fighter_moneyline": -110,
           "opponent_moneyline": -120,
-          "source_quote_age_seconds": 34.916931,
-          "source_quote_updated_at_utc": "2026-09-02T23:26:13.000000Z"
+          "source_quote_age_seconds": 153.528291,
+          "source_quote_updated_at_utc": "2026-09-03T17:25:37.000000Z"
         },
         {
           "book": "BetMGM",
           "eligible_for_consensus": true,
           "fighter_moneyline": -110,
           "opponent_moneyline": -110,
-          "source_quote_age_seconds": 62.916931,
-          "source_quote_updated_at_utc": "2026-09-02T23:25:45.000000Z"
+          "source_quote_age_seconds": 4.528291,
+          "source_quote_updated_at_utc": "2026-09-03T17:28:06.000000Z"
         },
         {
           "book": "BetOnline.ag",
           "eligible_for_consensus": true,
-          "fighter_moneyline": -106,
-          "opponent_moneyline": -110,
-          "source_quote_age_seconds": 46.916931,
-          "source_quote_updated_at_utc": "2026-09-02T23:26:01.000000Z"
+          "fighter_moneyline": -105,
+          "opponent_moneyline": -111,
+          "source_quote_age_seconds": 43.528291,
+          "source_quote_updated_at_utc": "2026-09-03T17:27:27.000000Z"
         },
         {
           "book": "betPARX",
           "eligible_for_consensus": true,
           "fighter_moneyline": -107,
           "opponent_moneyline": -115,
-          "source_quote_age_seconds": 62.916931,
-          "source_quote_updated_at_utc": "2026-09-02T23:25:45.000000Z"
+          "source_quote_age_seconds": 30.528291,
+          "source_quote_updated_at_utc": "2026-09-03T17:27:40.000000Z"
         },
         {
           "book": "BetRivers",
           "eligible_for_consensus": true,
           "fighter_moneyline": -107,
           "opponent_moneyline": -115,
-          "source_quote_age_seconds": 139.916931,
-          "source_quote_updated_at_utc": "2026-09-02T23:24:28.000000Z"
+          "source_quote_age_seconds": 53.528291,
+          "source_quote_updated_at_utc": "2026-09-03T17:27:17.000000Z"
         },
         {
           "book": "BetUS",
           "eligible_for_consensus": true,
-          "fighter_moneyline": -110,
-          "opponent_moneyline": -110,
-          "source_quote_age_seconds": 60.916931,
-          "source_quote_updated_at_utc": "2026-09-02T23:25:47.000000Z"
+          "fighter_moneyline": -105,
+          "opponent_moneyline": -115,
+          "source_quote_age_seconds": 31.528291,
+          "source_quote_updated_at_utc": "2026-09-03T17:27:39.000000Z"
         },
         {
           "book": "Bovada",
           "eligible_for_consensus": true,
-          "fighter_moneyline": -108,
-          "opponent_moneyline": -112,
-          "source_quote_age_seconds": 239.916931,
-          "source_quote_updated_at_utc": "2026-09-02T23:22:48.000000Z"
+          "fighter_moneyline": -105,
+          "opponent_moneyline": -115,
+          "source_quote_age_seconds": 331.528291,
+          "source_quote_updated_at_utc": "2026-09-03T17:22:39.000000Z"
         },
         {
           "book": "Hard Rock Bet",
           "eligible_for_consensus": true,
           "fighter_moneyline": -105,
           "opponent_moneyline": -115,
-          "source_quote_age_seconds": 61.916931,
-          "source_quote_updated_at_utc": "2026-09-02T23:25:46.000000Z"
+          "source_quote_age_seconds": 2.528291,
+          "source_quote_updated_at_utc": "2026-09-03T17:28:08.000000Z"
         }
       ],
       "current_signal": {
@@ -363,19 +363,19 @@
           "Bovada",
           "Hard Rock Bet"
         ],
-        "decision_id": "9c215be6dafc1c637972ae379c5af058d8c962c2036e522b46e3c1c6ed46dcf5",
-        "estimated_expected_return": -0.032240449266014326,
-        "market_fair_moneyline": -103,
-        "market_probability": 0.5069216694320877,
+        "decision_id": "b883bad5af9bbf086ce44da078a46cedc6c3babd9215ebfcc4851ae9be0de547",
+        "estimated_expected_return": -0.02757119823515619,
+        "market_fair_moneyline": -104,
+        "market_probability": 0.5093674675911086,
         "minimum_expected_return": 0.05,
         "model_probability_for_fighter": 0.9247972707,
         "model_weight": 0.0,
-        "observed_at_utc": "2026-09-02T23:26:47.916931Z",
+        "observed_at_utc": "2026-09-03T17:28:10.528291Z",
         "offered_moneyline": -110,
         "paper_action": "pass",
-        "probability_edge": -0.016887854377436118,
+        "probability_edge": -0.014442056218415211,
         "probability_source": "leave_one_book_out_no_vig_market_consensus",
-        "reason": "Pass: best estimated EV is -3.2%, below the 5.0% paper threshold.",
+        "reason": "Pass: best estimated EV is -2.8%, below the 5.0% paper threshold.",
         "target_book": "BetMGM",
         "target_book_excluded_from_consensus": true
       },
@@ -395,10 +395,10 @@
           "Bovada",
           "Hard Rock Bet"
         ],
-        "fighter_fair_moneyline": 102,
-        "fighter_probability": 0.4938474049492554,
-        "opponent_fair_moneyline": -102,
-        "opponent_probability": 0.5061525950507446
+        "fighter_fair_moneyline": 103,
+        "fighter_probability": 0.4916733621412368,
+        "opponent_fair_moneyline": -103,
+        "opponent_probability": 0.5083266378587632
       },
       "locked_t24_bayesian_filter": null,
       "locked_t24_decision": null,
@@ -415,95 +415,95 @@
           "eligible_for_consensus": true,
           "fighter_moneyline": -132,
           "opponent_moneyline": 107,
-          "source_quote_age_seconds": 62.916931,
-          "source_quote_updated_at_utc": "2026-09-02T23:25:45.000000Z"
+          "source_quote_age_seconds": 4.528291,
+          "source_quote_updated_at_utc": "2026-09-03T17:28:06.000000Z"
         },
         {
           "book": "BetAnything",
           "eligible_for_consensus": true,
-          "fighter_moneyline": -130,
-          "opponent_moneyline": 100,
-          "source_quote_age_seconds": 34.916931,
-          "source_quote_updated_at_utc": "2026-09-02T23:26:13.000000Z"
+          "fighter_moneyline": -125,
+          "opponent_moneyline": -105,
+          "source_quote_age_seconds": 153.528291,
+          "source_quote_updated_at_utc": "2026-09-03T17:25:37.000000Z"
         },
         {
           "book": "BetMGM",
           "eligible_for_consensus": true,
-          "fighter_moneyline": -135,
-          "opponent_moneyline": 110,
-          "source_quote_age_seconds": 62.916931,
-          "source_quote_updated_at_utc": "2026-09-02T23:25:45.000000Z"
+          "fighter_moneyline": -125,
+          "opponent_moneyline": 105,
+          "source_quote_age_seconds": 4.528291,
+          "source_quote_updated_at_utc": "2026-09-03T17:28:06.000000Z"
         },
         {
           "book": "BetOnline.ag",
           "eligible_for_consensus": true,
-          "fighter_moneyline": -130,
-          "opponent_moneyline": 111,
-          "source_quote_age_seconds": 46.916931,
-          "source_quote_updated_at_utc": "2026-09-02T23:26:01.000000Z"
+          "fighter_moneyline": -120,
+          "opponent_moneyline": 103,
+          "source_quote_age_seconds": 43.528291,
+          "source_quote_updated_at_utc": "2026-09-03T17:27:27.000000Z"
         },
         {
           "book": "betPARX",
           "eligible_for_consensus": true,
           "fighter_moneyline": -132,
           "opponent_moneyline": 107,
-          "source_quote_age_seconds": 62.916931,
-          "source_quote_updated_at_utc": "2026-09-02T23:25:45.000000Z"
+          "source_quote_age_seconds": 30.528291,
+          "source_quote_updated_at_utc": "2026-09-03T17:27:40.000000Z"
         },
         {
           "book": "BetRivers",
           "eligible_for_consensus": true,
           "fighter_moneyline": -132,
           "opponent_moneyline": 107,
-          "source_quote_age_seconds": 139.916931,
-          "source_quote_updated_at_utc": "2026-09-02T23:24:28.000000Z"
+          "source_quote_age_seconds": 53.528291,
+          "source_quote_updated_at_utc": "2026-09-03T17:27:17.000000Z"
         },
         {
           "book": "BetUS",
           "eligible_for_consensus": true,
-          "fighter_moneyline": -130,
-          "opponent_moneyline": 110,
-          "source_quote_age_seconds": 60.916931,
-          "source_quote_updated_at_utc": "2026-09-02T23:25:47.000000Z"
+          "fighter_moneyline": -120,
+          "opponent_moneyline": 100,
+          "source_quote_age_seconds": 31.528291,
+          "source_quote_updated_at_utc": "2026-09-03T17:27:39.000000Z"
         },
         {
           "book": "Bovada",
           "eligible_for_consensus": true,
-          "fighter_moneyline": -130,
-          "opponent_moneyline": 110,
-          "source_quote_age_seconds": 239.916931,
-          "source_quote_updated_at_utc": "2026-09-02T23:22:48.000000Z"
+          "fighter_moneyline": -125,
+          "opponent_moneyline": 105,
+          "source_quote_age_seconds": 331.528291,
+          "source_quote_updated_at_utc": "2026-09-03T17:22:39.000000Z"
         },
         {
           "book": "DraftKings",
           "eligible_for_consensus": true,
           "fighter_moneyline": -125,
           "opponent_moneyline": 105,
-          "source_quote_age_seconds": 84.916931,
-          "source_quote_updated_at_utc": "2026-09-02T23:25:23.000000Z"
+          "source_quote_age_seconds": 31.528291,
+          "source_quote_updated_at_utc": "2026-09-03T17:27:39.000000Z"
         },
         {
           "book": "FanDuel",
           "eligible_for_consensus": true,
-          "fighter_moneyline": -148,
-          "opponent_moneyline": 114,
-          "source_quote_age_seconds": 8.916931,
-          "source_quote_updated_at_utc": "2026-09-02T23:26:39.000000Z"
+          "fighter_moneyline": -130,
+          "opponent_moneyline": 108,
+          "source_quote_age_seconds": 3.528291,
+          "source_quote_updated_at_utc": "2026-09-03T17:28:07.000000Z"
         },
         {
           "book": "Hard Rock Bet",
           "eligible_for_consensus": true,
           "fighter_moneyline": -130,
           "opponent_moneyline": 105,
-          "source_quote_age_seconds": 61.916931,
-          "source_quote_updated_at_utc": "2026-09-02T23:25:46.000000Z"
+          "source_quote_age_seconds": 1.528291,
+          "source_quote_updated_at_utc": "2026-09-03T17:28:09.000000Z"
         }
       ],
       "current_signal": {
         "action_name": null,
-        "best_candidate_name": "Fabia Sintes",
-        "best_candidate_side": "opponent",
-        "break_even_probability": 0.4672897196261682,
+        "best_candidate_name": "Michael Aljarouj",
+        "best_candidate_side": "fighter",
+        "break_even_probability": 0.5454545454545454,
         "consensus_book_count": 10,
         "consensus_books": [
           "Bally Bet",
@@ -512,25 +512,25 @@
           "BetOnline.ag",
           "betPARX",
           "BetRivers",
-          "BetUS",
           "Bovada",
           "DraftKings",
+          "FanDuel",
           "Hard Rock Bet"
         ],
-        "decision_id": "e02e05c8dd2c12bf37d7a019dcdfbd4d4c5f24ec58817fe6ddf56930f6b573c8",
-        "estimated_expected_return": -0.015268902125729511,
-        "market_fair_moneyline": 117,
-        "market_probability": 0.46015471863283663,
+        "decision_id": "802b38c244c03596a25e5d53f0f29023aab306bcbee8557e2a8b8b5a855a1776",
+        "estimated_expected_return": -0.02050096460102213,
+        "market_fair_moneyline": -115,
+        "market_probability": 0.5342722011267151,
         "minimum_expected_return": 0.05,
         "model_probability_for_fighter": 0.5,
         "model_weight": 0.0,
-        "observed_at_utc": "2026-09-02T23:26:47.916931Z",
-        "offered_moneyline": 114,
+        "observed_at_utc": "2026-09-03T17:28:10.528291Z",
+        "offered_moneyline": -120,
         "paper_action": "pass",
-        "probability_edge": -0.007135000993331475,
+        "probability_edge": -0.011182344327830274,
         "probability_source": "leave_one_book_out_no_vig_market_consensus",
-        "reason": "Pass: best estimated EV is -1.5%, below the 5.0% paper threshold.",
-        "target_book": "FanDuel",
+        "reason": "Pass: best estimated EV is -2.1%, below the 5.0% paper threshold.",
+        "target_book": "BetUS",
         "target_book_excluded_from_consensus": true
       },
       "current_signal_unavailable_reason": null,
@@ -551,10 +551,10 @@
           "FanDuel",
           "Hard Rock Bet"
         ],
-        "fighter_fair_moneyline": -118,
-        "fighter_probability": 0.5417542841724692,
-        "opponent_fair_moneyline": 118,
-        "opponent_probability": 0.4582457158275308
+        "fighter_fair_moneyline": -114,
+        "fighter_probability": 0.5331328310638123,
+        "opponent_fair_moneyline": 114,
+        "opponent_probability": 0.46686716893618774
       },
       "locked_t24_bayesian_filter": null,
       "locked_t24_decision": null,
@@ -571,113 +571,113 @@
           "eligible_for_consensus": true,
           "fighter_moneyline": 125,
           "opponent_moneyline": -157,
-          "source_quote_age_seconds": 62.916931,
-          "source_quote_updated_at_utc": "2026-09-02T23:25:45.000000Z"
+          "source_quote_age_seconds": 4.528291,
+          "source_quote_updated_at_utc": "2026-09-03T17:28:06.000000Z"
         },
         {
           "book": "BetAnything",
           "eligible_for_consensus": true,
-          "fighter_moneyline": 115,
-          "opponent_moneyline": -145,
-          "source_quote_age_seconds": 34.916931,
-          "source_quote_updated_at_utc": "2026-09-02T23:26:13.000000Z"
+          "fighter_moneyline": 125,
+          "opponent_moneyline": -155,
+          "source_quote_age_seconds": 153.528291,
+          "source_quote_updated_at_utc": "2026-09-03T17:25:37.000000Z"
         },
         {
           "book": "BetOnline.ag",
           "eligible_for_consensus": true,
-          "fighter_moneyline": 124,
-          "opponent_moneyline": -145,
-          "source_quote_age_seconds": 46.916931,
-          "source_quote_updated_at_utc": "2026-09-02T23:26:01.000000Z"
+          "fighter_moneyline": 132,
+          "opponent_moneyline": -155,
+          "source_quote_age_seconds": 43.528291,
+          "source_quote_updated_at_utc": "2026-09-03T17:27:27.000000Z"
         },
         {
           "book": "betPARX",
           "eligible_for_consensus": true,
           "fighter_moneyline": 125,
           "opponent_moneyline": -157,
-          "source_quote_age_seconds": 62.916931,
-          "source_quote_updated_at_utc": "2026-09-02T23:25:45.000000Z"
+          "source_quote_age_seconds": 30.528291,
+          "source_quote_updated_at_utc": "2026-09-03T17:27:40.000000Z"
         },
         {
           "book": "BetRivers",
           "eligible_for_consensus": true,
           "fighter_moneyline": 125,
           "opponent_moneyline": -157,
-          "source_quote_age_seconds": 139.916931,
-          "source_quote_updated_at_utc": "2026-09-02T23:24:28.000000Z"
+          "source_quote_age_seconds": 53.528291,
+          "source_quote_updated_at_utc": "2026-09-03T17:27:17.000000Z"
         },
         {
           "book": "BetUS",
           "eligible_for_consensus": true,
-          "fighter_moneyline": 122,
-          "opponent_moneyline": -145,
-          "source_quote_age_seconds": 60.916931,
-          "source_quote_updated_at_utc": "2026-09-02T23:25:47.000000Z"
+          "fighter_moneyline": 130,
+          "opponent_moneyline": -155,
+          "source_quote_age_seconds": 31.528291,
+          "source_quote_updated_at_utc": "2026-09-03T17:27:39.000000Z"
         },
         {
           "book": "Bovada",
           "eligible_for_consensus": true,
-          "fighter_moneyline": 125,
-          "opponent_moneyline": -145,
-          "source_quote_age_seconds": 238.916931,
-          "source_quote_updated_at_utc": "2026-09-02T23:22:49.000000Z"
+          "fighter_moneyline": 130,
+          "opponent_moneyline": -150,
+          "source_quote_age_seconds": 331.528291,
+          "source_quote_updated_at_utc": "2026-09-03T17:22:39.000000Z"
         },
         {
           "book": "DraftKings",
           "eligible_for_consensus": true,
-          "fighter_moneyline": 124,
-          "opponent_moneyline": -148,
-          "source_quote_age_seconds": 84.916931,
-          "source_quote_updated_at_utc": "2026-09-02T23:25:23.000000Z"
+          "fighter_moneyline": 130,
+          "opponent_moneyline": -155,
+          "source_quote_age_seconds": 31.528291,
+          "source_quote_updated_at_utc": "2026-09-03T17:27:39.000000Z"
         },
         {
           "book": "FanDuel",
           "eligible_for_consensus": true,
           "fighter_moneyline": 128,
           "opponent_moneyline": -164,
-          "source_quote_age_seconds": 8.916931,
-          "source_quote_updated_at_utc": "2026-09-02T23:26:39.000000Z"
+          "source_quote_age_seconds": 3.528291,
+          "source_quote_updated_at_utc": "2026-09-03T17:28:07.000000Z"
         },
         {
           "book": "Hard Rock Bet",
           "eligible_for_consensus": true,
           "fighter_moneyline": 125,
           "opponent_moneyline": -155,
-          "source_quote_age_seconds": 61.916931,
-          "source_quote_updated_at_utc": "2026-09-02T23:25:46.000000Z"
+          "source_quote_age_seconds": 1.528291,
+          "source_quote_updated_at_utc": "2026-09-03T17:28:09.000000Z"
         }
       ],
       "current_signal": {
         "action_name": null,
         "best_candidate_name": "Axel Sola",
         "best_candidate_side": "fighter",
-        "break_even_probability": 0.43859649122807015,
+        "break_even_probability": 0.43103448275862066,
         "consensus_book_count": 9,
         "consensus_books": [
           "Bally Bet",
           "BetAnything",
-          "BetOnline.ag",
           "betPARX",
           "BetRivers",
           "BetUS",
           "Bovada",
           "DraftKings",
+          "FanDuel",
           "Hard Rock Bet"
         ],
-        "decision_id": "1f1e97d1b3e6c332d9752a5bb0286ed4d19560fbe519541c8ae798b3b3356219",
-        "estimated_expected_return": -0.025982588282960406,
-        "market_fair_moneyline": 134,
-        "market_probability": 0.4272006191741402,
+        "decision_id": "384ab8d2f21485f6337fa1aa9a1b629d795ad871cad5421d52eb50888b50ecaa",
+        "estimated_expected_return": -0.026588600773228,
+        "market_fair_moneyline": 138,
+        "market_probability": 0.4195738789770569,
         "minimum_expected_return": 0.05,
         "model_probability_for_fighter": 0.33654160329999994,
         "model_weight": 0.0,
-        "observed_at_utc": "2026-09-02T23:26:47.916931Z",
-        "offered_moneyline": 128,
+        "observed_at_utc": "2026-09-03T17:28:10.528291Z",
+        "offered_moneyline": 132,
         "paper_action": "pass",
-        "probability_edge": -0.01139587205393,
+        "probability_edge": -0.011460603781563827,
         "probability_source": "leave_one_book_out_no_vig_market_consensus",
-        "reason": "Pass: best estimated EV is -2.6%, below the 5.0% paper threshold.",
-        "target_book": "FanDuel",
+        "reason": "Pass: best estimated EV is -2.7%, below the 5.0% paper threshold.",
+        "target_book": "BetOnline.ag",
         "target_book_excluded_from_consensus": true
       },
       "current_signal_unavailable_reason": null,
@@ -697,10 +697,10 @@
           "FanDuel",
           "Hard Rock Bet"
         ],
-        "fighter_fair_moneyline": 135,
-        "fighter_probability": 0.4258650568805035,
-        "opponent_fair_moneyline": -135,
-        "opponent_probability": 0.5741349431194964
+        "fighter_fair_moneyline": 139,
+        "fighter_probability": 0.41910689133968315,
+        "opponent_fair_moneyline": -139,
+        "opponent_probability": 0.5808931086603168
       },
       "locked_t24_bayesian_filter": null,
       "locked_t24_decision": null,
@@ -715,97 +715,243 @@
         {
           "book": "Bally Bet",
           "eligible_for_consensus": true,
-          "fighter_moneyline": 195,
-          "opponent_moneyline": -250,
-          "source_quote_age_seconds": 62.916931,
-          "source_quote_updated_at_utc": "2026-09-02T23:25:45.000000Z"
+          "fighter_moneyline": -335,
+          "opponent_moneyline": 250,
+          "source_quote_age_seconds": 4.528291,
+          "source_quote_updated_at_utc": "2026-09-03T17:28:06.000000Z"
         },
         {
           "book": "BetAnything",
           "eligible_for_consensus": true,
-          "fighter_moneyline": 199,
-          "opponent_moneyline": -249,
-          "source_quote_age_seconds": 34.916931,
-          "source_quote_updated_at_utc": "2026-09-02T23:26:13.000000Z"
+          "fighter_moneyline": -305,
+          "opponent_moneyline": 235,
+          "source_quote_age_seconds": 153.528291,
+          "source_quote_updated_at_utc": "2026-09-03T17:25:37.000000Z"
+        },
+        {
+          "book": "BetOnline.ag",
+          "eligible_for_consensus": true,
+          "fighter_moneyline": -300,
+          "opponent_moneyline": 247,
+          "source_quote_age_seconds": 43.528291,
+          "source_quote_updated_at_utc": "2026-09-03T17:27:27.000000Z"
+        },
+        {
+          "book": "betPARX",
+          "eligible_for_consensus": true,
+          "fighter_moneyline": -335,
+          "opponent_moneyline": 250,
+          "source_quote_age_seconds": 30.528291,
+          "source_quote_updated_at_utc": "2026-09-03T17:27:40.000000Z"
+        },
+        {
+          "book": "BetRivers",
+          "eligible_for_consensus": true,
+          "fighter_moneyline": -335,
+          "opponent_moneyline": 250,
+          "source_quote_age_seconds": 53.528291,
+          "source_quote_updated_at_utc": "2026-09-03T17:27:17.000000Z"
+        },
+        {
+          "book": "BetUS",
+          "eligible_for_consensus": true,
+          "fighter_moneyline": -300,
+          "opponent_moneyline": 246,
+          "source_quote_age_seconds": 31.528291,
+          "source_quote_updated_at_utc": "2026-09-03T17:27:39.000000Z"
+        },
+        {
+          "book": "Bovada",
+          "eligible_for_consensus": true,
+          "fighter_moneyline": -290,
+          "opponent_moneyline": 240,
+          "source_quote_age_seconds": 331.528291,
+          "source_quote_updated_at_utc": "2026-09-03T17:22:39.000000Z"
+        },
+        {
+          "book": "DraftKings",
+          "eligible_for_consensus": true,
+          "fighter_moneyline": -310,
+          "opponent_moneyline": 250,
+          "source_quote_age_seconds": 31.528291,
+          "source_quote_updated_at_utc": "2026-09-03T17:27:39.000000Z"
+        },
+        {
+          "book": "FanDuel",
+          "eligible_for_consensus": true,
+          "fighter_moneyline": -330,
+          "opponent_moneyline": 240,
+          "source_quote_age_seconds": 3.528291,
+          "source_quote_updated_at_utc": "2026-09-03T17:28:07.000000Z"
+        },
+        {
+          "book": "Hard Rock Bet",
+          "eligible_for_consensus": true,
+          "fighter_moneyline": -325,
+          "opponent_moneyline": 250,
+          "source_quote_age_seconds": 1.528291,
+          "source_quote_updated_at_utc": "2026-09-03T17:28:09.000000Z"
+        }
+      ],
+      "current_signal": {
+        "action_name": null,
+        "best_candidate_name": "Nathaniel Wood",
+        "best_candidate_side": "fighter",
+        "break_even_probability": 0.7435897435897436,
+        "consensus_book_count": 9,
+        "consensus_books": [
+          "Bally Bet",
+          "BetAnything",
+          "BetOnline.ag",
+          "betPARX",
+          "BetRivers",
+          "BetUS",
+          "DraftKings",
+          "FanDuel",
+          "Hard Rock Bet"
+        ],
+        "decision_id": "78936cd75668c7fbda34f950722fbd25be76fbd9d8fa3f7fa8d29852598565c5",
+        "estimated_expected_return": -0.024961148550509793,
+        "market_fair_moneyline": -264,
+        "market_probability": 0.7250288895393645,
+        "minimum_expected_return": 0.05,
+        "model_probability_for_fighter": 0.9371078453,
+        "model_weight": 0.0,
+        "observed_at_utc": "2026-09-03T17:28:10.528291Z",
+        "offered_moneyline": -290,
+        "paper_action": "pass",
+        "probability_edge": -0.018560854050379105,
+        "probability_source": "leave_one_book_out_no_vig_market_consensus",
+        "reason": "Pass: best estimated EV is -2.5%, below the 5.0% paper threshold.",
+        "target_book": "Bovada",
+        "target_book_excluded_from_consensus": true
+      },
+      "current_signal_unavailable_reason": null,
+      "fighter_id": "329e403448756217",
+      "fighter_name": "Nathaniel Wood",
+      "full_market_consensus": {
+        "book_count": 10,
+        "books": [
+          "Bally Bet",
+          "BetAnything",
+          "BetOnline.ag",
+          "betPARX",
+          "BetRivers",
+          "BetUS",
+          "Bovada",
+          "DraftKings",
+          "FanDuel",
+          "Hard Rock Bet"
+        ],
+        "fighter_fair_moneyline": -263,
+        "fighter_probability": 0.7241829773296141,
+        "opponent_fair_moneyline": 263,
+        "opponent_probability": 0.2758170226703859
+      },
+      "locked_t24_bayesian_filter": null,
+      "locked_t24_decision": null,
+      "matchup_id": "matchup_5ba9978871b848d5b7445f82c33ad8b233afd688c6347983e72b3aec7be3e696",
+      "model_id": "35d1c5eb8e126b3c9563",
+      "model_probability_for_fighter": 0.9371078453,
+      "opponent_id": "93f9c19ae41d2a97",
+      "opponent_name": "Pavel Andrusca"
+    },
+    {
+      "book_quotes": [
+        {
+          "book": "Bally Bet",
+          "eligible_for_consensus": true,
+          "fighter_moneyline": 195,
+          "opponent_moneyline": -250,
+          "source_quote_age_seconds": 4.528291,
+          "source_quote_updated_at_utc": "2026-09-03T17:28:06.000000Z"
+        },
+        {
+          "book": "BetAnything",
+          "eligible_for_consensus": true,
+          "fighter_moneyline": 180,
+          "opponent_moneyline": -230,
+          "source_quote_age_seconds": 153.528291,
+          "source_quote_updated_at_utc": "2026-09-03T17:25:37.000000Z"
         },
         {
           "book": "BetMGM",
           "eligible_for_consensus": true,
           "fighter_moneyline": 200,
           "opponent_moneyline": -250,
-          "source_quote_age_seconds": 62.916931,
-          "source_quote_updated_at_utc": "2026-09-02T23:25:45.000000Z"
+          "source_quote_age_seconds": 4.528291,
+          "source_quote_updated_at_utc": "2026-09-03T17:28:06.000000Z"
         },
         {
           "book": "BetOnline.ag",
           "eligible_for_consensus": true,
-          "fighter_moneyline": 206,
-          "opponent_moneyline": -249,
-          "source_quote_age_seconds": 46.916931,
-          "source_quote_updated_at_utc": "2026-09-02T23:26:01.000000Z"
+          "fighter_moneyline": 193,
+          "opponent_moneyline": -230,
+          "source_quote_age_seconds": 43.528291,
+          "source_quote_updated_at_utc": "2026-09-03T17:27:27.000000Z"
         },
         {
           "book": "betPARX",
           "eligible_for_consensus": true,
           "fighter_moneyline": 195,
           "opponent_moneyline": -250,
-          "source_quote_age_seconds": 62.916931,
-          "source_quote_updated_at_utc": "2026-09-02T23:25:45.000000Z"
+          "source_quote_age_seconds": 30.528291,
+          "source_quote_updated_at_utc": "2026-09-03T17:27:40.000000Z"
         },
         {
           "book": "BetRivers",
           "eligible_for_consensus": true,
           "fighter_moneyline": 195,
           "opponent_moneyline": -250,
-          "source_quote_age_seconds": 139.916931,
-          "source_quote_updated_at_utc": "2026-09-02T23:24:28.000000Z"
+          "source_quote_age_seconds": 53.528291,
+          "source_quote_updated_at_utc": "2026-09-03T17:27:17.000000Z"
         },
         {
           "book": "BetUS",
           "eligible_for_consensus": true,
-          "fighter_moneyline": 202,
-          "opponent_moneyline": -245,
-          "source_quote_age_seconds": 60.916931,
-          "source_quote_updated_at_utc": "2026-09-02T23:25:47.000000Z"
+          "fighter_moneyline": 190,
+          "opponent_moneyline": -230,
+          "source_quote_age_seconds": 31.528291,
+          "source_quote_updated_at_utc": "2026-09-03T17:27:39.000000Z"
         },
         {
           "book": "Bovada",
           "eligible_for_consensus": true,
           "fighter_moneyline": 205,
           "opponent_moneyline": -245,
-          "source_quote_age_seconds": 238.916931,
-          "source_quote_updated_at_utc": "2026-09-02T23:22:49.000000Z"
+          "source_quote_age_seconds": 331.528291,
+          "source_quote_updated_at_utc": "2026-09-03T17:22:39.000000Z"
         },
         {
           "book": "DraftKings",
           "eligible_for_consensus": true,
-          "fighter_moneyline": 215,
-          "opponent_moneyline": -265,
-          "source_quote_age_seconds": 84.916931,
-          "source_quote_updated_at_utc": "2026-09-02T23:25:23.000000Z"
+          "fighter_moneyline": 200,
+          "opponent_moneyline": -245,
+          "source_quote_age_seconds": 31.528291,
+          "source_quote_updated_at_utc": "2026-09-03T17:27:39.000000Z"
         },
         {
           "book": "FanDuel",
           "eligible_for_consensus": true,
           "fighter_moneyline": 200,
           "opponent_moneyline": -265,
-          "source_quote_age_seconds": 8.916931,
-          "source_quote_updated_at_utc": "2026-09-02T23:26:39.000000Z"
+          "source_quote_age_seconds": 3.528291,
+          "source_quote_updated_at_utc": "2026-09-03T17:28:07.000000Z"
         },
         {
           "book": "Hard Rock Bet",
           "eligible_for_consensus": true,
           "fighter_moneyline": 195,
           "opponent_moneyline": -250,
-          "source_quote_age_seconds": 61.916931,
-          "source_quote_updated_at_utc": "2026-09-02T23:25:46.000000Z"
+          "source_quote_age_seconds": 2.528291,
+          "source_quote_updated_at_utc": "2026-09-03T17:28:08.000000Z"
         }
       ],
       "current_signal": {
         "action_name": null,
         "best_candidate_name": "Punahele Soriano",
         "best_candidate_side": "fighter",
-        "break_even_probability": 0.31746031746031744,
+        "break_even_probability": 0.32786885245901637,
         "consensus_book_count": 10,
         "consensus_books": [
           "Bally Bet",
@@ -815,24 +961,24 @@
           "betPARX",
           "BetRivers",
           "BetUS",
-          "Bovada",
+          "DraftKings",
           "FanDuel",
           "Hard Rock Bet"
         ],
-        "decision_id": "b5903bd843beddda4c779a62d0e5aa1c805387c00aefd9532312965056bfc34b",
-        "estimated_expected_return": 0.004018667706183976,
-        "market_fair_moneyline": 214,
-        "market_probability": 0.3187360849860902,
+        "decision_id": "89fbe504a95909a8d2498d5cfa07832cf7cdfc7cd7337da644245aa7a69166e1",
+        "estimated_expected_return": -0.012361879990081981,
+        "market_fair_moneyline": 209,
+        "market_probability": 0.32381577705243214,
         "minimum_expected_return": 0.05,
         "model_probability_for_fighter": 0.24202491169999996,
         "model_weight": 0.0,
-        "observed_at_utc": "2026-09-02T23:26:47.916931Z",
-        "offered_moneyline": 215,
+        "observed_at_utc": "2026-09-03T17:28:10.528291Z",
+        "offered_moneyline": 205,
         "paper_action": "pass",
-        "probability_edge": 0.0012757675257727419,
+        "probability_edge": -0.004053075406584228,
         "probability_source": "leave_one_book_out_no_vig_market_consensus",
-        "reason": "Pass: best estimated EV is 0.4%, below the 5.0% paper threshold.",
-        "target_book": "DraftKings",
+        "reason": "Pass: best estimated EV is -1.2%, below the 5.0% paper threshold.",
+        "target_book": "Bovada",
         "target_book_excluded_from_consensus": true
       },
       "current_signal_unavailable_reason": null,
@@ -853,10 +999,10 @@
           "FanDuel",
           "Hard Rock Bet"
         ],
-        "fighter_fair_moneyline": 215,
-        "fighter_probability": 0.31741735434432305,
-        "opponent_fair_moneyline": -215,
-        "opponent_probability": 0.682582645655677
+        "fighter_fair_moneyline": 210,
+        "fighter_probability": 0.32309268398053975,
+        "opponent_fair_moneyline": -210,
+        "opponent_probability": 0.6769073160194603
       },
       "locked_t24_bayesian_filter": null,
       "locked_t24_decision": null,
@@ -871,124 +1017,124 @@
         {
           "book": "Bally Bet",
           "eligible_for_consensus": true,
-          "fighter_moneyline": -215,
-          "opponent_moneyline": 170,
-          "source_quote_age_seconds": 62.916931,
-          "source_quote_updated_at_utc": "2026-09-02T23:25:45.000000Z"
+          "fighter_moneyline": -240,
+          "opponent_moneyline": 188,
+          "source_quote_age_seconds": 4.528291,
+          "source_quote_updated_at_utc": "2026-09-03T17:28:06.000000Z"
         },
         {
           "book": "BetAnything",
           "eligible_for_consensus": true,
-          "fighter_moneyline": -211,
-          "opponent_moneyline": 176,
-          "source_quote_age_seconds": 34.916931,
-          "source_quote_updated_at_utc": "2026-09-02T23:26:13.000000Z"
+          "fighter_moneyline": -235,
+          "opponent_moneyline": 185,
+          "source_quote_age_seconds": 153.528291,
+          "source_quote_updated_at_utc": "2026-09-03T17:25:37.000000Z"
         },
         {
           "book": "BetMGM",
           "eligible_for_consensus": true,
-          "fighter_moneyline": -200,
-          "opponent_moneyline": 165,
-          "source_quote_age_seconds": 62.916931,
-          "source_quote_updated_at_utc": "2026-09-02T23:25:45.000000Z"
+          "fighter_moneyline": -220,
+          "opponent_moneyline": 180,
+          "source_quote_age_seconds": 4.528291,
+          "source_quote_updated_at_utc": "2026-09-03T17:28:06.000000Z"
         },
         {
           "book": "BetOnline.ag",
           "eligible_for_consensus": true,
-          "fighter_moneyline": -211,
-          "opponent_moneyline": 178,
-          "source_quote_age_seconds": 46.916931,
-          "source_quote_updated_at_utc": "2026-09-02T23:26:01.000000Z"
+          "fighter_moneyline": -235,
+          "opponent_moneyline": 197,
+          "source_quote_age_seconds": 43.528291,
+          "source_quote_updated_at_utc": "2026-09-03T17:27:27.000000Z"
         },
         {
           "book": "betPARX",
           "eligible_for_consensus": true,
-          "fighter_moneyline": -215,
-          "opponent_moneyline": 170,
-          "source_quote_age_seconds": 62.916931,
-          "source_quote_updated_at_utc": "2026-09-02T23:25:45.000000Z"
+          "fighter_moneyline": -240,
+          "opponent_moneyline": 188,
+          "source_quote_age_seconds": 30.528291,
+          "source_quote_updated_at_utc": "2026-09-03T17:27:40.000000Z"
         },
         {
           "book": "BetRivers",
           "eligible_for_consensus": true,
-          "fighter_moneyline": -215,
-          "opponent_moneyline": 170,
-          "source_quote_age_seconds": 139.916931,
-          "source_quote_updated_at_utc": "2026-09-02T23:24:28.000000Z"
+          "fighter_moneyline": -240,
+          "opponent_moneyline": 188,
+          "source_quote_age_seconds": 53.528291,
+          "source_quote_updated_at_utc": "2026-09-03T17:27:17.000000Z"
         },
         {
           "book": "BetUS",
           "eligible_for_consensus": true,
-          "fighter_moneyline": -210,
-          "opponent_moneyline": 174,
-          "source_quote_age_seconds": 60.916931,
-          "source_quote_updated_at_utc": "2026-09-02T23:25:47.000000Z"
+          "fighter_moneyline": -235,
+          "opponent_moneyline": 194,
+          "source_quote_age_seconds": 31.528291,
+          "source_quote_updated_at_utc": "2026-09-03T17:27:39.000000Z"
         },
         {
           "book": "Bovada",
           "eligible_for_consensus": true,
-          "fighter_moneyline": -210,
-          "opponent_moneyline": 176,
-          "source_quote_age_seconds": 239.916931,
-          "source_quote_updated_at_utc": "2026-09-02T23:22:48.000000Z"
+          "fighter_moneyline": -230,
+          "opponent_moneyline": 190,
+          "source_quote_age_seconds": 331.528291,
+          "source_quote_updated_at_utc": "2026-09-03T17:22:39.000000Z"
         },
         {
           "book": "DraftKings",
           "eligible_for_consensus": true,
-          "fighter_moneyline": -225,
-          "opponent_moneyline": 185,
-          "source_quote_age_seconds": 84.916931,
-          "source_quote_updated_at_utc": "2026-09-02T23:25:23.000000Z"
+          "fighter_moneyline": -230,
+          "opponent_moneyline": 190,
+          "source_quote_age_seconds": 31.528291,
+          "source_quote_updated_at_utc": "2026-09-03T17:27:39.000000Z"
         },
         {
           "book": "FanDuel",
           "eligible_for_consensus": true,
           "fighter_moneyline": -225,
           "opponent_moneyline": 172,
-          "source_quote_age_seconds": 8.916931,
-          "source_quote_updated_at_utc": "2026-09-02T23:26:39.000000Z"
+          "source_quote_age_seconds": 3.528291,
+          "source_quote_updated_at_utc": "2026-09-03T17:28:07.000000Z"
         },
         {
           "book": "Hard Rock Bet",
           "eligible_for_consensus": true,
-          "fighter_moneyline": -210,
-          "opponent_moneyline": 170,
-          "source_quote_age_seconds": 61.916931,
-          "source_quote_updated_at_utc": "2026-09-02T23:25:46.000000Z"
+          "fighter_moneyline": -240,
+          "opponent_moneyline": 190,
+          "source_quote_age_seconds": 2.528291,
+          "source_quote_updated_at_utc": "2026-09-03T17:28:08.000000Z"
         }
       ],
       "current_signal": {
         "action_name": null,
         "best_candidate_name": "Modestas Bukauskas",
         "best_candidate_side": "opponent",
-        "break_even_probability": 0.3508771929824561,
+        "break_even_probability": 0.3367003367003367,
         "consensus_book_count": 10,
         "consensus_books": [
           "Bally Bet",
           "BetAnything",
           "BetMGM",
-          "BetOnline.ag",
           "betPARX",
           "BetRivers",
           "BetUS",
           "Bovada",
+          "DraftKings",
           "FanDuel",
           "Hard Rock Bet"
         ],
-        "decision_id": "a9dc4541cb9a6fdfc75e765a90ab34ffa15aa01b9dcfb31c9c78897e97865a28",
-        "estimated_expected_return": 0.0004235878019756001,
-        "market_fair_moneyline": 185,
-        "market_probability": 0.35102582028139495,
+        "decision_id": "39d7355258d29064b68348da1ceedaecc7961bcf5071251f844537521b233e81",
+        "estimated_expected_return": -0.011583711849062817,
+        "market_fair_moneyline": 200,
+        "market_probability": 0.3328000970205176,
         "minimum_expected_return": 0.05,
         "model_probability_for_fighter": 0.7513614164,
         "model_weight": 0.0,
-        "observed_at_utc": "2026-09-02T23:26:47.916931Z",
-        "offered_moneyline": 185,
+        "observed_at_utc": "2026-09-03T17:28:10.528291Z",
+        "offered_moneyline": 197,
         "paper_action": "pass",
-        "probability_edge": 0.00014862729893883042,
+        "probability_edge": -0.0039002396798191175,
         "probability_source": "leave_one_book_out_no_vig_market_consensus",
-        "reason": "Pass: best estimated EV is 0.0%, below the 5.0% paper threshold.",
-        "target_book": "DraftKings",
+        "reason": "Pass: best estimated EV is -1.2%, below the 5.0% paper threshold.",
+        "target_book": "BetOnline.ag",
         "target_book_excluded_from_consensus": true
       },
       "current_signal_unavailable_reason": null,
@@ -1009,10 +1155,10 @@
           "FanDuel",
           "Hard Rock Bet"
         ],
-        "fighter_fair_moneyline": -186,
-        "fighter_probability": 0.6503081746706829,
-        "opponent_fair_moneyline": 186,
-        "opponent_probability": 0.3496918253293171
+        "fighter_fair_moneyline": -201,
+        "fighter_probability": 0.6679713792207281,
+        "opponent_fair_moneyline": 201,
+        "opponent_probability": 0.33202862077927187
       },
       "locked_t24_bayesian_filter": null,
       "locked_t24_decision": null,
@@ -1029,122 +1175,122 @@
           "eligible_for_consensus": true,
           "fighter_moneyline": -286,
           "opponent_moneyline": 220,
-          "source_quote_age_seconds": 62.916931,
-          "source_quote_updated_at_utc": "2026-09-02T23:25:45.000000Z"
+          "source_quote_age_seconds": 4.528291,
+          "source_quote_updated_at_utc": "2026-09-03T17:28:06.000000Z"
         },
         {
           "book": "BetAnything",
           "eligible_for_consensus": true,
-          "fighter_moneyline": -285,
-          "opponent_moneyline": 215,
-          "source_quote_age_seconds": 34.916931,
-          "source_quote_updated_at_utc": "2026-09-02T23:26:13.000000Z"
+          "fighter_moneyline": -325,
+          "opponent_moneyline": 245,
+          "source_quote_age_seconds": 153.528291,
+          "source_quote_updated_at_utc": "2026-09-03T17:25:37.000000Z"
         },
         {
           "book": "BetMGM",
           "eligible_for_consensus": true,
-          "fighter_moneyline": -275,
-          "opponent_moneyline": 225,
-          "source_quote_age_seconds": 62.916931,
-          "source_quote_updated_at_utc": "2026-09-02T23:25:45.000000Z"
+          "fighter_moneyline": -300,
+          "opponent_moneyline": 240,
+          "source_quote_age_seconds": 4.528291,
+          "source_quote_updated_at_utc": "2026-09-03T17:28:06.000000Z"
         },
         {
           "book": "BetOnline.ag",
           "eligible_for_consensus": true,
-          "fighter_moneyline": -285,
-          "opponent_moneyline": 235,
-          "source_quote_age_seconds": 46.916931,
-          "source_quote_updated_at_utc": "2026-09-02T23:26:01.000000Z"
+          "fighter_moneyline": -325,
+          "opponent_moneyline": 265,
+          "source_quote_age_seconds": 43.528291,
+          "source_quote_updated_at_utc": "2026-09-03T17:27:27.000000Z"
         },
         {
           "book": "betPARX",
           "eligible_for_consensus": true,
           "fighter_moneyline": -286,
           "opponent_moneyline": 220,
-          "source_quote_age_seconds": 62.916931,
-          "source_quote_updated_at_utc": "2026-09-02T23:25:45.000000Z"
+          "source_quote_age_seconds": 30.528291,
+          "source_quote_updated_at_utc": "2026-09-03T17:27:40.000000Z"
         },
         {
           "book": "BetRivers",
           "eligible_for_consensus": true,
           "fighter_moneyline": -286,
           "opponent_moneyline": 220,
-          "source_quote_age_seconds": 139.916931,
-          "source_quote_updated_at_utc": "2026-09-02T23:24:28.000000Z"
+          "source_quote_age_seconds": 53.528291,
+          "source_quote_updated_at_utc": "2026-09-03T17:27:17.000000Z"
         },
         {
           "book": "BetUS",
           "eligible_for_consensus": true,
-          "fighter_moneyline": -285,
-          "opponent_moneyline": 234,
-          "source_quote_age_seconds": 60.916931,
-          "source_quote_updated_at_utc": "2026-09-02T23:25:47.000000Z"
+          "fighter_moneyline": -325,
+          "opponent_moneyline": 264,
+          "source_quote_age_seconds": 31.528291,
+          "source_quote_updated_at_utc": "2026-09-03T17:27:39.000000Z"
         },
         {
           "book": "Bovada",
           "eligible_for_consensus": true,
-          "fighter_moneyline": -280,
-          "opponent_moneyline": 230,
-          "source_quote_age_seconds": 239.916931,
-          "source_quote_updated_at_utc": "2026-09-02T23:22:48.000000Z"
+          "fighter_moneyline": -310,
+          "opponent_moneyline": 255,
+          "source_quote_age_seconds": 331.528291,
+          "source_quote_updated_at_utc": "2026-09-03T17:22:39.000000Z"
         },
         {
           "book": "DraftKings",
           "eligible_for_consensus": true,
-          "fighter_moneyline": -305,
-          "opponent_moneyline": 245,
-          "source_quote_age_seconds": 84.916931,
-          "source_quote_updated_at_utc": "2026-09-02T23:25:23.000000Z"
+          "fighter_moneyline": -310,
+          "opponent_moneyline": 250,
+          "source_quote_age_seconds": 31.528291,
+          "source_quote_updated_at_utc": "2026-09-03T17:27:39.000000Z"
         },
         {
           "book": "FanDuel",
           "eligible_for_consensus": true,
           "fighter_moneyline": -310,
           "opponent_moneyline": 230,
-          "source_quote_age_seconds": 8.916931,
-          "source_quote_updated_at_utc": "2026-09-02T23:26:39.000000Z"
+          "source_quote_age_seconds": 3.528291,
+          "source_quote_updated_at_utc": "2026-09-03T17:28:07.000000Z"
         },
         {
           "book": "Hard Rock Bet",
           "eligible_for_consensus": true,
           "fighter_moneyline": -275,
           "opponent_moneyline": 220,
-          "source_quote_age_seconds": 61.916931,
-          "source_quote_updated_at_utc": "2026-09-02T23:25:46.000000Z"
+          "source_quote_age_seconds": 1.528291,
+          "source_quote_updated_at_utc": "2026-09-03T17:28:09.000000Z"
         }
       ],
       "current_signal": {
         "action_name": null,
         "best_candidate_name": "Ryan Spann",
         "best_candidate_side": "opponent",
-        "break_even_probability": 0.2898550724637681,
+        "break_even_probability": 0.273972602739726,
         "consensus_book_count": 10,
         "consensus_books": [
           "Bally Bet",
           "BetAnything",
           "BetMGM",
-          "BetOnline.ag",
           "betPARX",
           "BetRivers",
           "BetUS",
           "Bovada",
+          "DraftKings",
           "FanDuel",
           "Hard Rock Bet"
         ],
-        "decision_id": "d9eba2c82545ba2273767090059a06d93284f04cda3a13aedf911012905fb18a",
-        "estimated_expected_return": 0.013377553676663378,
-        "market_fair_moneyline": 240,
-        "market_probability": 0.2937326242541053,
+        "decision_id": "3c7b194b14f865f4a705f8862fd73b8ba99c7061c92bd152ff383636956cee6f",
+        "estimated_expected_return": 0.037110457964485866,
+        "market_fair_moneyline": 252,
+        "market_probability": 0.2841398514971194,
         "minimum_expected_return": 0.05,
         "model_probability_for_fighter": 0.8380788126000001,
         "model_weight": 0.0,
-        "observed_at_utc": "2026-09-02T23:26:47.916931Z",
-        "offered_moneyline": 245,
+        "observed_at_utc": "2026-09-03T17:28:10.528291Z",
+        "offered_moneyline": 265,
         "paper_action": "pass",
-        "probability_edge": 0.0038775517903371637,
+        "probability_edge": 0.010167248757393388,
         "probability_source": "leave_one_book_out_no_vig_market_consensus",
-        "reason": "Pass: best estimated EV is 1.3%, below the 5.0% paper threshold.",
-        "target_book": "DraftKings",
+        "reason": "Pass: best estimated EV is 3.7%, below the 5.0% paper threshold.",
+        "target_book": "BetOnline.ag",
         "target_book_excluded_from_consensus": true
       },
       "current_signal_unavailable_reason": null,
@@ -1165,10 +1311,10 @@
           "FanDuel",
           "Hard Rock Bet"
         ],
-        "fighter_fair_moneyline": -242,
-        "fighter_probability": 0.7077048196669974,
-        "opponent_fair_moneyline": 242,
-        "opponent_probability": 0.2922951803330026
+        "fighter_fair_moneyline": -254,
+        "fighter_probability": 0.7177119200368242,
+        "opponent_fair_moneyline": 254,
+        "opponent_probability": 0.28228807996317584
       },
       "locked_t24_bayesian_filter": null,
       "locked_t24_decision": null,
@@ -1185,95 +1331,95 @@
           "eligible_for_consensus": true,
           "fighter_moneyline": -150,
           "opponent_moneyline": 120,
-          "source_quote_age_seconds": 62.916931,
-          "source_quote_updated_at_utc": "2026-09-02T23:25:45.000000Z"
+          "source_quote_age_seconds": 4.528291,
+          "source_quote_updated_at_utc": "2026-09-03T17:28:06.000000Z"
         },
         {
           "book": "BetAnything",
           "eligible_for_consensus": true,
-          "fighter_moneyline": -150,
-          "opponent_moneyline": 120,
-          "source_quote_age_seconds": 34.916931,
-          "source_quote_updated_at_utc": "2026-09-02T23:26:13.000000Z"
+          "fighter_moneyline": -140,
+          "opponent_moneyline": 110,
+          "source_quote_age_seconds": 153.528291,
+          "source_quote_updated_at_utc": "2026-09-03T17:25:37.000000Z"
         },
         {
           "book": "BetMGM",
           "eligible_for_consensus": true,
           "fighter_moneyline": -150,
           "opponent_moneyline": 125,
-          "source_quote_age_seconds": 62.916931,
-          "source_quote_updated_at_utc": "2026-09-02T23:25:45.000000Z"
+          "source_quote_age_seconds": 4.528291,
+          "source_quote_updated_at_utc": "2026-09-03T17:28:06.000000Z"
         },
         {
           "book": "BetOnline.ag",
           "eligible_for_consensus": true,
-          "fighter_moneyline": -146,
-          "opponent_moneyline": 125,
-          "source_quote_age_seconds": 46.916931,
-          "source_quote_updated_at_utc": "2026-09-02T23:26:01.000000Z"
+          "fighter_moneyline": -145,
+          "opponent_moneyline": 124,
+          "source_quote_age_seconds": 43.528291,
+          "source_quote_updated_at_utc": "2026-09-03T17:27:27.000000Z"
         },
         {
           "book": "betPARX",
           "eligible_for_consensus": true,
           "fighter_moneyline": -150,
           "opponent_moneyline": 120,
-          "source_quote_age_seconds": 62.916931,
-          "source_quote_updated_at_utc": "2026-09-02T23:25:45.000000Z"
+          "source_quote_age_seconds": 30.528291,
+          "source_quote_updated_at_utc": "2026-09-03T17:27:40.000000Z"
         },
         {
           "book": "BetRivers",
           "eligible_for_consensus": true,
           "fighter_moneyline": -150,
           "opponent_moneyline": 120,
-          "source_quote_age_seconds": 139.916931,
-          "source_quote_updated_at_utc": "2026-09-02T23:24:28.000000Z"
+          "source_quote_age_seconds": 53.528291,
+          "source_quote_updated_at_utc": "2026-09-03T17:27:17.000000Z"
         },
         {
           "book": "BetUS",
           "eligible_for_consensus": true,
-          "fighter_moneyline": -155,
-          "opponent_moneyline": 130,
-          "source_quote_age_seconds": 60.916931,
-          "source_quote_updated_at_utc": "2026-09-02T23:25:47.000000Z"
+          "fighter_moneyline": -140,
+          "opponent_moneyline": 118,
+          "source_quote_age_seconds": 31.528291,
+          "source_quote_updated_at_utc": "2026-09-03T17:27:39.000000Z"
         },
         {
           "book": "Bovada",
           "eligible_for_consensus": true,
-          "fighter_moneyline": -142,
-          "opponent_moneyline": 122,
-          "source_quote_age_seconds": 239.916931,
-          "source_quote_updated_at_utc": "2026-09-02T23:22:48.000000Z"
+          "fighter_moneyline": -138,
+          "opponent_moneyline": 117,
+          "source_quote_age_seconds": 331.528291,
+          "source_quote_updated_at_utc": "2026-09-03T17:22:39.000000Z"
         },
         {
           "book": "DraftKings",
           "eligible_for_consensus": true,
           "fighter_moneyline": -148,
           "opponent_moneyline": 124,
-          "source_quote_age_seconds": 84.916931,
-          "source_quote_updated_at_utc": "2026-09-02T23:25:23.000000Z"
+          "source_quote_age_seconds": 31.528291,
+          "source_quote_updated_at_utc": "2026-09-03T17:27:39.000000Z"
         },
         {
           "book": "FanDuel",
           "eligible_for_consensus": true,
-          "fighter_moneyline": -162,
+          "fighter_moneyline": -154,
           "opponent_moneyline": 126,
-          "source_quote_age_seconds": 8.916931,
-          "source_quote_updated_at_utc": "2026-09-02T23:26:39.000000Z"
+          "source_quote_age_seconds": 3.528291,
+          "source_quote_updated_at_utc": "2026-09-03T17:28:07.000000Z"
         },
         {
           "book": "Hard Rock Bet",
           "eligible_for_consensus": true,
           "fighter_moneyline": -150,
           "opponent_moneyline": 120,
-          "source_quote_age_seconds": 61.916931,
-          "source_quote_updated_at_utc": "2026-09-02T23:25:46.000000Z"
+          "source_quote_age_seconds": 1.528291,
+          "source_quote_updated_at_utc": "2026-09-03T17:28:09.000000Z"
         }
       ],
       "current_signal": {
         "action_name": null,
         "best_candidate_name": "Sofia Montenegro",
         "best_candidate_side": "opponent",
-        "break_even_probability": 0.43478260869565216,
+        "break_even_probability": 0.4424778761061947,
         "consensus_book_count": 10,
         "consensus_books": [
           "Bally Bet",
@@ -1282,25 +1428,25 @@
           "BetOnline.ag",
           "betPARX",
           "BetRivers",
+          "BetUS",
           "Bovada",
           "DraftKings",
-          "FanDuel",
           "Hard Rock Bet"
         ],
-        "decision_id": "7c062cc00a3302fc723ddff144a792221788134617d3c7ebb3e312a4f0ba1526",
-        "estimated_expected_return": -0.013703850577486687,
-        "market_fair_moneyline": 133,
-        "market_probability": 0.42882441279239714,
+        "decision_id": "c2545e9e879c87469e6c9869a864751b77a3bcf0cef1e0dc285c5859bd580889",
+        "estimated_expected_return": -0.01914803922498387,
+        "market_fair_moneyline": 130,
+        "market_probability": 0.43400529237832575,
         "minimum_expected_return": 0.05,
         "model_probability_for_fighter": 0.5,
         "model_weight": 0.0,
-        "observed_at_utc": "2026-09-02T23:26:47.916931Z",
-        "offered_moneyline": 130,
+        "observed_at_utc": "2026-09-03T17:28:10.528291Z",
+        "offered_moneyline": 126,
         "paper_action": "pass",
-        "probability_edge": -0.005958195903255026,
+        "probability_edge": -0.008472583727868965,
         "probability_source": "leave_one_book_out_no_vig_market_consensus",
-        "reason": "Pass: best estimated EV is -1.4%, below the 5.0% paper threshold.",
-        "target_book": "BetUS",
+        "reason": "Pass: best estimated EV is -1.9%, below the 5.0% paper threshold.",
+        "target_book": "FanDuel",
         "target_book_excluded_from_consensus": true
       },
       "current_signal_unavailable_reason": null,
@@ -1321,10 +1467,10 @@
           "FanDuel",
           "Hard Rock Bet"
         ],
-        "fighter_fair_moneyline": -134,
-        "fighter_probability": 0.5722498648293305,
-        "opponent_fair_moneyline": 134,
-        "opponent_probability": 0.4277501351706695
+        "fighter_fair_moneyline": -131,
+        "fighter_probability": 0.5670952908241567,
+        "opponent_fair_moneyline": 131,
+        "opponent_probability": 0.43290470917584334
       },
       "locked_t24_bayesian_filter": null,
       "locked_t24_decision": null,
@@ -1341,122 +1487,122 @@
           "eligible_for_consensus": true,
           "fighter_moneyline": 300,
           "opponent_moneyline": -400,
-          "source_quote_age_seconds": 62.916931,
-          "source_quote_updated_at_utc": "2026-09-02T23:25:45.000000Z"
+          "source_quote_age_seconds": 4.528291,
+          "source_quote_updated_at_utc": "2026-09-03T17:28:06.000000Z"
         },
         {
           "book": "BetAnything",
           "eligible_for_consensus": true,
-          "fighter_moneyline": 250,
-          "opponent_moneyline": -385,
-          "source_quote_age_seconds": 34.916931,
-          "source_quote_updated_at_utc": "2026-09-02T23:26:13.000000Z"
+          "fighter_moneyline": 260,
+          "opponent_moneyline": -395,
+          "source_quote_age_seconds": 153.528291,
+          "source_quote_updated_at_utc": "2026-09-03T17:25:37.000000Z"
         },
         {
           "book": "BetMGM",
           "eligible_for_consensus": true,
           "fighter_moneyline": 310,
           "opponent_moneyline": -400,
-          "source_quote_age_seconds": 62.916931,
-          "source_quote_updated_at_utc": "2026-09-02T23:25:45.000000Z"
+          "source_quote_age_seconds": 4.528291,
+          "source_quote_updated_at_utc": "2026-09-03T17:28:06.000000Z"
         },
         {
           "book": "BetOnline.ag",
           "eligible_for_consensus": true,
           "fighter_moneyline": 300,
           "opponent_moneyline": -400,
-          "source_quote_age_seconds": 46.916931,
-          "source_quote_updated_at_utc": "2026-09-02T23:26:01.000000Z"
+          "source_quote_age_seconds": 43.528291,
+          "source_quote_updated_at_utc": "2026-09-03T17:27:27.000000Z"
         },
         {
           "book": "betPARX",
           "eligible_for_consensus": true,
           "fighter_moneyline": 300,
           "opponent_moneyline": -400,
-          "source_quote_age_seconds": 62.916931,
-          "source_quote_updated_at_utc": "2026-09-02T23:25:45.000000Z"
+          "source_quote_age_seconds": 30.528291,
+          "source_quote_updated_at_utc": "2026-09-03T17:27:40.000000Z"
         },
         {
           "book": "BetRivers",
           "eligible_for_consensus": true,
           "fighter_moneyline": 300,
           "opponent_moneyline": -400,
-          "source_quote_age_seconds": 139.916931,
-          "source_quote_updated_at_utc": "2026-09-02T23:24:28.000000Z"
+          "source_quote_age_seconds": 53.528291,
+          "source_quote_updated_at_utc": "2026-09-03T17:27:17.000000Z"
         },
         {
           "book": "BetUS",
           "eligible_for_consensus": true,
           "fighter_moneyline": 309,
           "opponent_moneyline": -400,
-          "source_quote_age_seconds": 60.916931,
-          "source_quote_updated_at_utc": "2026-09-02T23:25:47.000000Z"
+          "source_quote_age_seconds": 31.528291,
+          "source_quote_updated_at_utc": "2026-09-03T17:27:39.000000Z"
         },
         {
           "book": "Bovada",
           "eligible_for_consensus": true,
           "fighter_moneyline": 310,
           "opponent_moneyline": -390,
-          "source_quote_age_seconds": 238.916931,
-          "source_quote_updated_at_utc": "2026-09-02T23:22:49.000000Z"
+          "source_quote_age_seconds": 331.528291,
+          "source_quote_updated_at_utc": "2026-09-03T17:22:39.000000Z"
         },
         {
           "book": "DraftKings",
           "eligible_for_consensus": true,
-          "fighter_moneyline": 320,
-          "opponent_moneyline": -410,
-          "source_quote_age_seconds": 84.916931,
-          "source_quote_updated_at_utc": "2026-09-02T23:25:23.000000Z"
+          "fighter_moneyline": 310,
+          "opponent_moneyline": -395,
+          "source_quote_age_seconds": 31.528291,
+          "source_quote_updated_at_utc": "2026-09-03T17:27:39.000000Z"
         },
         {
           "book": "FanDuel",
           "eligible_for_consensus": true,
           "fighter_moneyline": 290,
           "opponent_moneyline": -410,
-          "source_quote_age_seconds": 8.916931,
-          "source_quote_updated_at_utc": "2026-09-02T23:26:39.000000Z"
+          "source_quote_age_seconds": 3.528291,
+          "source_quote_updated_at_utc": "2026-09-03T17:28:07.000000Z"
         },
         {
           "book": "Hard Rock Bet",
           "eligible_for_consensus": true,
           "fighter_moneyline": 300,
           "opponent_moneyline": -400,
-          "source_quote_age_seconds": 61.916931,
-          "source_quote_updated_at_utc": "2026-09-02T23:25:46.000000Z"
+          "source_quote_age_seconds": 2.528291,
+          "source_quote_updated_at_utc": "2026-09-03T17:28:08.000000Z"
         }
       ],
       "current_signal": {
         "action_name": null,
         "best_candidate_name": "Trevor Peek",
         "best_candidate_side": "fighter",
-        "break_even_probability": 0.23809523809523808,
+        "break_even_probability": 0.24390243902439024,
         "consensus_book_count": 10,
         "consensus_books": [
           "Bally Bet",
           "BetAnything",
-          "BetMGM",
           "BetOnline.ag",
           "betPARX",
           "BetRivers",
           "BetUS",
           "Bovada",
+          "DraftKings",
           "FanDuel",
           "Hard Rock Bet"
         ],
-        "decision_id": "424a9c61ba2dd6ffa437d5f9f40032bb8166fdd9fb3b974691b07a71eaaaf51c",
-        "estimated_expected_return": 0.007685824869651636,
-        "market_fair_moneyline": 317,
-        "market_probability": 0.23992519639753612,
+        "decision_id": "a92531f202f1e3b5b4d0cc43b279df41ec69c43e16346cb0f8d5093b9aac7000",
+        "estimated_expected_return": -0.018765365980827453,
+        "market_fair_moneyline": 318,
+        "market_probability": 0.23932552049248113,
         "minimum_expected_return": 0.05,
         "model_probability_for_fighter": 0.35991107059999994,
         "model_weight": 0.0,
-        "observed_at_utc": "2026-09-02T23:26:47.916931Z",
-        "offered_moneyline": 320,
+        "observed_at_utc": "2026-09-03T17:28:10.528291Z",
+        "offered_moneyline": 310,
         "paper_action": "pass",
-        "probability_edge": 0.0018299583022980126,
+        "probability_edge": -0.004576918531909113,
         "probability_source": "leave_one_book_out_no_vig_market_consensus",
-        "reason": "Pass: best estimated EV is 0.8%, below the 5.0% paper threshold.",
-        "target_book": "DraftKings",
+        "reason": "Pass: best estimated EV is -1.9%, below the 5.0% paper threshold.",
+        "target_book": "BetMGM",
         "target_book_excluded_from_consensus": true
       },
       "current_signal_unavailable_reason": null,
@@ -1478,9 +1624,9 @@
           "Hard Rock Bet"
         ],
         "fighter_fair_moneyline": 319,
-        "fighter_probability": 0.23888605342102504,
+        "fighter_probability": 0.2388090967943541,
         "opponent_fair_moneyline": -319,
-        "opponent_probability": 0.7611139465789749
+        "opponent_probability": 0.7611909032056459
       },
       "locked_t24_bayesian_filter": null,
       "locked_t24_decision": null,
@@ -1497,88 +1643,88 @@
           "eligible_for_consensus": true,
           "fighter_moneyline": 160,
           "opponent_moneyline": -200,
-          "source_quote_age_seconds": 62.916931,
-          "source_quote_updated_at_utc": "2026-09-02T23:25:45.000000Z"
+          "source_quote_age_seconds": 4.528291,
+          "source_quote_updated_at_utc": "2026-09-03T17:28:06.000000Z"
         },
         {
           "book": "BetAnything",
           "eligible_for_consensus": true,
-          "fighter_moneyline": 150,
-          "opponent_moneyline": -180,
-          "source_quote_age_seconds": 34.916931,
-          "source_quote_updated_at_utc": "2026-09-02T23:26:13.000000Z"
+          "fighter_moneyline": 165,
+          "opponent_moneyline": -195,
+          "source_quote_age_seconds": 153.528291,
+          "source_quote_updated_at_utc": "2026-09-03T17:25:37.000000Z"
         },
         {
           "book": "BetMGM",
           "eligible_for_consensus": true,
           "fighter_moneyline": 165,
           "opponent_moneyline": -200,
-          "source_quote_age_seconds": 62.916931,
-          "source_quote_updated_at_utc": "2026-09-02T23:25:45.000000Z"
+          "source_quote_age_seconds": 4.528291,
+          "source_quote_updated_at_utc": "2026-09-03T17:28:06.000000Z"
         },
         {
           "book": "BetOnline.ag",
           "eligible_for_consensus": true,
-          "fighter_moneyline": 153,
-          "opponent_moneyline": -180,
-          "source_quote_age_seconds": 46.916931,
-          "source_quote_updated_at_utc": "2026-09-02T23:26:01.000000Z"
+          "fighter_moneyline": 165,
+          "opponent_moneyline": -195,
+          "source_quote_age_seconds": 43.528291,
+          "source_quote_updated_at_utc": "2026-09-03T17:27:27.000000Z"
         },
         {
           "book": "betPARX",
           "eligible_for_consensus": true,
           "fighter_moneyline": 160,
           "opponent_moneyline": -200,
-          "source_quote_age_seconds": 62.916931,
-          "source_quote_updated_at_utc": "2026-09-02T23:25:45.000000Z"
+          "source_quote_age_seconds": 30.528291,
+          "source_quote_updated_at_utc": "2026-09-03T17:27:40.000000Z"
         },
         {
           "book": "BetRivers",
           "eligible_for_consensus": true,
           "fighter_moneyline": 160,
           "opponent_moneyline": -200,
-          "source_quote_age_seconds": 139.916931,
-          "source_quote_updated_at_utc": "2026-09-02T23:24:28.000000Z"
+          "source_quote_age_seconds": 53.528291,
+          "source_quote_updated_at_utc": "2026-09-03T17:27:17.000000Z"
         },
         {
           "book": "BetUS",
           "eligible_for_consensus": true,
-          "fighter_moneyline": 150,
-          "opponent_moneyline": -180,
-          "source_quote_age_seconds": 60.916931,
-          "source_quote_updated_at_utc": "2026-09-02T23:25:47.000000Z"
+          "fighter_moneyline": 162,
+          "opponent_moneyline": -195,
+          "source_quote_age_seconds": 31.528291,
+          "source_quote_updated_at_utc": "2026-09-03T17:27:39.000000Z"
         },
         {
           "book": "Bovada",
           "eligible_for_consensus": true,
-          "fighter_moneyline": 158,
-          "opponent_moneyline": -183,
-          "source_quote_age_seconds": 238.916931,
-          "source_quote_updated_at_utc": "2026-09-02T23:22:49.000000Z"
+          "fighter_moneyline": 163,
+          "opponent_moneyline": -190,
+          "source_quote_age_seconds": 331.528291,
+          "source_quote_updated_at_utc": "2026-09-03T17:22:39.000000Z"
         },
         {
           "book": "DraftKings",
           "eligible_for_consensus": true,
-          "fighter_moneyline": 154,
-          "opponent_moneyline": -185,
-          "source_quote_age_seconds": 84.916931,
-          "source_quote_updated_at_utc": "2026-09-02T23:25:23.000000Z"
+          "fighter_moneyline": 160,
+          "opponent_moneyline": -192,
+          "source_quote_age_seconds": 31.528291,
+          "source_quote_updated_at_utc": "2026-09-03T17:27:39.000000Z"
         },
         {
           "book": "FanDuel",
           "eligible_for_consensus": true,
           "fighter_moneyline": 154,
           "opponent_moneyline": -200,
-          "source_quote_age_seconds": 8.916931,
-          "source_quote_updated_at_utc": "2026-09-02T23:26:39.000000Z"
+          "source_quote_age_seconds": 3.528291,
+          "source_quote_updated_at_utc": "2026-09-03T17:28:07.000000Z"
         },
         {
           "book": "Hard Rock Bet",
           "eligible_for_consensus": true,
           "fighter_moneyline": 160,
           "opponent_moneyline": -200,
-          "source_quote_age_seconds": 61.916931,
-          "source_quote_updated_at_utc": "2026-09-02T23:25:46.000000Z"
+          "source_quote_age_seconds": 2.528291,
+          "source_quote_updated_at_utc": "2026-09-03T17:28:08.000000Z"
         }
       ],
       "current_signal": {
@@ -1599,19 +1745,19 @@
           "FanDuel",
           "Hard Rock Bet"
         ],
-        "decision_id": "9c683ffff6806590350d335d94eb75ba53a207627b2e38bff6aebbd2fdf92fc6",
-        "estimated_expected_return": -0.01025981686251487,
-        "market_fair_moneyline": 168,
-        "market_probability": 0.37348686156131516,
+        "decision_id": "4a55ba2ab15199eae367ec1e9cdaa51f8d08f182580923065400e45939208412",
+        "estimated_expected_return": -0.02907587566191472,
+        "market_fair_moneyline": 173,
+        "market_probability": 0.3663864620143718,
         "minimum_expected_return": 0.05,
         "model_probability_for_fighter": 0.35023962750000004,
         "model_weight": 0.0,
-        "observed_at_utc": "2026-09-02T23:26:47.916931Z",
+        "observed_at_utc": "2026-09-03T17:28:10.528291Z",
         "offered_moneyline": 165,
         "paper_action": "pass",
-        "probability_edge": -0.0038716290047225987,
+        "probability_edge": -0.010972028551665958,
         "probability_source": "leave_one_book_out_no_vig_market_consensus",
-        "reason": "Pass: best estimated EV is -1.0%, below the 5.0% paper threshold.",
+        "reason": "Pass: best estimated EV is -2.9%, below the 5.0% paper threshold.",
         "target_book": "BetMGM",
         "target_book_excluded_from_consensus": true
       },
@@ -1633,10 +1779,10 @@
           "FanDuel",
           "Hard Rock Bet"
         ],
-        "fighter_fair_moneyline": 169,
-        "fighter_probability": 0.37239221806778927,
-        "opponent_fair_moneyline": -169,
-        "opponent_probability": 0.6276077819322108
+        "fighter_fair_moneyline": 173,
+        "fighter_probability": 0.36593730938874985,
+        "opponent_fair_moneyline": -173,
+        "opponent_probability": 0.6340626906112501
       },
       "locked_t24_bayesian_filter": null,
       "locked_t24_decision": null,
@@ -1653,80 +1799,80 @@
           "eligible_for_consensus": true,
           "fighter_moneyline": -375,
           "opponent_moneyline": 280,
-          "source_quote_age_seconds": 62.916931,
-          "source_quote_updated_at_utc": "2026-09-02T23:25:45.000000Z"
+          "source_quote_age_seconds": 4.528291,
+          "source_quote_updated_at_utc": "2026-09-03T17:28:06.000000Z"
         },
         {
           "book": "BetAnything",
           "eligible_for_consensus": true,
-          "fighter_moneyline": -350,
-          "opponent_moneyline": 270,
-          "source_quote_age_seconds": 34.916931,
-          "source_quote_updated_at_utc": "2026-09-02T23:26:13.000000Z"
+          "fighter_moneyline": -360,
+          "opponent_moneyline": 240,
+          "source_quote_age_seconds": 153.528291,
+          "source_quote_updated_at_utc": "2026-09-03T17:25:37.000000Z"
         },
         {
           "book": "BetOnline.ag",
           "eligible_for_consensus": true,
-          "fighter_moneyline": -350,
-          "opponent_moneyline": 280,
-          "source_quote_age_seconds": 46.916931,
-          "source_quote_updated_at_utc": "2026-09-02T23:26:01.000000Z"
+          "fighter_moneyline": -360,
+          "opponent_moneyline": 291,
+          "source_quote_age_seconds": 43.528291,
+          "source_quote_updated_at_utc": "2026-09-03T17:27:27.000000Z"
         },
         {
           "book": "betPARX",
           "eligible_for_consensus": true,
           "fighter_moneyline": -375,
           "opponent_moneyline": 280,
-          "source_quote_age_seconds": 62.916931,
-          "source_quote_updated_at_utc": "2026-09-02T23:25:45.000000Z"
+          "source_quote_age_seconds": 30.528291,
+          "source_quote_updated_at_utc": "2026-09-03T17:27:40.000000Z"
         },
         {
           "book": "BetRivers",
           "eligible_for_consensus": true,
           "fighter_moneyline": -375,
           "opponent_moneyline": 280,
-          "source_quote_age_seconds": 139.916931,
-          "source_quote_updated_at_utc": "2026-09-02T23:24:28.000000Z"
+          "source_quote_age_seconds": 53.528291,
+          "source_quote_updated_at_utc": "2026-09-03T17:27:17.000000Z"
         },
         {
           "book": "BetUS",
           "eligible_for_consensus": true,
-          "fighter_moneyline": -350,
-          "opponent_moneyline": 279,
-          "source_quote_age_seconds": 60.916931,
-          "source_quote_updated_at_utc": "2026-09-02T23:25:47.000000Z"
+          "fighter_moneyline": -360,
+          "opponent_moneyline": 285,
+          "source_quote_age_seconds": 31.528291,
+          "source_quote_updated_at_utc": "2026-09-03T17:27:39.000000Z"
         },
         {
           "book": "Bovada",
           "eligible_for_consensus": true,
           "fighter_moneyline": -380,
           "opponent_moneyline": 300,
-          "source_quote_age_seconds": 238.916931,
-          "source_quote_updated_at_utc": "2026-09-02T23:22:49.000000Z"
+          "source_quote_age_seconds": 331.528291,
+          "source_quote_updated_at_utc": "2026-09-03T17:22:39.000000Z"
         },
         {
           "book": "DraftKings",
           "eligible_for_consensus": true,
           "fighter_moneyline": -375,
           "opponent_moneyline": 295,
-          "source_quote_age_seconds": 84.916931,
-          "source_quote_updated_at_utc": "2026-09-02T23:25:23.000000Z"
+          "source_quote_age_seconds": 31.528291,
+          "source_quote_updated_at_utc": "2026-09-03T17:27:39.000000Z"
         },
         {
           "book": "FanDuel",
           "eligible_for_consensus": true,
           "fighter_moneyline": -390,
           "opponent_moneyline": 280,
-          "source_quote_age_seconds": 8.916931,
-          "source_quote_updated_at_utc": "2026-09-02T23:26:39.000000Z"
+          "source_quote_age_seconds": 3.528291,
+          "source_quote_updated_at_utc": "2026-09-03T17:28:07.000000Z"
         },
         {
           "book": "Hard Rock Bet",
           "eligible_for_consensus": true,
           "fighter_moneyline": -375,
           "opponent_moneyline": 275,
-          "source_quote_age_seconds": 61.916931,
-          "source_quote_updated_at_utc": "2026-09-02T23:25:46.000000Z"
+          "source_quote_age_seconds": 2.528291,
+          "source_quote_updated_at_utc": "2026-09-03T17:28:08.000000Z"
         }
       ],
       "current_signal": {
@@ -1746,19 +1892,19 @@
           "FanDuel",
           "Hard Rock Bet"
         ],
-        "decision_id": "d9941d287eea7b110a27b6982e463f182f1a34688f887f47095fb9b261511f27",
-        "estimated_expected_return": 0.003456714289884033,
-        "market_fair_moneyline": 299,
-        "market_probability": 0.2508641785724711,
+        "decision_id": "6ac6617e007b92aae3029ce6808d57102a73a951f6fc24de908df10ee1f0dfb6",
+        "estimated_expected_return": 0.005526174966004049,
+        "market_fair_moneyline": 298,
+        "market_probability": 0.251381543741501,
         "minimum_expected_return": 0.05,
         "model_probability_for_fighter": 0.6449791242,
         "model_weight": 0.0,
-        "observed_at_utc": "2026-09-02T23:26:47.916931Z",
+        "observed_at_utc": "2026-09-03T17:28:10.528291Z",
         "offered_moneyline": 300,
         "paper_action": "pass",
-        "probability_edge": 0.0008641785724710083,
+        "probability_edge": 0.0013815437415010123,
         "probability_source": "leave_one_book_out_no_vig_market_consensus",
-        "reason": "Pass: best estimated EV is 0.3%, below the 5.0% paper threshold.",
+        "reason": "Pass: best estimated EV is 0.6%, below the 5.0% paper threshold.",
         "target_book": "Bovada",
         "target_book_excluded_from_consensus": true
       },
@@ -1780,9 +1926,9 @@
           "Hard Rock Bet"
         ],
         "fighter_fair_moneyline": -300,
-        "fighter_probability": 0.7502222392847759,
+        "fighter_probability": 0.7497566106326491,
         "opponent_fair_moneyline": 300,
-        "opponent_probability": 0.24977776071522406
+        "opponent_probability": 0.2502433893673509
       },
       "locked_t24_bayesian_filter": null,
       "locked_t24_decision": null,
@@ -1797,7 +1943,7 @@
   "minimum_consensus_books_excluding_target": 3,
   "minimum_expected_return": 0.05,
   "model_weight": 0.0,
-  "observed_at_utc": "2026-09-02T23:26:47.916931Z",
+  "observed_at_utc": "2026-09-03T17:28:10.528291Z",
   "paper_only": true,
   "policy_version": "leave-one-book-out-paper-v1",
   "prop_markets": {
@@ -1832,7 +1978,7 @@
             "model_id": "27edefa97ab2ea6fcd132022",
             "model_probability": 0.8402262445241127,
             "model_version": "candidate-discrete-time-competing-risks-v1",
-            "observed_at_utc": "2026-09-02T23:26:47.916931Z",
+            "observed_at_utc": "2026-09-03T17:28:10.528291Z",
             "offered_moneyline": 120,
             "opponent_name": "Salahdine Parnasse",
             "other_book_consensus_count": 0,
@@ -1845,7 +1991,7 @@
             "scheduled_rounds": 5,
             "selection": "Over 2.5 rounds",
             "side": "over",
-            "source_quote_age_seconds": 238.916931,
+            "source_quote_age_seconds": 331.528291,
             "target_book": "Bovada",
             "target_book_excluded_from_market_context": true
           },
@@ -1855,7 +2001,7 @@
               "eligible": true,
               "no_vig_over_probability": 0.4278523489932886,
               "over_moneyline": 120,
-              "source_quote_age_seconds": 238.916931,
+              "source_quote_age_seconds": 331.528291,
               "under_moneyline": -155
             }
           ],
@@ -1871,8 +2017,8 @@
         },
         {
           "best_candidate": {
-            "break_even_probability": 0.33112582781456956,
-            "estimated_expected_return": 1.3427504154631875,
+            "break_even_probability": 0.3246753246753247,
+            "estimated_expected_return": 1.3892951257041783,
             "fighter_name": "Dan Hooker",
             "forecast_issued_at_utc": "2026-09-02T00:18:14.000000Z",
             "line": 3.5,
@@ -1882,21 +2028,21 @@
             "model_id": "27edefa97ab2ea6fcd132022",
             "model_probability": 0.7757451706831747,
             "model_version": "candidate-discrete-time-competing-risks-v1",
-            "observed_at_utc": "2026-09-02T23:26:47.916931Z",
-            "offered_moneyline": 202,
+            "observed_at_utc": "2026-09-03T17:28:10.528291Z",
+            "offered_moneyline": 208,
             "opponent_name": "Salahdine Parnasse",
             "other_book_consensus_count": 3,
-            "other_book_consensus_over_probability": 0.32236965053261074,
+            "other_book_consensus_over_probability": 0.3181818181818181,
             "paper_threshold_met": true,
             "period": "full_fight",
             "positive_expected_value": true,
-            "probability_edge": 0.44461934286860516,
+            "probability_edge": 0.45106984600785005,
             "schedule_basis": "ufcstats_first_listed_main_event",
             "scheduled_rounds": 5,
             "selection": "Over 3.5 rounds",
             "side": "over",
-            "source_quote_age_seconds": 60.916931,
-            "target_book": "BetUS",
+            "source_quote_age_seconds": 43.528291,
+            "target_book": "BetOnline.ag",
             "target_book_excluded_from_market_context": true
           },
           "book_quotes": [
@@ -1905,32 +2051,32 @@
               "eligible": true,
               "no_vig_over_probability": 0.3181818181818181,
               "over_moneyline": 200,
-              "source_quote_age_seconds": 34.916931,
+              "source_quote_age_seconds": 153.528291,
               "under_moneyline": -250
             },
             {
               "book": "BetOnline.ag",
               "eligible": true,
-              "no_vig_over_probability": 0.32236965053261074,
-              "over_moneyline": 196,
-              "source_quote_age_seconds": 46.916931,
-              "under_moneyline": -245
+              "no_vig_over_probability": 0.3125,
+              "over_moneyline": 208,
+              "source_quote_age_seconds": 43.528291,
+              "under_moneyline": -250
             },
             {
               "book": "BetUS",
               "eligible": true,
-              "no_vig_over_probability": 0.3180016591390912,
-              "over_moneyline": 202,
-              "source_quote_age_seconds": 60.916931,
-              "under_moneyline": -245
+              "no_vig_over_probability": 0.3139013452914798,
+              "over_moneyline": 206,
+              "source_quote_age_seconds": 31.528291,
+              "under_moneyline": -250
             },
             {
               "book": "DraftKings",
               "eligible": true,
-              "no_vig_over_probability": 0.32558139534883723,
-              "over_moneyline": 190,
-              "source_quote_age_seconds": 84.916931,
-              "under_moneyline": -250
+              "no_vig_over_probability": 0.31943212067435667,
+              "over_moneyline": 195,
+              "source_quote_age_seconds": 31.528291,
+              "under_moneyline": -260
             }
           ],
           "eligible_quote_count": 4,
@@ -1956,7 +2102,7 @@
             "model_id": "27edefa97ab2ea6fcd132022",
             "model_probability": 0.4294396420031765,
             "model_version": "candidate-discrete-time-competing-risks-v1",
-            "observed_at_utc": "2026-09-02T23:26:47.916931Z",
+            "observed_at_utc": "2026-09-03T17:28:10.528291Z",
             "offered_moneyline": 186,
             "opponent_name": "Nora Cornolle",
             "other_book_consensus_count": 4,
@@ -1969,7 +2115,7 @@
             "scheduled_rounds": 3,
             "selection": "Under 2.5 rounds",
             "side": "under",
-            "source_quote_age_seconds": 60.916931,
+            "source_quote_age_seconds": 31.528291,
             "target_book": "BetUS",
             "target_book_excluded_from_market_context": true
           },
@@ -1979,7 +2125,7 @@
               "eligible": true,
               "no_vig_over_probability": 0.6665837272953471,
               "over_moneyline": -235,
-              "source_quote_age_seconds": 34.916931,
+              "source_quote_age_seconds": 153.528291,
               "under_moneyline": 185
             },
             {
@@ -1987,7 +2133,7 @@
               "eligible": true,
               "no_vig_over_probability": 0.6604857665186733,
               "over_moneyline": -225,
-              "source_quote_age_seconds": 46.916931,
+              "source_quote_age_seconds": 43.528291,
               "under_moneyline": 181
             },
             {
@@ -1995,7 +2141,7 @@
               "eligible": true,
               "no_vig_over_probability": 0.6644295302013423,
               "over_moneyline": -225,
-              "source_quote_age_seconds": 60.916931,
+              "source_quote_age_seconds": 31.528291,
               "under_moneyline": 186
             },
             {
@@ -2003,7 +2149,7 @@
               "eligible": true,
               "no_vig_over_probability": 0.6705882352941177,
               "over_moneyline": -250,
-              "source_quote_age_seconds": 239.916931,
+              "source_quote_age_seconds": 331.528291,
               "under_moneyline": 185
             },
             {
@@ -2011,7 +2157,7 @@
               "eligible": true,
               "no_vig_over_probability": 0.6634806849860613,
               "over_moneyline": -238,
-              "source_quote_age_seconds": 84.916931,
+              "source_quote_age_seconds": 31.528291,
               "under_moneyline": 180
             }
           ],
@@ -2038,7 +2184,7 @@
             "model_id": "27edefa97ab2ea6fcd132022",
             "model_probability": 0.6829448087360024,
             "model_version": "candidate-discrete-time-competing-risks-v1",
-            "observed_at_utc": "2026-09-02T23:26:47.916931Z",
+            "observed_at_utc": "2026-09-03T17:28:10.528291Z",
             "offered_moneyline": 114,
             "opponent_name": "Matthieu Duclos",
             "other_book_consensus_count": 3,
@@ -2051,7 +2197,7 @@
             "scheduled_rounds": 3,
             "selection": "Over 1.5 rounds",
             "side": "over",
-            "source_quote_age_seconds": 60.916931,
+            "source_quote_age_seconds": 31.528291,
             "target_book": "BetUS",
             "target_book_excluded_from_market_context": true
           },
@@ -2061,7 +2207,7 @@
               "eligible": true,
               "no_vig_over_probability": 0.4592085979482169,
               "over_moneyline": 105,
-              "source_quote_age_seconds": 34.916931,
+              "source_quote_age_seconds": 153.528291,
               "under_moneyline": -135
             },
             {
@@ -2069,7 +2215,7 @@
               "eligible": true,
               "no_vig_over_probability": 0.452053476964509,
               "over_moneyline": 111,
-              "source_quote_age_seconds": 46.916931,
+              "source_quote_age_seconds": 43.528291,
               "under_moneyline": -135
             },
             {
@@ -2077,7 +2223,7 @@
               "eligible": true,
               "no_vig_over_probability": 0.448558885283451,
               "over_moneyline": 114,
-              "source_quote_age_seconds": 60.916931,
+              "source_quote_age_seconds": 31.528291,
               "under_moneyline": -135
             },
             {
@@ -2085,7 +2231,7 @@
               "eligible": true,
               "no_vig_over_probability": 0.4458598726114649,
               "over_moneyline": 110,
-              "source_quote_age_seconds": 239.916931,
+              "source_quote_age_seconds": 331.528291,
               "under_moneyline": -145
             }
           ],
@@ -2112,7 +2258,7 @@
             "model_id": "27edefa97ab2ea6fcd132022",
             "model_probability": 0.7012491626391778,
             "model_version": "candidate-discrete-time-competing-risks-v1",
-            "observed_at_utc": "2026-09-02T23:26:47.916931Z",
+            "observed_at_utc": "2026-09-03T17:28:10.528291Z",
             "offered_moneyline": -205,
             "opponent_name": "Fabia Sintes",
             "other_book_consensus_count": 3,
@@ -2125,7 +2271,7 @@
             "scheduled_rounds": 3,
             "selection": "Over 1.5 rounds",
             "side": "over",
-            "source_quote_age_seconds": 46.916931,
+            "source_quote_age_seconds": 43.528291,
             "target_book": "BetOnline.ag",
             "target_book_excluded_from_market_context": true
           },
@@ -2135,7 +2281,7 @@
               "eligible": true,
               "no_vig_over_probability": 0.6564885496183206,
               "over_moneyline": -215,
-              "source_quote_age_seconds": 34.916931,
+              "source_quote_age_seconds": 153.528291,
               "under_moneyline": 180
             },
             {
@@ -2143,7 +2289,7 @@
               "eligible": true,
               "no_vig_over_probability": 0.6413030695048806,
               "over_moneyline": -205,
-              "source_quote_age_seconds": 46.916931,
+              "source_quote_age_seconds": 43.528291,
               "under_moneyline": 166
             },
             {
@@ -2151,7 +2297,7 @@
               "eligible": true,
               "no_vig_over_probability": 0.644729178800233,
               "over_moneyline": -205,
-              "source_quote_age_seconds": 60.916931,
+              "source_quote_age_seconds": 31.528291,
               "under_moneyline": 170
             },
             {
@@ -2159,7 +2305,7 @@
               "eligible": true,
               "no_vig_over_probability": 0.6634806849860613,
               "over_moneyline": -238,
-              "source_quote_age_seconds": 84.916931,
+              "source_quote_age_seconds": 31.528291,
               "under_moneyline": 180
             }
           ],
@@ -2175,8 +2321,8 @@
         },
         {
           "best_candidate": {
-            "break_even_probability": 0.5454545454545454,
-            "estimated_expected_return": 0.024145626906863615,
+            "break_even_probability": 0.5348837209302325,
+            "estimated_expected_return": 0.04438565905917313,
             "fighter_name": "Michael Aljarouj",
             "forecast_issued_at_utc": "2026-09-02T00:18:14.000000Z",
             "line": 2.5,
@@ -2186,20 +2332,20 @@
             "model_id": "27edefa97ab2ea6fcd132022",
             "model_probability": 0.5586248874037437,
             "model_version": "candidate-discrete-time-competing-risks-v1",
-            "observed_at_utc": "2026-09-02T23:26:47.916931Z",
-            "offered_moneyline": -120,
+            "observed_at_utc": "2026-09-03T17:28:10.528291Z",
+            "offered_moneyline": -115,
             "opponent_name": "Fabia Sintes",
             "other_book_consensus_count": 0,
             "other_book_consensus_over_probability": null,
             "paper_threshold_met": false,
             "period": "full_fight",
             "positive_expected_value": true,
-            "probability_edge": 0.013170341949198305,
+            "probability_edge": 0.02374116647351121,
             "schedule_basis": "ufc_standard_non_main_non_title",
             "scheduled_rounds": 3,
             "selection": "Over 2.5 rounds",
             "side": "over",
-            "source_quote_age_seconds": 239.916931,
+            "source_quote_age_seconds": 331.528291,
             "target_book": "Bovada",
             "target_book_excluded_from_market_context": true
           },
@@ -2207,10 +2353,10 @@
             {
               "book": "Bovada",
               "eligible": true,
-              "no_vig_over_probability": 0.5101214574898786,
-              "over_moneyline": -120,
-              "source_quote_age_seconds": 239.916931,
-              "under_moneyline": -110
+              "no_vig_over_probability": 0.5,
+              "over_moneyline": -115,
+              "source_quote_age_seconds": 331.528291,
+              "under_moneyline": -115
             }
           ],
           "eligible_quote_count": 1,
@@ -2225,8 +2371,8 @@
         },
         {
           "best_candidate": {
-            "break_even_probability": 0.34965034965034963,
-            "estimated_expected_return": 0.12696067613708206,
+            "break_even_probability": 0.3460207612456747,
+            "estimated_expected_return": 0.13878194197068794,
             "fighter_name": "Axel Sola",
             "forecast_issued_at_utc": "2026-09-02T00:18:14.000000Z",
             "line": 2.5,
@@ -2236,21 +2382,21 @@
             "model_id": "27edefa97ab2ea6fcd132022",
             "model_probability": 0.3940421944535252,
             "model_version": "candidate-discrete-time-competing-risks-v1",
-            "observed_at_utc": "2026-09-02T23:26:47.916931Z",
-            "offered_moneyline": 186,
+            "observed_at_utc": "2026-09-03T17:28:10.528291Z",
+            "offered_moneyline": 189,
             "opponent_name": "Fares Ziam",
             "other_book_consensus_count": 4,
             "other_book_consensus_over_probability": 0.6543086939869782,
             "paper_threshold_met": true,
             "period": "full_fight",
             "positive_expected_value": true,
-            "probability_edge": 0.04439184480317554,
+            "probability_edge": 0.04802143320785046,
             "schedule_basis": "ufc_standard_non_main_non_title",
             "scheduled_rounds": 3,
             "selection": "Under 2.5 rounds",
             "side": "under",
-            "source_quote_age_seconds": 60.916931,
-            "target_book": "BetUS",
+            "source_quote_age_seconds": 43.528291,
+            "target_book": "BetOnline.ag",
             "target_book_excluded_from_market_context": true
           },
           "book_quotes": [
@@ -2259,23 +2405,23 @@
               "eligible": true,
               "no_vig_over_probability": 0.6428571428571429,
               "over_moneyline": -200,
-              "source_quote_age_seconds": 34.916931,
+              "source_quote_age_seconds": 153.528291,
               "under_moneyline": 170
             },
             {
               "book": "BetOnline.ag",
               "eligible": true,
-              "no_vig_over_probability": 0.662090813093981,
-              "over_moneyline": -220,
-              "source_quote_age_seconds": 46.916931,
-              "under_moneyline": 185
+              "no_vig_over_probability": 0.6667521148423481,
+              "over_moneyline": -225,
+              "source_quote_age_seconds": 43.528291,
+              "under_moneyline": 189
             },
             {
               "book": "BetUS",
               "eligible": true,
               "no_vig_over_probability": 0.6644295302013423,
               "over_moneyline": -225,
-              "source_quote_age_seconds": 60.916931,
+              "source_quote_age_seconds": 31.528291,
               "under_moneyline": 186
             },
             {
@@ -2283,7 +2429,7 @@
               "eligible": true,
               "no_vig_over_probability": 0.6514745308310992,
               "over_moneyline": -225,
-              "source_quote_age_seconds": 238.916931,
+              "source_quote_age_seconds": 331.528291,
               "under_moneyline": 170
             },
             {
@@ -2291,7 +2437,7 @@
               "eligible": true,
               "no_vig_over_probability": 0.6571428571428573,
               "over_moneyline": -230,
-              "source_quote_age_seconds": 84.916931,
+              "source_quote_age_seconds": 31.528291,
               "under_moneyline": 175
             }
           ],
@@ -2318,7 +2464,7 @@
             "model_id": "27edefa97ab2ea6fcd132022",
             "model_probability": 0.42356261376348636,
             "model_version": "candidate-discrete-time-competing-risks-v1",
-            "observed_at_utc": "2026-09-02T23:26:47.916931Z",
+            "observed_at_utc": "2026-09-03T17:28:10.528291Z",
             "offered_moneyline": 140,
             "opponent_name": "Daniil Donchenko",
             "other_book_consensus_count": 3,
@@ -2331,7 +2477,7 @@
             "scheduled_rounds": 3,
             "selection": "Under 1.5 rounds",
             "side": "under",
-            "source_quote_age_seconds": 34.916931,
+            "source_quote_age_seconds": 153.528291,
             "target_book": "BetAnything",
             "target_book_excluded_from_market_context": true
           },
@@ -2341,7 +2487,7 @@
               "eligible": true,
               "no_vig_over_probability": 0.6017699115044248,
               "over_moneyline": -170,
-              "source_quote_age_seconds": 34.916931,
+              "source_quote_age_seconds": 153.528291,
               "under_moneyline": 140
             },
             {
@@ -2349,7 +2495,7 @@
               "eligible": true,
               "no_vig_over_probability": 0.5990922844175491,
               "over_moneyline": -165,
-              "source_quote_age_seconds": 46.916931,
+              "source_quote_age_seconds": 43.528291,
               "under_moneyline": 140
             },
             {
@@ -2357,7 +2503,7 @@
               "eligible": true,
               "no_vig_over_probability": 0.5970807358978257,
               "over_moneyline": -165,
-              "source_quote_age_seconds": 60.916931,
+              "source_quote_age_seconds": 31.528291,
               "under_moneyline": 138
             },
             {
@@ -2365,7 +2511,7 @@
               "eligible": true,
               "no_vig_over_probability": 0.599271402550091,
               "over_moneyline": -175,
-              "source_quote_age_seconds": 84.916931,
+              "source_quote_age_seconds": 31.528291,
               "under_moneyline": 135
             }
           ],
@@ -2392,7 +2538,7 @@
             "model_id": "27edefa97ab2ea6fcd132022",
             "model_probability": 0.591595128975186,
             "model_version": "candidate-discrete-time-competing-risks-v1",
-            "observed_at_utc": "2026-09-02T23:26:47.916931Z",
+            "observed_at_utc": "2026-09-03T17:28:10.528291Z",
             "offered_moneyline": -165,
             "opponent_name": "Daniil Donchenko",
             "other_book_consensus_count": 0,
@@ -2405,7 +2551,7 @@
             "scheduled_rounds": 3,
             "selection": "Under 2.5 rounds",
             "side": "under",
-            "source_quote_age_seconds": 238.916931,
+            "source_quote_age_seconds": 331.528291,
             "target_book": "Bovada",
             "target_book_excluded_from_market_context": true
           },
@@ -2415,7 +2561,7 @@
               "eligible": true,
               "no_vig_over_probability": 0.4165029469548134,
               "over_moneyline": 125,
-              "source_quote_age_seconds": 238.916931,
+              "source_quote_age_seconds": 331.528291,
               "under_moneyline": -165
             }
           ],
@@ -2431,8 +2577,8 @@
         },
         {
           "best_candidate": {
-            "break_even_probability": 0.42016806722689076,
-            "estimated_expected_return": 0.1257680103224541,
+            "break_even_probability": 0.425531914893617,
+            "estimated_expected_return": 0.11157765725116264,
             "fighter_name": "Oumar Sy",
             "forecast_issued_at_utc": "2026-09-02T00:18:14.000000Z",
             "line": 2.5,
@@ -2442,54 +2588,54 @@
             "model_id": "27edefa97ab2ea6fcd132022",
             "model_probability": 0.473011769043048,
             "model_version": "candidate-discrete-time-competing-risks-v1",
-            "observed_at_utc": "2026-09-02T23:26:47.916931Z",
-            "offered_moneyline": 138,
+            "observed_at_utc": "2026-09-03T17:28:10.528291Z",
+            "offered_moneyline": 135,
             "opponent_name": "Modestas Bukauskas",
             "other_book_consensus_count": 4,
-            "other_book_consensus_over_probability": 0.5943427292946,
+            "other_book_consensus_over_probability": 0.589771686262204,
             "paper_threshold_met": true,
             "period": "full_fight",
             "positive_expected_value": true,
-            "probability_edge": 0.05284370181615722,
+            "probability_edge": 0.047479854149430956,
             "schedule_basis": "ufc_standard_non_main_non_title",
             "scheduled_rounds": 3,
             "selection": "Under 2.5 rounds",
             "side": "under",
-            "source_quote_age_seconds": 60.916931,
-            "target_book": "BetUS",
+            "source_quote_age_seconds": 43.528291,
+            "target_book": "BetOnline.ag",
             "target_book_excluded_from_market_context": true
           },
           "book_quotes": [
             {
               "book": "BetAnything",
               "eligible": true,
-              "no_vig_over_probability": 0.5971574706920745,
-              "over_moneyline": -167,
-              "source_quote_age_seconds": 34.916931,
-              "under_moneyline": 137
+              "no_vig_over_probability": 0.5826863354037267,
+              "over_moneyline": -158,
+              "source_quote_age_seconds": 153.528291,
+              "under_moneyline": 128
             },
             {
               "book": "BetOnline.ag",
               "eligible": true,
-              "no_vig_over_probability": 0.5971574706920745,
-              "over_moneyline": -167,
-              "source_quote_age_seconds": 46.916931,
-              "under_moneyline": 137
+              "no_vig_over_probability": 0.5900206578738281,
+              "over_moneyline": -158,
+              "source_quote_age_seconds": 43.528291,
+              "under_moneyline": 135
             },
             {
               "book": "BetUS",
               "eligible": true,
-              "no_vig_over_probability": 0.5970807358978257,
-              "over_moneyline": -165,
-              "source_quote_age_seconds": 60.916931,
-              "under_moneyline": 138
+              "no_vig_over_probability": 0.5901639344262295,
+              "over_moneyline": -160,
+              "source_quote_age_seconds": 31.528291,
+              "under_moneyline": 134
             },
             {
               "book": "Bovada",
               "eligible": true,
               "no_vig_over_probability": 0.5915279878971256,
               "over_moneyline": -170,
-              "source_quote_age_seconds": 239.916931,
+              "source_quote_age_seconds": 331.528291,
               "under_moneyline": 130
             },
             {
@@ -2497,7 +2643,7 @@
               "eligible": true,
               "no_vig_over_probability": 0.5893794380981784,
               "over_moneyline": -166,
-              "source_quote_age_seconds": 84.916931,
+              "source_quote_age_seconds": 31.528291,
               "under_moneyline": 130
             }
           ],
@@ -2524,7 +2670,7 @@
             "model_id": "27edefa97ab2ea6fcd132022",
             "model_probability": 0.6174193104644794,
             "model_version": "candidate-discrete-time-competing-risks-v1",
-            "observed_at_utc": "2026-09-02T23:26:47.916931Z",
+            "observed_at_utc": "2026-09-03T17:28:10.528291Z",
             "offered_moneyline": 114,
             "opponent_name": "Ryan Spann",
             "other_book_consensus_count": 4,
@@ -2537,7 +2683,7 @@
             "scheduled_rounds": 3,
             "selection": "Over 1.5 rounds",
             "side": "over",
-            "source_quote_age_seconds": 60.916931,
+            "source_quote_age_seconds": 31.528291,
             "target_book": "BetUS",
             "target_book_excluded_from_market_context": true
           },
@@ -2545,17 +2691,17 @@
             {
               "book": "BetAnything",
               "eligible": true,
-              "no_vig_over_probability": 0.4592085979482169,
-              "over_moneyline": 105,
-              "source_quote_age_seconds": 34.916931,
-              "under_moneyline": -135
+              "no_vig_over_probability": 0.4693877551020409,
+              "over_moneyline": 100,
+              "source_quote_age_seconds": 153.528291,
+              "under_moneyline": -130
             },
             {
               "book": "BetOnline.ag",
               "eligible": true,
               "no_vig_over_probability": 0.45481163380831546,
               "over_moneyline": 110,
-              "source_quote_age_seconds": 46.916931,
+              "source_quote_age_seconds": 43.528291,
               "under_moneyline": -133
             },
             {
@@ -2563,7 +2709,7 @@
               "eligible": true,
               "no_vig_over_probability": 0.448558885283451,
               "over_moneyline": 114,
-              "source_quote_age_seconds": 60.916931,
+              "source_quote_age_seconds": 31.528291,
               "under_moneyline": -135
             },
             {
@@ -2571,7 +2717,7 @@
               "eligible": true,
               "no_vig_over_probability": 0.4592085979482169,
               "over_moneyline": 105,
-              "source_quote_age_seconds": 239.916931,
+              "source_quote_age_seconds": 331.528291,
               "under_moneyline": -135
             },
             {
@@ -2579,7 +2725,7 @@
               "eligible": true,
               "no_vig_over_probability": 0.4592085979482169,
               "over_moneyline": 105,
-              "source_quote_age_seconds": 84.916931,
+              "source_quote_age_seconds": 31.528291,
               "under_moneyline": -135
             }
           ],
@@ -2606,7 +2752,7 @@
             "model_id": "27edefa97ab2ea6fcd132022",
             "model_probability": 0.4413751125962563,
             "model_version": "candidate-discrete-time-competing-risks-v1",
-            "observed_at_utc": "2026-09-02T23:26:47.916931Z",
+            "observed_at_utc": "2026-09-03T17:28:10.528291Z",
             "offered_moneyline": 202,
             "opponent_name": "Sofia Montenegro",
             "other_book_consensus_count": 4,
@@ -2619,7 +2765,7 @@
             "scheduled_rounds": 3,
             "selection": "Under 2.5 rounds",
             "side": "under",
-            "source_quote_age_seconds": 60.916931,
+            "source_quote_age_seconds": 31.528291,
             "target_book": "BetUS",
             "target_book_excluded_from_market_context": true
           },
@@ -2629,7 +2775,7 @@
               "eligible": true,
               "no_vig_over_probability": 0.6818181818181818,
               "over_moneyline": -250,
-              "source_quote_age_seconds": 34.916931,
+              "source_quote_age_seconds": 153.528291,
               "under_moneyline": 200
             },
             {
@@ -2637,7 +2783,7 @@
               "eligible": true,
               "no_vig_over_probability": 0.6776303494673893,
               "over_moneyline": -245,
-              "source_quote_age_seconds": 46.916931,
+              "source_quote_age_seconds": 43.528291,
               "under_moneyline": 196
             },
             {
@@ -2645,7 +2791,7 @@
               "eligible": true,
               "no_vig_over_probability": 0.6819983408609089,
               "over_moneyline": -245,
-              "source_quote_age_seconds": 60.916931,
+              "source_quote_age_seconds": 31.528291,
               "under_moneyline": 202
             },
             {
@@ -2653,7 +2799,7 @@
               "eligible": true,
               "no_vig_over_probability": 0.6875,
               "over_moneyline": -275,
-              "source_quote_age_seconds": 239.916931,
+              "source_quote_age_seconds": 331.528291,
               "under_moneyline": 200
             },
             {
@@ -2661,7 +2807,7 @@
               "eligible": true,
               "no_vig_over_probability": 0.6805678793256432,
               "over_moneyline": -260,
-              "source_quote_age_seconds": 84.916931,
+              "source_quote_age_seconds": 31.528291,
               "under_moneyline": 195
             }
           ],
@@ -2688,7 +2834,7 @@
             "model_id": "27edefa97ab2ea6fcd132022",
             "model_probability": 0.7538450070450673,
             "model_version": "candidate-discrete-time-competing-risks-v1",
-            "observed_at_utc": "2026-09-02T23:26:47.916931Z",
+            "observed_at_utc": "2026-09-03T17:28:10.528291Z",
             "offered_moneyline": -170,
             "opponent_name": "Kurtis Campbell",
             "other_book_consensus_count": 3,
@@ -2701,7 +2847,7 @@
             "scheduled_rounds": 3,
             "selection": "Over 1.5 rounds",
             "side": "over",
-            "source_quote_age_seconds": 34.916931,
+            "source_quote_age_seconds": 153.528291,
             "target_book": "BetAnything",
             "target_book_excluded_from_market_context": true
           },
@@ -2711,7 +2857,7 @@
               "eligible": true,
               "no_vig_over_probability": 0.6017699115044248,
               "over_moneyline": -170,
-              "source_quote_age_seconds": 34.916931,
+              "source_quote_age_seconds": 153.528291,
               "under_moneyline": 140
             },
             {
@@ -2719,7 +2865,7 @@
               "eligible": true,
               "no_vig_over_probability": 0.6007688895460594,
               "over_moneyline": -170,
-              "source_quote_age_seconds": 46.916931,
+              "source_quote_age_seconds": 43.528291,
               "under_moneyline": 139
             },
             {
@@ -2727,7 +2873,7 @@
               "eligible": true,
               "no_vig_over_probability": 0.6037569709421778,
               "over_moneyline": -170,
-              "source_quote_age_seconds": 60.916931,
+              "source_quote_age_seconds": 31.528291,
               "under_moneyline": 142
             },
             {
@@ -2735,7 +2881,7 @@
               "eligible": true,
               "no_vig_over_probability": 0.6067415730337079,
               "over_moneyline": -180,
-              "source_quote_age_seconds": 84.916931,
+              "source_quote_age_seconds": 31.528291,
               "under_moneyline": 140
             }
           ],
@@ -2762,7 +2908,7 @@
             "model_id": "27edefa97ab2ea6fcd132022",
             "model_probability": 0.6294981222675097,
             "model_version": "candidate-discrete-time-competing-risks-v1",
-            "observed_at_utc": "2026-09-02T23:26:47.916931Z",
+            "observed_at_utc": "2026-09-03T17:28:10.528291Z",
             "offered_moneyline": 120,
             "opponent_name": "Kurtis Campbell",
             "other_book_consensus_count": 0,
@@ -2775,7 +2921,7 @@
             "scheduled_rounds": 3,
             "selection": "Over 2.5 rounds",
             "side": "over",
-            "source_quote_age_seconds": 238.916931,
+            "source_quote_age_seconds": 331.528291,
             "target_book": "Bovada",
             "target_book_excluded_from_market_context": true
           },
@@ -2785,7 +2931,7 @@
               "eligible": true,
               "no_vig_over_probability": 0.4278523489932886,
               "over_moneyline": 120,
-              "source_quote_age_seconds": 238.916931,
+              "source_quote_age_seconds": 331.528291,
               "under_moneyline": -155
             }
           ],
@@ -2801,8 +2947,8 @@
         },
         {
           "best_candidate": {
-            "break_even_probability": 0.3952569169960474,
-            "estimated_expected_return": 0.011883346186463584,
+            "break_even_probability": 0.38910505836575876,
+            "estimated_expected_return": 0.027881501857395685,
             "fighter_name": "Morgan Charriere",
             "forecast_issued_at_utc": "2026-09-02T00:18:14.000000Z",
             "line": 2.5,
@@ -2812,20 +2958,20 @@
             "model_id": "27edefa97ab2ea6fcd132022",
             "model_probability": 0.39995389177330576,
             "model_version": "candidate-discrete-time-competing-risks-v1",
-            "observed_at_utc": "2026-09-02T23:26:47.916931Z",
-            "offered_moneyline": 153,
+            "observed_at_utc": "2026-09-03T17:28:10.528291Z",
+            "offered_moneyline": 157,
             "opponent_name": "Felipe Lima",
             "other_book_consensus_count": 4,
-            "other_book_consensus_over_probability": 0.6197207755262812,
+            "other_book_consensus_over_probability": 0.6241947472745293,
             "paper_threshold_met": false,
             "period": "full_fight",
             "positive_expected_value": true,
-            "probability_edge": 0.004696974777258334,
+            "probability_edge": 0.010848833407546998,
             "schedule_basis": "ufc_standard_non_main_non_title",
             "scheduled_rounds": 3,
             "selection": "Under 2.5 rounds",
             "side": "under",
-            "source_quote_age_seconds": 46.916931,
+            "source_quote_age_seconds": 43.528291,
             "target_book": "BetOnline.ag",
             "target_book_excluded_from_market_context": true
           },
@@ -2833,42 +2979,42 @@
             {
               "book": "BetAnything",
               "eligible": true,
-              "no_vig_over_probability": 0.6017699115044248,
-              "over_moneyline": -170,
-              "source_quote_age_seconds": 34.916931,
-              "under_moneyline": 140
+              "no_vig_over_probability": 0.6233894945490586,
+              "over_moneyline": -185,
+              "source_quote_age_seconds": 153.528291,
+              "under_moneyline": 155
             },
             {
               "book": "BetOnline.ag",
               "eligible": true,
-              "no_vig_over_probability": 0.6192548273048681,
-              "over_moneyline": -180,
-              "source_quote_age_seconds": 46.916931,
-              "under_moneyline": 153
+              "no_vig_over_probability": 0.6252219080807417,
+              "over_moneyline": -185,
+              "source_quote_age_seconds": 43.528291,
+              "under_moneyline": 157
             },
             {
               "book": "BetUS",
               "eligible": true,
-              "no_vig_over_probability": 0.6164383561643836,
-              "over_moneyline": -180,
-              "source_quote_age_seconds": 60.916931,
-              "under_moneyline": 150
+              "no_vig_over_probability": 0.6224665518611737,
+              "over_moneyline": -185,
+              "source_quote_age_seconds": 31.528291,
+              "under_moneyline": 154
             },
             {
               "book": "Bovada",
               "eligible": true,
               "no_vig_over_probability": 0.625,
               "over_moneyline": -200,
-              "source_quote_age_seconds": 238.916931,
+              "source_quote_age_seconds": 331.528291,
               "under_moneyline": 150
             },
             {
               "book": "DraftKings",
               "eligible": true,
-              "no_vig_over_probability": 0.623003194888179,
-              "over_moneyline": -195,
-              "source_quote_age_seconds": 84.916931,
-              "under_moneyline": 150
+              "no_vig_over_probability": 0.6287128712871286,
+              "over_moneyline": -200,
+              "source_quote_age_seconds": 31.528291,
+              "under_moneyline": 154
             }
           ],
           "eligible_quote_count": 5,
@@ -2894,7 +3040,7 @@
             "model_id": "27edefa97ab2ea6fcd132022",
             "model_probability": 0.4636511701710096,
             "model_version": "candidate-discrete-time-competing-risks-v1",
-            "observed_at_utc": "2026-09-02T23:26:47.916931Z",
+            "observed_at_utc": "2026-09-03T17:28:10.528291Z",
             "offered_moneyline": 110,
             "opponent_name": "Muhammad Naimov",
             "other_book_consensus_count": 4,
@@ -2907,7 +3053,7 @@
             "scheduled_rounds": 3,
             "selection": "Over 2.5 rounds",
             "side": "over",
-            "source_quote_age_seconds": 60.916931,
+            "source_quote_age_seconds": 31.528291,
             "target_book": "BetUS",
             "target_book_excluded_from_market_context": true
           },
@@ -2917,7 +3063,7 @@
               "eligible": true,
               "no_vig_over_probability": 0.4592085979482169,
               "over_moneyline": 105,
-              "source_quote_age_seconds": 34.916931,
+              "source_quote_age_seconds": 153.528291,
               "under_moneyline": -135
             },
             {
@@ -2925,7 +3071,7 @@
               "eligible": true,
               "no_vig_over_probability": 0.4608294930875576,
               "over_moneyline": 107,
-              "source_quote_age_seconds": 46.916931,
+              "source_quote_age_seconds": 43.528291,
               "under_moneyline": -130
             },
             {
@@ -2933,7 +3079,7 @@
               "eligible": true,
               "no_vig_over_probability": 0.4572564612326044,
               "over_moneyline": 110,
-              "source_quote_age_seconds": 60.916931,
+              "source_quote_age_seconds": 31.528291,
               "under_moneyline": -130
             },
             {
@@ -2941,7 +3087,7 @@
               "eligible": true,
               "no_vig_over_probability": 0.4592085979482169,
               "over_moneyline": 105,
-              "source_quote_age_seconds": 238.916931,
+              "source_quote_age_seconds": 331.528291,
               "under_moneyline": -135
             },
             {
@@ -2949,7 +3095,7 @@
               "eligible": true,
               "no_vig_over_probability": 0.4592085979482169,
               "over_moneyline": 105,
-              "source_quote_age_seconds": 84.916931,
+              "source_quote_age_seconds": 31.528291,
               "under_moneyline": -135
             }
           ],
@@ -2967,8 +3113,8 @@
       "positive_candidate_count": 14,
       "positive_candidates": [
         {
-          "break_even_probability": 0.33112582781456956,
-          "estimated_expected_return": 1.3427504154631875,
+          "break_even_probability": 0.3246753246753247,
+          "estimated_expected_return": 1.3892951257041783,
           "fighter_name": "Dan Hooker",
           "forecast_issued_at_utc": "2026-09-02T00:18:14.000000Z",
           "line": 3.5,
@@ -2978,21 +3124,21 @@
           "model_id": "27edefa97ab2ea6fcd132022",
           "model_probability": 0.7757451706831747,
           "model_version": "candidate-discrete-time-competing-risks-v1",
-          "observed_at_utc": "2026-09-02T23:26:47.916931Z",
-          "offered_moneyline": 202,
+          "observed_at_utc": "2026-09-03T17:28:10.528291Z",
+          "offered_moneyline": 208,
           "opponent_name": "Salahdine Parnasse",
           "other_book_consensus_count": 3,
-          "other_book_consensus_over_probability": 0.32236965053261074,
+          "other_book_consensus_over_probability": 0.3181818181818181,
           "paper_threshold_met": true,
           "period": "full_fight",
           "positive_expected_value": true,
-          "probability_edge": 0.44461934286860516,
+          "probability_edge": 0.45106984600785005,
           "schedule_basis": "ufcstats_first_listed_main_event",
           "scheduled_rounds": 5,
           "selection": "Over 3.5 rounds",
           "side": "over",
-          "source_quote_age_seconds": 60.916931,
-          "target_book": "BetUS",
+          "source_quote_age_seconds": 43.528291,
+          "target_book": "BetOnline.ag",
           "target_book_excluded_from_market_context": true
         },
         {
@@ -3007,7 +3153,7 @@
           "model_id": "27edefa97ab2ea6fcd132022",
           "model_probability": 0.8402262445241127,
           "model_version": "candidate-discrete-time-competing-risks-v1",
-          "observed_at_utc": "2026-09-02T23:26:47.916931Z",
+          "observed_at_utc": "2026-09-03T17:28:10.528291Z",
           "offered_moneyline": 120,
           "opponent_name": "Salahdine Parnasse",
           "other_book_consensus_count": 0,
@@ -3020,7 +3166,7 @@
           "scheduled_rounds": 5,
           "selection": "Over 2.5 rounds",
           "side": "over",
-          "source_quote_age_seconds": 238.916931,
+          "source_quote_age_seconds": 331.528291,
           "target_book": "Bovada",
           "target_book_excluded_from_market_context": true
         },
@@ -3036,7 +3182,7 @@
           "model_id": "27edefa97ab2ea6fcd132022",
           "model_probability": 0.6829448087360024,
           "model_version": "candidate-discrete-time-competing-risks-v1",
-          "observed_at_utc": "2026-09-02T23:26:47.916931Z",
+          "observed_at_utc": "2026-09-03T17:28:10.528291Z",
           "offered_moneyline": 114,
           "opponent_name": "Matthieu Duclos",
           "other_book_consensus_count": 3,
@@ -3049,7 +3195,7 @@
           "scheduled_rounds": 3,
           "selection": "Over 1.5 rounds",
           "side": "over",
-          "source_quote_age_seconds": 60.916931,
+          "source_quote_age_seconds": 31.528291,
           "target_book": "BetUS",
           "target_book_excluded_from_market_context": true
         },
@@ -3065,7 +3211,7 @@
           "model_id": "27edefa97ab2ea6fcd132022",
           "model_probability": 0.6294981222675097,
           "model_version": "candidate-discrete-time-competing-risks-v1",
-          "observed_at_utc": "2026-09-02T23:26:47.916931Z",
+          "observed_at_utc": "2026-09-03T17:28:10.528291Z",
           "offered_moneyline": 120,
           "opponent_name": "Kurtis Campbell",
           "other_book_consensus_count": 0,
@@ -3078,7 +3224,7 @@
           "scheduled_rounds": 3,
           "selection": "Over 2.5 rounds",
           "side": "over",
-          "source_quote_age_seconds": 238.916931,
+          "source_quote_age_seconds": 331.528291,
           "target_book": "Bovada",
           "target_book_excluded_from_market_context": true
         },
@@ -3094,7 +3240,7 @@
           "model_id": "27edefa97ab2ea6fcd132022",
           "model_probability": 0.4413751125962563,
           "model_version": "candidate-discrete-time-competing-risks-v1",
-          "observed_at_utc": "2026-09-02T23:26:47.916931Z",
+          "observed_at_utc": "2026-09-03T17:28:10.528291Z",
           "offered_moneyline": 202,
           "opponent_name": "Sofia Montenegro",
           "other_book_consensus_count": 4,
@@ -3107,7 +3253,7 @@
           "scheduled_rounds": 3,
           "selection": "Under 2.5 rounds",
           "side": "under",
-          "source_quote_age_seconds": 60.916931,
+          "source_quote_age_seconds": 31.528291,
           "target_book": "BetUS",
           "target_book_excluded_from_market_context": true
         },
@@ -3123,7 +3269,7 @@
           "model_id": "27edefa97ab2ea6fcd132022",
           "model_probability": 0.6174193104644794,
           "model_version": "candidate-discrete-time-competing-risks-v1",
-          "observed_at_utc": "2026-09-02T23:26:47.916931Z",
+          "observed_at_utc": "2026-09-03T17:28:10.528291Z",
           "offered_moneyline": 114,
           "opponent_name": "Ryan Spann",
           "other_book_consensus_count": 4,
@@ -3136,7 +3282,7 @@
           "scheduled_rounds": 3,
           "selection": "Over 1.5 rounds",
           "side": "over",
-          "source_quote_age_seconds": 60.916931,
+          "source_quote_age_seconds": 31.528291,
           "target_book": "BetUS",
           "target_book_excluded_from_market_context": true
         },
@@ -3152,7 +3298,7 @@
           "model_id": "27edefa97ab2ea6fcd132022",
           "model_probability": 0.4294396420031765,
           "model_version": "candidate-discrete-time-competing-risks-v1",
-          "observed_at_utc": "2026-09-02T23:26:47.916931Z",
+          "observed_at_utc": "2026-09-03T17:28:10.528291Z",
           "offered_moneyline": 186,
           "opponent_name": "Nora Cornolle",
           "other_book_consensus_count": 4,
@@ -3165,7 +3311,7 @@
           "scheduled_rounds": 3,
           "selection": "Under 2.5 rounds",
           "side": "under",
-          "source_quote_age_seconds": 60.916931,
+          "source_quote_age_seconds": 31.528291,
           "target_book": "BetUS",
           "target_book_excluded_from_market_context": true
         },
@@ -3181,7 +3327,7 @@
           "model_id": "27edefa97ab2ea6fcd132022",
           "model_probability": 0.7538450070450673,
           "model_version": "candidate-discrete-time-competing-risks-v1",
-          "observed_at_utc": "2026-09-02T23:26:47.916931Z",
+          "observed_at_utc": "2026-09-03T17:28:10.528291Z",
           "offered_moneyline": -170,
           "opponent_name": "Kurtis Campbell",
           "other_book_consensus_count": 3,
@@ -3194,13 +3340,13 @@
           "scheduled_rounds": 3,
           "selection": "Over 1.5 rounds",
           "side": "over",
-          "source_quote_age_seconds": 34.916931,
+          "source_quote_age_seconds": 153.528291,
           "target_book": "BetAnything",
           "target_book_excluded_from_market_context": true
         },
         {
-          "break_even_probability": 0.34965034965034963,
-          "estimated_expected_return": 0.12696067613708206,
+          "break_even_probability": 0.3460207612456747,
+          "estimated_expected_return": 0.13878194197068794,
           "fighter_name": "Axel Sola",
           "forecast_issued_at_utc": "2026-09-02T00:18:14.000000Z",
           "line": 2.5,
@@ -3210,26 +3356,26 @@
           "model_id": "27edefa97ab2ea6fcd132022",
           "model_probability": 0.3940421944535252,
           "model_version": "candidate-discrete-time-competing-risks-v1",
-          "observed_at_utc": "2026-09-02T23:26:47.916931Z",
-          "offered_moneyline": 186,
+          "observed_at_utc": "2026-09-03T17:28:10.528291Z",
+          "offered_moneyline": 189,
           "opponent_name": "Fares Ziam",
           "other_book_consensus_count": 4,
           "other_book_consensus_over_probability": 0.6543086939869782,
           "paper_threshold_met": true,
           "period": "full_fight",
           "positive_expected_value": true,
-          "probability_edge": 0.04439184480317554,
+          "probability_edge": 0.04802143320785046,
           "schedule_basis": "ufc_standard_non_main_non_title",
           "scheduled_rounds": 3,
           "selection": "Under 2.5 rounds",
           "side": "under",
-          "source_quote_age_seconds": 60.916931,
-          "target_book": "BetUS",
+          "source_quote_age_seconds": 43.528291,
+          "target_book": "BetOnline.ag",
           "target_book_excluded_from_market_context": true
         },
         {
-          "break_even_probability": 0.42016806722689076,
-          "estimated_expected_return": 0.1257680103224541,
+          "break_even_probability": 0.425531914893617,
+          "estimated_expected_return": 0.11157765725116264,
           "fighter_name": "Oumar Sy",
           "forecast_issued_at_utc": "2026-09-02T00:18:14.000000Z",
           "line": 2.5,
@@ -3239,21 +3385,50 @@
           "model_id": "27edefa97ab2ea6fcd132022",
           "model_probability": 0.473011769043048,
           "model_version": "candidate-discrete-time-competing-risks-v1",
-          "observed_at_utc": "2026-09-02T23:26:47.916931Z",
-          "offered_moneyline": 138,
+          "observed_at_utc": "2026-09-03T17:28:10.528291Z",
+          "offered_moneyline": 135,
           "opponent_name": "Modestas Bukauskas",
           "other_book_consensus_count": 4,
-          "other_book_consensus_over_probability": 0.5943427292946,
+          "other_book_consensus_over_probability": 0.589771686262204,
           "paper_threshold_met": true,
           "period": "full_fight",
           "positive_expected_value": true,
-          "probability_edge": 0.05284370181615722,
+          "probability_edge": 0.047479854149430956,
           "schedule_basis": "ufc_standard_non_main_non_title",
           "scheduled_rounds": 3,
           "selection": "Under 2.5 rounds",
           "side": "under",
-          "source_quote_age_seconds": 60.916931,
-          "target_book": "BetUS",
+          "source_quote_age_seconds": 43.528291,
+          "target_book": "BetOnline.ag",
+          "target_book_excluded_from_market_context": true
+        },
+        {
+          "break_even_probability": 0.5348837209302325,
+          "estimated_expected_return": 0.04438565905917313,
+          "fighter_name": "Michael Aljarouj",
+          "forecast_issued_at_utc": "2026-09-02T00:18:14.000000Z",
+          "line": 2.5,
+          "market": "total_rounds",
+          "matchup_id": "matchup_4b14d6546c8101cf4e7844a682d653e6a80eb09ed63c589aec54a33e149df254",
+          "minimum_paper_expected_return": 0.05,
+          "model_id": "27edefa97ab2ea6fcd132022",
+          "model_probability": 0.5586248874037437,
+          "model_version": "candidate-discrete-time-competing-risks-v1",
+          "observed_at_utc": "2026-09-03T17:28:10.528291Z",
+          "offered_moneyline": -115,
+          "opponent_name": "Fabia Sintes",
+          "other_book_consensus_count": 0,
+          "other_book_consensus_over_probability": null,
+          "paper_threshold_met": false,
+          "period": "full_fight",
+          "positive_expected_value": true,
+          "probability_edge": 0.02374116647351121,
+          "schedule_basis": "ufc_standard_non_main_non_title",
+          "scheduled_rounds": 3,
+          "selection": "Over 2.5 rounds",
+          "side": "over",
+          "source_quote_age_seconds": 331.528291,
+          "target_book": "Bovada",
           "target_book_excluded_from_market_context": true
         },
         {
@@ -3268,7 +3443,7 @@
           "model_id": "27edefa97ab2ea6fcd132022",
           "model_probability": 0.7012491626391778,
           "model_version": "candidate-discrete-time-competing-risks-v1",
-          "observed_at_utc": "2026-09-02T23:26:47.916931Z",
+          "observed_at_utc": "2026-09-03T17:28:10.528291Z",
           "offered_moneyline": -205,
           "opponent_name": "Fabia Sintes",
           "other_book_consensus_count": 3,
@@ -3281,37 +3456,37 @@
           "scheduled_rounds": 3,
           "selection": "Over 1.5 rounds",
           "side": "over",
-          "source_quote_age_seconds": 46.916931,
+          "source_quote_age_seconds": 43.528291,
           "target_book": "BetOnline.ag",
           "target_book_excluded_from_market_context": true
         },
         {
-          "break_even_probability": 0.5454545454545454,
-          "estimated_expected_return": 0.024145626906863615,
-          "fighter_name": "Michael Aljarouj",
+          "break_even_probability": 0.38910505836575876,
+          "estimated_expected_return": 0.027881501857395685,
+          "fighter_name": "Morgan Charriere",
           "forecast_issued_at_utc": "2026-09-02T00:18:14.000000Z",
           "line": 2.5,
           "market": "total_rounds",
-          "matchup_id": "matchup_4b14d6546c8101cf4e7844a682d653e6a80eb09ed63c589aec54a33e149df254",
+          "matchup_id": "matchup_e77fa0e4f3862227418eef40fbbb1a99437034414985a81107bee615f9da08ca",
           "minimum_paper_expected_return": 0.05,
           "model_id": "27edefa97ab2ea6fcd132022",
-          "model_probability": 0.5586248874037437,
+          "model_probability": 0.39995389177330576,
           "model_version": "candidate-discrete-time-competing-risks-v1",
-          "observed_at_utc": "2026-09-02T23:26:47.916931Z",
-          "offered_moneyline": -120,
-          "opponent_name": "Fabia Sintes",
-          "other_book_consensus_count": 0,
-          "other_book_consensus_over_probability": null,
+          "observed_at_utc": "2026-09-03T17:28:10.528291Z",
+          "offered_moneyline": 157,
+          "opponent_name": "Felipe Lima",
+          "other_book_consensus_count": 4,
+          "other_book_consensus_over_probability": 0.6241947472745293,
           "paper_threshold_met": false,
           "period": "full_fight",
           "positive_expected_value": true,
-          "probability_edge": 0.013170341949198305,
+          "probability_edge": 0.010848833407546998,
           "schedule_basis": "ufc_standard_non_main_non_title",
           "scheduled_rounds": 3,
-          "selection": "Over 2.5 rounds",
-          "side": "over",
-          "source_quote_age_seconds": 239.916931,
-          "target_book": "Bovada",
+          "selection": "Under 2.5 rounds",
+          "side": "under",
+          "source_quote_age_seconds": 43.528291,
+          "target_book": "BetOnline.ag",
           "target_book_excluded_from_market_context": true
         },
         {
@@ -3326,7 +3501,7 @@
           "model_id": "27edefa97ab2ea6fcd132022",
           "model_probability": 0.42356261376348636,
           "model_version": "candidate-discrete-time-competing-risks-v1",
-          "observed_at_utc": "2026-09-02T23:26:47.916931Z",
+          "observed_at_utc": "2026-09-03T17:28:10.528291Z",
           "offered_moneyline": 140,
           "opponent_name": "Daniil Donchenko",
           "other_book_consensus_count": 3,
@@ -3339,37 +3514,8 @@
           "scheduled_rounds": 3,
           "selection": "Under 1.5 rounds",
           "side": "under",
-          "source_quote_age_seconds": 34.916931,
+          "source_quote_age_seconds": 153.528291,
           "target_book": "BetAnything",
-          "target_book_excluded_from_market_context": true
-        },
-        {
-          "break_even_probability": 0.3952569169960474,
-          "estimated_expected_return": 0.011883346186463584,
-          "fighter_name": "Morgan Charriere",
-          "forecast_issued_at_utc": "2026-09-02T00:18:14.000000Z",
-          "line": 2.5,
-          "market": "total_rounds",
-          "matchup_id": "matchup_e77fa0e4f3862227418eef40fbbb1a99437034414985a81107bee615f9da08ca",
-          "minimum_paper_expected_return": 0.05,
-          "model_id": "27edefa97ab2ea6fcd132022",
-          "model_probability": 0.39995389177330576,
-          "model_version": "candidate-discrete-time-competing-risks-v1",
-          "observed_at_utc": "2026-09-02T23:26:47.916931Z",
-          "offered_moneyline": 153,
-          "opponent_name": "Felipe Lima",
-          "other_book_consensus_count": 4,
-          "other_book_consensus_over_probability": 0.6197207755262812,
-          "paper_threshold_met": false,
-          "period": "full_fight",
-          "positive_expected_value": true,
-          "probability_edge": 0.004696974777258334,
-          "schedule_basis": "ufc_standard_non_main_non_title",
-          "scheduled_rounds": 3,
-          "selection": "Under 2.5 rounds",
-          "side": "under",
-          "source_quote_age_seconds": 46.916931,
-          "target_book": "BetOnline.ag",
           "target_book_excluded_from_market_context": true
         }
       ],
@@ -3377,7 +3523,7 @@
       "quote_count": 59
     }
   },
-  "publication_sha256": "260109e58f65fe91871d95052b4f0f9999520ea0ee79547edc4ba948725239de",
+  "publication_sha256": "5cec512657ec703c68e6cf54b3d82ba7d785436ca3a23c05e61565527f1fb846",
   "schema_version": 4,
   "source": "the-odds-api.com",
   "timing_precision": "timestamp",
