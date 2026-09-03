@@ -2073,11 +2073,13 @@ function allUpcomingEventGroups() {
   currentMatchups().forEach((matchup) => matchupIdentityKeys(matchup).forEach((key) => currentByIdentity.set(key, matchup)));
   const oddsByMatchup = new Map();
   (state.upcomingBetBoard?.market_matchups || []).forEach((matchup) => {
-    if (matchup.matchup_id) oddsByMatchup.set(String(matchup.matchup_id), Number(matchup.book_count) || 0);
+    if (matchup.matchup_id) oddsByMatchup.set(String(matchup.matchup_id), matchup);
   });
   (state.upcomingBetBoard?.bets || []).forEach((bet) => {
     if (!bet.matchup_id || oddsByMatchup.has(String(bet.matchup_id))) return;
-    oddsByMatchup.set(String(bet.matchup_id), Math.max(1, Number(bet.consensus_book_count) || 0));
+    oddsByMatchup.set(String(bet.matchup_id), {
+      book_count: Math.max(1, Number(bet.consensus_book_count) || 0),
+    });
   });
   const eventMetadata = new Map((state.allUpcoming.events || []).map((event) => [
     String(event.event_id || `${event.event_date}|${event.event_title}`),
@@ -2110,8 +2112,25 @@ function allUpcomingEventGroups() {
       event_title: published.event_title,
       event_url: published.event_url,
     } : { ...published };
+    const storedMarket = oddsByMatchup.get(String(published.matchup_id)) || {};
+    if (!(merged.book_quotes || []).length && Array.isArray(storedMarket.book_quotes)) {
+      merged.book_quotes = storedMarket.book_quotes;
+    }
+    const storedConsensus = finite(storedMarket.consensus_fighter_probability);
+    if (!merged.full_market_consensus && storedConsensus !== null) {
+      merged.full_market_consensus = {
+        fighter_probability: storedConsensus,
+        opponent_probability: 1 - storedConsensus,
+        book_count: Number(storedMarket.book_count) || 0,
+        captured_at_utc: storedMarket.latest_source_quote_updated_at_utc || "",
+        is_stored_capture: true,
+      };
+    }
+    if (storedMarket.latest_source_quote_updated_at_utc) {
+      merged.market_latest_updated_at_utc = storedMarket.latest_source_quote_updated_at_utc;
+    }
     merged.market_book_count = Math.max(
-      oddsByMatchup.get(String(published.matchup_id)) || 0,
+      Number(storedMarket.book_count) || 0,
       new Set((merged.book_quotes || []).map((quote) => String(quote.book || "")).filter(Boolean)).size,
     );
     grouped.get(eventKey).matchups.push(merged);
@@ -2121,20 +2140,50 @@ function allUpcomingEventGroups() {
     .sort((left, right) => String(left.event_date).localeCompare(String(right.event_date)) || left.event_title.localeCompare(right.event_title));
 }
 
+function upcomingBookPriceDetails(matchup) {
+  const quotes = Array.isArray(matchup.book_quotes) ? matchup.book_quotes : [];
+  if (!quotes.length) return null;
+  const details = element("details", "upcoming-price-details");
+  details.dataset.upcomingBookPrices = "true";
+  details.append(element("summary", "", `${quotes.length} stored book price${quotes.length === 1 ? "" : "s"}`));
+  const body = element("div", "upcoming-price-body");
+  const latest = matchup.market_latest_updated_at_utc || matchup.full_market_consensus?.captured_at_utc;
+  appendText(body, "p", "upcoming-price-note", `Latest source update ${formatTimestamp(latest)}. Stored lines are not guaranteed to still be available.`);
+  const grid = element("div", "upcoming-price-grid");
+  const header = element("div", "upcoming-price-row is-header");
+  ["Sportsbook", matchup.fighter_name, matchup.opponent_name].forEach((value) => appendText(header, "span", "", value));
+  grid.append(header);
+  quotes.forEach((quote) => {
+    const row = element("div", "upcoming-price-row");
+    appendText(row, "strong", "", quote.book || "Unknown book");
+    appendText(row, "span", "", formatOdds(quote.fighter_moneyline));
+    appendText(row, "span", "", formatOdds(quote.opponent_moneyline));
+    grid.append(row);
+  });
+  body.append(grid);
+  details.append(body);
+  return details;
+}
+
 function upcomingBoutDetails(matchup, fighter, opponent) {
   const body = element("div", "upcoming-bout-details");
   const matchupData = element("div", "matchup-row-data");
   const market = element("div", "matchup-market");
   const probability = finite(matchup.full_market_consensus?.fighter_probability);
   const modelProbability = finite(matchup.model_probability_for_fighter);
+  const bookCount = Number(matchup.market_book_count) || 0;
+  const storedMarket = matchup.full_market_consensus?.is_stored_capture === true;
   const left = element("span");
-  appendText(left, "strong", "", probability === null ? "Market unavailable" : `${formatPercent(probability)} / ${formatPercent(1 - probability)}`);
-  appendText(left, "span", "", " no-vig market");
+  appendText(left, "strong", "", probability === null ? (bookCount ? "Consensus unavailable" : "Market unavailable") : `${formatPercent(probability)} / ${formatPercent(1 - probability)}`);
+  appendText(left, "span", "", bookCount ? ` ${storedMarket ? "stored " : ""}no-vig market · ${bookCount} book${bookCount === 1 ? "" : "s"}` : " no-vig market");
   const right = element("span");
   appendText(right, "strong", "", modelProbability === null ? "Model unavailable" : `${formatPercent(modelProbability)} / ${formatPercent(1 - modelProbability)}`);
   appendText(right, "span", "", " model");
   market.append(left, right);
   matchupData.append(market);
+  if (bookCount && matchup.market_latest_updated_at_utc) {
+    appendText(matchupData, "p", "matchup-history-count", `Latest stored price update ${formatTimestamp(matchup.market_latest_updated_at_utc)}`);
+  }
 
   const bayesian = bayesianForMatchup(matchup);
   if (bayesian) {
@@ -2172,17 +2221,25 @@ function upcomingBoutDetails(matchup, fighter, opponent) {
   if (!hasSimulation) simulationButton.title = "A simulation has not been published for this later event yet.";
   const quoteCount = Array.isArray(matchup.book_quotes) ? matchup.book_quotes.length : 0;
   const hasCurrentPrices = Boolean(matchup.fighter_id && matchup.opponent_id && quoteCount);
+  const hasCurrentMarketPage = hasCurrentPrices && publicationMatchesCurrentCard(matchup.event_date, matchup.event_id);
+  const inlinePrices = upcomingBookPriceDetails(matchup);
   const marketButton = actionButton(
-    hasCurrentPrices ? `View ${quoteCount} book prices` : "Prices unavailable",
+    hasCurrentPrices ? (hasCurrentMarketPage ? "Open market research" : `View ${quoteCount} stored prices`) : "Prices unavailable",
     "text-button small-button",
     () => {
-      if (hasCurrentPrices) setRoute(`market/${matchup.fighter_id}/${matchup.opponent_id}`);
+      if (hasCurrentMarketPage) {
+        setRoute(`market/${matchup.fighter_id}/${matchup.opponent_id}`);
+      } else if (inlinePrices) {
+        inlinePrices.open = !inlinePrices.open;
+        if (inlinePrices.open) inlinePrices.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      }
     },
   );
   marketButton.disabled = !hasCurrentPrices;
   if (!hasCurrentPrices) marketButton.title = "No current book-price capture is published for this matchup.";
   actions.append(analyze, graphButton, simulationButton, marketButton);
   body.append(actions);
+  if (inlinePrices) body.append(inlinePrices);
   return body;
 }
 

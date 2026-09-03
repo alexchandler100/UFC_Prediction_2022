@@ -162,11 +162,15 @@ class WebsiteExplorerContractTests(unittest.TestCase):
         self.assertIn("upcoming-bout-details", script)
         self.assertIn("const boutNumber = eventBoutCount - fallbackIndex", script)
         self.assertIn("Bookie odds available from", script)
+        self.assertIn("function upcomingBookPriceDetails", script)
+        self.assertIn("stored book price", script)
+        self.assertIn("Consensus unavailable", script)
         self.assertIn("main event first within each card", script)
         self.assertIn(".upcoming-event-group", style)
         self.assertIn(".upcoming-bout-summary", style)
         self.assertIn(".upcoming-bout-details", style)
         self.assertIn(".upcoming-odds-indicator.has-odds", style)
+        self.assertIn(".upcoming-price-grid", style)
 
     def test_routes_focus_the_requested_data_instead_of_the_tab_hero(self):
         page = (REPO_ROOT / "index.html").read_text(encoding="utf-8")

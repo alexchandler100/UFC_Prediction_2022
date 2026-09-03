@@ -163,6 +163,14 @@ class UpcomingBetBoardTests(unittest.TestCase):
         self.assertEqual(board["market_matched_matchup_count"], 2)
         self.assertEqual(len(board["market_matchups"]), 2)
         self.assertTrue(all(item["book_count"] == 4 for item in board["market_matchups"]))
+        self.assertTrue(all(len(item["book_quotes"]) == 4 for item in board["market_matchups"]))
+        self.assertTrue(
+            all(0.0 < item["consensus_fighter_probability"] < 1.0 for item in board["market_matchups"])
+        )
+        reverse_quotes = board["market_matchups"][1]["book_quotes"]
+        reverse_target = next(item for item in reverse_quotes if item["book"] == "Target Book")
+        self.assertEqual(reverse_target["fighter_moneyline"], 100)
+        self.assertEqual(reverse_target["opponent_moneyline"], -120)
         self.assertEqual(board["qualified_bet_count"], 2)
         self.assertEqual(
             [bet["estimated_expected_return"] for bet in board["bets"]],
@@ -246,6 +254,26 @@ class UpcomingBetBoardTests(unittest.TestCase):
         tampered["publication_sha256"] = canonical_hash(tampered)
 
         with self.assertRaisesRegex(ValueError, "below-policy"):
+            validate_upcoming_bet_board(tampered)
+
+    def test_validator_rejects_an_inconsistent_stored_price_count(self):
+        board = build_upcoming_bet_board(
+            self.forecasts,
+            _event_prices(
+                "source-one",
+                "2026-08-30T20:00:00Z",
+                "Alpha One",
+                "Beta Two",
+            ),
+            observed_at_utc=OBSERVED,
+            source="the-odds-api.com",
+        )
+        tampered = copy.deepcopy(board)
+        tampered["market_matchups"][0]["book_count"] += 1
+        tampered.pop("publication_sha256")
+        tampered["publication_sha256"] = canonical_hash(tampered)
+
+        with self.assertRaisesRegex(ValueError, "stored-price count"):
             validate_upcoming_bet_board(tampered)
 
 

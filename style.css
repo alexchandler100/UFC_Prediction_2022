@@ -112,6 +112,16 @@ a { color: var(--blue); }
 .upcoming-bout-details .card-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); align-content: start; gap: 7px; min-width: 0; }
 .upcoming-bout-details .card-actions button { width: 100%; min-width: 0; white-space: normal; }
 .upcoming-bout-details .card-actions .text-button { margin-left: 0; }
+.upcoming-price-details { grid-column: 1 / -1; min-width: 0; overflow: hidden; border: 1px solid var(--line); border-radius: 10px; background: var(--paper-2); }
+.upcoming-price-details > summary { padding: 10px 12px; color: var(--teal); cursor: pointer; font-size: 12px; font-weight: 800; }
+.upcoming-price-body { min-width: 0; padding: 0 12px 12px; }
+.upcoming-price-note { margin: 0 0 8px; color: var(--ink-soft); font-size: 11px; }
+.upcoming-price-grid { display: grid; min-width: 0; overflow: hidden; border: 1px solid var(--line); border-radius: 8px; }
+.upcoming-price-row { display: grid; grid-template-columns: minmax(86px, 1fr) repeat(2, minmax(58px, .65fr)); min-width: 0; border-top: 1px solid var(--line); }
+.upcoming-price-row:first-child { border-top: 0; }
+.upcoming-price-row > * { min-width: 0; padding: 7px 8px; overflow-wrap: anywhere; font-size: 11px; text-align: right; }
+.upcoming-price-row > :first-child { text-align: left; }
+.upcoming-price-row.is-header { color: var(--ink-soft); background: var(--paper); font-weight: 700; }
 .primary-button, .secondary-button, .text-button { min-height: 42px; padding: 10px 16px; border-radius: 10px; cursor: pointer; font-weight: 700; }
 .primary-button { border: 1px solid var(--navy); color: white; background: var(--navy); }
 .primary-button:hover { background: #243746; }

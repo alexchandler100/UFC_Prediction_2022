@@ -361,6 +361,56 @@ def _book_quotes(
     return sorted(by_book.values(), key=lambda item: str(item["book_key"]))
 
 
+def _stored_book_quotes(
+    observations: Iterable[EarlyMarketObservation],
+    *,
+    reversed_orientation: bool,
+) -> list[dict[str, object]]:
+    """Return the latest captured price from each book, even when it is not fresh."""
+
+    by_book: dict[str, dict[str, object]] = {}
+    for item in observations:
+        if item.market != "h2h":
+            continue
+        fighter_line = (
+            item.outcome_b_moneyline
+            if reversed_orientation
+            else item.outcome_a_moneyline
+        )
+        opponent_line = (
+            item.outcome_a_moneyline
+            if reversed_orientation
+            else item.outcome_b_moneyline
+        )
+        first = _implied_probability(fighter_line)
+        second = _implied_probability(opponent_line)
+        quote = {
+            "book": item.book,
+            "book_key": item.source_book_key.casefold(),
+            "fighter_moneyline": fighter_line,
+            "opponent_moneyline": opponent_line,
+            "no_vig_fighter_probability": first / (first + second),
+            "source_quote_updated_at_utc": item.source_quote_updated_at_utc,
+            "first_observed_at_utc": item.first_observed_at_utc,
+        }
+        key = str(quote["book_key"])
+        current = by_book.get(key)
+        quote_order = (
+            str(quote["source_quote_updated_at_utc"]),
+            str(quote["first_observed_at_utc"]),
+        )
+        current_order = (
+            str(current["source_quote_updated_at_utc"]),
+            str(current["first_observed_at_utc"]),
+        ) if current is not None else None
+        if current_order is None or quote_order > current_order:
+            by_book[key] = quote
+    return sorted(
+        by_book.values(),
+        key=lambda item: (str(item["book"]).casefold(), str(item["book_key"])),
+    )
+
+
 def _qualified_moneyline(
     matchup: Mapping[str, object],
     observations: Iterable[EarlyMarketObservation],
@@ -658,16 +708,27 @@ def build_upcoming_bet_board(
             continue
         matched += 1
         rows, reversed_orientation = source_groups[0]
+        stored_quotes = _stored_book_quotes(
+            rows,
+            reversed_orientation=reversed_orientation,
+        )
+        consensus_probability = (
+            sum(float(item["no_vig_fighter_probability"]) for item in stored_quotes)
+            / len(stored_quotes)
+            if len(stored_quotes) >= 2
+            else None
+        )
         market_matchups.append(
             {
                 "event_id": matchup["event_id"],
                 "matchup_id": matchup["matchup_id"],
-                "book_count": len(
-                    {
-                        (item.source_book_key or item.book).casefold()
-                        for item in rows
-                    }
+                "book_count": len(stored_quotes),
+                "consensus_fighter_probability": consensus_probability,
+                "latest_source_quote_updated_at_utc": max(
+                    str(item["source_quote_updated_at_utc"])
+                    for item in stored_quotes
                 ),
+                "book_quotes": stored_quotes,
             }
         )
         candidate = _qualified_moneyline(
@@ -774,6 +835,45 @@ def validate_upcoming_bet_board(publication: object) -> dict[str, object]:
             book_count = _integer(matchup.get("book_count"))
             if not all(identity) or book_count is None or book_count < 1:
                 raise ValueError("upcoming bet board contains invalid market availability")
+            quotes = matchup.get("book_quotes")
+            # Historical publications contain only the availability count.
+            # Validate the richer contract whenever stored prices are present.
+            if quotes is not None:
+                if not isinstance(quotes, list) or len(quotes) != book_count:
+                    raise ValueError("upcoming bet board stored-price count is inconsistent")
+                book_keys: list[str] = []
+                for quote in quotes:
+                    if not isinstance(quote, dict):
+                        raise ValueError("upcoming bet board contains a non-object stored price")
+                    book_key = _text(quote.get("book_key")).casefold()
+                    fighter_line = _integer(quote.get("fighter_moneyline"))
+                    opponent_line = _integer(quote.get("opponent_moneyline"))
+                    probability = _float(quote.get("no_vig_fighter_probability"))
+                    if (
+                        not _text(quote.get("book"))
+                        or not book_key
+                        or fighter_line is None
+                        or opponent_line is None
+                        or fighter_line == 0
+                        or opponent_line == 0
+                        or abs(fighter_line) < 100
+                        or abs(opponent_line) < 100
+                        or probability is None
+                        or not 0.0 < probability < 1.0
+                    ):
+                        raise ValueError("upcoming bet board contains an invalid stored price")
+                    _utc(quote.get("source_quote_updated_at_utc"), "stored quote update")
+                    _utc(quote.get("first_observed_at_utc"), "stored quote observation")
+                    book_keys.append(book_key)
+                if len(set(book_keys)) != len(book_keys):
+                    raise ValueError("upcoming bet board repeats a stored book price")
+                consensus = _float(matchup.get("consensus_fighter_probability"))
+                if len(quotes) >= 2 and (consensus is None or not 0.0 < consensus < 1.0):
+                    raise ValueError("upcoming bet board stored consensus is invalid")
+                _utc(
+                    matchup.get("latest_source_quote_updated_at_utc"),
+                    "latest stored quote update",
+                )
             identities.append(identity)
         if len(set(identities)) != len(identities):
             raise ValueError("upcoming bet board repeats market availability")
