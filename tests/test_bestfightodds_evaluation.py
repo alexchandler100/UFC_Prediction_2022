@@ -78,6 +78,8 @@ class BestFightOddsEvaluationTests(unittest.TestCase):
         self.assertAlmostEqual(loaded.iloc[0]["model_probability"], 0.70)
         self.assertEqual(metadata["fights"], 1)
         self.assertEqual(len(metadata["sha256"]), 64)
+        self.assertFalse(metadata["training_cutoffs_verified"])
+        self.assertEqual(metadata["kind"], "precomputed_csv_unverified_training_provenance")
 
     def test_precomputed_future_trained_prediction_is_rejected(self):
         source = _predictions()

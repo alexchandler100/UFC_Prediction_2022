@@ -48,7 +48,9 @@ from capture_market_snapshot import (
     _text,
 )
 from fight_stat_helpers import same_name
-from fight_predictor.outcome_publication import validate_outcome_forecast_publication
+from fight_predictor.outcome_publication import (
+    outcome_forecasts_usable, validate_outcome_forecast_publication,
+)
 from market_tracker import (
     METHOD_MARKET_CONTRACT,
     MethodForecastCapture,
@@ -368,7 +370,7 @@ def _outcome_forecasts(event_id: str) -> dict[str, object] | None:
     publication = validate_outcome_forecast_publication(_json_object(
         OUTCOME_FORECAST_PATH.read_bytes(), OUTCOME_FORECAST_PATH
     ))
-    if _text(publication.get("event_id")) != event_id:
+    if _text(publication.get("event_id")) != event_id or not outcome_forecasts_usable(publication):
         return None
     return publication
 
@@ -452,12 +454,21 @@ def _build_current_method_publication(
     """Build the bounded website view from immutable method-price rows."""
 
     event_records = [record for record in records if record.event_id == event_id]
+    # Source start times can be revised after an immutable quote was captured.
+    # Keep those original timestamps; the current report supplies display timing.
     contracts = {
-        (record.event_date, record.event_start_utc, record.contract_version)
+        (record.event_date, record.contract_version)
         for record in event_records
     }
-    if len(contracts) > 1:
+    if contracts and contracts != {(event_date, METHOD_MARKET_CONTRACT)}:
         raise StoreIntegrityError("current method records have conflicting event contracts")
+
+    # A newly rebuilt forecast must not be attributed to earlier price captures.
+    if outcome_forecasts is not None and event_records:
+        issued = pd.to_datetime(outcome_forecasts.get("forecast_issued_at_utc"), utc=True)
+        latest_quote = max(pd.to_datetime(record.observed_at_utc, utc=True) for record in event_records)
+        if pd.isna(issued) or issued > latest_quote:
+            outcome_forecasts = None
 
     forecast_rows = (
         outcome_forecasts.get("matchups", []) if outcome_forecasts is not None else []

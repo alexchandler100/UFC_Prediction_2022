@@ -18,6 +18,8 @@ from typing import Mapping
 import numpy as np
 import pandas as pd
 
+from fight_semantics import SCHEDULE_CONTRACT_VERSION
+
 
 SCHEMA_VERSION = 1
 CALIBRATION_POLICY_VERSION = "bayesian-logistic-total-calibration-v1"
@@ -256,6 +258,14 @@ def fit_total_calibration(frame: pd.DataFrame) -> dict[str, object]:
                 "development_fights": int(len(development)),
                 "holdout_fights": int(len(holdout)),
             }
+            item["status"] = "unavailable"
+            item["reason"] = (
+                f"Needs at least {MINIMUM_CHECK_FIGHTS} fights in both the earlier "
+                "calibration sample and the later check before staking is available."
+            )
+            item["chronological_check"] = chronological_check
+            line_artifacts[str(line)] = item
+            continue
         else:
             development_draws = _posterior_slope_draws(
                 development["model_probability"].to_numpy(dtype=float),
@@ -324,6 +334,7 @@ def fit_total_calibration(frame: pd.DataFrame) -> dict[str, object]:
     body: dict[str, object] = {
         "schema_version": SCHEMA_VERSION,
         "policy_version": CALIBRATION_POLICY_VERSION,
+        "schedule_contract_version": SCHEDULE_CONTRACT_VERSION,
         "candidate_only": True,
         "paper_only": True,
         "execution_enabled": False,
@@ -384,6 +395,9 @@ def validate_total_calibration_artifact(value: object) -> dict[str, object]:
         or artifact.get("execution_enabled") is not False
     ):
         raise ValueError("Bayesian total calibration policy is invalid")
+    schedule_contract = artifact.get("schedule_contract_version")
+    if schedule_contract not in {None, SCHEDULE_CONTRACT_VERSION}:
+        raise ValueError("Bayesian total calibration schedule contract is invalid")
     lines = artifact.get("lines")
     if not isinstance(lines, dict) or not lines:
         raise ValueError("Bayesian total calibration lines are missing")
@@ -396,6 +410,23 @@ def validate_total_calibration_artifact(value: object) -> dict[str, object]:
             continue
         if item.get("status") != "available":
             raise ValueError("Bayesian total calibration status is invalid")
+        # Historical artifacts remain readable for audits and settled records.
+        # Only newly certified artifacts may be used to generate current stakes.
+        if schedule_contract == SCHEDULE_CONTRACT_VERSION:
+            check = item.get("chronological_check")
+            if (
+                int(item.get("training_fights") or 0) < MINIMUM_LINE_FIGHTS
+                or int(item.get("training_events") or 0) < MINIMUM_LINE_EVENTS
+                or not isinstance(check, dict)
+                or check.get("status") != "complete"
+                or int(check.get("development_fights") or 0) < MINIMUM_CHECK_FIGHTS
+                or int(check.get("holdout_fights") or 0) < MINIMUM_CHECK_FIGHTS
+            ):
+                raise ValueError("Bayesian total calibration lacks a supported later-fight check")
+            for metric in ("log_loss_change", "brier_change"):
+                change = float(check.get(metric, math.nan))
+                if not math.isfinite(change) or change > 0.0:
+                    raise ValueError("Bayesian total calibration did not pass its later-fight check")
         posterior = item.get("posterior")
         if not isinstance(posterior, dict):
             raise ValueError("Bayesian total posterior is missing")
@@ -419,6 +450,11 @@ def validate_total_calibration_artifact(value: object) -> dict[str, object]:
 class BayesianTotalCalibrator:
     def __init__(self, artifact: Mapping[str, object]):
         self.artifact = validate_total_calibration_artifact(dict(artifact))
+        if self.artifact.get("schedule_contract_version") != SCHEDULE_CONTRACT_VERSION:
+            raise ValueError(
+                "Historical total calibration lacks independently verified schedules; "
+                "new staking is unavailable until the duration model is rebuilt."
+            )
         rule = self.artifact["staking_rule"]
         self.lower_tail_probability = float(rule["lower_tail_probability"])
         self.maximum_single_bet_fraction = float(
@@ -465,6 +501,7 @@ class BayesianTotalCalibrator:
         return {
             "status": "available",
             "policy_version": CALIBRATION_POLICY_VERSION,
+            "schedule_contract_version": SCHEDULE_CONTRACT_VERSION,
             "calibration_artifact_sha256": self.artifact["artifact_sha256"],
             "calibration_training_fights": item["training_fights"],
             "calibration_training_events": item["training_events"],
@@ -521,6 +558,7 @@ class BayesianTotalCalibrator:
         return {
             "status": "available",
             "policy_version": KELLY_POLICY_VERSION,
+            "schedule_contract_version": SCHEDULE_CONTRACT_VERSION,
             "calibration_artifact_sha256": self.artifact["artifact_sha256"],
             "calibration_training_fights": item["training_fights"],
             "calibration_training_events": item["training_events"],

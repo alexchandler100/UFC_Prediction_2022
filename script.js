@@ -2913,6 +2913,7 @@ function availableMarketBooks() {
   const books = new Set();
   const add = (value) => { if (String(value || "").trim()) books.add(String(value).trim()); };
   (state.upcomingBetBoard?.bets || []).forEach((bet) => add(bet.target_book));
+  (state.upcomingBetBoard?.offers || []).forEach((bet) => add(bet.target_book));
   (state.upcomingBetBoard?.market_matchups || []).forEach((matchup) => (matchup.book_quotes || []).forEach((quote) => add(quote.book)));
   (currentMarket()?.matchups || []).forEach((matchup) => (matchup.book_quotes || []).forEach((quote) => add(quote.book)));
   (currentMarket()?.prop_markets?.total_rounds?.markets || []).forEach((market) => (market.book_quotes || []).forEach((quote) => add(quote.book)));
@@ -2939,7 +2940,7 @@ function renderMarketBookFilter() {
   const details = document.createElement("details");
   details.append(element("summary", "", `Sportsbooks: ${selectedMarketBookLabel()} · change`));
   const body = element("div", "market-book-filter-body");
-  appendText(body, "span", "section-note", "Choose only books you can use. The lists and raw price tables below will hide all other books.");
+  appendText(body, "span", "section-note", "Choose only books you can use. The paper portfolio will select the best eligible offer per fight from these books and recalculate its stakes.");
   const options = element("div", "market-book-options");
   books.forEach((book) => {
     const label = element("label", "market-book-option");
@@ -2961,6 +2962,69 @@ function renderMarketBookFilter() {
     }),
   );
   body.append(options, actions); details.append(body); container.append(details);
+}
+
+function evaluateUpcomingPaperOffers(board, selectedBooks = null, nowMs = Date.now()) {
+  const reasons = {};
+  const reject = (reason) => { reasons[reason] = (reasons[reason] || 0) + 1; };
+  if (!board || board.schema_version !== 2 || board.paper_only !== true || board.execution_enabled !== false || !Array.isArray(board.offers)) {
+    return { bets: [], eligibleOffers: 0, excludedOffers: 0, reasons: { legacy_or_invalid_publication: 1 }, allocatedFraction: 0 };
+  }
+  const threshold = finite(board.minimum_expected_return);
+  if (threshold === null || threshold < 0 || !Number.isFinite(nowMs)) {
+    return { bets: [], eligibleOffers: 0, excludedOffers: board.offers.length, reasons: { invalid_policy: 1 }, allocatedFraction: 0 };
+  }
+  const timestamp = (value) => typeof value === "string" && /(?:Z|[+-]\d{2}:\d{2})$/.test(value) ? Date.parse(value) : NaN;
+  const allowedBooks = selectedBooks === null ? null : new Set([...selectedBooks].map((book) => String(book).toLowerCase()));
+  const eligible = [];
+  board.offers.forEach((offer) => {
+    if (!offer || !offer.event_id || !offer.fighter_id || !offer.opponent_id || offer.fighter_id === offer.opponent_id) { reject("missing_fight_identity"); return; }
+    if (allowedBooks !== null && !allowedBooks.has(String(offer.target_book || "").toLowerCase())) { reject("book_not_selected"); return; }
+    const updated = timestamp(offer.source_quote_updated_at_utc);
+    const start = timestamp(offer.event_start_utc);
+    if (!Number.isFinite(updated)) { reject("missing_source_time"); return; }
+    if (updated > nowMs) { reject("future_source_time"); return; }
+    if (nowMs - updated > 30 * 60 * 1000) { reject("expired_price"); return; }
+    if (!Number.isFinite(start)) { reject("missing_event_start"); return; }
+    if (start <= nowMs) { reject("event_started"); return; }
+    if (offer.category === "Total rounds" && (offer.bayesian_kelly?.schedule_contract_version !== "verified-pre-fight-schedule-v1" || offer.schedule_contract_version !== "verified-pre-fight-schedule-v1" || offer.model_version !== "candidate-discrete-time-competing-risks-v2-verified-schedules" || offer.betting_performance_validated !== true)) { reject("unverified_duration_model"); return; }
+    const assessment = offer.bayesian_kelly;
+    const probability = finite(offer.estimated_win_probability);
+    const calibrated = finite(assessment?.posterior_mean_probability);
+    const floor = finite(assessment?.posterior_lower_probability);
+    const proposed = finite(assessment?.recommended_fraction);
+    const decimal = decimalOdds(offer.offered_moneyline);
+    const meanEv = finite(offer.estimated_expected_return);
+    const floorEv = finite(offer.robust_lower_expected_return);
+    if (assessment?.status !== "available" || probability === null || calibrated === null || floor === null || proposed === null || decimal === null || meanEv === null || floorEv === null || probability <= 0 || probability >= 1 || floor <= 0 || floor > probability || proposed <= 0 || Math.abs(probability - calibrated) > 1e-8 || Math.abs(meanEv - (probability * decimal - 1)) > 1e-8 || Math.abs(floorEv - (floor * decimal - 1)) > 1e-8 || meanEv < threshold || floorEv <= 0) {
+      reject("no_calibrated_positive_edge"); return;
+    }
+    eligible.push({ ...offer, allocated_fraction: 0 });
+  });
+  const textCompare = (left, right) => left < right ? -1 : left > right ? 1 : 0;
+  eligible.sort((left, right) => Number(right.estimated_expected_return) - Number(left.estimated_expected_return)
+    || textCompare(String(left.event_date || ""), String(right.event_date || ""))
+    || textCompare(String(left.event_id), String(right.event_id))
+    || textCompare(String(left.matchup_id || ""), String(right.matchup_id || ""))
+    || textCompare(String(left.selection || "").toLowerCase(), String(right.selection || "").toLowerCase())
+    || textCompare(String(left.target_book || "").toLowerCase(), String(right.target_book || "").toLowerCase())
+    || textCompare(String(left.side || ""), String(right.side || "")));
+  const fights = new Set();
+  const cardAllocation = new Map();
+  let allocatedFraction = 0;
+  const bets = [];
+  eligible.forEach((offer) => {
+    const fight = `${offer.event_id}|${[offer.fighter_id, offer.opponent_id].map(String).sort().join("|")}`;
+    if (fights.has(fight)) { reject("another_offer_for_same_fight"); return; }
+    fights.add(fight);
+    const card = String(offer.event_id);
+    const allocated = Math.max(0, Math.min(0.01, Number(offer.bayesian_kelly.recommended_fraction), 0.05 - (cardAllocation.get(card) || 0), 0.10 - allocatedFraction));
+    if (allocated <= 1e-12) { reject("portfolio_limit"); return; }
+    bets.push({ ...offer, allocated_fraction: allocated });
+    cardAllocation.set(card, (cardAllocation.get(card) || 0) + allocated);
+    allocatedFraction += allocated;
+  });
+  return { bets, eligibleOffers: eligible.length, excludedOffers: board.offers.length - bets.length, reasons, allocatedFraction };
 }
 
 function appendQualifiedBetExplanation(container, bet) {
@@ -2988,14 +3052,14 @@ function appendQualifiedBetExplanation(container, bet) {
       : `the fight is still going at ${cutoffText}`;
     const exactModel = `This is our 2\u00bd-minute fight-outcome logistic model (version ${modelVersion}${modelId ? `; ID ${modelId}` : ""})${issued ? `, frozen ${issued}` : ""}${trainedThrough ? ` and trained only on fights through ${trainedThrough}` : ""}. It is not the Monte Carlo simulator.`;
     cards.push(
-      ["Estimated chance and exact model", `${formatPercent(chance)}. ${exactModel}`],
-      ["How the model gets this number", `It divides a fight into 2\u00bd-minute segments. At each segment it uses 82 pre-fight fighter-versus-opponent differences\u2014ratings, age and size, record and recent form, striking, takedowns, and control\u2014to estimate whether the fight continues or either fighter wins by KO/TKO, submission, decision, or another result. Combining those segment-by-segment chances gives a ${formatPercent(chance)} chance that ${totalMeaning}.`],
+      ["Calibrated chance and exact model", `${formatPercent(chance)} after calibration; the original research estimate was ${formatPercent(bet.raw_estimated_win_probability)}. ${exactModel}`],
+      ["How the model gets this number", `It divides a fight into 2\u00bd-minute segments. At each segment it uses 82 pre-fight fighter-versus-opponent differences\u2014ratings, age and size, record and recent form, striking, takedowns, and control\u2014to estimate whether the fight continues or either fighter wins by KO/TKO, submission, decision, or another result. Those segment-by-segment chances produce the original research estimate that ${totalMeaning}; calibration then checks that estimate against earlier results.`],
     );
 
     const evaluation = state.outcomeEvaluation;
     const metricKey = totalLine === null ? "" : `over_${String(totalLine).replace(".", "_")}_rounds`;
     const totalTest = evaluation?.total_rounds?.[metricKey];
-    if (totalTest && evaluation) {
+    if (totalTest && evaluation?.schedule_contract_version === "verified-pre-fight-schedule-v1") {
       const sampleWarning = Number(totalTest.n) < 100
         ? " That is a small test sample, so this line is especially uncertain."
         : "";
@@ -3005,7 +3069,7 @@ function appendQualifiedBetExplanation(container, bet) {
     const probabilitySource = finite(bet.model_weight) > 0
       ? `This blends the prediction model with the no-vig average from ${formatNumber(bet.consensus_book_count, 0)} other books; the offered book is excluded.`
       : `This is the no-vig average from ${formatNumber(bet.consensus_book_count, 0)} other books. The offered book is excluded so its price is not used to judge itself.`;
-    cards.push(["Estimated chance", `${formatPercent(chance)}. ${probabilitySource}`]);
+    cards.push(["Calibrated estimated chance", `${formatPercent(chance)} after checking how earlier market probabilities matched results. The original research estimate was ${formatPercent(bet.raw_estimated_win_probability)}. ${probabilitySource}`]);
   }
 
   const profitOnWin = decimal === null ? null : decimal - 1;
@@ -3017,7 +3081,7 @@ function appendQualifiedBetExplanation(container, bet) {
       : "A Bayesian logistic calibration measured how reliable earlier market-consensus probabilities were on later completed fights.";
     cards.push(
       ["Bayesian chance range", `${formatPercent(bayesian.posterior_mean_probability)} average, with an 80% range of ${formatPercent(bayesian.posterior_lower_probability)} to ${formatPercent(bayesian.posterior_upper_probability)}. ${calibrationExplanation} The calibration used ${formatNumber(bayesian.calibration_training_fights, 0)} earlier fights across ${formatNumber(bayesian.calibration_training_events, 0)} events.`],
-      ["Robust Bayesian Kelly", `${formatPercent(bayesian.recommended_fraction)} of bankroll. Sizing uses the conservative ${formatPercent(bayesian.posterior_lower_probability)} chance; its uncapped Kelly stake is ${formatPercent(bayesian.robust_uncapped_kelly_fraction)}${bayesian.cap_applied ? `, reduced by the ${formatPercent(bayesian.maximum_single_bet_fraction)} single-bet cap` : ""}. The estimated chance of having a positive edge is ${formatPercent(bayesian.probability_positive_edge)}.`],
+      ["Allocated paper stake", `${formatPercent(bet.allocated_fraction)} of bankroll after portfolio limits. The original robust Bayesian Kelly calculation was ${formatPercent(bayesian.recommended_fraction)} and remains a research sizing reference. Allocation uses at most 1% per fight, 5% per card, and 10% across this snapshot. The conservative ${formatPercent(bayesian.posterior_lower_probability)} chance still implies a positive estimated return.`],
     );
   } else {
     const unavailableReason = String(bet?.bayesian_kelly?.reason || "this market does not yet have a validated uncertainty model")
@@ -3029,9 +3093,7 @@ function appendQualifiedBetExplanation(container, bet) {
     const card = element("div", "qualified-bet-explanation-card");
     appendText(card, "strong", "", title); appendText(card, "span", "", copy); container.append(card);
   });
-  appendText(container, "p", "qualified-bet-explanation-note", isTotal
-    ? "Other totals and moneyline bets on this fight may be related. They remain visible, but treating every displayed Kelly stake as independent can risk too much on one fight; combined sizing is not implemented yet."
-    : "Other bets on this fight may be related. They remain visible, but treating every displayed Kelly stake as independent can risk too much on one fight; combined sizing is not implemented yet.");
+  appendText(container, "p", "qualified-bet-explanation-note", "Only one selection per fight is funded in this paper portfolio. Stakes assume no existing open bets; this website does not know your account exposure or place bets. Prices expire 30 minutes after the source update and when the card starts.");
   if (bet.fighter_id && bet.opponent_id) {
     const action = element("div", "qualified-bet-action");
     action.append(actionButton("View fight research", "secondary-button small-button", () => setRoute(`matchups/${bet.fighter_id}/${bet.opponent_id}`)));
@@ -3044,23 +3106,23 @@ function renderQualifiedUpcomingBets() {
   const container = $("#qualified-upcoming-list");
   container.replaceChildren();
   const board = state.upcomingBetBoard;
-  if (!board || board.paper_only !== true || board.execution_enabled !== false || !Array.isArray(board.bets)) {
+  if (!board || board.paper_only !== true || board.execution_enabled !== false) {
     status.textContent = "No valid all-upcoming paper-bet publication is available yet.";
     container.append(element("div", "empty-state", "The board will appear after the next successful model update and market capture."));
     return;
   }
   const threshold = finite(board.minimum_expected_return);
-  const bets = board.bets
-    .filter((bet) => bet?.threshold_met === true && finite(bet.estimated_expected_return) !== null && (threshold === null || Number(bet.estimated_expected_return) >= threshold))
-    .filter((bet) => marketBookAllowed(bet.target_book))
-    .sort((left, right) => Number(right.estimated_expected_return) - Number(left.estimated_expected_return) || String(left.event_date).localeCompare(String(right.event_date)) || String(left.selection).localeCompare(String(right.selection)));
+  const portfolio = evaluateUpcomingPaperOffers(board, state.marketBookSelection);
+  const bets = portfolio.bets;
   const eventCount = new Set(bets.map((bet) => bet.event_id).filter(Boolean)).size;
   const captured = formatTimestamp(board.observed_at_utc);
   status.textContent = bets.length
-    ? `${bets.length} price${bets.length === 1 ? "" : "s"} across ${eventCount} card${eventCount === 1 ? "" : "s"}, ranked by estimated return at ${selectedMarketBookLabel()}. Minimum ${formatPercent(threshold)} · captured ${captured}.`
-    : `No current price at ${selectedMarketBookLabel()} exceeds the ${formatPercent(threshold)} paper threshold. This is a valid result, not missing data.`;
+    ? `${bets.length} funded paper selection${bets.length === 1 ? "" : "s"} across ${eventCount} card${eventCount === 1 ? "" : "s"}, ranked by estimated return after calibration at ${selectedMarketBookLabel()}. ${formatPercent(portfolio.allocatedFraction)} allocated across this snapshot · captured ${captured}.`
+    : portfolio.reasons.legacy_or_invalid_publication
+      ? "This older publication is research only. No paper stakes are funded until a calibrated portfolio is published."
+      : `No eligible current paper bets at ${selectedMarketBookLabel()}. ${portfolio.reasons.expired_price ? `${portfolio.reasons.expired_price} expired price${portfolio.reasons.expired_price === 1 ? "" : "s"}. ` : ""}${portfolio.reasons.event_started ? `${portfolio.reasons.event_started} offer${portfolio.reasons.event_started === 1 ? "" : "s"} from started cards. ` : ""}Fresh source times, a future card start, and a positive calibrated edge are required.`;
   if (!bets.length) {
-    container.append(element("div", "empty-state", "There are no theoretical paper bets to make at the currently published prices."));
+    container.append(element("div", "empty-state", "No stake is allocated. Eligibility is checked again every minute and whenever the sportsbook selection changes."));
     return;
   }
   bets.forEach((bet, index) => {
@@ -3079,16 +3141,14 @@ function renderQualifiedUpcomingBets() {
     appendText(price, "span", "", "Offered price");
     appendText(price, "strong", "", formatOdds(bet.offered_moneyline));
     const probability = element("div", "qualified-bet-stat");
-    appendText(probability, "span", "", "Estimated chance");
+    appendText(probability, "span", "", "Calibrated chance");
     appendText(probability, "strong", "", formatPercent(bet.estimated_win_probability));
     const expectedReturn = element("div", "qualified-bet-stat qualified-bet-ev");
     appendText(expectedReturn, "span", "", "Estimated return");
     appendText(expectedReturn, "strong", "", formatPercent(bet.estimated_expected_return));
-    const bayesian = bet?.bayesian_kelly?.status === "available" ? bet.bayesian_kelly : null;
     const bayesianKelly = element("div", "qualified-bet-stat");
-    const standardKelly = kellyFraction(bet.estimated_win_probability, bet.offered_moneyline);
-    appendText(bayesianKelly, "span", "", bayesian ? "Bayesian Kelly" : "Standard Kelly");
-    appendText(bayesianKelly, "strong", "", bayesian ? formatPercent(bayesian.recommended_fraction) : formatPercent(standardKelly));
+    appendText(bayesianKelly, "span", "", "Allocated paper stake");
+    appendText(bayesianKelly, "strong", "", formatPercent(bet.allocated_fraction));
 
     const source = element("div", "qualified-bet-source");
     const isCandidateTotal = bet.candidate_only === true || bet.probability_source === "candidate_duration_model" || bet.category === "Total rounds";
@@ -3143,7 +3203,8 @@ function performanceStakePlan(record, staking) {
     const fraction = finite(bayesian?.recommended_fraction);
     const probability = finite(bayesian?.posterior_lower_probability);
     if (bayesian?.status !== "available" || fraction === null || probability === null) return null;
-    return { fraction: Math.max(0, fraction), probability, label: "Conservative Bayesian chance" };
+    const allocated = finite(record.allocated_fraction);
+    return { fraction: Math.max(0, allocated === null ? fraction : Math.min(fraction, allocated)), probability, label: allocated === null ? "Conservative Bayesian chance" : "Published capped paper stake" };
   }
   if (staking === "flat_one_percent") return { fraction: 0.01, probability: published, label: "Published estimate" };
   const ordinaryFactor = staking === "full_kelly" ? 1 : staking === "half_kelly" ? 0.5 : staking === "third_kelly" ? 1 / 3 : null;
@@ -3255,6 +3316,14 @@ function appendPerformanceCell(row, label, content, className = "") {
   row.append(cell);
 }
 
+function fundedPerformanceCounts(rows) {
+  const funded = rows.filter((row) => Number(row.stake) > 1e-12);
+  return { funded: funded.length, zeroStake: rows.length - funded.length,
+    wins: funded.filter((row) => row.status === "won").length,
+    losses: funded.filter((row) => row.status === "lost").length,
+    voids: funded.filter((row) => row.status === "void").length };
+}
+
 function renderBetPerformance() {
   const publication = state.betPerformance;
   const summary = $("#performance-summary"); const rows = $("#performance-rows");
@@ -3280,15 +3349,16 @@ function renderBetPerformance() {
   const bayesianStrategy = staking === "robust_bayesian_kelly";
   const researchStrategy = blendStrategy || bayesianStrategy;
   $("#performance-data-note").textContent = bayesianStrategy
-    ? `${baseDataNote} Robust Bayesian Kelly uses the lower end of the calibrated chance range and caps one bet at 5% of bankroll. It is available for market-consensus moneylines and for newly published fight totals that have a saved Bayesian calibration.`
+    ? `${baseDataNote} New portfolio records use their saved capped allocation. Older robust Bayesian Kelly values remain historical research comparisons. A saved zero stake is an abstention, not a funded bet.`
     : blendStrategy
       ? `${baseDataNote} Research blend: probabilities are averaged in log-odds space before half Kelly is calculated; a bet is excluded when a required saved prediction is unavailable.`
       : baseDataNote;
-  $("#performance-summary-note").textContent = `${result.rows.length} settled bet${result.rows.length === 1 ? "" : "s"} · ${result.wins}-${result.losses}${result.voids ? ` · ${result.voids} void` : ""}${result.pending.length ? ` · ${result.pending.length} pending` : ""}${result.unsupported.length ? ` · ${result.unsupported.length} excluded because this strategy lacks a valid saved estimate` : ""}. Bets from one card are sized from the same pre-card bankroll; stakes are scaled together if they would exceed available cash.`;
+  const fundedCounts = fundedPerformanceCounts(result.rows);
+  $("#performance-summary-note").textContent = `${fundedCounts.funded} funded settled bet${fundedCounts.funded === 1 ? "" : "s"} · ${fundedCounts.wins}-${fundedCounts.losses}${fundedCounts.voids ? ` · ${fundedCounts.voids} void` : ""} · ${fundedCounts.zeroStake} zero-stake record${fundedCounts.zeroStake === 1 ? "" : "s"}${result.pending.length ? ` · ${result.pending.length} pending record${result.pending.length === 1 ? "" : "s"}` : ""}${result.unsupported.length ? ` · ${result.unsupported.length} excluded because this strategy lacks a valid saved estimate` : ""}. This paper replay groups settlements by card and does not track account exposure between cards.`;
   [
     [formatCurrency(result.endingBankroll), "Ending bankroll", `${formatCurrency(result.profit)} total profit`],
     [formatCurrency(result.totalStaked), "Total amount risked", `${formatPercent(result.roi)} return on amount risked`],
-    [`${result.wins}-${result.losses}`, "Win-loss record", `${result.voids} void · ${result.pending.length} pending`],
+    [`${fundedCounts.wins}-${fundedCounts.losses}`, "Funded win-loss record", `${fundedCounts.voids} funded void · ${fundedCounts.zeroStake} zero-stake records`],
     [formatPercent(result.maxDrawdown), "Largest drawdown", "Largest decline from an earlier bankroll high"],
   ].forEach(([value, label, note]) => summary.append(statTile(value, label, note)));
   renderPerformanceChart(result.curve, initial);
@@ -3573,6 +3643,7 @@ async function start() {
   try {
     await loadData();
     populateFilters(); renderCurrentCard(); renderFighterDirectory(); renderMarket(); renderBetPerformance(); bindEvents();
+    window.setInterval(renderQualifiedUpcomingBets, 60 * 1000);
     $("#publication-stamp").textContent = `Dataset through ${formatDate(state.explorer.data_through)} · schema v${state.explorer.schema_version}`;
     const status = $("#header-status"); status.classList.add("is-ready"); status.lastChild.textContent = " Data ready";
     $("#load-message").hidden = true; applyRoute();

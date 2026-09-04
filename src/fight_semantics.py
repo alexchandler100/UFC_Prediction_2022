@@ -13,6 +13,9 @@ import re
 from typing import Mapping
 
 
+SCHEDULE_CONTRACT_VERSION = "verified-pre-fight-schedule-v1"
+
+
 def clean_text(value: object) -> str:
     if value is None:
         return ""
@@ -176,13 +179,16 @@ def upcoming_schedule(bout_index: int, division: object) -> tuple[int, str]:
 
 
 def schedule_from_row(row: Mapping[str, object]) -> tuple[int | None, str]:
-    """Convenience adapter for point-in-time training labels."""
+    """Return independently declared, standard-round schedules for modeling.
 
-    return historical_schedule(
-        time_format=row.get("label_time_format", row.get("time_format")),
-        method=row.get("label_method", row.get("method")),
-        total_fight_seconds=row.get(
-            "label_total_fight_seconds", row.get("total_fight_time")
-        ),
-        finish_round=row.get("label_finish_round", row.get("round")),
-    )
+    A result cannot identify the length originally scheduled for an early
+    finish.  The historical display helper deliberately remains separate;
+    models must not select their five-round sample using eventual results.
+    """
+
+    time_format = row.get("label_time_format", row.get("time_format"))
+    rounds = scheduled_rounds_from_time_format(time_format)
+    lengths = declared_round_lengths_seconds(time_format)
+    if rounds is not None and 1 <= rounds <= 5 and lengths == (300,) * rounds:
+        return rounds, "explicit_time_format"
+    return None, "unknown"

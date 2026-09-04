@@ -5,6 +5,7 @@ import json
 import sys
 import tempfile
 import unittest
+from dataclasses import replace
 from pathlib import Path
 from unittest.mock import patch
 
@@ -123,7 +124,7 @@ def _paper_forecast(
         line=2.5,
         over_probability=0.70,
         model_id="outcome-model-one",
-        model_version="candidate-v1",
+        model_version="candidate-discrete-time-competing-risks-v2-verified-schedules",
         model_trained_through="2026-08-15",
         source_commit_sha="a" * 40,
         source_publication_sha256="b" * 64,
@@ -221,7 +222,7 @@ class TotalRoundsMarketTests(unittest.TestCase):
             line=2.5,
             over_probability=0.58,
             model_id="outcome-model-one",
-            model_version="candidate-v1",
+            model_version="candidate-discrete-time-competing-risks-v2-verified-schedules",
             model_trained_through="2026-08-15",
             source_commit_sha="a" * 40,
             source_publication_sha256="b" * 64,
@@ -235,6 +236,17 @@ class TotalRoundsMarketTests(unittest.TestCase):
         self.assertEqual(candidates[0]["target_book"], "DraftKings")
         self.assertGreater(candidates[0]["estimated_expected_return"], 0.20)
         self.assertEqual(candidates[0]["model_trained_through"], "2026-08-15")
+        offers = view["total_rounds"]["candidate_offers"]
+        self.assertEqual(len(offers), 6)
+        self.assertEqual({offer["target_book"] for offer in offers}, {"DraftKings", "FanDuel", "BetMGM"})
+        self.assertTrue(all(offer["event_start_utc"] and offer["source_quote_updated_at_utc"] for offer in offers))
+        self.assertTrue(all(offer["schedule_contract_version"] == "verified-pre-fight-schedule-v1" for offer in offers))
+        legacy = replace(forecast, model_version="candidate-discrete-time-competing-risks-v1")
+        legacy_view = build_prop_market_view(quotes, (legacy,), capture_id="capture-one")
+        self.assertEqual(legacy_view["total_rounds"]["candidate_offers"], [])
+        self.assertEqual(legacy_view["total_rounds"]["positive_candidates"], [])
+        self.assertEqual(len(legacy_view["total_rounds"]["markets"][0]["book_quotes"]), 3)
+        self.assertFalse(legacy_view["total_rounds"]["markets"][0]["forecast_available"])
         self.assertEqual(
             view["method_of_victory"]["expected_value_status"],
             "unavailable_without_book_price",

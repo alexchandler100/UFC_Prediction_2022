@@ -29,6 +29,7 @@ from fight_predictor.bayesian_logistic_shadow import (
     BayesianLogisticShadowStore,
     build_shadow_forecasts as build_bayesian_logistic_shadow_forecasts,
 )
+from fight_predictor.outcome_model import InsufficientVerifiedScheduleData
 from market_tracker import EarlyMarketObservationStore
 from market_tracker._common import canonical_hash
 from upcoming_bet_board import (
@@ -100,9 +101,15 @@ print('Training and evaluating the candidate outcome/finish-time model')
 outcome_feature_columns = tuple(
     column for column in point_in_time_fights if column.endswith('_diff')
 )
-outcome_model, outcome_evaluation = evaluate_outcome_model(
-    point_in_time_fights, outcome_feature_columns
-)
+try:
+    outcome_model, outcome_evaluation = evaluate_outcome_model(
+        point_in_time_fights, outcome_feature_columns
+    )
+except InsufficientVerifiedScheduleData as error:
+    outcome_model = None
+    outcome_evaluation = {'status': 'unavailable_verified_schedule_history',
+                          'reason': str(error), 'selected_c': 0.0}
+    print(f'Candidate duration model withheld: {error}')
 outcome_training_sha256 = sha256(point_in_time_path.read_bytes()).hexdigest()
 outcome_evaluation['training_input_sha256'] = outcome_training_sha256
 outcome_evaluation['feature_count'] = len(outcome_feature_columns)
@@ -304,6 +311,7 @@ outcome_publication = build_outcome_forecast_publication(
     model_trained_through=str(point_in_time_fights['date'].max()),
     forecast_issued_at_utc=predicted_odds_df['forecast issued at'].iloc[0],
     source_commit_sha=predicted_odds_df['forecast source commit'].iloc[0],
+    unavailable_reason=outcome_evaluation.get('reason', 'Insufficient verified schedule history.'),
 )
 write_outcome_forecast_publication(
     Path(__file__).resolve().parent

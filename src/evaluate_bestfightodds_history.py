@@ -114,9 +114,11 @@ def load_precomputed_predictions(
         raise ValueError("precomputed predictions contain a non-finite probability")
     if not frame["model_probability"].between(0.0, 1.0, inclusive="neither").all():
         raise ValueError("precomputed probabilities must be strictly within (0, 1)")
+    provenance_complete = False
     if "training_through" in frame:
         training = frame["training_through"].fillna("").astype(str).str.strip()
         populated = training.ne("")
+        provenance_complete = bool(populated.all())
         if populated.any():
             parsed_training = pd.to_datetime(training.loc[populated], errors="raise")
             if (parsed_training >= frame.loc[populated, "date"]).any():
@@ -127,7 +129,11 @@ def load_precomputed_predictions(
         ["date", "event_id", "fight_id"], kind="stable"
     ).reset_index(drop=True)
     return frame, {
-        "kind": "precomputed_causal_walk_forward_csv",
+        "kind": (
+            "precomputed_causal_walk_forward_csv" if provenance_complete
+            else "precomputed_csv_unverified_training_provenance"
+        ),
+        "training_cutoffs_verified": provenance_complete,
         "path": str(path),
         "sha256": sha256(payload).hexdigest(),
         "fights": int(len(frame)),

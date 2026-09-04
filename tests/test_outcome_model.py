@@ -3,6 +3,7 @@ from __future__ import annotations
 import sys
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 import pandas as pd
 
@@ -12,7 +13,9 @@ sys.path.insert(0, str(REPO_ROOT / "src"))
 
 from fight_predictor.outcome_model import (  # noqa: E402
     DiscreteTimeOutcomeModel,
+    InsufficientVerifiedScheduleData,
     TERMINAL_OUTCOMES,
+    evaluate_outcome_model,
 )
 from fight_predictor.outcome_publication import (  # noqa: E402
     build_outcome_forecast_publication,
@@ -67,8 +70,39 @@ class OutcomeModelTests(unittest.TestCase):
         frame = _training_frame()
         frame.loc[0, "label_time_format"] = ""
         frame.loc[0, "label_method"] = "KO/TKO"
+        frame.loc[0, "label_finish_round"] = 1
         model = DiscreteTimeOutcomeModel(["skill_diff"]).fit(frame)
         self.assertEqual(model.omitted_unknown_schedule, 1)
+
+    def test_known_five_round_early_finish_is_retained_in_training(self):
+        frame = _training_frame().iloc[:1].copy()
+        frame.loc[0, "label_time_format"] = "5 Rnd (5-5-5-5-5)"
+        frame.loc[0, "label_finish_round"] = 1
+        model = DiscreteTimeOutcomeModel(["skill_diff"])
+        risk = model._risk_rows(frame)
+        self.assertEqual(model.omitted_unknown_schedule, 0)
+        self.assertEqual(risk.iloc[0]["scheduled_rounds"], 5)
+        self.assertEqual(risk.iloc[0]["remaining_seconds"], 1500)
+
+    def test_legacy_fitted_model_cannot_generate_new_probabilities(self):
+        model = DiscreteTimeOutcomeModel(["skill_diff"]).fit(_training_frame())
+        del model.schedule_contract_version
+        with self.assertRaisesRegex(ValueError, "verified schedule contract"):
+            model.predict({"skill_diff": 0.75}, scheduled_rounds=5)
+
+    def test_evaluation_stops_before_fit_when_verified_history_is_insufficient(self):
+        frame = pd.concat([_training_frame()] * 14, ignore_index=True)
+        frame["date"] = pd.Timestamp("2025-01-01")
+        frame["event_id"] = "event-one"
+        frame["bout_order"] = range(len(frame))
+        frame["fight_id"] = [f"fight-{index}" for index in range(len(frame))]
+        frame["label_time_format"] = ""
+        frame["label_finish_round"] = 1
+        with patch.object(DiscreteTimeOutcomeModel, "fit", side_effect=AssertionError("must not fit")):
+            with self.assertRaises(InsufficientVerifiedScheduleData) as caught:
+                evaluate_outcome_model(frame, ["skill_diff"])
+        self.assertEqual(caught.exception.verified_fights, 0)
+        self.assertEqual(caught.exception.excluded_fights, 1008)
 
     def test_upcoming_publication_freezes_method_and_total_probabilities(self):
         model = DiscreteTimeOutcomeModel(["skill_diff"], c_value=0.1).fit(

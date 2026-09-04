@@ -216,6 +216,18 @@ class HistoricalMoneylineProfitabilityTests(unittest.TestCase):
         self.assertEqual(
             status, "fallback_5_percent_no_profitable_earlier_threshold"
         )
+        threshold, _, status = choose_threshold(
+            rows, thresholds=(0.0, 0.05), minimum_bets=10,
+            minimum_events=10, bootstrap_samples=100, allow_abstention=True,
+        )
+        self.assertIsNone(threshold)
+        self.assertEqual(status, "no_bet_no_profitable_earlier_threshold")
+        threshold, _, status = choose_threshold(
+            rows.iloc[:1], thresholds=(0.0, 0.05), minimum_bets=10,
+            minimum_events=10, bootstrap_samples=100, allow_abstention=True,
+        )
+        self.assertIsNone(threshold)
+        self.assertEqual(status, "no_bet_insufficient_history")
 
 
 if __name__ == "__main__":

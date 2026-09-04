@@ -29,6 +29,7 @@ import pandas as pd
 
 from fight_stat_helpers import same_name
 from fight_predictor.outcome_publication import (
+    outcome_forecasts_usable,
     validate_outcome_forecast_publication,
 )
 from market_tracker import (
@@ -780,6 +781,9 @@ def _build_total_round_forecasts(
         counters["total_round_quotes_without_forecast"] = len(quotes)
         return (), counters
     validated = validate_outcome_forecast_publication(publication)
+    if not outcome_forecasts_usable(validated):
+        counters["total_round_quotes_without_forecast"] = len(quotes)
+        return (), counters
     if (
         validated.get("event_id") != quotes[0].event_id
         or _event_date(validated.get("event_date")) != quotes[0].event_date

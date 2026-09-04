@@ -53,13 +53,13 @@ DEFAULT_PAIRED_INPUT = (
     DEFAULT_ANALYSIS_DIRECTORY / "current_model_market_evaluation_2021_2026.csv"
 )
 DEFAULT_REPORT = (
-    DEFAULT_ANALYSIS_DIRECTORY / "rolling_moneyline_profitability_2021_2026.json"
+    DEFAULT_ANALYSIS_DIRECTORY / "rolling_moneyline_profitability_abstention_v2.json"
 )
 DEFAULT_LEDGER = (
-    DEFAULT_ANALYSIS_DIRECTORY / "rolling_moneyline_profitability_2021_2026.csv"
+    DEFAULT_ANALYSIS_DIRECTORY / "rolling_moneyline_profitability_abstention_v2.csv"
 )
 DEFAULT_PREDICTION_LEDGER = (
-    DEFAULT_ANALYSIS_DIRECTORY / "rolling_probability_comparison_2021_2026.csv"
+    DEFAULT_ANALYSIS_DIRECTORY / "rolling_probability_comparison_abstention_v2.csv"
 )
 CANDIDATE_FEATURES = (
     "model_disagreement",
@@ -326,6 +326,7 @@ def evaluate_rolling_profitability(
                 minimum_bets=minimum_selection_bets,
                 minimum_events=minimum_selection_events,
                 bootstrap_samples=bootstrap_samples,
+                allow_abstention=True,
             )
             test_best = best_offer_per_fight(
                 test_values,
@@ -338,6 +339,7 @@ def evaluate_rolling_profitability(
             test_best["threshold_selection_status"] = threshold_status
             test_best["qualifies_selected_threshold"] = (
                 test_best["estimated_ev"] >= selected_threshold
+                if selected_threshold is not None else False
             )
             ledgers.append(test_best)
             selected_rows = test_best.loc[
@@ -431,7 +433,8 @@ def evaluate_rolling_profitability(
     }
     report = {
         "report_schema_version": 1,
-        "experiment_version": "rolling-yearly-fresh-t24-moneyline-v1",
+        "experiment_version": "rolling-yearly-fresh-t24-moneyline-abstention-v2",
+        "no_bet_rule": "No selections when prior data are insufficient or no earlier threshold was profitable; v1 remains historical reference.",
         "created_at_utc": datetime.now(timezone.utc).replace(microsecond=0).isoformat(),
         "paper_only": True,
         "execution_enabled": False,

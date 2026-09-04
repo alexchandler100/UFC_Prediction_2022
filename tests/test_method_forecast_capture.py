@@ -4,12 +4,17 @@ from pathlib import Path
 import sys
 import tempfile
 import unittest
+import json
+from unittest.mock import patch
 
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 
 from capture_method_market_snapshot import _build_method_forecast_captures  # noqa: E402
+import capture_method_market_snapshot as method_collector  # noqa: E402
+from fight_predictor.outcome_publication import OUTCOME_MODEL_VERSION  # noqa: E402
+from fight_semantics import SCHEDULE_CONTRACT_VERSION  # noqa: E402
 from market_tracker import (  # noqa: E402
     MethodForecastCapture,
     MethodForecastStore,
@@ -103,7 +108,9 @@ class MethodForecastCaptureTests(unittest.TestCase):
         publication = {
             "forecast_issued_at_utc": "2026-09-01T12:00:00Z",
             "model_id": "outcome-model-1",
-            "model_version": "candidate-v1",
+            "model_version": OUTCOME_MODEL_VERSION,
+            "schedule_contract_version": SCHEDULE_CONTRACT_VERSION,
+            "forecast_matchup_count": 1,
             "model_trained_through": "2026-08-29",
             "source_commit_sha": "a" * 40,
             "training_input_sha256": "b" * 64,
@@ -126,6 +133,14 @@ class MethodForecastCaptureTests(unittest.TestCase):
         self.assertEqual(missing, 0)
         self.assertEqual(rows[0].capture_id, first.capture_id)
         self.assertEqual(rows[0].horizon, "t24")
+
+    def test_loader_withholds_readable_legacy_outcome_forecast(self):
+        legacy = {"event_id": "event-1", "model_version": "candidate-v1", "forecast_matchup_count": 1}
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "forecasts.json"
+            path.write_text(json.dumps(legacy), encoding="utf-8")
+            with patch.object(method_collector, "OUTCOME_FORECAST_PATH", path), patch.object(method_collector, "validate_outcome_forecast_publication", return_value=legacy):
+                self.assertIsNone(method_collector._outcome_forecasts("event-1"))
 
     def test_store_is_append_only(self):
         forecast = _forecast()

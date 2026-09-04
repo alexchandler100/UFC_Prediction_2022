@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from hashlib import sha256
+from datetime import datetime, timezone
 import json
 from pathlib import Path
 
@@ -16,6 +17,7 @@ from fight_predictor import (
     evaluate_outcome_model,
     write_outcome_forecast_publication,
 )
+from fight_predictor.outcome_model import InsufficientVerifiedScheduleData
 
 
 ROOT = Path(__file__).resolve().parent
@@ -44,7 +46,12 @@ def main() -> int:
     feature_columns = tuple(
         column for column in frame if column.endswith("_diff")
     )
-    model, evaluation = evaluate_outcome_model(frame, feature_columns)
+    try:
+        model, evaluation = evaluate_outcome_model(frame, feature_columns)
+    except InsufficientVerifiedScheduleData as error:
+        model = None
+        evaluation = {"status": "unavailable_verified_schedule_history",
+                      "reason": str(error), "selected_c": 0.0}
     training_hash = sha256(POINT_IN_TIME_PATH.read_bytes()).hexdigest()
     evaluation["training_input_sha256"] = training_hash
     evaluation["feature_count"] = len(feature_columns)
@@ -82,8 +89,9 @@ def main() -> int:
         selected_c=float(evaluation["selected_c"]),
         training_input_sha256=training_hash,
         model_trained_through=str(frame["date"].max()),
-        forecast_issued_at_utc=next(iter(issued)),
+        forecast_issued_at_utc=datetime.now(timezone.utc).isoformat(),
         source_commit_sha=next(iter(commits)),
+        unavailable_reason=evaluation.get("reason", "Insufficient verified schedule history."),
     )
     write_outcome_forecast_publication(FORECAST_PATH, publication)
     print(

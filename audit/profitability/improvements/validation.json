@@ -1,0 +1,113 @@
+{
+  "all_passed": true,
+  "results": [
+    {
+      "pattern": "test_bet_performance.py",
+      "returncode": 0,
+      "seconds": 1.579,
+      "output": "----------------------------------------------------------------------\nRan 6 tests in 0.437s\n\nOK\n"
+    },
+    {
+      "pattern": "test_upcoming_bet_board.py",
+      "returncode": 0,
+      "seconds": 6.0,
+      "output": "----------------------------------------------------------------------\nRan 10 tests in 0.378s\n\nOK\n"
+    },
+    {
+      "pattern": "test_prop_market.py",
+      "returncode": 0,
+      "seconds": 0.546,
+      "output": "----------------------------------------------------------------------\nRan 7 tests in 0.097s\n\nOK\n"
+    },
+    {
+      "pattern": "test_market_opportunities.py",
+      "returncode": 0,
+      "seconds": 0.391,
+      "output": "----------------------------------------------------------------------\nRan 5 tests in 0.028s\n\nOK\n"
+    },
+    {
+      "pattern": "test_capture_market_snapshot.py",
+      "returncode": 0,
+      "seconds": 6.203,
+      "output": "FightOdds retrieval attempt 1 failed; retrying with a fresh browser in 15s (RuntimeError: first)\nFightOdds retrieval attempt 2 failed; retrying with a fresh browser in 60s (RuntimeError: second)\nThe Odds API totals market is unavailable; falling back to h2h only (HTTP 422)\n----------------------------------------------------------------------\nRan 11 tests in 0.378s\n\nOK\n"
+    },
+    {
+      "pattern": "test_method_forecast_capture.py",
+      "returncode": 0,
+      "seconds": 5.672,
+      "output": "----------------------------------------------------------------------\nRan 6 tests in 0.036s\n\nOK\n"
+    },
+    {
+      "pattern": "test_method_market_capture.py",
+      "returncode": 0,
+      "seconds": 6.156,
+      "output": "----------------------------------------------------------------------\nRan 11 tests in 0.055s\n\nOK\n"
+    },
+    {
+      "pattern": "test_bayesian_total_calibration.py",
+      "returncode": 0,
+      "seconds": 1.657,
+      "output": "----------------------------------------------------------------------\nRan 6 tests in 0.500s\n\nOK\n"
+    },
+    {
+      "pattern": "test_outcome_model.py",
+      "returncode": 0,
+      "seconds": 4.531,
+      "output": "C:\\Users\\Alex\\Projects\\GitHub\\UFC_Prediction_2022\\.venv\\Lib\\site-packages\\sklearn\\linear_model\\_logistic.py:456: DeprecationWarning: scipy.optimize: The `disp` and `iprint` options of the L-BFGS-B solver are deprecated and will be removed in SciPy 1.18.0.\n  opt_res = optimize.minimize(\nC:\\Users\\Alex\\Projects\\GitHub\\UFC_Prediction_2022\\.venv\\Lib\\site-packages\\sklearn\\linear_model\\_logistic.py:456: DeprecationWarning: scipy.optimize: The `disp` and `iprint` options of the L-BFGS-B solver are deprecated and will be removed in SciPy 1.18.0.\n  opt_res = optimize.minimize(\nC:\\Users\\Alex\\Projects\\GitHub\\UFC_Prediction_2022\\.venv\\Lib\\site-packages\\sklearn\\linear_model\\_logistic.py:456: DeprecationWarning: scipy.optimize: The `disp` and `iprint` options of the L-BFGS-B solver are deprecated and will be removed in SciPy 1.18.0.\n  opt_res = optimize.minimize(\nC:\\Users\\Alex\\Projects\\GitHub\\UFC_Prediction_2022\\.venv\\Lib\\site-packages\\sklearn\\linear_model\\_logistic.py:456: DeprecationWarning: scipy.optimize: The `disp` and `iprint` options of the L-BFGS-B solver are deprecated and will be removed in SciPy 1.18.0.\n  opt_res = optimize.minimize(\n----------------------------------------------------------------------\nRan 6 tests in 0.334s\n\nOK\n"
+    },
+    {
+      "pattern": "test_fight_semantics.py",
+      "returncode": 0,
+      "seconds": 0.219,
+      "output": "----------------------------------------------------------------------\nRan 4 tests in 0.002s\n\nOK\n"
+    },
+    {
+      "pattern": "test_repair_historical_schedules.py",
+      "returncode": 0,
+      "seconds": 0.25,
+      "output": "----------------------------------------------------------------------\nRan 5 tests in 0.005s\n\nOK\n"
+    },
+    {
+      "pattern": "test_historical_moneyline_profitability.py",
+      "returncode": 0,
+      "seconds": 6.718,
+      "output": "----------------------------------------------------------------------\nRan 6 tests in 0.084s\n\nOK\n"
+    },
+    {
+      "pattern": "test_rolling_moneyline_profitability.py",
+      "returncode": 0,
+      "seconds": 5.578,
+      "output": "----------------------------------------------------------------------\nRan 2 tests in 0.023s\n\nOK\n"
+    },
+    {
+      "pattern": "test_bestfightodds_evaluation.py",
+      "returncode": 0,
+      "seconds": 6.188,
+      "output": "----------------------------------------------------------------------\nRan 6 tests in 0.415s\n\nOK\n"
+    },
+    {
+      "pattern": "test_website_contract.py",
+      "returncode": 0,
+      "seconds": 0.312,
+      "output": "----------------------------------------------------------------------\nRan 21 tests in 0.073s\n\nOK\n"
+    },
+    {
+      "command": [
+        "node",
+        "tests/test_upcoming_portfolio.cjs"
+      ],
+      "returncode": 0,
+      "output": "\u00e2\u0153\u201d expired, future and missing source times never receive a stake (3.7221ms)\n\u00e2\u0153\u201d card start and schema1 publications fail closed (0.5226ms)\n\u00e2\u0153\u201d calibrated edge and conservative stake govern eligibility, not raw EV (0.4108ms)\n\u00e2\u0153\u201d book changes select the next accessible offer before allocating (1.7586ms)\n\u00e2\u0153\u201d one physical fight receives only one allocation across reversed identities and markets (0.5877ms)\n\u00e2\u0153\u201d fight, card and snapshot caps all apply (1.9415ms)\n\u00e2\u0153\u201d zero-stake outcomes are excluded from funded performance record (0.3903ms)\n\u00e2\u201e\u00b9 tests 7\n\u00e2\u201e\u00b9 suites 0\n\u00e2\u201e\u00b9 pass 7\n\u00e2\u201e\u00b9 fail 0\n\u00e2\u201e\u00b9 cancelled 0\n\u00e2\u201e\u00b9 skipped 0\n\u00e2\u201e\u00b9 todo 0\n\u00e2\u201e\u00b9 duration_ms 20.7517\n"
+    },
+    {
+      "command": [
+        "node",
+        "--check",
+        "script.js"
+      ],
+      "returncode": 0,
+      "output": ""
+    }
+  ],
+  "python_test_count": 112
+}

@@ -1,0 +1,402 @@
+{
+  "archive_reachability": {
+    "call_path": [
+      "capture_market_snapshot.capture -> archive_upcoming_bet_board",
+      "update_bet_performance -> build_bet_performance_publication",
+      "_archive_records copies the stored bayesian_kelly assessment",
+      "_attach_bayesian_kelly validates it as a moneyline assessment before checking category"
+    ],
+    "isolated_current_total_to_moneyline_validator": {
+      "message": "Bayesian Kelly assessment policy is invalid",
+      "status": "error"
+    },
+    "saved_archive_builder": {
+      "record_count": 74,
+      "status": "success"
+    },
+    "saved_snapshot_count": 74,
+    "saved_total_assessment_policies": {
+      "missing": 52,
+      "robust-bayesian-kelly-moneyline-v1": 11
+    },
+    "scope": "Real archive_upcoming_bet_board and build_bet_performance_publication paths; temporary archive only, empty official inputs and no result/support enrichment. This isolates archive compatibility; it does not run the live updater or assert that the currently published performance file is broken.",
+    "temporary_archive_after_current_board_builder": {
+      "error_type": "ValueError",
+      "message": "Bayesian Kelly assessment policy is invalid",
+      "status": "error"
+    },
+    "temporary_archive_after_current_board_snapshot_count": 86
+  },
+  "audit_only": true,
+  "calibration_line_support": {
+    "0.5": {
+      "chronological_check": {
+        "brier_change": 0.00048200644893899025,
+        "development_events": 64,
+        "development_fights": 787,
+        "development_last_event_date": "2026-04-18",
+        "holdout_events": 17,
+        "holdout_fights": 210,
+        "holdout_first_event_date": "2026-04-25",
+        "holdout_last_event_date": "2026-08-29",
+        "log_loss_change": 0.0038115454167211293,
+        "posterior_mean_calibrated": {
+          "accuracy": 0.861904761904762,
+          "brier": 0.11962932513994103,
+          "log_loss": 0.411979356693878
+        },
+        "raw_duration_model": {
+          "accuracy": 0.861904761904762,
+          "brier": 0.11914731869100204,
+          "log_loss": 0.40816781127715684
+        },
+        "status": "complete"
+      },
+      "reason": "The Bayesian adjustment made probability accuracy worse on the later-fight check, so it is not used for staking.",
+      "status": "unavailable",
+      "training_events": 81,
+      "training_fights": 997,
+      "training_first_event_date": "2024-10-05",
+      "training_last_event_date": "2026-08-29"
+    },
+    "1.5": {
+      "chronological_check": {
+        "brier_change": -0.002901803337564568,
+        "development_events": 64,
+        "development_fights": 787,
+        "development_last_event_date": "2026-04-18",
+        "holdout_events": 17,
+        "holdout_fights": 210,
+        "holdout_first_event_date": "2026-04-25",
+        "holdout_last_event_date": "2026-08-29",
+        "log_loss_change": -0.00967254530445305,
+        "posterior_mean_calibrated": {
+          "accuracy": 0.5714285714285714,
+          "brier": 0.25946817377188375,
+          "log_loss": 0.7241225425739366
+        },
+        "raw_duration_model": {
+          "accuracy": 0.5714285714285714,
+          "brier": 0.2623699771094483,
+          "log_loss": 0.7337950878783897
+        },
+        "status": "complete"
+      },
+      "status": "available",
+      "training_events": 81,
+      "training_fights": 997,
+      "training_first_event_date": "2024-10-05",
+      "training_last_event_date": "2026-08-29"
+    },
+    "2.5": {
+      "chronological_check": {
+        "brier_change": -0.004074641998646544,
+        "development_events": 64,
+        "development_fights": 787,
+        "development_last_event_date": "2026-04-18",
+        "holdout_events": 17,
+        "holdout_fights": 210,
+        "holdout_first_event_date": "2026-04-25",
+        "holdout_last_event_date": "2026-08-29",
+        "log_loss_change": -0.013411656715452747,
+        "posterior_mean_calibrated": {
+          "accuracy": 0.5380952380952381,
+          "brier": 0.25126049386118005,
+          "log_loss": 0.697586597706393
+        },
+        "raw_duration_model": {
+          "accuracy": 0.5380952380952381,
+          "brier": 0.2553351358598266,
+          "log_loss": 0.7109982544218457
+        },
+        "status": "complete"
+      },
+      "status": "available",
+      "training_events": 81,
+      "training_fights": 997,
+      "training_first_event_date": "2024-10-05",
+      "training_last_event_date": "2026-08-29"
+    },
+    "3.5": {
+      "chronological_check": {
+        "brier_change": -0.022672985976420035,
+        "development_events": 47,
+        "development_fights": 53,
+        "development_last_event_date": "2026-05-30",
+        "holdout_events": 12,
+        "holdout_fights": 14,
+        "holdout_first_event_date": "2026-06-06",
+        "holdout_last_event_date": "2026-08-29",
+        "log_loss_change": -0.07558070539252415,
+        "posterior_mean_calibrated": {
+          "accuracy": 0.5,
+          "brier": 0.33731268454818875,
+          "log_loss": 0.9082040707112592
+        },
+        "raw_duration_model": {
+          "accuracy": 0.5,
+          "brier": 0.3599856705246088,
+          "log_loss": 0.9837847761037833
+        },
+        "status": "complete"
+      },
+      "status": "available",
+      "training_events": 59,
+      "training_fights": 67,
+      "training_first_event_date": "2024-10-05",
+      "training_last_event_date": "2026-08-29"
+    },
+    "4.5": {
+      "chronological_check": {
+        "brier_change": -0.03827753517162913,
+        "development_events": 47,
+        "development_fights": 53,
+        "development_last_event_date": "2026-05-30",
+        "holdout_events": 12,
+        "holdout_fights": 14,
+        "holdout_first_event_date": "2026-06-06",
+        "holdout_last_event_date": "2026-08-29",
+        "log_loss_change": -0.1019474854642356,
+        "posterior_mean_calibrated": {
+          "accuracy": 0.42857142857142855,
+          "brier": 0.3272805956954455,
+          "log_loss": 0.8617491122045043
+        },
+        "raw_duration_model": {
+          "accuracy": 0.42857142857142855,
+          "brier": 0.3655581308670746,
+          "log_loss": 0.9636965976687399
+        },
+        "status": "complete"
+      },
+      "status": "available",
+      "training_events": 59,
+      "training_fights": 67,
+      "training_first_event_date": "2024-10-05",
+      "training_last_event_date": "2026-08-29"
+    }
+  },
+  "input_sha256": {
+    "scripts/audit_profitability_duration.py": "bb15552b928844133e0dd992a02e69af863e1bf90828ba9aa73bbd7ac2862f2b",
+    "src/bayesian_total_calibration.py": "6a13fde012e719c66e536f4dd08fe1f71d6e35cdf87eac0f3fb8e80becbdfcf7",
+    "src/capture_market_snapshot.py": "a51e7e484e9b1a37157f03db2388b4379d8f771182c6335e0d830134043c3871",
+    "src/content/data/external/outcome_forecasts.json": "cb915c896185512c3a42b3a1a10b85318da15c7a54290df7408c8987a23231a0",
+    "src/content/data/external/outcome_model_evaluation.json": "4dfe61f8b7f217662e792a0254dbed191553e31530411eb4adfe80d572d843bf",
+    "src/content/data/market/published_bet_snapshots.json": "df6583bf6324f18a70a4c19b4f334e72a7675b9b86ef5cb67fc5adf6b3d12268",
+    "src/content/data/market/upcoming_bet_board.json": "796bd93035601cf7d68509e1154d282b87d6a6a6eb854beb88ae1510960002ee",
+    "src/content/data/model_research/bayesian_kelly_market_calibration.json": "94295b6a6cfd5c5472891eb664586731e03cb0d65756e6641c15f5df24873304",
+    "src/content/data/processed/ufc_fights_point_in_time.csv": "5da36f9972b32dfa6c933b239f83d92cebe45ea8d6237201194da77a3e87b22a",
+    "src/data_handler/data_handler.py": "3c845c5127c1eb9212925e91550f04a43cb3d2fb3a96a7e92d9dd728fcdc1288",
+    "src/fight_predictor/outcome_model.py": "86ac9b3bd11f264fde462ee567a57629e07fee7fd5c604ef649c29ca557cb17c",
+    "src/fight_semantics.py": "896e99b360ea3076b69aca0af63f92d318b35b59a4a74e56902e6b6f305d6a43",
+    "src/market_tracker/bankroll.py": "628de2d99a48188999d373a75b410a05e69d737f2320a0383b96a66437357421",
+    "src/market_tracker/bayesian_kelly.py": "5e0918efb224d7d68e3dedc2c634b0a2bcfe09cd11f922d90dc30ddacbed5a66",
+    "src/upcoming_bet_board.py": "78b61b7980f7cc4ece37cfec475d78794c7b6f38c970d666af44d4d916ff6912",
+    "src/update_bet_performance.py": "494bdb28cad113b63c8a547184787beb73015435db1ec6cb40ffb0ddf8f2fc87",
+    "tests/test_outcome_model.py": "c21bc88b9bef1849257276d0c4361a0b64bb068e831910e0c5db50328dbd379e"
+  },
+  "insufficient_calibration_check": {
+    "fixture": "40 synthetic fights on 8 dates; first event has 33 fights",
+    "insufficient_check_enabled": true,
+    "production_result": {
+      "chronological_check": {
+        "development_fights": 38,
+        "holdout_fights": 2,
+        "status": "too_small"
+      },
+      "status": "available",
+      "training_events": 8,
+      "training_fights": 40,
+      "training_first_event_date": "2025-01-01",
+      "training_last_event_date": "2025-01-08"
+    },
+    "scope": "Synthetic branch reproduction, not an additional historical sample"
+  },
+  "limitations": [
+    "This audit does not retrain or estimate corrected odds, returns, or optimal stakes.",
+    "Known versus inferred schedules form different selected groups; rate differences are diagnostic, not causal estimates.",
+    "The synthetic fixture tests a branch, not historical profitability.",
+    "The archive reproduction exercises actual helpers with temporary storage and empty official ledgers, not the live updater."
+  ],
+  "production_inputs_unchanged": true,
+  "published_impact": {
+    "board_observed_at_utc": "2026-09-04T17:26:56.686757Z",
+    "current_total_bet_matchups": 9,
+    "current_total_bets": 11,
+    "five_round_current_total_bets": 2,
+    "five_round_forecast_matchups": 1,
+    "forecast_issued_at_utc": "2026-09-04T01:42:10+00:00",
+    "forecast_model_id": "6b0a0dc37c16783b41768fa2",
+    "forecast_training_fights": 4943,
+    "interpretation": "These forecasts use the same duration/method model and require reevaluation. Counts describe affected provenance, not a measured correction to each probability or proof that every forecast is inaccurate. Board and forecast publications can have different issue times/model identities; each is preserved separately.",
+    "method_forecast_matchups": 14,
+    "method_probability_values": 56,
+    "sum_current_total_recommended_fractions": 0.5499999999999999,
+    "total_forecast_matchups": 14,
+    "total_probability_values": 44
+  },
+  "reproduction_checks": {
+    "development_fight_count_matches_saved_evaluation": true,
+    "forecast_and_evaluation_training_input_identity_matches": true,
+    "holdout_fight_count_matches_saved_evaluation": true,
+    "holdout_start_matches_saved_evaluation": true,
+    "smoothed_five_round_base_rate_matches_saved_evaluation": true
+  },
+  "schedule_bias": {
+    "development": {
+      "decision_fights": 1981,
+      "events": 337,
+      "explicit_schedule_fights": 0,
+      "fights": 3946,
+      "finish_before_round_4_fights": 3740,
+      "inferred_or_unknown_schedule_fights": 3946,
+      "over_3_5_fights": 200,
+      "over_3_5_rate": 0.05068423720223011
+    },
+    "development_five_round": {
+      "decision_fights": 163,
+      "events": 181,
+      "explicit_schedule_fights": 0,
+      "fights": 206,
+      "finish_before_round_4_fights": 0,
+      "inferred_or_unknown_schedule_fights": 206,
+      "over_3_5_fights": 200,
+      "over_3_5_rate": 0.970873786407767
+    },
+    "holdout": {
+      "decision_fights": 475,
+      "events": 81,
+      "explicit_schedule_fights": 322,
+      "fights": 997,
+      "finish_before_round_4_fights": 945,
+      "inferred_or_unknown_schedule_fights": 675,
+      "over_3_5_fights": 50,
+      "over_3_5_rate": 0.05015045135406219
+    },
+    "holdout_explicit_five_round": {
+      "decision_fights": 11,
+      "events": 26,
+      "explicit_schedule_fights": 29,
+      "fights": 29,
+      "finish_before_round_4_fights": 15,
+      "inferred_or_unknown_schedule_fights": 0,
+      "over_3_5_fights": 14,
+      "over_3_5_rate": 0.4827586206896552
+    },
+    "holdout_inferred_five_round": {
+      "decision_fights": 32,
+      "events": 33,
+      "explicit_schedule_fights": 0,
+      "fights": 38,
+      "finish_before_round_4_fights": 0,
+      "inferred_or_unknown_schedule_fights": 38,
+      "over_3_5_fights": 36,
+      "over_3_5_rate": 0.9473684210526315
+    },
+    "holdout_start": "2024-10-05",
+    "provenance": [
+      {
+        "decision_fights": 6,
+        "fights": 1928,
+        "finish_before_round_4_fights": 1928,
+        "over_3_5_fights": 0,
+        "over_3_5_rate": 0.0,
+        "schedule_basis": "assumed_three_round_early_finish",
+        "scheduled_rounds": 3,
+        "split": "development"
+      },
+      {
+        "decision_fights": 1812,
+        "fights": 1812,
+        "finish_before_round_4_fights": 1812,
+        "over_3_5_fights": 0,
+        "over_3_5_rate": 0.0,
+        "schedule_basis": "inferred_from_decision_duration",
+        "scheduled_rounds": 3,
+        "split": "development"
+      },
+      {
+        "decision_fights": 0,
+        "fights": 43,
+        "finish_before_round_4_fights": 0,
+        "over_3_5_fights": 37,
+        "over_3_5_rate": 0.8604651163,
+        "schedule_basis": "inferred_five_round_late_finish",
+        "scheduled_rounds": 5,
+        "split": "development"
+      },
+      {
+        "decision_fights": 163,
+        "fights": 163,
+        "finish_before_round_4_fights": 0,
+        "over_3_5_fights": 163,
+        "over_3_5_rate": 1.0,
+        "schedule_basis": "inferred_from_decision_duration",
+        "scheduled_rounds": 5,
+        "split": "development"
+      },
+      {
+        "decision_fights": 1,
+        "fights": 329,
+        "finish_before_round_4_fights": 329,
+        "over_3_5_fights": 0,
+        "over_3_5_rate": 0.0,
+        "schedule_basis": "assumed_three_round_early_finish",
+        "scheduled_rounds": 3,
+        "split": "holdout"
+      },
+      {
+        "decision_fights": 123,
+        "fights": 293,
+        "finish_before_round_4_fights": 293,
+        "over_3_5_fights": 0,
+        "over_3_5_rate": 0.0,
+        "schedule_basis": "explicit_time_format",
+        "scheduled_rounds": 3,
+        "split": "holdout"
+      },
+      {
+        "decision_fights": 308,
+        "fights": 308,
+        "finish_before_round_4_fights": 308,
+        "over_3_5_fights": 0,
+        "over_3_5_rate": 0.0,
+        "schedule_basis": "inferred_from_decision_duration",
+        "scheduled_rounds": 3,
+        "split": "holdout"
+      },
+      {
+        "decision_fights": 11,
+        "fights": 29,
+        "finish_before_round_4_fights": 15,
+        "over_3_5_fights": 14,
+        "over_3_5_rate": 0.4827586207,
+        "schedule_basis": "explicit_time_format",
+        "scheduled_rounds": 5,
+        "split": "holdout"
+      },
+      {
+        "decision_fights": 0,
+        "fights": 6,
+        "finish_before_round_4_fights": 0,
+        "over_3_5_fights": 4,
+        "over_3_5_rate": 0.6666666667,
+        "schedule_basis": "inferred_five_round_late_finish",
+        "scheduled_rounds": 5,
+        "split": "holdout"
+      },
+      {
+        "decision_fights": 32,
+        "fights": 32,
+        "finish_before_round_4_fights": 0,
+        "over_3_5_fights": 32,
+        "over_3_5_rate": 1.0,
+        "schedule_basis": "inferred_from_decision_duration",
+        "scheduled_rounds": 5,
+        "split": "holdout"
+      }
+    ],
+    "reproduced_smoothed_development_over_3_5_rate": 0.9663461538461539
+  },
+  "schema_version": 1
+}

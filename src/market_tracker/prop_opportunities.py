@@ -15,6 +15,7 @@ from .prospective import MAX_SOURCE_QUOTE_AGE_SECONDS
 PROP_OPPORTUNITY_POLICY_VERSION = "candidate-total-round-model-ev-v1"
 MIN_PROP_EXPECTED_RETURN = 0.05
 MIN_PROP_CONSENSUS_BOOKS = 2
+VERIFIED_DURATION_MODEL_VERSION = "candidate-discrete-time-competing-risks-v2-verified-schedules"
 
 
 def _expected_return(probability: float, implied_probability: float) -> float:
@@ -32,6 +33,7 @@ def build_prop_market_view(
     current_quotes = tuple(item for item in quotes if item.capture_id == capture_id)
     current_forecasts = tuple(
         item for item in forecasts if item.capture_id == capture_id
+        and item.model_version == VERIFIED_DURATION_MODEL_VERSION
     )
     decision_index: dict[tuple[str, float], TotalRoundsPaperDecision] = {}
     for decision in decisions:
@@ -52,6 +54,7 @@ def build_prop_market_view(
 
     markets: list[dict[str, object]] = []
     positive: list[dict[str, object]] = []
+    candidate_offers: list[dict[str, object]] = []
     for matchup_id, line in sorted(grouped, key=lambda value: (value[0], value[1])):
         line_quotes = tuple(
             sorted(
@@ -125,9 +128,21 @@ def build_prop_market_view(
                         "schedule_basis": forecast.schedule_basis,
                         "model_id": forecast.model_id,
                         "model_version": forecast.model_version,
+                        # The standalone duration policy has no validated
+                        # price-matched prospective betting-performance gate.
+                        "betting_performance_validated": False,
+                        "schedule_contract_version": (
+                            "verified-pre-fight-schedule-v1"
+                            if forecast.model_version == VERIFIED_DURATION_MODEL_VERSION
+                            else None
+                        ),
                         "model_trained_through": forecast.model_trained_through,
                         "forecast_issued_at_utc": forecast.forecast_issued_at_utc,
                         "observed_at_utc": quote.observed_at_utc,
+                        "event_start_utc": quote.event_start_utc,
+                        "source_quote_updated_at_utc": quote.source_quote_updated_at_utc,
+                        "quote_id": quote.quote_id,
+                        "capture_id": quote.capture_id,
                         "source_quote_age_seconds": quote.source_quote_age_seconds,
                         "target_book_excluded_from_market_context": True,
                         "other_book_consensus_over_probability": consensus,
@@ -141,6 +156,7 @@ def build_prop_market_view(
                 str(item["side"]),
             )
         )
+        candidate_offers.extend(candidates)
         if candidates and candidates[0]["positive_expected_value"]:
             # Publish only the best available book/side for one matchup/line;
             # inferior prices for the same market remain visible in book_quotes.
@@ -157,7 +173,7 @@ def build_prop_market_view(
                 "forecast_unavailable_reason": (
                     None
                     if forecast is not None
-                    else "No frozen candidate duration forecast matched this line."
+                    else "No verified pre-fight-schedule duration forecast matched this line; legacy estimates are withheld."
                 ),
                 "best_candidate": candidates[0] if candidates else None,
                 "locked_t24_decision": (
@@ -196,6 +212,8 @@ def build_prop_market_view(
                         "under_moneyline": quote.under_moneyline,
                         "no_vig_over_probability": quote.no_vig_over_probability,
                         "source_quote_age_seconds": quote.source_quote_age_seconds,
+                        "source_quote_updated_at_utc": quote.source_quote_updated_at_utc,
+                        "event_start_utc": quote.event_start_utc,
                         "eligible": quote in eligible,
                     }
                     for quote in line_quotes
@@ -220,6 +238,7 @@ def build_prop_market_view(
         "expected_return_formula": "model_probability / break_even_probability - 1",
         "minimum_paper_expected_return": MIN_PROP_EXPECTED_RETURN,
         "total_rounds": {
+            "candidate_offers": candidate_offers,
             "price_status": "available" if current_quotes else "awaiting_capture",
             "quote_count": len(current_quotes),
             "forecast_count": len(current_forecasts),

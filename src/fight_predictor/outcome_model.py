@@ -16,10 +16,11 @@ from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
 
 from bayesian_total_calibration import fit_total_calibration
-from fight_semantics import method_bucket, schedule_from_row
+from fight_semantics import SCHEDULE_CONTRACT_VERSION, method_bucket, schedule_from_row
 
 
 INTERVAL_SECONDS = 150
+MINIMUM_VERIFIED_EVALUATION_FIGHTS = 1000
 CONTINUE = "continue"
 TERMINAL_OUTCOMES = (
     "fighter_ko_tko",
@@ -46,6 +47,21 @@ TOTAL_ROUND_THRESHOLDS = {
     "over_3_5_rounds": 1050,
     "over_4_5_rounds": 1350,
 }
+
+
+class InsufficientVerifiedScheduleData(ValueError):
+    """Duration research is unavailable until enough independent schedules exist."""
+
+    def __init__(self, verified_fights: int, excluded_fights: int):
+        self.verified_fights = int(verified_fights)
+        self.excluded_fights = int(excluded_fights)
+        self.required_fights = MINIMUM_VERIFIED_EVALUATION_FIGHTS
+        super().__init__(
+            f"Duration evaluation needs at least {self.required_fights:,} recent fights "
+            f"with independently verified schedules; found {self.verified_fights:,} "
+            f"and excluded {self.excluded_fights:,}. Historical schedules must be "
+            "repaired before publishing new duration or method recommendations."
+        )
 
 
 def _method_bucket(value: object) -> str:
@@ -254,11 +270,14 @@ class DiscreteTimeOutcomeModel:
         self.pipeline.fit(risk[list(self.model_columns)], risk["risk_target"])
         self.training_fights = len(fights) - self.omitted_unknown_schedule
         self.training_risk_rows = len(risk)
+        self.schedule_contract_version = SCHEDULE_CONTRACT_VERSION
         return self
 
     def predict(self, feature_row: pd.Series | dict[str, object], scheduled_rounds: int) -> CompetingRiskPrediction:
         if self.pipeline is None:
             raise RuntimeError("competing-risk model must be fitted before prediction")
+        if getattr(self, "schedule_contract_version", None) != SCHEDULE_CONTRACT_VERSION:
+            raise ValueError("duration model lacks the verified schedule contract; rebuild required")
         if scheduled_rounds not in {1, 2, 3, 4, 5}:
             raise ValueError("scheduled_rounds must be between one and five")
         horizon = scheduled_rounds * 300
@@ -326,8 +345,13 @@ def evaluate_outcome_model(
     frame = frame.sort_values(["date", "event_id", "bout_order", "fight_id"], kind="stable")
     latest = frame["date"].max()
     frame = frame[frame["date"] >= latest - pd.DateOffset(years=10)].reset_index(drop=True)
-    if len(frame) < 1000:
-        raise ValueError("outcome evaluation requires at least 1,000 recent fights")
+    if frame.empty:
+        raise InsufficientVerifiedScheduleData(0, 0)
+    verified = frame.apply(lambda row: _scheduled_rounds(row) is not None, axis=1)
+    excluded_unknown_schedule = int((~verified).sum())
+    frame = frame[verified].reset_index(drop=True)
+    if len(frame) < MINIMUM_VERIFIED_EVALUATION_FIGHTS:
+        raise InsufficientVerifiedScheduleData(len(frame), excluded_unknown_schedule)
     holdout_date = frame.iloc[int(len(frame) * 0.8)]["date"]
     development = frame[frame["date"] < holdout_date].reset_index(drop=True)
     holdout = frame[frame["date"] >= holdout_date].reset_index(drop=True)
@@ -494,6 +518,8 @@ def evaluate_outcome_model(
         pd.DataFrame(total_calibration_rows)
     )
     report: dict[str, object] = {
+        "schedule_contract_version": SCHEDULE_CONTRACT_VERSION,
+        "excluded_unknown_schedule_fights": excluded_unknown_schedule,
         "candidate_only": True,
         "production_enabled": False,
         "execution_enabled": False,

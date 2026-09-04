@@ -2,6 +2,7 @@ import json
 import sys
 import tempfile
 import unittest
+import pandas as pd
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -21,6 +22,46 @@ from market_tracker.bankroll import (  # noqa: E402
 
 
 class BetPerformanceTests(unittest.TestCase):
+    def test_verified_total_assessment_and_allocated_stake_survive_archive_and_settlement(self):
+        from bayesian_total_calibration import BayesianTotalCalibrator, fit_total_calibration
+        rows = pd.DataFrame([{
+            "event_date": pd.Timestamp("2020-01-01") + pd.Timedelta(days=7 * i),
+            "event_id": f"event-{i:03d}", "fight_id": f"fight-{i:03d}",
+            "line": 1.5, "model_probability": 0.35 if i % 2 else 0.65,
+            "target": int(i % 5 not in {0, 1}),
+        } for i in range(80)])
+        assessment = BayesianTotalCalibrator(fit_total_calibration(rows)).assessment(0.62, "over", 1.5, 1000)
+        self.assertEqual(assessment["status"], "available")
+        probability = assessment["posterior_mean_probability"]
+        allocation = min(0.01, assessment["recommended_fraction"])
+        self.assertGreater(allocation, 0)
+        bet = {
+            "category": "Total rounds", "event_id": "event", "event_date": "2026-09-05",
+            "matchup_id": "matchup", "fighter_id": "alpha", "opponent_id": "beta",
+            "fighter_name": "Alpha", "opponent_name": "Beta", "selection": "Over 1.5 rounds",
+            "side": "over", "target_book": "Book", "offered_moneyline": 1000,
+            "estimated_win_probability": probability, "estimated_expected_return": probability * 11 - 1,
+            "raw_estimated_win_probability": 0.62, "minimum_expected_return": 0.05,
+            "threshold_met": True, "candidate_only": True, "probability_source": "candidate_duration_model",
+            "observed_at_utc": "2026-09-01T12:00:00Z", "paper_only": True, "execution_enabled": False,
+            "bayesian_kelly": assessment, "allocated_fraction": allocation,
+            "allocation_policy_version": "capped-paper-portfolio-v1",
+        }
+        bet["bet_id"] = canonical_hash(bet)
+        with tempfile.TemporaryDirectory() as directory:
+            archive = archive_upcoming_bet_board({"publication_sha256": "a" * 64, "bets": [bet]}, Path(directory) / "archive.json")
+        publication = build_bet_performance_publication(
+            decisions=(), settlements=(), quotes=(), forecasts=(), archive=archive,
+            outcomes={("event", "alpha", "beta"): 1}, durations={("event", "alpha", "beta"): 600.0},
+        )
+        validate_bet_performance_publication(publication)
+        record = publication["records"][0]
+        self.assertEqual(record["bayesian_kelly"], assessment)
+        self.assertEqual(record["allocated_fraction"], allocation)
+        self.assertEqual(record["allocation_policy_version"], bet["allocation_policy_version"])
+        self.assertEqual(record["raw_estimated_win_probability"], 0.62)
+        self.assertEqual(record["status"], "won")
+
     def test_kelly_fraction_uses_probability_and_american_odds(self):
         self.assertAlmostEqual(kelly_fraction(0.60, 100), 0.20)
         self.assertAlmostEqual(kelly_fraction(0.60, -150), 0.0)

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from datetime import datetime, timezone
+from dataclasses import replace
 from pathlib import Path
 import tempfile
 import sys
@@ -75,6 +76,30 @@ def _snapshot(**overrides: object) -> MethodMarketSnapshot:
 
 
 class MethodMarketTests(unittest.TestCase):
+    def test_revised_start_keeps_immutable_prices_and_uses_current_display_time(self):
+        older = _snapshot()
+        revised = _snapshot(capture_id="revised", event_start_utc="2026-08-29T07:10:00Z",
+                            observed_at_utc="2026-08-28T07:10:00Z", fighter_prices={"ko_tko": 300})
+        before = [row.to_mapping() for row in (older, revised)]
+        publication = _build_current_method_publication(
+            (older, revised), event_id="event-1", event_date="2026-08-29",
+            event_start_utc="2026-08-29T07:00:00Z", outcome_forecasts=None,
+        )
+        self.assertEqual(publication["event_start_utc"], "2026-08-29T07:00:00Z")
+        self.assertEqual(publication["book_market_count"], 1)
+        self.assertEqual(publication["latest_observed_at_utc"], revised.observed_at_utc)
+        self.assertEqual([row.to_mapping() for row in (older, revised)], before)
+
+    def test_event_date_and_contract_conflicts_still_fail(self):
+        valid = _snapshot()
+        for changed in (replace(valid, event_date="2026-08-30"), replace(valid, contract_version="different-contract")):
+            with self.subTest(changed=changed.contract_version):
+                with self.assertRaisesRegex(Exception, "conflicting event contracts"):
+                    _build_current_method_publication(
+                        (valid, changed), event_id="event-1", event_date="2026-08-29",
+                        event_start_utc="2026-08-29T07:00:00Z", outcome_forecasts=None,
+                    )
+
     def test_complete_market_is_normalized_and_round_trips(self):
         snapshot = _snapshot()
         total = sum(
@@ -194,6 +219,7 @@ class MethodMarketTests(unittest.TestCase):
             event_date="2026-08-29",
             event_start_utc="2026-08-29T07:00:00Z",
             outcome_forecasts={
+                "forecast_issued_at_utc": "2026-08-20T00:00:00Z",
                 "matchups": [
                     {
                         "fighter_id": "b-opponent",
@@ -225,6 +251,24 @@ class MethodMarketTests(unittest.TestCase):
         self.assertEqual(beta_ko["candidate_model_probability"], 0.10)
         self.assertEqual(publication["expected_value_status"], "candidate_comparison_only")
         self.assertEqual(len(publication["publication_sha256"]), 64)
+
+    def test_future_or_missing_forecast_time_keeps_prices_but_withholds_model(self):
+        for issued in ("2026-08-28T07:00:01Z", None):
+            with self.subTest(issued=issued):
+                publication = _build_current_method_publication(
+                    (_snapshot(),), event_id="event-1", event_date="2026-08-29",
+                    event_start_utc="2026-08-29T07:00:00Z",
+                    outcome_forecasts={"forecast_issued_at_utc": issued, "matchups": [{
+                        "fighter_id": "b-opponent", "opponent_id": "a-fighter",
+                        "terminal_probabilities": {"fighter_ko_tko": 0.1},
+                    }]},
+                )
+                self.assertEqual(publication["expected_value_status"], "unavailable")
+                markets = publication["method_markets"]
+                self.assertEqual(len(markets), 1)
+                selections = markets[0]["book_quotes"][0]["selections"]
+                self.assertTrue(selections)
+                self.assertTrue(all(row["candidate_model_probability"] is None for row in selections))
 
     def test_duplicate_source_matchups_merge_complementary_sides(self):
         selections = []

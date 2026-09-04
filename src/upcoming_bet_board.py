@@ -47,11 +47,95 @@ MARKET_ROOT = ROOT / "content/data/market"
 UPCOMING_FORECAST_PATH = EXTERNAL_ROOT / "all_upcoming_forecasts.json"
 UPCOMING_BOARD_PATH = MARKET_ROOT / "upcoming_bet_board.json"
 FORECAST_SCHEMA_VERSION = 1
-BOARD_SCHEMA_VERSION = 1
+BOARD_SCHEMA_VERSION = 2
 FORECAST_VERSION = "all-announced-ufc-forecasts-v1"
-BOARD_POLICY_VERSION = "all-upcoming-qualified-bets-v1"
+BOARD_POLICY_VERSION = "calibrated-upcoming-paper-allocation-v2"
+LEGACY_BOARD_POLICY_VERSION = "all-upcoming-qualified-bets-v1"
 MAX_SOURCE_QUOTE_AGE_SECONDS = 30.0 * 60.0
 MAX_BOARD_BETS = 100
+MAX_BOARD_OFFERS = 2000
+ALLOCATION_POLICY = {
+    "maximum_fight_fraction": 0.01,
+    "maximum_card_fraction": 0.05,
+    "maximum_outstanding_fraction": 0.10,
+    "one_selection_per_fight": True,
+    "assumes_no_existing_open_bets": True,
+    "ranking": "calibrated_mean_expected_return_descending",
+}
+
+
+def _offer_rank(item: Mapping[str, object]) -> tuple:
+    return (-float(item["estimated_expected_return"]), str(item.get("event_date")),
+            str(item.get("event_id")), str(item.get("matchup_id")),
+            str(item.get("selection")).casefold(), str(item.get("target_book")).casefold(),
+            str(item.get("side")))
+
+
+def allocate_paper_offers(offers: Iterable[Mapping[str, object]]) -> list[dict[str, object]]:
+    """Allocate a snapshot with no pre-existing open bets; freeze IDs last."""
+    result = []
+    fights: set[tuple] = set()
+    cards: dict[str, float] = {}
+    outstanding = 0.0
+    for source in sorted(offers, key=_offer_rank):
+        offer = dict(source)
+        offer.pop("bet_id", None)
+        event = str(offer.get("event_id"))
+        fighter_ids = sorted(str(offer.get(key) or "") for key in ("fighter_id", "opponent_id"))
+        fight = (event, *fighter_ids) if all(fighter_ids) else (event, str(offer.get("matchup_id")))
+        allocation = 0.0
+        if fight not in fights:
+            allocation = max(0.0, min(
+                float(offer["bayesian_kelly"]["recommended_fraction"]),
+                ALLOCATION_POLICY["maximum_fight_fraction"],
+                ALLOCATION_POLICY["maximum_card_fraction"] - cards.get(event, 0.0),
+                ALLOCATION_POLICY["maximum_outstanding_fraction"] - outstanding,
+            ))
+        if allocation > 1e-12:
+            fights.add(fight)
+            cards[event] = cards.get(event, 0.0) + allocation
+            outstanding += allocation
+        else:
+            allocation = 0.0
+        offer["allocated_fraction"] = allocation
+        offer["bet_id"] = canonical_hash(offer)
+        result.append(offer)
+    return result
+
+
+def _calibrated_offer(bet: Mapping[str, object], observed_at: datetime) -> dict[str, object] | None:
+    if bet.get("category") == "Total rounds" and bet.get("betting_performance_validated") is not True:
+        return None
+    assessment = bet.get("bayesian_kelly")
+    if not isinstance(assessment, dict) or assessment.get("status") != "available":
+        return None
+    mean = _float(assessment.get("posterior_mean_probability"))
+    lower = _float(assessment.get("posterior_lower_probability"))
+    stake = _float(assessment.get("recommended_fraction"))
+    if mean is None or lower is None or stake is None or stake <= 0:
+        return None
+    updated_text = bet.get("source_quote_updated_at_utc")
+    start_text = bet.get("event_start_utc")
+    if not updated_text or not start_text:
+        return None
+    updated = _utc(updated_text, "source quote update")
+    start = _utc(start_text, "event start")
+    if start <= observed_at or not 0 <= (observed_at - updated).total_seconds() <= MAX_SOURCE_QUOTE_AGE_SECONDS:
+        return None
+    decimal = _decimal_odds(int(bet["offered_moneyline"]))
+    expected, floor_expected = mean * decimal - 1.0, lower * decimal - 1.0
+    if expected < MIN_EXPECTED_RETURN or floor_expected <= 0:
+        return None
+    result = dict(bet)
+    result.pop("bet_id", None)
+    result["raw_estimated_win_probability"] = bet["estimated_win_probability"]
+    result["raw_estimated_expected_return"] = float(bet["estimated_win_probability"]) * decimal - 1.0
+    result["estimated_win_probability"] = mean
+    result["estimated_expected_return"] = expected
+    result["robust_lower_expected_return"] = floor_expected
+    result["threshold_met"] = True
+    result["qualification_probability_source"] = "calibrated_posterior_mean"
+    return result
 
 
 def _text(value: object) -> str:
@@ -422,14 +506,14 @@ def _stored_book_quotes(
     )
 
 
-def _qualified_moneyline(
+def _moneyline_offers(
     matchup: Mapping[str, object],
     observations: Iterable[EarlyMarketObservation],
     *,
     reversed_orientation: bool,
     observed_at: datetime,
     bayesian_kelly: BayesianKellyCalibrator,
-) -> dict[str, object] | None:
+) -> list[dict[str, object]]:
     observation_records = tuple(observations)
     quotes = _book_quotes(
         observation_records,
@@ -437,10 +521,10 @@ def _qualified_moneyline(
         observed_at=observed_at,
     )
     if len(quotes) < MIN_CONSENSUS_BOOKS + 1:
-        return None
+        return []
     model_probability = _float(matchup.get("model_probability_for_fighter"))
     if model_probability is None or not 0.0 < model_probability < 1.0:
-        return None
+        return []
     candidates: list[dict[str, object]] = []
     for target in quotes:
         consensus = [
@@ -495,19 +579,7 @@ def _qualified_moneyline(
                     ),
                 }
             )
-    if not candidates:
-        return None
-    selected = min(
-        candidates,
-        key=lambda item: (
-            -float(item["estimated_expected_return"]),
-            str(item["target_book"]).casefold(),
-            str(item["side"]),
-        ),
-    )
-    if float(selected["estimated_expected_return"]) < MIN_EXPECTED_RETURN:
-        return None
-    return selected
+    return candidates
 
 
 def _names_match(
@@ -602,7 +674,7 @@ def _current_opportunity_bets(
             continue
         action = _text(signal.get("paper_action"))
         expected = _float(signal.get("estimated_expected_return"))
-        if action not in {"fighter", "opponent"} or expected is None or expected < MIN_EXPECTED_RETURN:
+        if action not in {"fighter", "opponent"} or expected is None:
             continue
         target_quote = next(
             (
@@ -627,7 +699,7 @@ def _current_opportunity_bets(
             "source_quote_age_seconds": target_quote.get(
                 "source_quote_age_seconds"
             ),
-            "event_start_utc": matchup.get("event_start_utc"),
+            "event_start_utc": matchup.get("event_start_utc") or publication.get("event_start_utc"),
             "bayesian_kelly": bayesian_kelly.assessment(
                 signal.get("market_probability"),
                 signal.get("offered_moneyline"),
@@ -637,18 +709,15 @@ def _current_opportunity_bets(
             _base_bet(forecast, candidate, observed_at=observed, source=source)
         )
 
-    totals = (
-        publication.get("prop_markets", {})
-        .get("total_rounds", {})
-        .get("positive_candidates", [])
-    )
+    total_view = publication.get("prop_markets", {}).get("total_rounds", {})
+    totals = total_view.get("candidate_offers", total_view.get("positive_candidates", []))
     for candidate in totals:
-        if not isinstance(candidate, dict) or candidate.get("paper_threshold_met") is not True:
+        if not isinstance(candidate, dict):
             continue
         expected = _float(candidate.get("estimated_expected_return"))
         matchup_id = _text(candidate.get("matchup_id"))
         forecast = forecasts.get(matchup_id)
-        if expected is None or expected < MIN_EXPECTED_RETURN or not forecast:
+        if expected is None or not forecast:
             continue
         side = _text(candidate.get("side")).casefold()
         line = _float(candidate.get("line"))
@@ -658,6 +727,9 @@ def _current_opportunity_bets(
         )
         if (
             total_bayesian_kelly is not None
+            and total_bayesian_kelly.artifact.get("schedule_contract_version") == "verified-pre-fight-schedule-v1"
+            and candidate.get("schedule_contract_version") == "verified-pre-fight-schedule-v1"
+            and candidate.get("model_version") == "candidate-discrete-time-competing-risks-v2-verified-schedules"
             and side in {"over", "under"}
             and line is not None
             and side_probability is not None
@@ -680,6 +752,8 @@ def _current_opportunity_bets(
                 "fighter_name", "opponent_name",
             )},
             "category": "Total rounds",
+            "betting_performance_validated": candidate.get("betting_performance_validated") is True,
+            "event_start_utc": candidate.get("event_start_utc") or publication.get("event_start_utc"),
             "selection": candidate.get("selection"),
             "side": candidate.get("side"),
             "target_book": candidate.get("target_book"),
@@ -696,6 +770,7 @@ def _current_opportunity_bets(
             "schedule_basis": candidate.get("schedule_basis"),
             "model_id": candidate.get("model_id"),
             "model_version": candidate.get("model_version"),
+            "schedule_contract_version": candidate.get("schedule_contract_version"),
             "model_trained_through": candidate.get("model_trained_through"),
             "forecast_issued_at_utc": candidate.get("forecast_issued_at_utc"),
             "break_even_probability": candidate.get("break_even_probability"),
@@ -706,7 +781,7 @@ def _current_opportunity_bets(
             "consensus_books": [],
             "observed_at_utc": observed,
             "source": source,
-            "source_quote_updated_at_utc": None,
+            "source_quote_updated_at_utc": candidate.get("source_quote_updated_at_utc"),
             "source_quote_age_seconds": candidate.get("source_quote_age_seconds"),
             "paper_only": True,
             "execution_enabled": False,
@@ -755,7 +830,7 @@ def build_upcoming_bet_board(
     for item in observations:
         if item.market == "h2h":
             grouped.setdefault(item.source_event_id, []).append(item)
-    bets_by_key: dict[tuple[str, str, str, str], dict[str, object]] = {}
+    bets_by_key: dict[tuple, dict[str, object]] = {}
     market_matchups: list[dict[str, object]] = []
     matched = evaluable = 0
     for matchup in official:
@@ -797,7 +872,7 @@ def build_upcoming_bet_board(
                 "book_quotes": stored_quotes,
             }
         )
-        candidate = _qualified_moneyline(
+        candidates = _moneyline_offers(
             matchup,
             rows,
             reversed_orientation=reversed_orientation,
@@ -806,14 +881,14 @@ def build_upcoming_bet_board(
         )
         if len(_book_quotes(rows, reversed_orientation=reversed_orientation, observed_at=observed_at)) >= MIN_CONSENSUS_BOOKS + 1:
             evaluable += 1
-        if candidate:
+        for candidate in candidates:
             bet = _base_bet(
                 matchup,
                 candidate,
                 observed_at=observed_text,
                 source=source,
             )
-            bets_by_key[(str(bet["event_id"]), str(bet["matchup_id"]), "Moneyline", "")] = bet
+            bets_by_key[(str(bet["event_id"]), str(bet["matchup_id"]), "Moneyline", str(bet["side"]), str(bet["target_book"]))] = bet
 
     forecast_by_matchup = {
         str(item.get("matchup_id")): item
@@ -831,18 +906,15 @@ def build_upcoming_bet_board(
             str(bet["event_id"]),
             str(bet["matchup_id"]),
             category,
-            str(bet["selection"]) if category != "Moneyline" else "",
+            str(bet["selection"]) if category != "Moneyline" else str(bet["side"]),
+            str(bet["target_book"]),
         )
-        bets_by_key[key] = bet
-    bets = sorted(
-        bets_by_key.values(),
-        key=lambda item: (
-            -float(item["estimated_expected_return"]),
-            str(item["event_date"]),
-            str(item["selection"]).casefold(),
-            str(item["bet_id"]),
-        ),
-    )[:MAX_BOARD_BETS]
+        # Complete fresh source observations take precedence over legacy views.
+        bets_by_key.setdefault(key, bet)
+    qualified_offers = [offer for bet in bets_by_key.values()
+                        if (offer := _calibrated_offer(bet, observed_at)) is not None]
+    offers = allocate_paper_offers(sorted(qualified_offers, key=_offer_rank)[:MAX_BOARD_OFFERS])
+    bets = [offer for offer in offers if offer["allocated_fraction"] > 0]
     body: dict[str, object] = {
         "schema_version": BOARD_SCHEMA_VERSION,
         "policy_version": BOARD_POLICY_VERSION,
@@ -851,6 +923,10 @@ def build_upcoming_bet_board(
         "paper_only": True,
         "execution_enabled": False,
         "minimum_expected_return": MIN_EXPECTED_RETURN,
+        "qualification_policy": "calibrated_mean_5pct_positive_probability_floor_and_stake",
+        "total_betting_policy": "research_only_until_standalone_duration_policy_passes_price_matched_prospective_evidence",
+        "allocation_policy": dict(ALLOCATION_POLICY),
+        "allocated_fraction": sum(bet["allocated_fraction"] for bet in bets),
         "minimum_consensus_books_excluding_target": MIN_CONSENSUS_BOOKS,
         "model_weight": LOCKED_GAMMA,
         "bayesian_kelly": {
@@ -885,6 +961,8 @@ def build_upcoming_bet_board(
             key=lambda item: (str(item["event_id"]), str(item["matchup_id"])),
         ),
         "qualified_bet_count": len(bets),
+        "eligible_offer_count": len(offers),
+        "offers": offers,
         "bets": bets,
     }
     body["publication_sha256"] = canonical_hash(body)
@@ -900,8 +978,9 @@ def validate_upcoming_bet_board(publication: object) -> dict[str, object]:
     if supplied_hash != canonical_hash(unhashed):
         raise ValueError("upcoming bet board hash is invalid")
     if (
-        publication.get("schema_version") != BOARD_SCHEMA_VERSION
-        or publication.get("policy_version") != BOARD_POLICY_VERSION
+        (publication.get("schema_version"), publication.get("policy_version")) not in {
+            (1, LEGACY_BOARD_POLICY_VERSION), (BOARD_SCHEMA_VERSION, BOARD_POLICY_VERSION)
+        }
         or publication.get("paper_only") is not True
         or publication.get("execution_enabled") is not False
         or _float(publication.get("minimum_expected_return")) != MIN_EXPECTED_RETURN
@@ -910,8 +989,15 @@ def validate_upcoming_bet_board(publication: object) -> dict[str, object]:
     bets = publication.get("bets")
     if not isinstance(bets, list) or publication.get("qualified_bet_count") != len(bets):
         raise ValueError("upcoming bet board count is inconsistent")
-    if len(bets) > MAX_BOARD_BETS:
+    if len(bets) > (MAX_BOARD_OFFERS if publication.get("schema_version") == BOARD_SCHEMA_VERSION else MAX_BOARD_BETS):
         raise ValueError("upcoming bet board exceeds its size bound")
+    current_schema = publication.get("schema_version") == BOARD_SCHEMA_VERSION
+    offers = publication.get("offers") if current_schema else bets
+    if current_schema:
+        if not isinstance(offers, list) or len(offers) > MAX_BOARD_OFFERS or publication.get("eligible_offer_count") != len(offers):
+            raise ValueError("upcoming bet board offer count is inconsistent")
+        if publication.get("allocation_policy") != ALLOCATION_POLICY:
+            raise ValueError("upcoming bet board allocation policy is invalid")
     market_matchups = publication.get("market_matchups")
     if market_matchups is not None:
         if not isinstance(market_matchups, list) or publication.get(
@@ -978,7 +1064,7 @@ def validate_upcoming_bet_board(publication: object) -> dict[str, object]:
             raise ValueError("upcoming bet board market availability is not sorted")
     values: list[float] = []
     ids: list[str] = []
-    for bet in bets:
+    for bet in [*offers, *bets] if current_schema else bets:
         if not isinstance(bet, dict):
             raise ValueError("upcoming bet board contains a non-object bet")
         expected = _float(bet.get("estimated_expected_return"))
@@ -999,7 +1085,43 @@ def validate_upcoming_bet_board(publication: object) -> dict[str, object]:
             raise ValueError("upcoming bet board contains an invalid moneyline")
         if _float(bet.get("minimum_expected_return")) != MIN_EXPECTED_RETURN:
             raise ValueError("upcoming bet board bet threshold is inconsistent")
-        if publication.get("bayesian_kelly") is not None:
+        if current_schema:
+            if (not _text(bet.get("event_id")) or not _text(bet.get("fighter_id"))
+                    or not _text(bet.get("opponent_id"))
+                    or bet.get("fighter_id") == bet.get("opponent_id")):
+                raise ValueError("upcoming bet board lacks a unique physical fight identity")
+            assessment = bet.get("bayesian_kelly") or {}
+            mean = _float(assessment.get("posterior_mean_probability"))
+            lower = _float(assessment.get("posterior_lower_probability"))
+            stake = _float(assessment.get("recommended_fraction"))
+            raw_probability = _float(bet.get("raw_estimated_win_probability"))
+            raw_expected = _float(bet.get("raw_estimated_expected_return"))
+            floor_expected = _float(bet.get("robust_lower_expected_return"))
+            allocated = _float(bet.get("allocated_fraction"))
+            decimal = _decimal_odds(moneyline)
+            if (assessment.get("status") != "available" or mean is None or lower is None
+                    or stake is None or stake <= 0 or raw_probability is None or not 0 < raw_probability < 1 or raw_expected is None
+                    or floor_expected is None or floor_expected <= 0
+                    or allocated is None or not 0 <= allocated <= 0.01
+                    or abs(probability - mean) > 1e-12
+                    or abs(expected - (probability * decimal - 1)) > 1e-12
+                    or abs(raw_expected - (raw_probability * decimal - 1)) > 1e-12
+                    or _float(assessment.get("nominal_probability")) is None
+                    or abs(float(assessment["nominal_probability"]) - raw_probability) > 1e-12
+                    or abs(floor_expected - (lower * decimal - 1)) > 1e-12):
+                raise ValueError("upcoming bet board calibrated probability or allocation is invalid")
+            observed = _utc(publication.get("observed_at_utc"), "board observation")
+            updated = _utc(bet.get("source_quote_updated_at_utc"), "source update")
+            start = _utc(bet.get("event_start_utc"), "event start")
+            if start <= observed or not 0 <= (observed - updated).total_seconds() <= MAX_SOURCE_QUOTE_AGE_SECONDS:
+                raise ValueError("upcoming bet board offer is expired or started")
+            if bet.get("category") == "Total rounds" and (
+                    bet.get("schedule_contract_version") != "verified-pre-fight-schedule-v1"
+                    or assessment.get("schedule_contract_version") != "verified-pre-fight-schedule-v1"
+                    or bet.get("betting_performance_validated") is not True
+                    or bet.get("model_version") != "candidate-discrete-time-competing-risks-v2-verified-schedules"):
+                raise ValueError("upcoming bet board total lacks verified pre-fight schedule")
+        if current_schema or publication.get("bayesian_kelly") is not None:
             if bet.get("category") == "Total rounds":
                 validate_total_bayesian_kelly_assessment(
                     bet.get("bayesian_kelly")
@@ -1011,12 +1133,24 @@ def validate_upcoming_bet_board(publication: object) -> dict[str, object]:
         unhashed_bet.pop("bet_id", None)
         if supplied_bet_id != canonical_hash(unhashed_bet):
             raise ValueError("upcoming bet board bet ID is invalid")
-        values.append(expected)
-        ids.append(supplied_bet_id)
+        if not current_schema or bet in offers:
+            # Each funded bet is also an offer and is validated above; collect
+            # the offer list once for ordering and uniqueness below.
+            if not current_schema or supplied_bet_id not in ids:
+                values.append(expected)
+                ids.append(supplied_bet_id)
     if values != sorted(values, reverse=True):
         raise ValueError("upcoming bet board is not sorted by expected return")
     if not all(ids) or len(set(ids)) != len(ids):
         raise ValueError("upcoming bet board bet IDs are invalid")
+    if current_schema:
+        if offers != allocate_paper_offers(offers):
+            raise ValueError("upcoming bet board does not match capped allocation")
+        funded = [offer for offer in offers if offer["allocated_fraction"] > 0]
+        if bets != funded or len(ids) != len(offers):
+            raise ValueError("upcoming bet board funded bets differ from eligible offers")
+        if abs(float(publication.get("allocated_fraction", -1)) - sum(bet["allocated_fraction"] for bet in bets)) > 1e-12:
+            raise ValueError("upcoming bet board total allocation is inconsistent")
     _utc(publication.get("observed_at_utc"), "observed_at_utc")
     return publication
 

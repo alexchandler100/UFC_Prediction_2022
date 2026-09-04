@@ -17,6 +17,8 @@ from data_handler import DataHandler  # noqa: E402
 from market_tracker import EarlyMarketObservation  # noqa: E402
 from market_tracker._common import canonical_hash  # noqa: E402
 from upcoming_bet_board import (  # noqa: E402
+    _calibrated_offer,
+    allocate_paper_offers,
     build_upcoming_bet_board,
     build_upcoming_forecast_publication,
     validate_upcoming_bet_board,
@@ -204,7 +206,7 @@ class UpcomingBetBoardTests(unittest.TestCase):
         )
         self.assertTrue(all(bet["target_book"] == "Target Book" for bet in board["bets"]))
 
-    def test_multiple_qualified_total_selections_for_one_fight_are_preserved(self):
+    def test_totals_without_supported_calibration_are_withheld_from_funded_board(self):
         matchup = self.forecasts["matchups"][0]
         current = {
             "event_id": matchup["event_id"],
@@ -255,21 +257,82 @@ class UpcomingBetBoardTests(unittest.TestCase):
             enable_total_bayesian_calibration=False,
         )
 
-        self.assertEqual(board["qualified_bet_count"], 2)
-        self.assertEqual(
-            {bet["selection"] for bet in board["bets"]},
-            {"Over 1.5 rounds", "Under 2.5 rounds"},
-        )
-        self.assertTrue(
-            all(
-                bet["bayesian_kelly"]["status"] == "unavailable"
-                for bet in board["bets"]
-            )
-        )
-        over = next(bet for bet in board["bets"] if bet["selection"] == "Over 1.5 rounds")
-        self.assertEqual(over["line"], 1.5)
-        self.assertEqual(over["model_id"], "outcome-model-one")
-        self.assertEqual(over["model_trained_through"], "2026-08-22")
+        self.assertEqual(board["qualified_bet_count"], 0)
+        self.assertEqual(board["offers"], [])
+        self.assertEqual(len(current["prop_markets"]["total_rounds"]["positive_candidates"]), 2)
+
+    def test_all_eligible_books_survive_until_accessible_book_selection(self):
+        observations = _event_prices("source-one", "2026-08-30T20:00:00Z", "Alpha One", "Beta Two")
+        observations.append(_observation(event_id="source-one", commence="2026-08-30T20:00:00Z",
+                            fighter="Alpha One", opponent="Beta Two", book="Second Target",
+                            fighter_line=100, opponent_line=-120))
+        board = build_upcoming_bet_board(self.forecasts, observations, observed_at_utc=OBSERVED,
+                                        source="the-odds-api.com")
+        self.assertEqual(board["schema_version"], 2)
+        self.assertTrue({"Target Book", "Second Target"}.issubset({offer["target_book"] for offer in board["offers"]}))
+        self.assertEqual(len(board["bets"]), 1)
+        self.assertAlmostEqual(board["allocated_fraction"], .01)
+        other = [offer for offer in board["offers"] if offer["target_book"] == "Target Book"]
+        reallocated = allocate_paper_offers(other)
+        self.assertAlmostEqual(reallocated[0]["allocated_fraction"], .01)
+        self.assertEqual(reallocated[0]["offered_moneyline"], 100)
+        self.assertEqual(reallocated[0]["raw_estimated_win_probability"], other[0]["raw_estimated_win_probability"])
+        self.assertEqual(reallocated[0]["bayesian_kelly"], other[0]["bayesian_kelly"])
+
+    def test_calibration_can_remove_nominal_edge_and_missing_timing_never_funds(self):
+        bet = {"estimated_win_probability": .7, "offered_moneyline": 100,
+               "source_quote_updated_at_utc": "2026-08-29T11:59:30Z",
+               "event_start_utc": "2026-08-30T20:00:00Z",
+               "bayesian_kelly": {"status": "available", "posterior_mean_probability": .49,
+                                  "posterior_lower_probability": .48, "recommended_fraction": .01}}
+        self.assertIsNone(_calibrated_offer(bet, OBSERVED))
+        bet["bayesian_kelly"].update(posterior_mean_probability=.6, posterior_lower_probability=.55)
+        offer = _calibrated_offer(bet, OBSERVED)
+        self.assertAlmostEqual(offer["estimated_expected_return"], .2)
+        self.assertAlmostEqual(offer["raw_estimated_expected_return"], .4)
+        bet["category"] = "Total rounds"
+        self.assertIsNone(_calibrated_offer(bet, OBSERVED))
+        bet["category"] = "Moneyline"
+        bet["source_quote_updated_at_utc"] = None
+        self.assertIsNone(_calibrated_offer(bet, OBSERVED))
+        bet["source_quote_updated_at_utc"] = "2026-08-29T11:00:00Z"
+        self.assertIsNone(_calibrated_offer(bet, OBSERVED))
+        bet["source_quote_updated_at_utc"] = "2026-08-29T12:00:01Z"
+        self.assertIsNone(_calibrated_offer(bet, OBSERVED))
+        bet["source_quote_updated_at_utc"] = "2026-08-29T11:59:30Z"
+        bet["event_start_utc"] = "2026-08-29T12:00:00Z"
+        self.assertIsNone(_calibrated_offer(bet, OBSERVED))
+
+    def test_allocation_caps_cards_outstanding_and_reversed_fighter_duplicates(self):
+        offers = []
+        for event in ("a", "b", "c"):
+            for index in range(7):
+                offers.append({"event_id": event, "event_date": "2026-08-30", "matchup_id": str(index),
+                               "fighter_id": f"fighter-{index}", "opponent_id": f"opponent-{index}",
+                               "selection": f"fighter-{index}", "side": "fighter", "target_book": "A",
+                               "offered_moneyline": 150, "estimated_expected_return": .2,
+                               "bayesian_kelly": {"recommended_fraction": .05}})
+        reverse = dict(offers[0], fighter_id=offers[0]["opponent_id"], opponent_id=offers[0]["fighter_id"],
+                       matchup_id="reversed", estimated_expected_return=.3)
+        offers.append(reverse)
+        allocated = allocate_paper_offers(offers)
+        self.assertEqual(allocated, allocate_paper_offers(reversed(offers)))
+        self.assertAlmostEqual(sum(x["allocated_fraction"] for x in allocated), .10)
+        for event in ("a", "b", "c"):
+            self.assertLessEqual(sum(x["allocated_fraction"] for x in allocated if x["event_id"] == event), .05 + 1e-12)
+        self.assertEqual(sum(x["allocated_fraction"] > 0 for x in allocated if x["event_id"] == "a" and x["matchup_id"] in {"0", "reversed"}), 1)
+        for offer in allocated:
+            unhashed = dict(offer)
+            supplied = unhashed.pop("bet_id")
+            self.assertEqual(supplied, canonical_hash(unhashed))
+
+    def test_legacy_board_remains_readable_for_historical_evidence(self):
+        board = build_upcoming_bet_board(self.forecasts, (), observed_at_utc=OBSERVED, source="test")
+        board["schema_version"] = 1
+        board["policy_version"] = "all-upcoming-qualified-bets-v1"
+        board.pop("publication_sha256")
+        board["publication_sha256"] = canonical_hash(board)
+        self.assertEqual(validate_upcoming_bet_board(board), board)
 
     def test_validator_rejects_a_below_threshold_row_even_with_updated_hashes(self):
         board = build_upcoming_bet_board(

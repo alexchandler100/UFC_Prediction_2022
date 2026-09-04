@@ -471,7 +471,8 @@ def choose_threshold(
     minimum_bets: int = 30,
     minimum_events: int = 10,
     bootstrap_samples: int = DEFAULT_BOOTSTRAP_SAMPLES,
-) -> tuple[float, dict[str, dict[str, object]], str]:
+    allow_abstention: bool = False,
+) -> tuple[float | None, dict[str, dict[str, object]], str]:
     results = {
         f"{float(threshold):.3f}": threshold_metrics(
             best_offers,
@@ -490,6 +491,11 @@ def choose_threshold(
         result for result in eligible if float(result["profit_units"]) > 0.0
     ]
     if not profitable:
+        if allow_abstention:
+            return None, results, (
+                "no_bet_insufficient_history" if not eligible
+                else "no_bet_no_profitable_earlier_threshold"
+            )
         fallback = min(thresholds, key=lambda value: abs(float(value) - 0.05))
         status = (
             "fallback_5_percent_insufficient_history"

@@ -22,14 +22,23 @@ from bayesian_total_calibration import (
     BayesianTotalCalibrator,
     CALIBRATION_POLICY_VERSION,
 )
-from fight_semantics import upcoming_schedule
+from fight_semantics import SCHEDULE_CONTRACT_VERSION, upcoming_schedule
 from market_tracker import matchup_id_for
 
 from .outcome_model import DiscreteTimeOutcomeModel
 
 
 OUTCOME_FORECAST_SCHEMA_VERSION = 1
-OUTCOME_MODEL_VERSION = "candidate-discrete-time-competing-risks-v1"
+OUTCOME_MODEL_VERSION = "candidate-discrete-time-competing-risks-v2-verified-schedules"
+
+
+def outcome_forecasts_usable(publication: Mapping[str, object]) -> bool:
+    """Legacy artifacts remain readable history, not eligible current forecasts."""
+    return (
+        publication.get("model_version") == OUTCOME_MODEL_VERSION
+        and publication.get("schedule_contract_version") == SCHEDULE_CONTRACT_VERSION
+        and int(publication.get("forecast_matchup_count", 0)) > 0
+    )
 
 
 def _canonical_json(value: object) -> str:
@@ -64,7 +73,7 @@ def scheduled_rounds_for_upcoming(
 
 
 def build_outcome_forecast_publication(
-    model: DiscreteTimeOutcomeModel,
+    model: DiscreteTimeOutcomeModel | None,
     feature_builder: object,
     upcoming: pd.DataFrame,
     card: Mapping[str, object],
@@ -74,6 +83,7 @@ def build_outcome_forecast_publication(
     model_trained_through: str,
     forecast_issued_at_utc: str,
     source_commit_sha: str,
+    unavailable_reason: str = "Insufficient independently verified scheduled fight lengths.",
 ) -> dict[str, object]:
     """Build one content-addressed, candidate-only upcoming-card forecast."""
 
@@ -86,17 +96,20 @@ def build_outcome_forecast_publication(
     if len(training_input_sha256) != 64:
         raise ValueError("outcome training input requires a SHA-256 fingerprint")
 
+    if model is not None and getattr(model, "schedule_contract_version", None) != SCHEDULE_CONTRACT_VERSION:
+        raise ValueError("Outcome model lacks independently verified schedules")
     model_contract = {
         "model_version": OUTCOME_MODEL_VERSION,
-        "interval_seconds": model.interval_seconds,
+        "schedule_contract_version": SCHEDULE_CONTRACT_VERSION,
+        "interval_seconds": model.interval_seconds if model is not None else 30,
         "selected_c": float(selected_c),
         "training_input_sha256": training_input_sha256,
-        "feature_columns": list(model.feature_columns),
+        "feature_columns": list(model.feature_columns) if model is not None else [],
     }
     model_id = _canonical_hash(model_contract)[:24]
     total_calibrator = (
         BayesianTotalCalibrator(model.total_calibration_artifact)
-        if model.total_calibration_artifact is not None
+        if model is not None and model.total_calibration_artifact is not None
         else None
     )
     matchups: list[dict[str, object]] = []
@@ -122,13 +135,19 @@ def build_outcome_forecast_publication(
             "forecast_status": status,
         }
         if (
-            not fighter_id
+            model is None
+            or not fighter_id
             or not opponent_id
             or fighter_id == opponent_id
             or status.casefold().startswith("abstain")
         ):
             item["matchup_id"] = None
-            item["forecast_status"] = "abstain_unresolved_identity"
+            item["forecast_status"] = (
+                "unavailable_verified_schedule_history" if model is None
+                else "abstain_unresolved_identity"
+            )
+            if model is None:
+                item["reason"] = unavailable_reason
             matchups.append(item)
             continue
         features = feature_builder.matchup_features(
@@ -170,6 +189,9 @@ def build_outcome_forecast_publication(
     body: dict[str, object] = {
         "schema_version": OUTCOME_FORECAST_SCHEMA_VERSION,
         "model_version": OUTCOME_MODEL_VERSION,
+        "schedule_contract_version": SCHEDULE_CONTRACT_VERSION,
+        "availability_status": "available" if model is not None else "unavailable",
+        "unavailable_reason": unavailable_reason if model is None else None,
         "model_id": model_id,
         "candidate_only": True,
         "paper_only": True,
@@ -183,10 +205,10 @@ def build_outcome_forecast_publication(
         "model_trained_through": model_trained_through,
         "training_input_sha256": training_input_sha256,
         "selected_c": float(selected_c),
-        "interval_seconds": model.interval_seconds,
-        "training_fights": model.training_fights,
-        "training_risk_rows": model.training_risk_rows,
-        "omitted_training_unknown_schedule": model.omitted_unknown_schedule,
+        "interval_seconds": model.interval_seconds if model is not None else 30,
+        "training_fights": model.training_fights if model is not None else 0,
+        "training_risk_rows": model.training_risk_rows if model is not None else 0,
+        "omitted_training_unknown_schedule": model.omitted_unknown_schedule if model is not None else 0,
         "schedule_contract": (
             "five rounds for UFCStats title labels and the first-listed main "
             "event; otherwise three rounds"

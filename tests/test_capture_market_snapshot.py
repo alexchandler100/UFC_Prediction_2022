@@ -75,6 +75,15 @@ def _published_matchup(index: int) -> collector.PublishedMatchup:
 
 
 class CaptureMarketSnapshotTests(unittest.TestCase):
+    def test_legacy_duration_forecast_is_withheld_without_discarding_prices(self):
+        legacy = {"model_version": "candidate-v1", "forecast_matchup_count": 1}
+        quotes = (object(), object())
+        with patch.object(collector, "validate_outcome_forecast_publication", return_value=legacy):
+            forecasts, counters = collector._build_total_round_forecasts(quotes, legacy)
+        self.assertEqual(forecasts, ())
+        self.assertEqual(counters["total_round_quotes_without_forecast"], 2)
+        self.assertEqual(counters["total_round_forecast_lines"], 0)
+
     def test_offline_capture_preserves_publication_and_round_trips(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)

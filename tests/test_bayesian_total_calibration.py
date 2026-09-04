@@ -13,6 +13,7 @@ sys.path.insert(0, str(ROOT / "src"))
 
 from bayesian_total_calibration import (  # noqa: E402
     BayesianTotalCalibrator,
+    _canonical_hash,
     fit_total_calibration,
     validate_total_bayesian_kelly_assessment,
     validate_total_calibration_artifact,
@@ -71,6 +72,37 @@ class BayesianTotalCalibrationTests(unittest.TestCase):
         changed["lines"]["1.5"]["posterior"]["slope_draws"][0] = 3.0
         with self.assertRaisesRegex(ValueError, "hash"):
             validate_total_calibration_artifact(changed)
+
+    def test_too_small_later_check_never_enables_staking(self):
+        frame = _predictions().iloc[:40].copy()
+        events = [0] * 33 + list(range(1, 8))
+        frame["event_id"] = [f"event-{event}" for event in events]
+        frame["event_date"] = [pd.Timestamp("2020-01-01") + pd.Timedelta(days=event)
+                               for event in events]
+        artifact = fit_total_calibration(frame)
+        line = artifact["lines"]["1.5"]
+        self.assertEqual(line["chronological_check"]["holdout_fights"], 2)
+        self.assertEqual(line["status"], "unavailable")
+        assessment = BayesianTotalCalibrator(artifact).assessment(0.9, "over", 1.5, 200)
+        self.assertEqual(assessment["status"], "unavailable")
+        self.assertNotIn("recommended_fraction", assessment)
+
+    def test_legacy_artifact_remains_readable_but_cannot_generate_new_stakes(self):
+        artifact = copy.deepcopy(self.artifact)
+        artifact.pop("schedule_contract_version")
+        artifact.pop("artifact_sha256")
+        artifact["artifact_sha256"] = _canonical_hash(artifact)
+        validate_total_calibration_artifact(artifact)
+        with self.assertRaisesRegex(ValueError, "independently verified schedules"):
+            BayesianTotalCalibrator(artifact)
+
+    def test_supported_check_is_required_even_after_hash_is_recomputed(self):
+        artifact = copy.deepcopy(self.artifact)
+        artifact["lines"]["1.5"]["chronological_check"]["holdout_fights"] = 2
+        artifact.pop("artifact_sha256")
+        artifact["artifact_sha256"] = _canonical_hash(artifact)
+        with self.assertRaisesRegex(ValueError, "supported later-fight check"):
+            validate_total_calibration_artifact(artifact)
 
 
 if __name__ == "__main__":

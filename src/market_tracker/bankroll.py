@@ -15,6 +15,10 @@ import re
 import tempfile
 from typing import Iterable, Mapping
 
+from bayesian_total_calibration import (
+    KELLY_POLICY_VERSION as TOTAL_KELLY_POLICY_VERSION,
+    validate_total_bayesian_kelly_assessment,
+)
 from ._common import canonical_hash, implied_probability, utc_datetime
 from .bayesian_kelly import (
     BayesianKellyCalibrator,
@@ -34,6 +38,19 @@ RESEARCH_STAKING_STRATEGIES = (
     "half_kelly_model_sim_blend",
 )
 SUPPORT_SOURCES = ("model", "simulation")
+
+
+def _validate_saved_assessment(record: Mapping[str, object], assessment: object) -> dict:
+    """Preserve historical assessments; dispatch by their recorded market policy."""
+    if isinstance(assessment, dict) and assessment.get("policy_version") == TOTAL_KELLY_POLICY_VERSION:
+        if record.get("category") != "Total rounds":
+            raise ValueError("A totals assessment cannot size a moneyline")
+        return validate_total_bayesian_kelly_assessment(assessment)
+    validated = validate_bayesian_kelly_assessment(assessment)
+    # Old total snapshots used an unavailable moneyline-shaped placeholder.
+    if record.get("category") != "Moneyline" and validated.get("status") == "available":
+        raise ValueError("A moneyline assessment cannot size a total-round bet")
+    return validated
 
 
 def profit_multiple(moneyline: object) -> float:
@@ -476,6 +493,9 @@ def _archive_records(
             "settled_at_utc": None,
             "probability_source": item.get("probability_source"),
             "bayesian_kelly": item.get("bayesian_kelly"),
+            "allocated_fraction": item.get("allocated_fraction"),
+            "allocation_policy_version": item.get("allocation_policy_version"),
+            "raw_estimated_win_probability": item.get("raw_estimated_win_probability"),
             **_support_fields("model", None),
             **_support_fields("simulation", None),
         })
@@ -541,7 +561,7 @@ def _attach_bayesian_kelly(
             prior = prior_support.get(str(record.get("record_id") or ""), {})
             existing = prior.get("bayesian_kelly")
         if existing is not None:
-            record["bayesian_kelly"] = validate_bayesian_kelly_assessment(existing)
+            record["bayesian_kelly"] = _validate_saved_assessment(record, existing)
             continue
         if record.get("category") != "Moneyline":
             record["bayesian_kelly"] = unavailable_assessment(
@@ -724,7 +744,12 @@ def validate_bet_performance_publication(value: object) -> dict[str, object]:
         if record["category"] != "Moneyline" and record.get("model_support_probability") is not None:
             raise ValueError("winner-model support cannot size a total-round bet")
         if has_bayesian_contract:
-            validate_bayesian_kelly_assessment(record.get("bayesian_kelly"))
+            _validate_saved_assessment(record, record.get("bayesian_kelly"))
+        allocated = record.get("allocated_fraction")
+        if allocated is not None:
+            allocated = float(allocated)
+            if not math.isfinite(allocated) or not 0 <= allocated <= 0.01:
+                raise ValueError("Saved portfolio allocation exceeds the one-percent fight cap")
     return value
 
 

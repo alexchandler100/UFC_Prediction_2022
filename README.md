@@ -7,6 +7,27 @@ This project collects UFCStats fight data and publishes a searchable fighter and
 
 ## Production pipeline
 
+The September 2026 profitability repair uses independently recorded scheduled
+fight lengths for duration training. An offline reconciliation recovered 686
+historical schedules from saved round statistics; unresolved schedules are
+excluded. Legacy duration artifacts remain historical evidence and cannot
+generate new funded recommendations. Totals still require their own successful
+betting-performance evaluation, even after their probabilities are rebuilt.
+
+The paper board now qualifies bets using calibrated probabilities and requires
+a positive conservative return. It selects among the user's chosen sportsbooks,
+expires prices after 30 minutes and at card start, and limits the displayed
+portfolio to one funded selection per fight: 1% per fight, 5% per card, and 10%
+across the current board. These are research limits assuming no existing open
+bets, not account-level risk controls. Saved allocations survive performance
+replay unchanged. Historical snapshots retain their original assessments.
+
+Reproduce the source repair with `python src/repair_historical_schedules.py
+--apply --apply-pit --report audit/profitability/improvements/schedule_repair.json`.
+Rebuild only duration research with `python src/build_outcome_forecasts.py`, then
+refresh existing price views without another API request using
+`python src/refresh_betting_publications.py`. These commands do not place bets.
+
 The weekly job:
 
 1. Reconciles recent completed events from UFCStats and refreshes active fighter profiles.
