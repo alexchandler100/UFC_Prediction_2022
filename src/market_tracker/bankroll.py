@@ -16,6 +16,11 @@ import tempfile
 from typing import Iterable, Mapping
 
 from ._common import canonical_hash, implied_probability, utc_datetime
+from .bayesian_kelly import (
+    BayesianKellyCalibrator,
+    unavailable_assessment,
+    validate_bayesian_kelly_assessment,
+)
 
 
 ARCHIVE_SCHEMA_VERSION = 1
@@ -23,6 +28,7 @@ PERFORMANCE_SCHEMA_VERSION = 1
 ARCHIVE_POLICY_VERSION = "published-qualified-paper-bets-v1"
 PERFORMANCE_POLICY_VERSION = "published-paper-bankroll-replay-v1"
 RESEARCH_STAKING_STRATEGIES = (
+    "robust_bayesian_kelly",
     "half_kelly_model_blend",
     "half_kelly_sim_blend",
     "half_kelly_model_sim_blend",
@@ -469,6 +475,7 @@ def _archive_records(
             "unit_profit": unit_profit,
             "settled_at_utc": None,
             "probability_source": item.get("probability_source"),
+            "bayesian_kelly": item.get("bayesian_kelly"),
             **_support_fields("model", None),
             **_support_fields("simulation", None),
         })
@@ -519,6 +526,48 @@ def _attach_research_support(
             record.update(fields)
 
 
+def _attach_bayesian_kelly(
+    records: list[dict[str, object]],
+    calibrator: BayesianKellyCalibrator,
+    prior_support: Mapping[str, Mapping[str, object]],
+) -> None:
+    trained_through = utc_datetime(
+        f"{calibrator.artifact['training_last_event_date']}T00:00:00Z",
+        "Bayesian Kelly training cutoff",
+    )
+    for record in records:
+        existing = record.get("bayesian_kelly")
+        if existing is None:
+            prior = prior_support.get(str(record.get("record_id") or ""), {})
+            existing = prior.get("bayesian_kelly")
+        if existing is not None:
+            record["bayesian_kelly"] = validate_bayesian_kelly_assessment(existing)
+            continue
+        if record.get("category") != "Moneyline":
+            record["bayesian_kelly"] = unavailable_assessment(
+                "Fight totals do not yet have a validated posterior calibration."
+            )
+            continue
+        if record.get("probability_source") != "leave_one_book_out_no_vig_market_consensus":
+            record["bayesian_kelly"] = unavailable_assessment(
+                "This probability did not come from the calibrated moneyline-consensus source."
+            )
+            continue
+        published = utc_datetime(record["published_at_utc"], "published_at_utc")
+        if trained_through >= published:
+            record["bayesian_kelly"] = unavailable_assessment(
+                "The calibration data was not strictly earlier than this published bet."
+            )
+            continue
+        record["bayesian_kelly"] = calibrator.assessment(
+            record["estimated_win_probability"],
+            record["offered_moneyline"],
+            assessment_timing=(
+                "retrospective_policy_using_only_prepublication_calibration_data"
+            ),
+        )
+
+
 def build_bet_performance_publication(
     *, decisions: Iterable[object], settlements: Iterable[object],
     quotes: Iterable[object], forecasts: Iterable[object],
@@ -529,6 +578,7 @@ def build_bet_performance_publication(
     model_support: Mapping[tuple[str, ...], Mapping[str, object]] | None = None,
     simulation_support: Mapping[tuple[str, ...], Mapping[str, object]] | None = None,
     prior_support: Mapping[str, Mapping[str, object]] | None = None,
+    bayesian_kelly_calibrator: BayesianKellyCalibrator | None = None,
 ) -> dict[str, object]:
     decisions = tuple(decisions)
     settlements = tuple(settlements)
@@ -549,6 +599,8 @@ def build_bet_performance_publication(
         simulation_support=simulation_support or {},
         prior_support=prior_support or {},
     )
+    calibrator = bayesian_kelly_calibrator or BayesianKellyCalibrator.load()
+    _attach_bayesian_kelly(records, calibrator, prior_support or {})
     records.sort(key=lambda item: (str(item["published_at_utc"]), str(item["record_id"])))
     official = [item for item in records if item["official"]]
     body: dict[str, object] = {
@@ -584,9 +636,18 @@ def build_bet_performance_publication(
                 and item["simulation_support_probability"] is not None
                 for item in records
             ),
+            "bayesian_kelly_supported_records": sum(
+                item["bayesian_kelly"]["status"] == "available"
+                for item in records
+            ),
+            "bayesian_kelly_calibration_artifact_sha256": calibrator.artifact[
+                "artifact_sha256"
+            ],
             "rule": (
-                "Research strategies combine probabilities in log-odds space, "
-                "then apply half Kelly; unsupported bets are excluded."
+                "Robust Bayesian Kelly sizes moneylines from the lower 10th-percentile "
+                "calibrated chance and caps one bet at 5% of bankroll. Other research "
+                "strategies combine probabilities in log-odds space, then apply half "
+                "Kelly. Unsupported bets are excluded."
             ),
         },
         "timing_strategies": ["official_t24", "first_qualifying", "nearest_t48", "nearest_t24", "favorite_early_underdog_late", "latest_qualifying"],
@@ -625,6 +686,11 @@ def validate_bet_performance_publication(value: object) -> dict[str, object]:
     records = value.get("records")
     if not isinstance(records, list) or value.get("record_count") != len(records):
         raise ValueError("bet performance record count is inconsistent")
+    research_support = value.get("research_support")
+    has_bayesian_contract = (
+        isinstance(research_support, dict)
+        and bool(research_support.get("bayesian_kelly_calibration_artifact_sha256"))
+    )
     identifiers: set[str] = set()
     for record in records:
         if not isinstance(record, dict) or not str(record.get("record_id") or ""):
@@ -657,6 +723,8 @@ def validate_bet_performance_publication(value: object) -> dict[str, object]:
                 raise ValueError(f"bet performance {source} support is from the future")
         if record["category"] != "Moneyline" and record.get("model_support_probability") is not None:
             raise ValueError("winner-model support cannot size a total-round bet")
+        if has_bayesian_contract:
+            validate_bayesian_kelly_assessment(record.get("bayesian_kelly"))
     return value
 
 

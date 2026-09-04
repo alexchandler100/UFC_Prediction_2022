@@ -9,10 +9,32 @@
   "official_wins": 0,
   "paper_only": true,
   "policy_version": "published-paper-bankroll-replay-v1",
-  "publication_sha256": "5b3479b311608b0d531c95758cc1650d538b9526ee027d40386a8ce3174994f4",
+  "publication_sha256": "b312455b6d9371e8e2ca98da1139ac8da12d8e04633d388a607b15905ee6ad38",
   "record_count": 64,
   "records": [
     {
+      "bayesian_kelly": {
+        "assessment_timing": "retrospective_policy_using_only_prepublication_calibration_data",
+        "break_even_probability": 0.18181818181818182,
+        "calibration_artifact_sha256": "2e84f775d3cfec880299d798214205805caf46ee008050a12d335215a16a1a7c",
+        "calibration_trained_through": "2026-04-04",
+        "calibration_training_events": 58,
+        "calibration_training_fights": 503,
+        "cap_applied": false,
+        "expected_log_growth_at_probability_floor": 0.0,
+        "maximum_single_bet_fraction": 0.05,
+        "nominal_probability": 0.19367753285617323,
+        "policy_version": "robust-bayesian-kelly-moneyline-v1",
+        "posterior_interval_mass": 0.8,
+        "posterior_lower_probability": 0.13288829619831904,
+        "posterior_mean_full_kelly_fraction": 0.0,
+        "posterior_mean_probability": 0.1649393440834655,
+        "posterior_upper_probability": 0.19849729448916245,
+        "probability_positive_edge": 0.2490272373540856,
+        "recommended_fraction": 0.0,
+        "robust_uncapped_kelly_fraction": 0.0,
+        "status": "available"
+      },
       "bout_order": null,
       "category": "Moneyline",
       "estimated_expected_return": 0.06522643070895273,
@@ -51,6 +73,28 @@
       "unit_profit": -1.0
     },
     {
+      "bayesian_kelly": {
+        "assessment_timing": "retrospective_policy_using_only_prepublication_calibration_data",
+        "break_even_probability": 0.11764705882352941,
+        "calibration_artifact_sha256": "2e84f775d3cfec880299d798214205805caf46ee008050a12d335215a16a1a7c",
+        "calibration_trained_through": "2026-04-04",
+        "calibration_training_events": 58,
+        "calibration_training_fights": 503,
+        "cap_applied": false,
+        "expected_log_growth_at_probability_floor": 0.0,
+        "maximum_single_bet_fraction": 0.05,
+        "nominal_probability": 0.12693064026754047,
+        "policy_version": "robust-bayesian-kelly-moneyline-v1",
+        "posterior_interval_mass": 0.8,
+        "posterior_lower_probability": 0.07337738044856817,
+        "posterior_mean_full_kelly_fraction": 0.0,
+        "posterior_mean_probability": 0.10126216444707256,
+        "posterior_upper_probability": 0.13158309186564054,
+        "probability_positive_edge": 0.22568093385214008,
+        "recommended_fraction": 0.0,
+        "robust_uncapped_kelly_fraction": 0.0,
+        "status": "available"
+      },
       "bout_order": null,
       "category": "Moneyline",
       "estimated_expected_return": 0.07891044227409405,
@@ -89,6 +133,28 @@
       "unit_profit": -1.0
     },
     {
+      "bayesian_kelly": {
+        "assessment_timing": "retrospective_policy_using_only_prepublication_calibration_data",
+        "break_even_probability": 0.16666666666666666,
+        "calibration_artifact_sha256": "2e84f775d3cfec880299d798214205805caf46ee008050a12d335215a16a1a7c",
+        "calibration_trained_through": "2026-04-04",
+        "calibration_training_events": 58,
+        "calibration_training_fights": 503,
+        "cap_applied": false,
+        "expected_log_growth_at_probability_floor": 0.0,
+        "maximum_single_bet_fraction": 0.05,
+        "nominal_probability": 0.17708939658203426,
+        "policy_version": "robust-bayesian-kelly-moneyline-v1",
+        "posterior_interval_mass": 0.8,
+        "posterior_lower_probability": 0.11709945675784009,
+        "posterior_mean_full_kelly_fraction": 0.0,
+        "posterior_mean_probability": 0.14864407336308633,
+        "posterior_upper_probability": 0.18193975582890026,
+        "probability_positive_edge": 0.23346303501945526,
+        "recommended_fraction": 0.0,
+        "robust_uncapped_kelly_fraction": 0.0,
+        "status": "available"
+      },
       "bout_order": 0,
       "category": "Moneyline",
       "estimated_expected_return": 0.06253637949220558,
@@ -127,6 +193,11 @@
       "unit_profit": 5.0
     },
     {
+      "bayesian_kelly": {
+        "policy_version": "robust-bayesian-kelly-moneyline-v1",
+        "reason": "Fight totals do not yet have a validated posterior calibration.",
+        "status": "unavailable"
+      },
       "bout_order": 5,
       "category": "Total rounds",
       "estimated_expected_return": 0.28602064261847504,
@@ -165,6 +236,28 @@
       "unit_profit": -1.0
     },
     {
+      "bayesian_kelly": {
+        "assessment_timing": "retrospective_policy_using_only_prepublication_calibration_data",
+        "break_even_probability": 0.13513513513513511,
+        "calibration_artifact_sha256": "2e84f775d3cfec880299d798214205805caf46ee008050a12d335215a16a1a7c",
+        "calibration_trained_through": "2026-04-04",
+        "calibration_training_events": 58,
+        "calibration_training_fights": 503,
+        "cap_applied": false,
+        "expected_log_growth_at_probability_floor": 0.0,
+        "maximum_single_bet_fraction": 0.05,
+        "nominal_probability": 0.1497069169293117,
+        "policy_version": "robust-bayesian-kelly-moneyline-v1",
+        "posterior_interval_mass": 0.8,
+        "posterior_lower_probability": 0.09244562469531845,
+        "posterior_mean_full_kelly_fraction": 0.0,
+        "posterior_mean_probability": 0.1224049784239962,
+        "posterior_upper_probability": 0.154508898665794,
+        "probability_positive_edge": 0.2840466926070039,
+        "recommended_fraction": 0.0,
+        "robust_uncapped_kelly_fraction": 0.0,
+        "status": "available"
+      },
       "bout_order": 7,
       "category": "Moneyline",
       "estimated_expected_return": 0.10783118527690672,
@@ -203,6 +296,11 @@
       "unit_profit": -1.0
     },
     {
+      "bayesian_kelly": {
+        "policy_version": "robust-bayesian-kelly-moneyline-v1",
+        "reason": "Fight totals do not yet have a validated posterior calibration.",
+        "status": "unavailable"
+      },
       "bout_order": 5,
       "category": "Total rounds",
       "estimated_expected_return": 0.1534855446639083,
@@ -241,6 +339,11 @@
       "unit_profit": -1.0
     },
     {
+      "bayesian_kelly": {
+        "policy_version": "robust-bayesian-kelly-moneyline-v1",
+        "reason": "Fight totals do not yet have a validated posterior calibration.",
+        "status": "unavailable"
+      },
       "bout_order": 2,
       "category": "Total rounds",
       "estimated_expected_return": 0.2609605828411927,
@@ -279,6 +382,11 @@
       "unit_profit": -1.0
     },
     {
+      "bayesian_kelly": {
+        "policy_version": "robust-bayesian-kelly-moneyline-v1",
+        "reason": "Fight totals do not yet have a validated posterior calibration.",
+        "status": "unavailable"
+      },
       "bout_order": 11,
       "category": "Total rounds",
       "estimated_expected_return": 1.5255093498381802,
@@ -317,6 +425,11 @@
       "unit_profit": 3.34
     },
     {
+      "bayesian_kelly": {
+        "policy_version": "robust-bayesian-kelly-moneyline-v1",
+        "reason": "Fight totals do not yet have a validated posterior calibration.",
+        "status": "unavailable"
+      },
       "bout_order": 9,
       "category": "Total rounds",
       "estimated_expected_return": 0.27385014021539655,
@@ -355,6 +468,11 @@
       "unit_profit": 1.3
     },
     {
+      "bayesian_kelly": {
+        "policy_version": "robust-bayesian-kelly-moneyline-v1",
+        "reason": "Fight totals do not yet have a validated posterior calibration.",
+        "status": "unavailable"
+      },
       "bout_order": 0,
       "category": "Total rounds",
       "estimated_expected_return": 0.1235553229261499,
@@ -393,6 +511,11 @@
       "unit_profit": -1.0
     },
     {
+      "bayesian_kelly": {
+        "policy_version": "robust-bayesian-kelly-moneyline-v1",
+        "reason": "Fight totals do not yet have a validated posterior calibration.",
+        "status": "unavailable"
+      },
       "bout_order": 1,
       "category": "Total rounds",
       "estimated_expected_return": 0.32057734549676553,
@@ -431,6 +554,11 @@
       "unit_profit": 2.4
     },
     {
+      "bayesian_kelly": {
+        "policy_version": "robust-bayesian-kelly-moneyline-v1",
+        "reason": "Fight totals do not yet have a validated posterior calibration.",
+        "status": "unavailable"
+      },
       "bout_order": 2,
       "category": "Total rounds",
       "estimated_expected_return": 0.41107002471535026,
@@ -469,6 +597,11 @@
       "unit_profit": -1.0
     },
     {
+      "bayesian_kelly": {
+        "policy_version": "robust-bayesian-kelly-moneyline-v1",
+        "reason": "Fight totals do not yet have a validated posterior calibration.",
+        "status": "unavailable"
+      },
       "bout_order": 4,
       "category": "Total rounds",
       "estimated_expected_return": 1.056865646757303,
@@ -507,6 +640,11 @@
       "unit_profit": -1.0
     },
     {
+      "bayesian_kelly": {
+        "policy_version": "robust-bayesian-kelly-moneyline-v1",
+        "reason": "Fight totals do not yet have a validated posterior calibration.",
+        "status": "unavailable"
+      },
       "bout_order": 8,
       "category": "Total rounds",
       "estimated_expected_return": 0.2524539067180409,
@@ -545,6 +683,11 @@
       "unit_profit": -1.0
     },
     {
+      "bayesian_kelly": {
+        "policy_version": "robust-bayesian-kelly-moneyline-v1",
+        "reason": "Fight totals do not yet have a validated posterior calibration.",
+        "status": "unavailable"
+      },
       "bout_order": 7,
       "category": "Total rounds",
       "estimated_expected_return": 0.23643290880714174,
@@ -583,6 +726,11 @@
       "unit_profit": -1.0
     },
     {
+      "bayesian_kelly": {
+        "policy_version": "robust-bayesian-kelly-moneyline-v1",
+        "reason": "Fight totals do not yet have a validated posterior calibration.",
+        "status": "unavailable"
+      },
       "bout_order": 8,
       "category": "Total rounds",
       "estimated_expected_return": 0.1257680103224541,
@@ -621,6 +769,11 @@
       "unit_profit": null
     },
     {
+      "bayesian_kelly": {
+        "policy_version": "robust-bayesian-kelly-moneyline-v1",
+        "reason": "Fight totals do not yet have a validated posterior calibration.",
+        "status": "unavailable"
+      },
       "bout_order": 7,
       "category": "Total rounds",
       "estimated_expected_return": 0.32127732439398593,
@@ -659,6 +812,11 @@
       "unit_profit": null
     },
     {
+      "bayesian_kelly": {
+        "policy_version": "robust-bayesian-kelly-moneyline-v1",
+        "reason": "Fight totals do not yet have a validated posterior calibration.",
+        "status": "unavailable"
+      },
       "bout_order": 1,
       "category": "Total rounds",
       "estimated_expected_return": 0.06391392502451798,
@@ -697,6 +855,28 @@
       "unit_profit": null
     },
     {
+      "bayesian_kelly": {
+        "assessment_timing": "retrospective_policy_using_only_prepublication_calibration_data",
+        "break_even_probability": 0.1652892561983471,
+        "calibration_artifact_sha256": "2e84f775d3cfec880299d798214205805caf46ee008050a12d335215a16a1a7c",
+        "calibration_trained_through": "2026-04-04",
+        "calibration_training_events": 58,
+        "calibration_training_fights": 503,
+        "cap_applied": false,
+        "expected_log_growth_at_probability_floor": 0.0,
+        "maximum_single_bet_fraction": 0.05,
+        "nominal_probability": 0.18859436302939128,
+        "policy_version": "robust-bayesian-kelly-moneyline-v1",
+        "posterior_interval_mass": 0.8,
+        "posterior_lower_probability": 0.12798442836289067,
+        "posterior_mean_full_kelly_fraction": 0.0,
+        "posterior_mean_probability": 0.1599153989579641,
+        "posterior_upper_probability": 0.19342790983844982,
+        "probability_positive_edge": 0.40077821011673154,
+        "recommended_fraction": 0.0,
+        "robust_uncapped_kelly_fraction": 0.0,
+        "status": "available"
+      },
       "bout_order": 7,
       "category": "Moneyline",
       "estimated_expected_return": 0.14099589632781728,
@@ -735,6 +915,28 @@
       "unit_profit": null
     },
     {
+      "bayesian_kelly": {
+        "assessment_timing": "retrospective_policy_using_only_prepublication_calibration_data",
+        "break_even_probability": 0.2222222222222222,
+        "calibration_artifact_sha256": "2e84f775d3cfec880299d798214205805caf46ee008050a12d335215a16a1a7c",
+        "calibration_trained_through": "2026-04-04",
+        "calibration_training_events": 58,
+        "calibration_training_fights": 503,
+        "cap_applied": false,
+        "expected_log_growth_at_probability_floor": 0.0,
+        "maximum_single_bet_fraction": 0.05,
+        "nominal_probability": 0.23490608353100628,
+        "policy_version": "robust-bayesian-kelly-moneyline-v1",
+        "posterior_interval_mass": 0.8,
+        "posterior_lower_probability": 0.17467608862372927,
+        "posterior_mean_full_kelly_fraction": 0.0,
+        "posterior_mean_probability": 0.20661551732836597,
+        "posterior_upper_probability": 0.23948606281448073,
+        "probability_positive_edge": 0.26459143968871596,
+        "recommended_fraction": 0.0,
+        "robust_uncapped_kelly_fraction": 0.0,
+        "status": "available"
+      },
       "bout_order": 0,
       "category": "Moneyline",
       "estimated_expected_return": 0.057077375889528215,
@@ -773,6 +975,11 @@
       "unit_profit": null
     },
     {
+      "bayesian_kelly": {
+        "policy_version": "robust-bayesian-kelly-moneyline-v1",
+        "reason": "Fight totals do not yet have a validated posterior calibration.",
+        "status": "unavailable"
+      },
       "bout_order": 4,
       "category": "Total rounds",
       "estimated_expected_return": 0.38489586898852135,
@@ -811,6 +1018,11 @@
       "unit_profit": null
     },
     {
+      "bayesian_kelly": {
+        "policy_version": "robust-bayesian-kelly-moneyline-v1",
+        "reason": "Fight totals do not yet have a validated posterior calibration.",
+        "status": "unavailable"
+      },
       "bout_order": 0,
       "category": "Total rounds",
       "estimated_expected_return": 1.3427504154631875,
@@ -849,6 +1061,11 @@
       "unit_profit": null
     },
     {
+      "bayesian_kelly": {
+        "policy_version": "robust-bayesian-kelly-moneyline-v1",
+        "reason": "Fight totals do not yet have a validated posterior calibration.",
+        "status": "unavailable"
+      },
       "bout_order": 11,
       "category": "Total rounds",
       "estimated_expected_return": 0.22819737612908497,
@@ -887,6 +1104,11 @@
       "unit_profit": null
     },
     {
+      "bayesian_kelly": {
+        "policy_version": "robust-bayesian-kelly-moneyline-v1",
+        "reason": "Fight totals do not yet have a validated posterior calibration.",
+        "status": "unavailable"
+      },
       "bout_order": 4,
       "category": "Total rounds",
       "estimated_expected_return": 0.19728324648334206,
@@ -925,6 +1147,11 @@
       "unit_profit": null
     },
     {
+      "bayesian_kelly": {
+        "policy_version": "robust-bayesian-kelly-moneyline-v1",
+        "reason": "Fight totals do not yet have a validated posterior calibration.",
+        "status": "unavailable"
+      },
       "bout_order": 12,
       "category": "Total rounds",
       "estimated_expected_return": 0.4615018906950452,
@@ -963,6 +1190,11 @@
       "unit_profit": null
     },
     {
+      "bayesian_kelly": {
+        "policy_version": "robust-bayesian-kelly-moneyline-v1",
+        "reason": "Fight totals do not yet have a validated posterior calibration.",
+        "status": "unavailable"
+      },
       "bout_order": 0,
       "category": "Total rounds",
       "estimated_expected_return": 0.8484977379530478,
@@ -1001,6 +1233,11 @@
       "unit_profit": null
     },
     {
+      "bayesian_kelly": {
+        "policy_version": "robust-bayesian-kelly-moneyline-v1",
+        "reason": "Fight totals do not yet have a validated posterior calibration.",
+        "status": "unavailable"
+      },
       "bout_order": 13,
       "category": "Total rounds",
       "estimated_expected_return": 0.3329528400406938,
@@ -1039,6 +1276,11 @@
       "unit_profit": null
     },
     {
+      "bayesian_kelly": {
+        "policy_version": "robust-bayesian-kelly-moneyline-v1",
+        "reason": "Fight totals do not yet have a validated posterior calibration.",
+        "status": "unavailable"
+      },
       "bout_order": 12,
       "category": "Total rounds",
       "estimated_expected_return": 0.4615018906950452,
@@ -1077,6 +1319,11 @@
       "unit_profit": null
     },
     {
+      "bayesian_kelly": {
+        "policy_version": "robust-bayesian-kelly-moneyline-v1",
+        "reason": "Fight totals do not yet have a validated posterior calibration.",
+        "status": "unavailable"
+      },
       "bout_order": 13,
       "category": "Total rounds",
       "estimated_expected_return": 0.3329528400406938,
@@ -1115,6 +1362,11 @@
       "unit_profit": null
     },
     {
+      "bayesian_kelly": {
+        "policy_version": "robust-bayesian-kelly-moneyline-v1",
+        "reason": "Fight totals do not yet have a validated posterior calibration.",
+        "status": "unavailable"
+      },
       "bout_order": 7,
       "category": "Total rounds",
       "estimated_expected_return": 0.32127732439398593,
@@ -1153,6 +1405,11 @@
       "unit_profit": null
     },
     {
+      "bayesian_kelly": {
+        "policy_version": "robust-bayesian-kelly-moneyline-v1",
+        "reason": "Fight totals do not yet have a validated posterior calibration.",
+        "status": "unavailable"
+      },
       "bout_order": 1,
       "category": "Total rounds",
       "estimated_expected_return": 0.12696067613708206,
@@ -1191,6 +1448,11 @@
       "unit_profit": null
     },
     {
+      "bayesian_kelly": {
+        "policy_version": "robust-bayesian-kelly-moneyline-v1",
+        "reason": "Fight totals do not yet have a validated posterior calibration.",
+        "status": "unavailable"
+      },
       "bout_order": 11,
       "category": "Total rounds",
       "estimated_expected_return": 0.22819737612908497,
@@ -1229,6 +1491,11 @@
       "unit_profit": null
     },
     {
+      "bayesian_kelly": {
+        "policy_version": "robust-bayesian-kelly-moneyline-v1",
+        "reason": "Fight totals do not yet have a validated posterior calibration.",
+        "status": "unavailable"
+      },
       "bout_order": 4,
       "category": "Total rounds",
       "estimated_expected_return": 0.19728324648334206,
@@ -1267,6 +1534,28 @@
       "unit_profit": null
     },
     {
+      "bayesian_kelly": {
+        "assessment_timing": "retrospective_policy_using_only_prepublication_calibration_data",
+        "break_even_probability": 0.1652892561983471,
+        "calibration_artifact_sha256": "2e84f775d3cfec880299d798214205805caf46ee008050a12d335215a16a1a7c",
+        "calibration_trained_through": "2026-04-04",
+        "calibration_training_events": 58,
+        "calibration_training_fights": 503,
+        "cap_applied": false,
+        "expected_log_growth_at_probability_floor": 0.0,
+        "maximum_single_bet_fraction": 0.05,
+        "nominal_probability": 0.18859436302939128,
+        "policy_version": "robust-bayesian-kelly-moneyline-v1",
+        "posterior_interval_mass": 0.8,
+        "posterior_lower_probability": 0.12798442836289067,
+        "posterior_mean_full_kelly_fraction": 0.0,
+        "posterior_mean_probability": 0.1599153989579641,
+        "posterior_upper_probability": 0.19342790983844982,
+        "probability_positive_edge": 0.40077821011673154,
+        "recommended_fraction": 0.0,
+        "robust_uncapped_kelly_fraction": 0.0,
+        "status": "available"
+      },
       "bout_order": 7,
       "category": "Moneyline",
       "estimated_expected_return": 0.14099589632781728,
@@ -1305,6 +1594,11 @@
       "unit_profit": null
     },
     {
+      "bayesian_kelly": {
+        "policy_version": "robust-bayesian-kelly-moneyline-v1",
+        "reason": "Fight totals do not yet have a validated posterior calibration.",
+        "status": "unavailable"
+      },
       "bout_order": 8,
       "category": "Total rounds",
       "estimated_expected_return": 0.1257680103224541,
@@ -1343,6 +1637,28 @@
       "unit_profit": null
     },
     {
+      "bayesian_kelly": {
+        "assessment_timing": "retrospective_policy_using_only_prepublication_calibration_data",
+        "break_even_probability": 0.2222222222222222,
+        "calibration_artifact_sha256": "2e84f775d3cfec880299d798214205805caf46ee008050a12d335215a16a1a7c",
+        "calibration_trained_through": "2026-04-04",
+        "calibration_training_events": 58,
+        "calibration_training_fights": 503,
+        "cap_applied": false,
+        "expected_log_growth_at_probability_floor": 0.0,
+        "maximum_single_bet_fraction": 0.05,
+        "nominal_probability": 0.23490608353100628,
+        "policy_version": "robust-bayesian-kelly-moneyline-v1",
+        "posterior_interval_mass": 0.8,
+        "posterior_lower_probability": 0.17467608862372927,
+        "posterior_mean_full_kelly_fraction": 0.0,
+        "posterior_mean_probability": 0.20661551732836597,
+        "posterior_upper_probability": 0.23948606281448073,
+        "probability_positive_edge": 0.26459143968871596,
+        "recommended_fraction": 0.0,
+        "robust_uncapped_kelly_fraction": 0.0,
+        "status": "available"
+      },
       "bout_order": 0,
       "category": "Moneyline",
       "estimated_expected_return": 0.057077375889528215,
@@ -1381,6 +1697,11 @@
       "unit_profit": null
     },
     {
+      "bayesian_kelly": {
+        "policy_version": "robust-bayesian-kelly-moneyline-v1",
+        "reason": "Fight totals do not yet have a validated posterior calibration.",
+        "status": "unavailable"
+      },
       "bout_order": 0,
       "category": "Total rounds",
       "estimated_expected_return": 1.3427504154631875,
@@ -1419,6 +1740,11 @@
       "unit_profit": null
     },
     {
+      "bayesian_kelly": {
+        "policy_version": "robust-bayesian-kelly-moneyline-v1",
+        "reason": "Fight totals do not yet have a validated posterior calibration.",
+        "status": "unavailable"
+      },
       "bout_order": 0,
       "category": "Total rounds",
       "estimated_expected_return": 0.8484977379530478,
@@ -1457,6 +1783,11 @@
       "unit_profit": null
     },
     {
+      "bayesian_kelly": {
+        "policy_version": "robust-bayesian-kelly-moneyline-v1",
+        "reason": "Fight totals do not yet have a validated posterior calibration.",
+        "status": "unavailable"
+      },
       "bout_order": 4,
       "category": "Total rounds",
       "estimated_expected_return": 0.38489586898852135,
@@ -1495,6 +1826,11 @@
       "unit_profit": null
     },
     {
+      "bayesian_kelly": {
+        "policy_version": "robust-bayesian-kelly-moneyline-v1",
+        "reason": "Fight totals do not yet have a validated posterior calibration.",
+        "status": "unavailable"
+      },
       "bout_order": 0,
       "category": "Total rounds",
       "estimated_expected_return": 1.3892951257041783,
@@ -1533,6 +1869,28 @@
       "unit_profit": null
     },
     {
+      "bayesian_kelly": {
+        "assessment_timing": "retrospective_policy_using_only_prepublication_calibration_data",
+        "break_even_probability": 0.2222222222222222,
+        "calibration_artifact_sha256": "2e84f775d3cfec880299d798214205805caf46ee008050a12d335215a16a1a7c",
+        "calibration_trained_through": "2026-04-04",
+        "calibration_training_events": 58,
+        "calibration_training_fights": 503,
+        "cap_applied": false,
+        "expected_log_growth_at_probability_floor": 0.0,
+        "maximum_single_bet_fraction": 0.05,
+        "nominal_probability": 0.23490608353100628,
+        "policy_version": "robust-bayesian-kelly-moneyline-v1",
+        "posterior_interval_mass": 0.8,
+        "posterior_lower_probability": 0.17467608862372927,
+        "posterior_mean_full_kelly_fraction": 0.0,
+        "posterior_mean_probability": 0.20661551732836597,
+        "posterior_upper_probability": 0.23948606281448073,
+        "probability_positive_edge": 0.26459143968871596,
+        "recommended_fraction": 0.0,
+        "robust_uncapped_kelly_fraction": 0.0,
+        "status": "available"
+      },
       "bout_order": 0,
       "category": "Moneyline",
       "estimated_expected_return": 0.057077375889528215,
@@ -1571,6 +1929,11 @@
       "unit_profit": null
     },
     {
+      "bayesian_kelly": {
+        "policy_version": "robust-bayesian-kelly-moneyline-v1",
+        "reason": "Fight totals do not yet have a validated posterior calibration.",
+        "status": "unavailable"
+      },
       "bout_order": 8,
       "category": "Total rounds",
       "estimated_expected_return": 0.11157765725116264,
@@ -1609,6 +1972,11 @@
       "unit_profit": null
     },
     {
+      "bayesian_kelly": {
+        "policy_version": "robust-bayesian-kelly-moneyline-v1",
+        "reason": "Fight totals do not yet have a validated posterior calibration.",
+        "status": "unavailable"
+      },
       "bout_order": 11,
       "category": "Total rounds",
       "estimated_expected_return": 0.22819737612908497,
@@ -1647,6 +2015,11 @@
       "unit_profit": null
     },
     {
+      "bayesian_kelly": {
+        "policy_version": "robust-bayesian-kelly-moneyline-v1",
+        "reason": "Fight totals do not yet have a validated posterior calibration.",
+        "status": "unavailable"
+      },
       "bout_order": 13,
       "category": "Total rounds",
       "estimated_expected_return": 0.3329528400406938,
@@ -1685,6 +2058,11 @@
       "unit_profit": null
     },
     {
+      "bayesian_kelly": {
+        "policy_version": "robust-bayesian-kelly-moneyline-v1",
+        "reason": "Fight totals do not yet have a validated posterior calibration.",
+        "status": "unavailable"
+      },
       "bout_order": 1,
       "category": "Total rounds",
       "estimated_expected_return": 0.13878194197068794,
@@ -1723,6 +2101,11 @@
       "unit_profit": null
     },
     {
+      "bayesian_kelly": {
+        "policy_version": "robust-bayesian-kelly-moneyline-v1",
+        "reason": "Fight totals do not yet have a validated posterior calibration.",
+        "status": "unavailable"
+      },
       "bout_order": 4,
       "category": "Total rounds",
       "estimated_expected_return": 0.19728324648334206,
@@ -1761,6 +2144,11 @@
       "unit_profit": null
     },
     {
+      "bayesian_kelly": {
+        "policy_version": "robust-bayesian-kelly-moneyline-v1",
+        "reason": "Fight totals do not yet have a validated posterior calibration.",
+        "status": "unavailable"
+      },
       "bout_order": 0,
       "category": "Total rounds",
       "estimated_expected_return": 0.8484977379530478,
@@ -1799,6 +2187,28 @@
       "unit_profit": null
     },
     {
+      "bayesian_kelly": {
+        "assessment_timing": "retrospective_policy_using_only_prepublication_calibration_data",
+        "break_even_probability": 0.1652892561983471,
+        "calibration_artifact_sha256": "2e84f775d3cfec880299d798214205805caf46ee008050a12d335215a16a1a7c",
+        "calibration_trained_through": "2026-04-04",
+        "calibration_training_events": 58,
+        "calibration_training_fights": 503,
+        "cap_applied": false,
+        "expected_log_growth_at_probability_floor": 0.0,
+        "maximum_single_bet_fraction": 0.05,
+        "nominal_probability": 0.18859436302939128,
+        "policy_version": "robust-bayesian-kelly-moneyline-v1",
+        "posterior_interval_mass": 0.8,
+        "posterior_lower_probability": 0.12798442836289067,
+        "posterior_mean_full_kelly_fraction": 0.0,
+        "posterior_mean_probability": 0.1599153989579641,
+        "posterior_upper_probability": 0.19342790983844982,
+        "probability_positive_edge": 0.40077821011673154,
+        "recommended_fraction": 0.0,
+        "robust_uncapped_kelly_fraction": 0.0,
+        "status": "available"
+      },
       "bout_order": 7,
       "category": "Moneyline",
       "estimated_expected_return": 0.14099589632781728,
@@ -1837,6 +2247,11 @@
       "unit_profit": null
     },
     {
+      "bayesian_kelly": {
+        "policy_version": "robust-bayesian-kelly-moneyline-v1",
+        "reason": "Fight totals do not yet have a validated posterior calibration.",
+        "status": "unavailable"
+      },
       "bout_order": 4,
       "category": "Total rounds",
       "estimated_expected_return": 0.38489586898852135,
@@ -1875,6 +2290,11 @@
       "unit_profit": null
     },
     {
+      "bayesian_kelly": {
+        "policy_version": "robust-bayesian-kelly-moneyline-v1",
+        "reason": "Fight totals do not yet have a validated posterior calibration.",
+        "status": "unavailable"
+      },
       "bout_order": 7,
       "category": "Total rounds",
       "estimated_expected_return": 0.32127732439398593,
@@ -1913,6 +2333,11 @@
       "unit_profit": null
     },
     {
+      "bayesian_kelly": {
+        "policy_version": "robust-bayesian-kelly-moneyline-v1",
+        "reason": "Fight totals do not yet have a validated posterior calibration.",
+        "status": "unavailable"
+      },
       "bout_order": 12,
       "category": "Total rounds",
       "estimated_expected_return": 0.4615018906950452,
@@ -1951,6 +2376,28 @@
       "unit_profit": null
     },
     {
+      "bayesian_kelly": {
+        "assessment_timing": "retrospective_policy_using_only_prepublication_calibration_data",
+        "break_even_probability": 0.1652892561983471,
+        "calibration_artifact_sha256": "2e84f775d3cfec880299d798214205805caf46ee008050a12d335215a16a1a7c",
+        "calibration_trained_through": "2026-04-04",
+        "calibration_training_events": 58,
+        "calibration_training_fights": 503,
+        "cap_applied": false,
+        "expected_log_growth_at_probability_floor": 0.0,
+        "maximum_single_bet_fraction": 0.05,
+        "nominal_probability": 0.18859436302939128,
+        "policy_version": "robust-bayesian-kelly-moneyline-v1",
+        "posterior_interval_mass": 0.8,
+        "posterior_lower_probability": 0.12798442836289067,
+        "posterior_mean_full_kelly_fraction": 0.0,
+        "posterior_mean_probability": 0.1599153989579641,
+        "posterior_upper_probability": 0.19342790983844982,
+        "probability_positive_edge": 0.40077821011673154,
+        "recommended_fraction": 0.0,
+        "robust_uncapped_kelly_fraction": 0.0,
+        "status": "available"
+      },
       "bout_order": 7,
       "category": "Moneyline",
       "estimated_expected_return": 0.14099589632781728,
@@ -1989,6 +2436,11 @@
       "unit_profit": null
     },
     {
+      "bayesian_kelly": {
+        "policy_version": "robust-bayesian-kelly-moneyline-v1",
+        "reason": "Fight totals do not yet have a validated posterior calibration.",
+        "status": "unavailable"
+      },
       "bout_order": 11,
       "category": "Total rounds",
       "estimated_expected_return": 0.22819737612908497,
@@ -2027,6 +2479,11 @@
       "unit_profit": null
     },
     {
+      "bayesian_kelly": {
+        "policy_version": "robust-bayesian-kelly-moneyline-v1",
+        "reason": "Fight totals do not yet have a validated posterior calibration.",
+        "status": "unavailable"
+      },
       "bout_order": 0,
       "category": "Total rounds",
       "estimated_expected_return": 1.3892951257041783,
@@ -2065,6 +2522,11 @@
       "unit_profit": null
     },
     {
+      "bayesian_kelly": {
+        "policy_version": "robust-bayesian-kelly-moneyline-v1",
+        "reason": "Fight totals do not yet have a validated posterior calibration.",
+        "status": "unavailable"
+      },
       "bout_order": 8,
       "category": "Total rounds",
       "estimated_expected_return": 0.11157765725116264,
@@ -2103,6 +2565,11 @@
       "unit_profit": null
     },
     {
+      "bayesian_kelly": {
+        "policy_version": "robust-bayesian-kelly-moneyline-v1",
+        "reason": "Fight totals do not yet have a validated posterior calibration.",
+        "status": "unavailable"
+      },
       "bout_order": 9,
       "category": "Total rounds",
       "estimated_expected_return": 0.383380905985361,
@@ -2141,6 +2608,11 @@
       "unit_profit": null
     },
     {
+      "bayesian_kelly": {
+        "policy_version": "robust-bayesian-kelly-moneyline-v1",
+        "reason": "Fight totals do not yet have a validated posterior calibration.",
+        "status": "unavailable"
+      },
       "bout_order": 4,
       "category": "Total rounds",
       "estimated_expected_return": 0.19728324648334206,
@@ -2179,6 +2651,11 @@
       "unit_profit": null
     },
     {
+      "bayesian_kelly": {
+        "policy_version": "robust-bayesian-kelly-moneyline-v1",
+        "reason": "Fight totals do not yet have a validated posterior calibration.",
+        "status": "unavailable"
+      },
       "bout_order": 1,
       "category": "Total rounds",
       "estimated_expected_return": 0.13878194197068794,
@@ -2217,6 +2694,11 @@
       "unit_profit": null
     },
     {
+      "bayesian_kelly": {
+        "policy_version": "robust-bayesian-kelly-moneyline-v1",
+        "reason": "Fight totals do not yet have a validated posterior calibration.",
+        "status": "unavailable"
+      },
       "bout_order": 13,
       "category": "Total rounds",
       "estimated_expected_return": 0.3329528400406938,
@@ -2255,6 +2737,11 @@
       "unit_profit": null
     },
     {
+      "bayesian_kelly": {
+        "policy_version": "robust-bayesian-kelly-moneyline-v1",
+        "reason": "Fight totals do not yet have a validated posterior calibration.",
+        "status": "unavailable"
+      },
       "bout_order": 7,
       "category": "Total rounds",
       "estimated_expected_return": 0.32127732439398593,
@@ -2293,6 +2780,11 @@
       "unit_profit": null
     },
     {
+      "bayesian_kelly": {
+        "policy_version": "robust-bayesian-kelly-moneyline-v1",
+        "reason": "Fight totals do not yet have a validated posterior calibration.",
+        "status": "unavailable"
+      },
       "bout_order": 12,
       "category": "Total rounds",
       "estimated_expected_return": 0.46833133878240507,
@@ -2331,6 +2823,11 @@
       "unit_profit": null
     },
     {
+      "bayesian_kelly": {
+        "policy_version": "robust-bayesian-kelly-moneyline-v1",
+        "reason": "Fight totals do not yet have a validated posterior calibration.",
+        "status": "unavailable"
+      },
       "bout_order": 0,
       "category": "Total rounds",
       "estimated_expected_return": 0.8484977379530478,
@@ -2369,6 +2866,11 @@
       "unit_profit": null
     },
     {
+      "bayesian_kelly": {
+        "policy_version": "robust-bayesian-kelly-moneyline-v1",
+        "reason": "Fight totals do not yet have a validated posterior calibration.",
+        "status": "unavailable"
+      },
       "bout_order": 4,
       "category": "Total rounds",
       "estimated_expected_return": 0.4163707751018968,
@@ -2407,6 +2909,28 @@
       "unit_profit": null
     },
     {
+      "bayesian_kelly": {
+        "assessment_timing": "retrospective_policy_using_only_prepublication_calibration_data",
+        "break_even_probability": 0.2222222222222222,
+        "calibration_artifact_sha256": "2e84f775d3cfec880299d798214205805caf46ee008050a12d335215a16a1a7c",
+        "calibration_trained_through": "2026-04-04",
+        "calibration_training_events": 58,
+        "calibration_training_fights": 503,
+        "cap_applied": false,
+        "expected_log_growth_at_probability_floor": 0.0,
+        "maximum_single_bet_fraction": 0.05,
+        "nominal_probability": 0.23490608353100628,
+        "policy_version": "robust-bayesian-kelly-moneyline-v1",
+        "posterior_interval_mass": 0.8,
+        "posterior_lower_probability": 0.17467608862372927,
+        "posterior_mean_full_kelly_fraction": 0.0,
+        "posterior_mean_probability": 0.20661551732836597,
+        "posterior_upper_probability": 0.23948606281448073,
+        "probability_positive_edge": 0.26459143968871596,
+        "recommended_fraction": 0.0,
+        "robust_uncapped_kelly_fraction": 0.0,
+        "status": "available"
+      },
       "bout_order": 0,
       "category": "Moneyline",
       "estimated_expected_return": 0.057077375889528215,
@@ -2446,9 +2970,11 @@
     }
   ],
   "research_support": {
+    "bayesian_kelly_calibration_artifact_sha256": "2e84f775d3cfec880299d798214205805caf46ee008050a12d335215a16a1a7c",
+    "bayesian_kelly_supported_records": 12,
     "both_supported_records": 1,
     "model_supported_records": 4,
-    "rule": "Research strategies combine probabilities in log-odds space, then apply half Kelly; unsupported bets are excluded.",
+    "rule": "Robust Bayesian Kelly sizes moneylines from the lower 10th-percentile calibrated chance and caps one bet at 5% of bankroll. Other research strategies combine probabilities in log-odds space, then apply half Kelly. Unsupported bets are excluded.",
     "simulation_supported_records": 5
   },
   "schema_version": 1,
@@ -2464,6 +2990,7 @@
     "half_kelly",
     "third_kelly",
     "flat_one_percent",
+    "robust_bayesian_kelly",
     "half_kelly_model_blend",
     "half_kelly_sim_blend",
     "half_kelly_model_sim_blend"

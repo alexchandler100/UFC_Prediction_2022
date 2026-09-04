@@ -105,6 +105,13 @@ class BetPerformanceTests(unittest.TestCase):
         )
         self.assertEqual(publication["research_support"]["model_supported_records"], 1)
         self.assertEqual(publication["records"][0]["status"], "won")
+        self.assertEqual(
+            publication["records"][0]["bayesian_kelly"]["status"], "available"
+        )
+        self.assertIn("robust_bayesian_kelly", publication["staking_strategies"])
+        self.assertEqual(
+            publication["research_support"]["bayesian_kelly_supported_records"], 1
+        )
 
     def test_research_support_is_attached_only_when_available_before_publication(self):
         bet = {
@@ -148,6 +155,7 @@ class BetPerformanceTests(unittest.TestCase):
         self.assertIsNone(record["simulation_support_probability"])
         self.assertEqual(publication["research_support"]["model_supported_records"], 1)
         self.assertEqual(publication["research_support"]["simulation_supported_records"], 0)
+        self.assertEqual(record["bayesian_kelly"]["status"], "unavailable")
 
     def test_total_ending_exactly_on_line_is_void(self):
         bet = {
@@ -177,6 +185,9 @@ class BetPerformanceTests(unittest.TestCase):
         )
         self.assertEqual(publication["records"][0]["status"], "void")
         self.assertEqual(publication["records"][0]["unit_profit"], 0.0)
+        self.assertEqual(
+            publication["records"][0]["bayesian_kelly"]["status"], "unavailable"
+        )
 
 
 if __name__ == "__main__":

@@ -29,6 +29,8 @@ from fight_predictor.bayesian_logistic_shadow import (
     BayesianLogisticShadowStore,
     build_shadow_forecasts as build_bayesian_logistic_shadow_forecasts,
 )
+from market_tracker import EarlyMarketObservationStore
+from market_tracker._common import canonical_hash
 from upcoming_bet_board import (
     build_upcoming_bet_board,
     build_upcoming_forecast_publication,
@@ -201,15 +203,39 @@ all_upcoming_forecasts = build_upcoming_forecast_publication(
     generated_at_utc=forecast_issued_at,
 )
 write_upcoming_forecast_publication(all_upcoming_forecasts)
-# A model refresh invalidates any board tied to the previous forecast bundle.
-# Publish an honest empty board until the independent market capture supplies
-# fresh, source-timestamped prices for these exact announced matchups.
+# Keep the latest timestamped prices visible across a model refresh. The board
+# is rebuilt against the new announced-fight publication, so removed or changed
+# matchups fall out while unchanged matchups retain their last captured prices.
+market_root = Path(__file__).resolve().parent / 'content/data/market'
+current_opportunities_path = market_root / 'current_opportunities.json'
+current_opportunities = None
+early_market_observations = EarlyMarketObservationStore(
+    market_root / 'early_market_observations.csv',
+    market_root / 'early_market_observations.jsonl',
+).read()
+board_observed_at = forecast_issued_at
+board_source = 'model-update-awaiting-market-capture'
+if current_opportunities_path.exists():
+    current_opportunities = json.loads(
+        current_opportunities_path.read_text(encoding='utf-8')
+    )
+    current_body = dict(current_opportunities)
+    current_fingerprint = current_body.pop('publication_sha256', None)
+    if current_fingerprint != canonical_hash(current_body):
+        raise RuntimeError(
+            'Refusing to carry forward an altered current-opportunities file'
+        )
+    board_observed_at = current_opportunities['observed_at_utc']
+    board_source = str(
+        current_opportunities.get('source') or 'last-valid-market-capture'
+    )
 write_upcoming_bet_board(
     build_upcoming_bet_board(
         all_upcoming_forecasts,
-        (),
-        observed_at_utc=forecast_issued_at,
-        source='model-update-awaiting-market-capture',
+        early_market_observations,
+        observed_at_utc=board_observed_at,
+        source=board_source,
+        current_opportunities=current_opportunities,
     )
 )
 print(

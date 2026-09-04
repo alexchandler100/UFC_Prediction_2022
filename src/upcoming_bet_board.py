@@ -26,6 +26,12 @@ from market_tracker import (
     matchup_id_for,
 )
 from market_tracker._common import canonical_hash
+from market_tracker.bayesian_kelly import (
+    BayesianKellyCalibrator,
+    POLICY_VERSION as BAYESIAN_KELLY_POLICY_VERSION,
+    unavailable_assessment,
+    validate_bayesian_kelly_assessment,
+)
 from market_tracker.paper import symmetric_logit_blend
 from market_tracker.prospective import MIN_CONSENSUS_BOOKS
 
@@ -417,6 +423,7 @@ def _qualified_moneyline(
     *,
     reversed_orientation: bool,
     observed_at: datetime,
+    bayesian_kelly: BayesianKellyCalibrator,
 ) -> dict[str, object] | None:
     observation_records = tuple(observations)
     quotes = _book_quotes(
@@ -477,6 +484,10 @@ def _qualified_moneyline(
                         "source_quote_age_seconds"
                     ],
                     "event_start_utc": observation_records[0].source_commence_time_utc,
+                    "bayesian_kelly": bayesian_kelly.assessment(
+                        side_probability,
+                        int(moneyline),
+                    ),
                 }
             )
     if not candidates:
@@ -558,6 +569,7 @@ def _base_bet(
         "source_quote_age_seconds": candidate.get("source_quote_age_seconds"),
         "paper_only": True,
         "execution_enabled": False,
+        "bayesian_kelly": candidate.get("bayesian_kelly"),
     }
     body["bet_id"] = canonical_hash(body)
     return body
@@ -566,6 +578,7 @@ def _base_bet(
 def _current_opportunity_bets(
     publication: Mapping[str, object] | None,
     forecasts: Mapping[str, Mapping[str, object]],
+    bayesian_kelly: BayesianKellyCalibrator,
 ) -> list[dict[str, object]]:
     if not publication:
         return []
@@ -609,6 +622,10 @@ def _current_opportunity_bets(
                 "source_quote_age_seconds"
             ),
             "event_start_utc": matchup.get("event_start_utc"),
+            "bayesian_kelly": bayesian_kelly.assessment(
+                signal.get("market_probability"),
+                signal.get("offered_moneyline"),
+            ),
         }
         rows.append(
             _base_bet(forecast, candidate, observed_at=observed, source=source)
@@ -657,6 +674,10 @@ def _current_opportunity_bets(
             "source_quote_age_seconds": candidate.get("source_quote_age_seconds"),
             "paper_only": True,
             "execution_enabled": False,
+            "bayesian_kelly": unavailable_assessment(
+                "Fight-total probabilities do not yet have their own "
+                "validated posterior calibration."
+            ),
         }
         body["bet_id"] = canonical_hash(body)
         rows.append(body)
@@ -670,11 +691,15 @@ def build_upcoming_bet_board(
     observed_at_utc: object,
     source: str,
     current_opportunities: Mapping[str, object] | None = None,
+    bayesian_kelly_calibrator: BayesianKellyCalibrator | None = None,
 ) -> dict[str, object]:
     """Rank every qualified price across all officially announced UFC cards."""
 
     forecasts = validate_upcoming_forecast_publication(
         dict(forecast_publication)
+    )
+    bayesian_kelly = (
+        bayesian_kelly_calibrator or BayesianKellyCalibrator.load()
     )
     observed_at = _utc(observed_at_utc, "observed_at_utc")
     observed_text = _utc_text(observed_at, "observed_at_utc")
@@ -736,6 +761,7 @@ def build_upcoming_bet_board(
             rows,
             reversed_orientation=reversed_orientation,
             observed_at=observed_at,
+            bayesian_kelly=bayesian_kelly,
         )
         if len(_book_quotes(rows, reversed_orientation=reversed_orientation, observed_at=observed_at)) >= MIN_CONSENSUS_BOOKS + 1:
             evaluable += 1
@@ -753,7 +779,9 @@ def build_upcoming_bet_board(
         for item in forecasts["matchups"]
         if item.get("matchup_id")
     }
-    for bet in _current_opportunity_bets(current_opportunities, forecast_by_matchup):
+    for bet in _current_opportunity_bets(
+        current_opportunities, forecast_by_matchup, bayesian_kelly
+    ):
         category = str(bet["category"])
         key = (
             str(bet["event_id"]),
@@ -781,6 +809,13 @@ def build_upcoming_bet_board(
         "minimum_expected_return": MIN_EXPECTED_RETURN,
         "minimum_consensus_books_excluding_target": MIN_CONSENSUS_BOOKS,
         "model_weight": LOCKED_GAMMA,
+        "bayesian_kelly": {
+            "policy_version": BAYESIAN_KELLY_POLICY_VERSION,
+            "calibration_artifact_sha256": bayesian_kelly.artifact[
+                "artifact_sha256"
+            ],
+            "moneyline_only": True,
+        },
         "forecast_publication_sha256": forecasts["publication_sha256"],
         "announced_event_count": forecasts["event_count"],
         "announced_matchup_count": len(official),
@@ -905,6 +940,8 @@ def validate_upcoming_bet_board(publication: object) -> dict[str, object]:
             raise ValueError("upcoming bet board contains an invalid moneyline")
         if _float(bet.get("minimum_expected_return")) != MIN_EXPECTED_RETURN:
             raise ValueError("upcoming bet board bet threshold is inconsistent")
+        if publication.get("bayesian_kelly") is not None:
+            validate_bayesian_kelly_assessment(bet.get("bayesian_kelly"))
         supplied_bet_id = _text(bet.get("bet_id"))
         unhashed_bet = dict(bet)
         unhashed_bet.pop("bet_id", None)

@@ -453,6 +453,18 @@ has model support for four moneyline records, simulation support for five of
 the fifteen total records, and both for one record, so these results are far too
 small to choose a live staking policy.
 
+Robust Bayesian Kelly is the default research sizing view. A symmetric
+calibration model was fit to 503 timestamped moneyline predictions across 58
+completed events. For each current moneyline it reports an average calibrated
+chance and an 80% uncertainty range, calculates Kelly from the lower end of
+that range, and caps one bet at 5% of bankroll. The later-data check trained on
+363 fights from 46 events and tested on the following 140 fights from 12
+events; calibration improved log loss by 0.00123 without changing 74.3%
+winner accuracy. This is a small improvement, not proof that the staking rule
+is profitable. It remains paper-only. Fight totals are excluded until they
+have a separate uncertainty calibration. See `BAYESIAN_KELLY.md` for the exact
+rule and limitations.
+
 A separate `market-first-t24-paper-v1` ledger now tests the promising historical
 adjustment without changing that baseline. Near T-24 it compares every offered
 sportsbook price with at least three other books, applies the frozen adjustment,

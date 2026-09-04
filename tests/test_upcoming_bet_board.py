@@ -136,6 +136,15 @@ class UpcomingBetBoardTests(unittest.TestCase):
             _forecast_frame(), generated_at_utc="2026-08-29T10:00:00Z"
         )
 
+    def test_model_refresh_keeps_saved_market_inputs_instead_of_emptying_board(self):
+        updater = (ROOT / "src" / "update_and_rebuild_model.py").read_text(
+            encoding="utf-8"
+        )
+        self.assertIn("EarlyMarketObservationStore", updater)
+        self.assertIn("early_market_observations,", updater)
+        self.assertIn("current_opportunities=current_opportunities", updater)
+        self.assertNotIn("all_upcoming_forecasts,\n        (),", updater)
+
     def test_board_matches_all_announced_cards_and_sorts_only_qualified_prices(self):
         observations = [
             *_event_prices(
@@ -180,6 +189,15 @@ class UpcomingBetBoardTests(unittest.TestCase):
             ),
         )
         self.assertTrue(all(bet["threshold_met"] for bet in board["bets"]))
+        self.assertTrue(
+            all(bet["bayesian_kelly"]["status"] == "available" for bet in board["bets"])
+        )
+        self.assertTrue(
+            all(
+                0.0 <= bet["bayesian_kelly"]["recommended_fraction"] <= 0.05
+                for bet in board["bets"]
+            )
+        )
         self.assertEqual(
             {bet["event_id"] for bet in board["bets"]},
             {"event-one", "event-two"},
@@ -232,6 +250,12 @@ class UpcomingBetBoardTests(unittest.TestCase):
         self.assertEqual(
             {bet["selection"] for bet in board["bets"]},
             {"Over 1.5 rounds", "Under 2.5 rounds"},
+        )
+        self.assertTrue(
+            all(
+                bet["bayesian_kelly"]["status"] == "unavailable"
+                for bet in board["bets"]
+            )
         )
 
     def test_validator_rejects_a_below_threshold_row_even_with_updated_hashes(self):

@@ -2963,7 +2963,7 @@ function appendQualifiedBetExplanation(container, bet) {
   const chance = finite(bet.estimated_win_probability);
   const decimal = decimalOdds(bet.offered_moneyline);
   const breakEven = decimal === null ? null : 1 / decimal;
-  const fullKelly = kellyFraction(chance, bet.offered_moneyline);
+  const bayesian = bet?.bayesian_kelly?.status === "available" ? bet.bayesian_kelly : null;
   const isTotal = bet.candidate_only === true || bet.probability_source === "candidate_duration_model" || bet.category === "Total rounds";
   const probabilitySource = isTotal
     ? "This comes from the experimental fight-duration model using information available before the fight. It has not passed the historical betting test."
@@ -2973,8 +2973,15 @@ function appendQualifiedBetExplanation(container, bet) {
   const cards = [
     ["Estimated chance", `${formatPercent(chance)}. ${probabilitySource}`],
     ["Estimated return", `${formatPercent(chance)} chance × ${formatNumber(decimal, 2)} total payout − 1 = ${formatPercent(bet.estimated_expected_return)} average profit per dollar if the chance estimate is right. Break-even is ${formatPercent(breakEven)}.`],
-    ["½ Kelly stake", `Full Kelly is ${formatPercent(fullKelly)} of bankroll; this displays half of that (${formatPercent((fullKelly || 0) / 2)}). Kelly can be far too aggressive when the chance estimate is uncertain.`],
   ];
+  if (bayesian) {
+    cards.push(
+      ["Bayesian chance range", `${formatPercent(bayesian.posterior_mean_probability)} average, with an 80% range of ${formatPercent(bayesian.posterior_lower_probability)} to ${formatPercent(bayesian.posterior_upper_probability)}. This was calibrated on ${formatNumber(bayesian.calibration_training_fights, 0)} earlier fights across ${formatNumber(bayesian.calibration_training_events, 0)} events.`],
+      ["Robust Bayesian Kelly", `${formatPercent(bayesian.recommended_fraction)} of bankroll. Sizing uses the conservative ${formatPercent(bayesian.posterior_lower_probability)} chance; its uncapped Kelly stake is ${formatPercent(bayesian.robust_uncapped_kelly_fraction)}${bayesian.cap_applied ? `, reduced by the ${formatPercent(bayesian.maximum_single_bet_fraction)} single-bet cap` : ""}. The estimated chance of having a positive edge is ${formatPercent(bayesian.probability_positive_edge)}.`],
+    );
+  } else {
+    cards.push(["Robust Bayesian Kelly", `Not available. ${bet?.bayesian_kelly?.reason || "This market does not yet have a validated uncertainty model."}`]);
+  }
   cards.forEach(([title, copy]) => {
     const card = element("div", "qualified-bet-explanation-card");
     appendText(card, "strong", "", title); appendText(card, "span", "", copy); container.append(card);
@@ -3034,9 +3041,10 @@ function renderQualifiedUpcomingBets() {
     const expectedReturn = element("div", "qualified-bet-stat qualified-bet-ev");
     appendText(expectedReturn, "span", "", "Estimated return");
     appendText(expectedReturn, "strong", "", formatPercent(bet.estimated_expected_return));
-    const halfKelly = element("div", "qualified-bet-stat");
-    appendText(halfKelly, "span", "", "½ Kelly stake");
-    appendText(halfKelly, "strong", "", formatPercent((kellyFraction(bet.estimated_win_probability, bet.offered_moneyline) || 0) / 2));
+    const bayesian = bet?.bayesian_kelly?.status === "available" ? bet.bayesian_kelly : null;
+    const bayesianKelly = element("div", "qualified-bet-stat");
+    appendText(bayesianKelly, "span", "", "Bayesian Kelly");
+    appendText(bayesianKelly, "strong", "", bayesian ? formatPercent(bayesian.recommended_fraction) : "Not available");
 
     const source = element("div", "qualified-bet-source");
     const isCandidateTotal = bet.candidate_only === true || bet.probability_source === "candidate_duration_model" || bet.category === "Total rounds";
@@ -3047,7 +3055,7 @@ function renderQualifiedUpcomingBets() {
     if (finite(bet.consensus_book_count) !== null) appendText(source, "small", "", `${formatNumber(bet.consensus_book_count, 0)} comparison books; target book excluded`);
     else if (isCandidateTotal) appendText(source, "small", "", "Candidate model has not passed a betting-performance gate");
 
-    row.append(rank, fight, price, probability, expectedReturn, halfKelly, source);
+    row.append(rank, fight, price, probability, expectedReturn, bayesianKelly, source);
     const explanation = element("div", "qualified-bet-explanation");
     appendQualifiedBetExplanation(explanation, bet);
     item.append(row, explanation); container.append(item);
@@ -3086,6 +3094,13 @@ function selectPerformanceRecords(records, timing) {
 function performanceStakePlan(record, staking) {
   const published = finite(record.estimated_win_probability);
   if (published === null) return null;
+  if (staking === "robust_bayesian_kelly") {
+    const bayesian = record?.bayesian_kelly;
+    const fraction = finite(bayesian?.recommended_fraction);
+    const probability = finite(bayesian?.posterior_lower_probability);
+    if (bayesian?.status !== "available" || fraction === null || probability === null) return null;
+    return { fraction: Math.max(0, fraction), probability, label: "Conservative Bayesian chance" };
+  }
   if (staking === "flat_one_percent") return { fraction: 0.01, probability: published, label: "Published estimate" };
   const ordinaryFactor = staking === "full_kelly" ? 1 : staking === "half_kelly" ? 0.5 : staking === "third_kelly" ? 1 / 3 : null;
   if (ordinaryFactor !== null) return { fraction: Math.max(0, Number(record.kelly_fraction) * ordinaryFactor), probability: published, label: "Published estimate" };
@@ -3217,11 +3232,15 @@ function renderBetPerformance() {
   const baseDataNote = timing === "official_t24"
     ? `Exact locked T-24 ledger · ${publication.official_settled_count} settled bets. Earlier website totals are intentionally included only in the published-price strategies.`
     : `Published-price replay includes recovered website boards and automatic archives from ${archiveStart}. Official locked bets before that archive are retained.`;
-  const researchStrategy = staking.includes("_blend");
-  $("#performance-data-note").textContent = researchStrategy
-    ? `${baseDataNote} Research blend: probabilities are averaged in log-odds space before half Kelly is calculated; a bet is excluded when a required saved prediction is unavailable.`
-    : baseDataNote;
-  $("#performance-summary-note").textContent = `${result.rows.length} settled bet${result.rows.length === 1 ? "" : "s"} · ${result.wins}-${result.losses}${result.voids ? ` · ${result.voids} void` : ""}${result.pending.length ? ` · ${result.pending.length} pending` : ""}${result.unsupported.length ? ` · ${result.unsupported.length} excluded because the required saved prediction is missing` : ""}. Bets from one card are sized from the same pre-card bankroll; stakes are scaled together if they would exceed available cash.`;
+  const blendStrategy = staking.includes("_blend");
+  const bayesianStrategy = staking === "robust_bayesian_kelly";
+  const researchStrategy = blendStrategy || bayesianStrategy;
+  $("#performance-data-note").textContent = bayesianStrategy
+    ? `${baseDataNote} Robust Bayesian Kelly uses the lower end of the calibrated chance range and caps one bet at 5% of bankroll. It is currently available only for market-consensus moneyline estimates.`
+    : blendStrategy
+      ? `${baseDataNote} Research blend: probabilities are averaged in log-odds space before half Kelly is calculated; a bet is excluded when a required saved prediction is unavailable.`
+      : baseDataNote;
+  $("#performance-summary-note").textContent = `${result.rows.length} settled bet${result.rows.length === 1 ? "" : "s"} · ${result.wins}-${result.losses}${result.voids ? ` · ${result.voids} void` : ""}${result.pending.length ? ` · ${result.pending.length} pending` : ""}${result.unsupported.length ? ` · ${result.unsupported.length} excluded because this strategy lacks a valid saved estimate` : ""}. Bets from one card are sized from the same pre-card bankroll; stakes are scaled together if they would exceed available cash.`;
   [
     [formatCurrency(result.endingBankroll), "Ending bankroll", `${formatCurrency(result.profit)} total profit`],
     [formatCurrency(result.totalStaked), "Total amount risked", `${formatPercent(result.roi)} return on amount risked`],
