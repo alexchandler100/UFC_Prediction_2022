@@ -26,7 +26,6 @@
       <button class="nav-button" type="button" data-nav="simulation">Simulation</button>
       <button class="nav-button" type="button" data-nav="market">Market</button>
       <button class="nav-button" type="button" data-nav="performance">Performance</button>
-      <button class="nav-button" type="button" data-nav="data">Model &amp; data</button>
     </nav>
     <div class="header-status" id="header-status" aria-live="polite"><span class="status-dot"></span>Loading data</div>
   </header>
@@ -34,16 +33,7 @@
   <main id="main-content" tabindex="-1">
     <div class="load-message" id="load-message" role="status"><span class="loader" aria-hidden="true"></span>Preparing fighter histories and matchup data…</div>
 
-    <section class="view is-active" id="view-matchups" data-view="matchups" aria-labelledby="matchups-title">
-      <div class="page-hero page-shell">
-        <div>
-          <p class="eyebrow">Matchup workspace</p>
-          <h1 id="matchups-title">Research the fight, not just the pick.</h1>
-          <p class="hero-copy">Compare pace, defense, grappling, physical traits, form, and every recorded UFC bout. Model and market numbers are supporting evidence—not the whole story.</p>
-        </div>
-        <div class="coverage-panel" id="coverage-summary" aria-label="Dataset coverage"></div>
-      </div>
-
+    <section class="view is-active" id="view-matchups" data-view="matchups" aria-label="Matchups">
       <div class="page-shell page-stack">
         <section class="panel current-card-panel" id="current-card-results" tabindex="-1" aria-labelledby="current-card-title">
           <div class="section-heading">
@@ -296,6 +286,8 @@
             </div>
             <span class="research-badge">Threshold only · execution off</span>
           </div>
+          <p class="section-note qualified-method-note">Method-of-victory odds are collected, but method bets stay out of this list because the method model has not beaten market prices in historical testing.</p>
+          <section id="market-book-filter" class="market-book-filter" aria-label="Sportsbook filter"></section>
           <section class="qualified-bet-list" id="qualified-upcoming-list" aria-live="polite"></section>
         </section>
         <section class="panel" id="market-research-results" tabindex="-1" aria-labelledby="profitability-title">
@@ -305,19 +297,13 @@
           </div>
           <section id="profitability-evidence" aria-live="polite"></section>
         </section>
-        <section class="panel opportunity-panel" aria-labelledby="opportunity-title">
-          <div class="section-heading">
-            <div><p class="eyebrow">Card order · main event first</p><h2 id="opportunity-title">Potentially profitable prices</h2><p class="section-note" id="market-opportunity-status">Loading current prices...</p></div>
-            <span class="research-badge">Paper only</span>
+        <details class="panel market-audit-panel">
+          <summary class="market-audit-summary"><span><span class="eyebrow">Optional price audit</span><strong>All current total and method prices</strong><small>Raw sportsbook lines and experimental estimates; any qualifying recommendation already appears above.</small></span></summary>
+          <div class="market-audit-body">
+            <p class="section-note" id="prop-coverage-status">Checking prop-market coverage...</p>
+            <section class="market-grid" id="prop-market-details" aria-live="polite"></section>
           </div>
-          <section class="opportunity-grid" id="market-opportunities" aria-live="polite"></section>
-        </section>
-        <section class="panel" aria-labelledby="prop-detail-title">
-          <div class="section-heading">
-            <div><p class="eyebrow">Prop-market research</p><h2 id="prop-detail-title">Total-round and method-of-victory prices</h2><p class="section-note" id="prop-coverage-status">Checking prop-market coverage...</p></div>
-          </div>
-          <section class="market-grid" id="prop-market-details" aria-live="polite"></section>
-        </section>
+        </details>
         <div class="section-heading"><div><p class="eyebrow">Moneyline audit</p><h2>Every matchup and book</h2><p class="section-note">Open a fight's odds-movement chart to switch between the consensus and any individual oddsmaker.</p></div></div>
         <section class="market-grid" id="market-matchups" aria-live="polite"></section>
       </div>
@@ -356,13 +342,6 @@
       </div>
     </section>
 
-    <section class="view" id="view-data" data-view="data" aria-labelledby="data-title">
-      <div class="compact-hero page-shell">
-        <p class="eyebrow">Methodology &amp; provenance</p><h1 id="data-title">What the numbers mean.</h1>
-        <p>The prediction model, market policy, evaluation history, data coverage, and missing-data rules are separated so their roles are never ambiguous.</p>
-      </div>
-      <div class="page-shell page-stack" id="model-data-content" tabindex="-1"></div>
-    </section>
   </main>
 
   <footer class="site-footer page-shell">

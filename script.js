@@ -49,6 +49,7 @@ const state = {
   fightGraphRenderToken: 0,
   fightGraphViewport: null,
   selected: { a: null, b: null },
+  marketBookSelection: null,
   directoryLimit: 48,
 };
 
@@ -1691,6 +1692,12 @@ async function prepareSimulationView(requestedMatchupId = "") {
     renderSimulationMatchup(null);
     return;
   }
+  if (!publicationMatchesCurrentCard(publication.event_date, publication.event_id)) {
+    status.textContent = `No simulations have been published for the ${state.card?.title || "current upcoming card"}. The latest stored simulation is for ${publication.event_title || formatDate(publication.event_date)} and is hidden because it is no longer current.`;
+    $("#simulation-card-list").replaceChildren(element("div", "empty-state", "Current-card simulations are awaiting a new validated run."));
+    renderSimulationMatchup(null);
+    return;
+  }
   const orderedMatchups = orderedCardMatchups(publication.matchups);
   const selected = orderedMatchups.find((item) => item.matchup_id === requestedMatchupId) || orderedMatchups.find((item) => item.status === "available") || orderedMatchups[0];
   const refreshPending = publication.mechanics_profile_id !== VALIDATED_SIMULATION_PROFILE_ID;
@@ -1709,13 +1716,14 @@ function showView(name) {
       nav.scrollLeft = Math.max(0, activeNav.offsetLeft - (nav.clientWidth - activeNav.offsetWidth) / 2);
     }
   });
-  document.title = `${name === "matchups" ? "Matchups" : name === "fighters" ? "Fighters" : name === "graph" ? "Fight graph" : name === "simulation" ? "Simulation" : name === "market" ? "Market" : name === "performance" ? "Performance" : "Model & data"} · UFC Data Lab`;
+  const titles = { matchups: "Matchups", fighters: "Fighters", graph: "Fight graph", simulation: "Simulation", market: "Market", performance: "Performance" };
+  document.title = `${titles[name] || "Matchups"} · UFC Data Lab`;
 }
 
 function applyRoute() {
   if (!state.explorer) return;
   const parts = window.location.hash.replace(/^#\/?/, "").split("/").filter(Boolean);
-  const view = ["matchups", "fighters", "graph", "simulation", "market", "performance", "data"].includes(parts[0]) ? parts[0] : "matchups";
+  const view = ["matchups", "fighters", "graph", "simulation", "market", "performance"].includes(parts[0]) ? parts[0] : "matchups";
   const expectedHash = window.location.hash || "#matchups";
   showView(view);
 
@@ -1768,10 +1776,6 @@ function applyRoute() {
   }
   if (view === "performance") {
     focusRouteTarget("#performance-controls", expectedHash);
-    return;
-  }
-  if (view === "data") {
-    focusRouteTarget("#model-data-content", expectedHash);
     return;
   }
   focusRouteTarget("#current-card-results", expectedHash);
@@ -2667,11 +2671,18 @@ function renderFightHistory(fighter, options = {}) {
     visible.forEach((fight) => {
     const details = document.createElement("details");
     details.dataset.fightDate = fight.date || "";
-    const summary = element("summary", "fight-summary"); appendText(summary, "time", "", formatDate(fight.date, { year: "numeric", month: "short", day: "numeric" }));
-    const resultKey = String(fight.result).toLowerCase(); appendText(summary, "span", `result ${resultKey === "w" ? "win" : resultKey === "l" ? "loss" : "neutral"}`, fight.result || "—");
-    const opponentName = element("strong", "", fight.opponent_name); summary.append(opponentName);
-    appendText(summary, "span", "", `${fight.method || "Method unavailable"} · R${fight.round || "—"} ${fight.time || ""}`);
-    const context = element("small", "fight-context"); appendText(context, "span", "promotion-pill", fight.promotion || "Unknown promotion"); context.append(document.createTextNode(` ${fight.event_name || fight.division || "Event unavailable"}`)); summary.append(context); details.append(summary);
+    const summary = element("summary", "fight-summary");
+    const primary = element("span", "fight-summary-primary");
+    appendText(primary, "time", "", formatDate(fight.date, { year: "numeric", month: "short", day: "numeric" }));
+    const resultKey = String(fight.result).toLowerCase();
+    appendText(primary, "span", `result ${resultKey === "w" ? "win" : resultKey === "l" ? "loss" : "neutral"}`, fight.result || "—");
+    appendText(primary, "strong", "", fight.opponent_name);
+    const secondary = element("span", "fight-summary-secondary");
+    appendText(secondary, "span", "fight-finish", `${fight.method || "Method unavailable"} · R${fight.round || "—"} ${fight.time || ""}`);
+    const context = element("small", "fight-context");
+    appendText(context, "span", "promotion-pill", fight.promotion || "Unknown promotion");
+    appendText(context, "span", "fight-event-name", fight.event_name || fight.division || "Event unavailable");
+    secondary.append(context); summary.append(primary, secondary); details.append(summary);
     const body = element("div", "details-body", fight.stats_available ? "Open to load complete bout statistics." : "Open to inspect result metadata and source coverage."); details.append(body);
     let rendered = false; details.addEventListener("toggle", async () => {
       if (!details.open || rendered) return;
@@ -2820,14 +2831,18 @@ function methodPriceCell(row, label, value) {
 
 function renderCurrentMethodPrices(container, publication) {
   const markets = orderedCardMatchups(publication?.method_markets || []);
+  let rendered = 0;
   markets.forEach((market) => {
+    const visibleQuotes = (market.book_quotes || []).filter((quote) => marketBookAllowed(quote.book));
+    if (!visibleQuotes.length) return;
+    rendered += 1;
     const card = element("article", "market-card wide-card method-market-card");
     appendText(card, "p", "eyebrow", boutOrderLabel(market));
     appendText(card, "h3", "", `${market.fighter_name} vs ${market.opponent_name}`);
-    const selections = (market.book_quotes || []).flatMap((quote) => (quote.selections || []).map((selection) => ({ ...selection, book: quote.book, horizon: quote.horizon })));
+    const selections = visibleQuotes.flatMap((quote) => (quote.selections || []).map((selection) => ({ ...selection, book: quote.book, horizon: quote.horizon })));
     const comparisons = selections.filter((selection) => finite(selection.candidate_model_estimated_return) !== null).sort((left, right) => Number(right.candidate_model_estimated_return) - Number(left.candidate_model_estimated_return));
     const best = comparisons[0] || null;
-    appendText(card, "p", "signal-reason", `${selections.length} listed method price${selections.length === 1 ? "" : "s"} across ${market.book_count} book${market.book_count === 1 ? "" : "s"}. Missing outcomes remain unavailable; six-way no-vig values appear only for complete boards.`);
+    appendText(card, "p", "signal-reason", `${selections.length} listed method price${selections.length === 1 ? "" : "s"} across ${visibleQuotes.length} selected book${visibleQuotes.length === 1 ? "" : "s"}. Missing outcomes remain unavailable; six-way no-vig values appear only for complete boards.`);
     if (best) {
       const stats = element("div", "signal-line");
       [[best.selection, "Highest raw model comparison"], [`${formatOdds(best.moneyline)} at ${best.book}`, "Offered method price"], [formatPercent(best.candidate_model_estimated_return), "Unvalidated model EV"]].forEach(([value, label]) => {
@@ -2844,7 +2859,7 @@ function renderCurrentMethodPrices(container, publication) {
     ["Book", "Selection", "Price", "Break-even", "Book no-vig", "Model", "Raw model EV"].forEach((value) => appendText(header, "th", "", value));
     head.append(header); table.append(head);
     const tbody = document.createElement("tbody");
-    (market.book_quotes || []).forEach((quote) => (quote.selections || []).forEach((selection) => {
+    visibleQuotes.forEach((quote) => (quote.selections || []).forEach((selection) => {
       const row = document.createElement("tr");
       const modelProbability = finite(selection.candidate_model_probability);
       const modelEv = finite(selection.candidate_model_estimated_return);
@@ -2859,7 +2874,91 @@ function renderCurrentMethodPrices(container, publication) {
     }));
     table.append(tbody); body.append(table); details.append(body); card.append(details); container.append(card);
   });
-  return markets.length;
+  return rendered;
+}
+
+function availableMarketBooks() {
+  const books = new Set();
+  const add = (value) => { if (String(value || "").trim()) books.add(String(value).trim()); };
+  (state.upcomingBetBoard?.bets || []).forEach((bet) => add(bet.target_book));
+  (state.upcomingBetBoard?.market_matchups || []).forEach((matchup) => (matchup.book_quotes || []).forEach((quote) => add(quote.book)));
+  (currentMarket()?.matchups || []).forEach((matchup) => (matchup.book_quotes || []).forEach((quote) => add(quote.book)));
+  (currentMarket()?.prop_markets?.total_rounds?.markets || []).forEach((market) => (market.book_quotes || []).forEach((quote) => add(quote.book)));
+  (currentMethodMarkets()?.method_markets || []).forEach((market) => (market.book_quotes || []).forEach((quote) => add(quote.book)));
+  return [...books].sort((left, right) => left.localeCompare(right));
+}
+
+function marketBookAllowed(book) {
+  return state.marketBookSelection === null || state.marketBookSelection.has(String(book || ""));
+}
+
+function selectedMarketBookLabel() {
+  const all = availableMarketBooks();
+  const selected = state.marketBookSelection === null ? all.length : all.filter((book) => state.marketBookSelection.has(book)).length;
+  return state.marketBookSelection === null ? `all ${all.length} sportsbooks` : `${selected} of ${all.length} sportsbooks`;
+}
+
+function renderMarketBookFilter() {
+  const container = $("#market-book-filter");
+  if (!container) return;
+  container.replaceChildren();
+  const books = availableMarketBooks();
+  if (!books.length) return;
+  const details = document.createElement("details");
+  details.append(element("summary", "", `Sportsbooks: ${selectedMarketBookLabel()} · change`));
+  const body = element("div", "market-book-filter-body");
+  appendText(body, "span", "section-note", "Choose only books you can use. The lists and raw price tables below will hide all other books.");
+  const options = element("div", "market-book-options");
+  books.forEach((book) => {
+    const label = element("label", "market-book-option");
+    const input = document.createElement("input");
+    input.type = "checkbox";
+    input.value = book;
+    input.checked = marketBookAllowed(book);
+    label.append(input, document.createTextNode(book));
+    options.append(label);
+  });
+  const actions = element("div", "market-book-actions");
+  actions.append(
+    actionButton("Select all", "secondary-button small-button", () => options.querySelectorAll('input[type="checkbox"]').forEach((input) => { input.checked = true; })),
+    actionButton("Clear", "secondary-button small-button", () => options.querySelectorAll('input[type="checkbox"]').forEach((input) => { input.checked = false; })),
+    actionButton("Apply", "primary-button small-button", () => {
+      const selected = new Set([...options.querySelectorAll('input[type="checkbox"]:checked')].map((input) => input.value));
+      state.marketBookSelection = selected.size === books.length ? null : selected;
+      renderMarket();
+    }),
+  );
+  body.append(options, actions); details.append(body); container.append(details);
+}
+
+function appendQualifiedBetExplanation(container, bet) {
+  const chance = finite(bet.estimated_win_probability);
+  const decimal = decimalOdds(bet.offered_moneyline);
+  const breakEven = decimal === null ? null : 1 / decimal;
+  const fullKelly = kellyFraction(chance, bet.offered_moneyline);
+  const isTotal = bet.candidate_only === true || bet.probability_source === "candidate_duration_model" || bet.category === "Total rounds";
+  const probabilitySource = isTotal
+    ? "This comes from the experimental fight-duration model using information available before the fight. It has not passed the historical betting test."
+    : finite(bet.model_weight) > 0
+      ? `This blends the prediction model with the no-vig average from ${formatNumber(bet.consensus_book_count, 0)} other books; the offered book is excluded.`
+      : `This is the no-vig average from ${formatNumber(bet.consensus_book_count, 0)} other books. The offered book is excluded so its price is not used to judge itself.`;
+  const cards = [
+    ["Estimated chance", `${formatPercent(chance)}. ${probabilitySource}`],
+    ["Estimated return", `${formatPercent(chance)} chance × ${formatNumber(decimal, 2)} total payout − 1 = ${formatPercent(bet.estimated_expected_return)} average profit per dollar if the chance estimate is right. Break-even is ${formatPercent(breakEven)}.`],
+    ["½ Kelly stake", `Full Kelly is ${formatPercent(fullKelly)} of bankroll; this displays half of that (${formatPercent((fullKelly || 0) / 2)}). Kelly can be far too aggressive when the chance estimate is uncertain.`],
+  ];
+  cards.forEach(([title, copy]) => {
+    const card = element("div", "qualified-bet-explanation-card");
+    appendText(card, "strong", "", title); appendText(card, "span", "", copy); container.append(card);
+  });
+  appendText(container, "p", "qualified-bet-explanation-note", isTotal
+    ? "Other totals and moneyline bets on this fight may be related. They remain visible, but treating every displayed Kelly stake as independent can risk too much on one fight; combined sizing is not implemented yet."
+    : "Other bets on this fight may be related. They remain visible, but treating every displayed Kelly stake as independent can risk too much on one fight; combined sizing is not implemented yet.");
+  if (bet.fighter_id && bet.opponent_id) {
+    const action = element("div", "qualified-bet-action");
+    action.append(actionButton("View fight research", "secondary-button small-button", () => setRoute(`matchups/${bet.fighter_id}/${bet.opponent_id}`)));
+    container.append(action);
+  }
 }
 
 function renderQualifiedUpcomingBets() {
@@ -2875,18 +2974,20 @@ function renderQualifiedUpcomingBets() {
   const threshold = finite(board.minimum_expected_return);
   const bets = board.bets
     .filter((bet) => bet?.threshold_met === true && finite(bet.estimated_expected_return) !== null && (threshold === null || Number(bet.estimated_expected_return) >= threshold))
+    .filter((bet) => marketBookAllowed(bet.target_book))
     .sort((left, right) => Number(right.estimated_expected_return) - Number(left.estimated_expected_return) || String(left.event_date).localeCompare(String(right.event_date)) || String(left.selection).localeCompare(String(right.selection)));
   const eventCount = new Set(bets.map((bet) => bet.event_id).filter(Boolean)).size;
   const captured = formatTimestamp(board.observed_at_utc);
   status.textContent = bets.length
-    ? `${bets.length} price${bets.length === 1 ? "" : "s"} across ${eventCount} card${eventCount === 1 ? "" : "s"}, ranked by estimated return. Minimum ${formatPercent(threshold)} · captured ${captured}.`
-    : `No current price exceeds the ${formatPercent(threshold)} paper threshold. This is a valid result, not missing data.`;
+    ? `${bets.length} price${bets.length === 1 ? "" : "s"} across ${eventCount} card${eventCount === 1 ? "" : "s"}, ranked by estimated return at ${selectedMarketBookLabel()}. Minimum ${formatPercent(threshold)} · captured ${captured}.`
+    : `No current price at ${selectedMarketBookLabel()} exceeds the ${formatPercent(threshold)} paper threshold. This is a valid result, not missing data.`;
   if (!bets.length) {
     container.append(element("div", "empty-state", "There are no theoretical paper bets to make at the currently published prices."));
     return;
   }
   bets.forEach((bet, index) => {
-    const row = element("article", "qualified-bet-row");
+    const item = document.createElement("details"); item.className = "qualified-bet-item";
+    const row = element("summary", "qualified-bet-row");
     const rank = element("div", "qualified-bet-rank");
     appendText(rank, "span", "", "Rank");
     appendText(rank, "strong", "", `#${index + 1}`);
@@ -2918,10 +3019,10 @@ function renderQualifiedUpcomingBets() {
     if (finite(bet.consensus_book_count) !== null) appendText(source, "small", "", `${formatNumber(bet.consensus_book_count, 0)} comparison books; target book excluded`);
     else if (isCandidateTotal) appendText(source, "small", "", "Candidate model has not passed a betting-performance gate");
 
-    const action = element("div", "qualified-bet-action");
-    if (bet.fighter_id && bet.opponent_id) action.append(actionButton("View fight research", "secondary-button small-button", () => setRoute(`matchups/${bet.fighter_id}/${bet.opponent_id}`)));
-    row.append(rank, fight, price, probability, expectedReturn, halfKelly, source, action);
-    container.append(row);
+    row.append(rank, fight, price, probability, expectedReturn, halfKelly, source);
+    const explanation = element("div", "qualified-bet-explanation");
+    appendQualifiedBetExplanation(explanation, bet);
+    item.append(row, explanation); container.append(item);
   });
 }
 
@@ -3213,26 +3314,27 @@ function oddsHistoryChart(container, readout, series, historyMatchup, matchup) {
 function renderOddsHistory(matchup) {
   const details = document.createElement("details"); details.classList.add("odds-history-details"); details.dataset.oddsHistory = "moneyline";
   const historyMatchup = oddsHistoryForMatchup(matchup);
+  const visibleSeries = (historyMatchup?.series || []).filter((series) => series.kind === "consensus" || marketBookAllowed(series.label));
   const captureCount = finite(historyMatchup?.capture_count) || 0;
   details.append(element("summary", "", captureCount ? `Odds movement over time · ${captureCount} capture${captureCount === 1 ? "" : "s"}` : "Odds movement over time"));
   const body = element("div", "details-body odds-history-panel");
-  if (!historyMatchup?.series?.length) {
+  if (!visibleSeries.length) {
     body.append(element("div", "empty-state odds-history-empty", "No price history has been captured for this fight yet. Scheduled collections will add points here.")); details.append(body); return details;
   }
   const controls = element("div", "odds-history-controls"); const control = element("label", "odds-history-source");
   appendText(control, "span", "", "Show source"); const select = document.createElement("select"); select.setAttribute("aria-label", `Odds history source for ${matchup.fighter_name} versus ${matchup.opponent_name}`);
-  historyMatchup.series.forEach((series) => { const option = element("option", "", series.label); option.value = series.key; select.append(option); }); control.append(select);
+  visibleSeries.forEach((series) => { const option = element("option", "", series.label); option.value = series.key; select.append(option); }); control.append(select);
   const legend = element("div", "odds-history-legend"); legend.append(element("span", "is-fighter", matchup.fighter_name), element("span", "is-opponent", matchup.opponent_name)); controls.append(control, legend);
   const chart = element("div", "odds-history-chart"); const readout = element("p", "odds-history-readout"); body.append(controls, chart, readout); details.append(body);
   const renderSelected = () => {
-    const series = historyMatchup.series.find((item) => item.key === select.value) || historyMatchup.series[0];
+    const series = visibleSeries.find((item) => item.key === select.value) || visibleSeries[0];
     oddsHistoryChart(chart, readout, series, historyMatchup, matchup);
   };
   select.addEventListener("change", renderSelected); renderSelected(); return details;
 }
 
 function renderMarket() {
-  const notice = $("#market-notice"); const container = $("#market-matchups"); const opportunityContainer = $("#market-opportunities"); const propContainer = $("#prop-market-details"); notice.replaceChildren(); container.replaceChildren(); opportunityContainer.replaceChildren(); propContainer.replaceChildren(); renderQualifiedUpcomingBets(); renderProfitabilityEvidence();
+  const notice = $("#market-notice"); const container = $("#market-matchups"); const propContainer = $("#prop-market-details"); notice.replaceChildren(); container.replaceChildren(); propContainer.replaceChildren(); renderMarketBookFilter(); renderQualifiedUpcomingBets(); renderProfitabilityEvidence();
   const market = currentMarket();
   const outcomes = currentOutcomes();
   const copy = element("div"); appendText(copy, "h2", "", "Paper research only—automatic betting is intentionally off.");
@@ -3252,83 +3354,6 @@ function renderMarket() {
   const propMarkets = market?.prop_markets;
   const totalRounds = propMarkets?.total_rounds;
   const methodMarket = currentMethodMarkets();
-  const ranked = [];
-  matchups.forEach((matchup) => {
-    const signal = matchup.current_signal;
-    const expectedReturn = finite(signal?.estimated_expected_return);
-    if (signal && expectedReturn !== null && expectedReturn > 0) ranked.push({
-      category: "Moneyline",
-      matchup: `${matchup.fighter_name} vs ${matchup.opponent_name}`,
-      selection: signal.best_candidate_name,
-      book: signal.target_book,
-      odds: signal.offered_moneyline,
-      probability: signal.market_probability,
-      expectedReturn,
-      boutOrder: boutOrderFor(matchup),
-      orderLabel: boutOrderLabel(matchup),
-      thresholdMet: signal.paper_action !== "pass",
-      probabilityLabel: "Leave-one-book-out fair probability",
-      warning: "Market-relative estimate; the target book is excluded from consensus.",
-    });
-    const bayesianCandidate = bayesianFilteredCandidate(matchup);
-    if (bayesianCandidate && bayesianCandidate.mean > 0) {
-      ranked.push({
-        category: "Bayesian-filtered moneyline",
-        matchup: `${matchup.fighter_name} vs ${matchup.opponent_name}`,
-        selection: bayesianCandidate.name,
-        book: bayesianCandidate.book,
-        odds: bayesianCandidate.odds,
-        probability: bayesianCandidate.distribution.mean,
-        expectedReturn: bayesianCandidate.mean,
-        boutOrder: boutOrderFor(matchup),
-        orderLabel: boutOrderLabel(matchup),
-        thresholdMet: bayesianCandidate.qualified,
-        decisionLabel: bayesianCandidate.qualified ? "Filter keeps bet" : "Filter vetoes bet",
-        filterStatus: bayesianCandidate.status,
-        probabilityPositive: bayesianCandidate.probability_positive,
-        expectedReturnLower: bayesianCandidate.lower,
-        expectedReturnUpper: bayesianCandidate.upper,
-        probabilityLabel: "Posterior-mean model probability",
-        warning: `${formatPercent(bayesianCandidate.probability_positive)} posterior probability of positive EV; ${formatPercent(bayesianCandidate.lower)} to ${formatPercent(bayesianCandidate.upper)} credible EV interval. Challenger only—no execution.`,
-      });
-    }
-  });
-  (totalRounds?.positive_candidates || []).forEach((candidate) => ranked.push({
-    category: "Total rounds",
-    matchup: `${candidate.fighter_name} vs ${candidate.opponent_name}`,
-    selection: candidate.selection,
-    book: candidate.target_book,
-    odds: candidate.offered_moneyline,
-    probability: candidate.model_probability,
-    expectedReturn: candidate.estimated_expected_return,
-    boutOrder: boutOrderFor(candidate),
-    orderLabel: boutOrderLabel(candidate),
-    thresholdMet: candidate.paper_threshold_met,
-    probabilityLabel: "Candidate duration-model probability",
-    warning: `Candidate model only - ${candidate.scheduled_rounds} scheduled rounds - ${String(candidate.schedule_basis).replaceAll("_", " ")}.`,
-  }));
-  ranked.sort((left, right) => {
-    if (left.boutOrder === null && right.boutOrder !== null) return 1;
-    if (left.boutOrder !== null && right.boutOrder === null) return -1;
-    return (left.boutOrder ?? 0) - (right.boutOrder ?? 0)
-      || left.category.localeCompare(right.category)
-      || right.expectedReturn - left.expectedReturn;
-  });
-  $("#market-opportunity-status").textContent = ranked.length
-    ? `${ranked.length} positive-EV price${ranked.length === 1 ? "" : "s"} in the latest synchronized capture. Bayesian-filtered rows begin with an existing-policy selection and may only keep or veto it; all rows remain paper-only.`
-    : "No positive-EV price is currently published. This is a valid result, not a data failure.";
-  if (!ranked.length) opportunityContainer.append(element("div", "empty-state", totalRounds ? "No current moneyline or total-round price has positive estimated value." : "Finish-time EV is awaiting the next successful totals capture; no current moneyline price is positive EV."));
-  ranked.forEach((candidate) => {
-    const card = element("article", "opportunity-card");
-    const meta = element("div", "opportunity-meta"); meta.append(element("span", "pill orange", candidate.orderLabel), element("span", "pill neutral", candidate.category), element("span", `pill ${candidate.thresholdMet ? "win" : "orange"}`, candidate.decisionLabel || (candidate.thresholdMet ? "Paper threshold met" : "+EV below threshold"))); card.append(meta);
-    appendText(card, "h3", "", candidate.matchup); appendText(card, "p", "signal-reason", `${candidate.selection} at ${candidate.book}`);
-    const stats = element("div", "signal-line"); const candidateStats = [[formatOdds(candidate.odds), "Offered price"], [formatPercent(candidate.probability), candidate.probabilityLabel], [formatPercent(candidate.expectedReturn), "Estimated return"]];
-    if (finite(candidate.probabilityPositive) !== null) candidateStats.push([formatPercent(candidate.probabilityPositive), "Probability EV is positive"]);
-    candidateStats.forEach(([value, label]) => { const item = element("div", "signal-stat"); appendText(item, "strong", "", value); appendText(item, "span", "", label); stats.append(item); });
-    const warning = candidate.filterStatus ? `The existing policy selected this same side and price. Bayesian filter: ${String(candidate.filterStatus).replaceAll("_", " ")}. ${candidate.warning}` : candidate.warning;
-    card.append(stats, element("div", "candidate-warning", warning)); opportunityContainer.append(card);
-  });
-
   const totalStatus = totalRounds?.price_status === "available" ? `${totalRounds.quote_count} book/line quotes and ${totalRounds.forecast_count} frozen model probabilities.` : "Awaiting the next successful total-round odds capture.";
   const methodStatus = methodMarket?.price_status === "available"
     ? `${methodMarket.book_market_count} method-of-victory book boards are available; model comparisons remain research-only.`
@@ -3336,20 +3361,22 @@ function renderMarket() {
   $("#prop-coverage-status").textContent = `${totalStatus} ${methodStatus}`;
   if (!(totalRounds?.markets || []).length) propContainer.append(element("div", "empty-state", "No synchronized total-round lines are published yet. The next market snapshot will populate this section when books expose totals."));
   orderedCardMatchups(totalRounds?.markets || []).forEach((market) => {
-    const card = element("article", "market-card"); const best = market.best_candidate;
+    const visibleQuotes = (market.book_quotes || []).filter((quote) => marketBookAllowed(quote.book));
+    if (!visibleQuotes.length) return;
+    const card = element("article", "market-card"); const best = marketBookAllowed(market.best_candidate?.target_book) ? market.best_candidate : null;
     appendText(card, "p", "eyebrow", boutOrderLabel(market));
     appendText(card, "h3", "", `${market.fighter_name} vs ${market.opponent_name}`);
-    appendText(card, "p", "signal-reason", `Full fight total: ${formatNumber(market.line, 1)} rounds - ${market.eligible_quote_count}/${market.quote_count} fresh book lines`);
+    appendText(card, "p", "signal-reason", `Full fight total: ${formatNumber(market.line, 1)} rounds · ${visibleQuotes.length} selected book line${visibleQuotes.length === 1 ? "" : "s"}`);
     if (best) {
       const stats = element("div", "signal-line"); [[best.selection, "Best side"], [`${formatOdds(best.offered_moneyline)} - ${best.target_book}`, "Best price"], [formatPercent(best.estimated_expected_return), "Candidate model EV"]].forEach(([value, label]) => { const item = element("div", "signal-stat"); appendText(item, "strong", "", value); appendText(item, "span", "", label); stats.append(item); }); card.append(stats);
     } else appendText(card, "p", "signal-reason", market.forecast_unavailable_reason || "No valid candidate price.");
-    if (market.locked_t24_decision) {
+    if (market.locked_t24_decision && marketBookAllowed(market.locked_t24_decision.target_book)) {
       const locked = market.locked_t24_decision; const lockedDetails = document.createElement("details"); lockedDetails.append(element("summary", "", "Locked T-24 residual paper decision"));
       const lockedBody = element("div", "details-body"); const lockedTable = element("table", "data-table"); const lockedRows = document.createElement("tbody");
       [["Captured", formatTimestamp(locked.captured_at_utc)], ["Paper action", locked.paper_action], ["Selection", locked.selection || "Pass"], ["Target book", locked.target_book], ["Offered price", formatOdds(locked.offered_moneyline)], ["Market over probability", formatPercent(locked.market_over_probability)], ["Independent-model over probability", formatPercent(locked.model_over_probability)], ["Residual over probability", formatPercent(locked.residual_over_probability)], ["Independent-model weight", formatPercent(locked.selected_residual_weight)], ["Estimated return", formatPercent(locked.estimated_expected_return)], ["Residual status", String(locked.residual_selection_status).replaceAll("_", " ")]].forEach(([label, value]) => { const row = document.createElement("tr"); appendText(row, "td", "", label); appendText(row, "td", "", value); lockedRows.append(row); });
       lockedTable.append(lockedRows); lockedBody.append(lockedTable); lockedDetails.append(lockedBody); card.append(lockedDetails);
     }
-    const details = document.createElement("details"); details.append(element("summary", "", `All ${market.book_quotes.length} total prices`)); const body = element("div", "details-body book-table-wrap"); const table = element("table", "data-table"); const head = document.createElement("thead"); const header = document.createElement("tr"); ["Book", "Over", "Under", "No-vig over", "Quote age"].forEach((value) => appendText(header, "th", "", value)); head.append(header); table.append(head); const tbody = document.createElement("tbody"); market.book_quotes.forEach((quote) => { const row = document.createElement("tr"); [quote.book, formatOdds(quote.over_moneyline), formatOdds(quote.under_moneyline), formatPercent(quote.no_vig_over_probability), `${formatNumber(quote.source_quote_age_seconds, 0)}s`].forEach((value) => appendText(row, "td", "", value)); tbody.append(row); }); table.append(tbody); body.append(table); details.append(body); card.append(details); propContainer.append(card);
+    const details = document.createElement("details"); details.append(element("summary", "", `All ${visibleQuotes.length} selected total prices`)); const body = element("div", "details-body book-table-wrap"); const table = element("table", "data-table"); const head = document.createElement("thead"); const header = document.createElement("tr"); ["Book", "Over", "Under", "No-vig over", "Quote age"].forEach((value) => appendText(header, "th", "", value)); head.append(header); table.append(head); const tbody = document.createElement("tbody"); visibleQuotes.forEach((quote) => { const row = document.createElement("tr"); [quote.book, formatOdds(quote.over_moneyline), formatOdds(quote.under_moneyline), formatPercent(quote.no_vig_over_probability), `${formatNumber(quote.source_quote_age_seconds, 0)}s`].forEach((value) => appendText(row, "td", "", value)); tbody.append(row); }); table.append(tbody); body.append(table); details.append(body); card.append(details); propContainer.append(card);
   });
   const renderedMethodMarkets = renderCurrentMethodPrices(propContainer, methodMarket);
   const outcomeMatchups = orderedCardMatchups((outcomes?.matchups || []).filter((item) => item.matchup_id && item.terminal_probabilities));
@@ -3361,7 +3388,9 @@ function renderMarket() {
   }
   if (!matchups.length) { container.append(element("div", "empty-state", "Run a successful market snapshot to publish current book lines and paper decisions.")); return; }
   matchups.forEach((matchup) => {
-    const signal = matchup.current_signal; const card = element("article", "market-card");
+    const visibleQuotes = (matchup.book_quotes || []).filter((quote) => marketBookAllowed(quote.book));
+    if ((matchup.book_quotes || []).length && !visibleQuotes.length) return;
+    const signal = marketBookAllowed(matchup.current_signal?.target_book) ? matchup.current_signal : null; const card = element("article", "market-card");
     card.dataset.marketFighterId = String(matchup.fighter_id || "");
     card.dataset.marketOpponentId = String(matchup.opponent_id || "");
     card.tabIndex = -1;
@@ -3373,8 +3402,8 @@ function renderMarket() {
       [[formatOdds(signal.offered_moneyline), `${signal.best_candidate_name} at ${signal.target_book}`], [formatOdds(signal.market_fair_moneyline), "Leave-one-book-out fair line"], [formatPercent(signal.estimated_expected_return), "Estimated return"]].forEach(([value, label]) => { const item = element("div", "signal-stat"); appendText(item, "strong", "", value); appendText(item, "span", "", label); stats.append(item); }); card.append(stats);
       appendText(card, "p", "signal-reason", signal.reason);
       appendText(card, "p", "signal-reason", `Consensus: ${signal.consensus_book_count} books · ${formatPercent(signal.market_probability)} fair probability · model weight ${formatPercent(signal.model_weight)}.`);
-    } else appendText(card, "p", "signal-reason", matchup.current_signal_unavailable_reason || "No evaluable paper signal for this matchup.");
-    const bayesianForecast = bayesianForMatchup(matchup); const bayesianCandidate = bestBayesianCandidate(matchup); const bayesianFiltered = bayesianFilteredCandidate(matchup);
+    } else appendText(card, "p", "signal-reason", matchup.current_signal && !marketBookAllowed(matchup.current_signal.target_book) ? "No published profitable price at the selected sportsbooks." : matchup.current_signal_unavailable_reason || "No evaluable paper signal for this matchup.");
+    const bayesianForecast = bayesianForMatchup(matchup); const rawBayesianCandidate = bestBayesianCandidate(matchup); const rawBayesianFiltered = bayesianFilteredCandidate(matchup); const bayesianCandidate = marketBookAllowed(rawBayesianCandidate?.book) ? rawBayesianCandidate : null; const bayesianFiltered = marketBookAllowed(rawBayesianFiltered?.book) ? rawBayesianFiltered : null;
     if (bayesianForecast) {
       const bayesianDetails = document.createElement("details"); bayesianDetails.append(element("summary", "", "Bayesian model and expected-return uncertainty"));
       const bayesianBody = element("div", "details-body"); const bayesianTable = element("table", "data-table"); const bayesianRows = document.createElement("tbody");
@@ -3399,17 +3428,17 @@ function renderMarket() {
       bayesianTable.append(bayesianRows); bayesianBody.append(bayesianTable); bayesianDetails.append(bayesianBody); card.append(bayesianDetails);
     }
     card.append(renderOddsHistory(matchup));
-    const details = document.createElement("details"); details.dataset.bookLines = "moneyline"; details.append(element("summary", "", `All ${matchup.book_quotes.length} book lines`));
+    const details = document.createElement("details"); details.dataset.bookLines = "moneyline"; details.append(element("summary", "", `All ${visibleQuotes.length} selected book lines`));
     const body = element("div", "details-body book-table-wrap"); const table = element("table", "data-table");
     const head = document.createElement("thead"); const header = document.createElement("tr"); ["Book", matchup.fighter_name, matchup.opponent_name, "Quote age", "Consensus"].forEach((value) => appendText(header, "th", "", value)); head.append(header); table.append(head);
-    const tbody = document.createElement("tbody"); matchup.book_quotes.forEach((quote) => { const quoteRow = document.createElement("tr"); appendText(quoteRow, "td", "", quote.book); appendText(quoteRow, "td", "", formatOdds(quote.fighter_moneyline)); appendText(quoteRow, "td", "", formatOdds(quote.opponent_moneyline)); appendText(quoteRow, "td", "", `${formatNumber(quote.source_quote_age_seconds, 0)}s`); appendText(quoteRow, "td", "", quote.eligible_for_consensus ? "Yes" : "No"); tbody.append(quoteRow); }); table.append(tbody); body.append(table); details.append(body); card.append(details);
-    if (matchup.locked_t24_decision) {
+    const tbody = document.createElement("tbody"); visibleQuotes.forEach((quote) => { const quoteRow = document.createElement("tr"); appendText(quoteRow, "td", "", quote.book); appendText(quoteRow, "td", "", formatOdds(quote.fighter_moneyline)); appendText(quoteRow, "td", "", formatOdds(quote.opponent_moneyline)); appendText(quoteRow, "td", "", `${formatNumber(quote.source_quote_age_seconds, 0)}s`); appendText(quoteRow, "td", "", quote.eligible_for_consensus ? "Yes" : "No"); tbody.append(quoteRow); }); table.append(tbody); body.append(table); details.append(body); card.append(details);
+    if (matchup.locked_t24_decision && marketBookAllowed(matchup.locked_t24_decision.target_book)) {
       const locked = matchup.locked_t24_decision; const lockedDetails = document.createElement("details"); lockedDetails.append(element("summary", "", "Locked T-24 paper decision"));
       const lockedBody = element("div", "details-body"); const lockedTable = element("table", "data-table"); const lockedRows = document.createElement("tbody");
       [["Captured", formatTimestamp(locked.observed_at_utc)], ["Candidate", locked.best_candidate_name || "—"], ["Target book", locked.target_book || "—"], ["Offered line", formatOdds(locked.offered_moneyline)], ["Leave-one-book-out fair line", formatOdds(locked.market_fair_moneyline)], ["Estimated return", formatPercent(locked.estimated_expected_return)], ["Paper action", locked.paper_action], ["Reason", locked.reason]].forEach(([label, value]) => { const lockedRow = document.createElement("tr"); appendText(lockedRow, "td", "", label); appendText(lockedRow, "td", "", value); lockedRows.append(lockedRow); });
       lockedTable.append(lockedRows); lockedBody.append(lockedTable); lockedDetails.append(lockedBody); card.append(lockedDetails);
     }
-    if (matchup.locked_t24_bayesian_filter) {
+    if (matchup.locked_t24_bayesian_filter && marketBookAllowed(matchup.locked_t24_bayesian_filter.target_book || matchup.locked_t24_bayesian_filter.candidate_book)) {
       const filtered = matchup.locked_t24_bayesian_filter; const filteredDetails = document.createElement("details"); filteredDetails.append(element("summary", "", "Locked T-24 Bayesian filter"));
       const filteredBody = element("div", "details-body"); const filteredTable = element("table", "data-table"); const filteredRows = document.createElement("tbody");
       [["Base paper action", filtered.base_paper_action], ["Filtered action", filtered.filtered_paper_action], ["Filter result", String(filtered.filter_status).replaceAll("_", " ")], ["Same frozen price", formatOdds(filtered.candidate_moneyline)], ["Posterior mean probability", formatPercent(filtered.candidate_posterior_mean_probability)], ["Posterior mean EV", formatPercent(filtered.candidate_posterior_mean_expected_return)], ["Credible EV interval", `${formatPercent(filtered.candidate_expected_return_lower)} to ${formatPercent(filtered.candidate_expected_return_upper)}`], ["Probability EV is positive", formatPercent(filtered.candidate_probability_positive_expected_return)]].forEach(([label, value]) => { const filteredRow = document.createElement("tr"); appendText(filteredRow, "td", "", label); appendText(filteredRow, "td", "", value); filteredRows.append(filteredRow); });
@@ -3418,38 +3447,6 @@ function renderMarket() {
     const fighter = state.fighterById.get(matchup.fighter_id); const opponent = state.fighterById.get(matchup.opponent_id);
     if (fighter && opponent) card.append(actionButton("Research fighter matchup", "secondary-button", () => setRoute(`matchups/${fighter.id}/${opponent.id}`))); container.append(card);
   });
-}
-
-function explainCard(title, copy) {
-  const card = element("article", "explain-card"); appendText(card, "h2", "", title); appendText(card, "p", "", copy); return card;
-}
-
-function renderModelData() {
-  const container = $("#model-data-content"); container.replaceChildren(); const grid = element("section", "explain-grid");
-  const model = state.model; const evaluation = model?.temporal_evaluation?.calibrated_model;
-  const modelCard = explainCard("The prediction model", model ? `Yes—the current predictor is ${String(model.model_type || "logistic regression").replaceAll("_", " ")}. It uses ${model.feature_columns?.length || 0} point-in-time features trained only on information available before each fight. Calibration adjusts the raw probabilities before publication.` : "The model artifact is not currently published.");
-  if (evaluation) { const metrics = element("div", "metric-row"); [[formatPercent(evaluation.accuracy), "holdout accuracy"], [formatNumber(evaluation.log_loss, 3), "holdout log loss"], [formatNumber(evaluation.auc, 3), "holdout AUC"]].forEach(([value, label]) => { const stat = element("div", "mini-stat"); appendText(stat, "strong", "", value); appendText(stat, "span", "", label); metrics.append(stat); }); modelCard.append(metrics); }
-  grid.append(modelCard);
-  const bayesianEvaluation = state.bayesian?.temporal_evaluation; const bayesianWalk = bayesianEvaluation?.walk_forward?.aggregate; const bayesianComparison = bayesianEvaluation?.comparison_to_point_model; const bayesianGate = bayesianEvaluation?.evidence_gate; const bayesianProspective = state.performance?.bayesian_moneyline_challenger; const bayesianFilter = state.performance?.bayesian_filtered_moneyline_policy;
-  const bayesianCard = explainCard("Bayesian logistic challenger", state.bayesian ? "The challenger places a Gaussian posterior around the regularized logistic coefficients using a Laplace approximation. Each fight receives a posterior probability interval and a distribution of expected return at the offered price. It remains paper-only." : "The Bayesian challenger artifact is not currently published.");
-  if (bayesianWalk) { const bayesianMetrics = element("div", "metric-row"); [[formatNumber(bayesianWalk.log_loss, 3), "walk-forward log loss"], [formatNumber(bayesianWalk.brier, 3), "walk-forward Brier"], [formatPercent(bayesianWalk.mean_90_probability_interval_width), "mean 90% interval width"], [formatNumber(bayesianComparison?.walk_forward_log_loss_delta_vs_point, 4), "log-loss delta vs point model"]].forEach(([value, label]) => { const stat = element("div", "mini-stat"); appendText(stat, "strong", "", value); appendText(stat, "span", "", label); bayesianMetrics.append(stat); }); bayesianCard.append(bayesianMetrics); }
-  if (bayesianProspective) { const prospectiveMetrics = element("div", "metric-row"); [[formatNumber(bayesianProspective.scored_forecasts, 0), "prospectively scored fights"], [formatNumber(bayesianProspective.settled_shadow_selections, 0), "settled shadow selections"], [formatPercent(bayesianProspective.hypothetical_roi), "shadow ROI"], [`${bayesianProspective.wins || 0}-${bayesianProspective.losses || 0}`, "shadow record"]].forEach(([value, label]) => { const stat = element("div", "mini-stat"); appendText(stat, "strong", "", value); appendText(stat, "span", "", label); prospectiveMetrics.append(stat); }); bayesianCard.append(prospectiveMetrics); appendText(bayesianCard, "p", "section-note", bayesianProspective.source_limit); }
-  if (bayesianFilter) { const filteredMetrics = element("div", "metric-row"); [[formatNumber(bayesianFilter.paired_settled_decisions, 0), "immutable paired decisions"], [formatNumber(bayesianFilter.bayesian_filtered_policy?.selections, 0), "selections surviving veto"], [formatPercent(bayesianFilter.bayesian_filtered_policy?.hypothetical_roi), "filtered ROI"], [formatPercent(bayesianFilter.paired_roi_difference?.point_difference), "ROI delta vs existing policy"]].forEach(([value, label]) => { const stat = element("div", "mini-stat"); appendText(stat, "strong", "", value); appendText(stat, "span", "", label); filteredMetrics.append(stat); }); bayesianCard.append(filteredMetrics); appendText(bayesianCard, "p", "section-note", "The immutable T-24 filter starts with an existing-policy selection and only keeps or vetoes that same side and price."); }
-  if (bayesianGate) appendText(bayesianCard, "p", "section-note", `Evidence gate: ${String(bayesianGate.status).replaceAll("_", " ")}. Prospective CLV and return requirements are not met; execution is disabled.`);
-  grid.append(bayesianCard);
-  const market = currentMarket();
-  const marketWeight = finite(market?.model_weight);
-  const marketCard = explainCard("How bets are informed", market ? `The price policy finds the best offered line, then estimates fair probability from the other eligible books. The target book is excluded to avoid grading its price against itself. The model currently receives ${formatPercent(marketWeight)} weight${marketWeight === 0 ? " because prospective market-relative evidence is still being collected" : " in the blended estimate"}.` : "Current-card market policy output is unavailable, so no live paper signal is shown.");
-  if (state.performance?.promotion_gate) appendText(marketCard, "p", "section-note", `Promotion gate: ${String(state.performance.promotion_gate.status).replaceAll("_", " ")} · ${state.performance.promotion_gate.paper_selections} / ${state.performance.promotion_gate.minimum_paper_selections} minimum paper selections.`); grid.append(marketCard);
-  const dataCard = explainCard("Dataset coverage", `${state.explorer.counts.fighters.toLocaleString()} profiles and ${state.explorer.counts.unique_fights.toLocaleString()} unique fights are published through ${formatDate(state.explorer.data_through)}. Stable UFCStats URL IDs join fighters, opponents, fights, and events; display names are not used as identity keys.`);
-  const dataMetrics = element("div", "metric-row"); [[state.explorer.counts.fighters_with_recorded_bouts.toLocaleString(), "profiles with bouts"], [state.explorer.counts.fighter_fight_rows.toLocaleString(), "fighter stat rows"], [state.explorer.fight_columns.length.toLocaleString(), "fields per fight"]].forEach(([value, label]) => { const stat = element("div", "mini-stat"); appendText(stat, "strong", "", value); appendText(stat, "span", "", label); dataMetrics.append(stat); }); dataCard.append(dataMetrics); grid.append(dataCard);
-  const rulesCard = explainCard("Sanitization rules", "The publication is rebuilt deterministically from processed CSV files and rejected if it cannot be reproduced. Duplicate fighter perspectives, conflicting IDs, invalid numbers, and oversized output fail validation.");
-  const list = element("ul", "provenance-list"); state.explorer.data_dictionary.notes.forEach((note) => appendText(list, "li", "", note)); rulesCard.append(list); grid.append(rulesCard); container.append(grid);
-
-  const dictionary = element("section", "panel"); const heading = element("div", "section-heading"); const headingCopy = element("div"); appendText(headingCopy, "p", "eyebrow", "Definitions"); appendText(headingCopy, "h2", "", "Published data dictionary"); appendText(headingCopy, "p", "section-note", "Every career and bout-level statistic exposed by the explorer."); heading.append(headingCopy); dictionary.append(heading);
-  const columns = element("div", "data-columns");
-  [["Career statistics", state.explorer.data_dictionary.career], ["Per-fight statistics", state.explorer.data_dictionary.fight_stats]].forEach(([title, definitions]) => { const section = element("div"); appendText(section, "h3", "", title); const table = element("table", "data-table"); const tbody = document.createElement("tbody"); Object.entries(definitions).forEach(([key, definition]) => { const row = document.createElement("tr"); appendText(row, "td", "", definition.label); appendText(row, "td", "", definition.group); appendText(row, "td", "", definition.format || definition.unit); tbody.append(row); }); table.append(tbody); section.append(table); columns.append(section); }); dictionary.append(columns);
-  const provenance = document.createElement("details"); provenance.append(element("summary", "", "Publication identity and integrity metadata")); const body = element("div", "details-body"); appendText(body, "p", "", `Identity contract: ${state.explorer.identity_contract}`); appendText(body, "p", "hash", `SHA-256: ${state.explorer.publication_sha256}`); if (model?.model_id) appendText(body, "p", "hash", `Model ID: ${model.model_id} · trained through ${model.training_labels_through || model.data_through}`); if (state.bayesian?.model_id) appendText(body, "p", "hash", `Bayesian challenger ID: ${state.bayesian.model_id} · base model ${state.bayesian.base_model_id}`); provenance.append(body); dictionary.append(provenance); container.append(dictionary);
 }
 
 function bindEvents() {
@@ -3484,7 +3481,7 @@ function bindEvents() {
 async function start() {
   try {
     await loadData();
-    renderCoverage(); populateFilters(); renderCurrentCard(); renderFighterDirectory(); renderMarket(); renderBetPerformance(); renderModelData(); bindEvents();
+    populateFilters(); renderCurrentCard(); renderFighterDirectory(); renderMarket(); renderBetPerformance(); bindEvents();
     $("#publication-stamp").textContent = `Dataset through ${formatDate(state.explorer.data_through)} · schema v${state.explorer.schema_version}`;
     const status = $("#header-status"); status.classList.add("is-ready"); status.lastChild.textContent = " Data ready";
     $("#load-message").hidden = true; applyRoute();

@@ -11,10 +11,11 @@ class WebsiteExplorerContractTests(unittest.TestCase):
         page = (REPO_ROOT / "index.html").read_text(encoding="utf-8")
         script = (REPO_ROOT / "script.js").read_text(encoding="utf-8")
 
-        self.assertIn("Research the fight, not just the pick", page)
         self.assertIn("Fighter database", page)
         self.assertIn("Build a matchup", page)
-        self.assertIn("Model &amp; data", page)
+        self.assertNotIn("Research the fight, not just the pick", page)
+        self.assertNotIn("Model &amp; data", page)
+        self.assertNotIn('id="view-data"', page)
         self.assertIn("fighter_explorer.json", script)
         self.assertIn("ensureFighterFights", script)
         self.assertIn("fight_shards", script)
@@ -54,10 +55,11 @@ class WebsiteExplorerContractTests(unittest.TestCase):
         ).read_text(encoding="utf-8")
 
         self.assertIn("Consensus, best price, and paper decisions", page)
-        self.assertIn("Potentially profitable prices", page)
         self.assertIn("Qualified upcoming paper bets", page)
         self.assertIn("All announced UFC cards", page)
-        self.assertIn("Total-round and method-of-victory prices", page)
+        self.assertNotIn("Potentially profitable prices", page)
+        self.assertIn("All current total and method prices", page)
+        self.assertIn('id="market-book-filter"', page)
         self.assertIn("automatic betting is intentionally off", script)
         self.assertIn("current_opportunities.json", script)
         self.assertIn("odds_history.json", script)
@@ -65,7 +67,9 @@ class WebsiteExplorerContractTests(unittest.TestCase):
         self.assertIn("bet_performance.json", script)
         self.assertIn("function renderQualifiedUpcomingBets", script)
         self.assertIn("ranked by estimated return", script)
-        self.assertIn("Candidate model has not passed a betting-performance gate", script)
+        self.assertIn("function renderMarketBookFilter", script)
+        self.assertIn("function appendQualifiedBetExplanation", script)
+        self.assertIn("combined sizing is not implemented yet", script)
         self.assertIn("target_book", script)
         self.assertIn("offered_moneyline", script)
         self.assertIn("estimated_expected_return", script)
@@ -73,8 +77,6 @@ class WebsiteExplorerContractTests(unittest.TestCase):
         self.assertIn("locked_t24_decision", script)
         self.assertIn("Leave-one-book-out fair line", script)
         self.assertIn("outcome_forecasts.json", script)
-        self.assertIn("positive_candidates", script)
-        self.assertIn("Candidate duration-model probability", script)
         self.assertIn("current_method_markets.json", script)
         self.assertIn("Missing outcomes remain unavailable", script)
         self.assertIn("method-price-table", script)
@@ -83,7 +85,6 @@ class WebsiteExplorerContractTests(unittest.TestCase):
         self.assertIn("Compare predeclared EV thresholds", script)
         self.assertIn("Locked T-24 residual paper decision", script)
         self.assertIn("bayesian_winner_challenger.json", script)
-        self.assertIn("Bayesian-filtered moneyline", script)
         self.assertIn("bayesianFilteredCandidate", script)
         self.assertIn("filtered minus base roi", script.lower())
         self.assertIn("Probability EV is positive", script)
@@ -187,7 +188,6 @@ class WebsiteExplorerContractTests(unittest.TestCase):
             "simulation-results",
             "qualified-upcoming-bets",
             "market-research-results",
-            "model-data-content",
         ):
             self.assertIn(f'id="{target_id}"', page)
         self.assertIn("function focusRouteTarget", script)
@@ -205,6 +205,8 @@ class WebsiteExplorerContractTests(unittest.TestCase):
         self.assertIn("function publicationMatchesCurrentCard", script)
         self.assertIn("function vegasMatchesCurrentCard", script)
         self.assertIn("function currentMarket()", script)
+        self.assertIn("publicationMatchesCurrentCard(publication.event_date, publication.event_id)", script)
+        self.assertIn("latest stored simulation", script)
         self.assertIn("if (!vegasMatchesCurrentCard()", script)
         self.assertIn(
             "const market = currentMarket();\n  return orderedCardMatchups(market?.matchups?.length ? market.matchups : legacyRows());",
@@ -224,14 +226,16 @@ class WebsiteExplorerContractTests(unittest.TestCase):
         style = (REPO_ROOT / "style.css").read_text(encoding="utf-8")
 
         self.assertIn('id="simulation-card-list"', page)
-        self.assertIn("Card order · main event first", page)
         self.assertIn("function boutOrderLabel", script)
         self.assertIn("function renderSimulationCardList", script)
         self.assertIn("function simulationMiniDuration", script)
         self.assertIn("function simulationStatisticGrid", script)
         self.assertIn("matchup-history-columns", script)
         self.assertIn("ensureFighterFights(fighter).then", script)
+        self.assertIn("fight-summary-primary", script)
+        self.assertIn("fight-summary-secondary", script)
         self.assertIn("grid-template-columns: minmax(0, 1fr);", style)
+        self.assertIn(".bar { display: block;", style)
         self.assertIn(".simulation-card-row", style)
         self.assertIn(".matchup-history-columns", style)
 
@@ -243,9 +247,12 @@ class WebsiteExplorerContractTests(unittest.TestCase):
         self.assertIn('id="qualified-upcoming-list"', page)
         self.assertIn('bet?.threshold_met === true', script)
         self.assertIn('Number(right.estimated_expected_return)', script)
+        self.assertIn('const item = document.createElement("details")', script)
+        self.assertNotIn("bestTotalByMatchup", script)
+        self.assertIn("They remain visible", script)
         self.assertIn('.qualified-bet-row', style)
-        self.assertIn('.qualified-bet-row { grid-template-columns: repeat(2, minmax(0, 1fr))', style)
-        self.assertNotIn('.qualified-bet-row { min-width:', style)
+        self.assertIn('.qualified-bet-item', style)
+        self.assertIn('.qualified-bet-explanation', style)
 
     def test_published_bet_performance_has_bankroll_and_timing_controls(self):
         page = (REPO_ROOT / "index.html").read_text(encoding="utf-8")

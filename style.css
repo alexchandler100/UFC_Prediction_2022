@@ -161,10 +161,9 @@ input[type="search"]:focus, select:focus { border-color: var(--teal); box-shadow
 .matchup-history-panel .section-heading { display: grid; gap: 12px; margin-bottom: 16px; }
 .matchup-history-panel .section-heading h2 { font-size: 21px; }
 .matchup-history-panel .history-controls { min-width: 0; }
-.matchup-history-panel .fight-summary { grid-template-columns: 72px 34px minmax(0, 1fr); gap: 8px; padding: 11px; }
-.matchup-history-panel .fight-summary > :nth-child(4), .matchup-history-panel .fight-summary > :nth-child(5) { grid-column: 3; }
-.matchup-history-panel .fight-summary > strong, .matchup-history-panel .fight-context { min-width: 0; overflow-wrap: anywhere; }
-.matchup-history-panel .fight-context { align-items: flex-start; flex-direction: column; gap: 4px; }
+.matchup-history-panel .fight-summary { padding: 6px 9px; }
+.matchup-history-panel .fight-summary-primary,
+.matchup-history-panel .fight-summary-secondary { min-width: 0; }
 .matchup-history-panel .details-body { max-width: 100%; overflow-x: auto; }
 .insight-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
 .insight-card { padding: 19px; border: 1px solid var(--line); border-radius: var(--radius-md); background: var(--paper); }
@@ -186,7 +185,7 @@ input[type="search"]:focus, select:focus { border-color: var(--teal); box-shadow
 .bar-half { height: 7px; overflow: hidden; background: #e8e6df; }
 .bar-half:first-child { display: flex; justify-content: end; border-radius: 5px 0 0 5px; }
 .bar-half:last-child { border-radius: 0 5px 5px 0; }
-.bar { height: 100%; background: var(--orange); }
+.bar { display: block; height: 100%; background: var(--orange); }
 .bar-b { background: var(--teal); }
 .directory-controls { display: grid; grid-template-columns: minmax(250px, 1.6fr) 1fr 1fr auto; gap: 14px; align-items: end; }
 .check-control { display: flex !important; align-items: center; gap: 8px; min-height: 48px; margin: 0 !important; }
@@ -229,16 +228,23 @@ details { min-width: 0; max-width: 100%; }
 summary { padding: 15px 17px; cursor: pointer; font-weight: 700; }
 details[open] summary { border-bottom: 1px solid var(--line); }
 .details-body { min-width: 0; max-width: 100%; padding: 17px; }
-.fight-history { display: grid; gap: 10px; }
-.fight-summary { display: grid; grid-template-columns: 90px 50px 1fr 1fr auto; gap: 12px; align-items: center; }
-.fight-summary time { color: var(--ink-soft); font-size: 12px; }
-.fight-summary .result { display: grid; width: 30px; height: 30px; place-items: center; border-radius: 50%; font-size: 12px; }
+.fight-history { display: grid; gap: 5px; }
+.fight-history > details { border-radius: 9px; }
+.fight-summary { display: grid; grid-template-columns: minmax(220px, .9fr) minmax(280px, 1.1fr); gap: 10px; align-items: center; padding: 6px 9px; }
+.fight-summary-primary { display: grid; grid-template-columns: 78px 24px minmax(0, 1fr); gap: 7px; align-items: center; min-width: 0; }
+.fight-summary-secondary { display: grid; grid-template-columns: minmax(120px, .7fr) minmax(0, 1.3fr); gap: 8px; align-items: center; min-width: 0; }
+.fight-summary time { color: var(--ink-soft); font-size: 11px; white-space: nowrap; }
+.fight-summary strong, .fight-finish, .fight-context, .fight-event-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.fight-summary strong { font-size: 12px; }
+.fight-finish { font-size: 11px; }
+.fight-summary .result { display: grid; width: 22px; height: 22px; place-items: center; border-radius: 50%; font-size: 10px; }
 .fight-summary .result.win { color: #166a50; background: #e2f3ec; }
 .fight-summary .result.loss { color: #973434; background: #f9e5e5; }
 .fight-summary .result.neutral { color: #665b32; background: #f4ebcd; }
 .fight-summary small { color: var(--ink-soft); }
-.fight-context { display: flex; align-items: center; gap: 7px; min-width: 0; }
-.promotion-pill { display: inline-flex; flex: 0 0 auto; padding: 3px 7px; border-radius: 999px; color: #315e58; background: #e2f1ed; font-size: 10px; font-weight: 800; line-height: 1.2; }
+.fight-context { display: flex; align-items: center; gap: 6px; min-width: 0; }
+.promotion-pill { display: inline-flex; flex: 0 0 auto; padding: 2px 5px; border-radius: 999px; color: #315e58; background: #e2f1ed; font-size: 9px; font-weight: 800; line-height: 1.2; }
+.fight-event-name { display: inline-block; }
 .history-controls { display: grid; gap: 6px; min-width: 190px; }
 .history-controls label { color: var(--ink-soft); font-size: 11px; font-weight: 800; }
 .coverage-notice { margin-bottom: 16px; padding: 14px; border: 1px solid #dfc37d; border-radius: 11px; background: #fff8e6; }
@@ -446,8 +452,21 @@ details[open] summary { border-bottom: 1px solid var(--line); }
 .market-notice p { margin: 0; color: #6c6043; }
 .market-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; }
 .opportunity-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; }
+.qualified-method-note { margin: -8px 0 13px; }
+.market-book-filter { margin: 0 0 14px; }
+.market-book-filter details { border: 1px solid var(--line); border-radius: 10px; background: #0d151d; }
+.market-book-filter summary { padding: 10px 12px; font-size: 12px; font-weight: 750; cursor: pointer; }
+.market-book-filter-body { display: grid; gap: 11px; padding: 0 12px 12px; }
+.market-book-options { display: flex; flex-wrap: wrap; gap: 7px; max-height: 150px; overflow-y: auto; }
+.market-book-option { display: inline-flex; align-items: center; gap: 6px; min-height: 34px; padding: 6px 9px; border: 1px solid var(--line); border-radius: 999px; color: var(--ink-soft); background: var(--paper-2); font-size: 11px; }
+.market-book-option input { margin: 0; }
+.market-book-actions { display: flex; flex-wrap: wrap; gap: 7px; }
 .qualified-bet-list { display: grid; min-width: 0; gap: 7px; }
-.qualified-bet-row { display: grid; grid-template-columns: 46px minmax(190px, 1.55fr) repeat(4, minmax(82px, .48fr)) minmax(150px, .85fr) auto; gap: 13px; align-items: center; min-width: 0; padding: 12px 13px; border: 1px solid var(--line); border-radius: 11px; background: var(--paper-2); }
+.qualified-bet-item { min-width: 0; overflow: hidden; border: 1px solid var(--line); border-radius: 11px; background: var(--paper-2); }
+.qualified-bet-item > summary::-webkit-details-marker { display: none; }
+.qualified-bet-row { display: grid; grid-template-columns: 46px minmax(190px, 1.55fr) repeat(4, minmax(82px, .48fr)) minmax(150px, .85fr) 24px; gap: 13px; align-items: center; min-width: 0; padding: 12px 13px; list-style: none; cursor: pointer; }
+.qualified-bet-row::after { content: "+"; justify-self: end; color: var(--teal); font-size: 20px; font-weight: 750; }
+.qualified-bet-item[open] .qualified-bet-row::after { content: "−"; }
 .qualified-bet-row > * { min-width: 0; }
 .qualified-bet-rank, .qualified-bet-stat { display: grid; gap: 2px; }
 .qualified-bet-rank span, .qualified-bet-stat span { color: var(--ink-soft); font-size: 9px; font-weight: 700; letter-spacing: .055em; text-transform: uppercase; }
@@ -459,8 +478,20 @@ details[open] summary { border-bottom: 1px solid var(--line); }
 .qualified-bet-ev strong { color: #8ce0c5; font-size: 17px; }
 .qualified-bet-source { display: flex; flex-wrap: wrap; gap: 5px 7px; align-items: center; }
 .qualified-bet-source small { flex: 1 0 100%; }
-.qualified-bet-action { justify-self: end; }
-.qualified-bet-action button { white-space: nowrap; }
+.qualified-bet-explanation { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; padding: 13px; border-top: 1px solid var(--line); background: #0d151d; }
+.qualified-bet-explanation-card { min-width: 0; padding: 10px; border-radius: 9px; background: var(--paper-2); }
+.qualified-bet-explanation-card strong, .qualified-bet-explanation-card span { display: block; }
+.qualified-bet-explanation-card strong { margin-bottom: 4px; font-size: 12px; }
+.qualified-bet-explanation-card span { color: var(--ink-soft); font-size: 11px; line-height: 1.45; }
+.qualified-bet-explanation-note { grid-column: 1 / -1; margin: 0; color: var(--ink-soft); font-size: 11px; line-height: 1.45; }
+.qualified-bet-explanation .qualified-bet-action { grid-column: 1 / -1; justify-self: start; }
+.market-audit-panel { padding: 0; }
+.market-audit-summary { padding: 17px 19px; list-style: none; cursor: pointer; }
+.market-audit-summary::-webkit-details-marker { display: none; }
+.market-audit-summary > span, .market-audit-summary strong, .market-audit-summary small { display: block; }
+.market-audit-summary strong { margin: 3px 0 4px; font-family: "Manrope", sans-serif; font-size: 17px; }
+.market-audit-summary small { color: var(--ink-soft); font-size: 11px; font-weight: 500; }
+.market-audit-body { padding: 0 19px 19px; }
 .performance-filter-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
 .performance-filter-grid input { width: 100%; min-height: 42px; padding: 9px 11px; border: 1px solid var(--line); border-radius: 9px; color: var(--ink); background: #0d151d; font: inherit; }
 .performance-data-note { margin: 16px 0 0; color: var(--ink-soft); font-size: 12px; }
@@ -597,9 +628,11 @@ input[type="search"]:focus, select:focus { border-color: var(--teal); box-shadow
   .fight-graph-layout { grid-template-columns: 1fr; }
   .performance-filter-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .fight-graph-details { position: static; }
-  .qualified-bet-row { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .qualified-bet-rank, .qualified-bet-fight, .qualified-bet-source, .qualified-bet-action { grid-column: 1 / -1; }
-  .qualified-bet-source, .qualified-bet-action { grid-column: 1 / -1; grid-row: auto; }
+  .qualified-bet-row { grid-template-columns: repeat(2, minmax(0, 1fr)) 24px; }
+  .qualified-bet-rank, .qualified-bet-fight, .qualified-bet-source { grid-column: 1 / -2; }
+  .qualified-bet-row::after { grid-column: 3; grid-row: 1 / span 4; }
+  .qualified-bet-explanation { grid-template-columns: 1fr; }
+  .qualified-bet-explanation-note, .qualified-bet-explanation .qualified-bet-action { grid-column: 1; }
 }
 @media (max-width: 600px) {
   :root { --shell: calc(100% - 20px); --radius-lg: 18px; }
@@ -667,8 +700,6 @@ input[type="search"]:focus, select:focus { border-color: var(--teal); box-shadow
   .directory-search { grid-column: auto; }
   .profile-bio, .stats-grid { grid-template-columns: repeat(2, 1fr); }
   .profile-header { padding: 22px; }
-  .fight-summary { grid-template-columns: 74px 34px 1fr; }
-  .fight-summary > :nth-child(4), .fight-summary > :nth-child(5) { grid-column: 3; }
   .fight-detail-grid { grid-template-columns: 1fr; }
   .data-table { table-layout: fixed; }
   .data-table th, .data-table td { overflow-wrap: anywhere; }
@@ -703,11 +734,14 @@ input[type="search"]:focus, select:focus { border-color: var(--teal); box-shadow
   .odds-history-source { flex-basis: auto; }
   .odds-history-legend { justify-content: flex-start; }
   .odds-history-svg { height: 240px; }
-  .qualified-bet-row { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; padding: 12px; }
-  .qualified-bet-rank, .qualified-bet-fight { grid-column: 1 / -1; }
-  .qualified-bet-source { grid-column: 1 / -1; grid-row: auto; }
-  .qualified-bet-action { grid-column: 1 / -1; grid-row: auto; justify-self: stretch; }
-  .qualified-bet-action button { width: 100%; }
+  .fight-summary { grid-template-columns: minmax(0, 1fr); gap: 3px; padding: 6px 8px; }
+  .fight-summary-primary { grid-template-columns: 70px 22px minmax(0, 1fr); gap: 6px; }
+  .fight-summary-secondary { grid-template-columns: minmax(0, .75fr) minmax(0, 1.25fr); gap: 6px; }
+  .qualified-bet-row { grid-template-columns: repeat(2, minmax(0, 1fr)) 22px; gap: 9px; padding: 11px; }
+  .qualified-bet-rank, .qualified-bet-fight, .qualified-bet-source { grid-column: 1 / -2; }
+  .qualified-bet-row::after { grid-column: 3; grid-row: 1 / span 4; }
+  .qualified-bet-explanation .qualified-bet-action { justify-self: stretch; }
+  .qualified-bet-explanation .qualified-bet-action button { width: 100%; }
   .performance-filter-grid { grid-template-columns: minmax(0, 1fr); }
   .performance-svg { min-width: 0; height: 240px; }
   .performance-table, .performance-table tbody, .performance-table tr, .performance-table td { display: block; width: 100%; }
