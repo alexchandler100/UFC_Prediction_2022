@@ -114,28 +114,23 @@ authorized by this research.
   comparison, side by method, finish time, settled over/under probabilities,
   method by round, decision type, bootstrap uncertainty, Monte Carlo error, and
   projected fight-stat summaries.
-- The current checked-in website publication uses the retained
-  `mechanics-8ba01f34444f` profile. Four matchups are available, seven are
-  withheld because at least one fighter has fewer than three prior UFCStats
-  bouts, and Yan-Gomes plus Tsuruya-Borjas are withheld for maximum-path
-  nonconvergence. Its publication hash is
-  `f71326805d560c5d859b42a9ce2a87ae31fe0ba52fa868ff9868bba7d8fd6609`.
+- The automatic website preview uses the retained
+  `mechanics-8ba01f34444f` profile. Each scheduled update simulates only newly
+  discovered eligible matchups across all announced events, records 4,096 paths
+  per fight, and leaves low-history or not-yet-completed fights explicit.
 - The final-profile run uses the validated 200-member pre-event parameter
   artifact stored locally at:
 
   `artifacts/simulations/upcoming-2026-08-29-finish-200/parameter_model.json.gz`
 
-## Prediction-retention gap
+## Completed: automatic prospective simulation retention
 
-The production winner history broadly preserves model forecasts, although old
-rows before stable-ID publication retain only rounded predicted American odds.
-Simulation forecasts are not preserved for every historical matchup: the
-checked-in compact simulation file is the latest frozen card, and the
-Performance publication now retains its available model/simulation support only
-for bets that were actually published. Add a bounded, hash-validated,
-append-only simulation forecast history for every eligible upcoming matchup
-before using simulation/model agreement in any general historical study. Do
-not reconstruct missing pre-fight simulations after results are known.
+Newly discovered eligible matchups now receive bounded, hash-validated,
+append-only simulation records before the fights occur. The compact website file
+is only a view of currently announced events; the immutable per-matchup files
+remain available for later prospective scoring. Historical simulations that
+were never recorded before their results became known must still never be
+reconstructed and presented as prospective forecasts.
 
 ## Completed Aug. 29 card refresh
 

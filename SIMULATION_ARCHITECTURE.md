@@ -492,8 +492,10 @@ src/content/data/simulation/
   backtest_report.json
   research_status.json
   shadow_forecasts/<date>_<event>_<publication_sha256>.json
+  upcoming_matchups/<simulation_input_sha256>.json
+    # immutable automatic 4,096-path previews captured when a fight is discovered
 src/content/data/external/simulation_forecasts.json
-  # current compact website view; candidate/paper-only and replaceable per card
+  # compact candidate/paper-only view of every currently announced event
 artifacts/simulations/upcoming-card/
   # ignored exact aggregates and fitted pre-event ensemble
 ```
@@ -506,19 +508,23 @@ Boolean `shadow_enabled`, and exact `parameter_artifact_sha256` and
 or edit this review decision. Strict bundle validation is available through
 `python -B src/validate_data.py --allow-stale --require-simulation-artifact`.
 
-When the status is missing or `shadow_enabled` is false, the weekly shadow job is
-a no-op. The production updater validates, commits, and pushes first. Only then
-does a dependent `simulation_shadow` job check out the exact SHA exported by the
-successful production job, load the cross-hashed frozen pair, and append a
-content-addressed publication after the entire card converges. It records that
-exact revision as the source commit, stages only immutable shadow JSON, and
-refuses to push if the publication branch advanced during simulation. The
-shadow job has its own concurrency group, so its three-hour ceiling does not
-retain the publisher lock shared by the production update and scheduled market
-captures. A missing gate, timeout, nonconvergence, or failure in this dependent
-job cannot roll back or prevent the already-published production update. Shadow
-objects remain candidate-only, paper-only, execution-disabled, and declare
-`production_influence: "none"`.
+The reviewed high-precision shadow bridge remains disabled when the status is
+missing or `shadow_enabled` is false. It is separate from the automatic website
+preview and from production predictions.
+
+After each scheduled updater discovers all announced UFCStats cards, the
+dependent `upcoming_simulations` job compares those stable matchup identities
+with `simulation/upcoming_matchups/`. Eligible fights without a matching record
+receive 64 fitted parameter replicas and 64 paths per replica (4,096 paths).
+The shared parameter fit is performed once for the batch. Each completed fight
+is written atomically to its own immutable, self-hashed record; later runs reuse
+it. Low-history fights are reconsidered on every updater rather than receiving
+fabricated statistics. A bounded run may leave work visibly queued, and the next
+scheduled run continues with only the missing fights. The website file is then
+rebuilt from the current announced schedule plus those records. Data-only commits
+that arrive during simulation are rebased safely; any intervening code change
+stops publication. This free standard-runner path never changes the production
+model or enables wagering.
 
 The manual `simulation-research` workflow uses only `ubuntu-24.04`, at most two
 worker processes, bounded research inputs, and a six-hour ceiling. That ceiling
@@ -550,13 +556,15 @@ specifications.
 ## Website boundary and deferred roadmap
 
 The implemented website surface is intentionally narrow: a dark-mode Simulation
-tab reads one precomputed, content-hashed upcoming-card JSON. It shows winner,
+tab reads one precomputed, content-hashed JSON covering every announced event,
+grouped chronologically with the main event first. It shows winner,
 side-by-method, duration, total-round, method-by-round, decision-type, projected
 statistic, process-error, and bootstrap-parameter distributions. Current
 moneylines may be shown as raw research context, but method EV is never implied
 without real synchronized method prices and settlement contracts. Matchups with
 fewer than three prior UFCStats bouts on either side are displayed as withheld,
-not simulated from fabricated detailed statistics.
+not simulated from fabricated detailed statistics. Newly discovered eligible
+fights are displayed as queued until their atomic 4,096-path preview is complete.
 
 The first population calibration used the newest 20 completed cards, retained
 133 fights where both sides had three strictly prior UFCStats bouts, and split

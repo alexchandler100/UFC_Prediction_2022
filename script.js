@@ -1457,10 +1457,12 @@ function simulationTotalRows(matchup) {
 }
 
 function simulationCurrentMatchup(matchup) {
-  return currentMatchups().find((item) => {
+  const current = currentMatchups().find((item) => {
     const ids = new Set([item.fighter_id, item.opponent_id]);
     return ids.has(matchup.fighter_id) && ids.has(matchup.opponent_id);
-  }) || null;
+  });
+  if (current) return current;
+  return (state.allUpcoming?.matchups || []).find((item) => item.matchup_id === matchup.matchup_id) || null;
 }
 
 function simulationComparisonContext(matchup) {
@@ -1593,10 +1595,34 @@ function simulationCardRow(matchup, selectedMatchupId) {
   return row;
 }
 
-function renderSimulationCardList(matchups, selectedMatchupId) {
+function renderSimulationCardList(publication, selectedMatchupId) {
   const list = $("#simulation-card-list");
   list.replaceChildren();
-  orderedCardMatchups(matchups).forEach((matchup) => list.append(simulationCardRow(matchup, selectedMatchupId)));
+  const matchups = publication?.matchups || [];
+  const events = publication?.events?.length ? publication.events : [{
+    event_id: publication?.event_id || "legacy-event",
+    event_title: publication?.event_title || "Upcoming card",
+    event_date: publication?.event_date,
+    matchup_count: matchups.length,
+  }];
+  events.forEach((event) => {
+    const eventMatchups = matchups.filter((matchup) => String(matchup.event_id || publication?.event_id || "legacy-event") === String(event.event_id));
+    if (!eventMatchups.length) return;
+    const group = element("section", "simulation-event-group");
+    const header = element("header", "simulation-event-header");
+    const heading = element("div");
+    appendText(heading, "p", "eyebrow", formatDate(event.event_date));
+    appendText(heading, "h3", "", event.event_title || "Upcoming card");
+    const counts = publication?.events?.length
+      ? `${Number(event.available_matchups || 0)} simulated · ${Number(event.pending_matchups || 0)} queued · ${Number(event.excluded_matchups || 0)} withheld`
+      : `${eventMatchups.length} bouts`;
+    appendText(header, "span", "simulation-event-count", counts);
+    header.prepend(heading);
+    const bouts = element("div", "simulation-event-bouts");
+    orderedCardMatchups(eventMatchups).forEach((matchup) => bouts.append(simulationCardRow(matchup, selectedMatchupId)));
+    group.append(header, bouts);
+    list.append(group);
+  });
 }
 
 function simulationMoneylineCard(matchup, redProbability, blueProbability) {
@@ -1687,12 +1713,12 @@ async function prepareSimulationView(requestedMatchupId = "") {
   status.textContent = "Loading precomputed simulation distributions...";
   const publication = await ensureSimulationData();
   if (!publication?.matchups?.length) {
-    status.textContent = "No current-card simulation publication is available yet.";
+    status.textContent = "No upcoming-fight simulation publication is available yet.";
     $("#simulation-card-list").replaceChildren(element("div", "empty-state", "Simulation forecasts unavailable."));
     renderSimulationMatchup(null);
     return;
   }
-  if (!publicationMatchesCurrentCard(publication.event_date, publication.event_id)) {
+  if (Number(publication.schema_version || 1) < 2 && !publicationMatchesCurrentCard(publication.event_date, publication.event_id)) {
     status.textContent = `No simulations have been published for the ${state.card?.title || "current upcoming card"}. The latest stored simulation is for ${publication.event_title || formatDate(publication.event_date)} and is hidden because it is no longer current.`;
     $("#simulation-card-list").replaceChildren(element("div", "empty-state", "Current-card simulations are awaiting a new validated run."));
     renderSimulationMatchup(null);
@@ -1701,8 +1727,10 @@ async function prepareSimulationView(requestedMatchupId = "") {
   const orderedMatchups = orderedCardMatchups(publication.matchups);
   const selected = orderedMatchups.find((item) => item.matchup_id === requestedMatchupId) || orderedMatchups.find((item) => item.status === "available") || orderedMatchups[0];
   const refreshPending = publication.mechanics_profile_id !== VALIDATED_SIMULATION_PROFILE_ID;
-  status.textContent = `${publication.event_title} - ${publication.available_matchups} simulated, ${publication.excluded_matchups} withheld. Mechanics ${publication.mechanics_profile_id}.${refreshPending ? ` Final finish-calibrated refresh (${VALIDATED_SIMULATION_PROFILE_ID}) pending.` : ""}`;
-  renderSimulationCardList(orderedMatchups, selected.matchup_id);
+  status.textContent = Number(publication.schema_version || 1) >= 2
+    ? `${publication.event_count} announced events · ${publication.available_matchups} simulated · ${publication.pending_matchups} queued · ${publication.excluded_matchups} withheld · ${Number(publication.paths_per_matchup || 0).toLocaleString()} paths per completed matchup.${refreshPending ? ` Final finish-calibrated refresh (${VALIDATED_SIMULATION_PROFILE_ID}) pending.` : ""}`
+    : `${publication.event_title} - ${publication.available_matchups} simulated, ${publication.excluded_matchups} withheld. Mechanics ${publication.mechanics_profile_id}.${refreshPending ? ` Final finish-calibrated refresh (${VALIDATED_SIMULATION_PROFILE_ID}) pending.` : ""}`;
+  renderSimulationCardList(publication, selected.matchup_id);
   renderSimulationMatchup(selected);
 }
 
@@ -1955,7 +1983,7 @@ function boutOrderLabel(matchup, fallbackIndex = 0) {
   const order = boutOrderFor(matchup);
   if (order === 0) return "Main event";
   if (order === 1) return "Co-main event";
-  const publishedCount = currentOutcomes()?.matchups?.length || state.simulations?.matchups?.length || 0;
+  const publishedCount = Number(matchup?.event_matchup_count) || currentOutcomes()?.matchups?.length || state.simulations?.matchups?.length || 0;
   if (order !== null && publishedCount && order === publishedCount - 1) return "Opening prelim";
   return order === null ? `Bout ${fallbackIndex + 1}` : `Bout ${order + 1}`;
 }

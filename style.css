@@ -390,6 +390,13 @@ details[open] summary { border-bottom: 1px solid var(--line); }
 .fight-graph-row-details .data-table th, .fight-graph-row-details .data-table td { height: auto; padding: 6px; white-space: normal; }
 .fight-graph-edge-table-empty { padding: 25px !important; color: var(--ink-soft); text-align: center; white-space: normal !important; }
 .simulation-card-list { display: grid; min-width: 0; gap: 8px; }
+.simulation-event-group { min-width: 0; overflow: hidden; border: 1px solid var(--line); border-radius: var(--radius-md); background: #0d151d; }
+.simulation-event-header { display: flex; align-items: center; justify-content: space-between; gap: 18px; padding: 14px 16px; border-bottom: 1px solid var(--line); background: var(--paper-2); }
+.simulation-event-header h3 { margin: 2px 0 0; font-family: "Manrope", sans-serif; font-size: 17px; line-height: 1.25; }
+.simulation-event-count { flex: 0 0 auto; color: var(--ink-soft); font-size: 11px; font-weight: 700; text-align: right; }
+.simulation-event-bouts { display: grid; min-width: 0; }
+.simulation-event-bouts .simulation-card-row { border-width: 0 0 1px; border-radius: 0; background: transparent; }
+.simulation-event-bouts .simulation-card-row:last-child { border-bottom: 0; }
 .simulation-card-row { display: grid; grid-template-columns: minmax(105px, .42fr) minmax(160px, .68fr) minmax(0, 2.4fr) auto; gap: 16px; align-items: center; min-width: 0; padding: 14px; border: 1px solid var(--line); border-radius: 13px; background: var(--paper-2); }
 .simulation-card-row.is-selected { border-color: var(--orange); box-shadow: inset 3px 0 0 var(--orange); }
 .simulation-card-row.is-withheld { grid-template-columns: minmax(105px, .42fr) minmax(160px, .68fr) minmax(0, 1fr) auto; opacity: .78; }
@@ -676,6 +683,9 @@ input[type="search"]:focus, select:focus { border-color: var(--teal); box-shadow
   .simulation-fighter.is-blue { text-align: left; }
   .simulation-versus { grid-template-columns: auto auto auto; justify-content: start; min-width: 0; gap: 8px; }
   .simulation-card-row, .simulation-card-row.is-withheld { grid-template-columns: minmax(0, 1fr); gap: 11px; padding: 13px; }
+  .simulation-event-header { align-items: flex-start; padding: 13px; }
+  .simulation-event-header h3 { font-size: 16px; }
+  .simulation-event-count { max-width: 48%; }
   .simulation-row-order { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
   .simulation-row-previews, .simulation-withheld-reason { grid-column: auto; }
   .simulation-row-previews { grid-template-columns: minmax(0, 1fr); gap: 11px; }

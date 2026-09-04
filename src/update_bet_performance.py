@@ -142,19 +142,19 @@ def _simulation_support() -> dict[tuple[str, ...], dict[str, object]]:
     if not SIMULATION_FORECASTS.exists():
         return {}
     publication = json.loads(SIMULATION_FORECASTS.read_text(encoding="utf-8"))
-    event_id = _identity(publication.get("event_id"))
-    issued = str(publication.get("forecast_issued_at_utc") or "")
-    if not event_id or not issued:
-        return {}
+    legacy_event_id = _identity(publication.get("event_id"))
+    legacy_issued = str(publication.get("forecast_issued_at_utc") or "")
     output: dict[tuple[str, ...], dict[str, object]] = {}
     for matchup in publication.get("matchups", []):
         if not isinstance(matchup, dict) or matchup.get("status") != "available":
             continue
+        event_id = _identity(matchup.get("event_id")) or legacy_event_id
+        issued = str(matchup.get("forecast_issued_at_utc") or legacy_issued)
         fighter_id = _identity(matchup.get("fighter_id"))
         opponent_id = _identity(matchup.get("opponent_id"))
         aggregate = matchup.get("aggregate")
         probabilities = aggregate.get("outcome_probabilities") if isinstance(aggregate, dict) else None
-        if not fighter_id or not opponent_id or not isinstance(probabilities, dict):
+        if not event_id or not issued or not fighter_id or not opponent_id or not isinstance(probabilities, dict):
             continue
         red = math.fsum(
             float(value) for key, value in probabilities.items()

@@ -998,6 +998,18 @@ the website projection is never replaced with a partially completed card.
 Every website object carries `candidate_only`, `paper_only`,
 `execution_enabled: false`, and `production_influence: "none"`.
 
+The scheduled updater also runs a lower-cost automatic preview for every newly
+discovered eligible matchup across all announced events. It fits 64 parameter
+replicas once per batch and runs 64 paths per replica (4,096 paths per fight).
+Completed previews are stored once as immutable self-hashed files under
+`src/content/data/simulation/upcoming_matchups/`; known fights are not rerun.
+Fights with fewer than three prior UFCStats bouts for either fighter are shown
+as withheld and reconsidered on later updates. If the free runner reaches its
+time limit, untouched fights remain visibly queued for the next scheduled run.
+The Simulation tab groups all announced events in date and bout order. These
+previews are research distributions, not production probabilities or betting
+instructions.
+
 The completed Aug. 29, 2026 refresh uses `mechanics-8ba01f34444f` and publication
 hash `f71326805d560c5d859b42a9ce2a87ae31fe0ba52fa868ff9868bba7d8fd6609`.
 Four of thirteen card matchups are published. Seven are withheld for the

@@ -82,12 +82,25 @@ def _validate_simulation_publication(publication: Mapping[str, object]) -> dict[
     unhashed.pop("publication_sha256", None)
     if supplied_hash != canonical_hash(unhashed):
         raise StoreIntegrityError("simulation publication hash is invalid")
-    stable_id(value.get("event_id"), "simulation event_id")
-    _publication_event_date(value.get("event_date"))
-    utc_datetime(
-        value.get("forecast_issued_at_utc"),
-        "simulation forecast_issued_at_utc",
-    )
+    catalog_format = int(value.get("schema_version") or 1) >= 2
+    if catalog_format:
+        events = value.get("events")
+        if not isinstance(events, list) or not events:
+            raise MarketDataError("simulation catalog events must be a nonempty list")
+        event_ids = set()
+        for event in events:
+            if not isinstance(event, Mapping):
+                raise MarketDataError("simulation catalog event must be an object")
+            event_ids.add(stable_id(event.get("event_id"), "simulation event_id"))
+            _publication_event_date(event.get("event_date"))
+        utc_datetime(value.get("generated_at_utc"), "simulation generated_at_utc")
+    else:
+        event_ids = {stable_id(value.get("event_id"), "simulation event_id")}
+        _publication_event_date(value.get("event_date"))
+        utc_datetime(
+            value.get("forecast_issued_at_utc"),
+            "simulation forecast_issued_at_utc",
+        )
     matchups = value.get("matchups")
     if not isinstance(matchups, list):
         raise MarketDataError("simulation publication matchups must be a list")
@@ -99,6 +112,23 @@ def _validate_simulation_publication(publication: Mapping[str, object]) -> dict[
         if matchup_id in seen:
             raise StoreIntegrityError("simulation publication matchup IDs are duplicated")
         seen.add(matchup_id)
+        if catalog_format:
+            if stable_id(item.get("event_id"), "simulation matchup event_id") not in event_ids:
+                raise StoreIntegrityError("simulation matchup references an unknown event")
+            _publication_event_date(item.get("event_date"))
+            if item.get("status") == "available":
+                utc_datetime(
+                    item.get("forecast_issued_at_utc"),
+                    "simulation matchup forecast_issued_at_utc",
+                )
+                validated_sha256(
+                    item.get("parameter_artifact_sha256"),
+                    "simulation matchup parameter_artifact_sha256",
+                )
+                nonempty_text(
+                    item.get("mechanics_profile_id"),
+                    "simulation matchup mechanics_profile_id",
+                )
     return value
 
 
@@ -210,12 +240,26 @@ class SimulationComparisonDecision:
         if base.event_date < SIMULATION_COMPARISON_FIRST_EVENT_DATE:
             raise MarketDataError("base decision predates the simulation comparison")
         value = _validate_simulation_publication(publication)
-        if stable_id(value.get("event_id"), "simulation event_id") != base.event_id:
+        matchup = next(
+            (
+                item
+                for item in value["matchups"]
+                if isinstance(item, Mapping)
+                and str(item.get("matchup_id")) == base.matchup_id
+            ),
+            None,
+        )
+        if matchup is None or matchup.get("status") != "available":
+            raise MarketDataError("simulation is unavailable for this frozen matchup")
+        catalog_format = int(value.get("schema_version") or 1) >= 2
+        simulation_event_id = matchup.get("event_id") if catalog_format else value.get("event_id")
+        simulation_event_date = matchup.get("event_date") if catalog_format else value.get("event_date")
+        if stable_id(simulation_event_id, "simulation event_id") != base.event_id:
             raise StoreIntegrityError("simulation and market decisions identify different events")
-        if _publication_event_date(value.get("event_date")) != base.event_date:
+        if _publication_event_date(simulation_event_date) != base.event_date:
             raise StoreIntegrityError("simulation and market event dates disagree")
         simulation_issued = utc_text(
-            value.get("forecast_issued_at_utc"),
+            matchup.get("forecast_issued_at_utc") if catalog_format else value.get("forecast_issued_at_utc"),
             "simulation forecast_issued_at_utc",
         )
         comparison_issued = utc_text(
@@ -236,17 +280,6 @@ class SimulationComparisonDecision:
             event_start_utc=base.event_start_utc,
             observed_field="comparison_issued_at_utc",
         )
-        matchup = next(
-            (
-                item
-                for item in value["matchups"]
-                if isinstance(item, Mapping)
-                and str(item.get("matchup_id")) == base.matchup_id
-            ),
-            None,
-        )
-        if matchup is None or matchup.get("status") != "available":
-            raise MarketDataError("simulation is unavailable for this frozen matchup")
         red_id = stable_id(matchup.get("fighter_id"), "simulation fighter_id")
         blue_id = stable_id(matchup.get("opponent_id"), "simulation opponent_id")
         if {red_id, blue_id} != {base.fighter_id, base.opponent_id}:
@@ -276,11 +309,12 @@ class SimulationComparisonDecision:
             "simulation_forecast_issued_at_utc": simulation_issued,
             "simulation_publication_sha256": value["publication_sha256"],
             "simulation_parameter_artifact_sha256": validated_sha256(
-                value.get("parameter_artifact_sha256"),
+                matchup.get("parameter_artifact_sha256") if catalog_format else value.get("parameter_artifact_sha256"),
                 "simulation parameter_artifact_sha256",
             ),
             "mechanics_profile_id": nonempty_text(
-                value.get("mechanics_profile_id"), "mechanics_profile_id"
+                matchup.get("mechanics_profile_id") if catalog_format else value.get("mechanics_profile_id"),
+                "mechanics_profile_id",
             ),
             "market_probability": market_probability,
             "model_probability": model_probability,

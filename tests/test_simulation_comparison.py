@@ -70,6 +70,48 @@ def _publication(*, issued="2026-09-03T12:00:00Z"):
     return body
 
 
+def _catalog_publication(*, issued="2026-09-03T12:00:00Z"):
+    body = {
+        "schema_version": 2,
+        "candidate_only": True,
+        "paper_only": True,
+        "execution_enabled": False,
+        "production_influence": "none",
+        "generated_at_utc": "2026-09-03T13:00:00Z",
+        "events": [
+            {
+                "event_id": "event-one",
+                "event_date": "2026-09-05",
+                "matchup_count": 1,
+            }
+        ],
+        "matchups": [
+            {
+                "event_id": "event-one",
+                "event_date": "2026-09-05",
+                "matchup_id": "matchup-one",
+                "fighter_id": "red",
+                "opponent_id": "blue",
+                "status": "available",
+                "forecast_issued_at_utc": issued,
+                "parameter_artifact_sha256": "b" * 64,
+                "mechanics_profile_id": "mechanics-catalog",
+                "aggregate": {
+                    "outcome_probabilities": {
+                        "red_ko_tko": 0.40,
+                        "red_decision": 0.25,
+                        "blue_ko_tko": 0.20,
+                        "blue_decision": 0.10,
+                        "draw": 0.05,
+                    }
+                },
+            }
+        ],
+    }
+    body["publication_sha256"] = canonical_hash(body)
+    return body
+
+
 class SimulationComparisonTests(unittest.TestCase):
     def test_fixed_probability_pool_is_swap_symmetric(self):
         pooled = equal_logit_pool((0.55, 0.65, 0.70))
@@ -125,6 +167,16 @@ class SimulationComparisonTests(unittest.TestCase):
                 _publication(),
                 comparison_issued_at_utc="2026-09-05T02:00:00Z",
             )
+
+    def test_catalog_uses_the_matching_fights_own_frozen_metadata(self):
+        record = SimulationComparisonDecision.create(
+            _base(),
+            _catalog_publication(),
+            comparison_issued_at_utc="2026-09-04T02:01:00Z",
+        )
+        self.assertEqual(record.simulation_parameter_artifact_sha256, "b" * 64)
+        self.assertEqual(record.mechanics_profile_id, "mechanics-catalog")
+        self.assertEqual(record.simulation_forecast_issued_at_utc, "2026-09-03T12:00:00.000000Z")
 
     def test_publication_hash_is_checked(self):
         publication = json.loads(json.dumps(_publication()))
