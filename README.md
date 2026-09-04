@@ -461,9 +461,13 @@ that range, and caps one bet at 5% of bankroll. The later-data check trained on
 363 fights from 46 events and tested on the following 140 fights from 12
 events; calibration improved log loss by 0.00123 without changing 74.3%
 winner accuracy. This is a small improvement, not proof that the staking rule
-is profitable. It remains paper-only. Fight totals are excluded until they
-have a separate uncertainty calibration. See `BAYESIAN_KELLY.md` for the exact
-rule and limitations.
+is profitable. It remains paper-only. Fight totals now have a separate
+Bayesian logistic calibration for each half-round line. On the later 210-fight
+check, calibration improved probability error at 1.5 and 2.5 rounds; the
+0.5-round adjustment was slightly worse and is automatically withheld. The
+five-round checks improved but contain only 14 later fights, so they remain
+especially uncertain. See `BAYESIAN_KELLY.md` for the exact rule and
+limitations.
 
 A separate `market-first-t24-paper-v1` ledger now tests the promising historical
 adjustment without changing that baseline. Near T-24 it compares every offered

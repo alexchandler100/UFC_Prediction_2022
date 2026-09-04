@@ -15,6 +15,7 @@ from sklearn.metrics import accuracy_score, log_loss
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
 
+from bayesian_total_calibration import fit_total_calibration
 from fight_semantics import method_bucket, schedule_from_row
 
 
@@ -39,6 +40,7 @@ TIME_FEATURES = (
     "is_final_interval",
 )
 TOTAL_ROUND_THRESHOLDS = {
+    "over_0_5_rounds": 150,
     "over_1_5_rounds": 450,
     "over_2_5_rounds": 750,
     "over_3_5_rounds": 1050,
@@ -161,6 +163,7 @@ class DiscreteTimeOutcomeModel:
         self.training_fights = 0
         self.training_risk_rows = 0
         self.omitted_unknown_schedule = 0
+        self.total_calibration_artifact: dict[str, object] | None = None
 
     @property
     def model_columns(self) -> tuple[str, ...]:
@@ -371,6 +374,7 @@ def evaluate_outcome_model(
     total_probability: dict[str, list[float]] = {
         key: [] for key in TOTAL_ROUND_THRESHOLDS
     }
+    total_calibration_rows: list[dict[str, object]] = []
     methods = ("ko_tko", "submission", "decision", "other")
     for _, row in holdout.iterrows():
         rounds = _scheduled_rounds(row)
@@ -393,8 +397,19 @@ def evaluate_outcome_model(
         for name, threshold in TOTAL_ROUND_THRESHOLDS.items():
             probability = prediction.probability_over_seconds(threshold)
             if probability is not None:
-                total_truth[name].append(int(float(duration) > threshold))
+                target = int(float(duration) > threshold)
+                total_truth[name].append(target)
                 total_probability[name].append(probability)
+                total_calibration_rows.append(
+                    {
+                        "event_date": row["date"],
+                        "event_id": row["event_id"],
+                        "fight_id": row["fight_id"],
+                        "line": threshold / 300.0,
+                        "model_probability": probability,
+                        "target": target,
+                    }
+                )
     if not terminal_truth:
         raise ValueError("outcome holdout has no fights with known schedule")
     terminal_array = np.asarray(terminal_matrix)
@@ -475,6 +490,9 @@ def evaluate_outcome_model(
             float(model_metrics["log_loss"]) - float(baseline_metrics["log_loss"])
         )
         total_metrics[name] = model_metrics
+    total_calibration = fit_total_calibration(
+        pd.DataFrame(total_calibration_rows)
+    )
     report: dict[str, object] = {
         "candidate_only": True,
         "production_enabled": False,
@@ -522,8 +540,10 @@ def evaluate_outcome_model(
             ),
         },
         "total_rounds": total_metrics,
+        "bayesian_total_calibration": total_calibration,
     }
     production_model = DiscreteTimeOutcomeModel(
         feature_columns, c_value=selected_c
     ).fit(frame)
+    production_model.total_calibration_artifact = total_calibration
     return production_model, report

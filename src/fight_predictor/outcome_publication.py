@@ -18,6 +18,10 @@ from typing import Mapping
 
 import pandas as pd
 
+from bayesian_total_calibration import (
+    BayesianTotalCalibrator,
+    CALIBRATION_POLICY_VERSION,
+)
 from fight_semantics import upcoming_schedule
 from market_tracker import matchup_id_for
 
@@ -90,6 +94,11 @@ def build_outcome_forecast_publication(
         "feature_columns": list(model.feature_columns),
     }
     model_id = _canonical_hash(model_contract)[:24]
+    total_calibrator = (
+        BayesianTotalCalibrator(model.total_calibration_artifact)
+        if model.total_calibration_artifact is not None
+        else None
+    )
     matchups: list[dict[str, object]] = []
     for bout_index, row in upcoming.reset_index(drop=True).iterrows():
         fighter_id = _text(row.get("fighter id"))
@@ -127,11 +136,16 @@ def build_outcome_forecast_publication(
         )
         prediction = model.predict(features.iloc[0], scheduled_rounds=rounds)
         total_probabilities: dict[str, float] = {}
+        total_posteriors: dict[str, object] = {}
         for half_round in range(1, rounds * 2, 2):
             line = half_round / 2.0
             probability = prediction.probability_over_seconds(int(line * 300))
             if probability is not None:
                 total_probabilities[f"{line:.1f}"] = float(probability)
+                if total_calibrator is not None:
+                    total_posteriors[f"{line:.1f}"] = total_calibrator.summary(
+                        probability, line
+                    )
         item.update(
             {
                 "matchup_id": matchup_id_for(event_id, fighter_id, opponent_id),
@@ -148,6 +162,7 @@ def build_outcome_forecast_publication(
                     for key, value in prediction.method_probabilities.items()
                 },
                 "total_round_over_probabilities": total_probabilities,
+                "total_round_over_probability_posteriors": total_posteriors,
             }
         )
         matchups.append(item)
@@ -177,6 +192,22 @@ def build_outcome_forecast_publication(
             "event; otherwise three rounds"
         ),
         "method_price_status": "unavailable_from_configured_provider",
+        "bayesian_total_calibration": (
+            {
+                "status": "available",
+                "policy_version": CALIBRATION_POLICY_VERSION,
+                "artifact_sha256": total_calibrator.artifact["artifact_sha256"],
+                "trained_through": total_calibrator.artifact[
+                    "training_last_event_date"
+                ],
+            }
+            if total_calibrator is not None
+            else {
+                "status": "unavailable",
+                "policy_version": CALIBRATION_POLICY_VERSION,
+                "reason": "No historical total calibration was supplied.",
+            }
+        ),
         "matchup_count": len(matchups),
         "forecast_matchup_count": sum(
             item.get("matchup_id") is not None for item in matchups
@@ -226,6 +257,18 @@ def validate_outcome_forecast_publication(
     unhashed.pop("publication_sha256", None)
     if supplied_hash != _canonical_hash(unhashed):
         raise ValueError("outcome forecast publication hash is invalid")
+    calibration = publication.get("bayesian_total_calibration")
+    if not isinstance(calibration, dict) or calibration.get(
+        "policy_version"
+    ) != CALIBRATION_POLICY_VERSION:
+        raise ValueError("outcome forecast Bayesian total calibration is invalid")
+    if calibration.get("status") == "available":
+        if len(_text(calibration.get("artifact_sha256"))) != 64:
+            raise ValueError("outcome forecast total calibration identity is invalid")
+    elif calibration.get("status") != "unavailable" or not _text(
+        calibration.get("reason")
+    ):
+        raise ValueError("outcome forecast total calibration status is invalid")
     matchups = publication.get("matchups")
     if not isinstance(matchups, list) or len(matchups) != publication.get(
         "matchup_count"
@@ -288,6 +331,33 @@ def validate_outcome_forecast_publication(
         expected_lines = {f"{value / 2:.1f}" for value in range(1, rounds * 2, 2)}
         if set(totals) != expected_lines:
             raise ValueError("total-round forecast lines disagree with scheduled rounds")
+        posteriors = item.get("total_round_over_probability_posteriors")
+        if not isinstance(posteriors, dict):
+            raise ValueError("total-round probability posteriors are missing")
+        if calibration.get("status") == "available" and set(posteriors) != expected_lines:
+            raise ValueError("total-round posterior lines disagree with point forecasts")
+        for line, summary in posteriors.items():
+            if line not in expected_lines or not isinstance(summary, dict):
+                raise ValueError("total-round posterior line is invalid")
+            if summary.get("status") == "unavailable":
+                if not _text(summary.get("reason")):
+                    raise ValueError("unavailable total-round posterior needs a reason")
+                continue
+            if summary.get("status") != "available":
+                raise ValueError("total-round posterior status is invalid")
+            nominal = float(summary.get("nominal_over_probability"))
+            lower = float(summary.get("posterior_lower_over_probability"))
+            mean = float(summary.get("posterior_mean_over_probability"))
+            upper = float(summary.get("posterior_upper_over_probability"))
+            if (
+                abs(nominal - float(totals[line])) > 1e-12
+                or not 0.0 < lower <= mean <= upper < 1.0
+            ):
+                raise ValueError("total-round posterior probabilities are inconsistent")
+            if summary.get("calibration_artifact_sha256") != calibration.get(
+                "artifact_sha256"
+            ):
+                raise ValueError("total-round posterior calibration identity changed")
     if resolved != publication.get("forecast_matchup_count"):
         raise ValueError("outcome forecast resolved count is invalid")
     return publication

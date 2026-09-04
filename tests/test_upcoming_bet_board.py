@@ -252,6 +252,7 @@ class UpcomingBetBoardTests(unittest.TestCase):
             observed_at_utc=OBSERVED,
             source="the-odds-api.com",
             current_opportunities=current,
+            enable_total_bayesian_calibration=False,
         )
 
         self.assertEqual(board["qualified_bet_count"], 2)

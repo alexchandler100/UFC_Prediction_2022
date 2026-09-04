@@ -3012,8 +3012,11 @@ function appendQualifiedBetExplanation(container, bet) {
   cards.push(["Odds and estimated profit", `At ${formatOdds(bet.offered_moneyline)}, a winning $1 bet returns ${formatCurrency(decimal)} total: ${formatCurrency(profitOnWin)} profit plus the original $1 stake. Winning ${formatPercent(breakEven)} of identical bets would, on average, exactly cover the losing bets; that is what the price's break-even rate means. If the ${formatPercent(chance)} estimate is right, the calculated average profit is ${formatCurrency(bet.estimated_expected_return)} per $1 bet (${formatPercent(bet.estimated_expected_return)}).`]);
 
   if (bayesian) {
+    const calibrationExplanation = isTotal
+      ? `A Bayesian logistic calibration was fitted specifically for the ${formatNumber(bayesian.line, 1)}-round cutoff. It learned from duration-model predictions for fights that occurred after that model's training period, rather than treating the original ${formatPercent(chance)} estimate as exact.`
+      : "A Bayesian logistic calibration measured how reliable earlier market-consensus probabilities were on later completed fights.";
     cards.push(
-      ["Bayesian chance range", `${formatPercent(bayesian.posterior_mean_probability)} average, with an 80% range of ${formatPercent(bayesian.posterior_lower_probability)} to ${formatPercent(bayesian.posterior_upper_probability)}. This was calibrated on ${formatNumber(bayesian.calibration_training_fights, 0)} earlier fights across ${formatNumber(bayesian.calibration_training_events, 0)} events.`],
+      ["Bayesian chance range", `${formatPercent(bayesian.posterior_mean_probability)} average, with an 80% range of ${formatPercent(bayesian.posterior_lower_probability)} to ${formatPercent(bayesian.posterior_upper_probability)}. ${calibrationExplanation} The calibration used ${formatNumber(bayesian.calibration_training_fights, 0)} earlier fights across ${formatNumber(bayesian.calibration_training_events, 0)} events.`],
       ["Robust Bayesian Kelly", `${formatPercent(bayesian.recommended_fraction)} of bankroll. Sizing uses the conservative ${formatPercent(bayesian.posterior_lower_probability)} chance; its uncapped Kelly stake is ${formatPercent(bayesian.robust_uncapped_kelly_fraction)}${bayesian.cap_applied ? `, reduced by the ${formatPercent(bayesian.maximum_single_bet_fraction)} single-bet cap` : ""}. The estimated chance of having a positive edge is ${formatPercent(bayesian.probability_positive_edge)}.`],
     );
   } else {
@@ -3277,7 +3280,7 @@ function renderBetPerformance() {
   const bayesianStrategy = staking === "robust_bayesian_kelly";
   const researchStrategy = blendStrategy || bayesianStrategy;
   $("#performance-data-note").textContent = bayesianStrategy
-    ? `${baseDataNote} Robust Bayesian Kelly uses the lower end of the calibrated chance range and caps one bet at 5% of bankroll. It is currently available only for market-consensus moneyline estimates.`
+    ? `${baseDataNote} Robust Bayesian Kelly uses the lower end of the calibrated chance range and caps one bet at 5% of bankroll. It is available for market-consensus moneylines and for newly published fight totals that have a saved Bayesian calibration.`
     : blendStrategy
       ? `${baseDataNote} Research blend: probabilities are averaged in log-odds space before half Kelly is calculated; a bet is excluded when a required saved prediction is unavailable.`
       : baseDataNote;

@@ -1,8 +1,8 @@
 # Robust Bayesian Kelly
 
-This is a paper-only way to size moneyline bets while acknowledging that the
-estimated win chance is uncertain. It does not decide which bets qualify and
-cannot place a bet.
+This is a paper-only way to size moneyline and fight-total bets while
+acknowledging that the estimated chance is uncertain. It does not decide which
+bets qualify and cannot place a bet.
 
 ## Why ordinary Bayesian Kelly is not enough
 
@@ -11,11 +11,13 @@ chance. Averaging that growth over a Bayesian probability distribution gives
 the same answer as inserting the distribution's average probability into the
 ordinary Kelly formula. Uncertainty alone therefore does not reduce the stake.
 
-The implemented rule makes the safety preference explicit:
+The implemented rule makes the safety preference explicit. For moneylines it
+calibrates the market consensus. For totals it calibrates the duration model
+separately at 0.5, 1.5, 2.5, 3.5, and 4.5 rounds:
 
-1. Fit `logit(true chance) = slope * logit(market chance)`, with a prior
-   centered on slope 1. There is no intercept, so swapping the fighters gives
-   exactly the complementary probability.
+1. Fit `logit(true chance) = slope * logit(original chance)`, with a prior
+   centered on slope 1. There is no intercept. For totals, every Under draw is
+   exactly one minus the matching Over draw.
 2. Preserve 257 equally weighted values from the fitted slope distribution.
 3. Recalculate the fight probability for every slope value.
 4. Use the lower 10th-percentile probability for Kelly sizing. A positive
@@ -41,10 +43,24 @@ score from 0.18759 to 0.18714. Winner accuracy stayed 74.3%. Those small gains
 support using calibration as a research option; they do not establish betting
 profitability.
 
+The totals calibration uses 997 duration-model predictions from 81 events,
+dated 2024-10-05 through 2026-08-29. Those fights occurred after the duration
+model's training period. Within them, the check fitted calibration on the
+earlier 787 fights and tested it on the following 210 fights. Probability error
+improved at 1.5 rounds (log loss 0.73380 to 0.72412) and 2.5 rounds (0.71100 to
+0.69759). The 3.5- and 4.5-round checks also improved, but each used only 14
+later fights, which is far too small for a strong conclusion. Calibration at
+0.5 rounds was slightly worse (0.40817 to 0.41198), so the system refuses to
+use that adjustment for Kelly sizing.
+
 ## Scope and limitations
 
-- Only market-consensus moneyline probabilities are supported. Totals and
-  method-of-victory markets need separate fitted uncertainty models.
+- Market-consensus moneylines and total-round lines that pass their later-fight
+  calibration check are supported. Method-of-victory markets still need their
+  own fitted uncertainty model.
+- The totals posterior measures uncertainty in a Bayesian calibration of the
+  existing duration model; it is not a full Bayesian refit of all of that
+  model's hundreds of coefficients.
 - The fitted uncertainty describes how the consensus is calibrated across
   fights. It does not capture every matchup-specific unknown.
 - The 5% cap is an additional risk limit, not a Bayesian result.

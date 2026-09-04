@@ -18,6 +18,12 @@ from typing import Iterable, Mapping
 
 import pandas as pd
 
+from bayesian_total_calibration import (
+    BayesianTotalCalibrator,
+    KELLY_POLICY_VERSION as TOTAL_BAYESIAN_KELLY_POLICY_VERSION,
+    unavailable_total_assessment,
+    validate_total_bayesian_kelly_assessment,
+)
 from fight_stat_helpers import same_name
 from market_tracker import (
     LOCKED_GAMMA,
@@ -29,7 +35,6 @@ from market_tracker._common import canonical_hash
 from market_tracker.bayesian_kelly import (
     BayesianKellyCalibrator,
     POLICY_VERSION as BAYESIAN_KELLY_POLICY_VERSION,
-    unavailable_assessment,
     validate_bayesian_kelly_assessment,
 )
 from market_tracker.paper import symmetric_logit_blend
@@ -579,6 +584,7 @@ def _current_opportunity_bets(
     publication: Mapping[str, object] | None,
     forecasts: Mapping[str, Mapping[str, object]],
     bayesian_kelly: BayesianKellyCalibrator,
+    total_bayesian_kelly: BayesianTotalCalibrator | None,
 ) -> list[dict[str, object]]:
     if not publication:
         return []
@@ -644,6 +650,28 @@ def _current_opportunity_bets(
         forecast = forecasts.get(matchup_id)
         if expected is None or expected < MIN_EXPECTED_RETURN or not forecast:
             continue
+        side = _text(candidate.get("side")).casefold()
+        line = _float(candidate.get("line"))
+        side_probability = _float(candidate.get("model_probability"))
+        total_assessment = unavailable_total_assessment(
+            "The historical Bayesian total calibration is not available."
+        )
+        if (
+            total_bayesian_kelly is not None
+            and side in {"over", "under"}
+            and line is not None
+            and side_probability is not None
+            and 0.0 < side_probability < 1.0
+        ):
+            over_probability = (
+                side_probability if side == "over" else 1.0 - side_probability
+            )
+            total_assessment = total_bayesian_kelly.assessment(
+                over_probability,
+                side,
+                line,
+                candidate.get("offered_moneyline"),
+            )
         body = {
             **{key: forecast.get(key) for key in (
                 "event_id", "event_url", "event_title", "event_date",
@@ -682,10 +710,7 @@ def _current_opportunity_bets(
             "source_quote_age_seconds": candidate.get("source_quote_age_seconds"),
             "paper_only": True,
             "execution_enabled": False,
-            "bayesian_kelly": unavailable_assessment(
-                "Fight-total probabilities do not yet have their own "
-                "validated posterior calibration."
-            ),
+            "bayesian_kelly": total_assessment,
         }
         body["bet_id"] = canonical_hash(body)
         rows.append(body)
@@ -700,6 +725,8 @@ def build_upcoming_bet_board(
     source: str,
     current_opportunities: Mapping[str, object] | None = None,
     bayesian_kelly_calibrator: BayesianKellyCalibrator | None = None,
+    total_bayesian_kelly_calibrator: BayesianTotalCalibrator | None = None,
+    enable_total_bayesian_calibration: bool = True,
 ) -> dict[str, object]:
     """Rank every qualified price across all officially announced UFC cards."""
 
@@ -709,6 +736,12 @@ def build_upcoming_bet_board(
     bayesian_kelly = (
         bayesian_kelly_calibrator or BayesianKellyCalibrator.load()
     )
+    total_bayesian_kelly = total_bayesian_kelly_calibrator
+    if total_bayesian_kelly is None and enable_total_bayesian_calibration:
+        try:
+            total_bayesian_kelly = BayesianTotalCalibrator.load()
+        except (OSError, ValueError, json.JSONDecodeError):
+            total_bayesian_kelly = None
     observed_at = _utc(observed_at_utc, "observed_at_utc")
     observed_text = _utc_text(observed_at, "observed_at_utc")
     official = [
@@ -788,7 +821,10 @@ def build_upcoming_bet_board(
         if item.get("matchup_id")
     }
     for bet in _current_opportunity_bets(
-        current_opportunities, forecast_by_matchup, bayesian_kelly
+        current_opportunities,
+        forecast_by_matchup,
+        bayesian_kelly,
+        total_bayesian_kelly,
     ):
         category = str(bet["category"])
         key = (
@@ -822,7 +858,22 @@ def build_upcoming_bet_board(
             "calibration_artifact_sha256": bayesian_kelly.artifact[
                 "artifact_sha256"
             ],
-            "moneyline_only": True,
+            "moneyline_only": False,
+            "total_rounds": (
+                {
+                    "status": "available",
+                    "policy_version": TOTAL_BAYESIAN_KELLY_POLICY_VERSION,
+                    "calibration_artifact_sha256": total_bayesian_kelly.artifact[
+                        "artifact_sha256"
+                    ],
+                }
+                if total_bayesian_kelly is not None
+                else {
+                    "status": "unavailable",
+                    "policy_version": TOTAL_BAYESIAN_KELLY_POLICY_VERSION,
+                    "reason": "Historical total calibration is not available.",
+                }
+            ),
         },
         "forecast_publication_sha256": forecasts["publication_sha256"],
         "announced_event_count": forecasts["event_count"],
@@ -949,7 +1000,12 @@ def validate_upcoming_bet_board(publication: object) -> dict[str, object]:
         if _float(bet.get("minimum_expected_return")) != MIN_EXPECTED_RETURN:
             raise ValueError("upcoming bet board bet threshold is inconsistent")
         if publication.get("bayesian_kelly") is not None:
-            validate_bayesian_kelly_assessment(bet.get("bayesian_kelly"))
+            if bet.get("category") == "Total rounds":
+                validate_total_bayesian_kelly_assessment(
+                    bet.get("bayesian_kelly")
+                )
+            else:
+                validate_bayesian_kelly_assessment(bet.get("bayesian_kelly"))
         supplied_bet_id = _text(bet.get("bet_id"))
         unhashed_bet = dict(bet)
         unhashed_bet.pop("bet_id", None)
