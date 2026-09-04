@@ -1,8 +1,8 @@
 {
   "betting_status": "disabled_paper_only_no_execution",
   "candidate_only": true,
-  "decision_dataset_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
-  "decisions_total": 0,
+  "decision_dataset_sha256": "25942c5eaed55cae032a1ff6b30069edd7db0a6b6d84d7717f5734d569efe16c",
+  "decisions_total": 13,
   "evidence_gate": {
     "automatic_promotion": false,
     "candidate_beats_market_interval_met": false,
@@ -16,14 +16,14 @@
   },
   "execution_enabled": false,
   "last_build": {
-    "captures_at_locked_horizon": 0,
-    "captures_considered": 21,
+    "captures_at_locked_horizon": 1,
+    "captures_considered": 22,
     "matchups_already_frozen": 0,
-    "matchups_considered": 269,
+    "matchups_considered": 282,
     "matchups_without_forecast": 0,
     "matchups_without_fresh_quotes": 0
   },
-  "last_update_utc": "2026-09-04T01:42:53Z",
+  "last_update_utc": "2026-09-04T17:27:26Z",
   "latest_available_same_book_price_movement": {
     "count": 0,
     "definition": "later implied probability minus locked break-even probability; positive means the recorded paper price was better",
@@ -105,8 +105,8 @@
     },
     "schema_version": 1
   },
-  "policy_artifact_sha256": null,
-  "policy_version": null,
+  "policy_artifact_sha256": "863831b9b628e1bd62bdcaf76a5c939883f76af4b717e9d13d13a3a346841d04",
+  "policy_version": "market-first-t24-paper-v1",
   "probability_quality_on_all_scored_fights": {
     "candidate_minus_market_log_loss": {
       "bootstrap_samples": 0,
@@ -120,7 +120,7 @@
     "market_first_candidate": null
   },
   "prospective_first_capture_utc": "2026-08-30T00:20:36.000000Z",
-  "report_sha256": "5e7488f18a47518b60a09391373545669b0a2b46d7cd83d2387a5ddb1c319373",
+  "report_sha256": "8f7a89aadfd02b352ce64d859268eb0d1ac27bc31600eca49e6635a0f3a9ed6e",
   "results": {
     "losses": 0,
     "maximum_drawdown_units": 0.0,
@@ -136,5 +136,5 @@
   "settled_events": 0,
   "settlement_dataset_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
   "settlements_total": 0,
-  "unsettled_decisions": 0
+  "unsettled_decisions": 13
 }
