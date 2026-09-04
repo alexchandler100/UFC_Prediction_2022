@@ -13,6 +13,7 @@ from data_handler.data_handler import atomic_to_csv
 from build_fighter_explorer import (
     build_fighter_explorer,
     load_external_history_inputs,
+    load_fighter_history_supplements,
     write_fighter_explorer,
 )
 from external_mma import load_approved_auxiliary
@@ -295,6 +296,7 @@ predicted_odds_df_with_vegas_odds = (
 dh.update_vegas_odds(predicted_odds_df_with_vegas_odds)
 print('Building compact fighter explorer publication')
 external_history, external_identity_map = load_external_history_inputs()
+external_history_supplements = load_fighter_history_supplements()
 write_fighter_explorer(
     build_fighter_explorer(
         raw_fights,
@@ -302,6 +304,7 @@ write_fighter_explorer(
         all_upcoming_frame,
         external_history,
         external_identity_map,
+        external_history_supplements,
     )
 )
 print('saving scraped fights and predictions to content/data/external/vegas_odds.json')

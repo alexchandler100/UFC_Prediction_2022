@@ -17,6 +17,17 @@ from src.build_fighter_explorer import (
     validate_fighter_explorer,
 )
 
+REPO_ROOT = Path(__file__).resolve().parents[1]
+
+
+class FighterExplorerUpdaterContractTests(unittest.TestCase):
+    def test_production_rebuild_keeps_reviewed_history_supplements(self):
+        source = (REPO_ROOT / "src/update_and_rebuild_model.py").read_text(
+            encoding="utf-8"
+        )
+        self.assertIn("load_fighter_history_supplements()", source)
+        self.assertIn("external_history_supplements,", source)
+
 
 def _fight_row(
     *,
