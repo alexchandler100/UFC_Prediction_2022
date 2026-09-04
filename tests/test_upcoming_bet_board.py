@@ -218,10 +218,18 @@ class UpcomingBetBoardTests(unittest.TestCase):
                             "matchup_id": matchup["matchup_id"],
                             "selection": "Over 1.5 rounds",
                             "side": "over",
+                            "line": 1.5,
                             "target_book": "Book A",
                             "offered_moneyline": -110,
                             "model_probability": 0.6,
                             "estimated_expected_return": 0.145,
+                            "scheduled_rounds": 3,
+                            "schedule_basis": "ufc_standard_non_main_non_title",
+                            "model_id": "outcome-model-one",
+                            "model_version": "candidate-discrete-time-competing-risks-v1",
+                            "model_trained_through": "2026-08-22",
+                            "forecast_issued_at_utc": "2026-08-29T10:00:00Z",
+                            "break_even_probability": 0.5238095238,
                             "paper_threshold_met": True,
                         },
                         {
@@ -257,6 +265,10 @@ class UpcomingBetBoardTests(unittest.TestCase):
                 for bet in board["bets"]
             )
         )
+        over = next(bet for bet in board["bets"] if bet["selection"] == "Over 1.5 rounds")
+        self.assertEqual(over["line"], 1.5)
+        self.assertEqual(over["model_id"], "outcome-model-one")
+        self.assertEqual(over["model_trained_through"], "2026-08-22")
 
     def test_validator_rejects_a_below_threshold_row_even_with_updated_hashes(self):
         board = build_upcoming_bet_board(

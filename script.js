@@ -14,6 +14,7 @@ const DATA_PATHS = {
   performance: "src/content/data/market/performance_report.json",
   betPerformance: "src/content/data/market/bet_performance.json",
   outcomes: "src/content/data/external/outcome_forecasts.json",
+  outcomeEvaluation: "src/content/data/external/outcome_model_evaluation.json",
   simulations: "src/content/data/external/simulation_forecasts.json",
 };
 
@@ -33,6 +34,7 @@ const state = {
   performance: null,
   betPerformance: null,
   outcomes: null,
+  outcomeEvaluation: null,
   simulations: null,
   simulationPromise: null,
   fighters: [],
@@ -1228,7 +1230,7 @@ async function fetchJson(path, required = true) {
 }
 
 async function loadData() {
-  const [explorer, vegas, card, model, bayesian, market, oddsHistory, upcomingBetBoard, allUpcoming, methodMarkets, performance, betPerformance, outcomes] = await Promise.all([
+  const [explorer, vegas, card, model, bayesian, market, oddsHistory, upcomingBetBoard, allUpcoming, methodMarkets, performance, betPerformance, outcomes, outcomeEvaluation] = await Promise.all([
     fetchJson(DATA_PATHS.explorer),
     fetchJson(DATA_PATHS.vegas, false),
     fetchJson(DATA_PATHS.card, false),
@@ -1242,6 +1244,7 @@ async function loadData() {
     fetchJson(DATA_PATHS.performance, false),
     fetchJson(DATA_PATHS.betPerformance, false),
     fetchJson(DATA_PATHS.outcomes, false),
+    fetchJson(DATA_PATHS.outcomeEvaluation, false),
   ]);
   state.explorer = explorer;
   state.vegas = vegas;
@@ -1256,6 +1259,7 @@ async function loadData() {
   state.performance = performance;
   state.betPerformance = betPerformance;
   state.outcomes = outcomes;
+  state.outcomeEvaluation = outcomeEvaluation;
   state.fighters = explorer.fighters;
   state.fighterById = new Map(state.fighters.map((fighter) => [fighter.id, fighter]));
   state.fightColumn = new Map(explorer.fight_columns.map((column, index) => [column, index]));
@@ -2963,24 +2967,60 @@ function appendQualifiedBetExplanation(container, bet) {
   const chance = finite(bet.estimated_win_probability);
   const decimal = decimalOdds(bet.offered_moneyline);
   const breakEven = decimal === null ? null : 1 / decimal;
+  const standardKelly = kellyFraction(chance, bet.offered_moneyline);
   const bayesian = bet?.bayesian_kelly?.status === "available" ? bet.bayesian_kelly : null;
   const isTotal = bet.candidate_only === true || bet.probability_source === "candidate_duration_model" || bet.category === "Total rounds";
-  const probabilitySource = isTotal
-    ? "This comes from the experimental fight-duration model using information available before the fight. It has not passed the historical betting test."
-    : finite(bet.model_weight) > 0
+  const cards = [];
+
+  if (isTotal) {
+    const lineMatch = String(bet.selection || "").match(/([0-9]+(?:\.[0-9]+)?)\s+round/i);
+    const totalLine = finite(bet.line) ?? finite(lineMatch?.[1]);
+    const cutoffSeconds = totalLine === null ? null : totalLine * 300;
+    const cutoffText = cutoffSeconds === null
+      ? "the listed cutoff"
+      : `${Math.floor(cutoffSeconds / 60)}:${String(Math.round(cutoffSeconds % 60)).padStart(2, "0")}`;
+    const modelVersion = String(bet.model_version || "candidate-discrete-time-competing-risks-v1");
+    const modelId = String(bet.model_id || "");
+    const issued = bet.forecast_issued_at_utc ? formatTimestamp(bet.forecast_issued_at_utc) : null;
+    const trainedThrough = bet.model_trained_through ? formatDate(bet.model_trained_through) : null;
+    const totalMeaning = bet.side === "under"
+      ? `the fight ends before ${cutoffText}`
+      : `the fight is still going at ${cutoffText}`;
+    const exactModel = `This is our 2\u00bd-minute fight-outcome logistic model (version ${modelVersion}${modelId ? `; ID ${modelId}` : ""})${issued ? `, frozen ${issued}` : ""}${trainedThrough ? ` and trained only on fights through ${trainedThrough}` : ""}. It is not the Monte Carlo simulator.`;
+    cards.push(
+      ["Estimated chance and exact model", `${formatPercent(chance)}. ${exactModel}`],
+      ["How the model gets this number", `It divides a fight into 2\u00bd-minute segments. At each segment it uses 82 pre-fight fighter-versus-opponent differences\u2014ratings, age and size, record and recent form, striking, takedowns, and control\u2014to estimate whether the fight continues or either fighter wins by KO/TKO, submission, decision, or another result. Combining those segment-by-segment chances gives a ${formatPercent(chance)} chance that ${totalMeaning}.`],
+    );
+
+    const evaluation = state.outcomeEvaluation;
+    const metricKey = totalLine === null ? "" : `over_${String(totalLine).replace(".", "_")}_rounds`;
+    const totalTest = evaluation?.total_rounds?.[metricKey];
+    if (totalTest && evaluation) {
+      const sampleWarning = Number(totalTest.n) < 100
+        ? " That is a small test sample, so this line is especially uncertain."
+        : "";
+      cards.push(["How this model did on past fights", `This model design learned its settings from ${formatNumber(evaluation.development_fights, 0)} earlier fights, then was tested on ${formatNumber(evaluation.holdout_fights, 0)} newer fights from ${formatDate(evaluation.holdout_start)} through ${formatDate(evaluation.holdout_end)}. For this round line, ${formatNumber(totalTest.n, 0)} fights applied: it classified ${formatPercent(totalTest.accuracy)} correctly, and its probability-error score was ${formatNumber(totalTest.log_loss, 3)} versus ${formatNumber(totalTest.baseline_log_loss, 3)} for always using the earlier historical rate (lower is better).${sampleWarning}`]);
+    }
+  } else {
+    const probabilitySource = finite(bet.model_weight) > 0
       ? `This blends the prediction model with the no-vig average from ${formatNumber(bet.consensus_book_count, 0)} other books; the offered book is excluded.`
       : `This is the no-vig average from ${formatNumber(bet.consensus_book_count, 0)} other books. The offered book is excluded so its price is not used to judge itself.`;
-  const cards = [
-    ["Estimated chance", `${formatPercent(chance)}. ${probabilitySource}`],
-    ["Estimated return", `${formatPercent(chance)} chance × ${formatNumber(decimal, 2)} total payout − 1 = ${formatPercent(bet.estimated_expected_return)} average profit per dollar if the chance estimate is right. Break-even is ${formatPercent(breakEven)}.`],
-  ];
+    cards.push(["Estimated chance", `${formatPercent(chance)}. ${probabilitySource}`]);
+  }
+
+  const profitOnWin = decimal === null ? null : decimal - 1;
+  cards.push(["Odds and estimated profit", `At ${formatOdds(bet.offered_moneyline)}, a winning $1 bet returns ${formatCurrency(decimal)} total: ${formatCurrency(profitOnWin)} profit plus the original $1 stake. Winning ${formatPercent(breakEven)} of identical bets would, on average, exactly cover the losing bets; that is what the price's break-even rate means. If the ${formatPercent(chance)} estimate is right, the calculated average profit is ${formatCurrency(bet.estimated_expected_return)} per $1 bet (${formatPercent(bet.estimated_expected_return)}).`]);
+
   if (bayesian) {
     cards.push(
       ["Bayesian chance range", `${formatPercent(bayesian.posterior_mean_probability)} average, with an 80% range of ${formatPercent(bayesian.posterior_lower_probability)} to ${formatPercent(bayesian.posterior_upper_probability)}. This was calibrated on ${formatNumber(bayesian.calibration_training_fights, 0)} earlier fights across ${formatNumber(bayesian.calibration_training_events, 0)} events.`],
       ["Robust Bayesian Kelly", `${formatPercent(bayesian.recommended_fraction)} of bankroll. Sizing uses the conservative ${formatPercent(bayesian.posterior_lower_probability)} chance; its uncapped Kelly stake is ${formatPercent(bayesian.robust_uncapped_kelly_fraction)}${bayesian.cap_applied ? `, reduced by the ${formatPercent(bayesian.maximum_single_bet_fraction)} single-bet cap` : ""}. The estimated chance of having a positive edge is ${formatPercent(bayesian.probability_positive_edge)}.`],
     );
   } else {
-    cards.push(["Robust Bayesian Kelly", `Not available. ${bet?.bayesian_kelly?.reason || "This market does not yet have a validated uncertainty model."}`]);
+    const unavailableReason = String(bet?.bayesian_kelly?.reason || "this market does not yet have a validated uncertainty model")
+      .replace(/^Fight-total/, "fight-total")
+      .replace(/\.$/, "");
+    cards.push(["Standard Kelly (uncertainty not included)", `${formatPercent(standardKelly)} of bankroll. This treats the ${formatPercent(chance)} estimate as exact, so it can be extremely aggressive. It is shown as a mathematical reference, not a recommended stake. The uncertainty-aware Kelly value is unavailable because ${unavailableReason}.`]);
   }
   cards.forEach(([title, copy]) => {
     const card = element("div", "qualified-bet-explanation-card");
@@ -3043,14 +3083,15 @@ function renderQualifiedUpcomingBets() {
     appendText(expectedReturn, "strong", "", formatPercent(bet.estimated_expected_return));
     const bayesian = bet?.bayesian_kelly?.status === "available" ? bet.bayesian_kelly : null;
     const bayesianKelly = element("div", "qualified-bet-stat");
-    appendText(bayesianKelly, "span", "", "Bayesian Kelly");
-    appendText(bayesianKelly, "strong", "", bayesian ? formatPercent(bayesian.recommended_fraction) : "Not available");
+    const standardKelly = kellyFraction(bet.estimated_win_probability, bet.offered_moneyline);
+    appendText(bayesianKelly, "span", "", bayesian ? "Bayesian Kelly" : "Standard Kelly");
+    appendText(bayesianKelly, "strong", "", bayesian ? formatPercent(bayesian.recommended_fraction) : formatPercent(standardKelly));
 
     const source = element("div", "qualified-bet-source");
     const isCandidateTotal = bet.candidate_only === true || bet.probability_source === "candidate_duration_model" || bet.category === "Total rounds";
     source.append(
       element("span", `pill ${isCandidateTotal ? "orange" : "win"}`, bet.category || "Moneyline"),
-      element("span", "qualified-bet-model", isCandidateTotal ? "Experimental duration model" : "Other-book market consensus"),
+      element("span", "qualified-bet-model", isCandidateTotal ? "2\u00bd-minute logistic duration model" : "Other-book market consensus"),
     );
     if (finite(bet.consensus_book_count) !== null) appendText(source, "small", "", `${formatNumber(bet.consensus_book_count, 0)} comparison books; target book excluded`);
     else if (isCandidateTotal) appendText(source, "small", "", "Candidate model has not passed a betting-performance gate");

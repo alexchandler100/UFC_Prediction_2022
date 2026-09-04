@@ -663,6 +663,14 @@ def _current_opportunity_bets(
             "candidate_only": True,
             "probability_source": candidate.get("probability_source")
             or "candidate_duration_model",
+            "line": candidate.get("line"),
+            "scheduled_rounds": candidate.get("scheduled_rounds"),
+            "schedule_basis": candidate.get("schedule_basis"),
+            "model_id": candidate.get("model_id"),
+            "model_version": candidate.get("model_version"),
+            "model_trained_through": candidate.get("model_trained_through"),
+            "forecast_issued_at_utc": candidate.get("forecast_issued_at_utc"),
+            "break_even_probability": candidate.get("break_even_probability"),
             "model_weight": candidate.get("selected_residual_weight"),
             "consensus_book_count": candidate.get(
                 "other_book_consensus_count"

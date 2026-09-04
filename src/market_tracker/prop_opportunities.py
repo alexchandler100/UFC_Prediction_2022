@@ -125,6 +125,7 @@ def build_prop_market_view(
                         "schedule_basis": forecast.schedule_basis,
                         "model_id": forecast.model_id,
                         "model_version": forecast.model_version,
+                        "model_trained_through": forecast.model_trained_through,
                         "forecast_issued_at_utc": forecast.forecast_issued_at_utc,
                         "observed_at_utc": quote.observed_at_utc,
                         "source_quote_age_seconds": quote.source_quote_age_seconds,

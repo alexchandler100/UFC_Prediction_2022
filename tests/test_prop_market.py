@@ -234,6 +234,7 @@ class TotalRoundsMarketTests(unittest.TestCase):
         self.assertEqual(candidates[0]["selection"], "Over 2.5 rounds")
         self.assertEqual(candidates[0]["target_book"], "DraftKings")
         self.assertGreater(candidates[0]["estimated_expected_return"], 0.20)
+        self.assertEqual(candidates[0]["model_trained_through"], "2026-08-15")
         self.assertEqual(
             view["method_of_victory"]["expected_value_status"],
             "unavailable_without_book_price",
