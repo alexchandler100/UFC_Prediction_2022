@@ -3,6 +3,7 @@ import json
 import math
 import tempfile
 import unittest
+from dataclasses import dataclass
 from pathlib import Path
 from unittest.mock import patch
 
@@ -48,7 +49,11 @@ from ufcstats_client import (
     UFCStatsError,
     UFCStatsEventNotComplete,
 )
-from validate_data import validate_point_in_time, validate_raw_fights
+from validate_data import (
+    _records_match_with_float_tolerance,
+    validate_point_in_time,
+    validate_raw_fights,
+)
 
 
 def make_response(body: str, url: str = "http://ufcstats.test/events", status: int = 200):
@@ -75,6 +80,39 @@ class FakeSession:
     def post(self, url, **kwargs):
         self.post_calls.append((url, kwargs))
         return make_response("", url=url, status=204)
+
+
+@dataclass(frozen=True)
+class FloatReproductionFixture:
+    decision_id: str
+    probability: float
+    selection: str
+
+
+class CrossPlatformReproductionTests(unittest.TestCase):
+    def test_only_machine_precision_float_differences_are_tolerated(self):
+        stored = FloatReproductionFixture("stored-hash", 0.45920859794821695, "pass")
+        rounded = FloatReproductionFixture("rebuilt-hash", 0.4592085979482169, "pass")
+        changed = FloatReproductionFixture("rebuilt-hash", 0.4593, "pass")
+        wrong_selection = FloatReproductionFixture(
+            "rebuilt-hash", 0.4592085979482169, "over"
+        )
+
+        self.assertTrue(
+            _records_match_with_float_tolerance(
+                stored, rounded, derived_identity_field="decision_id"
+            )
+        )
+        self.assertFalse(
+            _records_match_with_float_tolerance(
+                stored, changed, derived_identity_field="decision_id"
+            )
+        )
+        self.assertFalse(
+            _records_match_with_float_tolerance(
+                stored, wrong_selection, derived_identity_field="decision_id"
+            )
+        )
 
 
 class UFCStatsClientTests(unittest.TestCase):

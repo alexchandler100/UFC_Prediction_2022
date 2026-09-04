@@ -12,6 +12,7 @@ from __future__ import annotations
 import argparse
 from hashlib import sha256
 import json
+import math
 from collections import Counter
 from dataclasses import dataclass, field
 from datetime import date
@@ -220,6 +221,35 @@ class ValidationReport:
         if self.errors:
             formatted = "\n".join(f"- {message}" for message in self.errors)
             raise ValueError(f"Data validation failed:\n{formatted}")
+
+
+def _records_match_with_float_tolerance(
+    stored: object,
+    rebuilt: object,
+    *,
+    derived_identity_field: str,
+) -> bool:
+    """Compare rebuilt records across platforms without requiring bit-identical floats.
+
+    Each stored record has already validated its own content hash.  A rebuilt
+    identity may differ when Windows and Linux math libraries round an
+    intermediate result by one machine unit, so compare numeric fields with a
+    deliberately tight tolerance and require every nonnumeric field to match.
+    """
+
+    if type(stored) is not type(rebuilt) or not hasattr(stored, "__dataclass_fields__"):
+        return False
+    for name in stored.__dataclass_fields__:
+        if name == derived_identity_field:
+            continue
+        left = getattr(stored, name)
+        right = getattr(rebuilt, name)
+        if isinstance(left, float) and isinstance(right, float):
+            if not math.isclose(left, right, rel_tol=1e-14, abs_tol=1e-15):
+                return False
+        elif left != right:
+            return False
+    return True
 
 
 def _require_columns(
@@ -1892,7 +1922,12 @@ def validate_market_data(
                 ),
             )
             report.require(
-                rebuilt == total_decision,
+                rebuilt == total_decision
+                or _records_match_with_float_tolerance(
+                    total_decision,
+                    rebuilt,
+                    derived_identity_field="decision_id",
+                ),
                 "a total-round paper decision cannot be reproduced",
             )
         except (MarketDataError, StoreIntegrityError, ValueError) as error:
