@@ -100,6 +100,7 @@ def build(root, now):
         'equal_stake': {'recorded': equal.get('frozen_fights', 0), 'settled': equal.get('settled_fights', 0),
             'review_fights': 200, 'review_cards': 20,
             'results': equal.get('results', [])},
+        'simulation_conditions': read(root, 'simulation_conditions/report.json', None),
         'workflow_runs_url': 'https://github.com/alexchandler100/UFC_Prediction_2022/actions',
         'workflow_failure_status': 'unavailable_from_ledgers',
         'note': 'Zero recommendations can be a valid pass. Missing collections and overdue results require review. Experiments are separate; do not add their profits together.'}

@@ -3838,6 +3838,17 @@ function renderResearchMonitor() {
   const equal=report.equal_stake;
   appendText(container,'p','section-note',`Equal-stake winner comparison: ${equal.recorded} fights recorded, ${equal.settled} settled. First review requires at least ${equal.review_fights} fights across ${equal.review_cards} cards; this does not establish profitability.`);
   table(['Strategy (all books)','Cards','Settled bets','Paper profit','Return per unit'],equal.results.filter(r=>r.book==='all_books_hypothetical' && r.winning_payout_reduction===0).map(r=>[r.strategy,r.settled_cards,r.settled_bets,r.profit_units.toFixed(2),r.return_per_unit===null?'Unavailable':formatPercent(r.return_per_unit)]));
+  const conditions=report.simulation_conditions;
+  if (conditions) {
+    appendText(container,'p','section-note',`Conditional model study: ${conditions.recorded_comparisons} fights recorded since ${formatTimestamp(conditions.policy.activated_at_utc)}. Tests substantial striking/grappling data, recent history, and narrow simulation ranges. Rules stay fixed; missing indicators are unavailable. Negative error differences favor the simulation. This does not prove profitable betting.`);
+    appendText(container,'p','section-note',`${conditions.coverage.comparisons_without_indicators} new comparisons lack frozen indicators; ${conditions.coverage.legacy_comparisons_excluded} older comparisons are excluded from this prospective study.`);
+    const labels={all:'All recorded fights',substantial_relevant_history:'Substantial relevant data',recent_history:'Recent fight history',narrow_simulation_range:'Narrow simulation range'};
+    table(['Condition','Simulation version','Group','Fights / cards scored','Simulation error − market','95% card interval'],conditions.results.map(r=>{
+      const delta=r.brier_difference_vs_market.simulation;
+      return [labels[r.condition],r.mechanics_profile_id,r.condition==='all'?'All':r.matches===null?'Unavailable':r.matches?'Matches':'Does not match',`${r.scored_fights} / ${r.scored_cards}`,delta.difference===null?'Unavailable':delta.difference.toFixed(4),delta.card_bootstrap_95 ? delta.card_bootstrap_95.map(v=>v.toFixed(4)).join(' to ') : 'Not enough cards'];
+    }));
+    const link=element('a','','Full conditional comparisons, fixed rules, and paper returns');link.href='src/content/data/market/simulation_conditions/report.json';container.append(link);
+  }
 }
 
 function methodPaperStatus(row, nowMs = Date.now()) {

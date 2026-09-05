@@ -100,7 +100,13 @@ jobs:
       - name: Settle completed paper decisions and refresh metrics
         run: python src/update_market_performance.py
 
-      - name: Publish paper-bet bankroll history
+      - name: Record conditional simulation evidence
+        run: python src/update_simulation_conditions.py
+
+      - name: Validate conditional simulation evidence
+        run: python src/update_simulation_conditions.py --validate-only
+
+      - name: Publish bankroll history
         run: python src/update_bet_performance.py
 
       - name: Update frozen market-first prospective paper test
@@ -199,7 +205,10 @@ jobs:
             src/content/data/market/method_paper/settlements.json \
             src/content/data/market/method_paper/report.json \
             src/content/data/market/research_monitor.json \
-            src/content/data/market/bet_odds_history.json
+            src/content/data/market/bet_odds_history.json \
+            src/content/data/market/simulation_conditions/policy.json \
+            src/content/data/market/simulation_conditions/records.json \
+            src/content/data/market/simulation_conditions/report.json
           do
             if [ -f "$optional_path" ]; then
               git add -- "$optional_path"
@@ -262,6 +271,9 @@ jobs:
               src/content/data/market/published_bet_snapshots.json|\
               src/content/data/market/research_monitor.json|\
               src/content/data/market/bet_odds_history.json|\
+              src/content/data/market/simulation_conditions/policy.json|\
+              src/content/data/market/simulation_conditions/records.json|\
+              src/content/data/market/simulation_conditions/report.json|\
               src/content/data/market/bet_performance.json)
                 ;;
               *)

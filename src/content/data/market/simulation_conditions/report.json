@@ -1,0 +1,61 @@
+{
+  "coverage": {
+    "comparisons_since_activation": 0,
+    "comparisons_without_indicators": 0,
+    "legacy_comparisons_excluded": 6
+  },
+  "interpretation": "Lower probability error than market favors the model; this is not proof of profitable betting. No automatic promotion.",
+  "policy": {
+    "activated_at_utc": "2026-09-05T19:00:28.123810+00:00",
+    "betting": {
+      "minimum_ev": 0.05,
+      "one_selection_per_fight_per_strategy": true,
+      "price": "exact_base_decision_reference_book_only",
+      "risk_units": 1,
+      "winning_payout_reductions": [
+        0,
+        0.02,
+        0.05
+      ]
+    },
+    "bootstrap_samples": 1000,
+    "bootstrap_seed": 20260905,
+    "limitations": [
+      "Thresholds are illustrative and were not optimized on results.",
+      "Groups overlap; intervals are descriptive, not adjusted for multiple comparisons.",
+      "Each mechanics version is reported separately; no automatic model promotion.",
+      "Indicators describe prior records available at capture, not proven exact training inputs.",
+      "Ground/distance attempts are activity evidence, not minutes spent in each phase."
+    ],
+    "one_record_per_physical_fight": true,
+    "paper_only": true,
+    "production_influence": "none",
+    "record_sha256": "3cffd273e701a3b6987e9582d9deeb50ccb861a5916a4aa77173a7ac4559c606",
+    "retuning_allowed": false,
+    "review_minimum_cards_per_group": 20,
+    "review_minimum_fights_per_group": 200,
+    "rules": {
+      "narrow_simulation_range": {
+        "maximum_95pct_width_each": 0.2,
+        "maximum_process_mcse_each": 0.02,
+        "minimum_bootstrap_members": 32
+      },
+      "recent_history": {
+        "lookback_days": 730,
+        "minimum_fights_each": 2
+      },
+      "substantial_relevant_history": {
+        "minimum_complete_fraction_each": 0.8,
+        "minimum_distance_attempts_each": 100,
+        "minimum_fights_each": 5,
+        "minimum_ground_attempts_each": 50,
+        "minimum_takedown_attempts_each": 20
+      }
+    },
+    "version": "simulation-conditions-v1"
+  },
+  "recorded_comparisons": 0,
+  "records_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+  "results": [],
+  "status": "collecting_evidence"
+}
