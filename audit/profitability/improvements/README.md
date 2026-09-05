@@ -31,6 +31,7 @@ Future rolling profitability evaluations select **no bets** when earlier evidenc
 .venv/Scripts/python.exe -B src/repair_historical_schedules.py --apply --apply-pit --report audit/profitability/improvements/schedule_repair.json
 .venv/Scripts/python.exe -B src/build_outcome_forecasts.py
 .venv/Scripts/python.exe -B src/refresh_betting_publications.py
+.venv/Scripts/python.exe -B src/build_fighter_explorer.py
 .venv/Scripts/python.exe -B src/capture_market_snapshot.py --validate-only
 .venv/Scripts/python.exe -B src/capture_method_market_snapshot.py --validate-only
 .venv/Scripts/python.exe -B src/update_bet_performance.py --validate-only
@@ -38,6 +39,11 @@ node tests/test_upcoming_portfolio.cjs
 ```
 
 The repair is repeatable: a second run proposes no cell changes. Rebuilding forecasts issues a new forecast at the actual current time and is only valid before the card date; do not backdate it. The refresh makes no API requests and never rewrites immutable evidence to look prospective.
+
+After changing processed schedules, also rebuild the fighter explorer as shown
+above. Its fight-history shards include `time_format`; changing the source CSV
+without regenerating those shards causes the saved-data CI check to fail. This
+offline rebuild updates the derived index and history files without retraining.
 
 [Focused validation](validation.json) records **112 passing Python tests**, plus **7 JavaScript behavior checks** and the JavaScript syntax check. This includes early-finish schedule cases, rejected old duration artifacts, insufficient calibration, price expiry, accessible-book alternatives, allocation limits, saved totals assessment preservation, and method event-start changes.
 
