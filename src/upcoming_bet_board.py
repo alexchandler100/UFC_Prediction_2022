@@ -864,6 +864,7 @@ def build_upcoming_bet_board(
                 "event_id": matchup["event_id"],
                 "matchup_id": matchup["matchup_id"],
                 "book_count": len(stored_quotes),
+                "event_start_utc": rows[0].source_commence_time_utc,
                 "consensus_fighter_probability": consensus_probability,
                 "latest_source_quote_updated_at_utc": max(
                     str(item["source_quote_updated_at_utc"])

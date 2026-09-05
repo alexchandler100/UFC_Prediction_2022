@@ -9,6 +9,7 @@ const DATA_PATHS = {
   market: "src/content/data/market/current_opportunities.json",
   oddsHistory: "src/content/data/market/odds_history.json",
   upcomingBetBoard: "src/content/data/market/upcoming_bet_board.json",
+  candidateReport: "src/content/data/market/candidate_report.json",
   allUpcoming: "src/content/data/external/all_upcoming_forecasts.json",
   methodMarkets: "src/content/data/market/current_method_markets.json",
   performance: "src/content/data/market/performance_report.json",
@@ -29,6 +30,8 @@ const state = {
   market: null,
   oddsHistory: null,
   upcomingBetBoard: null,
+  candidateReport: null,
+  candidateSort: "supported",
   allUpcoming: null,
   methodMarkets: null,
   performance: null,
@@ -1230,7 +1233,7 @@ async function fetchJson(path, required = true) {
 }
 
 async function loadData() {
-  const [explorer, vegas, card, model, bayesian, market, oddsHistory, upcomingBetBoard, allUpcoming, methodMarkets, performance, betPerformance, outcomes, outcomeEvaluation] = await Promise.all([
+  const [explorer, vegas, card, model, bayesian, market, oddsHistory, upcomingBetBoard, allUpcoming, methodMarkets, performance, betPerformance, outcomes, outcomeEvaluation, candidateReport] = await Promise.all([
     fetchJson(DATA_PATHS.explorer),
     fetchJson(DATA_PATHS.vegas, false),
     fetchJson(DATA_PATHS.card, false),
@@ -1245,6 +1248,7 @@ async function loadData() {
     fetchJson(DATA_PATHS.betPerformance, false),
     fetchJson(DATA_PATHS.outcomes, false),
     fetchJson(DATA_PATHS.outcomeEvaluation, false),
+    fetchJson(DATA_PATHS.candidateReport, false),
   ]);
   state.explorer = explorer;
   state.vegas = vegas;
@@ -1254,6 +1258,7 @@ async function loadData() {
   state.market = market;
   state.oddsHistory = oddsHistory;
   state.upcomingBetBoard = upcomingBetBoard;
+  state.candidateReport = candidateReport;
   state.allUpcoming = allUpcoming;
   state.methodMarkets = methodMarkets;
   state.performance = performance;
@@ -3494,7 +3499,93 @@ function renderOddsHistory(matchup) {
   select.addEventListener("change", renderSelected); renderSelected(); return details;
 }
 
+function candidateDiagnosticReasons(row, nowMs = Date.now()) {
+  const reasons = (row.reasons_now || []).filter((reason) => !["expired", "future_quote", "event_started"].includes(reason));
+  if (!row.book) return reasons;
+  const quote = Date.parse(row.quote_updated_at_utc || "");
+  const start = Date.parse(row.event_start_utc || "");
+  if (Number.isFinite(quote)) {
+    if (quote > nowMs) reasons.push("future_quote");
+    else if (nowMs - quote > 30 * 60 * 1000) reasons.push("expired");
+  }
+  if (Number.isFinite(start) && start <= nowMs) reasons.push("event_started");
+  return [...new Set(reasons)];
+}
+
+function compareCandidateDiagnostics(left, right, sort = "supported", nowMs = Date.now()) {
+  const rank = (row) => {
+    const reasons = candidateDiagnosticReasons(row, nowMs);
+    const unusable = !row.book || ["expired", "future_quote", "missing_time", "event_started"].some((reason) => reasons.includes(reason));
+    const adjusted = finite(row.adjusted_ev);
+    const model = finite(row.model_ev);
+    const supported = row.market === "Moneyline" && adjusted !== null && adjusted >= 0.05 && finite(row.conservative_ev) > 0 && !reasons.some((reason) => ["no_consensus", "no_model", "no_calibration", "zero_stake"].includes(reason));
+    const score = sort === "model" ? model : adjusted;
+    return [Number(unusable), sort === "supported" ? Number(!supported) : 0, -(score ?? -Infinity)];
+  };
+  const a = rank(left); const b = rank(right);
+  for (let i = 0; i < a.length; i += 1) if (a[i] !== b[i]) return a[i] < b[i] ? -1 : 1;
+  return String(left.row_id).localeCompare(String(right.row_id));
+}
+
+function renderCandidateDiagnostics() {
+  const container = $("#candidate-diagnostics");
+  if (!container) return;
+  const openFights = new Set([...container.querySelectorAll("details[open]")].map((item) => item.dataset.matchupId));
+  container.replaceChildren();
+  const report = state.candidateReport;
+  if (!report || report.inputs?.board !== state.upcomingBetBoard?.publication_sha256 || report.inputs?.forecasts !== state.allUpcoming?.publication_sha256) {
+    appendText(container, "p", "section-note", "Candidate explanations await a report matching the current forecasts and board.");
+    return;
+  }
+  const nowMs = Date.now();
+  const rows = report.rows.filter((row) => !row.book || marketBookAllowed(row.book)).sort((a, b) => compareCandidateDiagnostics(a, b, state.candidateSort, nowMs));
+  const sortLabel = element("label", "", "Rank candidates by ");
+  const sortSelect = element("select");
+  [["supported", "Best supported"], ["adjusted", "Highest adjusted EV"], ["model", "Highest independent-model EV"]].forEach(([value, text]) => {
+    const option = element("option", "", text); option.value = value; sortSelect.append(option);
+  });
+  sortSelect.value = state.candidateSort;
+  sortSelect.addEventListener("change", () => { state.candidateSort = sortSelect.value; renderCandidateDiagnostics(); });
+  sortLabel.append(sortSelect); container.append(sortLabel);
+  appendText(container, "p", "section-note", "Usable prices first. Best supported prioritizes moneylines with at least 5% adjusted EV and a positive conservative EV, then ranks by adjusted EV. Fights and their offers follow the selected ranking. This is an evidence ranking, not a guarantee of profit.");
+  const above = (key) => rows.filter((row) => finite(row[key]) !== null && finite(row[key]) >= 0.05).length;
+  appendText(container, "p", "section-note", `Stored price comparisons at or above 5% EV: raw market ${above("raw_market_ev")}, adjusted ${above("adjusted_ev")}, independent model ${above("model_ev")}. These count side/book offers, not distinct fights or executable bets. Capture: ${formatTimestamp(report.captured_at_utc)}.`);
+  appendText(container, "p", "section-note", "The funded moneyline board uses adjusted market probabilities and a conservative uncertainty check; the independent model is compared here for research. Stored prices paired with newer forecasts are diagnostic only, not prospective results. Totals remain unfunded pending betting evidence. Method bets remain research only.");
+  appendText(container, "p", "section-note", `Totals coverage in this capture: ${report.totals_coverage?.quote_count || 0} saved prices and ${report.totals_coverage?.forecast_count || 0} eligible paired forecasts. A newer duration prediction is not attached retrospectively to an old capture.`);
+  const groups = new Map();
+  rows.forEach((row) => { const key = row.matchup_id; if (!groups.has(key)) groups.set(key, []); groups.get(key).push(row); });
+  groups.forEach((offers) => {
+    const first = offers[0];
+    const details = element("details");
+    details.dataset.matchupId = first.matchup_id;
+    details.open = openFights.has(first.matchup_id);
+    details.append(element("summary", "", `${formatDate(first.event_date)} · ${first.fighter_name} vs ${first.opponent_name} · ${offers.filter((row) => row.book).length} offers`));
+    const wrap = element("div", "details-body book-table-wrap");
+    const table = element("table", "data-table");
+    const head = element("thead"); const header = element("tr");
+    ["Selection / book", "Price", "Market chance / EV", "Adjusted chance / EV", "Model chance / EV", "Why not funded now"].forEach((text) => appendText(header, "th", "", text));
+    head.append(header); table.append(head);
+    const body = element("tbody");
+    const percentage = (value) => finite(value) === null ? "Unavailable" : formatPercent(Number(value));
+    offers.forEach((row) => {
+      const tr = element("tr");
+      const reasons = candidateDiagnosticReasons(row).map((reason) => report.reason_labels[reason] || reason);
+      const values = [row.book ? `${row.selection} · ${row.book}` : `${row.fighter_name}: no saved prices`,
+        row.moneyline == null ? "—" : `${row.moneyline > 0 ? "+" : ""}${row.moneyline}`,
+        `${percentage(row.raw_market_probability)} / ${percentage(row.raw_market_ev)}`,
+        `${percentage(row.adjusted_probability)} / ${percentage(row.adjusted_ev)}`,
+        `${percentage(row.model_probability)} / ${percentage(row.model_ev)}`,
+        reasons.length ? reasons.join("; ") : "Passed in saved board; see current funded selections above"];
+      values.forEach((value) => appendText(tr, "td", "", value));
+      tr.title = `Quote updated: ${row.quote_updated_at_utc || "unknown"}; forecast issued: ${row.forecast_issued_at_utc || "unknown"}; at-capture checks: ${(row.reasons_at_capture || []).map((reason) => report.reason_labels[reason] || reason).join("; ") || "passed"}${row.forecast_unavailable_reason ? `; ${row.forecast_unavailable_reason}` : ""}`;
+      body.append(tr);
+    });
+    table.append(body); wrap.append(table); details.append(wrap); container.append(details);
+  });
+}
+
 function renderMarket() {
+  renderCandidateDiagnostics();
   const notice = $("#market-notice"); const container = $("#market-matchups"); const propContainer = $("#prop-market-details"); notice.replaceChildren(); container.replaceChildren(); propContainer.replaceChildren(); renderMarketBookFilter(); renderQualifiedUpcomingBets(); renderProfitabilityEvidence();
   const market = currentMarket();
   const outcomes = currentOutcomes();
@@ -3643,7 +3734,7 @@ async function start() {
   try {
     await loadData();
     populateFilters(); renderCurrentCard(); renderFighterDirectory(); renderMarket(); renderBetPerformance(); bindEvents();
-    window.setInterval(renderQualifiedUpcomingBets, 60 * 1000);
+    window.setInterval(() => { renderQualifiedUpcomingBets(); renderCandidateDiagnostics(); }, 60 * 1000);
     $("#publication-stamp").textContent = `Dataset through ${formatDate(state.explorer.data_through)} · schema v${state.explorer.schema_version}`;
     const status = $("#header-status"); status.classList.add("is-ready"); status.lastChild.textContent = " Data ready";
     $("#load-message").hidden = true; applyRoute();

@@ -93,12 +93,16 @@ jobs:
       - name: Publish compact current-card odds history
         run: python src/update_odds_history.py
 
+      - name: Publish candidate explanations
+        run: python src/update_candidate_report.py
+
       - name: Validate generated snapshot
         run: |
           python src/update_odds_history.py --validate-only
           python src/update_bet_performance.py --validate-only
           python src/update_market_first_paper.py --validate-only
           python src/update_equal_stake_experiment.py --validate-only
+          python src/update_candidate_report.py --validate-only
           python src/validate_data.py --require-model-artifact --require-market-data
 
       - name: Commit validated generated files
@@ -152,7 +156,8 @@ jobs:
             src/content/data/market/equal_stake_experiment/policy.json \
             src/content/data/market/equal_stake_experiment/decisions.json \
             src/content/data/market/equal_stake_experiment/settlements.json \
-            src/content/data/market/equal_stake_experiment/report.json
+            src/content/data/market/equal_stake_experiment/report.json \
+            src/content/data/market/candidate_report.json
           do
             if [ -f "$optional_path" ]; then
               git add -- "$optional_path"
