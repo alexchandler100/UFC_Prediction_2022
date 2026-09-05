@@ -79,6 +79,9 @@ jobs:
       - name: Record equal-stake prospective comparison
         run: python src/update_equal_stake_experiment.py
 
+      - name: Record and settle method paper recommendations
+        run: python src/update_method_paper.py
+
       - name: Settle paper decisions and publish return metrics
         working-directory: src
         run: python update_market_performance.py
@@ -103,6 +106,7 @@ jobs:
           python src/update_market_first_paper.py --validate-only
           python src/update_equal_stake_experiment.py --validate-only
           python src/update_candidate_report.py --validate-only
+          python src/update_method_paper.py --validate-only
           python src/validate_data.py --require-model-artifact --require-market-data
 
       - name: Commit validated generated files
@@ -157,7 +161,11 @@ jobs:
             src/content/data/market/equal_stake_experiment/decisions.json \
             src/content/data/market/equal_stake_experiment/settlements.json \
             src/content/data/market/equal_stake_experiment/report.json \
-            src/content/data/market/candidate_report.json
+            src/content/data/market/candidate_report.json \
+            src/content/data/market/method_paper/policy.json \
+            src/content/data/market/method_paper/decisions.json \
+            src/content/data/market/method_paper/settlements.json \
+            src/content/data/market/method_paper/report.json
           do
             if [ -f "$optional_path" ]; then
               git add -- "$optional_path"

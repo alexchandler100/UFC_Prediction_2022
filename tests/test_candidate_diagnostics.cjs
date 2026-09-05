@@ -11,7 +11,7 @@ function extract(name) {
 }
 const context = {};
 vm.createContext(context);
-vm.runInContext(['finite', 'candidateDiagnosticReasons', 'compareCandidateDiagnostics'].map(extract).join('\n'), context);
+vm.runInContext(['finite', 'candidateDiagnosticReasons', 'compareCandidateDiagnostics', 'methodPaperStatus'].map(extract).join('\n'), context);
 const now = Date.parse('2026-09-04T12:00:00Z');
 const offer = (id, extra = {}) => ({row_id: id, book: 'A', market: 'Moneyline',
   quote_updated_at_utc: '2026-09-04T11:59:00Z', event_start_utc: '2026-09-05T12:00:00Z',
@@ -32,4 +32,10 @@ test('price expiry and event start update without reloading the report', () => {
   const reasons=context.candidateDiagnosticReasons(offer('a'),Date.parse('2026-09-05T12:01:00Z'));
   assert.ok(reasons.includes('expired')); assert.ok(reasons.includes('event_started'));
   assert.ok(!context.candidateDiagnosticReasons(offer('a'),now).includes('expired'));
+});
+test('method paper prices expire and remain visible for result review', () => {
+  const row = {observed_at_utc: '2026-09-04T11:59:00Z', event_start_utc: '2026-09-05T12:00:00Z'};
+  assert.equal(context.methodPaperStatus(row, now), 'Recently collected');
+  assert.equal(context.methodPaperStatus(row, now + 31 * 60000), 'Recorded price expired');
+  assert.equal(context.methodPaperStatus(row, Date.parse(row.event_start_utc)), 'Awaiting result / review');
 });

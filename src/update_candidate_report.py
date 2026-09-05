@@ -28,7 +28,7 @@ REASONS = {
     'missing_time': 'Quote update or event start missing',
     'future_quote': 'Quote update is in the future',
     'event_started': 'Event has started',
-    'totals_research': 'Totals funding awaits prospective betting evidence',
+    'totals_research': 'Totals excluded from conservative stakes pending betting evidence',
     'portfolio': 'Not selected in the saved capped portfolio',
 }
 

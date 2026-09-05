@@ -10,6 +10,7 @@ const DATA_PATHS = {
   oddsHistory: "src/content/data/market/odds_history.json",
   upcomingBetBoard: "src/content/data/market/upcoming_bet_board.json",
   candidateReport: "src/content/data/market/candidate_report.json",
+  methodPaper: "src/content/data/market/method_paper/report.json",
   allUpcoming: "src/content/data/external/all_upcoming_forecasts.json",
   methodMarkets: "src/content/data/market/current_method_markets.json",
   performance: "src/content/data/market/performance_report.json",
@@ -31,6 +32,7 @@ const state = {
   oddsHistory: null,
   upcomingBetBoard: null,
   candidateReport: null,
+  methodPaper: null,
   candidateSort: "supported",
   allUpcoming: null,
   methodMarkets: null,
@@ -1233,7 +1235,7 @@ async function fetchJson(path, required = true) {
 }
 
 async function loadData() {
-  const [explorer, vegas, card, model, bayesian, market, oddsHistory, upcomingBetBoard, allUpcoming, methodMarkets, performance, betPerformance, outcomes, outcomeEvaluation, candidateReport] = await Promise.all([
+  const [explorer, vegas, card, model, bayesian, market, oddsHistory, upcomingBetBoard, allUpcoming, methodMarkets, performance, betPerformance, outcomes, outcomeEvaluation, candidateReport, methodPaper] = await Promise.all([
     fetchJson(DATA_PATHS.explorer),
     fetchJson(DATA_PATHS.vegas, false),
     fetchJson(DATA_PATHS.card, false),
@@ -1249,6 +1251,7 @@ async function loadData() {
     fetchJson(DATA_PATHS.outcomes, false),
     fetchJson(DATA_PATHS.outcomeEvaluation, false),
     fetchJson(DATA_PATHS.candidateReport, false),
+    fetchJson(DATA_PATHS.methodPaper, false),
   ]);
   state.explorer = explorer;
   state.vegas = vegas;
@@ -1259,6 +1262,7 @@ async function loadData() {
   state.oddsHistory = oddsHistory;
   state.upcomingBetBoard = upcomingBetBoard;
   state.candidateReport = candidateReport;
+  state.methodPaper = methodPaper;
   state.allUpcoming = allUpcoming;
   state.methodMarkets = methodMarkets;
   state.performance = performance;
@@ -3098,7 +3102,7 @@ function appendQualifiedBetExplanation(container, bet) {
     const card = element("div", "qualified-bet-explanation-card");
     appendText(card, "strong", "", title); appendText(card, "span", "", copy); container.append(card);
   });
-  appendText(container, "p", "qualified-bet-explanation-note", "Only one selection per fight is funded in this paper portfolio. Stakes assume no existing open bets; this website does not know your account exposure or place bets. Prices expire 30 minutes after the source update and when the card starts.");
+  appendText(container, "p", "qualified-bet-explanation-note", "Only one selection per fight receives a hypothetical stake in this paper portfolio. Stakes assume no existing open bets; this website does not know your account exposure or place bets. Prices expire 30 minutes after the source update and when the card starts.");
   if (bet.fighter_id && bet.opponent_id) {
     const action = element("div", "qualified-bet-action");
     action.append(actionButton("View fight research", "secondary-button small-button", () => setRoute(`matchups/${bet.fighter_id}/${bet.opponent_id}`)));
@@ -3122,9 +3126,9 @@ function renderQualifiedUpcomingBets() {
   const eventCount = new Set(bets.map((bet) => bet.event_id).filter(Boolean)).size;
   const captured = formatTimestamp(board.observed_at_utc);
   status.textContent = bets.length
-    ? `${bets.length} funded paper selection${bets.length === 1 ? "" : "s"} across ${eventCount} card${eventCount === 1 ? "" : "s"}, ranked by estimated return after calibration at ${selectedMarketBookLabel()}. ${formatPercent(portfolio.allocatedFraction)} allocated across this snapshot · captured ${captured}.`
+    ? `${bets.length} paper selection${bets.length === 1 ? "" : "s"} across ${eventCount} card${eventCount === 1 ? "" : "s"}, ranked by estimated return after calibration at ${selectedMarketBookLabel()}. ${formatPercent(portfolio.allocatedFraction)} allocated across this snapshot · captured ${captured}.`
     : portfolio.reasons.legacy_or_invalid_publication
-      ? "This older publication is research only. No paper stakes are funded until a calibrated portfolio is published."
+      ? "This older publication is research only. Suggested paper stakes await a calibrated portfolio."
       : `No eligible current paper bets at ${selectedMarketBookLabel()}. ${portfolio.reasons.expired_price ? `${portfolio.reasons.expired_price} expired price${portfolio.reasons.expired_price === 1 ? "" : "s"}. ` : ""}${portfolio.reasons.event_started ? `${portfolio.reasons.event_started} offer${portfolio.reasons.event_started === 1 ? "" : "s"} from started cards. ` : ""}Fresh source times, a future card start, and a positive calibrated edge are required.`;
   if (!bets.length) {
     container.append(element("div", "empty-state", "No stake is allocated. Eligibility is checked again every minute and whenever the sportsbook selection changes."));
@@ -3354,16 +3358,16 @@ function renderBetPerformance() {
   const bayesianStrategy = staking === "robust_bayesian_kelly";
   const researchStrategy = blendStrategy || bayesianStrategy;
   $("#performance-data-note").textContent = bayesianStrategy
-    ? `${baseDataNote} New portfolio records use their saved capped allocation. Older robust Bayesian Kelly values remain historical research comparisons. A saved zero stake is an abstention, not a funded bet.`
+    ? `${baseDataNote} New portfolio records use their saved capped allocation. Older robust Bayesian Kelly values remain historical research comparisons. A saved zero stake records a pass.`
     : blendStrategy
       ? `${baseDataNote} Research blend: probabilities are averaged in log-odds space before half Kelly is calculated; a bet is excluded when a required saved prediction is unavailable.`
       : baseDataNote;
   const fundedCounts = fundedPerformanceCounts(result.rows);
-  $("#performance-summary-note").textContent = `${fundedCounts.funded} funded settled bet${fundedCounts.funded === 1 ? "" : "s"} · ${fundedCounts.wins}-${fundedCounts.losses}${fundedCounts.voids ? ` · ${fundedCounts.voids} void` : ""} · ${fundedCounts.zeroStake} zero-stake record${fundedCounts.zeroStake === 1 ? "" : "s"}${result.pending.length ? ` · ${result.pending.length} pending record${result.pending.length === 1 ? "" : "s"}` : ""}${result.unsupported.length ? ` · ${result.unsupported.length} excluded because this strategy lacks a valid saved estimate` : ""}. This paper replay groups settlements by card and does not track account exposure between cards.`;
+  $("#performance-summary-note").textContent = `${fundedCounts.funded} settled paper bet${fundedCounts.funded === 1 ? "" : "s"} · ${fundedCounts.wins}-${fundedCounts.losses}${fundedCounts.voids ? ` · ${fundedCounts.voids} void` : ""} · ${fundedCounts.zeroStake} zero-stake record${fundedCounts.zeroStake === 1 ? "" : "s"}${result.pending.length ? ` · ${result.pending.length} pending record${result.pending.length === 1 ? "" : "s"}` : ""}${result.unsupported.length ? ` · ${result.unsupported.length} excluded because this strategy lacks a valid saved estimate` : ""}. This paper replay groups settlements by card and does not track account exposure between cards.`;
   [
     [formatCurrency(result.endingBankroll), "Ending bankroll", `${formatCurrency(result.profit)} total profit`],
     [formatCurrency(result.totalStaked), "Total amount risked", `${formatPercent(result.roi)} return on amount risked`],
-    [`${fundedCounts.wins}-${fundedCounts.losses}`, "Funded win-loss record", `${fundedCounts.voids} funded void · ${fundedCounts.zeroStake} zero-stake records`],
+    [`${fundedCounts.wins}-${fundedCounts.losses}`, "Paper win-loss record", `${fundedCounts.voids} paper void · ${fundedCounts.zeroStake} zero-stake records`],
     [formatPercent(result.maxDrawdown), "Largest drawdown", "Largest decline from an earlier bankroll high"],
   ].forEach(([value, label, note]) => summary.append(statTile(value, label, note)));
   renderPerformanceChart(result.curve, initial);
@@ -3550,7 +3554,7 @@ function renderCandidateDiagnostics() {
   appendText(container, "p", "section-note", "Usable prices first. Best supported prioritizes moneylines with at least 5% adjusted EV and a positive conservative EV, then ranks by adjusted EV. Fights and their offers follow the selected ranking. This is an evidence ranking, not a guarantee of profit.");
   const above = (key) => rows.filter((row) => finite(row[key]) !== null && finite(row[key]) >= 0.05).length;
   appendText(container, "p", "section-note", `Stored price comparisons at or above 5% EV: raw market ${above("raw_market_ev")}, adjusted ${above("adjusted_ev")}, independent model ${above("model_ev")}. These count side/book offers, not distinct fights or executable bets. Capture: ${formatTimestamp(report.captured_at_utc)}.`);
-  appendText(container, "p", "section-note", "The funded moneyline board uses adjusted market probabilities and a conservative uncertainty check; the independent model is compared here for research. Stored prices paired with newer forecasts are diagnostic only, not prospective results. Totals remain unfunded pending betting evidence. Method bets remain research only.");
+  appendText(container, "p", "section-note", "The moneyline paper board uses adjusted market probabilities and a conservative uncertainty check; the independent model is compared here for research. Stored prices paired with newer forecasts are diagnostic only, not prospective results. Totals remain excluded from the conservative staking policy pending betting evidence. Method paper recommendations use the separate fixed-stake experiment.");
   appendText(container, "p", "section-note", `Totals coverage in this capture: ${report.totals_coverage?.quote_count || 0} saved prices and ${report.totals_coverage?.forecast_count || 0} eligible paired forecasts. A newer duration prediction is not attached retrospectively to an old capture.`);
   const groups = new Map();
   rows.forEach((row) => { const key = row.matchup_id; if (!groups.has(key)) groups.set(key, []); groups.get(key).push(row); });
@@ -3563,7 +3567,7 @@ function renderCandidateDiagnostics() {
     const wrap = element("div", "details-body book-table-wrap");
     const table = element("table", "data-table");
     const head = element("thead"); const header = element("tr");
-    ["Selection / book", "Price", "Market chance / EV", "Adjusted chance / EV", "Model chance / EV", "Why not funded now"].forEach((text) => appendText(header, "th", "", text));
+    ["Selection / book", "Price", "Market chance / EV", "Adjusted chance / EV", "Model chance / EV", "Why no paper stake now"].forEach((text) => appendText(header, "th", "", text));
     head.append(header); table.append(head);
     const body = element("tbody");
     const percentage = (value) => finite(value) === null ? "Unavailable" : formatPercent(Number(value));
@@ -3575,7 +3579,7 @@ function renderCandidateDiagnostics() {
         `${percentage(row.raw_market_probability)} / ${percentage(row.raw_market_ev)}`,
         `${percentage(row.adjusted_probability)} / ${percentage(row.adjusted_ev)}`,
         `${percentage(row.model_probability)} / ${percentage(row.model_ev)}`,
-        reasons.length ? reasons.join("; ") : "Passed in saved board; see current funded selections above"];
+        reasons.length ? reasons.join("; ") : "Passed in saved board; see current paper selections above"];
       values.forEach((value) => appendText(tr, "td", "", value));
       tr.title = `Quote updated: ${row.quote_updated_at_utc || "unknown"}; forecast issued: ${row.forecast_issued_at_utc || "unknown"}; at-capture checks: ${(row.reasons_at_capture || []).map((reason) => report.reason_labels[reason] || reason).join("; ") || "passed"}${row.forecast_unavailable_reason ? `; ${row.forecast_unavailable_reason}` : ""}`;
       body.append(tr);
@@ -3584,7 +3588,39 @@ function renderCandidateDiagnostics() {
   });
 }
 
+function methodPaperStatus(row, nowMs = Date.now()) {
+  if (Date.parse(row.event_start_utc) <= nowMs) return "Awaiting result / review";
+  const age = nowMs - Date.parse(row.observed_at_utc);
+  return Number.isFinite(age) && age >= 0 && age <= 30 * 60 * 1000 ? "Recently collected" : "Recorded price expired";
+}
+
+function renderMethodPaper() {
+  const container = $("#method-paper-recommendations");
+  if (!container) return;
+  container.replaceChildren();
+  const report = state.methodPaper;
+  appendText(container, "p", "section-note", "Experimental selections: at least 5% model EV, one selection per fight, one hypothetical unit each. No prior profitability requirement or Kelly filter. Source quote-update times are unavailable; displayed age measures collection time. Results use a declared paper convention, not verified bookmaker payouts.");
+  if (!report) { appendText(container, "p", "", "Awaiting the first method paper report."); return; }
+  appendText(container, "p", "section-note", `${report.paper_recommendations} recorded recommendations · ${report.settled_fights} settled fights including passes/voids · ${Number(report.profit_units).toFixed(2)} units profit.`);
+  const rows = (report.recommendations || []).filter((row) => marketBookAllowed(row.book)).sort((a,b) => {
+    const activeA = methodPaperStatus(a) === "Recently collected"; const activeB = methodPaperStatus(b) === "Recently collected";
+    return Number(activeB) - Number(activeA) || b.expected_return - a.expected_return;
+  });
+  if (!rows.length) { appendText(container, "p", "", "No new qualifying method selections have been recorded for the selected books. Only captures after this experiment started are eligible."); return; }
+  const wrap = element("div", "book-table-wrap"); const table = element("table", "data-table");
+  const head = element("thead"); const headings = element("tr");
+  ["Selection", "Book / price", "Model chance", "Estimated EV", "Paper stake", "Status"].forEach((label) => appendText(headings, "th", "", label));
+  head.append(headings); table.append(head); const body = element("tbody");
+  rows.forEach((row) => {
+    const tr = element("tr");
+    [row.selection, `${row.book} / ${row.moneyline > 0 ? "+" : ""}${row.moneyline}`, formatPercent(row.probability), formatPercent(row.expected_return), "1 unit", methodPaperStatus(row)].forEach((value) => appendText(tr, "td", "", value));
+    body.append(tr);
+  });
+  table.append(body); wrap.append(table); container.append(wrap);
+}
+
 function renderMarket() {
+  renderMethodPaper();
   renderCandidateDiagnostics();
   const notice = $("#market-notice"); const container = $("#market-matchups"); const propContainer = $("#prop-market-details"); notice.replaceChildren(); container.replaceChildren(); propContainer.replaceChildren(); renderMarketBookFilter(); renderQualifiedUpcomingBets(); renderProfitabilityEvidence();
   const market = currentMarket();
@@ -3734,7 +3770,7 @@ async function start() {
   try {
     await loadData();
     populateFilters(); renderCurrentCard(); renderFighterDirectory(); renderMarket(); renderBetPerformance(); bindEvents();
-    window.setInterval(() => { renderQualifiedUpcomingBets(); renderCandidateDiagnostics(); }, 60 * 1000);
+    window.setInterval(() => { renderQualifiedUpcomingBets(); renderCandidateDiagnostics(); renderMethodPaper(); }, 60 * 1000);
     $("#publication-stamp").textContent = `Dataset through ${formatDate(state.explorer.data_through)} · schema v${state.explorer.schema_version}`;
     const status = $("#header-status"); status.classList.add("is-ready"); status.lastChild.textContent = " Data ready";
     $("#load-message").hidden = true; applyRoute();
