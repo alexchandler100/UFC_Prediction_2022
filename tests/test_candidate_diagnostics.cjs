@@ -38,4 +38,5 @@ test('method paper prices expire and remain visible for result review', () => {
   assert.equal(context.methodPaperStatus(row, now), 'Recently collected');
   assert.equal(context.methodPaperStatus(row, now + 31 * 60000), 'Recorded price expired');
   assert.equal(context.methodPaperStatus(row, Date.parse(row.event_start_utc)), 'Awaiting result / review');
+  assert.equal(context.methodPaperStatus({...row,settlement_status:'win'}, now), 'Won');
 });

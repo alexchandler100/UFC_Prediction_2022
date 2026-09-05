@@ -133,12 +133,14 @@ def summarize(decisions, settlements, policy, now):
     settled = {row['matchup_id']: row for row in settlements}
     recommendations = []
     for row in decisions:
-        if row['selection'] and row['matchup_id'] not in settled:
+        if row['selection']:
             offer = row['selection']
             recommendations.append({**offer, 'matchup_id': row['matchup_id'],
                 'event_id': row['event_id'], 'event_date': row['event_date'],
                 'event_start_utc': row['event_start_utc'], 'risk_units': 1,
                 'decision_sha256': row['record_sha256'],
+                'settlement_status': settled.get(row['matchup_id'], {}).get('status'),
+                'profit_units': settled.get(row['matchup_id'], {}).get('profit_units'),
                 'status': 'awaiting_result' if utc(row['event_start_utc']) <= now else
                     ('recently_collected' if (now - utc(offer['observed_at_utc'])).total_seconds() <= 1800 else 'price_expired')})
     recommendations.sort(key=lambda row: (-row['expected_return'], row['matchup_id']))

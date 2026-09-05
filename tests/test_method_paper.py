@@ -80,5 +80,14 @@ class MethodPaperTests(unittest.TestCase):
             self.assertEqual((root/'policy.json').read_bytes(),policy)
             self.assertFalse(first['execution_enabled'])
 
+    def test_settled_recommendation_keeps_original_price_and_probability(self):
+        rows = self.build()
+        result = summarize(rows, [{'matchup_id': rows[0]['matchup_id'], 'event_id': rows[0]['event_id'],
+            'status': 'win', 'risk_units': 1, 'profit_units': 10}], self.policy, NOW)
+        self.assertEqual(len(result['recommendations']), 1)
+        self.assertEqual(result['recommendations'][0]['settlement_status'], 'win')
+        self.assertEqual(result['recommendations'][0]['moneyline'], 1000)
+        self.assertEqual(result['recommendations'][0]['probability'], rows[0]['selection']['probability'])
+
 
 if __name__ == '__main__': unittest.main()

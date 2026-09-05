@@ -13,7 +13,7 @@ function extract(name) {
 }
 const sandbox = {};
 vm.createContext(sandbox);
-vm.runInContext(['finite', 'decimalOdds', 'evaluateUpcomingPaperOffers', 'fundedPerformanceCounts'].map(extract).join('\n'), sandbox);
+vm.runInContext(['finite', 'decimalOdds', 'evaluateUpcomingPaperOffers', 'recordedPaperStatus', 'recordedPaperGroups', 'fundedPerformanceCounts'].map(extract).join('\n'), sandbox);
 const now = Date.parse('2026-09-05T12:00:00Z');
 function offer(id = 'fight', overrides = {}) {
   const row = { event_id: 'card', event_date: '2026-09-05', matchup_id: id,
@@ -94,4 +94,31 @@ test('zero-stake outcomes are excluded from funded performance record', () => {
   const result = sandbox.fundedPerformanceCounts([{ stake: 0, status: 'won' }, { stake: 0, status: 'lost' }, { stake: 1, status: 'lost' }]);
   assert.equal(result.funded, 1); assert.equal(result.zeroStake, 2);
   assert.equal(result.wins, 0); assert.equal(result.losses, 1);
+});
+
+test('recorded picks survive price expiry, card start, board rollover and settlement', () => {
+  const saved={...offer(),bet_id:'saved',snapshot_id:'snapshot',threshold_met:true,paper_only:true,execution_enabled:false,observed_at_utc:'2026-09-05T12:00:00Z',allocated_fraction:.01};
+  const archive={paper_only:true,execution_enabled:false,snapshots:[saved]};
+  const before=JSON.stringify(archive);
+  const read=(performance={})=>sandbox.recordedPaperGroups(archive,{paper_only:true,execution_enabled:false,bets:[]},performance);
+  assert.equal(read().length,1);
+  assert.equal(sandbox.recordedPaperStatus(read()[0].latest,now+31*60000),'Recorded price expired');
+  assert.equal(sandbox.recordedPaperStatus(read()[0].latest,now+2*3600000),'Awaiting result / review');
+  const settled=read({records:[{record_type:'published_snapshot',record_id:'snapshot',status:'won',unit_profit:1}]});
+  assert.equal(sandbox.recordedPaperStatus(settled[0].latest,now+86400000),'Won');
+  assert.equal(settled[0].latest.offered_moneyline,100);
+  assert.equal(settled[0].latest.estimated_expected_return,.2);
+  assert.equal(JSON.stringify(archive),before);
+});
+
+test('archive groups snapshots, filters saved books and never promotes an unrecorded offer',()=>{
+  const saved={...offer(),bet_id:'one',threshold_met:true,paper_only:true,execution_enabled:false,observed_at_utc:'2026-09-05T12:00:00Z'};
+  const second={...saved,bet_id:'two',observed_at_utc:'2026-09-05T12:15:00Z',offered_moneyline:110};
+  const archive={paper_only:true,execution_enabled:false,snapshots:[saved,second]};
+  const publication={...board([offer('never-recorded')]),bets:[second]};
+  const groups=sandbox.recordedPaperGroups(archive,publication,{});
+  assert.equal(groups.length,1);assert.equal(groups[0].versions.length,2);
+  assert.equal(groups[0].latest.bet_id,'two');
+  assert.equal(sandbox.recordedPaperGroups(archive,publication,{},new Set(['B'])).length,0);
+  assert.equal(sandbox.recordedPaperGroups(null,board([offer()]),{}).length,0);
 });
