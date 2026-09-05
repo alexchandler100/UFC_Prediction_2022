@@ -76,6 +76,9 @@ jobs:
           THE_ODDS_API_KEY: ${{ secrets.THE_ODDS_API_KEY }}
         run: python update_and_rebuild_model.py
 
+      - name: Record equal-stake prospective comparison
+        run: python src/update_equal_stake_experiment.py
+
       - name: Settle paper decisions and publish return metrics
         working-directory: src
         run: python update_market_performance.py
@@ -95,6 +98,7 @@ jobs:
           python src/update_odds_history.py --validate-only
           python src/update_bet_performance.py --validate-only
           python src/update_market_first_paper.py --validate-only
+          python src/update_equal_stake_experiment.py --validate-only
           python src/validate_data.py --require-model-artifact --require-market-data
 
       - name: Commit validated generated files
@@ -144,7 +148,11 @@ jobs:
             src/content/data/market/market_first_paper_decisions.jsonl \
             src/content/data/market/market_first_paper_settlements.csv \
             src/content/data/market/market_first_paper_settlements.jsonl \
-            src/content/data/market/market_first_paper_report.json
+            src/content/data/market/market_first_paper_report.json \
+            src/content/data/market/equal_stake_experiment/policy.json \
+            src/content/data/market/equal_stake_experiment/decisions.json \
+            src/content/data/market/equal_stake_experiment/settlements.json \
+            src/content/data/market/equal_stake_experiment/report.json
           do
             if [ -f "$optional_path" ]; then
               git add -- "$optional_path"

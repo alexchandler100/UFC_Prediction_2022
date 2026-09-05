@@ -84,6 +84,9 @@ jobs:
           THE_ODDS_API_KEY: ${{ secrets.THE_ODDS_API_KEY }}
         run: python src/capture_market_snapshot.py
 
+      - name: Record equal-stake prospective comparison
+        run: python src/update_equal_stake_experiment.py
+
       - name: Capture bounded method-of-victory prices
         id: method_capture
         # Method prices are useful enrichment, but an optional source outage
@@ -109,6 +112,7 @@ jobs:
           python src/update_odds_history.py --validate-only
           python src/update_bet_performance.py --validate-only
           python src/update_market_first_paper.py --validate-only
+          python src/update_equal_stake_experiment.py --validate-only
           python src/validate_data.py --require-model-artifact --require-market-data
 
       - name: Revalidate optional method-price outputs
@@ -170,7 +174,11 @@ jobs:
             src/content/data/market/market_first_paper_decisions.jsonl \
             src/content/data/market/market_first_paper_settlements.csv \
             src/content/data/market/market_first_paper_settlements.jsonl \
-            src/content/data/market/market_first_paper_report.json
+            src/content/data/market/market_first_paper_report.json \
+            src/content/data/market/equal_stake_experiment/policy.json \
+            src/content/data/market/equal_stake_experiment/decisions.json \
+            src/content/data/market/equal_stake_experiment/settlements.json \
+            src/content/data/market/equal_stake_experiment/report.json
           do
             if [ -f "$optional_path" ]; then
               git add -- "$optional_path"
@@ -208,6 +216,10 @@ jobs:
               src/content/data/market/market_first_paper_settlements.csv|\
               src/content/data/market/market_first_paper_settlements.jsonl|\
               src/content/data/market/market_first_paper_report.json|\
+              src/content/data/market/equal_stake_experiment/policy.json|\
+              src/content/data/market/equal_stake_experiment/decisions.json|\
+              src/content/data/market/equal_stake_experiment/settlements.json|\
+              src/content/data/market/equal_stake_experiment/report.json|\
               src/content/data/market/paper_decisions.csv|\
               src/content/data/market/paper_decisions.jsonl|\
               src/content/data/market/bayesian_filtered_paper_decisions.csv|\

@@ -14,3 +14,9 @@ website data are complete locally. Changes are not committed or deployed.
 No more training is needed before review. On resumption, review the diff and
 finish the broader data-validation check if desired. Preserve the original audit
 and immutable historical ledgers. Details: [implemented changes](README.md).
+
+Subsequent authorized work added the [equal-stake prospective comparison](EQUAL_STAKE_EXPERIMENT.md).
+It compares market consensus, adjusted consensus, and the winner model using
+new captures only. The separate policy/ledgers are initialized locally with zero
+fights; existing workflows are wired to collect after deployment. No model
+training, new API calls, or changes to existing ledgers were needed.
