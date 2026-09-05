@@ -2294,6 +2294,83 @@ function upcomingBoutDetails(matchup, fighter, opponent) {
   return body;
 }
 
+function liveResultName(value) {
+  return String(value || '').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/ł/g,'l').replace(/Ł/g,'L').toLowerCase().replace(/[^a-z0-9]/g,'');
+}
+
+function liveResultKey(date, first, second) {
+  return `${date}|${[liveResultName(first),liveResultName(second)].sort().join('|')}`;
+}
+
+function parseLiveResults(payload) {
+  if (!Array.isArray(payload?.events)) throw new Error('Scoreboard events unavailable');
+  const results=new Map(), ambiguous=new Set();
+  for (const event of payload.events) {
+    if (!Array.isArray(event.competitions) || !Number.isFinite(Date.parse(event.date))) continue;
+    const date=new Date(event.date);
+    const parts=new Intl.DateTimeFormat('en-US',{timeZone:'America/Chicago',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(date);
+    const part=type=>parts.find(p=>p.type===type).value;
+    // US cards can cross midnight UTC; require both full names on the same dated card.
+    const dates=new Set([date.toISOString().slice(0,10),`${part('year')}-${part('month')}-${part('day')}`]);
+    for (const bout of event.competitions) {
+      const people=bout.competitors || [];
+      const names=people.map(p=>p.athlete?.fullName || p.athlete?.displayName);
+      if (people.length!==2 || names.some(n=>!liveResultName(n)) || liveResultName(names[0])===liveResultName(names[1])) continue;
+      const winners=people.filter(p=>p.winner===true);
+      const descriptions=(bout.details || []).map(d=>String(d.type?.text || ''));
+      let outcome=null;
+      if (bout.status?.type?.completed===true && winners.length===1 && !descriptions.some(d=>/\b(no contest|draw)\b/i.test(d))) {
+        const methods=new Set(descriptions.map(d=>({submission:'SUB',kotko:'KO/TKO',decision:'DEC',disqualification:'DQ'})[d.match(/^(?:Unofficial\s+)?Winner\s+(Submission|Kotko|Decision|Disqualification)$/i)?.[1]?.toLowerCase()]).filter(Boolean));
+        outcome={winner:liveResultName(winners[0].athlete?.fullName || winners[0].athlete?.displayName),
+          method:methods.size===1 ? [...methods][0] : '', round:bout.status.period, clock:bout.status.displayClock,
+          event_id:String(event.id), bout_id:String(bout.id)};
+      }
+      for (const day of dates) {
+        const key=liveResultKey(day,...names);
+        if (results.has(key)) ambiguous.add(key);
+        results.set(key,outcome);
+      }
+    }
+  }
+  for (const key of ambiguous) results.delete(key);
+  return results;
+}
+
+function applyLiveResultHighlights() {
+  for (const node of document.querySelectorAll('[data-live-result-name]')) {
+    const d=node.dataset;
+    const result=state.liveResults?.get(liveResultKey(d.resultDate,d.resultFighter,d.resultOpponent));
+    const won=result?.winner===liveResultName(d.liveResultName);
+    node.classList.toggle('is-live-winner',Boolean(won));
+    node.replaceChildren(element('span','live-result-fighter-name',d.liveResultName));
+    if (won && result.method) node.append(element('span','live-result-method',result.method));
+    const freshness=state.liveResultUpdatedAt ? `Last successful check ${formatTimestamp(state.liveResultUpdatedAt)}.` : '';
+    const source=won ? `ESPN reported winner${result.method ? ` by ${result.method}` : ''}. ${freshness} Display only; research settlement uses verified results.` : '';
+    const failure=state.liveResultError ? 'Live result refresh unavailable; previously received results may be outdated.' : '';
+    node.title=[d.liveResultName,source,failure].filter(Boolean).join(' ');
+    node.setAttribute('aria-label',[d.liveResultName,source,failure].filter(Boolean).join(' '));
+  }
+  const meta=$('#current-card-meta');
+  if (meta) meta.title=state.liveResultError ? 'Live results unavailable from ESPN. No result has been inferred.' : state.liveResultUpdatedAt ? `ESPN results checked ${formatTimestamp(state.liveResultUpdatedAt)}. Winner highlights are display only.` : 'Winner highlights check ESPN while this tab is visible on fight day.';
+}
+
+async function refreshLiveResults() {
+  if (document.hidden || !$('#view-matchups')?.classList.contains('is-active') || state.liveResultLoading) return;
+  const now=Date.now();
+  if (now-(state.liveResultAttemptAt || 0)<(state.liveResultError ? 10 : 2)*60000) return;
+  // Only poll around cards represented on this page, including the UTC rollover.
+  if (!allUpcomingEventGroups().some(e=>{const date=Date.parse(`${e.event_date}T00:00:00Z`);return now>=date-12*3600000 && now<=date+48*3600000;})) return;
+  state.liveResultLoading=true;state.liveResultAttemptAt=now;
+  const controller=new AbortController();const timer=setTimeout(()=>controller.abort(),10000);
+  try {
+    const response=await fetch('https://site.api.espn.com/apis/site/v2/sports/mma/ufc/scoreboard',{signal:controller.signal});
+    if (!response.ok) throw new Error('Scoreboard unavailable');
+    state.liveResults=parseLiveResults(await response.json());
+    state.liveResultUpdatedAt=new Date().toISOString();state.liveResultError=false;
+  } catch {state.liveResultError=true;}
+  finally {clearTimeout(timer);state.liveResultLoading=false;applyLiveResultHighlights();}
+}
+
 function renderUpcomingBout(matchup, fallbackIndex, eventBoutCount) {
   const fighter = state.fighterById.get(matchup.fighter_id) || fighterByName(matchup.fighter_name);
   const opponent = state.fighterById.get(matchup.opponent_id) || fighterByName(matchup.opponent_name);
@@ -2317,7 +2394,12 @@ function renderUpcomingBout(matchup, fallbackIndex, eventBoutCount) {
   [[fighter, matchup.fighter_name], [opponent, matchup.opponent_name]].forEach(([person, fallbackName], personIndex) => {
     if (personIndex) pair.append(element("span", "vs", "VS"));
     const side = element("span", "upcoming-bout-fighter");
-    appendText(side, "strong", "", person?.name || fallbackName);
+    const name=element('strong','',person?.name || fallbackName);
+    name.dataset.liveResultName=person?.name || fallbackName;
+    name.dataset.resultDate=matchup.event_date;
+    name.dataset.resultFighter=matchup.fighter_name;
+    name.dataset.resultOpponent=matchup.opponent_name;
+    side.append(name);
     appendText(side, "small", "", person ? record(person) : "Record unavailable");
     pair.append(side);
   });
@@ -2354,6 +2436,7 @@ function renderCurrentCard() {
     group.append(header, bouts);
     container.append(group);
   });
+  applyLiveResultHighlights();
 }
 
 function marketMatchupFor(fighterA, fighterB) {
@@ -3947,9 +4030,12 @@ async function start() {
     await loadData();
     populateFilters(); renderCurrentCard(); renderFighterDirectory(); renderMarket(); renderBetPerformance(); bindEvents();
     window.setInterval(() => { renderQualifiedUpcomingBets(); renderCandidateDiagnostics(); renderMethodPaper(); }, 60 * 1000);
+    window.setInterval(refreshLiveResults, 2 * 60 * 1000);
+    document.addEventListener('visibilitychange',refreshLiveResults);
+    window.addEventListener('hashchange',refreshLiveResults);
     $("#publication-stamp").textContent = `Dataset through ${formatDate(state.explorer.data_through)} · schema v${state.explorer.schema_version}`;
     const status = $("#header-status"); status.classList.add("is-ready"); status.lastChild.textContent = " Data ready";
-    $("#load-message").hidden = true; applyRoute();
+    $("#load-message").hidden = true; applyRoute();refreshLiveResults();
   } catch (error) {
     console.error(error);
     const message = $("#load-message"); message.classList.add("is-error"); message.replaceChildren(element("span", "", `The data explorer could not start: ${error.message}`));

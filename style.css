@@ -105,6 +105,10 @@ a { color: var(--blue); }
 .upcoming-bout-pair .vs { color: #778690; font-size: 10px; font-weight: 800; }
 .upcoming-bout-fighter strong { overflow-wrap: anywhere; font-size: 14px; line-height: 1.25; }
 .upcoming-bout-fighter:last-child { text-align: right; }
+.upcoming-bout-fighter strong.is-live-winner { color: #e6bd57; display: flex; align-items: baseline; gap: .35em; min-width: 0; white-space: nowrap; }
+.upcoming-bout-fighter:last-child strong.is-live-winner { justify-content: flex-end; }
+.is-live-winner .live-result-fighter-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.is-live-winner .live-result-method { flex: none; font-size: .72em; font-weight: 700; }
 .upcoming-bout-expand { display: grid; width: 26px; height: 26px; place-items: center; border-radius: 50%; color: var(--ink-soft); background: var(--paper-2); font-size: 18px; font-weight: 500; line-height: 1; }
 .upcoming-bout-expand::before { content: "+"; }
 .upcoming-bout[open] .upcoming-bout-expand::before { content: "−"; }
