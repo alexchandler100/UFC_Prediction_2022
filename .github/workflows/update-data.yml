@@ -99,7 +99,13 @@ jobs:
       - name: Publish candidate explanations
         run: python src/update_candidate_report.py
 
-      - name: Validate generated snapshot
+      - name: Publish research monitoring and selection histories
+        run: python src/update_research_monitor.py
+
+      - name: Validate research monitoring
+        run: python src/update_research_monitor.py --validate-only
+
+      - name: Validate generated data
         run: |
           python src/update_odds_history.py --validate-only
           python src/update_bet_performance.py --validate-only
@@ -165,7 +171,9 @@ jobs:
             src/content/data/market/method_paper/policy.json \
             src/content/data/market/method_paper/decisions.json \
             src/content/data/market/method_paper/settlements.json \
-            src/content/data/market/method_paper/report.json
+            src/content/data/market/method_paper/report.json \
+            src/content/data/market/research_monitor.json \
+            src/content/data/market/bet_odds_history.json
           do
             if [ -f "$optional_path" ]; then
               git add -- "$optional_path"

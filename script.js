@@ -11,6 +11,7 @@ const DATA_PATHS = {
   upcomingBetBoard: "src/content/data/market/upcoming_bet_board.json",
   candidateReport: "src/content/data/market/candidate_report.json",
   methodPaper: "src/content/data/market/method_paper/report.json",
+  researchMonitor: "src/content/data/market/research_monitor.json",
   allUpcoming: "src/content/data/external/all_upcoming_forecasts.json",
   methodMarkets: "src/content/data/market/current_method_markets.json",
   performance: "src/content/data/market/performance_report.json",
@@ -1235,7 +1236,7 @@ async function fetchJson(path, required = true) {
 }
 
 async function loadData() {
-  const [explorer, vegas, card, model, bayesian, market, oddsHistory, upcomingBetBoard, allUpcoming, methodMarkets, performance, betPerformance, outcomes, outcomeEvaluation, candidateReport, methodPaper] = await Promise.all([
+  const [explorer, vegas, card, model, bayesian, market, oddsHistory, upcomingBetBoard, allUpcoming, methodMarkets, performance, betPerformance, outcomes, outcomeEvaluation, candidateReport, methodPaper, researchMonitor] = await Promise.all([
     fetchJson(DATA_PATHS.explorer),
     fetchJson(DATA_PATHS.vegas, false),
     fetchJson(DATA_PATHS.card, false),
@@ -1252,6 +1253,7 @@ async function loadData() {
     fetchJson(DATA_PATHS.outcomeEvaluation, false),
     fetchJson(DATA_PATHS.candidateReport, false),
     fetchJson(DATA_PATHS.methodPaper, false),
+    fetchJson(DATA_PATHS.researchMonitor, false),
   ]);
   state.explorer = explorer;
   state.vegas = vegas;
@@ -1263,6 +1265,7 @@ async function loadData() {
   state.upcomingBetBoard = upcomingBetBoard;
   state.candidateReport = candidateReport;
   state.methodPaper = methodPaper;
+  state.researchMonitor = researchMonitor;
   state.allUpcoming = allUpcoming;
   state.methodMarkets = methodMarkets;
   state.performance = performance;
@@ -3136,6 +3139,9 @@ function renderQualifiedUpcomingBets() {
   }
   bets.forEach((bet, index) => {
     const item = document.createElement("details"); item.className = "qualified-bet-item";
+    const openKey = `recommendation:${bet.matchup_id}:${bet.selection}`;
+    item.open = Boolean(state.openPaperDetails?.[openKey]);
+    item.addEventListener('toggle', () => { (state.openPaperDetails ||= {})[openKey] = item.open; });
     const row = element("summary", "qualified-bet-row");
     const rank = element("div", "qualified-bet-rank");
     appendText(rank, "span", "", "Rank");
@@ -3171,6 +3177,7 @@ function renderQualifiedUpcomingBets() {
     row.append(rank, fight, price, probability, expectedReturn, bayesianKelly, source);
     const explanation = element("div", "qualified-bet-explanation");
     appendQualifiedBetExplanation(explanation, bet);
+    explanation.append(renderBetOddsHistory(bet));
     item.append(row, explanation); container.append(item);
   });
 }
@@ -3588,6 +3595,108 @@ function renderCandidateDiagnostics() {
   });
 }
 
+function betHistoryMatches(series, bet) {
+  const sameFight = bet.matchup_id ? series.matchup_id === bet.matchup_id : series.event_id === bet.event_id
+    && [series.fighter_id, series.opponent_id].sort().join('|') === [bet.fighter_id, bet.opponent_id].sort().join('|');
+  const market = bet.method ? 'method' : bet.category === 'Total rounds' || bet.market === 'total_rounds' ? 'total_rounds' : 'moneyline';
+  if (!sameFight || series.market !== market) return false;
+  if (market === 'total_rounds' && Number(series.line) !== Number(bet.line)) return false;
+  if (market === 'method') return series.selection_id === `${bet.fighter_id}:${bet.method}`;
+  return true;
+}
+
+function renderBetOddsHistory(bet) {
+  const details = element('details', 'odds-history-details');
+  const historyKey = JSON.stringify([bet.matchup_id || [bet.event_id, bet.fighter_id, bet.opponent_id], bet.category, bet.market, bet.method, bet.line, bet.selection]);
+  const preference = (state.historyPreferences ||= {})[historyKey] ||= {};
+  details.open = Boolean(preference.open);
+  details.append(element('summary', '', 'Collected bookmaker odds over time'));
+  const body = element('div', 'details-body odds-history-panel'); details.append(body);
+  let loaded = false;
+  details.addEventListener('toggle', async () => {
+    preference.open = details.open;
+    if (!details.open || loaded) return;
+    loaded = true; body.textContent = 'Loading collected odds…';
+    state.betHistoryPromise ||= fetchJson('src/content/data/market/bet_odds_history.json', false);
+    const history = await state.betHistoryPromise;
+    body.replaceChildren();
+    const choices = (history?.series || []).filter(series => betHistoryMatches(series, bet));
+    if (!choices.length) { body.textContent = 'No matching price history is available for this selection yet.'; return; }
+    appendText(body, 'p', 'section-note', 'All collected bookmakers, including books outside your selection. Time is collection time; lines connect observations across gaps. Higher decimal odds mean a larger payout for the same winning stake. These are recorded prices, not live offers.');
+    const choiceLabel = element('label', 'odds-history-source', 'Selection '); const choice = element('select');
+    choices.forEach((series, index) => { const option = element('option', '', series.label); option.value = index; choice.append(option); });
+    const preferredId = bet.side === 'fighter' ? bet.fighter_id : bet.side === 'opponent' ? bet.opponent_id : bet.side;
+    const preferred = choices.findIndex(series => series.selection_id === preferredId || series.label === bet.selection);
+    choice.value = String(preference.choice ?? Math.max(0, preferred)); choiceLabel.append(choice);
+    const bookLabel = element('label', 'odds-history-source', 'Bookmaker '); const books = element('select'); bookLabel.append(books);
+    const plot = element('div', 'odds-history-chart'); const readout = element('p', 'odds-history-readout');
+    const data = element('details'); data.append(element('summary', '', 'Full collected prices and timestamps')); const tableWrap = element('div', 'book-table-wrap'); data.append(tableWrap);
+    body.append(choiceLabel, bookLabel, plot, readout, data);
+    const draw = () => {
+      const series = choices[Number(choice.value)]; const points = series.points.filter(p => !books.value || p.book === books.value);
+      plot.replaceChildren(); tableWrap.replaceChildren();
+      const bookNames = [...new Set(points.map(p => p.book))].sort();
+      const color = book => `hsl(${bookNames.indexOf(book) * 137.5 % 360}, 65%, 48%)`;
+      const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg'); svg.setAttribute('viewBox', '0 0 800 320'); svg.setAttribute('role', 'img'); svg.setAttribute('aria-label', `${series.label}: collected decimal odds by bookmaker`); svg.style.width = '100%';
+      const add = (tag, attrs, text) => { const node = document.createElementNS(svg.namespaceURI, tag); Object.entries(attrs).forEach(([k,v]) => node.setAttribute(k,v)); if (text) node.textContent = text; svg.append(node); return node; };
+      const times = points.map(p => Date.parse(p.observed_at_utc)); const prices = points.map(p => decimalOdds(p.moneyline));
+      const minT = Math.min(...times), maxT = Math.max(...times), minY = Math.min(...prices), maxY = Math.max(...prices);
+      const low = Math.max(1, minY - .1), high = maxY + .1;
+      const x = time => 65 + (maxT === minT ? .5 : (time-minT)/(maxT-minT)) * 710;
+      const y = price => 260 - (price-low)/(high-low) * 235;
+      for (let i=0; i<=4; i++) { const v=low+(high-low)*i/4; add('line',{x1:65,x2:775,y1:y(v),y2:y(v),stroke:'currentColor',opacity:.15}); add('text',{x:57,y:y(v)+4,'text-anchor':'end',fill:'currentColor','font-size':12},v.toFixed(2)); }
+      add('text',{x:65,y:15,fill:'currentColor','font-size':12},'Decimal odds (stake included)');
+      bookNames.forEach(book => {
+        const bp = points.filter(p => p.book === book);
+        add('polyline',{points:bp.map(p=>`${x(Date.parse(p.observed_at_utc))},${y(decimalOdds(p.moneyline))}`).join(' '),fill:'none',stroke:color(book),'stroke-width':2});
+        bp.forEach(p => { const text=`${book}: ${formatOdds(p.moneyline)} (${decimalOdds(p.moneyline).toFixed(2)}) · collected ${formatTimestamp(p.observed_at_utc)} · book updated ${p.source_quote_updated_at_utc ? formatTimestamp(p.source_quote_updated_at_utc) : 'unknown'}`;
+          const dot=add('circle',{cx:x(Date.parse(p.observed_at_utc)),cy:y(decimalOdds(p.moneyline)),r:4,fill:color(book),tabindex:0,'aria-label':text});
+          const title=document.createElementNS(svg.namespaceURI,'title'); title.textContent=text; dot.append(title); ['mouseenter','focus','click'].forEach(event=>dot.addEventListener(event,()=>{readout.textContent=text;})); });
+      });
+      add('text',{x:65,y:292,fill:'currentColor','font-size':11},formatTimestamp(new Date(minT).toISOString()));
+      add('text',{x:775,y:309,'text-anchor':'end',fill:'currentColor','font-size':11},formatTimestamp(new Date(maxT).toISOString()));
+      plot.append(svg); const legend=element('div','odds-history-legend'); bookNames.forEach(book=>{const label=element('span','',book);label.style.color=color(book);legend.append(label);}); plot.append(legend);
+      readout.textContent=`${points.length} collected prices. Hover, tap, or focus a point for the exact odds and timestamps. A single point cannot show a trend.`;
+      const table=element('table','data-table'); const head=element('tr'); ['Book','Collected','Book updated','American odds'].forEach(label=>head.append(element('th','',label))); table.append(head);
+      points.forEach(p=>{const row=element('tr');[p.book,formatTimestamp(p.observed_at_utc),p.source_quote_updated_at_utc ? formatTimestamp(p.source_quote_updated_at_utc) : 'Unknown',formatOdds(p.moneyline)].forEach(value=>row.append(element('td','',value)));table.append(row);});tableWrap.append(table);
+    };
+    const changeSelection = () => { books.replaceChildren(); const all=element('option','','All collected books');all.value='';books.append(all); [...new Set(choices[Number(choice.value)].points.map(p=>p.book))].sort().forEach(book=>{const option=element('option','',book);option.value=book;books.append(option);});draw(); };
+    choice.addEventListener('change',()=>{preference.choice=Number(choice.value);preference.book='';changeSelection();});
+    books.addEventListener('change',()=>{preference.book=books.value;draw();});changeSelection();
+    if (preference.book && [...new Set(choices[Number(choice.value)].points.map(p=>p.book))].includes(preference.book)) {books.value=preference.book;draw();}
+  });
+  return details;
+}
+
+function renderResearchMonitor() {
+  const container = $('#research-monitor'); if (!container) return; container.replaceChildren();
+  const report=state.researchMonitor;
+  if (!report) {container.textContent='Monitoring report unavailable. Check the scheduled workflow runs.';return;}
+  const age=Date.now()-Date.parse(report.generated_at_utc);
+  appendText(container,'p','section-note',`Updated ${formatTimestamp(report.generated_at_utc)}${age>48*3600000 ? ' — report is over 48 hours old; check workflows.' : ''}. ${report.note}`);
+  const runs=element('a','','Check collection failures in GitHub Actions');runs.href=report.workflow_runs_url;container.append(runs);
+  const runStatus=element('p','section-note','Workflow status is separate from saved data. Check it here if collections stop.');
+  const checkRuns=element('button','secondary-button','Check latest workflow runs');checkRuns.type='button';
+  checkRuns.addEventListener('click',async()=>{
+    checkRuns.disabled=true;runStatus.textContent='Checking GitHub…';
+    try {
+      const summaries=await Promise.all(['collect-market-snapshot.yml','update-data.yml'].map(async filename=>{
+        const response=await fetch(`https://api.github.com/repos/alexchandler100/UFC_Prediction_2022/actions/workflows/${filename}/runs?per_page=20`);
+        if (!response.ok) throw new Error('Workflow status unavailable');
+        const data=await response.json();const recent=data.workflow_runs || []; const failed=recent.filter(r=>r.conclusion==='failure').length;
+        const latest=recent[0]; return `${filename==='update-data.yml'?'Data updates':'Market collection'}: ${failed} failed among the latest ${recent.length} runs; latest ${latest ? `${latest.conclusion || latest.status} (${formatTimestamp(latest.created_at)})` : 'unavailable'}.`;
+      }));runStatus.textContent=summaries.join(' ');
+    } catch {runStatus.textContent='Could not read workflow status (network or API limit). Use the GitHub Actions link above.';}
+    finally {checkRuns.disabled=false;}
+  });container.append(checkRuns,runStatus);
+  const table=(headers,rows)=>{const wrap=element('div','book-table-wrap'), t=element('table','data-table'),head=element('tr');headers.forEach(label=>head.append(element('th','',label)));t.append(head);rows.forEach(values=>{const row=element('tr');values.forEach(value=>row.append(element('td','',String(value))));t.append(row);});wrap.append(t);container.append(wrap);};
+  table(['Feed','Last collection','Captures / past 7 days','Fights / past 7 days','Check'],report.feeds.map(f=>[f.market,formatTimestamp(f.last_collected_at_utc),f.captures_last_7_days,f.fights_last_7_days,!f.ledger_available?'Ledger missing':!f.captures_last_7_days?'No captures this week':f.market!=='method' && Date.now()-Date.parse(f.last_collected_at_utc)>48*3600000?'No collection in over 48 hours':'Recent captures recorded']));
+  table(['Experiment','Recorded / past 7 days','Recommendations','Settled decisions','Pending','Overdue >2 days','Paper profit'],report.experiments.map(e=>[e.name,`${e.recorded} / ${e.recorded_last_7_days}`,e.recommendations,e.settled,e.pending,e.overdue_review,`${e.profit_units.toFixed(2)} units`]));
+  const equal=report.equal_stake;
+  appendText(container,'p','section-note',`Equal-stake winner comparison: ${equal.recorded} fights recorded, ${equal.settled} settled. First review requires at least ${equal.review_fights} fights across ${equal.review_cards} cards; this does not establish profitability.`);
+  table(['Strategy (all books)','Cards','Settled bets','Paper profit','Return per unit'],equal.results.filter(r=>r.book==='all_books_hypothetical' && r.winning_payout_reduction===0).map(r=>[r.strategy,r.settled_cards,r.settled_bets,r.profit_units.toFixed(2),r.return_per_unit===null?'Unavailable':formatPercent(r.return_per_unit)]));
+}
+
 function methodPaperStatus(row, nowMs = Date.now()) {
   if (Date.parse(row.event_start_utc) <= nowMs) return "Awaiting result / review";
   const age = nowMs - Date.parse(row.observed_at_utc);
@@ -3613,13 +3722,17 @@ function renderMethodPaper() {
   head.append(headings); table.append(head); const body = element("tbody");
   rows.forEach((row) => {
     const tr = element("tr");
-    [row.selection, `${row.book} / ${row.moneyline > 0 ? "+" : ""}${row.moneyline}`, formatPercent(row.probability), formatPercent(row.expected_return), "1 unit", methodPaperStatus(row)].forEach((value) => appendText(tr, "td", "", value));
+    const selectionCell=element('td'); const selectionDetails=element('details');
+    const openKey=`method:${row.matchup_id}`;selectionDetails.open=Boolean(state.openPaperDetails?.[openKey]);selectionDetails.addEventListener('toggle',()=>{(state.openPaperDetails ||= {})[openKey]=selectionDetails.open;});
+    selectionDetails.append(element('summary','',row.selection),renderBetOddsHistory(row)); selectionCell.append(selectionDetails); tr.append(selectionCell);
+    [`${row.book} / ${row.moneyline > 0 ? "+" : ""}${row.moneyline}`, formatPercent(row.probability), formatPercent(row.expected_return), "1 unit", methodPaperStatus(row)].forEach((value) => appendText(tr, "td", "", value));
     body.append(tr);
   });
   table.append(body); wrap.append(table); container.append(wrap);
 }
 
 function renderMarket() {
+  renderResearchMonitor();
   renderMethodPaper();
   renderCandidateDiagnostics();
   const notice = $("#market-notice"); const container = $("#market-matchups"); const propContainer = $("#prop-market-details"); notice.replaceChildren(); container.replaceChildren(); propContainer.replaceChildren(); renderMarketBookFilter(); renderQualifiedUpcomingBets(); renderProfitabilityEvidence();
@@ -3658,6 +3771,7 @@ function renderMarket() {
     if (best) {
       const stats = element("div", "signal-line"); [[best.selection, "Best side"], [`${formatOdds(best.offered_moneyline)} - ${best.target_book}`, "Best price"], [formatPercent(best.estimated_expected_return), "Candidate model EV"]].forEach(([value, label]) => { const item = element("div", "signal-stat"); appendText(item, "strong", "", value); appendText(item, "span", "", label); stats.append(item); }); card.append(stats);
     } else appendText(card, "p", "signal-reason", market.forecast_unavailable_reason || "No valid candidate price.");
+    card.append(renderBetOddsHistory({...market, category: 'Total rounds'}));
     if (market.locked_t24_decision && marketBookAllowed(market.locked_t24_decision.target_book)) {
       const locked = market.locked_t24_decision; const lockedDetails = document.createElement("details"); lockedDetails.append(element("summary", "", "Locked T-24 residual paper decision"));
       const lockedBody = element("div", "details-body"); const lockedTable = element("table", "data-table"); const lockedRows = document.createElement("tbody");
@@ -3715,6 +3829,7 @@ function renderMarket() {
       posteriorRows.forEach(([label, value]) => { const posteriorRow = document.createElement("tr"); appendText(posteriorRow, "td", "", label); appendText(posteriorRow, "td", "", value); bayesianRows.append(posteriorRow); });
       bayesianTable.append(bayesianRows); bayesianBody.append(bayesianTable); bayesianDetails.append(bayesianBody); card.append(bayesianDetails);
     }
+    card.append(renderBetOddsHistory({...matchup, ...signal}));
     card.append(renderOddsHistory(matchup));
     const details = document.createElement("details"); details.dataset.bookLines = "moneyline"; details.append(element("summary", "", `All ${visibleQuotes.length} selected book lines`));
     const body = element("div", "details-body book-table-wrap"); const table = element("table", "data-table");

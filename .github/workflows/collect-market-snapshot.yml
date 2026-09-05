@@ -112,7 +112,13 @@ jobs:
       - name: Publish candidate explanations
         run: python src/update_candidate_report.py
 
-      - name: Revalidate market ledgers and bounded report
+      - name: Publish research monitoring and selection histories
+        run: python src/update_research_monitor.py
+
+      - name: Validate research monitoring
+        run: python src/update_research_monitor.py --validate-only
+
+      - name: Revalidate market ledgers and reports
         run: |
           python src/capture_market_snapshot.py --validate-only
           python src/update_odds_history.py --validate-only
@@ -191,7 +197,9 @@ jobs:
             src/content/data/market/method_paper/policy.json \
             src/content/data/market/method_paper/decisions.json \
             src/content/data/market/method_paper/settlements.json \
-            src/content/data/market/method_paper/report.json
+            src/content/data/market/method_paper/report.json \
+            src/content/data/market/research_monitor.json \
+            src/content/data/market/bet_odds_history.json
           do
             if [ -f "$optional_path" ]; then
               git add -- "$optional_path"
@@ -252,6 +260,8 @@ jobs:
               src/content/data/market/odds_history.json|\
               src/content/data/market/upcoming_bet_board.json|\
               src/content/data/market/published_bet_snapshots.json|\
+              src/content/data/market/research_monitor.json|\
+              src/content/data/market/bet_odds_history.json|\
               src/content/data/market/bet_performance.json)
                 ;;
               *)
