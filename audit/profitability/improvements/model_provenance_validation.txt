@@ -1,0 +1,21 @@
+FACT: external MMA: 10,448 bouts / 1 snapshots
+FACT: published paper-bet history: 76 timestamped records / 2 settled locked bets
+FACT: market ledger: 3,133 quotes / 282 forecasts / 732 total-round quotes / 190 total-round forecasts / 13 total decisions / 0 total settlements / 22 captures / 26 paper decisions / 13 settlements / 13 Bayesian-filtered decisions / 14 Bayesian-blend shadows / 1,626 distinct early price states / 13 official UFC links
+FACT: raw fights: 17,674 rows / 8,837 fights
+FACT: optional simulation per-round data is present (not validated; use --require-simulation-artifact)
+FACT: optional simulation research files present but not validated: none
+FACT: fighter stats: 2,736 source IDs
+FACT: point-in-time replay: 711,924 feature cells reproduced
+FACT: point-in-time fights: 8,682 rows / 82 features
+FACT: winner model: ec4979660cb600a8be94 / 4943 fights
+FACT: Bayesian winner challenger: 82 coefficients / 90% interval
+FACT: candidate outcome forecasts: 14/14 matchups
+FACT: all announced UFC forecasts: 10 events / 79 matchups
+FACT: qualified all-upcoming paper bets: 0 at or above 5% EV
+FACT: fighter explorer: 5,747 fighters / 8,837 fights
+FACT: latest completed fight: 2026-08-29 (6 days old)
+WARNING: market ledger has 140 legacy API quote(s) without source-side update timestamps
+WARNING: optional simulation research bundle is incomplete: parameter_model.json.gz, backtest_report.json, research_status.json
+WARNING: Display names are not unique; ID-based joins are required: Bruno Silva
+WARNING: legacy ufc_fights_reported_derived_doubled.csv is an unsupported notebook-era artifact; it is excluded from the production model and website because its historical composite formulas are not valid production features
+Validation passed

@@ -45,6 +45,24 @@ above. Its fight-history shards include `time_format`; changing the source CSV
 without regenerating those shards causes the saved-data CI check to fail. This
 offline rebuild updates the derived index and history files without retraining.
 
+The same schedule repair also changed the winner model's source-state fingerprint,
+even though schedules are not winner-model input features. The bounded recovery
+command is `python src/refresh_schedule_model_provenance.py`. It verifies that
+undoing exactly the documented 686 schedule repairs reproduces the old source
+fingerprint, and that the winner training matrix and Bayesian covariance still
+match. Any other source/training change is rejected and needs the normal rebuild.
+It updates both model identities and reissues the current winner forecasts at the
+actual refresh time, preserving every coefficient and probability. Historical
+ledgers remain unchanged. The operation is valid only before the current card
+starts and is a no-op once the model is consistent. The evidence is saved in
+[model_provenance_refresh.json](model_provenance_refresh.json).
+
+Push-time CI now includes `--require-model-artifact` along with `--allow-stale`,
+so source/model incompatibilities are caught before the collector runs. Release
+verification uses `python src/validate_data.py --require-model-artifact
+--require-market-data`; this performs a complete feature replay as well as the
+model, publication, and market-ledger checks.
+
 [Focused validation](validation.json) records **112 passing Python tests**, plus **7 JavaScript behavior checks** and the JavaScript syntax check. This includes early-finish schedule cases, rejected old duration artifacts, insufficient calibration, price expiry, accessible-book alternatives, allocation limits, saved totals assessment preservation, and method event-start changes.
 
 The remaining uncertainty is economic: no strategy has demonstrated repeatable profit. Collect new decisions under fixed rules, retain the existing review counts and return/price-quality requirements, and evaluate any further changes against the obtainable market price. The next work should be additional verified historical schedules and new prospective results, not larger stakes.

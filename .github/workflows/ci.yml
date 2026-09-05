@@ -39,7 +39,7 @@ jobs:
         run: python -m unittest discover -s tests -v
 
       - name: Validate checked-in snapshot structure
-        run: python src/validate_data.py --allow-stale
+        run: python src/validate_data.py --allow-stale --require-model-artifact
 
       - name: Check browser JavaScript syntax
         run: node --check script.js
