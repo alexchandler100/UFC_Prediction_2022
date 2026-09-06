@@ -37,6 +37,9 @@ from .prop_opportunities import build_prop_market_view
 from .prop_paper import TotalRoundsPaperDecision
 
 
+# Current-card book prices and calibration evidence can exceed the old 256 KiB
+# cap. Share one finite UTF-8 byte limit across writers and offline validators.
+CURRENT_OPPORTUNITIES_SIZE_LIMIT = 1024 * 1024
 OPPORTUNITY_POLICY_VERSION = "leave-one-book-out-paper-v1"
 PUBLICATION_FLOAT_REL_TOLERANCE = 1e-12
 PUBLICATION_FLOAT_ABS_TOLERANCE = 1e-12

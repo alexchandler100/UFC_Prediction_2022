@@ -64,6 +64,7 @@ from market_tracker import (
     matchup_id_for,
     validate_current_opportunities,
 )
+from market_tracker.opportunities import CURRENT_OPPORTUNITIES_SIZE_LIMIT
 from odds_getter import OddsApiError, OddsApiResponse, OddsGetter, TheOddsApiClient
 from upcoming_bet_board import (
     build_upcoming_bet_board,
@@ -116,7 +117,6 @@ CURRENT_OPPORTUNITIES_PATH = MARKET_ROOT / "current_opportunities.json"
 UPCOMING_BET_BOARD_PATH = MARKET_ROOT / "upcoming_bet_board.json"
 PUBLISHED_BET_ARCHIVE_PATH = MARKET_ROOT / "published_bet_snapshots.json"
 REPORT_SIZE_LIMIT = 64 * 1024
-CURRENT_OPPORTUNITIES_SIZE_LIMIT = 256 * 1024
 SOURCE_RETRY_DELAYS_SECONDS = (15.0, 60.0)
 API_RETRY_DELAYS_SECONDS = (5.0, 30.0)
 MAX_EARLY_PRICE_STATES_PER_CAPTURE = 10_000
@@ -1562,10 +1562,14 @@ def _atomic_write_report(report: dict[str, object]) -> None:
 def _atomic_write_current_opportunities(publication: dict[str, object]) -> None:
     CURRENT_OPPORTUNITIES_PATH.parent.mkdir(parents=True, exist_ok=True)
     encoded = json.dumps(
-        publication, indent=2, sort_keys=True, ensure_ascii=False, allow_nan=False
+        publication, separators=(",", ":"), sort_keys=True, ensure_ascii=False, allow_nan=False
     ) + "\n"
-    if len(encoded.encode("utf-8")) > CURRENT_OPPORTUNITIES_SIZE_LIMIT:
-        raise CaptureError("current opportunity publication exceeded its size limit")
+    encoded_size = len(encoded.encode("utf-8"))
+    if encoded_size > CURRENT_OPPORTUNITIES_SIZE_LIMIT:
+        raise CaptureError(
+            f"current opportunity publication exceeded its size limit: "
+            f"{encoded_size:,} bytes > {CURRENT_OPPORTUNITIES_SIZE_LIMIT:,} bytes"
+        )
     descriptor, temporary_name = tempfile.mkstemp(
         prefix=f".{CURRENT_OPPORTUNITIES_PATH.name}.",
         suffix=".tmp",

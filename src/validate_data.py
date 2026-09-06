@@ -89,6 +89,7 @@ from market_tracker import (
     simulation_comparison_report,
 )
 from market_tracker._common import BETTING_STATUS, canonical_hash
+from market_tracker.opportunities import CURRENT_OPPORTUNITIES_SIZE_LIMIT
 from market_tracker.bankroll import (
     validate_bet_performance_publication,
     validate_published_bet_archive,
@@ -2280,8 +2281,8 @@ def validate_market_data(
     opportunities_path = market_root / "current_opportunities.json"
     if opportunities_path.exists():
         try:
-            if opportunities_path.stat().st_size > 256 * 1024:
-                raise ValueError("current opportunity publication exceeds 256 KiB")
+            if opportunities_path.stat().st_size > CURRENT_OPPORTUNITIES_SIZE_LIMIT:
+                raise ValueError(f"current opportunity publication exceeds {CURRENT_OPPORTUNITIES_SIZE_LIMIT:,} bytes")
             opportunities = json.loads(
                 opportunities_path.read_text(encoding="utf-8")
             )
