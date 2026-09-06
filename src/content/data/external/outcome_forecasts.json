@@ -1,56 +1,56 @@
 {
   "availability_status": "available",
   "bayesian_total_calibration": {
-    "artifact_sha256": "d047c7d292ce9695ecc7acf2db882c90002d0c5530b26dabd1c0d9ee01c08575",
+    "artifact_sha256": "cd26a453107386163c99b3e7d80ab810efb93f680339be49277b120e4086a2d6",
     "policy_version": "bayesian-logistic-total-calibration-v1",
     "status": "available",
-    "trained_through": "2026-08-29"
+    "trained_through": "2026-09-05"
   },
   "candidate_only": true,
-  "event_date": "September 05, 2026",
-  "event_id": "2144954270be834d",
-  "event_title": "UFC Fight Night: Hooker vs. Parnasse",
-  "event_url": "http://ufcstats.com/event-details/2144954270be834d",
+  "event_date": "September 12, 2026",
+  "event_id": "638cfec7ec559d6e",
+  "event_title": "Noche UFC: Silva vs. Delgado",
+  "event_url": "http://ufcstats.com/event-details/638cfec7ec559d6e",
   "execution_enabled": false,
-  "forecast_issued_at_utc": "2026-09-04T23:47:52.078641+00:00",
-  "forecast_matchup_count": 14,
+  "forecast_issued_at_utc": "2026-09-06T14:43:14+00:00",
+  "forecast_matchup_count": 13,
   "interval_seconds": 150,
-  "matchup_count": 14,
+  "matchup_count": 13,
   "matchups": [
     {
       "bout_order": 0,
-      "division": "Lightweight",
-      "fighter_id": "193b9d1858bc4df3",
-      "fighter_name": "Dan Hooker",
-      "fighter_win_probability": 0.43464102153595924,
+      "division": "Featherweight",
+      "fighter_id": "52ef95b5860fb28c",
+      "fighter_name": "Jean Silva",
+      "fighter_win_probability": 0.5280116581741003,
       "forecast_status": "candidate_model",
-      "matchup_id": "matchup_0dc64302fb9aa1e8a2fefa3fcd256374a63542df95f08a12b53d18c5af710d5b",
+      "matchup_id": "matchup_66db0c6413cc98507cd0e1876233d66b36cf6017b3a96e40b1fd60441fcffa0f",
       "method_probabilities": {
-        "decision": 0.3258904766460374,
-        "ko_tko": 0.45467666316891625,
+        "decision": 0.6107867411066439,
+        "ko_tko": 0.23251892011650122,
         "other": 0.0,
-        "submission": 0.21943286018504649
+        "submission": 0.1566943387768549
       },
-      "opponent_id": "b3cb9dfccff3be76",
-      "opponent_name": "Salahdine Parnasse",
+      "opponent_id": "7d6ceff6747f2de2",
+      "opponent_name": "Jose Delgado",
       "schedule_basis": "ufcstats_first_listed_main_event",
       "scheduled_rounds": 5,
       "terminal_probabilities": {
-        "fighter_decision": 0.126583148810251,
-        "fighter_ko_tko": 0.17448258581409704,
+        "fighter_decision": 0.29089351843610867,
+        "fighter_ko_tko": 0.11280553371299955,
         "fighter_other": 0.0,
-        "fighter_submission": 0.1335752869116112,
-        "opponent_decision": 0.19930732783578636,
-        "opponent_ko_tko": 0.2801940773548192,
+        "fighter_submission": 0.12431260602499213,
+        "opponent_decision": 0.31989322267053516,
+        "opponent_ko_tko": 0.11971338640350168,
         "opponent_other": 0.0,
-        "opponent_submission": 0.08585757327343528
+        "opponent_submission": 0.03238173275186279
       },
       "total_round_over_probabilities": {
-        "0.5": 0.8677675932473862,
-        "1.5": 0.6599651371836321,
-        "2.5": 0.5053756788417691,
-        "3.5": 0.38359159251679725,
-        "4.5": 0.278079523239425
+        "0.5": 0.9418624774770358,
+        "1.5": 0.8380945270052319,
+        "2.5": 0.7454934835325888,
+        "3.5": 0.6553761501695178,
+        "4.5": 0.5538418004434823
       },
       "total_round_over_probability_posteriors": {
         "0.5": {
@@ -59,23 +59,32 @@
           "status": "unavailable"
         },
         "1.5": {
-          "calibration_artifact_sha256": "d047c7d292ce9695ecc7acf2db882c90002d0c5530b26dabd1c0d9ee01c08575",
-          "calibration_trained_through": "2026-08-29",
+          "calibration_artifact_sha256": "cd26a453107386163c99b3e7d80ab810efb93f680339be49277b120e4086a2d6",
+          "calibration_trained_through": "2026-09-05",
           "calibration_training_events": 17,
-          "calibration_training_fights": 210,
-          "nominal_over_probability": 0.6599651371836321,
+          "calibration_training_fights": 211,
+          "nominal_over_probability": 0.8380945270052319,
           "policy_version": "bayesian-logistic-total-calibration-v1",
           "posterior_interval_mass": 0.8,
-          "posterior_lower_over_probability": 0.5524534626718066,
-          "posterior_mean_over_probability": 0.5772767765512342,
-          "posterior_upper_over_probability": 0.6035059995623508,
+          "posterior_lower_over_probability": 0.6205262174776365,
+          "posterior_mean_over_probability": 0.6733000266600269,
+          "posterior_upper_over_probability": 0.7277065303725534,
           "schedule_contract_version": "verified-pre-fight-schedule-v1",
           "status": "available"
         },
         "2.5": {
+          "calibration_artifact_sha256": "cd26a453107386163c99b3e7d80ab810efb93f680339be49277b120e4086a2d6",
+          "calibration_trained_through": "2026-09-05",
+          "calibration_training_events": 17,
+          "calibration_training_fights": 211,
+          "nominal_over_probability": 0.7454934835325888,
           "policy_version": "bayesian-logistic-total-calibration-v1",
-          "reason": "The Bayesian adjustment made probability accuracy worse on the later-fight check, so it is not used for staking.",
-          "status": "unavailable"
+          "posterior_interval_mass": 0.8,
+          "posterior_lower_over_probability": 0.6102018534202038,
+          "posterior_mean_over_probability": 0.6738451953242046,
+          "posterior_upper_over_probability": 0.7413675246326007,
+          "schedule_contract_version": "verified-pre-fight-schedule-v1",
+          "status": "available"
         },
         "3.5": {
           "policy_version": "bayesian-logistic-total-calibration-v1",
@@ -91,36 +100,36 @@
     },
     {
       "bout_order": 1,
-      "division": "Lightweight",
-      "fighter_id": "1e4f273069fb9e85",
-      "fighter_name": "Fares Ziam",
-      "fighter_win_probability": 0.5579514038288065,
+      "division": "Flyweight",
+      "fighter_id": "792be9a24df82ed6",
+      "fighter_name": "Brandon Moreno",
+      "fighter_win_probability": 0.5703031902187371,
       "forecast_status": "candidate_model",
-      "matchup_id": "matchup_59d3204bd6591089d45ebe3e85e99fc60ec6d3301eb3884ceb1d0451d9599614",
+      "matchup_id": "matchup_d2991ba39eeb0b23aafb0230892c0807c82ad3247da4834b997399065a0f2efb",
       "method_probabilities": {
-        "decision": 0.5443043608195721,
-        "ko_tko": 0.2618618562227436,
+        "decision": 0.42087652963888994,
+        "ko_tko": 0.3985602350322361,
         "other": 0.0,
-        "submission": 0.19383378295768422
+        "submission": 0.18056323532887392
       },
-      "opponent_id": "1d2d98ddd05b38fb",
-      "opponent_name": "Axel Sola",
+      "opponent_id": "2fe9032955c2e013",
+      "opponent_name": "Joseph Morales",
       "schedule_basis": "ufc_standard_non_main_non_title",
       "scheduled_rounds": 3,
       "terminal_probabilities": {
-        "fighter_decision": 0.3329988856172862,
-        "fighter_ko_tko": 0.0983060532976931,
+        "fighter_decision": 0.2740638109794283,
+        "fighter_ko_tko": 0.27626073200996315,
         "fighter_other": 0.0,
-        "fighter_submission": 0.12664646491382725,
-        "opponent_decision": 0.21130547520228588,
-        "opponent_ko_tko": 0.16355580292505054,
+        "fighter_submission": 0.019978647229345652,
+        "opponent_decision": 0.14681271865946166,
+        "opponent_ko_tko": 0.12229950302227294,
         "opponent_other": 0.0,
-        "opponent_submission": 0.06718731804385697
+        "opponent_submission": 0.16058458809952827
       },
       "total_round_over_probabilities": {
-        "0.5": 0.8936819215064584,
-        "1.5": 0.7161282510754415,
-        "2.5": 0.5656400927265823
+        "0.5": 0.8399435604449471,
+        "1.5": 0.6005976451238976,
+        "2.5": 0.4259164537473607
       },
       "total_round_over_probability_posteriors": {
         "0.5": {
@@ -129,58 +138,67 @@
           "status": "unavailable"
         },
         "1.5": {
-          "calibration_artifact_sha256": "d047c7d292ce9695ecc7acf2db882c90002d0c5530b26dabd1c0d9ee01c08575",
-          "calibration_trained_through": "2026-08-29",
+          "calibration_artifact_sha256": "cd26a453107386163c99b3e7d80ab810efb93f680339be49277b120e4086a2d6",
+          "calibration_trained_through": "2026-09-05",
           "calibration_training_events": 17,
-          "calibration_training_fights": 210,
-          "nominal_over_probability": 0.7161282510754415,
+          "calibration_training_fights": 211,
+          "nominal_over_probability": 0.6005976451238976,
           "policy_version": "bayesian-logistic-total-calibration-v1",
           "posterior_interval_mass": 0.8,
-          "posterior_lower_over_probability": 0.5729391722174542,
-          "posterior_mean_over_probability": 0.6068574007236327,
-          "posterior_upper_over_probability": 0.642491842119754,
+          "posterior_lower_over_probability": 0.5304687749369688,
+          "posterior_mean_over_probability": 0.5451122835019224,
+          "posterior_upper_over_probability": 0.5606786887505975,
           "schedule_contract_version": "verified-pre-fight-schedule-v1",
           "status": "available"
         },
         "2.5": {
+          "calibration_artifact_sha256": "cd26a453107386163c99b3e7d80ab810efb93f680339be49277b120e4086a2d6",
+          "calibration_trained_through": "2026-09-05",
+          "calibration_training_events": 17,
+          "calibration_training_fights": 211,
+          "nominal_over_probability": 0.4259164537473607,
           "policy_version": "bayesian-logistic-total-calibration-v1",
-          "reason": "The Bayesian adjustment made probability accuracy worse on the later-fight check, so it is not used for staking.",
-          "status": "unavailable"
+          "posterior_interval_mass": 0.8,
+          "posterior_lower_over_probability": 0.4273861542135732,
+          "posterior_mean_over_probability": 0.4491420610433153,
+          "posterior_upper_over_probability": 0.46891799504962617,
+          "schedule_contract_version": "verified-pre-fight-schedule-v1",
+          "status": "available"
         }
       }
     },
     {
       "bout_order": 2,
-      "division": "Middleweight",
-      "fighter_id": "a67d071163962af8",
-      "fighter_name": "Michael Page",
-      "fighter_win_probability": 0.29574231759923875,
+      "division": "Featherweight",
+      "fighter_id": "6b0a6def604de298",
+      "fighter_name": "Tommy McMillen",
+      "fighter_win_probability": 0.5731044595142509,
       "forecast_status": "candidate_model",
-      "matchup_id": "matchup_51f9afe90b3c10f198f3b831550026bc05de06a230ace43ae9714acb3e53915e",
+      "matchup_id": "matchup_937f5cfa3486c033c8191c9de80a2cc81dec1d3ce7f087edbd9121364a4239a3",
       "method_probabilities": {
-        "decision": 0.2204637306899011,
-        "ko_tko": 0.5746428588207685,
+        "decision": 0.5200758775325209,
+        "ko_tko": 0.3095899136660326,
         "other": 0.0,
-        "submission": 0.20489341048933024
+        "submission": 0.17033420880144656
       },
-      "opponent_id": "49d2a08964c5eb11",
-      "opponent_name": "Nursulton Ruziboev",
+      "opponent_id": "6eedb757f13b9978",
+      "opponent_name": "Marwan Rahiki",
       "schedule_basis": "ufc_standard_non_main_non_title",
       "scheduled_rounds": 3,
       "terminal_probabilities": {
-        "fighter_decision": 0.11279440203237806,
-        "fighter_ko_tko": 0.13654636557468303,
+        "fighter_decision": 0.35103932659555476,
+        "fighter_ko_tko": 0.17171470530239213,
         "fighter_other": 0.0,
-        "fighter_submission": 0.04640154999217768,
-        "opponent_decision": 0.10766932865752306,
-        "opponent_ko_tko": 0.43809649324608546,
+        "fighter_submission": 0.05035042761630397,
+        "opponent_decision": 0.16903655093696623,
+        "opponent_ko_tko": 0.13787520836364048,
         "opponent_other": 0.0,
-        "opponent_submission": 0.15849186049715255
+        "opponent_submission": 0.11998378118514258
       },
       "total_round_over_probabilities": {
-        "0.5": 0.7282010682372727,
-        "1.5": 0.39488017190658464,
-        "2.5": 0.21357590459955253
+        "0.5": 0.8812751852206931,
+        "1.5": 0.6891801866924723,
+        "2.5": 0.5323384233773183
       },
       "total_round_over_probability_posteriors": {
         "0.5": {
@@ -189,58 +207,67 @@
           "status": "unavailable"
         },
         "1.5": {
-          "calibration_artifact_sha256": "d047c7d292ce9695ecc7acf2db882c90002d0c5530b26dabd1c0d9ee01c08575",
-          "calibration_trained_through": "2026-08-29",
+          "calibration_artifact_sha256": "cd26a453107386163c99b3e7d80ab810efb93f680339be49277b120e4086a2d6",
+          "calibration_trained_through": "2026-09-05",
           "calibration_training_events": 17,
-          "calibration_training_fights": 210,
-          "nominal_over_probability": 0.39488017190658464,
+          "calibration_training_fights": 211,
+          "nominal_over_probability": 0.6891801866924723,
           "policy_version": "bayesian-logistic-total-calibration-v1",
           "posterior_interval_mass": 0.8,
-          "posterior_lower_over_probability": 0.43280800970453387,
-          "posterior_mean_over_probability": 0.4499751495426718,
-          "posterior_upper_over_probability": 0.46616426299840885,
+          "posterior_lower_over_probability": 0.559265869578391,
+          "posterior_mean_over_probability": 0.587249930846183,
+          "posterior_upper_over_probability": 0.6168268757309688,
           "schedule_contract_version": "verified-pre-fight-schedule-v1",
           "status": "available"
         },
         "2.5": {
+          "calibration_artifact_sha256": "cd26a453107386163c99b3e7d80ab810efb93f680339be49277b120e4086a2d6",
+          "calibration_trained_through": "2026-09-05",
+          "calibration_training_events": 17,
+          "calibration_training_fights": 211,
+          "nominal_over_probability": 0.5323384233773183,
           "policy_version": "bayesian-logistic-total-calibration-v1",
-          "reason": "The Bayesian adjustment made probability accuracy worse on the later-fight check, so it is not used for staking.",
-          "status": "unavailable"
+          "posterior_interval_mass": 0.8,
+          "posterior_lower_over_probability": 0.5135007793239629,
+          "posterior_mean_over_probability": 0.5221502858214393,
+          "posterior_upper_over_probability": 0.5316893633731475,
+          "schedule_contract_version": "verified-pre-fight-schedule-v1",
+          "status": "available"
         }
       }
     },
     {
       "bout_order": 3,
-      "division": "Welterweight",
-      "fighter_id": "70dd69b6a703257e",
-      "fighter_name": "Daniil Donchenko",
-      "fighter_win_probability": 0.6982832808803402,
+      "division": "Women's Flyweight",
+      "fighter_id": "34ff304266360297",
+      "fighter_name": "Manon Fiorot",
+      "fighter_win_probability": 0.653776333667362,
       "forecast_status": "candidate_model",
-      "matchup_id": "matchup_86b2eb61db67ca8fa121533f6e961a913c37fc9cd4cd9b044b5534cfa1159816",
+      "matchup_id": "matchup_b464e7f36dcad5cc9c276270b36003a7ccb1aa0ec8407c2b3ef8618a633f4a75",
       "method_probabilities": {
-        "decision": 0.4064192649167352,
-        "ko_tko": 0.4598035384472876,
+        "decision": 0.5403413285284032,
+        "ko_tko": 0.3131306423648553,
         "other": 0.0,
-        "submission": 0.1337771966359772
+        "submission": 0.1465280291067415
       },
-      "opponent_id": "64facb6cc564262d",
-      "opponent_name": "Punahele Soriano",
+      "opponent_id": "e8b731feff72294b",
+      "opponent_name": "Alexa Grasso",
       "schedule_basis": "ufc_standard_non_main_non_title",
       "scheduled_rounds": 3,
       "terminal_probabilities": {
-        "fighter_decision": 0.24450162850727647,
-        "fighter_ko_tko": 0.4066654987573286,
+        "fighter_decision": 0.43895362601119997,
+        "fighter_ko_tko": 0.164530087544185,
         "fighter_other": 0.0,
-        "fighter_submission": 0.04711615361573511,
-        "opponent_decision": 0.16191763640945875,
-        "opponent_ko_tko": 0.053138039689958984,
+        "fighter_submission": 0.05029262011197703,
+        "opponent_decision": 0.10138770251720321,
+        "opponent_ko_tko": 0.14860055482067033,
         "opponent_other": 0.0,
-        "opponent_submission": 0.0866610430202421
+        "opponent_submission": 0.09623540899476447
       },
       "total_round_over_probabilities": {
-        "0.5": 0.8328364386968465,
-        "1.5": 0.5880731180328981,
-        "2.5": 0.4142310499299885
+        "0.5": 0.8751142912677973,
+        "1.5": 0.6708160234789395,
+        "2.5": 0.4960859642458831
       },
       "total_round_over_probability_posteriors": {
         "0.5": {
@@ -249,58 +276,67 @@
           "status": "unavailable"
         },
         "1.5": {
-          "calibration_artifact_sha256": "d047c7d292ce9695ecc7acf2db882c90002d0c5530b26dabd1c0d9ee01c08575",
-          "calibration_trained_through": "2026-08-29",
+          "calibration_artifact_sha256": "cd26a453107386163c99b3e7d80ab810efb93f680339be49277b120e4086a2d6",
+          "calibration_trained_through": "2026-09-05",
           "calibration_training_events": 17,
-          "calibration_training_fights": 210,
-          "nominal_over_probability": 0.5880731180328981,
+          "calibration_training_fights": 211,
+          "nominal_over_probability": 0.6708160234789395,
           "policy_version": "bayesian-logistic-total-calibration-v1",
           "posterior_interval_mass": 0.8,
-          "posterior_lower_over_probability": 0.5282335165043874,
-          "posterior_mean_over_probability": 0.5417742819676351,
-          "posterior_upper_over_probability": 0.556144145110981,
+          "posterior_lower_over_probability": 0.5530333640017108,
+          "posterior_mean_over_probability": 0.5781948481688384,
+          "posterior_upper_over_probability": 0.6048301519419556,
           "schedule_contract_version": "verified-pre-fight-schedule-v1",
           "status": "available"
         },
         "2.5": {
+          "calibration_artifact_sha256": "cd26a453107386163c99b3e7d80ab810efb93f680339be49277b120e4086a2d6",
+          "calibration_trained_through": "2026-09-05",
+          "calibration_training_events": 17,
+          "calibration_training_fights": 211,
+          "nominal_over_probability": 0.4960859642458831,
           "policy_version": "bayesian-logistic-total-calibration-v1",
-          "reason": "The Bayesian adjustment made probability accuracy worse on the later-fight check, so it is not used for staking.",
-          "status": "unavailable"
+          "posterior_interval_mass": 0.8,
+          "posterior_lower_over_probability": 0.4961647323323286,
+          "posterior_mean_over_probability": 0.49732045553731846,
+          "posterior_upper_over_probability": 0.4983678087986589,
+          "schedule_contract_version": "verified-pre-fight-schedule-v1",
+          "status": "available"
         }
       }
     },
     {
       "bout_order": 4,
-      "division": "Featherweight",
-      "fighter_id": "9d51798e61f2e0c7",
-      "fighter_name": "Kurtis Campbell",
-      "fighter_win_probability": 0.5622590426812626,
+      "division": "Heavyweight",
+      "fighter_id": "fc08099550072fe4",
+      "fighter_name": "Waldo Cortes Acosta",
+      "fighter_win_probability": 0.533575831508486,
       "forecast_status": "candidate_model",
-      "matchup_id": "matchup_cf3205b162a0dde589038b55f4225ba43c70eea4bcc574f1ed3694825204d030",
+      "matchup_id": "matchup_abc39e40cf108721027025feb07e881cfd6cdcf3cbb5ac9f60e3b80d0b606c6b",
       "method_probabilities": {
-        "decision": 0.6388114069174149,
-        "ko_tko": 0.2862909264949898,
+        "decision": 0.5886950598638185,
+        "ko_tko": 0.2349126394390677,
         "other": 0.0,
-        "submission": 0.07489766658759518
+        "submission": 0.17639230069711398
       },
-      "opponent_id": "0bc697c5936a2d0a",
-      "opponent_name": "Trevor Peek",
+      "opponent_id": "fa6796c55d6c5440",
+      "opponent_name": "Curtis Blaydes",
       "schedule_basis": "ufc_standard_non_main_non_title",
       "scheduled_rounds": 3,
       "terminal_probabilities": {
-        "fighter_decision": 0.43957230740032727,
-        "fighter_ko_tko": 0.09153456425714926,
+        "fighter_decision": 0.2582570244854573,
+        "fighter_ko_tko": 0.17411993354001173,
         "fighter_other": 0.0,
-        "fighter_submission": 0.031152171023786004,
-        "opponent_decision": 0.19923909951708768,
-        "opponent_ko_tko": 0.19475636223784049,
+        "fighter_submission": 0.101198873483017,
+        "opponent_decision": 0.3304380353783612,
+        "opponent_ko_tko": 0.060792705899055964,
         "opponent_other": 0.0,
-        "opponent_submission": 0.043745495563809175
+        "opponent_submission": 0.07519342721409697
       },
       "total_round_over_probabilities": {
-        "0.5": 0.917947429399459,
-        "1.5": 0.7768519869640728,
-        "2.5": 0.6498841146826243
+        "0.5": 0.904580451685612,
+        "1.5": 0.7424777323667817,
+        "2.5": 0.5994849990250543
       },
       "total_round_over_probability_posteriors": {
         "0.5": {
@@ -309,58 +345,67 @@
           "status": "unavailable"
         },
         "1.5": {
-          "calibration_artifact_sha256": "d047c7d292ce9695ecc7acf2db882c90002d0c5530b26dabd1c0d9ee01c08575",
-          "calibration_trained_through": "2026-08-29",
+          "calibration_artifact_sha256": "cd26a453107386163c99b3e7d80ab810efb93f680339be49277b120e4086a2d6",
+          "calibration_trained_through": "2026-09-05",
           "calibration_training_events": 17,
-          "calibration_training_fights": 210,
-          "nominal_over_probability": 0.7768519869640728,
+          "calibration_training_fights": 211,
+          "nominal_over_probability": 0.7424777323667817,
           "policy_version": "bayesian-logistic-total-calibration-v1",
           "posterior_interval_mass": 0.8,
-          "posterior_lower_over_probability": 0.5977582547470751,
-          "posterior_mean_over_probability": 0.6419219456308302,
-          "posterior_upper_over_probability": 0.6878807664863954,
+          "posterior_lower_over_probability": 0.5785271856549247,
+          "posterior_mean_over_probability": 0.61493841056044,
+          "posterior_upper_over_probability": 0.6531939194118395,
           "schedule_contract_version": "verified-pre-fight-schedule-v1",
           "status": "available"
         },
         "2.5": {
+          "calibration_artifact_sha256": "cd26a453107386163c99b3e7d80ab810efb93f680339be49277b120e4086a2d6",
+          "calibration_trained_through": "2026-09-05",
+          "calibration_training_events": 17,
+          "calibration_training_fights": 211,
+          "nominal_over_probability": 0.5994849990250543,
           "policy_version": "bayesian-logistic-total-calibration-v1",
-          "reason": "The Bayesian adjustment made probability accuracy worse on the later-fight check, so it is not used for staking.",
-          "status": "unavailable"
+          "posterior_interval_mass": 0.8,
+          "posterior_lower_over_probability": 0.5419475216353307,
+          "posterior_mean_over_probability": 0.5684508941742304,
+          "posterior_upper_over_probability": 0.5975345027196294,
+          "schedule_contract_version": "verified-pre-fight-schedule-v1",
+          "status": "available"
         }
       }
     },
     {
       "bout_order": 5,
-      "division": "Featherweight",
-      "fighter_id": "5b43d68174b6e2ab",
-      "fighter_name": "Losene Keita",
-      "fighter_win_probability": 0.5387660824290639,
+      "division": "Bantamweight",
+      "fighter_id": "9a97acbfd5a08bfa",
+      "fighter_name": "David Martinez",
+      "fighter_win_probability": 0.6894674537948087,
       "forecast_status": "candidate_model",
-      "matchup_id": "matchup_efceb8a2cf0faca403b487b7f86a45ed53496d69cfb44431d1fce10df1751431",
+      "matchup_id": "matchup_f3409c8960623b60db41650f26f238caea2b314befb8164c73c2b21187a7deb4",
       "method_probabilities": {
-        "decision": 0.5875550401313254,
-        "ko_tko": 0.2791468360523489,
+        "decision": 0.49942782293485205,
+        "ko_tko": 0.36028687402238535,
         "other": 0.0,
-        "submission": 0.1332981238163256
+        "submission": 0.14028530304276254
       },
-      "opponent_id": "8d11d9c13e2ccdf7",
-      "opponent_name": "Muhammad Naimov",
+      "opponent_id": "82a5152216251682",
+      "opponent_name": "Dan Ige",
       "schedule_basis": "ufc_standard_non_main_non_title",
       "scheduled_rounds": 3,
       "terminal_probabilities": {
-        "fighter_decision": 0.29417466436669876,
-        "fighter_ko_tko": 0.18536585634437008,
+        "fighter_decision": 0.36761852406497914,
+        "fighter_ko_tko": 0.24825859301879055,
         "fighter_other": 0.0,
-        "fighter_submission": 0.0592255617179951,
-        "opponent_decision": 0.2933803757646267,
-        "opponent_ko_tko": 0.09378097970797883,
+        "fighter_submission": 0.07359033671103897,
+        "opponent_decision": 0.13180929886987292,
+        "opponent_ko_tko": 0.11202828100359481,
         "opponent_other": 0.0,
-        "opponent_submission": 0.07407256209833052
+        "opponent_submission": 0.06669496633172356
       },
       "total_round_over_probabilities": {
-        "0.5": 0.9001005914649491,
-        "1.5": 0.7322239991300251,
-        "2.5": 0.5853136868856225
+        "0.5": 0.8673271999760588,
+        "1.5": 0.6581157559298921,
+        "2.5": 0.4913142946307957
       },
       "total_round_over_probability_posteriors": {
         "0.5": {
@@ -369,58 +414,67 @@
           "status": "unavailable"
         },
         "1.5": {
-          "calibration_artifact_sha256": "d047c7d292ce9695ecc7acf2db882c90002d0c5530b26dabd1c0d9ee01c08575",
-          "calibration_trained_through": "2026-08-29",
+          "calibration_artifact_sha256": "cd26a453107386163c99b3e7d80ab810efb93f680339be49277b120e4086a2d6",
+          "calibration_trained_through": "2026-09-05",
           "calibration_training_events": 17,
-          "calibration_training_fights": 210,
-          "nominal_over_probability": 0.7322239991300251,
+          "calibration_training_fights": 211,
+          "nominal_over_probability": 0.6581157559298921,
           "policy_version": "bayesian-logistic-total-calibration-v1",
           "posterior_interval_mass": 0.8,
-          "posterior_lower_over_probability": 0.5791898067399152,
-          "posterior_mean_over_probability": 0.615776497633016,
-          "posterior_upper_over_probability": 0.6541326606642446,
+          "posterior_lower_over_probability": 0.5488174571138249,
+          "posterior_mean_over_probability": 0.5720469109198503,
+          "posterior_upper_over_probability": 0.5966605771689657,
           "schedule_contract_version": "verified-pre-fight-schedule-v1",
           "status": "available"
         },
         "2.5": {
+          "calibration_artifact_sha256": "cd26a453107386163c99b3e7d80ab810efb93f680339be49277b120e4086a2d6",
+          "calibration_trained_through": "2026-09-05",
+          "calibration_training_events": 17,
+          "calibration_training_fights": 211,
+          "nominal_over_probability": 0.4913142946307957,
           "policy_version": "bayesian-logistic-total-calibration-v1",
-          "reason": "The Bayesian adjustment made probability accuracy worse on the later-fight check, so it is not used for staking.",
-          "status": "unavailable"
+          "posterior_interval_mass": 0.8,
+          "posterior_lower_over_probability": 0.4914890631033671,
+          "posterior_mean_over_probability": 0.49405359701380075,
+          "posterior_upper_over_probability": 0.4963777359866278,
+          "schedule_contract_version": "verified-pre-fight-schedule-v1",
+          "status": "available"
         }
       }
     },
     {
       "bout_order": 6,
-      "division": "Featherweight",
-      "fighter_id": "5b03b61f9d90125e",
-      "fighter_name": "Morgan Charriere",
-      "fighter_win_probability": 0.4594533481544659,
+      "division": "Flyweight",
+      "fighter_id": "c96d9178c9ed9e62",
+      "fighter_name": "Tim Elliott",
+      "fighter_win_probability": 0.24740596957014102,
       "forecast_status": "candidate_model",
-      "matchup_id": "matchup_e77fa0e4f3862227418eef40fbbb1a99437034414985a81107bee615f9da08ca",
+      "matchup_id": "matchup_c64265c64920cec9a00bd1f9240a24eed73020e493f2b7d88bb0c8477a8eaf14",
       "method_probabilities": {
-        "decision": 0.6308563337602651,
-        "ko_tko": 0.21710599775597084,
+        "decision": 0.32727275013358653,
+        "ko_tko": 0.4650108710813131,
         "other": 0.0,
-        "submission": 0.15203766848376415
+        "submission": 0.20771637878510035
       },
-      "opponent_id": "9256f591b30c073e",
-      "opponent_name": "Felipe Lima",
+      "opponent_id": "5ef94841c4bc3f86",
+      "opponent_name": "Edgar Chairez",
       "schedule_basis": "ufc_standard_non_main_non_title",
       "scheduled_rounds": 3,
       "terminal_probabilities": {
-        "fighter_decision": 0.32011354762391603,
-        "fighter_ko_tko": 0.08780707358567255,
+        "fighter_decision": 0.1508307652866559,
+        "fighter_ko_tko": 0.05442111975411345,
         "fighter_other": 0.0,
-        "fighter_submission": 0.051532726944877316,
-        "opponent_decision": 0.31074278613634904,
-        "opponent_ko_tko": 0.12929892417029828,
+        "fighter_submission": 0.042154084529371666,
+        "opponent_decision": 0.17644198484693063,
+        "opponent_ko_tko": 0.41058975132719966,
         "opponent_other": 0.0,
-        "opponent_submission": 0.10050494153888682
+        "opponent_submission": 0.1655622942557287
       },
       "total_round_over_probabilities": {
-        "0.5": 0.9167238259866981,
-        "1.5": 0.7713627160657008,
-        "2.5": 0.6378782380178032
+        "0.5": 0.8001809674719579,
+        "1.5": 0.5192027284668205,
+        "2.5": 0.33427700986936
       },
       "total_round_over_probability_posteriors": {
         "0.5": {
@@ -429,58 +483,67 @@
           "status": "unavailable"
         },
         "1.5": {
-          "calibration_artifact_sha256": "d047c7d292ce9695ecc7acf2db882c90002d0c5530b26dabd1c0d9ee01c08575",
-          "calibration_trained_through": "2026-08-29",
+          "calibration_artifact_sha256": "cd26a453107386163c99b3e7d80ab810efb93f680339be49277b120e4086a2d6",
+          "calibration_trained_through": "2026-09-05",
           "calibration_training_events": 17,
-          "calibration_training_fights": 210,
-          "nominal_over_probability": 0.7713627160657008,
+          "calibration_training_fights": 211,
+          "nominal_over_probability": 0.5192027284668205,
           "policy_version": "bayesian-logistic-total-calibration-v1",
           "posterior_interval_mass": 0.8,
-          "posterior_lower_over_probability": 0.595358919670146,
-          "posterior_mean_over_probability": 0.6385752122075964,
-          "posterior_upper_over_probability": 0.6835951278762218,
+          "posterior_lower_over_probability": 0.5057464241743089,
+          "posterior_mean_over_probability": 0.5085251837714801,
+          "posterior_upper_over_probability": 0.511484945906553,
           "schedule_contract_version": "verified-pre-fight-schedule-v1",
           "status": "available"
         },
         "2.5": {
+          "calibration_artifact_sha256": "cd26a453107386163c99b3e7d80ab810efb93f680339be49277b120e4086a2d6",
+          "calibration_trained_through": "2026-09-05",
+          "calibration_training_events": 17,
+          "calibration_training_fights": 211,
+          "nominal_over_probability": 0.33427700986936,
           "policy_version": "bayesian-logistic-total-calibration-v1",
-          "reason": "The Bayesian adjustment made probability accuracy worse on the later-fight check, so it is not used for staking.",
-          "status": "unavailable"
+          "posterior_interval_mass": 0.8,
+          "posterior_lower_over_probability": 0.3373695430925562,
+          "posterior_mean_over_probability": 0.38489639656586083,
+          "posterior_upper_over_probability": 0.4286712201127393,
+          "schedule_contract_version": "verified-pre-fight-schedule-v1",
+          "status": "available"
         }
       }
     },
     {
       "bout_order": 7,
-      "division": "Heavyweight",
-      "fighter_id": "39d309957c5c210d",
-      "fighter_name": "Mario Pinto",
-      "fighter_win_probability": 0.7366851739446032,
+      "division": "Welterweight",
+      "fighter_id": "e4a47b07044ddd72",
+      "fighter_name": "Ignacio Bahamondes",
+      "fighter_win_probability": 0.6308564312299079,
       "forecast_status": "candidate_model",
-      "matchup_id": "matchup_c4fdd2478b8f9bfba7f679889348ae3848153f5d11360f550d52e07349e29e17",
+      "matchup_id": "matchup_1795f0f9b8401650217d3518f508681af01a56f2d856f666f6a286be6bb24b4e",
       "method_probabilities": {
-        "decision": 0.5004217151558332,
-        "ko_tko": 0.34571016339996335,
+        "decision": 0.40062632532856557,
+        "ko_tko": 0.39361188667052316,
         "other": 0.0,
-        "submission": 0.15386812144420337
+        "submission": 0.2057617880009113
       },
-      "opponent_id": "a67f5afa8d6a1b80",
-      "opponent_name": "Ryan Spann",
+      "opponent_id": "447f9858ae78f921",
+      "opponent_name": "Muslim Salikhov",
       "schedule_basis": "ufc_standard_non_main_non_title",
       "scheduled_rounds": 3,
       "terminal_probabilities": {
-        "fighter_decision": 0.4412366603504857,
-        "fighter_ko_tko": 0.22785474999983613,
+        "fighter_decision": 0.1522337650510366,
+        "fighter_ko_tko": 0.3044286471849346,
         "fighter_other": 0.0,
-        "fighter_submission": 0.06759376359428142,
-        "opponent_decision": 0.05918505480534757,
-        "opponent_ko_tko": 0.11785541340012724,
+        "fighter_submission": 0.17419401899393666,
+        "opponent_decision": 0.24839256027752893,
+        "opponent_ko_tko": 0.08918323948558851,
         "opponent_other": 0.0,
-        "opponent_submission": 0.08627435784992196
+        "opponent_submission": 0.031567769006974646
       },
       "total_round_over_probabilities": {
-        "0.5": 0.85876292805379,
-        "1.5": 0.6347171529824357,
-        "2.5": 0.45172264591878436
+        "0.5": 0.8397659483367972,
+        "1.5": 0.6004248776290205,
+        "2.5": 0.4277170695489737
       },
       "total_round_over_probability_posteriors": {
         "0.5": {
@@ -489,58 +552,67 @@
           "status": "unavailable"
         },
         "1.5": {
-          "calibration_artifact_sha256": "d047c7d292ce9695ecc7acf2db882c90002d0c5530b26dabd1c0d9ee01c08575",
-          "calibration_trained_through": "2026-08-29",
+          "calibration_artifact_sha256": "cd26a453107386163c99b3e7d80ab810efb93f680339be49277b120e4086a2d6",
+          "calibration_trained_through": "2026-09-05",
           "calibration_training_events": 17,
-          "calibration_training_fights": 210,
-          "nominal_over_probability": 0.6347171529824357,
+          "calibration_training_fights": 211,
+          "nominal_over_probability": 0.6004248776290205,
           "policy_version": "bayesian-logistic-total-calibration-v1",
           "posterior_interval_mass": 0.8,
-          "posterior_lower_over_probability": 0.5437518663070626,
-          "posterior_mean_over_probability": 0.5645758316304963,
-          "posterior_upper_over_probability": 0.5866201724007055,
+          "posterior_lower_over_probability": 0.5304151207473815,
+          "posterior_mean_over_probability": 0.5450331697519384,
+          "posterior_upper_over_probability": 0.5605726236174662,
           "schedule_contract_version": "verified-pre-fight-schedule-v1",
           "status": "available"
         },
         "2.5": {
+          "calibration_artifact_sha256": "cd26a453107386163c99b3e7d80ab810efb93f680339be49277b120e4086a2d6",
+          "calibration_trained_through": "2026-09-05",
+          "calibration_training_events": 17,
+          "calibration_training_fights": 211,
+          "nominal_over_probability": 0.4277170695489737,
           "policy_version": "bayesian-logistic-total-calibration-v1",
-          "reason": "The Bayesian adjustment made probability accuracy worse on the later-fight check, so it is not used for staking.",
-          "status": "unavailable"
+          "posterior_interval_mass": 0.8,
+          "posterior_lower_over_probability": 0.4291520490255098,
+          "posterior_mean_over_probability": 0.45038484145289787,
+          "posterior_upper_over_probability": 0.4696824027180576,
+          "schedule_contract_version": "verified-pre-fight-schedule-v1",
+          "status": "available"
         }
       }
     },
     {
       "bout_order": 8,
-      "division": "Light Heavyweight",
-      "fighter_id": "46e2011d92463b7e",
-      "fighter_name": "Oumar Sy",
-      "fighter_win_probability": 0.5906225798429727,
+      "division": "Middleweight",
+      "fighter_id": "7674b836ce0698a0",
+      "fighter_name": "Yousri Belgaroui",
+      "fighter_win_probability": 0.8108826926724209,
       "forecast_status": "candidate_model",
-      "matchup_id": "matchup_a98b162dd2ff1d5415a572a5a20b0f37599fc71cd28b0ac30b961720373d1199",
+      "matchup_id": "matchup_9c495107c2bd33322a572d2016024690b02d02d2d0cc09fb890650971126b860",
       "method_probabilities": {
-        "decision": 0.5573966782003719,
-        "ko_tko": 0.30666822947958977,
+        "decision": 0.3109095072239474,
+        "ko_tko": 0.49243268230240567,
         "other": 0.0,
-        "submission": 0.13593509232003842
+        "submission": 0.1966578104736469
       },
-      "opponent_id": "476fe566d2df676e",
-      "opponent_name": "Modestas Bukauskas",
+      "opponent_id": "312f7d7b2b2f7de4",
+      "opponent_name": "Djorden Santos",
       "schedule_basis": "ufc_standard_non_main_non_title",
       "scheduled_rounds": 3,
       "terminal_probabilities": {
-        "fighter_decision": 0.36257613617386736,
-        "fighter_ko_tko": 0.15635668637987074,
+        "fighter_decision": 0.2836234051690289,
+        "fighter_ko_tko": 0.4465503992734387,
         "fighter_other": 0.0,
-        "fighter_submission": 0.0716897572892346,
-        "opponent_decision": 0.19482054202650456,
-        "opponent_ko_tko": 0.15031154309971903,
+        "fighter_submission": 0.08070888822995317,
+        "opponent_decision": 0.02728610205491849,
+        "opponent_ko_tko": 0.04588228302896697,
         "opponent_other": 0.0,
-        "opponent_submission": 0.0642453350308038
+        "opponent_submission": 0.11594892224369373
       },
       "total_round_over_probabilities": {
-        "0.5": 0.8899646702705298,
-        "1.5": 0.7080358124060492,
-        "2.5": 0.5531382921688509
+        "0.5": 0.7680846529895848,
+        "1.5": 0.4610986731391712,
+        "2.5": 0.26968443264579284
       },
       "total_round_over_probability_posteriors": {
         "0.5": {
@@ -549,58 +621,67 @@
           "status": "unavailable"
         },
         "1.5": {
-          "calibration_artifact_sha256": "d047c7d292ce9695ecc7acf2db882c90002d0c5530b26dabd1c0d9ee01c08575",
-          "calibration_trained_through": "2026-08-29",
+          "calibration_artifact_sha256": "cd26a453107386163c99b3e7d80ab810efb93f680339be49277b120e4086a2d6",
+          "calibration_trained_through": "2026-09-05",
           "calibration_training_events": 17,
-          "calibration_training_fights": 210,
-          "nominal_over_probability": 0.7080358124060492,
+          "calibration_training_fights": 211,
+          "nominal_over_probability": 0.4610986731391712,
           "policy_version": "bayesian-logistic-total-calibration-v1",
           "posterior_interval_mass": 0.8,
-          "posterior_lower_over_probability": 0.5698692850447111,
-          "posterior_mean_over_probability": 0.6024573069134923,
-          "posterior_upper_over_probability": 0.6367278147773475,
+          "posterior_lower_over_probability": 0.4767106487506522,
+          "posterior_mean_over_probability": 0.48270936870132636,
+          "posterior_upper_over_probability": 0.4883425246111243,
           "schedule_contract_version": "verified-pre-fight-schedule-v1",
           "status": "available"
         },
         "2.5": {
+          "calibration_artifact_sha256": "cd26a453107386163c99b3e7d80ab810efb93f680339be49277b120e4086a2d6",
+          "calibration_trained_through": "2026-09-05",
+          "calibration_training_events": 17,
+          "calibration_training_fights": 211,
+          "nominal_over_probability": 0.26968443264579284,
           "policy_version": "bayesian-logistic-total-calibration-v1",
-          "reason": "The Bayesian adjustment made probability accuracy worse on the later-fight check, so it is not used for staking.",
-          "status": "unavailable"
+          "posterior_interval_mass": 0.8,
+          "posterior_lower_over_probability": 0.2736518167399362,
+          "posterior_mean_over_probability": 0.33763403339542875,
+          "posterior_upper_over_probability": 0.39761132474088773,
+          "schedule_contract_version": "verified-pre-fight-schedule-v1",
+          "status": "available"
         }
       }
     },
     {
       "bout_order": 9,
-      "division": "Featherweight",
-      "fighter_id": "329e403448756217",
-      "fighter_name": "Nathaniel Wood",
-      "fighter_win_probability": 0.5862660267392122,
+      "division": "Lightweight",
+      "fighter_id": "7cbf7c78d3b34218",
+      "fighter_name": "Drakkar Klose",
+      "fighter_win_probability": 0.33653144421302317,
       "forecast_status": "candidate_model",
-      "matchup_id": "matchup_5ba9978871b848d5b7445f82c33ad8b233afd688c6347983e72b3aec7be3e696",
+      "matchup_id": "matchup_7a11d1373c50e9cbe7af10195864810d4b1c4ebbc188faf9130ebe6994b34f70",
       "method_probabilities": {
-        "decision": 0.42249398935791593,
-        "ko_tko": 0.34353808493928756,
+        "decision": 0.5037105167011197,
+        "ko_tko": 0.32590849106350617,
         "other": 0.0,
-        "submission": 0.2339679257027966
+        "submission": 0.17038099223537423
       },
-      "opponent_id": "93f9c19ae41d2a97",
-      "opponent_name": "Pavel Andrusca",
+      "opponent_id": "de83f920fd302871",
+      "opponent_name": "Tommy Gantt",
       "schedule_basis": "ufc_standard_non_main_non_title",
       "scheduled_rounds": 3,
       "terminal_probabilities": {
-        "fighter_decision": 0.2950444005797315,
-        "fighter_ko_tko": 0.11943097672856277,
+        "fighter_decision": 0.19726883064785747,
+        "fighter_ko_tko": 0.05755179000606613,
         "fighter_other": 0.0,
-        "fighter_submission": 0.17179064943091793,
-        "opponent_decision": 0.12744958877818438,
-        "opponent_ko_tko": 0.22410710821072477,
+        "fighter_submission": 0.08171082355909955,
+        "opponent_decision": 0.3064416860532622,
+        "opponent_ko_tko": 0.26835670105744003,
         "opponent_other": 0.0,
-        "opponent_submission": 0.06217727627187866
+        "opponent_submission": 0.08867016867627467
       },
       "total_round_over_probabilities": {
-        "0.5": 0.8502452966167627,
-        "1.5": 0.619186313721405,
-        "2.5": 0.4458687089168224
+        "0.5": 0.879348440397008,
+        "1.5": 0.6839769175272857,
+        "2.5": 0.5261950408967203
       },
       "total_round_over_probability_posteriors": {
         "0.5": {
@@ -609,58 +690,67 @@
           "status": "unavailable"
         },
         "1.5": {
-          "calibration_artifact_sha256": "d047c7d292ce9695ecc7acf2db882c90002d0c5530b26dabd1c0d9ee01c08575",
-          "calibration_trained_through": "2026-08-29",
+          "calibration_artifact_sha256": "cd26a453107386163c99b3e7d80ab810efb93f680339be49277b120e4086a2d6",
+          "calibration_trained_through": "2026-09-05",
           "calibration_training_events": 17,
-          "calibration_training_fights": 210,
-          "nominal_over_probability": 0.619186313721405,
+          "calibration_training_fights": 211,
+          "nominal_over_probability": 0.6839769175272857,
           "policy_version": "bayesian-logistic-total-calibration-v1",
           "posterior_interval_mass": 0.8,
-          "posterior_lower_over_probability": 0.5385151317641799,
-          "posterior_mean_over_probability": 0.55690062244912,
-          "posterior_upper_over_probability": 0.5763821995687748,
+          "posterior_lower_over_probability": 0.5574823242873808,
+          "posterior_mean_over_probability": 0.5846629529762657,
+          "posterior_upper_over_probability": 0.6134041027789436,
           "schedule_contract_version": "verified-pre-fight-schedule-v1",
           "status": "available"
         },
         "2.5": {
+          "calibration_artifact_sha256": "cd26a453107386163c99b3e7d80ab810efb93f680339be49277b120e4086a2d6",
+          "calibration_trained_through": "2026-09-05",
+          "calibration_training_events": 17,
+          "calibration_training_fights": 211,
+          "nominal_over_probability": 0.5261950408967203,
           "policy_version": "bayesian-logistic-total-calibration-v1",
-          "reason": "The Bayesian adjustment made probability accuracy worse on the later-fight check, so it is not used for staking.",
-          "status": "unavailable"
+          "posterior_interval_mass": 0.8,
+          "posterior_lower_over_probability": 0.5109316719916012,
+          "posterior_mean_over_probability": 0.5179391228007273,
+          "posterior_upper_over_probability": 0.5256687930884514,
+          "schedule_contract_version": "verified-pre-fight-schedule-v1",
+          "status": "available"
         }
       }
     },
     {
       "bout_order": 10,
-      "division": "Flyweight",
-      "fighter_id": "22e3458965d5d08a",
-      "fighter_name": "Michael Aljarouj",
-      "fighter_win_probability": 0.4748736654335961,
+      "division": "Lightweight",
+      "fighter_id": "e132d47bd9efbbe0",
+      "fighter_name": "Rafa Garcia",
+      "fighter_win_probability": 0.5273980609195994,
       "forecast_status": "candidate_model",
-      "matchup_id": "matchup_4b14d6546c8101cf4e7844a682d653e6a80eb09ed63c589aec54a33e149df254",
+      "matchup_id": "matchup_8b54193e4f8a1587878a18998f44d167604b46e87b456e16b350cf7661b60711",
       "method_probabilities": {
-        "decision": 0.5332649469128736,
-        "ko_tko": 0.3108796963809455,
+        "decision": 0.4662404727600379,
+        "ko_tko": 0.35575008838005473,
         "other": 0.0,
-        "submission": 0.155855356706181
+        "submission": 0.1780094388599075
       },
-      "opponent_id": "9911989cf48b195d",
-      "opponent_name": "Fabia Sintes",
+      "opponent_id": "a13d755965a4ec9f",
+      "opponent_name": "Rongzhu",
       "schedule_basis": "ufc_standard_non_main_non_title",
       "scheduled_rounds": 3,
       "terminal_probabilities": {
-        "fighter_decision": 0.2703416709009041,
-        "fighter_ko_tko": 0.131605946537423,
+        "fighter_decision": 0.24617952598429782,
+        "fighter_ko_tko": 0.1463304578170008,
         "fighter_other": 0.0,
-        "fighter_submission": 0.072926047995269,
-        "opponent_decision": 0.26292327601196946,
-        "opponent_ko_tko": 0.17927374984352248,
+        "fighter_submission": 0.13488807711830084,
+        "opponent_decision": 0.22006094677574006,
+        "opponent_ko_tko": 0.20941963056305396,
         "opponent_other": 0.0,
-        "opponent_submission": 0.08292930871091199
+        "opponent_submission": 0.043121361741606676
       },
       "total_round_over_probabilities": {
-        "0.5": 0.8839646645342879,
-        "1.5": 0.6941037462250079,
-        "2.5": 0.5361791342016865
+        "0.5": 0.8594525744692031,
+        "1.5": 0.6391603479083974,
+        "2.5": 0.4675494866011912
       },
       "total_round_over_probability_posteriors": {
         "0.5": {
@@ -669,58 +759,67 @@
           "status": "unavailable"
         },
         "1.5": {
-          "calibration_artifact_sha256": "d047c7d292ce9695ecc7acf2db882c90002d0c5530b26dabd1c0d9ee01c08575",
-          "calibration_trained_through": "2026-08-29",
+          "calibration_artifact_sha256": "cd26a453107386163c99b3e7d80ab810efb93f680339be49277b120e4086a2d6",
+          "calibration_trained_through": "2026-09-05",
           "calibration_training_events": 17,
-          "calibration_training_fights": 210,
-          "nominal_over_probability": 0.6941037462250079,
+          "calibration_training_fights": 211,
+          "nominal_over_probability": 0.6391603479083974,
           "policy_version": "bayesian-logistic-total-calibration-v1",
           "posterior_interval_mass": 0.8,
-          "posterior_lower_over_probability": 0.5646863607424453,
-          "posterior_mean_over_probability": 0.595000925130513,
-          "posterior_upper_over_probability": 0.6269302926954953,
+          "posterior_lower_over_probability": 0.5426489383002415,
+          "posterior_mean_over_probability": 0.5630216957295738,
+          "posterior_upper_over_probability": 0.5846355870479539,
           "schedule_contract_version": "verified-pre-fight-schedule-v1",
           "status": "available"
         },
         "2.5": {
+          "calibration_artifact_sha256": "cd26a453107386163c99b3e7d80ab810efb93f680339be49277b120e4086a2d6",
+          "calibration_trained_through": "2026-09-05",
+          "calibration_training_events": 17,
+          "calibration_training_fights": 211,
+          "nominal_over_probability": 0.4675494866011912,
           "policy_version": "bayesian-logistic-total-calibration-v1",
-          "reason": "The Bayesian adjustment made probability accuracy worse on the later-fight check, so it is not used for staking.",
-          "status": "unavailable"
+          "posterior_interval_mass": 0.8,
+          "posterior_lower_over_probability": 0.4682007840661887,
+          "posterior_mean_over_probability": 0.4777728567754768,
+          "posterior_upper_over_probability": 0.4864523161413563,
+          "schedule_contract_version": "verified-pre-fight-schedule-v1",
+          "status": "available"
         }
       }
     },
     {
       "bout_order": 11,
-      "division": "Women's Bantamweight",
-      "fighter_id": "f2b3f4ef3f780168",
-      "fighter_name": "Nora Cornolle",
-      "fighter_win_probability": 0.36304943917823107,
+      "division": "Featherweight",
+      "fighter_id": "41523699f37d400c",
+      "fighter_name": "Sean King III",
+      "fighter_win_probability": 0.4709954085744172,
       "forecast_status": "candidate_model",
-      "matchup_id": "matchup_1fce52baf78bc8d3d8b338f10139cc7aeb18fe188c5bae17140a9dcc62f262e6",
+      "matchup_id": "matchup_2eff2435db7496ee92cfbb0bba997a7f2342807dc8f08b889daa4902ba093ae4",
       "method_probabilities": {
-        "decision": 0.5963689426508957,
-        "ko_tko": 0.197747548782251,
+        "decision": 0.5332902621651898,
+        "ko_tko": 0.31084631714887834,
         "other": 0.0,
-        "submission": 0.20588350856685333
+        "submission": 0.15586342068593179
       },
-      "opponent_id": "9f5e3c20ce40b344",
-      "opponent_name": "Klaudia Sygula",
+      "opponent_id": "d1026588fa65693f",
+      "opponent_name": "Jessie Rosas",
       "schedule_basis": "ufc_standard_non_main_non_title",
       "scheduled_rounds": 3,
       "terminal_probabilities": {
-        "fighter_decision": 0.19201999462833014,
-        "fighter_ko_tko": 0.05548733445862856,
+        "fighter_decision": 0.26618173461835737,
+        "fighter_ko_tko": 0.13163030974647205,
         "fighter_other": 0.0,
-        "fighter_submission": 0.11554211009127235,
-        "opponent_decision": 0.40434894802256555,
-        "opponent_ko_tko": 0.14226021432362246,
+        "fighter_submission": 0.07318336420958776,
+        "opponent_decision": 0.2671085275468325,
+        "opponent_ko_tko": 0.1792160074024063,
         "opponent_other": 0.0,
-        "opponent_submission": 0.09034139847558097
+        "opponent_submission": 0.08268005647634402
       },
       "total_round_over_probabilities": {
-        "0.5": 0.9049296734146436,
-        "1.5": 0.7394052297898696,
-        "2.5": 0.5881877913625775
+        "0.5": 0.883958699088933,
+        "1.5": 0.694301201999,
+        "2.5": 0.5366522073140392
       },
       "total_round_over_probability_posteriors": {
         "0.5": {
@@ -729,58 +828,67 @@
           "status": "unavailable"
         },
         "1.5": {
-          "calibration_artifact_sha256": "d047c7d292ce9695ecc7acf2db882c90002d0c5530b26dabd1c0d9ee01c08575",
-          "calibration_trained_through": "2026-08-29",
+          "calibration_artifact_sha256": "cd26a453107386163c99b3e7d80ab810efb93f680339be49277b120e4086a2d6",
+          "calibration_trained_through": "2026-09-05",
           "calibration_training_events": 17,
-          "calibration_training_fights": 210,
-          "nominal_over_probability": 0.7394052297898696,
+          "calibration_training_fights": 211,
+          "nominal_over_probability": 0.694301201999,
           "policy_version": "bayesian-logistic-total-calibration-v1",
           "posterior_interval_mass": 0.8,
-          "posterior_lower_over_probability": 0.5820465507786857,
-          "posterior_mean_over_probability": 0.6198341078611402,
-          "posterior_upper_over_probability": 0.6594083177837813,
+          "posterior_lower_over_probability": 0.5610357842113022,
+          "posterior_mean_over_probability": 0.589813581981605,
+          "posterior_upper_over_probability": 0.6202149687565789,
           "schedule_contract_version": "verified-pre-fight-schedule-v1",
           "status": "available"
         },
         "2.5": {
+          "calibration_artifact_sha256": "cd26a453107386163c99b3e7d80ab810efb93f680339be49277b120e4086a2d6",
+          "calibration_trained_through": "2026-09-05",
+          "calibration_training_events": 17,
+          "calibration_training_fights": 211,
+          "nominal_over_probability": 0.5366522073140392,
           "policy_version": "bayesian-logistic-total-calibration-v1",
-          "reason": "The Bayesian adjustment made probability accuracy worse on the later-fight check, so it is not used for staking.",
-          "status": "unavailable"
+          "posterior_interval_mass": 0.8,
+          "posterior_lower_over_probability": 0.5153067515198537,
+          "posterior_mean_over_probability": 0.5251087772073807,
+          "posterior_upper_over_probability": 0.5359171346119742,
+          "schedule_contract_version": "verified-pre-fight-schedule-v1",
+          "status": "available"
         }
       }
     },
     {
       "bout_order": 12,
-      "division": "Middleweight",
-      "fighter_id": "ec322adbabbfa6e7",
-      "fighter_name": "Matthieu Duclos",
-      "fighter_win_probability": 0.35126442528982443,
+      "division": "Women's Flyweight",
+      "fighter_id": "6fd953151d981979",
+      "fighter_name": "JJ Aldrich",
+      "fighter_win_probability": 0.3438116464116182,
       "forecast_status": "candidate_model",
-      "matchup_id": "matchup_28fea7b40a742271baa73e0e4459f1d5777e4498f310623c111e7397e38f7183",
+      "matchup_id": "matchup_efc52791a801f4be7db8f27634cf0bb8892c9d043aa415db2ff02c6293d01725",
       "method_probabilities": {
-        "decision": 0.569610617080732,
-        "ko_tko": 0.3144956570978743,
+        "decision": 0.538422839747308,
+        "ko_tko": 0.2900868642576743,
         "other": 0.0,
-        "submission": 0.1158937258213937
+        "submission": 0.1714902959950177
       },
-      "opponent_id": "33a86e839ad202d8",
-      "opponent_name": "Luis Felipe Dias",
+      "opponent_id": "9f5609dba6584ab2",
+      "opponent_name": "Regina Tarin",
       "schedule_basis": "ufc_standard_non_main_non_title",
       "scheduled_rounds": 3,
       "terminal_probabilities": {
-        "fighter_decision": 0.21494206325280765,
-        "fighter_ko_tko": 0.08629721452294871,
+        "fighter_decision": 0.2259398917707619,
+        "fighter_ko_tko": 0.050149577649149776,
         "fighter_other": 0.0,
-        "fighter_submission": 0.05002514751406808,
-        "opponent_decision": 0.35466855382792434,
-        "opponent_ko_tko": 0.22819844257492558,
+        "fighter_submission": 0.06772217699170655,
+        "opponent_decision": 0.3124829479765461,
+        "opponent_ko_tko": 0.23993728660852456,
         "opponent_other": 0.0,
-        "opponent_submission": 0.06586857830732562
+        "opponent_submission": 0.10376811900331114
       },
       "total_round_over_probabilities": {
-        "0.5": 0.896617885319123,
-        "1.5": 0.7242608684515922,
-        "2.5": 0.5769823343930528
+        "0.5": 0.8854816903027094,
+        "1.5": 0.6959026891420096,
+        "2.5": 0.535772894285336
       },
       "total_round_over_probability_posteriors": {
         "0.5": {
@@ -789,101 +897,50 @@
           "status": "unavailable"
         },
         "1.5": {
-          "calibration_artifact_sha256": "d047c7d292ce9695ecc7acf2db882c90002d0c5530b26dabd1c0d9ee01c08575",
-          "calibration_trained_through": "2026-08-29",
+          "calibration_artifact_sha256": "cd26a453107386163c99b3e7d80ab810efb93f680339be49277b120e4086a2d6",
+          "calibration_trained_through": "2026-09-05",
           "calibration_training_events": 17,
-          "calibration_training_fights": 210,
-          "nominal_over_probability": 0.7242608684515922,
+          "calibration_training_fights": 211,
+          "nominal_over_probability": 0.6959026891420096,
           "policy_version": "bayesian-logistic-total-calibration-v1",
           "posterior_interval_mass": 0.8,
-          "posterior_lower_over_probability": 0.5760722011390599,
-          "posterior_mean_over_probability": 0.6113348211732677,
-          "posterior_upper_over_probability": 0.6483429875899193,
+          "posterior_lower_over_probability": 0.5615923552461022,
+          "posterior_mean_over_probability": 0.5906190054339201,
+          "posterior_upper_over_probability": 0.6212786043972046,
           "schedule_contract_version": "verified-pre-fight-schedule-v1",
           "status": "available"
         },
         "2.5": {
-          "policy_version": "bayesian-logistic-total-calibration-v1",
-          "reason": "The Bayesian adjustment made probability accuracy worse on the later-fight check, so it is not used for staking.",
-          "status": "unavailable"
-        }
-      }
-    },
-    {
-      "bout_order": 13,
-      "division": "Women's Strawweight",
-      "fighter_id": "3138df4d117ebc12",
-      "fighter_name": "Delphine Benouaich",
-      "fighter_win_probability": 0.4748736654335961,
-      "forecast_status": "candidate_model",
-      "matchup_id": "matchup_c6f99d827d99147ec40154996f5cd9c439402f8c1fe7b0c6d927bd3c81990c61",
-      "method_probabilities": {
-        "decision": 0.5332649469128736,
-        "ko_tko": 0.3108796963809455,
-        "other": 0.0,
-        "submission": 0.155855356706181
-      },
-      "opponent_id": "8b1b051038354655",
-      "opponent_name": "Sofia Montenegro",
-      "schedule_basis": "ufc_standard_non_main_non_title",
-      "scheduled_rounds": 3,
-      "terminal_probabilities": {
-        "fighter_decision": 0.2703416709009041,
-        "fighter_ko_tko": 0.131605946537423,
-        "fighter_other": 0.0,
-        "fighter_submission": 0.072926047995269,
-        "opponent_decision": 0.26292327601196946,
-        "opponent_ko_tko": 0.17927374984352248,
-        "opponent_other": 0.0,
-        "opponent_submission": 0.08292930871091199
-      },
-      "total_round_over_probabilities": {
-        "0.5": 0.8839646645342879,
-        "1.5": 0.6941037462250079,
-        "2.5": 0.5361791342016865
-      },
-      "total_round_over_probability_posteriors": {
-        "0.5": {
-          "policy_version": "bayesian-logistic-total-calibration-v1",
-          "reason": "The Bayesian adjustment made probability accuracy worse on the later-fight check, so it is not used for staking.",
-          "status": "unavailable"
-        },
-        "1.5": {
-          "calibration_artifact_sha256": "d047c7d292ce9695ecc7acf2db882c90002d0c5530b26dabd1c0d9ee01c08575",
-          "calibration_trained_through": "2026-08-29",
+          "calibration_artifact_sha256": "cd26a453107386163c99b3e7d80ab810efb93f680339be49277b120e4086a2d6",
+          "calibration_trained_through": "2026-09-05",
           "calibration_training_events": 17,
-          "calibration_training_fights": 210,
-          "nominal_over_probability": 0.6941037462250079,
+          "calibration_training_fights": 211,
+          "nominal_over_probability": 0.535772894285336,
           "policy_version": "bayesian-logistic-total-calibration-v1",
           "posterior_interval_mass": 0.8,
-          "posterior_lower_over_probability": 0.5646863607424453,
-          "posterior_mean_over_probability": 0.595000925130513,
-          "posterior_upper_over_probability": 0.6269302926954953,
+          "posterior_lower_over_probability": 0.5149384792012486,
+          "posterior_mean_over_probability": 0.524505615028555,
+          "posterior_upper_over_probability": 0.535055337720536,
           "schedule_contract_version": "verified-pre-fight-schedule-v1",
           "status": "available"
-        },
-        "2.5": {
-          "policy_version": "bayesian-logistic-total-calibration-v1",
-          "reason": "The Bayesian adjustment made probability accuracy worse on the later-fight check, so it is not used for staking.",
-          "status": "unavailable"
         }
       }
     }
   ],
   "method_price_status": "unavailable_from_configured_provider",
-  "model_id": "69ffc5b7efa9a2500f9e9d70",
-  "model_trained_through": "2026-08-29",
+  "model_id": "a2514f5e689d2636069a9a58",
+  "model_trained_through": "2026-09-05",
   "model_version": "candidate-discrete-time-competing-risks-v2-verified-schedules",
   "omitted_training_unknown_schedule": 0,
   "paper_only": true,
-  "publication_sha256": "f455a65601805ac827db1cb0c8b2b0304f5b212b2e121187b862eafe5107dea6",
+  "publication_sha256": "705f283419f4977a29dfb55ff9fce79d76633789f1f3fcb9343435a6b9149cdf",
   "schedule_contract": "five rounds for UFCStats title labels and the first-listed main event; otherwise three rounds",
   "schedule_contract_version": "verified-pre-fight-schedule-v1",
   "schema_version": 1,
   "selected_c": 0.01,
-  "source_commit_sha": "1f4a8ad34858c0c9a5030ad0c73d7fd5067576c9",
-  "training_fights": 1002,
-  "training_input_sha256": "5ee1803614cd1c940c7e00712f53caaee015963be70d88e7b35e86bde3e00fac",
-  "training_risk_rows": 4571,
+  "source_commit_sha": "f062b187c1dfad68c4511d2d560c2af3a5daec84",
+  "training_fights": 1016,
+  "training_input_sha256": "cf985a2d1003f3c172ea64a671476ae5edde6cb78bec3b9313b2eebad29ee74e",
+  "training_risk_rows": 4631,
   "unavailable_reason": null
 }
