@@ -1,7 +1,7 @@
 {
   "ambiguous_historical_matchup_keys": 1,
   "ambiguous_result_decisions": 0,
-  "as_of_utc": "2026-09-13T15:28:12.478574Z",
+  "as_of_utc": "2026-09-15T04:35:18.829706Z",
   "bayesian_filtered_moneyline_policy": {
     "base_policy_on_same_cohort": {
       "hypothetical_profit_units": 0,
@@ -133,18 +133,18 @@
   "entry_timing_experiment": {
     "coverage": {
       "matchups_classified_pickem": 0,
-      "matchups_with_early_capture": 50,
-      "matchups_with_eligible_capture": 50,
+      "matchups_with_early_capture": 61,
+      "matchups_with_eligible_capture": 61,
       "matchups_with_late_capture": 37,
       "matchups_with_t24_capture": 26
     },
     "execution_enabled": false,
     "favorite_definition": "side above 50% in the full no-vig consensus at the first eligible capture; classification never changes after a line flip",
     "ledger_counts": {
-      "eligible_captures": 357,
-      "frozen_classifications": 50,
-      "quotes": 4499,
-      "source_metadata": 4101
+      "eligible_captures": 368,
+      "frozen_classifications": 61,
+      "quotes": 4598,
+      "source_metadata": 4200
     },
     "paper_only": true,
     "policy_version": "favorite-early-dog-late-v1",
@@ -242,7 +242,7 @@
     "shadow_policies": {
       "earliest_available_both": {
         "action_counts": {
-          "fighter": 4,
+          "fighter": 5,
           "opponent": 0
         },
         "clv": {
@@ -261,7 +261,7 @@
           "positive_rate": 0.5
         },
         "entry_window_counts": {
-          "early": 4,
+          "early": 5,
           "fixed_t24": 0,
           "late": 0,
           "other": 0
@@ -269,7 +269,7 @@
         "hypothetical_profit_units": -4.0,
         "hypothetical_roi": -1.0,
         "losses": 4,
-        "mean_locked_expected_return": 0.06347170282905329,
+        "mean_locked_expected_return": 0.0631723471035012,
         "paper_only": true,
         "return_event_block_interval": {
           "bootstrap_samples": 10000,
@@ -281,8 +281,8 @@
           "point_estimate": -1.0
         },
         "scored_selection_count": 4,
-        "selection_count": 4,
-        "unscored_selection_count": 0,
+        "selection_count": 5,
+        "unscored_selection_count": 1,
         "wins": 0
       },
       "favorite_early_underdog_late": {
@@ -991,14 +991,14 @@
     "simulation_coverage": 0.46153846153846156,
     "status": "collecting_results"
   },
-  "quote_dataset_sha256": "7f76d6dc028ad9210ff35650776d87a7bcb069fea4ee1d82415adf789c19040b",
-  "report_sha256": "93c7a9d85e8451fd42e79ca633a600b859b93b97f19afc5c6e0f24e908ff68d8",
+  "quote_dataset_sha256": "301e8d5ec28bcc57b3b97ba90712a914bafc97e8811e2d301383da911b8fe8fa",
+  "report_sha256": "a25c606409efd467f3113a5a255cc0cbee37a96f3542e773c449848a7dc05e3f",
   "result_source_sha256": "08e2507a43d9cee7633431f0795a0defb09739cf0d338ad20ad648e65009593e",
   "schema_version": 6,
   "settlement_dataset_sha256": "d584dcc4d9f03eb835b1974806c9d35e9a5d22361ffab96d03b73631528bb17a",
   "settlements_total": 26,
   "simulation_comparison_dataset_sha256": "f09e22ba360b29c1ac6e6389ef6973a16159e547f28014430e34d30aa560c21e",
-  "source_metadata_dataset_sha256": "936cc7edcabf45c0e8552e6401b3de47351c1bf47fada143281f0bfc123b8cca",
+  "source_metadata_dataset_sha256": "66f4ab4bca4cfd301882037e71b722fb67ba896eacb7c6d3732e7b270aec6457",
   "total_rounds": {
     "betting_status": "disabled_paper_only_no_execution",
     "decision_dataset_sha256": "13cd5c3f6e1eb505a9c34e4d6507f75a0f471ec65c95775f8122beb96dbe2637",
@@ -1082,7 +1082,7 @@
       "settled_events": 1,
       "status": "collecting_prospective_evidence"
     },
-    "quote_dataset_sha256": "a3719f4cfdb8ef3ba83aa1bfda1e75550a099bd6403bca910c4f1970627c2653",
+    "quote_dataset_sha256": "6442050409910ca9bf0ca2ccfa522f3fb577d7e0bba763c486554adedfa4e160",
     "residual_selection_protocol": "select weight on earliest 70% of settled events; require at least 0.002 lower log loss and an event-block 95% upper confidence bound below zero on the latest 30%",
     "scored_forecasts": 13,
     "settlement_dataset_sha256": "258cac10787442c0ade19fb535c0ed3603fc4c530397748e21af1ef0f1bff7ca",
