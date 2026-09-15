@@ -92,6 +92,11 @@ class MethodForecastCaptureTests(unittest.TestCase):
         )
         self.assertIn("method_forecast_captures.csv", workflow)
         self.assertIn("method_forecast_captures.jsonl", workflow)
+        self.assertIn("capture_method_market_snapshot.py --optional-workflow", workflow)
+        self.assertIn(
+            "steps.method_capture.outputs.capture_status == 'captured'", workflow
+        )
+        self.assertNotIn("continue-on-error: true", workflow)
 
     def test_canonical_orientation_swaps_probabilities_and_round_trips(self):
         forecast = _forecast()

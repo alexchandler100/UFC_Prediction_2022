@@ -90,9 +90,9 @@ jobs:
       - name: Capture bounded method-of-victory prices
         id: method_capture
         # Method prices are useful enrichment, but an optional source outage
-        # must not discard a healthy moneyline/totals capture.
-        continue-on-error: true
-        run: python src/capture_method_market_snapshot.py
+        # must not discard a healthy moneyline/totals capture. This mode also
+        # restores every method file if capture or validation fails part-way.
+        run: python src/capture_method_market_snapshot.py --optional-workflow
 
       - name: Record and settle method paper recommendations
         run: python src/update_method_paper.py
@@ -136,7 +136,7 @@ jobs:
           python src/validate_data.py --require-model-artifact --require-market-data
 
       - name: Revalidate optional method-price outputs
-        if: steps.method_capture.outcome == 'success'
+        if: steps.method_capture.outputs.capture_status == 'captured'
         run: python src/capture_method_market_snapshot.py --validate-only
 
       - name: Commit only market capture outputs

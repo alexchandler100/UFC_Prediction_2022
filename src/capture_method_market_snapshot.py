@@ -82,6 +82,61 @@ class MethodCaptureSkipped(RuntimeError):
     """Expected no-op because no capture horizon is currently due."""
 
 
+def _method_output_paths() -> tuple[Path, ...]:
+    """Files that an optional method capture is allowed to change."""
+
+    return (
+        METHOD_CSV_PATH,
+        METHOD_JSONL_PATH,
+        METHOD_FORECAST_CSV_PATH,
+        METHOD_FORECAST_JSONL_PATH,
+        REPORT_PATH,
+        CURRENT_METHOD_PATH,
+    )
+
+
+def _restore_method_outputs(before: Mapping[Path, bytes | None]) -> None:
+    """Restore the exact pre-capture state after a recoverable optional failure."""
+
+    for path, contents in before.items():
+        if contents is None:
+            path.unlink(missing_ok=True)
+        else:
+            atomic_write_text(path, contents.decode("utf-8"))
+
+
+def _write_capture_status(status: str) -> None:
+    """Expose the actual outcome to a GitHub Actions step, when present."""
+
+    output_path = os.environ.get("GITHUB_OUTPUT", "").strip()
+    if output_path:
+        with Path(output_path).open("a", encoding="utf-8", newline="\n") as output:
+            output.write(f"capture_status={status}\n")
+
+
+def run_optional_capture() -> tuple[str, dict[str, object] | None, str | None]:
+    """Capture and validate atomically without blocking the core odds pipeline."""
+
+    before = {
+        path: path.read_bytes() if path.is_file() else None
+        for path in _method_output_paths()
+    }
+    try:
+        report = capture_method_snapshot()
+        validate_generated_capture()
+    except MethodCaptureSkipped as skipped:
+        return "skipped", None, str(skipped)
+    except (CaptureError, StoreIntegrityError, ValueError, OSError) as error:
+        try:
+            _restore_method_outputs(before)
+        except OSError as restore_error:
+            raise CaptureError(
+                "optional method capture failed and its prior files could not be restored"
+            ) from restore_error
+        return "failed", None, str(error)
+    return "captured", report, None
+
+
 def _capture_id(observed: datetime, payload_sha: str) -> str:
     stamp = observed.strftime("%Y%m%dT%H%M%S%fZ")
     return f"method_capture_{stamp}_{payload_sha[:12]}"
@@ -856,12 +911,38 @@ def validate_generated_capture() -> dict[str, object]:
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--validate-only", action="store_true")
+    mode = parser.add_mutually_exclusive_group()
+    mode.add_argument("--validate-only", action="store_true")
+    mode.add_argument(
+        "--optional-workflow",
+        action="store_true",
+        help=(
+            "capture and validate transactionally; restore prior method files and "
+            "exit successfully after an expected optional-source failure"
+        ),
+    )
     return parser
 
 
 def main(argv: Sequence[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
+    if args.optional_workflow:
+        status, report, detail = run_optional_capture()
+        _write_capture_status(status)
+        if status == "captured":
+            assert report is not None
+            print(
+                f"Method prices: {report['records_added']} added; "
+                f"{report['records_total']} total book/fight/horizon boards."
+            )
+        elif status == "skipped":
+            print(f"Method price capture skipped: {detail}")
+        else:
+            print(
+                f"Optional method price capture failed and was rolled back: {detail}",
+                file=sys.stderr,
+            )
+        return 0
     try:
         report = validate_generated_capture() if args.validate_only else capture_method_snapshot()
         print(

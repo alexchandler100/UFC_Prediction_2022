@@ -6,6 +6,7 @@ from pathlib import Path
 import tempfile
 import sys
 import unittest
+from unittest.mock import patch
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -13,6 +14,7 @@ sys.path.insert(0, str(ROOT / "src"))
 
 from bestfightodds_props import MethodPropSelection, PropBookPrice  # noqa: E402
 from capture_market_snapshot import PublishedMatchup  # noqa: E402
+import capture_method_market_snapshot as method_collector  # noqa: E402
 from capture_method_market_snapshot import (  # noqa: E402
     _build_current_method_publication,
     _build_snapshots,
@@ -306,6 +308,88 @@ class MethodMarketTests(unittest.TestCase):
         self.assertTrue(snapshots[0].is_complete_six_way)
         self.assertEqual(snapshots[0].source_event_id, "matchups_899_900")
         self.assertEqual(counters["source_duplicate_matchups_merged"], 1)
+
+
+class OptionalMethodCaptureTests(unittest.TestCase):
+    def _paths(self, root: Path) -> tuple[Path, ...]:
+        return tuple(root / name for name in (
+            "quotes.csv", "quotes.jsonl", "forecasts.csv", "forecasts.jsonl",
+            "report.json", "current.json",
+        ))
+
+    def test_success_is_kept_and_reported_as_captured(self):
+        with tempfile.TemporaryDirectory() as directory:
+            paths = self._paths(Path(directory))
+
+            def capture():
+                paths[0].write_text("new\n", encoding="utf-8")
+                return {"records_added": 1, "records_total": 1}
+
+            with (
+                patch.object(method_collector, "_method_output_paths", return_value=paths),
+                patch.object(method_collector, "capture_method_snapshot", side_effect=capture),
+                patch.object(method_collector, "validate_generated_capture"),
+            ):
+                status, report, detail = method_collector.run_optional_capture()
+            self.assertEqual(status, "captured")
+            self.assertEqual(report, {"records_added": 1, "records_total": 1})
+            self.assertIsNone(detail)
+            self.assertEqual(paths[0].read_text(encoding="utf-8"), "new\n")
+
+    def test_skip_does_not_claim_that_a_capture_happened(self):
+        with tempfile.TemporaryDirectory() as directory:
+            paths = self._paths(Path(directory))
+            paths[0].write_text("prior\n", encoding="utf-8")
+            with (
+                patch.object(method_collector, "_method_output_paths", return_value=paths),
+                patch.object(
+                    method_collector,
+                    "capture_method_snapshot",
+                    side_effect=method_collector.MethodCaptureSkipped("not due"),
+                ),
+                patch.object(method_collector, "validate_generated_capture") as validate,
+            ):
+                status, report, detail = method_collector.run_optional_capture()
+            self.assertEqual((status, report, detail), ("skipped", None, "not due"))
+            validate.assert_not_called()
+            self.assertEqual(paths[0].read_text(encoding="utf-8"), "prior\n")
+
+    def test_recoverable_failure_restores_all_prior_files(self):
+        with tempfile.TemporaryDirectory() as directory:
+            paths = self._paths(Path(directory))
+            paths[0].write_text("prior\n", encoding="utf-8")
+            paths[1].write_text("also prior\n", encoding="utf-8")
+
+            def capture():
+                paths[0].write_text("changed\n", encoding="utf-8")
+                paths[2].write_text("new file\n", encoding="utf-8")
+                return {"records_added": 1, "records_total": 1}
+
+            with (
+                patch.object(method_collector, "_method_output_paths", return_value=paths),
+                patch.object(method_collector, "capture_method_snapshot", side_effect=capture),
+                patch.object(
+                    method_collector,
+                    "validate_generated_capture",
+                    side_effect=method_collector.CaptureError("publication mismatch"),
+                ),
+            ):
+                status, report, detail = method_collector.run_optional_capture()
+            self.assertEqual(status, "failed")
+            self.assertIsNone(report)
+            self.assertEqual(detail, "publication mismatch")
+            self.assertEqual(paths[0].read_text(encoding="utf-8"), "prior\n")
+            self.assertEqual(paths[1].read_text(encoding="utf-8"), "also prior\n")
+            self.assertFalse(paths[2].exists())
+
+    def test_github_output_records_the_real_capture_status(self):
+        with tempfile.TemporaryDirectory() as directory:
+            output = Path(directory) / "github-output.txt"
+            with patch.dict("os.environ", {"GITHUB_OUTPUT": str(output)}):
+                method_collector._write_capture_status("skipped")
+            self.assertEqual(
+                output.read_text(encoding="utf-8"), "capture_status=skipped\n"
+            )
 
 
 if __name__ == "__main__":
