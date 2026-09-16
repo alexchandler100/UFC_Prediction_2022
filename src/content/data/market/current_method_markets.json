@@ -1,24 +1,118 @@
 {
-  "book_market_count": 1,
+  "book_market_count": 26,
   "candidate_only": true,
   "contract_version": "fighter-method-book-board-v1",
   "event_date": "2026-09-19",
   "event_id": "8a0a35e7c74bebcc",
-  "event_start_utc": "2026-09-19T21:15:00Z",
+  "event_start_utc": "2026-09-19T21:00:00Z",
   "execution_enabled": false,
   "expected_value_status": "candidate_comparison_only",
-  "latest_observed_at_utc": "2026-09-13T15:28:34.561915Z",
+  "latest_observed_at_utc": "2026-09-16T23:28:53.464092Z",
   "market": "fighter_method_of_victory",
-  "method_market_count": 1,
+  "method_market_count": 9,
   "method_markets": [
     {
-      "book_count": 1,
+      "book_count": 4,
       "book_quotes": [
         {
-          "book": "FanDuel",
-          "horizon": "opening",
+          "book": "BetRivers",
+          "horizon": "t72",
           "is_complete_six_way": false,
-          "observed_at_utc": "2026-09-13T15:28:34.561915Z",
+          "observed_at_utc": "2026-09-16T23:28:53.464092Z",
+          "selection_count": 3,
+          "selections": [
+            {
+              "book_no_vig_probability": null,
+              "break_even_probability": 0.10526315789473684,
+              "candidate_model_estimated_return": -0.5837763068597434,
+              "candidate_model_probability": 0.04381302033055333,
+              "method": "ko_tko",
+              "moneyline": 850,
+              "selected_fighter_id": "a0f0004aadf10b71",
+              "selected_fighter_name": "Alexandre Pantoja",
+              "selection": "Alexandre Pantoja by KO/TKO",
+              "side": "opponent"
+            },
+            {
+              "book_no_vig_probability": null,
+              "break_even_probability": 0.2564102564102564,
+              "candidate_model_estimated_return": -0.4790158204286402,
+              "candidate_model_probability": 0.13358568706957943,
+              "method": "submission",
+              "moneyline": 290,
+              "selected_fighter_id": "a0f0004aadf10b71",
+              "selected_fighter_name": "Alexandre Pantoja",
+              "selection": "Alexandre Pantoja by SUBMISSION",
+              "side": "opponent"
+            },
+            {
+              "book_no_vig_probability": null,
+              "break_even_probability": 0.17391304347826086,
+              "candidate_model_estimated_return": -0.7337700525535533,
+              "candidate_model_probability": 0.04630086042546899,
+              "method": "decision",
+              "moneyline": 475,
+              "selected_fighter_id": "a0f0004aadf10b71",
+              "selected_fighter_name": "Alexandre Pantoja",
+              "selection": "Alexandre Pantoja by DECISION",
+              "side": "opponent"
+            }
+          ],
+          "six_way_overround": null,
+          "source_book_key": "book_25"
+        },
+        {
+          "book": "BetWay",
+          "horizon": "t72",
+          "is_complete_six_way": false,
+          "observed_at_utc": "2026-09-16T23:28:53.464092Z",
+          "selection_count": 3,
+          "selections": [
+            {
+              "book_no_vig_probability": null,
+              "break_even_probability": 0.125,
+              "candidate_model_estimated_return": -0.6494958373555734,
+              "candidate_model_probability": 0.04381302033055333,
+              "method": "ko_tko",
+              "moneyline": 700,
+              "selected_fighter_id": "a0f0004aadf10b71",
+              "selected_fighter_name": "Alexandre Pantoja",
+              "selection": "Alexandre Pantoja by KO/TKO",
+              "side": "opponent"
+            },
+            {
+              "book_no_vig_probability": null,
+              "break_even_probability": 0.26666666666666666,
+              "candidate_model_estimated_return": -0.49905367348907714,
+              "candidate_model_probability": 0.13358568706957943,
+              "method": "submission",
+              "moneyline": 275,
+              "selected_fighter_id": "a0f0004aadf10b71",
+              "selected_fighter_name": "Alexandre Pantoja",
+              "selection": "Alexandre Pantoja by SUBMISSION",
+              "side": "opponent"
+            },
+            {
+              "book_no_vig_probability": null,
+              "break_even_probability": 0.2,
+              "candidate_model_estimated_return": -0.768495697872655,
+              "candidate_model_probability": 0.04630086042546899,
+              "method": "decision",
+              "moneyline": 400,
+              "selected_fighter_id": "a0f0004aadf10b71",
+              "selected_fighter_name": "Alexandre Pantoja",
+              "selection": "Alexandre Pantoja by DECISION",
+              "side": "opponent"
+            }
+          ],
+          "six_way_overround": null,
+          "source_book_key": "book_20"
+        },
+        {
+          "book": "FanDuel",
+          "horizon": "t72",
+          "is_complete_six_way": false,
+          "observed_at_utc": "2026-09-16T23:28:53.464092Z",
           "selection_count": 3,
           "selections": [
             {
@@ -35,11 +129,11 @@
             },
             {
               "book_no_vig_probability": null,
-              "break_even_probability": 0.2777777777777778,
-              "candidate_model_estimated_return": -0.519091526549514,
+              "break_even_probability": 0.2631578947368421,
+              "candidate_model_estimated_return": -0.49237438913559817,
               "candidate_model_probability": 0.13358568706957943,
               "method": "submission",
-              "moneyline": 260,
+              "moneyline": 280,
               "selected_fighter_id": "a0f0004aadf10b71",
               "selected_fighter_name": "Alexandre Pantoja",
               "selection": "Alexandre Pantoja by SUBMISSION",
@@ -47,11 +141,11 @@
             },
             {
               "book_no_vig_probability": null,
-              "break_even_probability": 0.18518518518518517,
-              "candidate_model_estimated_return": -0.7499753537024674,
+              "break_even_probability": 0.17857142857142858,
+              "candidate_model_estimated_return": -0.7407151816173736,
               "candidate_model_probability": 0.04630086042546899,
               "method": "decision",
-              "moneyline": 440,
+              "moneyline": 460,
               "selected_fighter_id": "a0f0004aadf10b71",
               "selected_fighter_name": "Alexandre Pantoja",
               "selection": "Alexandre Pantoja by DECISION",
@@ -60,6 +154,53 @@
           ],
           "six_way_overround": null,
           "source_book_key": "book_21"
+        },
+        {
+          "book": "Unibet",
+          "horizon": "t72",
+          "is_complete_six_way": false,
+          "observed_at_utc": "2026-09-16T23:28:53.464092Z",
+          "selection_count": 3,
+          "selections": [
+            {
+              "book_no_vig_probability": null,
+              "break_even_probability": 0.10526315789473684,
+              "candidate_model_estimated_return": -0.5837763068597434,
+              "candidate_model_probability": 0.04381302033055333,
+              "method": "ko_tko",
+              "moneyline": 850,
+              "selected_fighter_id": "a0f0004aadf10b71",
+              "selected_fighter_name": "Alexandre Pantoja",
+              "selection": "Alexandre Pantoja by KO/TKO",
+              "side": "opponent"
+            },
+            {
+              "book_no_vig_probability": null,
+              "break_even_probability": 0.2564102564102564,
+              "candidate_model_estimated_return": -0.4790158204286402,
+              "candidate_model_probability": 0.13358568706957943,
+              "method": "submission",
+              "moneyline": 290,
+              "selected_fighter_id": "a0f0004aadf10b71",
+              "selected_fighter_name": "Alexandre Pantoja",
+              "selection": "Alexandre Pantoja by SUBMISSION",
+              "side": "opponent"
+            },
+            {
+              "book_no_vig_probability": null,
+              "break_even_probability": 0.17857142857142858,
+              "candidate_model_estimated_return": -0.7407151816173736,
+              "candidate_model_probability": 0.04630086042546899,
+              "method": "decision",
+              "moneyline": 460,
+              "selected_fighter_id": "a0f0004aadf10b71",
+              "selected_fighter_name": "Alexandre Pantoja",
+              "selection": "Alexandre Pantoja by DECISION",
+              "side": "opponent"
+            }
+          ],
+          "six_way_overround": null,
+          "source_book_key": "book_26"
         }
       ],
       "bout_order": 0,
@@ -68,14 +209,1461 @@
       "matchup_id": "matchup_6e355a8ad7d197cbe29ce642d75d50d2a8e45844e42d87852e64e4bf6ec40b9c",
       "opponent_id": "a0f0004aadf10b71",
       "opponent_name": "Alexandre Pantoja"
+    },
+    {
+      "book_count": 4,
+      "book_quotes": [
+        {
+          "book": "BetRivers",
+          "horizon": "t72",
+          "is_complete_six_way": false,
+          "observed_at_utc": "2026-09-16T23:28:53.464092Z",
+          "selection_count": 3,
+          "selections": [
+            {
+              "book_no_vig_probability": null,
+              "break_even_probability": 0.30303030303030304,
+              "candidate_model_estimated_return": -0.8658494104801113,
+              "candidate_model_probability": 0.04065169379390565,
+              "method": "ko_tko",
+              "moneyline": 230,
+              "selected_fighter_id": "eae48ff31db420c2",
+              "selected_fighter_name": "Arman Tsarukyan",
+              "selection": "Arman Tsarukyan by KO/TKO",
+              "side": "fighter"
+            },
+            {
+              "book_no_vig_probability": null,
+              "break_even_probability": 0.26666666666666666,
+              "candidate_model_estimated_return": -0.48779292113413064,
+              "candidate_model_probability": 0.13658855436423184,
+              "method": "submission",
+              "moneyline": 275,
+              "selected_fighter_id": "eae48ff31db420c2",
+              "selected_fighter_name": "Arman Tsarukyan",
+              "selection": "Arman Tsarukyan by SUBMISSION",
+              "side": "fighter"
+            },
+            {
+              "book_no_vig_probability": null,
+              "break_even_probability": 0.25,
+              "candidate_model_estimated_return": 0.7925179751266938,
+              "candidate_model_probability": 0.44812949378167344,
+              "method": "decision",
+              "moneyline": 300,
+              "selected_fighter_id": "eae48ff31db420c2",
+              "selected_fighter_name": "Arman Tsarukyan",
+              "selection": "Arman Tsarukyan by DECISION",
+              "side": "fighter"
+            }
+          ],
+          "six_way_overround": null,
+          "source_book_key": "book_25"
+        },
+        {
+          "book": "BetWay",
+          "horizon": "t72",
+          "is_complete_six_way": false,
+          "observed_at_utc": "2026-09-16T23:28:53.464092Z",
+          "selection_count": 3,
+          "selections": [
+            {
+              "book_no_vig_probability": null,
+              "break_even_probability": 0.3076923076923077,
+              "candidate_model_estimated_return": -0.8678819951698067,
+              "candidate_model_probability": 0.04065169379390565,
+              "method": "ko_tko",
+              "moneyline": 225,
+              "selected_fighter_id": "eae48ff31db420c2",
+              "selected_fighter_name": "Arman Tsarukyan",
+              "selection": "Arman Tsarukyan by KO/TKO",
+              "side": "fighter"
+            },
+            {
+              "book_no_vig_probability": null,
+              "break_even_probability": 0.3076923076923077,
+              "candidate_model_estimated_return": -0.5560871983162465,
+              "candidate_model_probability": 0.13658855436423184,
+              "method": "submission",
+              "moneyline": 225,
+              "selected_fighter_id": "eae48ff31db420c2",
+              "selected_fighter_name": "Arman Tsarukyan",
+              "selection": "Arman Tsarukyan by SUBMISSION",
+              "side": "fighter"
+            },
+            {
+              "book_no_vig_probability": null,
+              "break_even_probability": 0.25,
+              "candidate_model_estimated_return": 0.7925179751266938,
+              "candidate_model_probability": 0.44812949378167344,
+              "method": "decision",
+              "moneyline": 300,
+              "selected_fighter_id": "eae48ff31db420c2",
+              "selected_fighter_name": "Arman Tsarukyan",
+              "selection": "Arman Tsarukyan by DECISION",
+              "side": "fighter"
+            }
+          ],
+          "six_way_overround": null,
+          "source_book_key": "book_20"
+        },
+        {
+          "book": "FanDuel",
+          "horizon": "t72",
+          "is_complete_six_way": false,
+          "observed_at_utc": "2026-09-16T23:28:53.464092Z",
+          "selection_count": 3,
+          "selections": [
+            {
+              "book_no_vig_probability": null,
+              "break_even_probability": 0.3125,
+              "candidate_model_estimated_return": -0.8699145798595019,
+              "candidate_model_probability": 0.04065169379390565,
+              "method": "ko_tko",
+              "moneyline": 220,
+              "selected_fighter_id": "eae48ff31db420c2",
+              "selected_fighter_name": "Arman Tsarukyan",
+              "selection": "Arman Tsarukyan by KO/TKO",
+              "side": "fighter"
+            },
+            {
+              "book_no_vig_probability": null,
+              "break_even_probability": 0.30303030303030304,
+              "candidate_model_estimated_return": -0.5492577705980349,
+              "candidate_model_probability": 0.13658855436423184,
+              "method": "submission",
+              "moneyline": 230,
+              "selected_fighter_id": "eae48ff31db420c2",
+              "selected_fighter_name": "Arman Tsarukyan",
+              "selection": "Arman Tsarukyan by SUBMISSION",
+              "side": "fighter"
+            },
+            {
+              "book_no_vig_probability": null,
+              "break_even_probability": 0.21739130434782608,
+              "candidate_model_estimated_return": 1.0613956713956978,
+              "candidate_model_probability": 0.44812949378167344,
+              "method": "decision",
+              "moneyline": 360,
+              "selected_fighter_id": "eae48ff31db420c2",
+              "selected_fighter_name": "Arman Tsarukyan",
+              "selection": "Arman Tsarukyan by DECISION",
+              "side": "fighter"
+            }
+          ],
+          "six_way_overround": null,
+          "source_book_key": "book_21"
+        },
+        {
+          "book": "Unibet",
+          "horizon": "t72",
+          "is_complete_six_way": false,
+          "observed_at_utc": "2026-09-16T23:28:53.464092Z",
+          "selection_count": 3,
+          "selections": [
+            {
+              "book_no_vig_probability": null,
+              "break_even_probability": 0.30303030303030304,
+              "candidate_model_estimated_return": -0.8658494104801113,
+              "candidate_model_probability": 0.04065169379390565,
+              "method": "ko_tko",
+              "moneyline": 230,
+              "selected_fighter_id": "eae48ff31db420c2",
+              "selected_fighter_name": "Arman Tsarukyan",
+              "selection": "Arman Tsarukyan by KO/TKO",
+              "side": "fighter"
+            },
+            {
+              "book_no_vig_probability": null,
+              "break_even_probability": 0.26666666666666666,
+              "candidate_model_estimated_return": -0.48779292113413064,
+              "candidate_model_probability": 0.13658855436423184,
+              "method": "submission",
+              "moneyline": 275,
+              "selected_fighter_id": "eae48ff31db420c2",
+              "selected_fighter_name": "Arman Tsarukyan",
+              "selection": "Arman Tsarukyan by SUBMISSION",
+              "side": "fighter"
+            },
+            {
+              "book_no_vig_probability": null,
+              "break_even_probability": 0.25,
+              "candidate_model_estimated_return": 0.7925179751266938,
+              "candidate_model_probability": 0.44812949378167344,
+              "method": "decision",
+              "moneyline": 300,
+              "selected_fighter_id": "eae48ff31db420c2",
+              "selected_fighter_name": "Arman Tsarukyan",
+              "selection": "Arman Tsarukyan by DECISION",
+              "side": "fighter"
+            }
+          ],
+          "six_way_overround": null,
+          "source_book_key": "book_26"
+        }
+      ],
+      "bout_order": 1,
+      "fighter_id": "eae48ff31db420c2",
+      "fighter_name": "Arman Tsarukyan",
+      "matchup_id": "matchup_46acdff5f3e3f7792daa1d5df06232e0e473168e2b7cb8890421fed3e858632b",
+      "opponent_id": "9c393e836a852f30",
+      "opponent_name": "Mauricio Ruffy"
+    },
+    {
+      "book_count": 4,
+      "book_quotes": [
+        {
+          "book": "BetRivers",
+          "horizon": "t72",
+          "is_complete_six_way": false,
+          "observed_at_utc": "2026-09-16T23:28:53.464092Z",
+          "selection_count": 3,
+          "selections": [
+            {
+              "book_no_vig_probability": null,
+              "break_even_probability": 0.19607843137254902,
+              "candidate_model_estimated_return": -0.8850335659508345,
+              "candidate_model_probability": 0.022542438048855976,
+              "method": "ko_tko",
+              "moneyline": 410,
+              "selected_fighter_id": "a495f599e787614f",
+              "selected_fighter_name": "Alonzo Menifield",
+              "selection": "Alonzo Menifield by KO/TKO",
+              "side": "fighter"
+            },
+            {
+              "book_no_vig_probability": null,
+              "break_even_probability": 0.09523809523809523,
+              "candidate_model_estimated_return": -0.5120540301161391,
+              "candidate_model_probability": 0.04647104475084389,
+              "method": "submission",
+              "moneyline": 950,
+              "selected_fighter_id": "a495f599e787614f",
+              "selected_fighter_name": "Alonzo Menifield",
+              "selection": "Alonzo Menifield by SUBMISSION",
+              "side": "fighter"
+            },
+            {
+              "book_no_vig_probability": null,
+              "break_even_probability": 0.11764705882352941,
+              "candidate_model_estimated_return": -0.4716447705600646,
+              "candidate_model_probability": 0.06215943875763946,
+              "method": "decision",
+              "moneyline": 750,
+              "selected_fighter_id": "a495f599e787614f",
+              "selected_fighter_name": "Alonzo Menifield",
+              "selection": "Alonzo Menifield by DECISION",
+              "side": "fighter"
+            }
+          ],
+          "six_way_overround": null,
+          "source_book_key": "book_25"
+        },
+        {
+          "book": "BetWay",
+          "horizon": "t72",
+          "is_complete_six_way": false,
+          "observed_at_utc": "2026-09-16T23:28:53.464092Z",
+          "selection_count": 3,
+          "selections": [
+            {
+              "book_no_vig_probability": null,
+              "break_even_probability": 0.2222222222222222,
+              "candidate_model_estimated_return": -0.8985590287801482,
+              "candidate_model_probability": 0.022542438048855976,
+              "method": "ko_tko",
+              "moneyline": 350,
+              "selected_fighter_id": "a495f599e787614f",
+              "selected_fighter_name": "Alonzo Menifield",
+              "selection": "Alonzo Menifield by KO/TKO",
+              "side": "fighter"
+            },
+            {
+              "book_no_vig_probability": null,
+              "break_even_probability": 0.1,
+              "candidate_model_estimated_return": -0.5352895524915611,
+              "candidate_model_probability": 0.04647104475084389,
+              "method": "submission",
+              "moneyline": 900,
+              "selected_fighter_id": "a495f599e787614f",
+              "selected_fighter_name": "Alonzo Menifield",
+              "selection": "Alonzo Menifield by SUBMISSION",
+              "side": "fighter"
+            },
+            {
+              "book_no_vig_probability": null,
+              "break_even_probability": 0.125,
+              "candidate_model_estimated_return": -0.5027244899388843,
+              "candidate_model_probability": 0.06215943875763946,
+              "method": "decision",
+              "moneyline": 700,
+              "selected_fighter_id": "a495f599e787614f",
+              "selected_fighter_name": "Alonzo Menifield",
+              "selection": "Alonzo Menifield by DECISION",
+              "side": "fighter"
+            }
+          ],
+          "six_way_overround": null,
+          "source_book_key": "book_20"
+        },
+        {
+          "book": "FanDuel",
+          "horizon": "t72",
+          "is_complete_six_way": false,
+          "observed_at_utc": "2026-09-16T23:28:53.464092Z",
+          "selection_count": 3,
+          "selections": [
+            {
+              "book_no_vig_probability": null,
+              "break_even_probability": 0.1724137931034483,
+              "candidate_model_estimated_return": -0.8692538593166353,
+              "candidate_model_probability": 0.022542438048855976,
+              "method": "ko_tko",
+              "moneyline": 480,
+              "selected_fighter_id": "a495f599e787614f",
+              "selected_fighter_name": "Alonzo Menifield",
+              "selection": "Alonzo Menifield by KO/TKO",
+              "side": "fighter"
+            },
+            {
+              "book_no_vig_probability": null,
+              "break_even_probability": 0.09090909090909091,
+              "candidate_model_estimated_return": -0.4888185077407172,
+              "candidate_model_probability": 0.04647104475084389,
+              "method": "submission",
+              "moneyline": 1000,
+              "selected_fighter_id": "a495f599e787614f",
+              "selected_fighter_name": "Alonzo Menifield",
+              "selection": "Alonzo Menifield by SUBMISSION",
+              "side": "fighter"
+            },
+            {
+              "book_no_vig_probability": null,
+              "break_even_probability": 0.1,
+              "candidate_model_estimated_return": -0.3784056124236054,
+              "candidate_model_probability": 0.06215943875763946,
+              "method": "decision",
+              "moneyline": 900,
+              "selected_fighter_id": "a495f599e787614f",
+              "selected_fighter_name": "Alonzo Menifield",
+              "selection": "Alonzo Menifield by DECISION",
+              "side": "fighter"
+            }
+          ],
+          "six_way_overround": null,
+          "source_book_key": "book_21"
+        },
+        {
+          "book": "Unibet",
+          "horizon": "t72",
+          "is_complete_six_way": false,
+          "observed_at_utc": "2026-09-16T23:28:53.464092Z",
+          "selection_count": 3,
+          "selections": [
+            {
+              "book_no_vig_probability": null,
+              "break_even_probability": 0.19607843137254902,
+              "candidate_model_estimated_return": -0.8850335659508345,
+              "candidate_model_probability": 0.022542438048855976,
+              "method": "ko_tko",
+              "moneyline": 410,
+              "selected_fighter_id": "a495f599e787614f",
+              "selected_fighter_name": "Alonzo Menifield",
+              "selection": "Alonzo Menifield by KO/TKO",
+              "side": "fighter"
+            },
+            {
+              "book_no_vig_probability": null,
+              "break_even_probability": 0.09523809523809523,
+              "candidate_model_estimated_return": -0.5120540301161391,
+              "candidate_model_probability": 0.04647104475084389,
+              "method": "submission",
+              "moneyline": 950,
+              "selected_fighter_id": "a495f599e787614f",
+              "selected_fighter_name": "Alonzo Menifield",
+              "selection": "Alonzo Menifield by SUBMISSION",
+              "side": "fighter"
+            },
+            {
+              "book_no_vig_probability": null,
+              "break_even_probability": 0.11764705882352941,
+              "candidate_model_estimated_return": -0.4716447705600646,
+              "candidate_model_probability": 0.06215943875763946,
+              "method": "decision",
+              "moneyline": 750,
+              "selected_fighter_id": "a495f599e787614f",
+              "selected_fighter_name": "Alonzo Menifield",
+              "selection": "Alonzo Menifield by DECISION",
+              "side": "fighter"
+            }
+          ],
+          "six_way_overround": null,
+          "source_book_key": "book_26"
+        }
+      ],
+      "bout_order": 4,
+      "fighter_id": "a495f599e787614f",
+      "fighter_name": "Alonzo Menifield",
+      "matchup_id": "matchup_476907300c352a3007df1648d5891307dad34b5ffaf7f0940510328bb5dda3c1",
+      "opponent_id": "1c23ec2f1b71be40",
+      "opponent_name": "Iwo Baraniewski"
+    },
+    {
+      "book_count": 3,
+      "book_quotes": [
+        {
+          "book": "BetRivers",
+          "horizon": "t72",
+          "is_complete_six_way": false,
+          "observed_at_utc": "2026-09-16T23:28:53.464092Z",
+          "selection_count": 3,
+          "selections": [
+            {
+              "book_no_vig_probability": null,
+              "break_even_probability": 0.8,
+              "candidate_model_estimated_return": -0.455986744950006,
+              "candidate_model_probability": 0.4352106040399952,
+              "method": "ko_tko",
+              "moneyline": -400,
+              "selected_fighter_id": "f7e856a73c96048e",
+              "selected_fighter_name": "Gable Steveson",
+              "selection": "Gable Steveson by KO/TKO",
+              "side": "fighter"
+            },
+            {
+              "book_no_vig_probability": null,
+              "break_even_probability": 0.16,
+              "candidate_model_estimated_return": -0.3255195583172813,
+              "candidate_model_probability": 0.107916870669235,
+              "method": "submission",
+              "moneyline": 525,
+              "selected_fighter_id": "f7e856a73c96048e",
+              "selected_fighter_name": "Gable Steveson",
+              "selection": "Gable Steveson by SUBMISSION",
+              "side": "fighter"
+            },
+            {
+              "book_no_vig_probability": null,
+              "break_even_probability": 0.06666666666666667,
+              "candidate_model_estimated_return": 4.6515299280341615,
+              "candidate_model_probability": 0.3767686618689441,
+              "method": "decision",
+              "moneyline": 1400,
+              "selected_fighter_id": "f7e856a73c96048e",
+              "selected_fighter_name": "Gable Steveson",
+              "selection": "Gable Steveson by DECISION",
+              "side": "fighter"
+            }
+          ],
+          "six_way_overround": null,
+          "source_book_key": "book_25"
+        },
+        {
+          "book": "FanDuel",
+          "horizon": "t72",
+          "is_complete_six_way": false,
+          "observed_at_utc": "2026-09-16T23:28:53.464092Z",
+          "selection_count": 3,
+          "selections": [
+            {
+              "book_no_vig_probability": null,
+              "break_even_probability": 0.7619047619047619,
+              "candidate_model_estimated_return": -0.42878608219750636,
+              "candidate_model_probability": 0.4352106040399952,
+              "method": "ko_tko",
+              "moneyline": -320,
+              "selected_fighter_id": "f7e856a73c96048e",
+              "selected_fighter_name": "Gable Steveson",
+              "selection": "Gable Steveson by KO/TKO",
+              "side": "fighter"
+            },
+            {
+              "book_no_vig_probability": null,
+              "break_even_probability": 0.17543859649122806,
+              "candidate_model_estimated_return": -0.3848738371853605,
+              "candidate_model_probability": 0.107916870669235,
+              "method": "submission",
+              "moneyline": 470,
+              "selected_fighter_id": "f7e856a73c96048e",
+              "selected_fighter_name": "Gable Steveson",
+              "selection": "Gable Steveson by SUBMISSION",
+              "side": "fighter"
+            },
+            {
+              "book_no_vig_probability": null,
+              "break_even_probability": 0.05263157894736842,
+              "candidate_model_estimated_return": 6.158604575509938,
+              "candidate_model_probability": 0.3767686618689441,
+              "method": "decision",
+              "moneyline": 1800,
+              "selected_fighter_id": "f7e856a73c96048e",
+              "selected_fighter_name": "Gable Steveson",
+              "selection": "Gable Steveson by DECISION",
+              "side": "fighter"
+            }
+          ],
+          "six_way_overround": null,
+          "source_book_key": "book_21"
+        },
+        {
+          "book": "Unibet",
+          "horizon": "t72",
+          "is_complete_six_way": false,
+          "observed_at_utc": "2026-09-16T23:28:53.464092Z",
+          "selection_count": 3,
+          "selections": [
+            {
+              "book_no_vig_probability": null,
+              "break_even_probability": 0.8,
+              "candidate_model_estimated_return": -0.455986744950006,
+              "candidate_model_probability": 0.4352106040399952,
+              "method": "ko_tko",
+              "moneyline": -400,
+              "selected_fighter_id": "f7e856a73c96048e",
+              "selected_fighter_name": "Gable Steveson",
+              "selection": "Gable Steveson by KO/TKO",
+              "side": "fighter"
+            },
+            {
+              "book_no_vig_probability": null,
+              "break_even_probability": 0.16,
+              "candidate_model_estimated_return": -0.3255195583172813,
+              "candidate_model_probability": 0.107916870669235,
+              "method": "submission",
+              "moneyline": 525,
+              "selected_fighter_id": "f7e856a73c96048e",
+              "selected_fighter_name": "Gable Steveson",
+              "selection": "Gable Steveson by SUBMISSION",
+              "side": "fighter"
+            },
+            {
+              "book_no_vig_probability": null,
+              "break_even_probability": 0.06666666666666667,
+              "candidate_model_estimated_return": 4.6515299280341615,
+              "candidate_model_probability": 0.3767686618689441,
+              "method": "decision",
+              "moneyline": 1400,
+              "selected_fighter_id": "f7e856a73c96048e",
+              "selected_fighter_name": "Gable Steveson",
+              "selection": "Gable Steveson by DECISION",
+              "side": "fighter"
+            }
+          ],
+          "six_way_overround": null,
+          "source_book_key": "book_26"
+        }
+      ],
+      "bout_order": 5,
+      "fighter_id": "f7e856a73c96048e",
+      "fighter_name": "Gable Steveson",
+      "matchup_id": "matchup_24d2abb788a1cd512c495fdc548d6e73ba97540b84f658b9ddefdfce49e378d6",
+      "opponent_id": "0f3a990526c5e706",
+      "opponent_name": "Sean Sharaf"
+    },
+    {
+      "book_count": 3,
+      "book_quotes": [
+        {
+          "book": "BetRivers",
+          "horizon": "t72",
+          "is_complete_six_way": false,
+          "observed_at_utc": "2026-09-16T23:28:53.464092Z",
+          "selection_count": 3,
+          "selections": [
+            {
+              "book_no_vig_probability": null,
+              "break_even_probability": 0.08695652173913043,
+              "candidate_model_estimated_return": 1.282224920082509,
+              "candidate_model_probability": 0.1984543408767399,
+              "method": "ko_tko",
+              "moneyline": 1050,
+              "selected_fighter_id": "f1d64ae34e088832",
+              "selected_fighter_name": "Charles Jourdain",
+              "selection": "Charles Jourdain by KO/TKO",
+              "side": "opponent"
+            },
+            {
+              "book_no_vig_probability": null,
+              "break_even_probability": 0.14285714285714285,
+              "candidate_model_estimated_return": -0.4542379840465931,
+              "candidate_model_probability": 0.07796600227905813,
+              "method": "submission",
+              "moneyline": 600,
+              "selected_fighter_id": "f1d64ae34e088832",
+              "selected_fighter_name": "Charles Jourdain",
+              "selection": "Charles Jourdain by SUBMISSION",
+              "side": "opponent"
+            },
+            {
+              "book_no_vig_probability": null,
+              "break_even_probability": 0.5348837209302325,
+              "candidate_model_estimated_return": -0.07972228330378839,
+              "candidate_model_probability": 0.4922415693956481,
+              "method": "decision",
+              "moneyline": -115,
+              "selected_fighter_id": "f1d64ae34e088832",
+              "selected_fighter_name": "Charles Jourdain",
+              "selection": "Charles Jourdain by DECISION",
+              "side": "opponent"
+            }
+          ],
+          "six_way_overround": null,
+          "source_book_key": "book_25"
+        },
+        {
+          "book": "FanDuel",
+          "horizon": "t72",
+          "is_complete_six_way": false,
+          "observed_at_utc": "2026-09-16T23:28:53.464092Z",
+          "selection_count": 3,
+          "selections": [
+            {
+              "book_no_vig_probability": null,
+              "break_even_probability": 0.07142857142857142,
+              "candidate_model_estimated_return": 1.7783607722743588,
+              "candidate_model_probability": 0.1984543408767399,
+              "method": "ko_tko",
+              "moneyline": 1300,
+              "selected_fighter_id": "f1d64ae34e088832",
+              "selected_fighter_name": "Charles Jourdain",
+              "selection": "Charles Jourdain by KO/TKO",
+              "side": "opponent"
+            },
+            {
+              "book_no_vig_probability": null,
+              "break_even_probability": 0.125,
+              "candidate_model_estimated_return": -0.37627198176753496,
+              "candidate_model_probability": 0.07796600227905813,
+              "method": "submission",
+              "moneyline": 700,
+              "selected_fighter_id": "f1d64ae34e088832",
+              "selected_fighter_name": "Charles Jourdain",
+              "selection": "Charles Jourdain by SUBMISSION",
+              "side": "opponent"
+            },
+            {
+              "book_no_vig_probability": null,
+              "break_even_probability": 0.5454545454545454,
+              "candidate_model_estimated_return": -0.09755712277464501,
+              "candidate_model_probability": 0.4922415693956481,
+              "method": "decision",
+              "moneyline": -120,
+              "selected_fighter_id": "f1d64ae34e088832",
+              "selected_fighter_name": "Charles Jourdain",
+              "selection": "Charles Jourdain by DECISION",
+              "side": "opponent"
+            }
+          ],
+          "six_way_overround": null,
+          "source_book_key": "book_21"
+        },
+        {
+          "book": "Unibet",
+          "horizon": "t72",
+          "is_complete_six_way": false,
+          "observed_at_utc": "2026-09-16T23:28:53.464092Z",
+          "selection_count": 3,
+          "selections": [
+            {
+              "book_no_vig_probability": null,
+              "break_even_probability": 0.08695652173913043,
+              "candidate_model_estimated_return": 1.282224920082509,
+              "candidate_model_probability": 0.1984543408767399,
+              "method": "ko_tko",
+              "moneyline": 1050,
+              "selected_fighter_id": "f1d64ae34e088832",
+              "selected_fighter_name": "Charles Jourdain",
+              "selection": "Charles Jourdain by KO/TKO",
+              "side": "opponent"
+            },
+            {
+              "book_no_vig_probability": null,
+              "break_even_probability": 0.14285714285714285,
+              "candidate_model_estimated_return": -0.4542379840465931,
+              "candidate_model_probability": 0.07796600227905813,
+              "method": "submission",
+              "moneyline": 600,
+              "selected_fighter_id": "f1d64ae34e088832",
+              "selected_fighter_name": "Charles Jourdain",
+              "selection": "Charles Jourdain by SUBMISSION",
+              "side": "opponent"
+            },
+            {
+              "book_no_vig_probability": null,
+              "break_even_probability": 0.5348837209302325,
+              "candidate_model_estimated_return": -0.07972228330378839,
+              "candidate_model_probability": 0.4922415693956481,
+              "method": "decision",
+              "moneyline": -115,
+              "selected_fighter_id": "f1d64ae34e088832",
+              "selected_fighter_name": "Charles Jourdain",
+              "selection": "Charles Jourdain by DECISION",
+              "side": "opponent"
+            }
+          ],
+          "six_way_overround": null,
+          "source_book_key": "book_26"
+        }
+      ],
+      "bout_order": 6,
+      "fighter_id": "7c7332319c14094c",
+      "fighter_name": "Marlon Vera",
+      "matchup_id": "matchup_ae4469d6e6c383f48dab6d33688d521769dc4791855bdb3c6cf4abaa090c38c7",
+      "opponent_id": "f1d64ae34e088832",
+      "opponent_name": "Charles Jourdain"
+    },
+    {
+      "book_count": 2,
+      "book_quotes": [
+        {
+          "book": "BetRivers",
+          "horizon": "t72",
+          "is_complete_six_way": false,
+          "observed_at_utc": "2026-09-16T23:28:53.464092Z",
+          "selection_count": 3,
+          "selections": [
+            {
+              "book_no_vig_probability": null,
+              "break_even_probability": 0.8484848484848485,
+              "candidate_model_estimated_return": -0.7377091942003307,
+              "candidate_model_probability": 0.2225497746179013,
+              "method": "ko_tko",
+              "moneyline": -560,
+              "selected_fighter_id": "140567899d98978a",
+              "selected_fighter_name": "Robelis Despaigne",
+              "selection": "Robelis Despaigne by KO/TKO",
+              "side": "opponent"
+            },
+            {
+              "book_no_vig_probability": null,
+              "break_even_probability": 0.10526315789473684,
+              "candidate_model_estimated_return": -0.26490154713459735,
+              "candidate_model_probability": 0.07737878451214765,
+              "method": "submission",
+              "moneyline": 850,
+              "selected_fighter_id": "140567899d98978a",
+              "selected_fighter_name": "Robelis Despaigne",
+              "selection": "Robelis Despaigne by SUBMISSION",
+              "side": "opponent"
+            },
+            {
+              "book_no_vig_probability": null,
+              "break_even_probability": 0.09090909090909091,
+              "candidate_model_estimated_return": 2.9561463678341124,
+              "candidate_model_probability": 0.35964966980310115,
+              "method": "decision",
+              "moneyline": 1000,
+              "selected_fighter_id": "140567899d98978a",
+              "selected_fighter_name": "Robelis Despaigne",
+              "selection": "Robelis Despaigne by DECISION",
+              "side": "opponent"
+            }
+          ],
+          "six_way_overround": null,
+          "source_book_key": "book_25"
+        },
+        {
+          "book": "Unibet",
+          "horizon": "t72",
+          "is_complete_six_way": false,
+          "observed_at_utc": "2026-09-16T23:28:53.464092Z",
+          "selection_count": 3,
+          "selections": [
+            {
+              "book_no_vig_probability": null,
+              "break_even_probability": 0.8484848484848485,
+              "candidate_model_estimated_return": -0.7377091942003307,
+              "candidate_model_probability": 0.2225497746179013,
+              "method": "ko_tko",
+              "moneyline": -560,
+              "selected_fighter_id": "140567899d98978a",
+              "selected_fighter_name": "Robelis Despaigne",
+              "selection": "Robelis Despaigne by KO/TKO",
+              "side": "opponent"
+            },
+            {
+              "book_no_vig_probability": null,
+              "break_even_probability": 0.10526315789473684,
+              "candidate_model_estimated_return": -0.26490154713459735,
+              "candidate_model_probability": 0.07737878451214765,
+              "method": "submission",
+              "moneyline": 850,
+              "selected_fighter_id": "140567899d98978a",
+              "selected_fighter_name": "Robelis Despaigne",
+              "selection": "Robelis Despaigne by SUBMISSION",
+              "side": "opponent"
+            },
+            {
+              "book_no_vig_probability": null,
+              "break_even_probability": 0.1,
+              "candidate_model_estimated_return": 2.5964966980310114,
+              "candidate_model_probability": 0.35964966980310115,
+              "method": "decision",
+              "moneyline": 900,
+              "selected_fighter_id": "140567899d98978a",
+              "selected_fighter_name": "Robelis Despaigne",
+              "selection": "Robelis Despaigne by DECISION",
+              "side": "opponent"
+            }
+          ],
+          "six_way_overround": null,
+          "source_book_key": "book_26"
+        }
+      ],
+      "bout_order": 7,
+      "fighter_id": "c62fbc117d57b943",
+      "fighter_name": "Tai Tuivasa",
+      "matchup_id": "matchup_41ba239087a241674fcd8f74181fb92a25ca542b10d45301b7c21c7489209f99",
+      "opponent_id": "140567899d98978a",
+      "opponent_name": "Robelis Despaigne"
+    },
+    {
+      "book_count": 2,
+      "book_quotes": [
+        {
+          "book": "BetRivers",
+          "horizon": "t72",
+          "is_complete_six_way": false,
+          "observed_at_utc": "2026-09-16T23:28:53.464092Z",
+          "selection_count": 3,
+          "selections": [
+            {
+              "book_no_vig_probability": null,
+              "break_even_probability": 0.2222222222222222,
+              "candidate_model_estimated_return": -0.4343696527465597,
+              "candidate_model_probability": 0.12569563272298673,
+              "method": "ko_tko",
+              "moneyline": 350,
+              "selected_fighter_id": "1e719d4b676dc19a",
+              "selected_fighter_name": "Brunno Ferreira",
+              "selection": "Brunno Ferreira by KO/TKO",
+              "side": "opponent"
+            },
+            {
+              "book_no_vig_probability": null,
+              "break_even_probability": 0.14285714285714285,
+              "candidate_model_estimated_return": -0.36005978747487155,
+              "candidate_model_probability": 0.09142003036073264,
+              "method": "submission",
+              "moneyline": 600,
+              "selected_fighter_id": "1e719d4b676dc19a",
+              "selected_fighter_name": "Brunno Ferreira",
+              "selection": "Brunno Ferreira by SUBMISSION",
+              "side": "opponent"
+            },
+            {
+              "book_no_vig_probability": null,
+              "break_even_probability": 0.11764705882352941,
+              "candidate_model_estimated_return": 0.4089285576918251,
+              "candidate_model_probability": 0.1657563009049206,
+              "method": "decision",
+              "moneyline": 750,
+              "selected_fighter_id": "1e719d4b676dc19a",
+              "selected_fighter_name": "Brunno Ferreira",
+              "selection": "Brunno Ferreira by DECISION",
+              "side": "opponent"
+            }
+          ],
+          "six_way_overround": null,
+          "source_book_key": "book_25"
+        },
+        {
+          "book": "Unibet",
+          "horizon": "t72",
+          "is_complete_six_way": false,
+          "observed_at_utc": "2026-09-16T23:28:53.464092Z",
+          "selection_count": 3,
+          "selections": [
+            {
+              "book_no_vig_probability": null,
+              "break_even_probability": 0.2222222222222222,
+              "candidate_model_estimated_return": -0.4343696527465597,
+              "candidate_model_probability": 0.12569563272298673,
+              "method": "ko_tko",
+              "moneyline": 350,
+              "selected_fighter_id": "1e719d4b676dc19a",
+              "selected_fighter_name": "Brunno Ferreira",
+              "selection": "Brunno Ferreira by KO/TKO",
+              "side": "opponent"
+            },
+            {
+              "book_no_vig_probability": null,
+              "break_even_probability": 0.14285714285714285,
+              "candidate_model_estimated_return": -0.36005978747487155,
+              "candidate_model_probability": 0.09142003036073264,
+              "method": "submission",
+              "moneyline": 600,
+              "selected_fighter_id": "1e719d4b676dc19a",
+              "selected_fighter_name": "Brunno Ferreira",
+              "selection": "Brunno Ferreira by SUBMISSION",
+              "side": "opponent"
+            },
+            {
+              "book_no_vig_probability": null,
+              "break_even_probability": 0.11764705882352941,
+              "candidate_model_estimated_return": 0.4089285576918251,
+              "candidate_model_probability": 0.1657563009049206,
+              "method": "decision",
+              "moneyline": 750,
+              "selected_fighter_id": "1e719d4b676dc19a",
+              "selected_fighter_name": "Brunno Ferreira",
+              "selection": "Brunno Ferreira by DECISION",
+              "side": "opponent"
+            }
+          ],
+          "six_way_overround": null,
+          "source_book_key": "book_26"
+        }
+      ],
+      "bout_order": 10,
+      "fighter_id": "4144798612ef96e5",
+      "fighter_name": "Edmen Shahbazyan",
+      "matchup_id": "matchup_acd0e6b31a1c8fb3bae358145f988d378eaf334300bf13546996916eed3530b8",
+      "opponent_id": "1e719d4b676dc19a",
+      "opponent_name": "Brunno Ferreira"
+    },
+    {
+      "book_count": 2,
+      "book_quotes": [
+        {
+          "book": "BetRivers",
+          "horizon": "t72",
+          "is_complete_six_way": false,
+          "observed_at_utc": "2026-09-16T23:28:53.464092Z",
+          "selection_count": 3,
+          "selections": [
+            {
+              "book_no_vig_probability": null,
+              "break_even_probability": 0.1724137931034483,
+              "candidate_model_estimated_return": 0.2816915512252893,
+              "candidate_model_probability": 0.22098130193539472,
+              "method": "ko_tko",
+              "moneyline": 480,
+              "selected_fighter_id": "04835018f90b118c",
+              "selected_fighter_name": "Casey O'Neill",
+              "selection": "Casey O'Neill by KO/TKO",
+              "side": "fighter"
+            },
+            {
+              "book_no_vig_probability": null,
+              "break_even_probability": 0.08695652173913043,
+              "candidate_model_estimated_return": -0.20979548201443532,
+              "candidate_model_probability": 0.06871343634657084,
+              "method": "submission",
+              "moneyline": 1050,
+              "selected_fighter_id": "04835018f90b118c",
+              "selected_fighter_name": "Casey O'Neill",
+              "selection": "Casey O'Neill by SUBMISSION",
+              "side": "fighter"
+            },
+            {
+              "book_no_vig_probability": null,
+              "break_even_probability": 0.4807692307692308,
+              "candidate_model_estimated_return": -0.6129434804783547,
+              "candidate_model_probability": 0.18608486515463718,
+              "method": "decision",
+              "moneyline": 108,
+              "selected_fighter_id": "04835018f90b118c",
+              "selected_fighter_name": "Casey O'Neill",
+              "selection": "Casey O'Neill by DECISION",
+              "side": "fighter"
+            }
+          ],
+          "six_way_overround": null,
+          "source_book_key": "book_25"
+        },
+        {
+          "book": "Unibet",
+          "horizon": "t72",
+          "is_complete_six_way": false,
+          "observed_at_utc": "2026-09-16T23:28:53.464092Z",
+          "selection_count": 3,
+          "selections": [
+            {
+              "book_no_vig_probability": null,
+              "break_even_probability": 0.16666666666666666,
+              "candidate_model_estimated_return": 0.32588781161236824,
+              "candidate_model_probability": 0.22098130193539472,
+              "method": "ko_tko",
+              "moneyline": 500,
+              "selected_fighter_id": "04835018f90b118c",
+              "selected_fighter_name": "Casey O'Neill",
+              "selection": "Casey O'Neill by KO/TKO",
+              "side": "fighter"
+            },
+            {
+              "book_no_vig_probability": null,
+              "break_even_probability": 0.08695652173913043,
+              "candidate_model_estimated_return": -0.20979548201443532,
+              "candidate_model_probability": 0.06871343634657084,
+              "method": "submission",
+              "moneyline": 1050,
+              "selected_fighter_id": "04835018f90b118c",
+              "selected_fighter_name": "Casey O'Neill",
+              "selection": "Casey O'Neill by SUBMISSION",
+              "side": "fighter"
+            },
+            {
+              "book_no_vig_probability": null,
+              "break_even_probability": 0.4807692307692308,
+              "candidate_model_estimated_return": -0.6129434804783547,
+              "candidate_model_probability": 0.18608486515463718,
+              "method": "decision",
+              "moneyline": 108,
+              "selected_fighter_id": "04835018f90b118c",
+              "selected_fighter_name": "Casey O'Neill",
+              "selection": "Casey O'Neill by DECISION",
+              "side": "fighter"
+            }
+          ],
+          "six_way_overround": null,
+          "source_book_key": "book_26"
+        }
+      ],
+      "bout_order": 11,
+      "fighter_id": "04835018f90b118c",
+      "fighter_name": "Casey O'Neill",
+      "matchup_id": "matchup_8cb639734e70349cede5526c9186ce46910e1a9fe372bc84895459f47f63314c",
+      "opponent_id": "de594b35c45c2e9a",
+      "opponent_name": "Eduarda Moura"
+    },
+    {
+      "book_count": 2,
+      "book_quotes": [
+        {
+          "book": "BetRivers",
+          "horizon": "t72",
+          "is_complete_six_way": false,
+          "observed_at_utc": "2026-09-16T23:28:53.464092Z",
+          "selection_count": 3,
+          "selections": [
+            {
+              "book_no_vig_probability": null,
+              "break_even_probability": 0.125,
+              "candidate_model_estimated_return": -0.4277892128378943,
+              "candidate_model_probability": 0.07152634839526321,
+              "method": "ko_tko",
+              "moneyline": 700,
+              "selected_fighter_id": "9560ff14eb3129f7",
+              "selected_fighter_name": "Giga Chikadze",
+              "selection": "Giga Chikadze by KO/TKO",
+              "side": "fighter"
+            },
+            {
+              "book_no_vig_probability": null,
+              "break_even_probability": 0.04,
+              "candidate_model_estimated_return": -0.6201213307842646,
+              "candidate_model_probability": 0.015195146768629417,
+              "method": "submission",
+              "moneyline": 2400,
+              "selected_fighter_id": "9560ff14eb3129f7",
+              "selected_fighter_name": "Giga Chikadze",
+              "selection": "Giga Chikadze by SUBMISSION",
+              "side": "fighter"
+            },
+            {
+              "book_no_vig_probability": null,
+              "break_even_probability": 0.125,
+              "candidate_model_estimated_return": 0.29845267619543203,
+              "candidate_model_probability": 0.162306584524429,
+              "method": "decision",
+              "moneyline": 700,
+              "selected_fighter_id": "9560ff14eb3129f7",
+              "selected_fighter_name": "Giga Chikadze",
+              "selection": "Giga Chikadze by DECISION",
+              "side": "fighter"
+            }
+          ],
+          "six_way_overround": null,
+          "source_book_key": "book_25"
+        },
+        {
+          "book": "Unibet",
+          "horizon": "t72",
+          "is_complete_six_way": false,
+          "observed_at_utc": "2026-09-16T23:28:53.464092Z",
+          "selection_count": 3,
+          "selections": [
+            {
+              "book_no_vig_probability": null,
+              "break_even_probability": 0.125,
+              "candidate_model_estimated_return": -0.4277892128378943,
+              "candidate_model_probability": 0.07152634839526321,
+              "method": "ko_tko",
+              "moneyline": 700,
+              "selected_fighter_id": "9560ff14eb3129f7",
+              "selected_fighter_name": "Giga Chikadze",
+              "selection": "Giga Chikadze by KO/TKO",
+              "side": "fighter"
+            },
+            {
+              "book_no_vig_probability": null,
+              "break_even_probability": 0.04,
+              "candidate_model_estimated_return": -0.6201213307842646,
+              "candidate_model_probability": 0.015195146768629417,
+              "method": "submission",
+              "moneyline": 2400,
+              "selected_fighter_id": "9560ff14eb3129f7",
+              "selected_fighter_name": "Giga Chikadze",
+              "selection": "Giga Chikadze by SUBMISSION",
+              "side": "fighter"
+            },
+            {
+              "book_no_vig_probability": null,
+              "break_even_probability": 0.125,
+              "candidate_model_estimated_return": 0.29845267619543203,
+              "candidate_model_probability": 0.162306584524429,
+              "method": "decision",
+              "moneyline": 700,
+              "selected_fighter_id": "9560ff14eb3129f7",
+              "selected_fighter_name": "Giga Chikadze",
+              "selection": "Giga Chikadze by DECISION",
+              "side": "fighter"
+            }
+          ],
+          "six_way_overround": null,
+          "source_book_key": "book_26"
+        }
+      ],
+      "bout_order": 12,
+      "fighter_id": "9560ff14eb3129f7",
+      "fighter_name": "Giga Chikadze",
+      "matchup_id": "matchup_730df33900ec43538f5d7a9c368cd8fc9d91aef0d76aae08a2e109ea2630641f",
+      "opponent_id": "791c8437b341fba5",
+      "opponent_name": "Joanderson Brito"
     }
   ],
   "model_probability_status": "available_in_candidate_outcome_forecast",
   "paper_only": true,
-  "positive_candidate_comparison_count": 0,
-  "positive_candidate_comparisons": [],
+  "positive_candidate_comparison_count": 18,
+  "positive_candidate_comparisons": [
+    {
+      "book": "FanDuel",
+      "book_no_vig_probability": null,
+      "bout_order": 1,
+      "break_even_probability": 0.21739130434782608,
+      "candidate_model_estimated_return": 1.0613956713956978,
+      "candidate_model_probability": 0.44812949378167344,
+      "fighter_name": "Arman Tsarukyan",
+      "horizon": "t72",
+      "matchup_id": "matchup_46acdff5f3e3f7792daa1d5df06232e0e473168e2b7cb8890421fed3e858632b",
+      "method": "decision",
+      "moneyline": 360,
+      "opponent_name": "Mauricio Ruffy",
+      "selected_fighter_id": "eae48ff31db420c2",
+      "selected_fighter_name": "Arman Tsarukyan",
+      "selection": "Arman Tsarukyan by DECISION",
+      "side": "fighter"
+    },
+    {
+      "book": "BetRivers",
+      "book_no_vig_probability": null,
+      "bout_order": 1,
+      "break_even_probability": 0.25,
+      "candidate_model_estimated_return": 0.7925179751266938,
+      "candidate_model_probability": 0.44812949378167344,
+      "fighter_name": "Arman Tsarukyan",
+      "horizon": "t72",
+      "matchup_id": "matchup_46acdff5f3e3f7792daa1d5df06232e0e473168e2b7cb8890421fed3e858632b",
+      "method": "decision",
+      "moneyline": 300,
+      "opponent_name": "Mauricio Ruffy",
+      "selected_fighter_id": "eae48ff31db420c2",
+      "selected_fighter_name": "Arman Tsarukyan",
+      "selection": "Arman Tsarukyan by DECISION",
+      "side": "fighter"
+    },
+    {
+      "book": "BetWay",
+      "book_no_vig_probability": null,
+      "bout_order": 1,
+      "break_even_probability": 0.25,
+      "candidate_model_estimated_return": 0.7925179751266938,
+      "candidate_model_probability": 0.44812949378167344,
+      "fighter_name": "Arman Tsarukyan",
+      "horizon": "t72",
+      "matchup_id": "matchup_46acdff5f3e3f7792daa1d5df06232e0e473168e2b7cb8890421fed3e858632b",
+      "method": "decision",
+      "moneyline": 300,
+      "opponent_name": "Mauricio Ruffy",
+      "selected_fighter_id": "eae48ff31db420c2",
+      "selected_fighter_name": "Arman Tsarukyan",
+      "selection": "Arman Tsarukyan by DECISION",
+      "side": "fighter"
+    },
+    {
+      "book": "Unibet",
+      "book_no_vig_probability": null,
+      "bout_order": 1,
+      "break_even_probability": 0.25,
+      "candidate_model_estimated_return": 0.7925179751266938,
+      "candidate_model_probability": 0.44812949378167344,
+      "fighter_name": "Arman Tsarukyan",
+      "horizon": "t72",
+      "matchup_id": "matchup_46acdff5f3e3f7792daa1d5df06232e0e473168e2b7cb8890421fed3e858632b",
+      "method": "decision",
+      "moneyline": 300,
+      "opponent_name": "Mauricio Ruffy",
+      "selected_fighter_id": "eae48ff31db420c2",
+      "selected_fighter_name": "Arman Tsarukyan",
+      "selection": "Arman Tsarukyan by DECISION",
+      "side": "fighter"
+    },
+    {
+      "book": "FanDuel",
+      "book_no_vig_probability": null,
+      "bout_order": 5,
+      "break_even_probability": 0.05263157894736842,
+      "candidate_model_estimated_return": 6.158604575509938,
+      "candidate_model_probability": 0.3767686618689441,
+      "fighter_name": "Gable Steveson",
+      "horizon": "t72",
+      "matchup_id": "matchup_24d2abb788a1cd512c495fdc548d6e73ba97540b84f658b9ddefdfce49e378d6",
+      "method": "decision",
+      "moneyline": 1800,
+      "opponent_name": "Sean Sharaf",
+      "selected_fighter_id": "f7e856a73c96048e",
+      "selected_fighter_name": "Gable Steveson",
+      "selection": "Gable Steveson by DECISION",
+      "side": "fighter"
+    },
+    {
+      "book": "BetRivers",
+      "book_no_vig_probability": null,
+      "bout_order": 5,
+      "break_even_probability": 0.06666666666666667,
+      "candidate_model_estimated_return": 4.6515299280341615,
+      "candidate_model_probability": 0.3767686618689441,
+      "fighter_name": "Gable Steveson",
+      "horizon": "t72",
+      "matchup_id": "matchup_24d2abb788a1cd512c495fdc548d6e73ba97540b84f658b9ddefdfce49e378d6",
+      "method": "decision",
+      "moneyline": 1400,
+      "opponent_name": "Sean Sharaf",
+      "selected_fighter_id": "f7e856a73c96048e",
+      "selected_fighter_name": "Gable Steveson",
+      "selection": "Gable Steveson by DECISION",
+      "side": "fighter"
+    },
+    {
+      "book": "Unibet",
+      "book_no_vig_probability": null,
+      "bout_order": 5,
+      "break_even_probability": 0.06666666666666667,
+      "candidate_model_estimated_return": 4.6515299280341615,
+      "candidate_model_probability": 0.3767686618689441,
+      "fighter_name": "Gable Steveson",
+      "horizon": "t72",
+      "matchup_id": "matchup_24d2abb788a1cd512c495fdc548d6e73ba97540b84f658b9ddefdfce49e378d6",
+      "method": "decision",
+      "moneyline": 1400,
+      "opponent_name": "Sean Sharaf",
+      "selected_fighter_id": "f7e856a73c96048e",
+      "selected_fighter_name": "Gable Steveson",
+      "selection": "Gable Steveson by DECISION",
+      "side": "fighter"
+    },
+    {
+      "book": "FanDuel",
+      "book_no_vig_probability": null,
+      "bout_order": 6,
+      "break_even_probability": 0.07142857142857142,
+      "candidate_model_estimated_return": 1.7783607722743588,
+      "candidate_model_probability": 0.1984543408767399,
+      "fighter_name": "Marlon Vera",
+      "horizon": "t72",
+      "matchup_id": "matchup_ae4469d6e6c383f48dab6d33688d521769dc4791855bdb3c6cf4abaa090c38c7",
+      "method": "ko_tko",
+      "moneyline": 1300,
+      "opponent_name": "Charles Jourdain",
+      "selected_fighter_id": "f1d64ae34e088832",
+      "selected_fighter_name": "Charles Jourdain",
+      "selection": "Charles Jourdain by KO/TKO",
+      "side": "opponent"
+    },
+    {
+      "book": "BetRivers",
+      "book_no_vig_probability": null,
+      "bout_order": 6,
+      "break_even_probability": 0.08695652173913043,
+      "candidate_model_estimated_return": 1.282224920082509,
+      "candidate_model_probability": 0.1984543408767399,
+      "fighter_name": "Marlon Vera",
+      "horizon": "t72",
+      "matchup_id": "matchup_ae4469d6e6c383f48dab6d33688d521769dc4791855bdb3c6cf4abaa090c38c7",
+      "method": "ko_tko",
+      "moneyline": 1050,
+      "opponent_name": "Charles Jourdain",
+      "selected_fighter_id": "f1d64ae34e088832",
+      "selected_fighter_name": "Charles Jourdain",
+      "selection": "Charles Jourdain by KO/TKO",
+      "side": "opponent"
+    },
+    {
+      "book": "Unibet",
+      "book_no_vig_probability": null,
+      "bout_order": 6,
+      "break_even_probability": 0.08695652173913043,
+      "candidate_model_estimated_return": 1.282224920082509,
+      "candidate_model_probability": 0.1984543408767399,
+      "fighter_name": "Marlon Vera",
+      "horizon": "t72",
+      "matchup_id": "matchup_ae4469d6e6c383f48dab6d33688d521769dc4791855bdb3c6cf4abaa090c38c7",
+      "method": "ko_tko",
+      "moneyline": 1050,
+      "opponent_name": "Charles Jourdain",
+      "selected_fighter_id": "f1d64ae34e088832",
+      "selected_fighter_name": "Charles Jourdain",
+      "selection": "Charles Jourdain by KO/TKO",
+      "side": "opponent"
+    },
+    {
+      "book": "BetRivers",
+      "book_no_vig_probability": null,
+      "bout_order": 7,
+      "break_even_probability": 0.09090909090909091,
+      "candidate_model_estimated_return": 2.9561463678341124,
+      "candidate_model_probability": 0.35964966980310115,
+      "fighter_name": "Tai Tuivasa",
+      "horizon": "t72",
+      "matchup_id": "matchup_41ba239087a241674fcd8f74181fb92a25ca542b10d45301b7c21c7489209f99",
+      "method": "decision",
+      "moneyline": 1000,
+      "opponent_name": "Robelis Despaigne",
+      "selected_fighter_id": "140567899d98978a",
+      "selected_fighter_name": "Robelis Despaigne",
+      "selection": "Robelis Despaigne by DECISION",
+      "side": "opponent"
+    },
+    {
+      "book": "Unibet",
+      "book_no_vig_probability": null,
+      "bout_order": 7,
+      "break_even_probability": 0.1,
+      "candidate_model_estimated_return": 2.5964966980310114,
+      "candidate_model_probability": 0.35964966980310115,
+      "fighter_name": "Tai Tuivasa",
+      "horizon": "t72",
+      "matchup_id": "matchup_41ba239087a241674fcd8f74181fb92a25ca542b10d45301b7c21c7489209f99",
+      "method": "decision",
+      "moneyline": 900,
+      "opponent_name": "Robelis Despaigne",
+      "selected_fighter_id": "140567899d98978a",
+      "selected_fighter_name": "Robelis Despaigne",
+      "selection": "Robelis Despaigne by DECISION",
+      "side": "opponent"
+    },
+    {
+      "book": "BetRivers",
+      "book_no_vig_probability": null,
+      "bout_order": 10,
+      "break_even_probability": 0.11764705882352941,
+      "candidate_model_estimated_return": 0.4089285576918251,
+      "candidate_model_probability": 0.1657563009049206,
+      "fighter_name": "Edmen Shahbazyan",
+      "horizon": "t72",
+      "matchup_id": "matchup_acd0e6b31a1c8fb3bae358145f988d378eaf334300bf13546996916eed3530b8",
+      "method": "decision",
+      "moneyline": 750,
+      "opponent_name": "Brunno Ferreira",
+      "selected_fighter_id": "1e719d4b676dc19a",
+      "selected_fighter_name": "Brunno Ferreira",
+      "selection": "Brunno Ferreira by DECISION",
+      "side": "opponent"
+    },
+    {
+      "book": "Unibet",
+      "book_no_vig_probability": null,
+      "bout_order": 10,
+      "break_even_probability": 0.11764705882352941,
+      "candidate_model_estimated_return": 0.4089285576918251,
+      "candidate_model_probability": 0.1657563009049206,
+      "fighter_name": "Edmen Shahbazyan",
+      "horizon": "t72",
+      "matchup_id": "matchup_acd0e6b31a1c8fb3bae358145f988d378eaf334300bf13546996916eed3530b8",
+      "method": "decision",
+      "moneyline": 750,
+      "opponent_name": "Brunno Ferreira",
+      "selected_fighter_id": "1e719d4b676dc19a",
+      "selected_fighter_name": "Brunno Ferreira",
+      "selection": "Brunno Ferreira by DECISION",
+      "side": "opponent"
+    },
+    {
+      "book": "Unibet",
+      "book_no_vig_probability": null,
+      "bout_order": 11,
+      "break_even_probability": 0.16666666666666666,
+      "candidate_model_estimated_return": 0.32588781161236824,
+      "candidate_model_probability": 0.22098130193539472,
+      "fighter_name": "Casey O'Neill",
+      "horizon": "t72",
+      "matchup_id": "matchup_8cb639734e70349cede5526c9186ce46910e1a9fe372bc84895459f47f63314c",
+      "method": "ko_tko",
+      "moneyline": 500,
+      "opponent_name": "Eduarda Moura",
+      "selected_fighter_id": "04835018f90b118c",
+      "selected_fighter_name": "Casey O'Neill",
+      "selection": "Casey O'Neill by KO/TKO",
+      "side": "fighter"
+    },
+    {
+      "book": "BetRivers",
+      "book_no_vig_probability": null,
+      "bout_order": 11,
+      "break_even_probability": 0.1724137931034483,
+      "candidate_model_estimated_return": 0.2816915512252893,
+      "candidate_model_probability": 0.22098130193539472,
+      "fighter_name": "Casey O'Neill",
+      "horizon": "t72",
+      "matchup_id": "matchup_8cb639734e70349cede5526c9186ce46910e1a9fe372bc84895459f47f63314c",
+      "method": "ko_tko",
+      "moneyline": 480,
+      "opponent_name": "Eduarda Moura",
+      "selected_fighter_id": "04835018f90b118c",
+      "selected_fighter_name": "Casey O'Neill",
+      "selection": "Casey O'Neill by KO/TKO",
+      "side": "fighter"
+    },
+    {
+      "book": "BetRivers",
+      "book_no_vig_probability": null,
+      "bout_order": 12,
+      "break_even_probability": 0.125,
+      "candidate_model_estimated_return": 0.29845267619543203,
+      "candidate_model_probability": 0.162306584524429,
+      "fighter_name": "Giga Chikadze",
+      "horizon": "t72",
+      "matchup_id": "matchup_730df33900ec43538f5d7a9c368cd8fc9d91aef0d76aae08a2e109ea2630641f",
+      "method": "decision",
+      "moneyline": 700,
+      "opponent_name": "Joanderson Brito",
+      "selected_fighter_id": "9560ff14eb3129f7",
+      "selected_fighter_name": "Giga Chikadze",
+      "selection": "Giga Chikadze by DECISION",
+      "side": "fighter"
+    },
+    {
+      "book": "Unibet",
+      "book_no_vig_probability": null,
+      "bout_order": 12,
+      "break_even_probability": 0.125,
+      "candidate_model_estimated_return": 0.29845267619543203,
+      "candidate_model_probability": 0.162306584524429,
+      "fighter_name": "Giga Chikadze",
+      "horizon": "t72",
+      "matchup_id": "matchup_730df33900ec43538f5d7a9c368cd8fc9d91aef0d76aae08a2e109ea2630641f",
+      "method": "decision",
+      "moneyline": 700,
+      "opponent_name": "Joanderson Brito",
+      "selected_fighter_id": "9560ff14eb3129f7",
+      "selected_fighter_name": "Giga Chikadze",
+      "selection": "Giga Chikadze by DECISION",
+      "side": "fighter"
+    }
+  ],
   "price_status": "available",
-  "publication_sha256": "71fe6d40d43fadec51b64d700c27ef7dd011017a7576a2d4085593e125346fd8",
+  "publication_sha256": "5169817179760a19fd00db1793bcb96b1d1230467567c2a10f5727568f20ecf5",
   "schema_version": 1,
   "settlement_status": "not_enabled_until_book_contracts_are_verified",
   "source": "bestfightodds.com"
