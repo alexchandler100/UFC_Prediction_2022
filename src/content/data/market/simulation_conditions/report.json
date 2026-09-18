@@ -1,6 +1,6 @@
 {
   "coverage": {
-    "comparisons_since_activation": 0,
+    "comparisons_since_activation": 9,
     "comparisons_without_indicators": 0,
     "legacy_comparisons_excluded": 6
   },
@@ -54,8 +54,1229 @@
     },
     "version": "simulation-conditions-v1"
   },
-  "recorded_comparisons": 0,
-  "records_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
-  "results": [],
+  "recorded_comparisons": 9,
+  "records_sha256": "eccc9e62b4854a50dc901e3d13db6f3ef0de58902d7fce4c1386ef572375a833",
+  "results": [
+    {
+      "brier_difference_vs_market": {
+        "model": {
+          "card_bootstrap_95": null,
+          "difference": null
+        },
+        "simulation": {
+          "card_bootstrap_95": null,
+          "difference": null
+        }
+      },
+      "condition": "all",
+      "matches": null,
+      "mechanics_profile_id": "mechanics-8ba01f34444f",
+      "no_bet_profit_units": 0,
+      "paper_returns": {
+        "market": [
+          {
+            "bets": 0,
+            "fights_with_prices": 0,
+            "profit_units": null,
+            "return_per_unit": null,
+            "risk_units": 0,
+            "winning_payout_reduction": 0
+          },
+          {
+            "bets": 0,
+            "fights_with_prices": 0,
+            "profit_units": null,
+            "return_per_unit": null,
+            "risk_units": 0,
+            "winning_payout_reduction": 0.02
+          },
+          {
+            "bets": 0,
+            "fights_with_prices": 0,
+            "profit_units": null,
+            "return_per_unit": null,
+            "risk_units": 0,
+            "winning_payout_reduction": 0.05
+          }
+        ],
+        "model": [
+          {
+            "bets": 0,
+            "fights_with_prices": 0,
+            "profit_units": null,
+            "return_per_unit": null,
+            "risk_units": 0,
+            "winning_payout_reduction": 0
+          },
+          {
+            "bets": 0,
+            "fights_with_prices": 0,
+            "profit_units": null,
+            "return_per_unit": null,
+            "risk_units": 0,
+            "winning_payout_reduction": 0.02
+          },
+          {
+            "bets": 0,
+            "fights_with_prices": 0,
+            "profit_units": null,
+            "return_per_unit": null,
+            "risk_units": 0,
+            "winning_payout_reduction": 0.05
+          }
+        ],
+        "simulation": [
+          {
+            "bets": 0,
+            "fights_with_prices": 0,
+            "profit_units": null,
+            "return_per_unit": null,
+            "risk_units": 0,
+            "winning_payout_reduction": 0
+          },
+          {
+            "bets": 0,
+            "fights_with_prices": 0,
+            "profit_units": null,
+            "return_per_unit": null,
+            "risk_units": 0,
+            "winning_payout_reduction": 0.02
+          },
+          {
+            "bets": 0,
+            "fights_with_prices": 0,
+            "profit_units": null,
+            "return_per_unit": null,
+            "risk_units": 0,
+            "winning_payout_reduction": 0.05
+          }
+        ]
+      },
+      "pending_results": 9,
+      "recorded_fights": 9,
+      "review_sample_reached": false,
+      "scored_cards": 0,
+      "scored_fights": 0,
+      "scores": {
+        "market": {
+          "accuracy": null,
+          "brier": null,
+          "fights": 0,
+          "log_loss": null
+        },
+        "model": {
+          "accuracy": null,
+          "brier": null,
+          "fights": 0,
+          "log_loss": null
+        },
+        "simulation": {
+          "accuracy": null,
+          "brier": null,
+          "fights": 0,
+          "log_loss": null
+        }
+      },
+      "void_results": 0
+    },
+    {
+      "brier_difference_vs_market": {
+        "model": {
+          "card_bootstrap_95": null,
+          "difference": null
+        },
+        "simulation": {
+          "card_bootstrap_95": null,
+          "difference": null
+        }
+      },
+      "condition": "substantial_relevant_history",
+      "matches": true,
+      "mechanics_profile_id": "mechanics-8ba01f34444f",
+      "no_bet_profit_units": 0,
+      "paper_returns": {
+        "market": [
+          {
+            "bets": 0,
+            "fights_with_prices": 0,
+            "profit_units": null,
+            "return_per_unit": null,
+            "risk_units": 0,
+            "winning_payout_reduction": 0
+          },
+          {
+            "bets": 0,
+            "fights_with_prices": 0,
+            "profit_units": null,
+            "return_per_unit": null,
+            "risk_units": 0,
+            "winning_payout_reduction": 0.02
+          },
+          {
+            "bets": 0,
+            "fights_with_prices": 0,
+            "profit_units": null,
+            "return_per_unit": null,
+            "risk_units": 0,
+            "winning_payout_reduction": 0.05
+          }
+        ],
+        "model": [
+          {
+            "bets": 0,
+            "fights_with_prices": 0,
+            "profit_units": null,
+            "return_per_unit": null,
+            "risk_units": 0,
+            "winning_payout_reduction": 0
+          },
+          {
+            "bets": 0,
+            "fights_with_prices": 0,
+            "profit_units": null,
+            "return_per_unit": null,
+            "risk_units": 0,
+            "winning_payout_reduction": 0.02
+          },
+          {
+            "bets": 0,
+            "fights_with_prices": 0,
+            "profit_units": null,
+            "return_per_unit": null,
+            "risk_units": 0,
+            "winning_payout_reduction": 0.05
+          }
+        ],
+        "simulation": [
+          {
+            "bets": 0,
+            "fights_with_prices": 0,
+            "profit_units": null,
+            "return_per_unit": null,
+            "risk_units": 0,
+            "winning_payout_reduction": 0
+          },
+          {
+            "bets": 0,
+            "fights_with_prices": 0,
+            "profit_units": null,
+            "return_per_unit": null,
+            "risk_units": 0,
+            "winning_payout_reduction": 0.02
+          },
+          {
+            "bets": 0,
+            "fights_with_prices": 0,
+            "profit_units": null,
+            "return_per_unit": null,
+            "risk_units": 0,
+            "winning_payout_reduction": 0.05
+          }
+        ]
+      },
+      "pending_results": 2,
+      "recorded_fights": 2,
+      "review_sample_reached": false,
+      "scored_cards": 0,
+      "scored_fights": 0,
+      "scores": {
+        "market": {
+          "accuracy": null,
+          "brier": null,
+          "fights": 0,
+          "log_loss": null
+        },
+        "model": {
+          "accuracy": null,
+          "brier": null,
+          "fights": 0,
+          "log_loss": null
+        },
+        "simulation": {
+          "accuracy": null,
+          "brier": null,
+          "fights": 0,
+          "log_loss": null
+        }
+      },
+      "void_results": 0
+    },
+    {
+      "brier_difference_vs_market": {
+        "model": {
+          "card_bootstrap_95": null,
+          "difference": null
+        },
+        "simulation": {
+          "card_bootstrap_95": null,
+          "difference": null
+        }
+      },
+      "condition": "substantial_relevant_history",
+      "matches": false,
+      "mechanics_profile_id": "mechanics-8ba01f34444f",
+      "no_bet_profit_units": 0,
+      "paper_returns": {
+        "market": [
+          {
+            "bets": 0,
+            "fights_with_prices": 0,
+            "profit_units": null,
+            "return_per_unit": null,
+            "risk_units": 0,
+            "winning_payout_reduction": 0
+          },
+          {
+            "bets": 0,
+            "fights_with_prices": 0,
+            "profit_units": null,
+            "return_per_unit": null,
+            "risk_units": 0,
+            "winning_payout_reduction": 0.02
+          },
+          {
+            "bets": 0,
+            "fights_with_prices": 0,
+            "profit_units": null,
+            "return_per_unit": null,
+            "risk_units": 0,
+            "winning_payout_reduction": 0.05
+          }
+        ],
+        "model": [
+          {
+            "bets": 0,
+            "fights_with_prices": 0,
+            "profit_units": null,
+            "return_per_unit": null,
+            "risk_units": 0,
+            "winning_payout_reduction": 0
+          },
+          {
+            "bets": 0,
+            "fights_with_prices": 0,
+            "profit_units": null,
+            "return_per_unit": null,
+            "risk_units": 0,
+            "winning_payout_reduction": 0.02
+          },
+          {
+            "bets": 0,
+            "fights_with_prices": 0,
+            "profit_units": null,
+            "return_per_unit": null,
+            "risk_units": 0,
+            "winning_payout_reduction": 0.05
+          }
+        ],
+        "simulation": [
+          {
+            "bets": 0,
+            "fights_with_prices": 0,
+            "profit_units": null,
+            "return_per_unit": null,
+            "risk_units": 0,
+            "winning_payout_reduction": 0
+          },
+          {
+            "bets": 0,
+            "fights_with_prices": 0,
+            "profit_units": null,
+            "return_per_unit": null,
+            "risk_units": 0,
+            "winning_payout_reduction": 0.02
+          },
+          {
+            "bets": 0,
+            "fights_with_prices": 0,
+            "profit_units": null,
+            "return_per_unit": null,
+            "risk_units": 0,
+            "winning_payout_reduction": 0.05
+          }
+        ]
+      },
+      "pending_results": 7,
+      "recorded_fights": 7,
+      "review_sample_reached": false,
+      "scored_cards": 0,
+      "scored_fights": 0,
+      "scores": {
+        "market": {
+          "accuracy": null,
+          "brier": null,
+          "fights": 0,
+          "log_loss": null
+        },
+        "model": {
+          "accuracy": null,
+          "brier": null,
+          "fights": 0,
+          "log_loss": null
+        },
+        "simulation": {
+          "accuracy": null,
+          "brier": null,
+          "fights": 0,
+          "log_loss": null
+        }
+      },
+      "void_results": 0
+    },
+    {
+      "brier_difference_vs_market": {
+        "model": {
+          "card_bootstrap_95": null,
+          "difference": null
+        },
+        "simulation": {
+          "card_bootstrap_95": null,
+          "difference": null
+        }
+      },
+      "condition": "substantial_relevant_history",
+      "matches": null,
+      "mechanics_profile_id": "mechanics-8ba01f34444f",
+      "no_bet_profit_units": 0,
+      "paper_returns": {
+        "market": [
+          {
+            "bets": 0,
+            "fights_with_prices": 0,
+            "profit_units": null,
+            "return_per_unit": null,
+            "risk_units": 0,
+            "winning_payout_reduction": 0
+          },
+          {
+            "bets": 0,
+            "fights_with_prices": 0,
+            "profit_units": null,
+            "return_per_unit": null,
+            "risk_units": 0,
+            "winning_payout_reduction": 0.02
+          },
+          {
+            "bets": 0,
+            "fights_with_prices": 0,
+            "profit_units": null,
+            "return_per_unit": null,
+            "risk_units": 0,
+            "winning_payout_reduction": 0.05
+          }
+        ],
+        "model": [
+          {
+            "bets": 0,
+            "fights_with_prices": 0,
+            "profit_units": null,
+            "return_per_unit": null,
+            "risk_units": 0,
+            "winning_payout_reduction": 0
+          },
+          {
+            "bets": 0,
+            "fights_with_prices": 0,
+            "profit_units": null,
+            "return_per_unit": null,
+            "risk_units": 0,
+            "winning_payout_reduction": 0.02
+          },
+          {
+            "bets": 0,
+            "fights_with_prices": 0,
+            "profit_units": null,
+            "return_per_unit": null,
+            "risk_units": 0,
+            "winning_payout_reduction": 0.05
+          }
+        ],
+        "simulation": [
+          {
+            "bets": 0,
+            "fights_with_prices": 0,
+            "profit_units": null,
+            "return_per_unit": null,
+            "risk_units": 0,
+            "winning_payout_reduction": 0
+          },
+          {
+            "bets": 0,
+            "fights_with_prices": 0,
+            "profit_units": null,
+            "return_per_unit": null,
+            "risk_units": 0,
+            "winning_payout_reduction": 0.02
+          },
+          {
+            "bets": 0,
+            "fights_with_prices": 0,
+            "profit_units": null,
+            "return_per_unit": null,
+            "risk_units": 0,
+            "winning_payout_reduction": 0.05
+          }
+        ]
+      },
+      "pending_results": 0,
+      "recorded_fights": 0,
+      "review_sample_reached": false,
+      "scored_cards": 0,
+      "scored_fights": 0,
+      "scores": {
+        "market": {
+          "accuracy": null,
+          "brier": null,
+          "fights": 0,
+          "log_loss": null
+        },
+        "model": {
+          "accuracy": null,
+          "brier": null,
+          "fights": 0,
+          "log_loss": null
+        },
+        "simulation": {
+          "accuracy": null,
+          "brier": null,
+          "fights": 0,
+          "log_loss": null
+        }
+      },
+      "void_results": 0
+    },
+    {
+      "brier_difference_vs_market": {
+        "model": {
+          "card_bootstrap_95": null,
+          "difference": null
+        },
+        "simulation": {
+          "card_bootstrap_95": null,
+          "difference": null
+        }
+      },
+      "condition": "recent_history",
+      "matches": true,
+      "mechanics_profile_id": "mechanics-8ba01f34444f",
+      "no_bet_profit_units": 0,
+      "paper_returns": {
+        "market": [
+          {
+            "bets": 0,
+            "fights_with_prices": 0,
+            "profit_units": null,
+            "return_per_unit": null,
+            "risk_units": 0,
+            "winning_payout_reduction": 0
+          },
+          {
+            "bets": 0,
+            "fights_with_prices": 0,
+            "profit_units": null,
+            "return_per_unit": null,
+            "risk_units": 0,
+            "winning_payout_reduction": 0.02
+          },
+          {
+            "bets": 0,
+            "fights_with_prices": 0,
+            "profit_units": null,
+            "return_per_unit": null,
+            "risk_units": 0,
+            "winning_payout_reduction": 0.05
+          }
+        ],
+        "model": [
+          {
+            "bets": 0,
+            "fights_with_prices": 0,
+            "profit_units": null,
+            "return_per_unit": null,
+            "risk_units": 0,
+            "winning_payout_reduction": 0
+          },
+          {
+            "bets": 0,
+            "fights_with_prices": 0,
+            "profit_units": null,
+            "return_per_unit": null,
+            "risk_units": 0,
+            "winning_payout_reduction": 0.02
+          },
+          {
+            "bets": 0,
+            "fights_with_prices": 0,
+            "profit_units": null,
+            "return_per_unit": null,
+            "risk_units": 0,
+            "winning_payout_reduction": 0.05
+          }
+        ],
+        "simulation": [
+          {
+            "bets": 0,
+            "fights_with_prices": 0,
+            "profit_units": null,
+            "return_per_unit": null,
+            "risk_units": 0,
+            "winning_payout_reduction": 0
+          },
+          {
+            "bets": 0,
+            "fights_with_prices": 0,
+            "profit_units": null,
+            "return_per_unit": null,
+            "risk_units": 0,
+            "winning_payout_reduction": 0.02
+          },
+          {
+            "bets": 0,
+            "fights_with_prices": 0,
+            "profit_units": null,
+            "return_per_unit": null,
+            "risk_units": 0,
+            "winning_payout_reduction": 0.05
+          }
+        ]
+      },
+      "pending_results": 6,
+      "recorded_fights": 6,
+      "review_sample_reached": false,
+      "scored_cards": 0,
+      "scored_fights": 0,
+      "scores": {
+        "market": {
+          "accuracy": null,
+          "brier": null,
+          "fights": 0,
+          "log_loss": null
+        },
+        "model": {
+          "accuracy": null,
+          "brier": null,
+          "fights": 0,
+          "log_loss": null
+        },
+        "simulation": {
+          "accuracy": null,
+          "brier": null,
+          "fights": 0,
+          "log_loss": null
+        }
+      },
+      "void_results": 0
+    },
+    {
+      "brier_difference_vs_market": {
+        "model": {
+          "card_bootstrap_95": null,
+          "difference": null
+        },
+        "simulation": {
+          "card_bootstrap_95": null,
+          "difference": null
+        }
+      },
+      "condition": "recent_history",
+      "matches": false,
+      "mechanics_profile_id": "mechanics-8ba01f34444f",
+      "no_bet_profit_units": 0,
+      "paper_returns": {
+        "market": [
+          {
+            "bets": 0,
+            "fights_with_prices": 0,
+            "profit_units": null,
+            "return_per_unit": null,
+            "risk_units": 0,
+            "winning_payout_reduction": 0
+          },
+          {
+            "bets": 0,
+            "fights_with_prices": 0,
+            "profit_units": null,
+            "return_per_unit": null,
+            "risk_units": 0,
+            "winning_payout_reduction": 0.02
+          },
+          {
+            "bets": 0,
+            "fights_with_prices": 0,
+            "profit_units": null,
+            "return_per_unit": null,
+            "risk_units": 0,
+            "winning_payout_reduction": 0.05
+          }
+        ],
+        "model": [
+          {
+            "bets": 0,
+            "fights_with_prices": 0,
+            "profit_units": null,
+            "return_per_unit": null,
+            "risk_units": 0,
+            "winning_payout_reduction": 0
+          },
+          {
+            "bets": 0,
+            "fights_with_prices": 0,
+            "profit_units": null,
+            "return_per_unit": null,
+            "risk_units": 0,
+            "winning_payout_reduction": 0.02
+          },
+          {
+            "bets": 0,
+            "fights_with_prices": 0,
+            "profit_units": null,
+            "return_per_unit": null,
+            "risk_units": 0,
+            "winning_payout_reduction": 0.05
+          }
+        ],
+        "simulation": [
+          {
+            "bets": 0,
+            "fights_with_prices": 0,
+            "profit_units": null,
+            "return_per_unit": null,
+            "risk_units": 0,
+            "winning_payout_reduction": 0
+          },
+          {
+            "bets": 0,
+            "fights_with_prices": 0,
+            "profit_units": null,
+            "return_per_unit": null,
+            "risk_units": 0,
+            "winning_payout_reduction": 0.02
+          },
+          {
+            "bets": 0,
+            "fights_with_prices": 0,
+            "profit_units": null,
+            "return_per_unit": null,
+            "risk_units": 0,
+            "winning_payout_reduction": 0.05
+          }
+        ]
+      },
+      "pending_results": 3,
+      "recorded_fights": 3,
+      "review_sample_reached": false,
+      "scored_cards": 0,
+      "scored_fights": 0,
+      "scores": {
+        "market": {
+          "accuracy": null,
+          "brier": null,
+          "fights": 0,
+          "log_loss": null
+        },
+        "model": {
+          "accuracy": null,
+          "brier": null,
+          "fights": 0,
+          "log_loss": null
+        },
+        "simulation": {
+          "accuracy": null,
+          "brier": null,
+          "fights": 0,
+          "log_loss": null
+        }
+      },
+      "void_results": 0
+    },
+    {
+      "brier_difference_vs_market": {
+        "model": {
+          "card_bootstrap_95": null,
+          "difference": null
+        },
+        "simulation": {
+          "card_bootstrap_95": null,
+          "difference": null
+        }
+      },
+      "condition": "recent_history",
+      "matches": null,
+      "mechanics_profile_id": "mechanics-8ba01f34444f",
+      "no_bet_profit_units": 0,
+      "paper_returns": {
+        "market": [
+          {
+            "bets": 0,
+            "fights_with_prices": 0,
+            "profit_units": null,
+            "return_per_unit": null,
+            "risk_units": 0,
+            "winning_payout_reduction": 0
+          },
+          {
+            "bets": 0,
+            "fights_with_prices": 0,
+            "profit_units": null,
+            "return_per_unit": null,
+            "risk_units": 0,
+            "winning_payout_reduction": 0.02
+          },
+          {
+            "bets": 0,
+            "fights_with_prices": 0,
+            "profit_units": null,
+            "return_per_unit": null,
+            "risk_units": 0,
+            "winning_payout_reduction": 0.05
+          }
+        ],
+        "model": [
+          {
+            "bets": 0,
+            "fights_with_prices": 0,
+            "profit_units": null,
+            "return_per_unit": null,
+            "risk_units": 0,
+            "winning_payout_reduction": 0
+          },
+          {
+            "bets": 0,
+            "fights_with_prices": 0,
+            "profit_units": null,
+            "return_per_unit": null,
+            "risk_units": 0,
+            "winning_payout_reduction": 0.02
+          },
+          {
+            "bets": 0,
+            "fights_with_prices": 0,
+            "profit_units": null,
+            "return_per_unit": null,
+            "risk_units": 0,
+            "winning_payout_reduction": 0.05
+          }
+        ],
+        "simulation": [
+          {
+            "bets": 0,
+            "fights_with_prices": 0,
+            "profit_units": null,
+            "return_per_unit": null,
+            "risk_units": 0,
+            "winning_payout_reduction": 0
+          },
+          {
+            "bets": 0,
+            "fights_with_prices": 0,
+            "profit_units": null,
+            "return_per_unit": null,
+            "risk_units": 0,
+            "winning_payout_reduction": 0.02
+          },
+          {
+            "bets": 0,
+            "fights_with_prices": 0,
+            "profit_units": null,
+            "return_per_unit": null,
+            "risk_units": 0,
+            "winning_payout_reduction": 0.05
+          }
+        ]
+      },
+      "pending_results": 0,
+      "recorded_fights": 0,
+      "review_sample_reached": false,
+      "scored_cards": 0,
+      "scored_fights": 0,
+      "scores": {
+        "market": {
+          "accuracy": null,
+          "brier": null,
+          "fights": 0,
+          "log_loss": null
+        },
+        "model": {
+          "accuracy": null,
+          "brier": null,
+          "fights": 0,
+          "log_loss": null
+        },
+        "simulation": {
+          "accuracy": null,
+          "brier": null,
+          "fights": 0,
+          "log_loss": null
+        }
+      },
+      "void_results": 0
+    },
+    {
+      "brier_difference_vs_market": {
+        "model": {
+          "card_bootstrap_95": null,
+          "difference": null
+        },
+        "simulation": {
+          "card_bootstrap_95": null,
+          "difference": null
+        }
+      },
+      "condition": "narrow_simulation_range",
+      "matches": true,
+      "mechanics_profile_id": "mechanics-8ba01f34444f",
+      "no_bet_profit_units": 0,
+      "paper_returns": {
+        "market": [
+          {
+            "bets": 0,
+            "fights_with_prices": 0,
+            "profit_units": null,
+            "return_per_unit": null,
+            "risk_units": 0,
+            "winning_payout_reduction": 0
+          },
+          {
+            "bets": 0,
+            "fights_with_prices": 0,
+            "profit_units": null,
+            "return_per_unit": null,
+            "risk_units": 0,
+            "winning_payout_reduction": 0.02
+          },
+          {
+            "bets": 0,
+            "fights_with_prices": 0,
+            "profit_units": null,
+            "return_per_unit": null,
+            "risk_units": 0,
+            "winning_payout_reduction": 0.05
+          }
+        ],
+        "model": [
+          {
+            "bets": 0,
+            "fights_with_prices": 0,
+            "profit_units": null,
+            "return_per_unit": null,
+            "risk_units": 0,
+            "winning_payout_reduction": 0
+          },
+          {
+            "bets": 0,
+            "fights_with_prices": 0,
+            "profit_units": null,
+            "return_per_unit": null,
+            "risk_units": 0,
+            "winning_payout_reduction": 0.02
+          },
+          {
+            "bets": 0,
+            "fights_with_prices": 0,
+            "profit_units": null,
+            "return_per_unit": null,
+            "risk_units": 0,
+            "winning_payout_reduction": 0.05
+          }
+        ],
+        "simulation": [
+          {
+            "bets": 0,
+            "fights_with_prices": 0,
+            "profit_units": null,
+            "return_per_unit": null,
+            "risk_units": 0,
+            "winning_payout_reduction": 0
+          },
+          {
+            "bets": 0,
+            "fights_with_prices": 0,
+            "profit_units": null,
+            "return_per_unit": null,
+            "risk_units": 0,
+            "winning_payout_reduction": 0.02
+          },
+          {
+            "bets": 0,
+            "fights_with_prices": 0,
+            "profit_units": null,
+            "return_per_unit": null,
+            "risk_units": 0,
+            "winning_payout_reduction": 0.05
+          }
+        ]
+      },
+      "pending_results": 0,
+      "recorded_fights": 0,
+      "review_sample_reached": false,
+      "scored_cards": 0,
+      "scored_fights": 0,
+      "scores": {
+        "market": {
+          "accuracy": null,
+          "brier": null,
+          "fights": 0,
+          "log_loss": null
+        },
+        "model": {
+          "accuracy": null,
+          "brier": null,
+          "fights": 0,
+          "log_loss": null
+        },
+        "simulation": {
+          "accuracy": null,
+          "brier": null,
+          "fights": 0,
+          "log_loss": null
+        }
+      },
+      "void_results": 0
+    },
+    {
+      "brier_difference_vs_market": {
+        "model": {
+          "card_bootstrap_95": null,
+          "difference": null
+        },
+        "simulation": {
+          "card_bootstrap_95": null,
+          "difference": null
+        }
+      },
+      "condition": "narrow_simulation_range",
+      "matches": false,
+      "mechanics_profile_id": "mechanics-8ba01f34444f",
+      "no_bet_profit_units": 0,
+      "paper_returns": {
+        "market": [
+          {
+            "bets": 0,
+            "fights_with_prices": 0,
+            "profit_units": null,
+            "return_per_unit": null,
+            "risk_units": 0,
+            "winning_payout_reduction": 0
+          },
+          {
+            "bets": 0,
+            "fights_with_prices": 0,
+            "profit_units": null,
+            "return_per_unit": null,
+            "risk_units": 0,
+            "winning_payout_reduction": 0.02
+          },
+          {
+            "bets": 0,
+            "fights_with_prices": 0,
+            "profit_units": null,
+            "return_per_unit": null,
+            "risk_units": 0,
+            "winning_payout_reduction": 0.05
+          }
+        ],
+        "model": [
+          {
+            "bets": 0,
+            "fights_with_prices": 0,
+            "profit_units": null,
+            "return_per_unit": null,
+            "risk_units": 0,
+            "winning_payout_reduction": 0
+          },
+          {
+            "bets": 0,
+            "fights_with_prices": 0,
+            "profit_units": null,
+            "return_per_unit": null,
+            "risk_units": 0,
+            "winning_payout_reduction": 0.02
+          },
+          {
+            "bets": 0,
+            "fights_with_prices": 0,
+            "profit_units": null,
+            "return_per_unit": null,
+            "risk_units": 0,
+            "winning_payout_reduction": 0.05
+          }
+        ],
+        "simulation": [
+          {
+            "bets": 0,
+            "fights_with_prices": 0,
+            "profit_units": null,
+            "return_per_unit": null,
+            "risk_units": 0,
+            "winning_payout_reduction": 0
+          },
+          {
+            "bets": 0,
+            "fights_with_prices": 0,
+            "profit_units": null,
+            "return_per_unit": null,
+            "risk_units": 0,
+            "winning_payout_reduction": 0.02
+          },
+          {
+            "bets": 0,
+            "fights_with_prices": 0,
+            "profit_units": null,
+            "return_per_unit": null,
+            "risk_units": 0,
+            "winning_payout_reduction": 0.05
+          }
+        ]
+      },
+      "pending_results": 9,
+      "recorded_fights": 9,
+      "review_sample_reached": false,
+      "scored_cards": 0,
+      "scored_fights": 0,
+      "scores": {
+        "market": {
+          "accuracy": null,
+          "brier": null,
+          "fights": 0,
+          "log_loss": null
+        },
+        "model": {
+          "accuracy": null,
+          "brier": null,
+          "fights": 0,
+          "log_loss": null
+        },
+        "simulation": {
+          "accuracy": null,
+          "brier": null,
+          "fights": 0,
+          "log_loss": null
+        }
+      },
+      "void_results": 0
+    },
+    {
+      "brier_difference_vs_market": {
+        "model": {
+          "card_bootstrap_95": null,
+          "difference": null
+        },
+        "simulation": {
+          "card_bootstrap_95": null,
+          "difference": null
+        }
+      },
+      "condition": "narrow_simulation_range",
+      "matches": null,
+      "mechanics_profile_id": "mechanics-8ba01f34444f",
+      "no_bet_profit_units": 0,
+      "paper_returns": {
+        "market": [
+          {
+            "bets": 0,
+            "fights_with_prices": 0,
+            "profit_units": null,
+            "return_per_unit": null,
+            "risk_units": 0,
+            "winning_payout_reduction": 0
+          },
+          {
+            "bets": 0,
+            "fights_with_prices": 0,
+            "profit_units": null,
+            "return_per_unit": null,
+            "risk_units": 0,
+            "winning_payout_reduction": 0.02
+          },
+          {
+            "bets": 0,
+            "fights_with_prices": 0,
+            "profit_units": null,
+            "return_per_unit": null,
+            "risk_units": 0,
+            "winning_payout_reduction": 0.05
+          }
+        ],
+        "model": [
+          {
+            "bets": 0,
+            "fights_with_prices": 0,
+            "profit_units": null,
+            "return_per_unit": null,
+            "risk_units": 0,
+            "winning_payout_reduction": 0
+          },
+          {
+            "bets": 0,
+            "fights_with_prices": 0,
+            "profit_units": null,
+            "return_per_unit": null,
+            "risk_units": 0,
+            "winning_payout_reduction": 0.02
+          },
+          {
+            "bets": 0,
+            "fights_with_prices": 0,
+            "profit_units": null,
+            "return_per_unit": null,
+            "risk_units": 0,
+            "winning_payout_reduction": 0.05
+          }
+        ],
+        "simulation": [
+          {
+            "bets": 0,
+            "fights_with_prices": 0,
+            "profit_units": null,
+            "return_per_unit": null,
+            "risk_units": 0,
+            "winning_payout_reduction": 0
+          },
+          {
+            "bets": 0,
+            "fights_with_prices": 0,
+            "profit_units": null,
+            "return_per_unit": null,
+            "risk_units": 0,
+            "winning_payout_reduction": 0.02
+          },
+          {
+            "bets": 0,
+            "fights_with_prices": 0,
+            "profit_units": null,
+            "return_per_unit": null,
+            "risk_units": 0,
+            "winning_payout_reduction": 0.05
+          }
+        ]
+      },
+      "pending_results": 0,
+      "recorded_fights": 0,
+      "review_sample_reached": false,
+      "scored_cards": 0,
+      "scored_fights": 0,
+      "scores": {
+        "market": {
+          "accuracy": null,
+          "brier": null,
+          "fights": 0,
+          "log_loss": null
+        },
+        "model": {
+          "accuracy": null,
+          "brier": null,
+          "fights": 0,
+          "log_loss": null
+        },
+        "simulation": {
+          "accuracy": null,
+          "brier": null,
+          "fights": 0,
+          "log_loss": null
+        }
+      },
+      "void_results": 0
+    }
+  ],
   "status": "collecting_evidence"
 }

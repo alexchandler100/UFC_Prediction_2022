@@ -1,1 +1,814 @@
-[]
+[
+  {
+    "capture_id": "capture_20260918T232830347226Z_35405613816_1_71cb2a01e5ef",
+    "event_date": "2026-09-19",
+    "event_id": "8a0a35e7c74bebcc",
+    "event_start_utc": "2026-09-19T21:45:00.000000Z",
+    "fighter_id": "791c8437b341fba5",
+    "forecast": {
+      "capture_id": "capture_20260918T232830347226Z_35405613816_1_71cb2a01e5ef",
+      "event_date": "2026-09-19",
+      "event_id": "8a0a35e7c74bebcc",
+      "event_start_utc": "2026-09-19T21:45:00.000000Z",
+      "fight_id": null,
+      "fighter_id": "791c8437b341fba5",
+      "fighter_name": "Joanderson Brito",
+      "forecast_capture_id": "684775981382f57c3221fb9591ce966814596061e0be74644f554d3d8a93652c",
+      "forecast_issued_at_utc": "2026-09-17T02:49:37.000000Z",
+      "legacy_predicted_american_odds": null,
+      "matchup_id": "matchup_730df33900ec43538f5d7a9c368cd8fc9d91aef0d76aae08a2e109ea2630641f",
+      "model_id": "5ca0c9b4a2b142fb5faf",
+      "model_probability": 0.7508323863999999,
+      "model_trained_through": "2026-09-12",
+      "model_training_cutoff_precision": "date",
+      "model_version": "point-in-time-elo-logistic-v2",
+      "opponent_id": "9560ff14eb3129f7",
+      "opponent_name": "Giga Chikadze",
+      "probability_provenance": "native_probability",
+      "schema_version": 1,
+      "source_commit_sha": "b9b0d891c1095ed65a699ce2c1a8f8f539f57345",
+      "timing_precision": "timestamp"
+    },
+    "matchup_id": "matchup_730df33900ec43538f5d7a9c368cd8fc9d91aef0d76aae08a2e109ea2630641f",
+    "offers": [
+      {
+        "book": "Bally Bet",
+        "consensus_quote_ids": [
+          "bcecffc9ac52b1d78b069304e6cde827bf878b3079de0b5f846fa92d8a87a7db",
+          "046ab8540c1396a711d422c0ebc1a607fb936e598c94c2026622cca5fee85409",
+          "0fca06a027e1268ff36c10cfae7e491ba549d1fd02dd999adaa68debed51338c",
+          "b225d83750142245eb00d7a6cff3bd1b9229347aafab35818cb79457ac9c14e2",
+          "d3285921683e6c53498efc4dd3705e7da61dd616909b35334a445a14a356d0c9",
+          "6612415bf71dde8977b52f8390a311e2ecad2871b0b833a59fd0d0b740f5af57",
+          "b14b802d83fb9b7a75fee55a0f5bf3686a81711ffeab1114fe16e410746b6873",
+          "3300ec6d07ec570119521c30ab8693e118042597197cef444fdfc1b2faab6a8b"
+        ],
+        "expected_returns": {
+          "adjusted_market": -0.015631616970730455,
+          "market": -0.05071682832732438,
+          "production_model": -0.07039799779047629
+        },
+        "market_consensus_id": "831d3e2e6b5f0ff80a8f744b8aedb540f18fc1a02094f9cb9f410c175979761f",
+        "moneyline": -420,
+        "probabilities": {
+          "adjusted_market": 0.7950667709082562,
+          "market": 0.7667287155817765,
+          "production_model": 0.7508323863999999
+        },
+        "quote_id": "fbff1b777bed7f0bea08945a6fd68f0f84414ece04b2b9d5d96fcc21a95e4a10",
+        "side": "fighter",
+        "source_metadata": {
+          "book": "Bally Bet",
+          "capture_id": "capture_20260918T232830347226Z_35405613816_1_71cb2a01e5ef",
+          "event_id": "8a0a35e7c74bebcc",
+          "matchup_id": "matchup_730df33900ec43538f5d7a9c368cd8fc9d91aef0d76aae08a2e109ea2630641f",
+          "metadata_id": "52da12d73db7dd2b49e626e2fd4a650919e439b628e051cf94b08716cd6afdf8",
+          "observed_at_utc": "2026-09-18T23:28:30.715570Z",
+          "quote_id": "fbff1b777bed7f0bea08945a6fd68f0f84414ece04b2b9d5d96fcc21a95e4a10",
+          "schema_version": 1,
+          "source": "the-odds-api.com",
+          "source_book_key": "ballybet",
+          "source_commence_time_utc": "2026-09-19T21:45:00.000000Z",
+          "source_event_id": "72bc9fad0569290a723199450ccce949",
+          "source_quote_age_seconds": 35.71557,
+          "source_quote_updated_at_utc": "2026-09-18T23:27:55.000000Z"
+        }
+      },
+      {
+        "book": "Bally Bet",
+        "consensus_quote_ids": [
+          "bcecffc9ac52b1d78b069304e6cde827bf878b3079de0b5f846fa92d8a87a7db",
+          "046ab8540c1396a711d422c0ebc1a607fb936e598c94c2026622cca5fee85409",
+          "0fca06a027e1268ff36c10cfae7e491ba549d1fd02dd999adaa68debed51338c",
+          "b225d83750142245eb00d7a6cff3bd1b9229347aafab35818cb79457ac9c14e2",
+          "d3285921683e6c53498efc4dd3705e7da61dd616909b35334a445a14a356d0c9",
+          "6612415bf71dde8977b52f8390a311e2ecad2871b0b833a59fd0d0b740f5af57",
+          "b14b802d83fb9b7a75fee55a0f5bf3686a81711ffeab1114fe16e410746b6873",
+          "3300ec6d07ec570119521c30ab8693e118042597197cef444fdfc1b2faab6a8b"
+        ],
+        "expected_returns": {
+          "adjusted_market": -0.1597737607238504,
+          "market": -0.043587733885283586,
+          "production_model": 0.02158721576000011
+        },
+        "market_consensus_id": "831d3e2e6b5f0ff80a8f744b8aedb540f18fc1a02094f9cb9f410c175979761f",
+        "moneyline": 310,
+        "probabilities": {
+          "adjusted_market": 0.20493322909174383,
+          "market": 0.23327128441822353,
+          "production_model": 0.24916761360000006
+        },
+        "quote_id": "fbff1b777bed7f0bea08945a6fd68f0f84414ece04b2b9d5d96fcc21a95e4a10",
+        "side": "opponent",
+        "source_metadata": {
+          "book": "Bally Bet",
+          "capture_id": "capture_20260918T232830347226Z_35405613816_1_71cb2a01e5ef",
+          "event_id": "8a0a35e7c74bebcc",
+          "matchup_id": "matchup_730df33900ec43538f5d7a9c368cd8fc9d91aef0d76aae08a2e109ea2630641f",
+          "metadata_id": "52da12d73db7dd2b49e626e2fd4a650919e439b628e051cf94b08716cd6afdf8",
+          "observed_at_utc": "2026-09-18T23:28:30.715570Z",
+          "quote_id": "fbff1b777bed7f0bea08945a6fd68f0f84414ece04b2b9d5d96fcc21a95e4a10",
+          "schema_version": 1,
+          "source": "the-odds-api.com",
+          "source_book_key": "ballybet",
+          "source_commence_time_utc": "2026-09-19T21:45:00.000000Z",
+          "source_event_id": "72bc9fad0569290a723199450ccce949",
+          "source_quote_age_seconds": 35.71557,
+          "source_quote_updated_at_utc": "2026-09-18T23:27:55.000000Z"
+        }
+      },
+      {
+        "book": "BetAnything",
+        "consensus_quote_ids": [
+          "fbff1b777bed7f0bea08945a6fd68f0f84414ece04b2b9d5d96fcc21a95e4a10",
+          "046ab8540c1396a711d422c0ebc1a607fb936e598c94c2026622cca5fee85409",
+          "0fca06a027e1268ff36c10cfae7e491ba549d1fd02dd999adaa68debed51338c",
+          "b225d83750142245eb00d7a6cff3bd1b9229347aafab35818cb79457ac9c14e2",
+          "d3285921683e6c53498efc4dd3705e7da61dd616909b35334a445a14a356d0c9",
+          "6612415bf71dde8977b52f8390a311e2ecad2871b0b833a59fd0d0b740f5af57",
+          "b14b802d83fb9b7a75fee55a0f5bf3686a81711ffeab1114fe16e410746b6873",
+          "3300ec6d07ec570119521c30ab8693e118042597197cef444fdfc1b2faab6a8b"
+        ],
+        "expected_returns": {
+          "adjusted_market": -0.02017183425856206,
+          "market": -0.055077851035929104,
+          "production_model": -0.07656246730114957
+        },
+        "market_consensus_id": "26da91d549a53c0acbfbbe13fd65f85a85e9f0e7564586f40eb1201e8c3d905a",
+        "moneyline": -435,
+        "probabilities": {
+          "adjusted_market": 0.7966827142009822,
+          "market": 0.7683011865408801,
+          "production_model": 0.7508323863999999
+        },
+        "quote_id": "bcecffc9ac52b1d78b069304e6cde827bf878b3079de0b5f846fa92d8a87a7db",
+        "side": "fighter",
+        "source_metadata": {
+          "book": "BetAnything",
+          "capture_id": "capture_20260918T232830347226Z_35405613816_1_71cb2a01e5ef",
+          "event_id": "8a0a35e7c74bebcc",
+          "matchup_id": "matchup_730df33900ec43538f5d7a9c368cd8fc9d91aef0d76aae08a2e109ea2630641f",
+          "metadata_id": "0415ebcc7d0fe2b59a2f11116eec1c1bf71909e62ac16c9d33a0ed88ea4b1b50",
+          "observed_at_utc": "2026-09-18T23:28:30.715570Z",
+          "quote_id": "bcecffc9ac52b1d78b069304e6cde827bf878b3079de0b5f846fa92d8a87a7db",
+          "schema_version": 1,
+          "source": "the-odds-api.com",
+          "source_book_key": "betanysports",
+          "source_commence_time_utc": "2026-09-19T21:45:00.000000Z",
+          "source_event_id": "72bc9fad0569290a723199450ccce949",
+          "source_quote_age_seconds": 128.71557,
+          "source_quote_updated_at_utc": "2026-09-18T23:26:22.000000Z"
+        }
+      },
+      {
+        "book": "BetAnything",
+        "consensus_quote_ids": [
+          "fbff1b777bed7f0bea08945a6fd68f0f84414ece04b2b9d5d96fcc21a95e4a10",
+          "046ab8540c1396a711d422c0ebc1a607fb936e598c94c2026622cca5fee85409",
+          "0fca06a027e1268ff36c10cfae7e491ba549d1fd02dd999adaa68debed51338c",
+          "b225d83750142245eb00d7a6cff3bd1b9229347aafab35818cb79457ac9c14e2",
+          "d3285921683e6c53498efc4dd3705e7da61dd616909b35334a445a14a356d0c9",
+          "6612415bf71dde8977b52f8390a311e2ecad2871b0b833a59fd0d0b740f5af57",
+          "b14b802d83fb9b7a75fee55a0f5bf3686a81711ffeab1114fe16e410746b6873",
+          "3300ec6d07ec570119521c30ab8693e118042597197cef444fdfc1b2faab6a8b"
+        ],
+        "expected_returns": {
+          "adjusted_market": -0.22739431396373255,
+          "market": -0.1195445088553444,
+          "production_model": -0.05316306831999984
+        },
+        "market_consensus_id": "26da91d549a53c0acbfbbe13fd65f85a85e9f0e7564586f40eb1201e8c3d905a",
+        "moneyline": 280,
+        "probabilities": {
+          "adjusted_market": 0.20331728579901776,
+          "market": 0.2316988134591199,
+          "production_model": 0.24916761360000006
+        },
+        "quote_id": "bcecffc9ac52b1d78b069304e6cde827bf878b3079de0b5f846fa92d8a87a7db",
+        "side": "opponent",
+        "source_metadata": {
+          "book": "BetAnything",
+          "capture_id": "capture_20260918T232830347226Z_35405613816_1_71cb2a01e5ef",
+          "event_id": "8a0a35e7c74bebcc",
+          "matchup_id": "matchup_730df33900ec43538f5d7a9c368cd8fc9d91aef0d76aae08a2e109ea2630641f",
+          "metadata_id": "0415ebcc7d0fe2b59a2f11116eec1c1bf71909e62ac16c9d33a0ed88ea4b1b50",
+          "observed_at_utc": "2026-09-18T23:28:30.715570Z",
+          "quote_id": "bcecffc9ac52b1d78b069304e6cde827bf878b3079de0b5f846fa92d8a87a7db",
+          "schema_version": 1,
+          "source": "the-odds-api.com",
+          "source_book_key": "betanysports",
+          "source_commence_time_utc": "2026-09-19T21:45:00.000000Z",
+          "source_event_id": "72bc9fad0569290a723199450ccce949",
+          "source_quote_age_seconds": 128.71557,
+          "source_quote_updated_at_utc": "2026-09-18T23:26:22.000000Z"
+        }
+      },
+      {
+        "book": "BetOnline.ag",
+        "consensus_quote_ids": [
+          "fbff1b777bed7f0bea08945a6fd68f0f84414ece04b2b9d5d96fcc21a95e4a10",
+          "bcecffc9ac52b1d78b069304e6cde827bf878b3079de0b5f846fa92d8a87a7db",
+          "0fca06a027e1268ff36c10cfae7e491ba549d1fd02dd999adaa68debed51338c",
+          "b225d83750142245eb00d7a6cff3bd1b9229347aafab35818cb79457ac9c14e2",
+          "d3285921683e6c53498efc4dd3705e7da61dd616909b35334a445a14a356d0c9",
+          "6612415bf71dde8977b52f8390a311e2ecad2871b0b833a59fd0d0b740f5af57",
+          "b14b802d83fb9b7a75fee55a0f5bf3686a81711ffeab1114fe16e410746b6873",
+          "3300ec6d07ec570119521c30ab8693e118042597197cef444fdfc1b2faab6a8b"
+        ],
+        "expected_returns": {
+          "adjusted_market": -0.010881054770796594,
+          "market": -0.046134502281225065,
+          "production_model": -0.06603776325853672
+        },
+        "market_consensus_id": "52c10faa165079aa8bc5fa46005a6fe20b54e841d68aaf03b68028e776e23c0c",
+        "moneyline": -410,
+        "probabilities": {
+          "adjusted_market": 0.795174054007791,
+          "market": 0.7668330471856818,
+          "production_model": 0.7508323863999999
+        },
+        "quote_id": "046ab8540c1396a711d422c0ebc1a607fb936e598c94c2026622cca5fee85409",
+        "side": "fighter",
+        "source_metadata": {
+          "book": "BetOnline.ag",
+          "capture_id": "capture_20260918T232830347226Z_35405613816_1_71cb2a01e5ef",
+          "event_id": "8a0a35e7c74bebcc",
+          "matchup_id": "matchup_730df33900ec43538f5d7a9c368cd8fc9d91aef0d76aae08a2e109ea2630641f",
+          "metadata_id": "dfea75644ab8e216973244edd17ef5ccba003f734bb0eac956f6bd192b636180",
+          "observed_at_utc": "2026-09-18T23:28:30.715570Z",
+          "quote_id": "046ab8540c1396a711d422c0ebc1a607fb936e598c94c2026622cca5fee85409",
+          "schema_version": 1,
+          "source": "the-odds-api.com",
+          "source_book_key": "betonlineag",
+          "source_commence_time_utc": "2026-09-19T21:45:00.000000Z",
+          "source_event_id": "72bc9fad0569290a723199450ccce949",
+          "source_quote_age_seconds": 290.71557,
+          "source_quote_updated_at_utc": "2026-09-18T23:23:40.000000Z"
+        }
+      },
+      {
+        "book": "BetOnline.ag",
+        "consensus_quote_ids": [
+          "fbff1b777bed7f0bea08945a6fd68f0f84414ece04b2b9d5d96fcc21a95e4a10",
+          "bcecffc9ac52b1d78b069304e6cde827bf878b3079de0b5f846fa92d8a87a7db",
+          "0fca06a027e1268ff36c10cfae7e491ba549d1fd02dd999adaa68debed51338c",
+          "b225d83750142245eb00d7a6cff3bd1b9229347aafab35818cb79457ac9c14e2",
+          "d3285921683e6c53498efc4dd3705e7da61dd616909b35334a445a14a356d0c9",
+          "6612415bf71dde8977b52f8390a311e2ecad2871b0b833a59fd0d0b740f5af57",
+          "b14b802d83fb9b7a75fee55a0f5bf3686a81711ffeab1114fe16e410746b6873",
+          "3300ec6d07ec570119521c30ab8693e118042597197cef444fdfc1b2faab6a8b"
+        ],
+        "expected_returns": {
+          "adjusted_market": -0.16021362143194295,
+          "market": -0.04401549346129541,
+          "production_model": 0.02158721576000011
+        },
+        "market_consensus_id": "52c10faa165079aa8bc5fa46005a6fe20b54e841d68aaf03b68028e776e23c0c",
+        "moneyline": 310,
+        "probabilities": {
+          "adjusted_market": 0.20482594599220905,
+          "market": 0.2331669528143182,
+          "production_model": 0.24916761360000006
+        },
+        "quote_id": "046ab8540c1396a711d422c0ebc1a607fb936e598c94c2026622cca5fee85409",
+        "side": "opponent",
+        "source_metadata": {
+          "book": "BetOnline.ag",
+          "capture_id": "capture_20260918T232830347226Z_35405613816_1_71cb2a01e5ef",
+          "event_id": "8a0a35e7c74bebcc",
+          "matchup_id": "matchup_730df33900ec43538f5d7a9c368cd8fc9d91aef0d76aae08a2e109ea2630641f",
+          "metadata_id": "dfea75644ab8e216973244edd17ef5ccba003f734bb0eac956f6bd192b636180",
+          "observed_at_utc": "2026-09-18T23:28:30.715570Z",
+          "quote_id": "046ab8540c1396a711d422c0ebc1a607fb936e598c94c2026622cca5fee85409",
+          "schema_version": 1,
+          "source": "the-odds-api.com",
+          "source_book_key": "betonlineag",
+          "source_commence_time_utc": "2026-09-19T21:45:00.000000Z",
+          "source_event_id": "72bc9fad0569290a723199450ccce949",
+          "source_quote_age_seconds": 290.71557,
+          "source_quote_updated_at_utc": "2026-09-18T23:23:40.000000Z"
+        }
+      },
+      {
+        "book": "betPARX",
+        "consensus_quote_ids": [
+          "fbff1b777bed7f0bea08945a6fd68f0f84414ece04b2b9d5d96fcc21a95e4a10",
+          "bcecffc9ac52b1d78b069304e6cde827bf878b3079de0b5f846fa92d8a87a7db",
+          "046ab8540c1396a711d422c0ebc1a607fb936e598c94c2026622cca5fee85409",
+          "b225d83750142245eb00d7a6cff3bd1b9229347aafab35818cb79457ac9c14e2",
+          "d3285921683e6c53498efc4dd3705e7da61dd616909b35334a445a14a356d0c9",
+          "6612415bf71dde8977b52f8390a311e2ecad2871b0b833a59fd0d0b740f5af57",
+          "b14b802d83fb9b7a75fee55a0f5bf3686a81711ffeab1114fe16e410746b6873",
+          "3300ec6d07ec570119521c30ab8693e118042597197cef444fdfc1b2faab6a8b"
+        ],
+        "expected_returns": {
+          "adjusted_market": -0.015631616970730455,
+          "market": -0.05071682832732438,
+          "production_model": -0.07039799779047629
+        },
+        "market_consensus_id": "a1dcac6f03fcda809d8e275a0855480280bc6804e681f099b359fae544735bed",
+        "moneyline": -420,
+        "probabilities": {
+          "adjusted_market": 0.7950667709082562,
+          "market": 0.7667287155817765,
+          "production_model": 0.7508323863999999
+        },
+        "quote_id": "0fca06a027e1268ff36c10cfae7e491ba549d1fd02dd999adaa68debed51338c",
+        "side": "fighter",
+        "source_metadata": {
+          "book": "betPARX",
+          "capture_id": "capture_20260918T232830347226Z_35405613816_1_71cb2a01e5ef",
+          "event_id": "8a0a35e7c74bebcc",
+          "matchup_id": "matchup_730df33900ec43538f5d7a9c368cd8fc9d91aef0d76aae08a2e109ea2630641f",
+          "metadata_id": "2f9e249f015f33b1395b62835f247efbef6c8421020064c27943e4c8b40101c3",
+          "observed_at_utc": "2026-09-18T23:28:30.715570Z",
+          "quote_id": "0fca06a027e1268ff36c10cfae7e491ba549d1fd02dd999adaa68debed51338c",
+          "schema_version": 1,
+          "source": "the-odds-api.com",
+          "source_book_key": "betparx",
+          "source_commence_time_utc": "2026-09-19T21:45:00.000000Z",
+          "source_event_id": "72bc9fad0569290a723199450ccce949",
+          "source_quote_age_seconds": 35.71557,
+          "source_quote_updated_at_utc": "2026-09-18T23:27:55.000000Z"
+        }
+      },
+      {
+        "book": "betPARX",
+        "consensus_quote_ids": [
+          "fbff1b777bed7f0bea08945a6fd68f0f84414ece04b2b9d5d96fcc21a95e4a10",
+          "bcecffc9ac52b1d78b069304e6cde827bf878b3079de0b5f846fa92d8a87a7db",
+          "046ab8540c1396a711d422c0ebc1a607fb936e598c94c2026622cca5fee85409",
+          "b225d83750142245eb00d7a6cff3bd1b9229347aafab35818cb79457ac9c14e2",
+          "d3285921683e6c53498efc4dd3705e7da61dd616909b35334a445a14a356d0c9",
+          "6612415bf71dde8977b52f8390a311e2ecad2871b0b833a59fd0d0b740f5af57",
+          "b14b802d83fb9b7a75fee55a0f5bf3686a81711ffeab1114fe16e410746b6873",
+          "3300ec6d07ec570119521c30ab8693e118042597197cef444fdfc1b2faab6a8b"
+        ],
+        "expected_returns": {
+          "adjusted_market": -0.1597737607238504,
+          "market": -0.043587733885283586,
+          "production_model": 0.02158721576000011
+        },
+        "market_consensus_id": "a1dcac6f03fcda809d8e275a0855480280bc6804e681f099b359fae544735bed",
+        "moneyline": 310,
+        "probabilities": {
+          "adjusted_market": 0.20493322909174383,
+          "market": 0.23327128441822353,
+          "production_model": 0.24916761360000006
+        },
+        "quote_id": "0fca06a027e1268ff36c10cfae7e491ba549d1fd02dd999adaa68debed51338c",
+        "side": "opponent",
+        "source_metadata": {
+          "book": "betPARX",
+          "capture_id": "capture_20260918T232830347226Z_35405613816_1_71cb2a01e5ef",
+          "event_id": "8a0a35e7c74bebcc",
+          "matchup_id": "matchup_730df33900ec43538f5d7a9c368cd8fc9d91aef0d76aae08a2e109ea2630641f",
+          "metadata_id": "2f9e249f015f33b1395b62835f247efbef6c8421020064c27943e4c8b40101c3",
+          "observed_at_utc": "2026-09-18T23:28:30.715570Z",
+          "quote_id": "0fca06a027e1268ff36c10cfae7e491ba549d1fd02dd999adaa68debed51338c",
+          "schema_version": 1,
+          "source": "the-odds-api.com",
+          "source_book_key": "betparx",
+          "source_commence_time_utc": "2026-09-19T21:45:00.000000Z",
+          "source_event_id": "72bc9fad0569290a723199450ccce949",
+          "source_quote_age_seconds": 35.71557,
+          "source_quote_updated_at_utc": "2026-09-18T23:27:55.000000Z"
+        }
+      },
+      {
+        "book": "BetRivers",
+        "consensus_quote_ids": [
+          "fbff1b777bed7f0bea08945a6fd68f0f84414ece04b2b9d5d96fcc21a95e4a10",
+          "bcecffc9ac52b1d78b069304e6cde827bf878b3079de0b5f846fa92d8a87a7db",
+          "046ab8540c1396a711d422c0ebc1a607fb936e598c94c2026622cca5fee85409",
+          "0fca06a027e1268ff36c10cfae7e491ba549d1fd02dd999adaa68debed51338c",
+          "d3285921683e6c53498efc4dd3705e7da61dd616909b35334a445a14a356d0c9",
+          "6612415bf71dde8977b52f8390a311e2ecad2871b0b833a59fd0d0b740f5af57",
+          "b14b802d83fb9b7a75fee55a0f5bf3686a81711ffeab1114fe16e410746b6873",
+          "3300ec6d07ec570119521c30ab8693e118042597197cef444fdfc1b2faab6a8b"
+        ],
+        "expected_returns": {
+          "adjusted_market": -0.015631616970730455,
+          "market": -0.05071682832732438,
+          "production_model": -0.07039799779047629
+        },
+        "market_consensus_id": "93651104157f8cf579bd722026c48caf5cbb9ba5c2d37cbcd154972ac069e1e8",
+        "moneyline": -420,
+        "probabilities": {
+          "adjusted_market": 0.7950667709082562,
+          "market": 0.7667287155817765,
+          "production_model": 0.7508323863999999
+        },
+        "quote_id": "b225d83750142245eb00d7a6cff3bd1b9229347aafab35818cb79457ac9c14e2",
+        "side": "fighter",
+        "source_metadata": {
+          "book": "BetRivers",
+          "capture_id": "capture_20260918T232830347226Z_35405613816_1_71cb2a01e5ef",
+          "event_id": "8a0a35e7c74bebcc",
+          "matchup_id": "matchup_730df33900ec43538f5d7a9c368cd8fc9d91aef0d76aae08a2e109ea2630641f",
+          "metadata_id": "07867bc5a1ed64f0e2bbb150e533bfa7b7788b49a170ffa5368b7678d68515e8",
+          "observed_at_utc": "2026-09-18T23:28:30.715570Z",
+          "quote_id": "b225d83750142245eb00d7a6cff3bd1b9229347aafab35818cb79457ac9c14e2",
+          "schema_version": 1,
+          "source": "the-odds-api.com",
+          "source_book_key": "betrivers",
+          "source_commence_time_utc": "2026-09-19T21:45:00.000000Z",
+          "source_event_id": "72bc9fad0569290a723199450ccce949",
+          "source_quote_age_seconds": 34.71557,
+          "source_quote_updated_at_utc": "2026-09-18T23:27:56.000000Z"
+        }
+      },
+      {
+        "book": "BetRivers",
+        "consensus_quote_ids": [
+          "fbff1b777bed7f0bea08945a6fd68f0f84414ece04b2b9d5d96fcc21a95e4a10",
+          "bcecffc9ac52b1d78b069304e6cde827bf878b3079de0b5f846fa92d8a87a7db",
+          "046ab8540c1396a711d422c0ebc1a607fb936e598c94c2026622cca5fee85409",
+          "0fca06a027e1268ff36c10cfae7e491ba549d1fd02dd999adaa68debed51338c",
+          "d3285921683e6c53498efc4dd3705e7da61dd616909b35334a445a14a356d0c9",
+          "6612415bf71dde8977b52f8390a311e2ecad2871b0b833a59fd0d0b740f5af57",
+          "b14b802d83fb9b7a75fee55a0f5bf3686a81711ffeab1114fe16e410746b6873",
+          "3300ec6d07ec570119521c30ab8693e118042597197cef444fdfc1b2faab6a8b"
+        ],
+        "expected_returns": {
+          "adjusted_market": -0.1597737607238504,
+          "market": -0.043587733885283586,
+          "production_model": 0.02158721576000011
+        },
+        "market_consensus_id": "93651104157f8cf579bd722026c48caf5cbb9ba5c2d37cbcd154972ac069e1e8",
+        "moneyline": 310,
+        "probabilities": {
+          "adjusted_market": 0.20493322909174383,
+          "market": 0.23327128441822353,
+          "production_model": 0.24916761360000006
+        },
+        "quote_id": "b225d83750142245eb00d7a6cff3bd1b9229347aafab35818cb79457ac9c14e2",
+        "side": "opponent",
+        "source_metadata": {
+          "book": "BetRivers",
+          "capture_id": "capture_20260918T232830347226Z_35405613816_1_71cb2a01e5ef",
+          "event_id": "8a0a35e7c74bebcc",
+          "matchup_id": "matchup_730df33900ec43538f5d7a9c368cd8fc9d91aef0d76aae08a2e109ea2630641f",
+          "metadata_id": "07867bc5a1ed64f0e2bbb150e533bfa7b7788b49a170ffa5368b7678d68515e8",
+          "observed_at_utc": "2026-09-18T23:28:30.715570Z",
+          "quote_id": "b225d83750142245eb00d7a6cff3bd1b9229347aafab35818cb79457ac9c14e2",
+          "schema_version": 1,
+          "source": "the-odds-api.com",
+          "source_book_key": "betrivers",
+          "source_commence_time_utc": "2026-09-19T21:45:00.000000Z",
+          "source_event_id": "72bc9fad0569290a723199450ccce949",
+          "source_quote_age_seconds": 34.71557,
+          "source_quote_updated_at_utc": "2026-09-18T23:27:56.000000Z"
+        }
+      },
+      {
+        "book": "Bovada",
+        "consensus_quote_ids": [
+          "fbff1b777bed7f0bea08945a6fd68f0f84414ece04b2b9d5d96fcc21a95e4a10",
+          "bcecffc9ac52b1d78b069304e6cde827bf878b3079de0b5f846fa92d8a87a7db",
+          "046ab8540c1396a711d422c0ebc1a607fb936e598c94c2026622cca5fee85409",
+          "0fca06a027e1268ff36c10cfae7e491ba549d1fd02dd999adaa68debed51338c",
+          "b225d83750142245eb00d7a6cff3bd1b9229347aafab35818cb79457ac9c14e2",
+          "6612415bf71dde8977b52f8390a311e2ecad2871b0b833a59fd0d0b740f5af57",
+          "b14b802d83fb9b7a75fee55a0f5bf3686a81711ffeab1114fe16e410746b6873",
+          "3300ec6d07ec570119521c30ab8693e118042597197cef444fdfc1b2faab6a8b"
+        ],
+        "expected_returns": {
+          "adjusted_market": -0.014297847817986375,
+          "market": -0.04943796662381361,
+          "production_model": -0.06824414699759052
+        },
+        "market_consensus_id": "3d8fe5e7a3cdae31e6e17ed3ae4b6de118d5a88518af99901ffe1ff387259e61",
+        "moneyline": -415,
+        "probabilities": {
+          "adjusted_market": 0.7943036760301664,
+          "market": 0.7659868812643056,
+          "production_model": 0.7508323863999999
+        },
+        "quote_id": "d3285921683e6c53498efc4dd3705e7da61dd616909b35334a445a14a356d0c9",
+        "side": "fighter",
+        "source_metadata": {
+          "book": "Bovada",
+          "capture_id": "capture_20260918T232830347226Z_35405613816_1_71cb2a01e5ef",
+          "event_id": "8a0a35e7c74bebcc",
+          "matchup_id": "matchup_730df33900ec43538f5d7a9c368cd8fc9d91aef0d76aae08a2e109ea2630641f",
+          "metadata_id": "b3c00275504b7c00707a1d7feba245f55c6b37d45922dd2a7abbd9181bf2f394",
+          "observed_at_utc": "2026-09-18T23:28:30.715570Z",
+          "quote_id": "d3285921683e6c53498efc4dd3705e7da61dd616909b35334a445a14a356d0c9",
+          "schema_version": 1,
+          "source": "the-odds-api.com",
+          "source_book_key": "bovada",
+          "source_commence_time_utc": "2026-09-19T21:45:00.000000Z",
+          "source_event_id": "72bc9fad0569290a723199450ccce949",
+          "source_quote_age_seconds": 125.71557,
+          "source_quote_updated_at_utc": "2026-09-18T23:26:25.000000Z"
+        }
+      },
+      {
+        "book": "Bovada",
+        "consensus_quote_ids": [
+          "fbff1b777bed7f0bea08945a6fd68f0f84414ece04b2b9d5d96fcc21a95e4a10",
+          "bcecffc9ac52b1d78b069304e6cde827bf878b3079de0b5f846fa92d8a87a7db",
+          "046ab8540c1396a711d422c0ebc1a607fb936e598c94c2026622cca5fee85409",
+          "0fca06a027e1268ff36c10cfae7e491ba549d1fd02dd999adaa68debed51338c",
+          "b225d83750142245eb00d7a6cff3bd1b9229347aafab35818cb79457ac9c14e2",
+          "6612415bf71dde8977b52f8390a311e2ecad2871b0b833a59fd0d0b740f5af57",
+          "b14b802d83fb9b7a75fee55a0f5bf3686a81711ffeab1114fe16e410746b6873",
+          "3300ec6d07ec570119521c30ab8693e118042597197cef444fdfc1b2faab6a8b"
+        ],
+        "expected_returns": {
+          "adjusted_market": -0.1257906231282071,
+          "market": -0.005444245373298795,
+          "production_model": 0.058962357800000254
+        },
+        "market_consensus_id": "3d8fe5e7a3cdae31e6e17ed3ae4b6de118d5a88518af99901ffe1ff387259e61",
+        "moneyline": 325,
+        "probabilities": {
+          "adjusted_market": 0.20569632396983362,
+          "market": 0.23401311873569441,
+          "production_model": 0.24916761360000006
+        },
+        "quote_id": "d3285921683e6c53498efc4dd3705e7da61dd616909b35334a445a14a356d0c9",
+        "side": "opponent",
+        "source_metadata": {
+          "book": "Bovada",
+          "capture_id": "capture_20260918T232830347226Z_35405613816_1_71cb2a01e5ef",
+          "event_id": "8a0a35e7c74bebcc",
+          "matchup_id": "matchup_730df33900ec43538f5d7a9c368cd8fc9d91aef0d76aae08a2e109ea2630641f",
+          "metadata_id": "b3c00275504b7c00707a1d7feba245f55c6b37d45922dd2a7abbd9181bf2f394",
+          "observed_at_utc": "2026-09-18T23:28:30.715570Z",
+          "quote_id": "d3285921683e6c53498efc4dd3705e7da61dd616909b35334a445a14a356d0c9",
+          "schema_version": 1,
+          "source": "the-odds-api.com",
+          "source_book_key": "bovada",
+          "source_commence_time_utc": "2026-09-19T21:45:00.000000Z",
+          "source_event_id": "72bc9fad0569290a723199450ccce949",
+          "source_quote_age_seconds": 125.71557,
+          "source_quote_updated_at_utc": "2026-09-18T23:26:25.000000Z"
+        }
+      },
+      {
+        "book": "DraftKings",
+        "consensus_quote_ids": [
+          "fbff1b777bed7f0bea08945a6fd68f0f84414ece04b2b9d5d96fcc21a95e4a10",
+          "bcecffc9ac52b1d78b069304e6cde827bf878b3079de0b5f846fa92d8a87a7db",
+          "046ab8540c1396a711d422c0ebc1a607fb936e598c94c2026622cca5fee85409",
+          "0fca06a027e1268ff36c10cfae7e491ba549d1fd02dd999adaa68debed51338c",
+          "b225d83750142245eb00d7a6cff3bd1b9229347aafab35818cb79457ac9c14e2",
+          "d3285921683e6c53498efc4dd3705e7da61dd616909b35334a445a14a356d0c9",
+          "b14b802d83fb9b7a75fee55a0f5bf3686a81711ffeab1114fe16e410746b6873",
+          "3300ec6d07ec570119521c30ab8693e118042597197cef444fdfc1b2faab6a8b"
+        ],
+        "expected_returns": {
+          "adjusted_market": -0.011564822599268276,
+          "market": -0.046799337162925725,
+          "production_model": -0.06603776325853672
+        },
+        "market_consensus_id": "da63c84532e919cf4afac4a16d4209aebc32eaa5acbac81cc229bc97983dca17",
+        "moneyline": -410,
+        "probabilities": {
+          "adjusted_market": 0.7946243583025491,
+          "market": 0.7662985720847068,
+          "production_model": 0.7508323863999999
+        },
+        "quote_id": "6612415bf71dde8977b52f8390a311e2ecad2871b0b833a59fd0d0b740f5af57",
+        "side": "fighter",
+        "source_metadata": {
+          "book": "DraftKings",
+          "capture_id": "capture_20260918T232830347226Z_35405613816_1_71cb2a01e5ef",
+          "event_id": "8a0a35e7c74bebcc",
+          "matchup_id": "matchup_730df33900ec43538f5d7a9c368cd8fc9d91aef0d76aae08a2e109ea2630641f",
+          "metadata_id": "3f5c7e47aee4f4609606aa7e7f27cb6cb2ae532c4f7500553f8306a0c960b274",
+          "observed_at_utc": "2026-09-18T23:28:30.715570Z",
+          "quote_id": "6612415bf71dde8977b52f8390a311e2ecad2871b0b833a59fd0d0b740f5af57",
+          "schema_version": 1,
+          "source": "the-odds-api.com",
+          "source_book_key": "draftkings",
+          "source_commence_time_utc": "2026-09-19T21:45:00.000000Z",
+          "source_event_id": "72bc9fad0569290a723199450ccce949",
+          "source_quote_age_seconds": 58.71557,
+          "source_quote_updated_at_utc": "2026-09-18T23:27:32.000000Z"
+        }
+      },
+      {
+        "book": "DraftKings",
+        "consensus_quote_ids": [
+          "fbff1b777bed7f0bea08945a6fd68f0f84414ece04b2b9d5d96fcc21a95e4a10",
+          "bcecffc9ac52b1d78b069304e6cde827bf878b3079de0b5f846fa92d8a87a7db",
+          "046ab8540c1396a711d422c0ebc1a607fb936e598c94c2026622cca5fee85409",
+          "0fca06a027e1268ff36c10cfae7e491ba549d1fd02dd999adaa68debed51338c",
+          "b225d83750142245eb00d7a6cff3bd1b9229347aafab35818cb79457ac9c14e2",
+          "d3285921683e6c53498efc4dd3705e7da61dd616909b35334a445a14a356d0c9",
+          "b14b802d83fb9b7a75fee55a0f5bf3686a81711ffeab1114fe16e410746b6873",
+          "3300ec6d07ec570119521c30ab8693e118042597197cef444fdfc1b2faab6a8b"
+        ],
+        "expected_returns": {
+          "adjusted_market": -0.13742230487070606,
+          "market": -0.01845400275576836,
+          "production_model": 0.046503977120000206
+        },
+        "market_consensus_id": "da63c84532e919cf4afac4a16d4209aebc32eaa5acbac81cc229bc97983dca17",
+        "moneyline": 320,
+        "probabilities": {
+          "adjusted_market": 0.20537564169745093,
+          "market": 0.23370142791529325,
+          "production_model": 0.24916761360000006
+        },
+        "quote_id": "6612415bf71dde8977b52f8390a311e2ecad2871b0b833a59fd0d0b740f5af57",
+        "side": "opponent",
+        "source_metadata": {
+          "book": "DraftKings",
+          "capture_id": "capture_20260918T232830347226Z_35405613816_1_71cb2a01e5ef",
+          "event_id": "8a0a35e7c74bebcc",
+          "matchup_id": "matchup_730df33900ec43538f5d7a9c368cd8fc9d91aef0d76aae08a2e109ea2630641f",
+          "metadata_id": "3f5c7e47aee4f4609606aa7e7f27cb6cb2ae532c4f7500553f8306a0c960b274",
+          "observed_at_utc": "2026-09-18T23:28:30.715570Z",
+          "quote_id": "6612415bf71dde8977b52f8390a311e2ecad2871b0b833a59fd0d0b740f5af57",
+          "schema_version": 1,
+          "source": "the-odds-api.com",
+          "source_book_key": "draftkings",
+          "source_commence_time_utc": "2026-09-19T21:45:00.000000Z",
+          "source_event_id": "72bc9fad0569290a723199450ccce949",
+          "source_quote_age_seconds": 58.71557,
+          "source_quote_updated_at_utc": "2026-09-18T23:27:32.000000Z"
+        }
+      },
+      {
+        "book": "FanDuel",
+        "consensus_quote_ids": [
+          "fbff1b777bed7f0bea08945a6fd68f0f84414ece04b2b9d5d96fcc21a95e4a10",
+          "bcecffc9ac52b1d78b069304e6cde827bf878b3079de0b5f846fa92d8a87a7db",
+          "046ab8540c1396a711d422c0ebc1a607fb936e598c94c2026622cca5fee85409",
+          "0fca06a027e1268ff36c10cfae7e491ba549d1fd02dd999adaa68debed51338c",
+          "b225d83750142245eb00d7a6cff3bd1b9229347aafab35818cb79457ac9c14e2",
+          "d3285921683e6c53498efc4dd3705e7da61dd616909b35334a445a14a356d0c9",
+          "6612415bf71dde8977b52f8390a311e2ecad2871b0b833a59fd0d0b740f5af57",
+          "3300ec6d07ec570119521c30ab8693e118042597197cef444fdfc1b2faab6a8b"
+        ],
+        "expected_returns": {
+          "adjusted_market": -0.0006458756888654271,
+          "market": -0.0362617266799562,
+          "production_model": -0.05664648888205137
+        },
+        "market_consensus_id": "16abf12b8d462214a10ebc8710ffe016a7c6981e40ab5fa67362c2e527883eba",
+        "moneyline": -390,
+        "probabilities": {
+          "adjusted_market": 0.7954043030231479,
+          "market": 0.7670569930506471,
+          "production_model": 0.7508323863999999
+        },
+        "quote_id": "b14b802d83fb9b7a75fee55a0f5bf3686a81711ffeab1114fe16e410746b6873",
+        "side": "fighter",
+        "source_metadata": {
+          "book": "FanDuel",
+          "capture_id": "capture_20260918T232830347226Z_35405613816_1_71cb2a01e5ef",
+          "event_id": "8a0a35e7c74bebcc",
+          "matchup_id": "matchup_730df33900ec43538f5d7a9c368cd8fc9d91aef0d76aae08a2e109ea2630641f",
+          "metadata_id": "eeee826109f119de12a5f3c2bb4dacce3abdaad343fc6965dc503ff08bcebe6e",
+          "observed_at_utc": "2026-09-18T23:28:30.715570Z",
+          "quote_id": "b14b802d83fb9b7a75fee55a0f5bf3686a81711ffeab1114fe16e410746b6873",
+          "schema_version": 1,
+          "source": "the-odds-api.com",
+          "source_book_key": "fanduel",
+          "source_commence_time_utc": "2026-09-19T21:45:00.000000Z",
+          "source_event_id": "72bc9fad0569290a723199450ccce949",
+          "source_quote_age_seconds": 9.71557,
+          "source_quote_updated_at_utc": "2026-09-18T23:28:21.000000Z"
+        }
+      },
+      {
+        "book": "FanDuel",
+        "consensus_quote_ids": [
+          "fbff1b777bed7f0bea08945a6fd68f0f84414ece04b2b9d5d96fcc21a95e4a10",
+          "bcecffc9ac52b1d78b069304e6cde827bf878b3079de0b5f846fa92d8a87a7db",
+          "046ab8540c1396a711d422c0ebc1a607fb936e598c94c2026622cca5fee85409",
+          "0fca06a027e1268ff36c10cfae7e491ba549d1fd02dd999adaa68debed51338c",
+          "b225d83750142245eb00d7a6cff3bd1b9229347aafab35818cb79457ac9c14e2",
+          "d3285921683e6c53498efc4dd3705e7da61dd616909b35334a445a14a356d0c9",
+          "6612415bf71dde8977b52f8390a311e2ecad2871b0b833a59fd0d0b740f5af57",
+          "3300ec6d07ec570119521c30ab8693e118042597197cef444fdfc1b2faab6a8b"
+        ],
+        "expected_returns": {
+          "adjusted_market": -0.1611576423949065,
+          "market": -0.04493367150765326,
+          "production_model": 0.02158721576000011
+        },
+        "market_consensus_id": "16abf12b8d462214a10ebc8710ffe016a7c6981e40ab5fa67362c2e527883eba",
+        "moneyline": 310,
+        "probabilities": {
+          "adjusted_market": 0.2045956969768521,
+          "market": 0.23294300694935288,
+          "production_model": 0.24916761360000006
+        },
+        "quote_id": "b14b802d83fb9b7a75fee55a0f5bf3686a81711ffeab1114fe16e410746b6873",
+        "side": "opponent",
+        "source_metadata": {
+          "book": "FanDuel",
+          "capture_id": "capture_20260918T232830347226Z_35405613816_1_71cb2a01e5ef",
+          "event_id": "8a0a35e7c74bebcc",
+          "matchup_id": "matchup_730df33900ec43538f5d7a9c368cd8fc9d91aef0d76aae08a2e109ea2630641f",
+          "metadata_id": "eeee826109f119de12a5f3c2bb4dacce3abdaad343fc6965dc503ff08bcebe6e",
+          "observed_at_utc": "2026-09-18T23:28:30.715570Z",
+          "quote_id": "b14b802d83fb9b7a75fee55a0f5bf3686a81711ffeab1114fe16e410746b6873",
+          "schema_version": 1,
+          "source": "the-odds-api.com",
+          "source_book_key": "fanduel",
+          "source_commence_time_utc": "2026-09-19T21:45:00.000000Z",
+          "source_event_id": "72bc9fad0569290a723199450ccce949",
+          "source_quote_age_seconds": 9.71557,
+          "source_quote_updated_at_utc": "2026-09-18T23:28:21.000000Z"
+        }
+      },
+      {
+        "book": "Hard Rock Bet",
+        "consensus_quote_ids": [
+          "fbff1b777bed7f0bea08945a6fd68f0f84414ece04b2b9d5d96fcc21a95e4a10",
+          "bcecffc9ac52b1d78b069304e6cde827bf878b3079de0b5f846fa92d8a87a7db",
+          "046ab8540c1396a711d422c0ebc1a607fb936e598c94c2026622cca5fee85409",
+          "0fca06a027e1268ff36c10cfae7e491ba549d1fd02dd999adaa68debed51338c",
+          "b225d83750142245eb00d7a6cff3bd1b9229347aafab35818cb79457ac9c14e2",
+          "d3285921683e6c53498efc4dd3705e7da61dd616909b35334a445a14a356d0c9",
+          "6612415bf71dde8977b52f8390a311e2ecad2871b0b833a59fd0d0b740f5af57",
+          "b14b802d83fb9b7a75fee55a0f5bf3686a81711ffeab1114fe16e410746b6873"
+        ],
+        "expected_returns": {
+          "adjusted_market": -0.01722062090459575,
+          "market": -0.0522439029909425,
+          "production_model": -0.07250116974117649
+        },
+        "market_consensus_id": "163a38b8475f3587438b7edb0e402571a06eac33e30b3577f457f375faf5a234",
+        "moneyline": -425,
+        "probabilities": {
+          "adjusted_market": 0.7955833068867558,
+          "market": 0.7672311261501894,
+          "production_model": 0.7508323863999999
+        },
+        "quote_id": "3300ec6d07ec570119521c30ab8693e118042597197cef444fdfc1b2faab6a8b",
+        "side": "fighter",
+        "source_metadata": {
+          "book": "Hard Rock Bet",
+          "capture_id": "capture_20260918T232830347226Z_35405613816_1_71cb2a01e5ef",
+          "event_id": "8a0a35e7c74bebcc",
+          "matchup_id": "matchup_730df33900ec43538f5d7a9c368cd8fc9d91aef0d76aae08a2e109ea2630641f",
+          "metadata_id": "fd26e5ca8474c010458480138cf037c3f193f699578560b7c087c5a89112f621",
+          "observed_at_utc": "2026-09-18T23:28:30.715570Z",
+          "quote_id": "3300ec6d07ec570119521c30ab8693e118042597197cef444fdfc1b2faab6a8b",
+          "schema_version": 1,
+          "source": "the-odds-api.com",
+          "source_book_key": "hardrockbet",
+          "source_commence_time_utc": "2026-09-19T21:45:00.000000Z",
+          "source_event_id": "72bc9fad0569290a723199450ccce949",
+          "source_quote_age_seconds": 60.71557,
+          "source_quote_updated_at_utc": "2026-09-18T23:27:30.000000Z"
+        }
+      },
+      {
+        "book": "Hard Rock Bet",
+        "consensus_quote_ids": [
+          "fbff1b777bed7f0bea08945a6fd68f0f84414ece04b2b9d5d96fcc21a95e4a10",
+          "bcecffc9ac52b1d78b069304e6cde827bf878b3079de0b5f846fa92d8a87a7db",
+          "046ab8540c1396a711d422c0ebc1a607fb936e598c94c2026622cca5fee85409",
+          "0fca06a027e1268ff36c10cfae7e491ba549d1fd02dd999adaa68debed51338c",
+          "b225d83750142245eb00d7a6cff3bd1b9229347aafab35818cb79457ac9c14e2",
+          "d3285921683e6c53498efc4dd3705e7da61dd616909b35334a445a14a356d0c9",
+          "6612415bf71dde8977b52f8390a311e2ecad2871b0b833a59fd0d0b740f5af57",
+          "b14b802d83fb9b7a75fee55a0f5bf3686a81711ffeab1114fe16e410746b6873"
+        ],
+        "expected_returns": {
+          "adjusted_market": -0.1823332275470233,
+          "market": -0.06892450460075761,
+          "production_model": -0.0033295455999997614
+        },
+        "market_consensus_id": "163a38b8475f3587438b7edb0e402571a06eac33e30b3577f457f375faf5a234",
+        "moneyline": 300,
+        "probabilities": {
+          "adjusted_market": 0.20441669311324417,
+          "market": 0.2327688738498106,
+          "production_model": 0.24916761360000006
+        },
+        "quote_id": "3300ec6d07ec570119521c30ab8693e118042597197cef444fdfc1b2faab6a8b",
+        "side": "opponent",
+        "source_metadata": {
+          "book": "Hard Rock Bet",
+          "capture_id": "capture_20260918T232830347226Z_35405613816_1_71cb2a01e5ef",
+          "event_id": "8a0a35e7c74bebcc",
+          "matchup_id": "matchup_730df33900ec43538f5d7a9c368cd8fc9d91aef0d76aae08a2e109ea2630641f",
+          "metadata_id": "fd26e5ca8474c010458480138cf037c3f193f699578560b7c087c5a89112f621",
+          "observed_at_utc": "2026-09-18T23:28:30.715570Z",
+          "quote_id": "3300ec6d07ec570119521c30ab8693e118042597197cef444fdfc1b2faab6a8b",
+          "schema_version": 1,
+          "source": "the-odds-api.com",
+          "source_book_key": "hardrockbet",
+          "source_commence_time_utc": "2026-09-19T21:45:00.000000Z",
+          "source_event_id": "72bc9fad0569290a723199450ccce949",
+          "source_quote_age_seconds": 60.71557,
+          "source_quote_updated_at_utc": "2026-09-18T23:27:30.000000Z"
+        }
+      }
+    ],
+    "opponent_id": "9560ff14eb3129f7",
+    "policy_sha256": "54f1748fa235c083b21da0ff7bb23d7bad2d97712d74f59ea387473e908b5236",
+    "record_sha256": "3602fab4a840b7c423d7316f0be18aaef535002f23fb0fa64fa5b89e3b610e0c",
+    "recorded_at_utc": "2026-09-18T23:28:48.856511+00:00"
+  }
+]
