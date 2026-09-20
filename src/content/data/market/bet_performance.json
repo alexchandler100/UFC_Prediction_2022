@@ -1,15 +1,15 @@
 {
   "archive_started_at_utc": "2026-08-29T04:31:48.487351Z",
-  "as_of_utc": "2026-09-18T23:28:30.715570Z",
+  "as_of_utc": "2026-09-20T14:44:31.000000Z",
   "execution_enabled": false,
   "limitations": "Only timestamped paper bets are included. The exact official history starts with the locked ledger; alternative timing replays start when the publication archive begins.",
   "official_bet_count": 4,
-  "official_losses": 2,
-  "official_settled_count": 2,
-  "official_wins": 0,
+  "official_losses": 3,
+  "official_settled_count": 4,
+  "official_wins": 1,
   "paper_only": true,
   "policy_version": "published-paper-bankroll-replay-v1",
-  "publication_sha256": "d258bc2e5df8a3aea154df7ee2169c3c093b4e9b0a9aac83769e663e6c088f83",
+  "publication_sha256": "a38071a5a20c4ad187b7da15bfdfb76eafa29ed5c9929d5eafd749d513c97e5e",
   "record_count": 79,
   "records": [
     {
@@ -961,9 +961,9 @@
       "simulation_support_issued_at_utc": null,
       "simulation_support_probability": null,
       "simulation_support_source": null,
-      "status": "pending",
+      "status": "lost",
       "target_book": "BetOnline.ag",
-      "unit_profit": null
+      "unit_profit": -1.0
     },
     {
       "allocated_fraction": null,
@@ -1685,9 +1685,9 @@
       "simulation_support_issued_at_utc": null,
       "simulation_support_probability": null,
       "simulation_support_source": null,
-      "status": "pending",
+      "status": "lost",
       "target_book": "BetOnline.ag",
-      "unit_profit": null
+      "unit_profit": -1.0
     },
     {
       "allocated_fraction": null,
@@ -2380,9 +2380,9 @@
       "simulation_support_issued_at_utc": null,
       "simulation_support_probability": null,
       "simulation_support_source": null,
-      "status": "pending",
+      "status": "lost",
       "target_book": "BetOnline.ag",
-      "unit_profit": null
+      "unit_profit": -1.0
     },
     {
       "allocated_fraction": null,
@@ -2581,9 +2581,9 @@
       "simulation_support_issued_at_utc": null,
       "simulation_support_probability": null,
       "simulation_support_source": null,
-      "status": "pending",
+      "status": "lost",
       "target_book": "BetOnline.ag",
-      "unit_profit": null
+      "unit_profit": -1.0
     },
     {
       "allocated_fraction": null,
@@ -3535,9 +3535,9 @@
       "simulation_support_issued_at_utc": "2026-09-04T01:45:24.823318+00:00",
       "simulation_support_probability": 0.6514215080346106,
       "simulation_support_source": "frozen_pre_event_monte_carlo",
-      "status": "pending",
+      "status": "lost",
       "target_book": "BetOnline.ag",
-      "unit_profit": null
+      "unit_profit": -1.0
     },
     {
       "allocated_fraction": null,
@@ -3824,7 +3824,7 @@
       "market_key": "moneyline:matchup_24d2abb788a1cd512c495fdc548d6e73ba97540b84f658b9ddefdfce49e378d6",
       "matchup_id": "matchup_24d2abb788a1cd512c495fdc548d6e73ba97540b84f658b9ddefdfce49e378d6",
       "minimum_expected_return": 0.05,
-      "model_support_issued_at_utc": "2026-09-17T02:49:37.000000Z",
+      "model_support_issued_at_utc": "2026-09-17T02:49:37+00:00",
       "model_support_probability": 0.08680082619999996,
       "model_support_source": "production_winner_model",
       "offered_moneyline": 1248,
@@ -3837,14 +3837,14 @@
       "record_type": "official_locked_t24",
       "selection": "Sean Sharaf",
       "selection_role": "underdog",
-      "settled_at_utc": null,
+      "settled_at_utc": "2026-09-20T14:44:31.000000Z",
       "side": "fighter",
       "simulation_support_issued_at_utc": null,
       "simulation_support_probability": null,
       "simulation_support_source": null,
-      "status": "pending",
+      "status": "won",
       "target_book": "BetOnline.ag",
-      "unit_profit": null
+      "unit_profit": 12.48
     },
     {
       "bayesian_kelly": {
@@ -3880,14 +3880,14 @@
       "record_type": "official_locked_t24",
       "selection": "Over 1.5 rounds",
       "selection_role": "total",
-      "settled_at_utc": null,
+      "settled_at_utc": "2026-09-20T14:44:31.000000Z",
       "side": "over",
       "simulation_support_issued_at_utc": null,
       "simulation_support_probability": null,
       "simulation_support_source": null,
-      "status": "pending",
+      "status": "lost",
       "target_book": "BetOnline.ag",
-      "unit_profit": null
+      "unit_profit": -1.0
     }
   ],
   "research_support": {
@@ -3901,9 +3901,9 @@
   "schema_version": 1,
   "source_hashes": {
     "official_decisions": "7274d8376af97e71844d86a8527d0d05ab30ef69d108609991f8050f358394e1",
-    "official_settlements": "d584dcc4d9f03eb835b1974806c9d35e9a5d22361ffab96d03b73631528bb17a",
+    "official_settlements": "1254a49930277ab4fb3cb8e952cc229eba3975c2da545ea8e1bea53253bc7d1f",
     "official_total_decisions": "f0def996747e5c86f776ee9d8ea3004786f95efca93124bb6f2dd46ec315fcff",
-    "official_total_settlements": "258cac10787442c0ade19fb535c0ed3603fc4c530397748e21af1ef0f1bff7ca",
+    "official_total_settlements": "37132eb89d68945c9fe50d6c19b38c12593afce7023888bd9bf4a46ce960e738",
     "published_archive": "f2a70c9ea857bf50a32d4c390524d6f91667ac4fdfbe5c2f1f30ce6d29fc4256"
   },
   "staking_strategies": [
