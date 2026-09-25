@@ -10,32 +10,32 @@
     "execution_enabled": false,
     "minimum_recommended_bets": 100,
     "minimum_settled_events": 40,
-    "positive_price_movement_interval_met": false,
+    "positive_price_movement_interval_met": true,
     "positive_return_interval_met": false,
     "status": "collecting_new_fights"
   },
   "execution_enabled": false,
   "last_build": {
-    "captures_at_locked_horizon": 3,
-    "captures_considered": 57,
-    "matchups_already_frozen": 24,
-    "matchups_considered": 641,
+    "captures_at_locked_horizon": 4,
+    "captures_considered": 58,
+    "matchups_already_frozen": 38,
+    "matchups_considered": 648,
     "matchups_without_forecast": 0,
     "matchups_without_fresh_quotes": 0
   },
-  "last_update_utc": "2026-09-25T17:31:37Z",
+  "last_update_utc": "2026-09-25T23:30:24Z",
   "latest_available_same_book_price_movement": {
-    "count": 5,
+    "count": 9,
     "definition": "later implied probability minus locked break-even probability; positive means the recorded paper price was better",
     "interval": {
-      "bootstrap_samples": 0,
-      "ci_95_lower": null,
-      "ci_95_upper": null,
-      "event_count": 1,
-      "point": 0.009643720024074232
+      "bootstrap_samples": 10000,
+      "ci_95_lower": 0.0028806584362139898,
+      "ci_95_upper": 0.009643720024074232,
+      "event_count": 2,
+      "point": 0.006637914873914124
     },
-    "mean_probability_advantage": 0.009643720024074232,
-    "positive_rate": 0.6
+    "mean_probability_advantage": 0.006637914873914124,
+    "positive_rate": 0.4444444444444444
   },
   "paper_only": true,
   "paper_return_interval": {
@@ -144,7 +144,7 @@
     }
   },
   "prospective_first_capture_utc": "2026-08-30T00:20:36.000000Z",
-  "report_sha256": "4a30311419a053952e69c6ab215c61b2b0cb7ff8e56ebb2fa52bdc859621aa55",
+  "report_sha256": "812941e46da3e032a4de056c6a9a2086c33f53d2d263e542155adef46dd17b9f",
   "results": {
     "losses": 6,
     "maximum_drawdown_units": 4.0601668862538425,
