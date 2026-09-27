@@ -23,7 +23,7 @@
     "matchups_without_forecast": 0,
     "matchups_without_fresh_quotes": 0
   },
-  "last_update_utc": "2026-09-26T23:28:59Z",
+  "last_update_utc": "2026-09-27T14:47:12Z",
   "latest_available_same_book_price_movement": {
     "count": 9,
     "definition": "later implied probability minus locked break-even probability; positive means the recorded paper price was better",
@@ -42,8 +42,8 @@
     "bootstrap_samples": 10000,
     "ci_95_lower": -0.3851955880941389,
     "ci_95_upper": 0.16377538829151733,
-    "event_count": 2,
-    "point": -0.18913452509926162
+    "event_count": 3,
+    "point": -0.12985953005432516
   },
   "policy": {
     "candidate_only": true,
@@ -110,55 +110,55 @@
   "probability_quality_on_all_scored_fights": {
     "candidate_minus_market_log_loss": {
       "bootstrap_samples": 10000,
-      "ci_95_lower": 0.04731553526209958,
-      "ci_95_upper": 0.09150070524804378,
-      "event_count": 2,
-      "point": 0.06756707150565734
+      "ci_95_lower": 0.031945958428310516,
+      "ci_95_upper": 0.09150070524804377,
+      "event_count": 3,
+      "point": 0.059523594359159666
     },
     "current_model": {
-      "accuracy": 0.5416666666666666,
-      "brier_score": 0.34023988836783486,
-      "count": 24,
-      "expected_calibration_error": 0.2837275734375,
-      "log_loss": 0.9784873078223361,
-      "positive_rate": 0.4583333333333333,
-      "roc_auc": 0.4370629370629371
+      "accuracy": 0.6129032258064516,
+      "brier_score": 0.30756484945034485,
+      "count": 31,
+      "expected_calibration_error": 0.2690671722129032,
+      "log_loss": 0.8875544070585178,
+      "positive_rate": 0.4838709677419355,
+      "roc_auc": 0.5020833333333333
     },
     "leave_one_out_market": {
-      "accuracy": 0.6666666666666666,
-      "brier_score": 0.23288920301099966,
-      "count": 24,
-      "expected_calibration_error": 0.16166096075138026,
-      "log_loss": 0.6748966925584147,
-      "positive_rate": 0.4583333333333333,
-      "roc_auc": 0.6853146853146853
+      "accuracy": 0.6451612903225806,
+      "brier_score": 0.2450347154675816,
+      "count": 31,
+      "expected_calibration_error": 0.23627514249292642,
+      "log_loss": 0.6975079108031422,
+      "positive_rate": 0.4838709677419355,
+      "roc_auc": 0.6375
     },
     "market_first_candidate": {
-      "accuracy": 0.5833333333333334,
-      "brier_score": 0.2505456362165928,
-      "count": 24,
-      "expected_calibration_error": 0.2267118479265374,
-      "log_loss": 0.742463764064072,
-      "positive_rate": 0.4583333333333333,
-      "roc_auc": 0.6713286713286714
+      "accuracy": 0.5806451612903226,
+      "brier_score": 0.26070237616946207,
+      "count": 31,
+      "expected_calibration_error": 0.20057822267263084,
+      "log_loss": 0.7570315051623018,
+      "positive_rate": 0.4838709677419355,
+      "roc_auc": 0.6291666666666667
     }
   },
   "prospective_first_capture_utc": "2026-08-30T00:20:36.000000Z",
-  "report_sha256": "67d81371e1114217ae501eccf6a6c2c374ac47d92eca939476f77f86d045b5ac",
+  "report_sha256": "886bf84f3776ae811ec1170c77d76c5e971d76d83637b64786781ce482e8846f",
   "results": {
-    "losses": 6,
+    "losses": 7,
     "maximum_drawdown_units": 4.0601668862538425,
-    "profit_units": -2.6478833513896625,
-    "recommended_bets": 14,
-    "risk_units": 14.0,
-    "roi": -0.1891345250992616,
-    "scored_fights": 24,
+    "profit_units": -2.337471540977852,
+    "recommended_bets": 18,
+    "risk_units": 18.0,
+    "roi": -0.12985953005432513,
+    "scored_fights": 31,
     "voids": 0,
-    "wins": 8
+    "wins": 11
   },
   "schema_version": 1,
-  "settled_events": 2,
-  "settlement_dataset_sha256": "661ea2c3fe26297d16492166dcc1cb3f96a3ddefba09afad3f057bbbd21e117b",
-  "settlements_total": 24,
-  "unsettled_decisions": 7
+  "settled_events": 3,
+  "settlement_dataset_sha256": "d976738ae98954823d20f5c13c24ce30ba59404a1c6d01eec17a50b6f7fd5c9b",
+  "settlements_total": 31,
+  "unsettled_decisions": 0
 }
