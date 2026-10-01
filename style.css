@@ -479,6 +479,31 @@ details[open] > summary { border-bottom: 1px solid var(--line); }
 .market-book-option input { margin: 0; }
 .market-book-actions { display: flex; flex-wrap: wrap; gap: 7px; }
 .qualified-bet-list { display: grid; min-width: 0; gap: 7px; }
+.market-pick-filters { display: grid; grid-template-columns: minmax(0, 1fr) minmax(180px, 240px); align-items: end; gap: 18px; margin-bottom: 20px; }
+.market-pick-filters .market-book-filter { margin: 0; }
+.market-pick-filters .filter-control { display: grid; gap: 5px; min-width: 0; }
+.market-pick-filters label { color: var(--ink-soft); font-size: 12px; }
+.market-pick-filters select { width: 100%; min-width: 0; }
+.market-pick-event { min-width: 0; overflow: hidden; border: 1px solid var(--line); border-radius: 12px; background: var(--paper); }
+.market-pick-event-heading { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 18px; padding: 14px; list-style: none; background: #0d151d; }
+.market-pick-event-heading::-webkit-details-marker, .market-pick-summary::-webkit-details-marker { display: none; }
+.market-pick-event-heading strong { flex: 1 1 260px; min-width: 0; font-size: 14px; overflow-wrap: anywhere; }
+.market-pick-event-heading span { color: var(--ink-soft); font-size: 12px; font-weight: 500; }
+.market-pick-event-heading::after, .market-pick-toggle::after { content: "+"; color: var(--teal); font-size: 20px; }
+.market-pick-event[open] > .market-pick-event-heading::after, .market-pick[open] > .market-pick-summary .market-pick-toggle::after { content: "−"; }
+.market-pick-event-list { display: grid; min-width: 0; }
+.market-pick { min-width: 0; border: 0; border-radius: 0; }
+.market-pick + .market-pick { border-top: 1px solid var(--line); }
+.market-pick-summary { display: grid; grid-template-columns: minmax(0, 1fr) minmax(130px, .4fr) 110px 20px; align-items: center; gap: 14px; min-width: 0; padding: 13px 14px; list-style: none; }
+.market-pick-summary:hover, .market-pick-summary:focus-visible { background: var(--paper-2); }
+.market-pick-fight, .market-pick-price { display: grid; gap: 3px; min-width: 0; overflow-wrap: anywhere; }
+.market-pick-fight strong { font-size: 14px; }
+.market-pick-fight span, .market-pick-price small { color: var(--ink-soft); font-size: 11px; font-weight: 500; }
+.market-pick-price strong { font-size: 12px; font-variant-numeric: tabular-nums; }
+.market-pick-summary > .pill { justify-self: start; }
+.market-pick-toggle { justify-self: end; }
+.market-pick-history { margin-bottom: 12px; }
+#current-prices-panel { margin-bottom: 20px; }
 .qualified-bet-item { min-width: 0; overflow: hidden; border: 1px solid var(--line); border-radius: 11px; background: var(--paper-2); }
 .qualified-bet-item > summary::-webkit-details-marker { display: none; }
 .qualified-bet-row { display: grid; grid-template-columns: 46px minmax(190px, 1.55fr) repeat(4, minmax(82px, .48fr)) minmax(150px, .85fr) 24px; gap: 13px; align-items: center; min-width: 0; padding: 12px 13px; list-style: none; cursor: pointer; }
@@ -503,7 +528,9 @@ details[open] > summary { border-bottom: 1px solid var(--line); }
 .qualified-bet-explanation-note { grid-column: 1 / -1; margin: 0; color: var(--ink-soft); font-size: 11px; line-height: 1.45; }
 .qualified-bet-explanation .qualified-bet-action { grid-column: 1 / -1; justify-self: start; }
 .market-audit-panel { padding: 0; }
-.market-audit-summary { padding: 17px 19px; list-style: none; cursor: pointer; }
+.market-audit-summary { position: relative; padding: 17px 45px 17px 19px; list-style: none; cursor: pointer; }
+.market-audit-summary::after { position: absolute; right: 19px; top: 20px; content: "+"; color: var(--teal); font-size: 20px; }
+.market-audit-panel[open] > .market-audit-summary::after { content: "−"; }
 .market-audit-summary::-webkit-details-marker { display: none; }
 .market-audit-summary > span, .market-audit-summary strong, .market-audit-summary small { display: block; }
 .market-audit-summary strong { margin: 3px 0 4px; font-family: "Manrope", sans-serif; font-size: 17px; }
@@ -656,6 +683,13 @@ input[type="search"]:focus, select:focus { border-color: var(--teal); box-shadow
   .qualified-bet-explanation-note, .qualified-bet-explanation .qualified-bet-action { grid-column: 1; }
 }
 @media (max-width: 600px) {
+  .market-pick-filters { grid-template-columns: minmax(0, 1fr); gap: 10px; }
+  .market-pick-summary { grid-template-columns: minmax(0, 1fr) auto 16px; gap: 10px; padding: 12px; }
+  .market-pick-fight { grid-column: 1 / -1; }
+  .market-pick-price { grid-column: 1; }
+  .market-pick-event-heading { gap: 6px; padding: 12px; }
+  .market-pick-event-heading strong { flex-basis: 100%; }
+  .market-pick-event-heading span { flex: 1; }
   :root { --shell: calc(100% - 20px); --radius-lg: 18px; }
   .brand small, .header-status { display: none; }
   .site-header { grid-template-columns: 1fr; min-height: auto; }

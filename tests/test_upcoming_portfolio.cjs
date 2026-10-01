@@ -13,7 +13,7 @@ function extract(name) {
 }
 const sandbox = {};
 vm.createContext(sandbox);
-vm.runInContext(['finite', 'decimalOdds', 'evaluateUpcomingPaperOffers', 'recordedPaperStatus', 'recordedPaperGroups', 'fundedPerformanceCounts'].map(extract).join('\n'), sandbox);
+vm.runInContext(['finite', 'decimalOdds', 'evaluateUpcomingPaperOffers', 'recordedPaperStatus', 'recordedPaperGroups', 'marketRecommendationGroups', 'partitionMarketRecommendations', 'fundedPerformanceCounts'].map(extract).join('\n'), sandbox);
 const now = Date.parse('2026-09-05T12:00:00Z');
 function offer(id = 'fight', overrides = {}) {
   const row = { event_id: 'card', event_date: '2026-09-05', matchup_id: id,
@@ -102,10 +102,10 @@ test('recorded picks survive price expiry, card start, board rollover and settle
   const before=JSON.stringify(archive);
   const read=(performance={})=>sandbox.recordedPaperGroups(archive,{paper_only:true,execution_enabled:false,bets:[]},performance);
   assert.equal(read().length,1);
-  assert.equal(sandbox.recordedPaperStatus(read()[0].latest,now+31*60000),'Recorded price expired');
-  assert.equal(sandbox.recordedPaperStatus(read()[0].latest,now+2*3600000),'Awaiting result / review');
+  assert.equal(sandbox.recordedPaperStatus(read()[0].latest,now+31*60000),'Upcoming');
+  assert.equal(sandbox.recordedPaperStatus(read()[0].latest,now+2*3600000),'Awaiting result');
   const settled=read({records:[{record_type:'published_snapshot',record_id:'snapshot',status:'won',unit_profit:1}]});
-  assert.equal(sandbox.recordedPaperStatus(settled[0].latest,now+86400000),'Won');
+  assert.equal(sandbox.recordedPaperStatus(settled[0].latest,now+86400000),'Correct');
   assert.equal(settled[0].latest.offered_moneyline,100);
   assert.equal(settled[0].latest.estimated_expected_return,.2);
   assert.equal(JSON.stringify(archive),before);
@@ -121,4 +121,67 @@ test('archive groups snapshots, filters saved books and never promotes an unreco
   assert.equal(groups[0].latest.bet_id,'two');
   assert.equal(sandbox.recordedPaperGroups(archive,publication,{},new Set(['B'])).length,0);
   assert.equal(sandbox.recordedPaperGroups(null,board([offer()]),{}).length,0);
+});
+
+test('saved picks separate future, unresolved past and confirmed outcomes without guessing results', () => {
+  const groups = [
+    ['future', {event_date: '2026-09-06'}],
+    ['starting-now', {event_start_utc: new Date(now).toISOString()}],
+    ['past', {event_date: '2026-09-04'}],
+    ['unknown-time', {}],
+    ['win', {settlement_status: 'won'}],
+    ['loss', {settlement_status: 'loss'}],
+    ['void', {settlement_status: 'void'}],
+  ].map(([key, latest]) => ({key, latest}));
+  const sections = sandbox.partitionMarketRecommendations(groups, now);
+  assert.deepEqual(Array.from(sections.upcoming, row => row.key), ['future']);
+  assert.deepEqual(Array.from(sections.awaiting, row => row.key).sort(), ['past', 'starting-now', 'unknown-time']);
+  assert.deepEqual(Array.from(sections.resolved, row => sandbox.recordedPaperStatus(row.latest, now)).sort(), ['Correct', 'Incorrect', 'Void']);
+  assert.equal(sandbox.recordedPaperStatus({event_date: '2026-09-05', event_start_utc: '2026-09-05T14:00:00Z'}, now), 'Upcoming');
+  assert.equal(sandbox.partitionMarketRecommendations(groups, now + 2 * 86400000).upcoming.length, 0);
+});
+
+test('repeated prices and official copies count once, with both totals fighters preserved', () => {
+  const saved = {...offer(), bet_id: 'saved', snapshot_id: 'snapshot', threshold_met: true,
+    fighter_name: 'Fighter A', opponent_name: 'Fighter B', category: 'Total rounds', selection: 'Over 2.5 rounds',
+    paper_only: true, execution_enabled: false, observed_at_utc: '2026-09-05T11:00:00Z'};
+  const later = {...saved, bet_id: 'later', snapshot_id: 'later-snapshot', target_book: 'B', offered_moneyline: 120, observed_at_utc: '2026-09-05T12:00:00Z'};
+  const archive = {paper_only: true, execution_enabled: false, snapshots: [saved, later]};
+  const performance = {records: [
+    {...saved, official: true, record_id: 'official', published_at_utc: '2026-09-05T11:30:00Z', status: 'lost'},
+    {record_type: 'published_snapshot', record_id: 'snapshot', status: 'lost'},
+    {record_type: 'published_snapshot', record_id: 'later-snapshot', status: 'lost'},
+  ]};
+  const before = JSON.stringify({archive, performance});
+  const groups = sandbox.recordedPaperGroups(archive, null, performance);
+  assert.equal(groups.length, 1);
+  assert.equal(groups[0].versions.length, 3);
+  assert.equal(groups[0].latest.target_book, 'B');
+  assert.equal(groups[0].latest.offered_moneyline, 120);
+  assert.equal(groups[0].latest.fighter_name, 'Fighter A');
+  assert.equal(groups[0].latest.opponent_name, 'Fighter B');
+  assert.equal(sandbox.recordedPaperStatus(groups[0].latest, now), 'Incorrect');
+  const filtered = sandbox.recordedPaperGroups(archive, null, performance, new Set(['a']));
+  assert.equal(filtered.length, 1);
+  assert.equal(filtered[0].latest.target_book, 'A');
+  assert.equal(sandbox.recordedPaperGroups(null, null, performance).length, 1);
+  assert.equal(JSON.stringify({archive, performance}), before);
+});
+
+test('method picks retain the selected opponent and canonical matchup names', () => {
+  const methods = {paper_only: true, execution_enabled: false, recommendations: [{
+    decision_sha256: 'frozen', matchup_id: 'fight', fighter_id: 'b', matchup_fighter_id: 'a', matchup_opponent_id: 'b',
+    fighter_name: 'Fighter A', opponent_name: 'Fighter B', book: 'Book', selection: 'Fighter B by KO/TKO',
+    method: 'ko_tko', moneyline: 250, probability: .3, expected_return: .05, settlement_status: 'loss',
+  }]};
+  const before = JSON.stringify(methods);
+  const groups = sandbox.marketRecommendationGroups(null, null, null, methods);
+  assert.equal(groups.length, 1);
+  assert.equal(groups[0].latest.selected_fighter_id, 'b');
+  assert.equal(groups[0].latest.fighter_id, 'a');
+  assert.equal(groups[0].latest.opponent_name, 'Fighter B');
+  assert.equal(groups[0].latest.offered_moneyline, 250);
+  assert.equal(sandbox.partitionMarketRecommendations(groups, now).resolved.length, 1);
+  assert.equal(sandbox.marketRecommendationGroups(null, null, null, methods, new Set(['Other'])).length, 0);
+  assert.equal(JSON.stringify(methods), before);
 });

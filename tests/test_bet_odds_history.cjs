@@ -28,6 +28,9 @@ test('exact matchup, method fighter and totals line matching',()=>{
   const method={...series,market:'method',selection_id:'a:ko_tko'};
   assert.ok(c.betHistoryMatches(method,{matchup_id:'m',fighter_id:'a',method:'ko_tko'}));
   assert.equal(c.betHistoryMatches(method,{matchup_id:'m',fighter_id:'b',method:'ko_tko'}),false);
+  const selectedOpponent = {matchup_id:'m',fighter_id:'a',selected_fighter_id:'b',method:'ko_tko'};
+  assert.equal(c.betHistoryMatches(method,selectedOpponent),false);
+  assert.ok(c.betHistoryMatches({...method,selection_id:'b:ko_tko'},selectedOpponent));
 });
 test('opening a recommendation renders all books, filter and point timestamps',async()=>{
   const c=setup(), details=c.renderBetOddsHistory({matchup_id:'m',side:'fighter',fighter_id:'a'});

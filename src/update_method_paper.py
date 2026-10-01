@@ -136,6 +136,8 @@ def summarize(decisions, settlements, policy, now):
         if row['selection']:
             offer = row['selection']
             recommendations.append({**offer, 'matchup_id': row['matchup_id'],
+                'matchup_fighter_id': row['fighter_id'], 'matchup_opponent_id': row['opponent_id'],
+                'fighter_name': row['fighter_name'], 'opponent_name': row['opponent_name'],
                 'event_id': row['event_id'], 'event_date': row['event_date'],
                 'event_start_utc': row['event_start_utc'], 'risk_units': 1,
                 'decision_sha256': row['record_sha256'],

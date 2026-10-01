@@ -1367,6 +1367,9 @@ function focusMarketMatchup(fighterId, opponentId) {
       || (cardFighter === opponentId && cardOpponent === fighterId);
   });
   if (!target) return false;
+  for (let parent = target.parentElement; parent; parent = parent.parentElement) {
+    if (parent.tagName === "DETAILS") parent.open = true;
+  }
   target.classList.add("is-route-target");
   const prices = target.querySelector('details[data-book-lines="moneyline"]');
   if (prices) prices.open = true;
@@ -3015,6 +3018,9 @@ function availableMarketBooks() {
   const add = (value) => { if (String(value || "").trim()) books.add(String(value).trim()); };
   (state.upcomingBetBoard?.bets || []).forEach((bet) => add(bet.target_book));
   (state.upcomingBetBoard?.offers || []).forEach((bet) => add(bet.target_book));
+  (state.publishedBets?.snapshots || []).forEach((bet) => add(bet.target_book));
+  (state.betPerformance?.records || []).forEach((bet) => add(bet.target_book));
+  (state.methodPaper?.recommendations || []).forEach((bet) => add(bet.book));
   (state.upcomingBetBoard?.market_matchups || []).forEach((matchup) => (matchup.book_quotes || []).forEach((quote) => add(quote.book)));
   (currentMarket()?.matchups || []).forEach((matchup) => (matchup.book_quotes || []).forEach((quote) => add(quote.book)));
   (currentMarket()?.prop_markets?.total_rounds?.markets || []).forEach((market) => (market.book_quotes || []).forEach((quote) => add(quote.book)));
@@ -3041,7 +3047,7 @@ function renderMarketBookFilter() {
   const details = document.createElement("details");
   details.append(element("summary", "", `Sportsbooks: ${selectedMarketBookLabel()} · change`));
   const body = element("div", "market-book-filter-body");
-  appendText(body, "span", "section-note", "Choose only books you can use. The paper portfolio will select the best eligible offer per fight from these books and recalculate its stakes.");
+  appendText(body, "span", "section-note", "Show picks and prices from your sportsbooks.");
   const options = element("div", "market-book-options");
   books.forEach((book) => {
     const label = element("label", "market-book-option");
@@ -3204,29 +3210,23 @@ function appendQualifiedBetExplanation(container, bet) {
 
 function renderQualifiedUpcomingBets() {
   renderRecordedPaperBets();
+  const panel = $("#current-prices-panel"); panel.hidden = true;
   const status = $("#qualified-upcoming-status");
   const container = $("#qualified-upcoming-list");
   container.replaceChildren();
   const board = state.upcomingBetBoard;
   if (!board || board.paper_only !== true || board.execution_enabled !== false) {
-    status.textContent = "No valid all-upcoming paper-bet publication is available yet.";
-    container.append(element("div", "empty-state", "The board will appear after the next successful model update and market capture."));
+    status.textContent = "";
     return;
   }
-  const threshold = finite(board.minimum_expected_return);
   const portfolio = evaluateUpcomingPaperOffers(board, state.marketBookSelection);
-  const bets = portfolio.bets;
+  const pickType = $("#market-pick-type").value;
+  const bets = portfolio.bets.filter((bet) => pickType === "all" || bet.category === pickType);
   const eventCount = new Set(bets.map((bet) => bet.event_id).filter(Boolean)).size;
   const captured = formatTimestamp(board.observed_at_utc);
-  status.textContent = bets.length
-    ? `${bets.length} paper selection${bets.length === 1 ? "" : "s"} across ${eventCount} card${eventCount === 1 ? "" : "s"}, ranked by estimated return after calibration at ${selectedMarketBookLabel()}. ${formatPercent(portfolio.allocatedFraction)} allocated across this snapshot · captured ${captured}.`
-    : portfolio.reasons.legacy_or_invalid_publication
-      ? "This older publication is research only. Suggested paper stakes await a calibrated portfolio."
-      : `No eligible current paper bets at ${selectedMarketBookLabel()}. ${portfolio.reasons.expired_price ? `${portfolio.reasons.expired_price} expired price${portfolio.reasons.expired_price === 1 ? "" : "s"}. ` : ""}${portfolio.reasons.event_started ? `${portfolio.reasons.event_started} offer${portfolio.reasons.event_started === 1 ? "" : "s"} from started cards. ` : ""}Fresh source times, a future card start, and a positive calibrated edge are required.`;
-  if (!bets.length) {
-    container.append(element("div", "empty-state", "No fresh qualifying prices right now. Previously recorded recommendations remain below, with their original prices and results."));
-    return;
-  }
+  status.textContent = bets.length ? `${bets.length} prices across ${eventCount} cards, ranked by estimated return · checked ${captured}.` : "";
+  if (!bets.length) return;
+  panel.hidden = false;
   bets.forEach((bet, index) => {
     const item = document.createElement("details"); item.className = "qualified-bet-item";
     const openKey = `recommendation:${bet.matchup_id}:${bet.selection}`;
@@ -3273,32 +3273,34 @@ function renderQualifiedUpcomingBets() {
 }
 
 function recordedPaperStatus(bet, nowMs = Date.now()) {
-  const result = {won: 'Won', lost: 'Lost', win: 'Won', loss: 'Lost', void: 'Void'}[bet.settlement_status];
+  const result = {won: 'Correct', lost: 'Incorrect', win: 'Correct', loss: 'Incorrect', void: 'Void'}[bet.settlement_status];
   if (result) return result;
   const start = Date.parse(bet.event_start_utc);
-  if ((Number.isFinite(start) && start <= nowMs) || (!Number.isFinite(start) && String(bet.event_date || '') && bet.event_date < new Date(nowMs).toISOString().slice(0, 10))) return 'Awaiting result / review';
-  const updated = Date.parse(bet.source_quote_updated_at_utc);
-  if (!Number.isFinite(start) || !Number.isFinite(updated)) return 'Recorded pick — price timing unavailable';
-  return updated <= nowMs && nowMs - updated <= 30 * 60 * 1000 ? 'Recently quoted' : 'Recorded price expired';
+  const upcoming = Number.isFinite(start) ? start > nowMs : String(bet.event_date || '') > new Date(nowMs).toISOString().slice(0, 10);
+  return upcoming ? 'Upcoming' : 'Awaiting result';
 }
 
 function recordedPaperGroups(archive, board, performance, selectedBooks = null) {
   const outcomes = new Map((performance?.records || []).filter(r=>r.record_type==='published_snapshot').map(r=>[r.record_id,r]));
   const snapshots = archive?.paper_only === true && archive.execution_enabled === false ? archive.snapshots || [] : [];
   const current = board?.paper_only === true && board.execution_enabled === false ? board.bets || [] : [];
+  const official = (performance?.records || []).filter(row => row.official === true).map(row => ({
+    ...row, bet_id: `official:${row.record_id}`, observed_at_utc: row.published_at_utc,
+    threshold_met: true, paper_only: true, execution_enabled: false, settlement_status: row.status,
+  }));
   const unique = new Map();
-  for (const row of [...snapshots, ...current]) {
+  for (const row of [...snapshots, ...current, ...official]) {
     if (!row.bet_id || row.threshold_met !== true || row.paper_only !== true || row.execution_enabled !== false) continue;
     if (selectedBooks !== null && ![...selectedBooks].some(b=>b.toLowerCase()===String(row.target_book).toLowerCase())) continue;
     if (unique.has(row.bet_id)) continue;
     const result = outcomes.get(row.snapshot_id);
     unique.set(row.bet_id, {...row, event_start_utc: row.event_start_utc || result?.event_start_utc,
-      settlement_status: result?.status || 'pending', unit_profit: result?.unit_profit});
+      settlement_status: result?.status || row.settlement_status || 'pending', unit_profit: result?.unit_profit ?? row.unit_profit});
   }
   const groups = new Map();
   for (const row of unique.values()) {
     const selected = row.category==='Moneyline' ? (row.side==='fighter' ? row.fighter_id : row.opponent_id) : row.selection;
-    const key = JSON.stringify([row.event_id,[row.fighter_id,row.opponent_id].sort(),row.category,selected,row.target_book]);
+    const key = JSON.stringify([row.event_id,[row.fighter_id,row.opponent_id].sort(),row.category,selected]);
     if (!groups.has(key)) groups.set(key,[]); groups.get(key).push(row);
   }
   return [...groups.entries()].map(([key,versions])=>{
@@ -3307,25 +3309,120 @@ function recordedPaperGroups(archive, board, performance, selectedBooks = null) 
   }).sort((a,b)=>String(b.latest.event_date).localeCompare(String(a.latest.event_date)) || b.latest.estimated_expected_return-a.latest.estimated_expected_return);
 }
 
-function renderRecordedPaperBets() {
-  const container=$('#recorded-paper-bets'); if (!container) return; container.replaceChildren();
-  appendText(container,'h3','','Recorded recommendations');
-  appendText(container,'p','section-note','Original published picks remain visible after prices expire and cards start. Books filter the saved picks without replacing them. Earlier snapshots reflect the rules used at the time; repeated publications are not separate bets.');
-  const groups=recordedPaperGroups(state.publishedBets,state.upcomingBetBoard,state.betPerformance,state.marketBookSelection);
-  if (!groups.length) {appendText(container,'p','',state.publishedBets ? 'No recorded recommendations for the selected books yet.' : 'The recommendation archive is unavailable.');return;}
-  groups.forEach(({key,versions,latest:bet})=>{
-    const details=element('details','qualified-bet-item');details.open=Boolean(state.openPaperDetails?.[key]);details.addEventListener('toggle',()=>{(state.openPaperDetails ||= {})[key]=details.open;});
-    const summary=element('summary','');
-    appendText(summary,'strong','',`${bet.selection} at ${bet.target_book} · ${formatOdds(bet.offered_moneyline)} · ${formatPercent(bet.estimated_expected_return)} original EV`);
-    appendText(summary,'span','section-note',` ${formatDate(bet.event_date)} · ${recordedPaperStatus(bet)} · ${versions.length} saved publication${versions.length===1?'':'s'}`);
-    const body=element('div','details-body');
-    appendText(body,'p','',`${bet.fighter_name} vs ${bet.opponent_name}. Latest saved publication: ${formatTimestamp(bet.observed_at_utc)}. Original estimated chance: ${formatPercent(bet.estimated_win_probability)}. Original paper stake: ${finite(bet.allocated_fraction) === null ? 'not recorded' : formatPercent(bet.allocated_fraction)}.`);
-    const table=element('table','data-table');const head=element('tr');['Published','Original odds','Original EV','Status'].forEach(label=>head.append(element('th','',label)));table.append(head);
-    versions.forEach(version=>{const row=element('tr');[formatTimestamp(version.observed_at_utc),formatOdds(version.offered_moneyline),formatPercent(version.estimated_expected_return),recordedPaperStatus(version)].forEach(value=>row.append(element('td','',value)));table.append(row);});
-    const wrap=element('div','book-table-wrap');wrap.append(table);body.append(wrap);
-    const totalLine=bet.category==='Total rounds' ? Number(String(bet.selection).match(/(?:Over|Under)\s+([\d.]+)/i)?.[1]) : bet.line;
-    body.append(renderBetOddsHistory({...bet,line:totalLine}));details.append(summary,body);container.append(details);
+function marketRecommendationGroups(archive, board, performance, methods, selectedBooks = null) {
+  const groups = recordedPaperGroups(archive, board, performance, selectedBooks);
+  if (methods?.paper_only === true && methods.execution_enabled === false) {
+    for (const row of methods.recommendations || []) {
+      if (selectedBooks !== null && ![...selectedBooks].some(book => book.toLowerCase() === String(row.book).toLowerCase())) continue;
+      const bet = { ...row, category: 'Method', target_book: row.book, offered_moneyline: row.moneyline,
+        estimated_win_probability: row.probability, estimated_expected_return: row.expected_return,
+        selected_fighter_id: row.fighter_id,
+        fighter_id: row.matchup_fighter_id, opponent_id: row.matchup_opponent_id };
+      groups.push({ key: `method:${row.decision_sha256}`, versions: [bet], latest: bet });
+    }
+  }
+  return groups;
+}
+
+function partitionMarketRecommendations(groups, nowMs = Date.now()) {
+  const result = { upcoming: [], awaiting: [], resolved: [] };
+  for (const group of groups) {
+    const status = recordedPaperStatus(group.latest, nowMs);
+    result[status === 'Upcoming' ? 'upcoming' : status === 'Awaiting result' ? 'awaiting' : 'resolved'].push(group);
+  }
+  for (const [phase, rows] of Object.entries(result)) rows.sort((a, b) =>
+    (phase === 'upcoming' ? 1 : -1) * String(a.latest.event_date).localeCompare(String(b.latest.event_date))
+    || String(a.latest.event_id).localeCompare(String(b.latest.event_id))
+    || (a.latest.category === 'Method') - (b.latest.category === 'Method')
+    || String(a.latest.fighter_name).localeCompare(String(b.latest.fighter_name))
+    || a.key.localeCompare(b.key));
+  return result;
+}
+
+function renderMarketRecommendation({ key, versions, latest: bet }) {
+  const details = element('details', 'market-pick');
+  details.dataset.category = bet.category;
+  details.open = Boolean(state.openPaperDetails?.[key]);
+  const summary = element('summary', 'market-pick-summary');
+  const fight = element('div', 'market-pick-fight');
+  appendText(fight, 'strong', '', `${bet.fighter_name || 'Fighter unavailable'} vs ${bet.opponent_name || 'Opponent unavailable'}`);
+  appendText(fight, 'span', '', `${bet.selection} · ${bet.category === 'Method' ? 'Method · experimental' : bet.category === 'Moneyline' ? 'Fight winner' : 'Round total'}`);
+  const price = element('div', 'market-pick-price');
+  appendText(price, 'small', '', 'Recorded price');
+  appendText(price, 'strong', '', `${formatOdds(bet.offered_moneyline)} · ${bet.target_book}`);
+  const status = recordedPaperStatus(bet);
+  const result = element('span', `pill ${status === 'Correct' ? 'win' : status === 'Incorrect' ? 'loss' : 'neutral'}`, status);
+  const toggle = element('span', 'market-pick-toggle'); toggle.setAttribute('aria-hidden', 'true');
+  summary.append(fight, price, result, toggle);
+  const body = element('div', 'details-body');
+  appendText(body, 'p', 'section-note', `Pick recorded ${formatTimestamp(bet.observed_at_utc)} · estimated chance ${formatPercent(bet.estimated_win_probability)}. The displayed price is the recorded quote, not a live offer.`);
+  if (status === 'Void') appendText(body, 'p', 'section-note', 'Void: this pick is not counted as correct or incorrect.');
+  if (versions.length > 1) {
+    const history = element('details', 'market-pick-history'); history.append(element('summary', '', 'Price history'));
+    const table = performanceTable(['Recorded', 'Sportsbook', 'Price']);
+    versions.forEach(version => {
+      const row = element('tr');
+      [formatTimestamp(version.observed_at_utc), version.target_book, formatOdds(version.offered_moneyline)]
+        .forEach((value, index) => appendPerformanceCell(row, ['Recorded', 'Sportsbook', 'Price'][index], value));
+      table.body.append(row);
+    });
+    history.append(table.wrap); body.append(history);
+  }
+  const loadHistory = () => {
+    if (!details.open || body.dataset.loaded) return;
+    body.dataset.loaded = 'true';
+    const line = bet.category === 'Total rounds' ? Number(String(bet.selection).match(/(?:Over|Under)\s+([\d.]+)/i)?.[1]) : bet.line;
+    body.append(renderBetOddsHistory({ ...bet, line }));
+  };
+  details.addEventListener('toggle', () => { (state.openPaperDetails ||= {})[key] = details.open; loadHistory(); });
+  details.append(summary, body); loadHistory();
+  return details;
+}
+
+function renderMarketPickEvents(container, groups, phase) {
+  const events = new Map();
+  groups.forEach(group => {
+    const id = `${group.latest.event_date}:${group.latest.event_id}`;
+    if (!events.has(id)) events.set(id, []);
+    events.get(id).push(group);
   });
+  let index = 0;
+  for (const [id, picks] of events) {
+    const event = element('details', 'market-pick-event');
+    const key = `market:${phase}:${id}`;
+    event.open = state.openPaperDetails?.[key] ?? (phase !== 'resolved' || index === 0);
+    event.addEventListener('toggle', () => { (state.openPaperDetails ||= {})[key] = event.open; });
+    const heading = element('summary', 'market-pick-event-heading');
+    const title = picks.find(pick => pick.latest.event_title)?.latest.event_title || 'UFC';
+    appendText(heading, 'strong', '', `${formatDate(picks[0].latest.event_date)} · ${title}`);
+    const correct = picks.filter(pick => recordedPaperStatus(pick.latest) === 'Correct').length;
+    const incorrect = picks.filter(pick => recordedPaperStatus(pick.latest) === 'Incorrect').length;
+    const voids = picks.length - correct - incorrect;
+    appendText(heading, 'span', '', phase === 'resolved'
+      ? `${correct} correct · ${incorrect} incorrect${voids ? ` · ${voids} void` : ''}`
+      : `${picks.length} pick${picks.length === 1 ? '' : 's'}`);
+    const list = element('div', 'market-pick-event-list');
+    picks.forEach(pick => list.append(renderMarketRecommendation(pick)));
+    event.append(heading, list); container.append(event); index++;
+  }
+}
+
+function renderRecordedPaperBets() {
+  const groups = marketRecommendationGroups(state.publishedBets, state.upcomingBetBoard, state.betPerformance, state.methodPaper, state.marketBookSelection);
+  const type = $('#market-pick-type').value;
+  const sections = partitionMarketRecommendations(groups.filter(group => type === 'all' || group.latest.category === type));
+  $('#recorded-upcoming-status').textContent = `${sections.upcoming.length} upcoming picks · tracked selections, no bets placed.`;
+  const correct = sections.resolved.filter(group => recordedPaperStatus(group.latest) === 'Correct').length;
+  const incorrect = sections.resolved.filter(group => recordedPaperStatus(group.latest) === 'Incorrect').length;
+  const voids = sections.resolved.length - correct - incorrect;
+  $('#recorded-results-status').textContent = `${correct} correct · ${incorrect} incorrect${voids ? ` · ${voids} void` : ''} · counts are picks, not unique fights.`;
+  for (const [phase, selector] of [['upcoming', '#recorded-paper-bets'], ['awaiting', '#recorded-awaiting-picks'], ['resolved', '#recorded-results']]) {
+    const container = $(selector); container.replaceChildren();
+    renderMarketPickEvents(container, sections[phase], phase);
+    if (!sections[phase].length) appendText(container, 'p', 'section-note', phase === 'upcoming'
+      ? 'No upcoming picks for these filters.' : 'No confirmed results for these filters.');
+  }
+  $('#recorded-awaiting-panel').hidden = !sections.awaiting.length;
 }
 
 function selectPerformanceRecords(records, timing) {
@@ -3891,7 +3988,7 @@ function betHistoryMatches(series, bet) {
   const market = bet.method ? 'method' : bet.category === 'Total rounds' || bet.market === 'total_rounds' ? 'total_rounds' : 'moneyline';
   if (!sameFight || series.market !== market) return false;
   if (market === 'total_rounds' && Number(series.line) !== Number(bet.line)) return false;
-  if (market === 'method') return series.selection_id === `${bet.fighter_id}:${bet.method}`;
+  if (market === 'method') return series.selection_id === `${bet.selected_fighter_id || bet.fighter_id}:${bet.method}`;
   return true;
 }
 
@@ -4025,56 +4122,18 @@ function renderResearchMonitor() {
   }
 }
 
-function methodPaperStatus(row, nowMs = Date.now()) {
-  if (['win','loss','void'].includes(row.settlement_status)) return {win:'Won',loss:'Lost',void:'Void'}[row.settlement_status];
-  if (Date.parse(row.event_start_utc) <= nowMs) return "Awaiting result / review";
-  const age = nowMs - Date.parse(row.observed_at_utc);
-  return Number.isFinite(age) && age >= 0 && age <= 30 * 60 * 1000 ? "Recently collected" : "Recorded price expired";
-}
-
-function renderMethodPaper() {
-  const container = $("#method-paper-recommendations");
-  if (!container) return;
-  container.replaceChildren();
-  const report = state.methodPaper;
-  appendText(container, "p", "section-note", "Experimental selections: at least 5% model EV, one selection per fight, one hypothetical unit each. No prior profitability requirement or Kelly filter. Source quote-update times are unavailable; displayed age measures collection time. Results use a declared paper convention, not verified bookmaker payouts.");
-  if (!report) { appendText(container, "p", "", "Awaiting the first method paper report."); return; }
-  appendText(container, "p", "section-note", `${report.paper_recommendations} recorded recommendations · ${report.settled_fights} settled fights including passes/voids · ${Number(report.profit_units).toFixed(2)} units profit.`);
-  const rows = (report.recommendations || []).filter((row) => marketBookAllowed(row.book)).sort((a,b) => {
-    const activeA = methodPaperStatus(a) === "Recently collected"; const activeB = methodPaperStatus(b) === "Recently collected";
-    return Number(activeB) - Number(activeA) || b.expected_return - a.expected_return;
-  });
-  if (!rows.length) { appendText(container, "p", "", "No new qualifying method selections have been recorded for the selected books. Only captures after this experiment started are eligible."); return; }
-  const wrap = element("div", "book-table-wrap"); const table = element("table", "data-table");
-  const head = element("thead"); const headings = element("tr");
-  ["Selection", "Book / price", "Model chance", "Estimated EV", "Paper stake", "Status"].forEach((label) => appendText(headings, "th", "", label));
-  head.append(headings); table.append(head); const body = element("tbody");
-  rows.forEach((row) => {
-    const tr = element("tr");
-    const selectionCell=element('td'); const selectionDetails=element('details');
-    const openKey=`method:${row.matchup_id}`;selectionDetails.open=Boolean(state.openPaperDetails?.[openKey]);selectionDetails.addEventListener('toggle',()=>{(state.openPaperDetails ||= {})[openKey]=selectionDetails.open;});
-    selectionDetails.append(element('summary','',row.selection),renderBetOddsHistory(row)); selectionCell.append(selectionDetails); tr.append(selectionCell);
-    [`${row.book} / ${row.moneyline > 0 ? "+" : ""}${row.moneyline}`, formatPercent(row.probability), formatPercent(row.expected_return), "1 unit", methodPaperStatus(row)].forEach((value) => appendText(tr, "td", "", value));
-    body.append(tr);
-  });
-  table.append(body); wrap.append(table); container.append(wrap);
-}
-
 function renderMarket() {
   renderResearchMonitor();
-  renderMethodPaper();
   renderCandidateDiagnostics();
   const notice = $("#market-notice"); const container = $("#market-matchups"); const propContainer = $("#prop-market-details"); notice.replaceChildren(); container.replaceChildren(); propContainer.replaceChildren(); renderMarketBookFilter(); renderQualifiedUpcomingBets(); renderProfitabilityEvidence();
   const market = currentMarket();
   const outcomes = currentOutcomes();
-  const copy = element("div"); appendText(copy, "h2", "", "Paper research only—automatic betting is intentionally off.");
   const marketNotice = market
     ? `Quotes captured ${formatTimestamp(market.observed_at_utc)}. The policy compares the best available price with a consensus that excludes that target book.`
     : state.market
       ? `The latest stored quotes are for ${formatDate(state.market.event_date)}, not the current ${state.card?.date || "fight card"}. Current-card prices will appear after the next synchronized market snapshot.`
       : "No current book-by-book market capture is published. Fighter and matchup research remains available.";
-  appendText(copy, "p", "", marketNotice);
-  notice.append(copy, element("span", "pill orange", market ? "Execution disabled" : "Current prices unavailable"));
+  notice.textContent = marketNotice;
   const capturedMatchups = market?.matchups || [];
   const capturedIdentities = new Set(capturedMatchups.flatMap(matchupIdentityKeys));
   const uncapturedMatchups = legacyRows()
@@ -4182,6 +4241,7 @@ function renderMarket() {
 }
 
 function bindEvents() {
+  $("#market-pick-type").addEventListener("change", renderQualifiedUpcomingBets);
   document.querySelectorAll("[data-nav]").forEach((button) => button.addEventListener("click", () => setRoute(button.dataset.nav)));
   makeAutocomplete($("#matchup-fighter-a"), $("#matchup-results-a"), "a"); makeAutocomplete($("#matchup-fighter-b"), $("#matchup-results-b"), "b");
   $("#analyze-matchup").addEventListener("click", () => { if (state.selected.a && state.selected.b) setRoute(`matchups/${state.selected.a.id}/${state.selected.b.id}`); });
@@ -4214,7 +4274,7 @@ async function start() {
   try {
     await loadData();
     populateFilters(); renderCurrentCard(); renderFighterDirectory(); renderMarket(); renderBetPerformance(); bindEvents();
-    window.setInterval(() => { renderQualifiedUpcomingBets(); renderCandidateDiagnostics(); renderMethodPaper(); }, 60 * 1000);
+    window.setInterval(() => { renderQualifiedUpcomingBets(); renderCandidateDiagnostics(); }, 60 * 1000);
     window.setInterval(refreshLiveResults, 2 * 60 * 1000);
     document.addEventListener('visibilitychange',refreshLiveResults);
     window.addEventListener('hashchange',refreshLiveResults);

@@ -54,13 +54,13 @@ class WebsiteExplorerContractTests(unittest.TestCase):
             REPO_ROOT / ".github" / "workflows" / "update-data.yml"
         ).read_text(encoding="utf-8")
 
-        self.assertIn("Consensus, best price, and paper decisions", page)
-        self.assertIn("Qualified upcoming paper bets", page)
-        self.assertIn("All announced UFC cards", page)
+        self.assertIn("Picks, prices and results", page)
+        self.assertIn("Upcoming picks", page)
+        self.assertIn("Awaiting results", page)
         self.assertNotIn("Potentially profitable prices", page)
         self.assertIn("All current total and method prices", page)
         self.assertIn('id="market-book-filter"', page)
-        self.assertIn("automatic betting is intentionally off", script)
+        self.assertIn("tracked selections, no bets placed", script)
         self.assertIn("current_opportunities.json", script)
         self.assertIn("odds_history.json", script)
         self.assertIn("upcoming_bet_board.json", script)
@@ -107,7 +107,7 @@ class WebsiteExplorerContractTests(unittest.TestCase):
         script = (REPO_ROOT / "script.js").read_text(encoding="utf-8")
         style = (REPO_ROOT / "style.css").read_text(encoding="utf-8")
 
-        self.assertIn("consensus moved over time", page)
+        self.assertIn("switch between the consensus and any individual oddsmaker", page)
         self.assertIn("function renderOddsHistory", script)
         self.assertIn("function oddsHistoryChart", script)
         self.assertIn("const uncapturedMatchups = legacyRows()", script)

@@ -67,6 +67,18 @@ class MethodPaperTests(unittest.TestCase):
         self.assertEqual(result['settled_risk_units'],0)
         self.assertIsNone(result['return_per_unit'])
 
+    def test_report_names_both_fighters_without_changing_selected_opponent(self):
+        rows = self.build(quotes=[_price_snapshot(fighter_prices={}, opponent_prices={'decision': 1000})])
+        result = summarize(rows, [], self.policy, NOW)
+        pick = result['recommendations'][0]
+        self.assertEqual(pick['fighter_id'], 'b-fighter')
+        self.assertEqual(pick['matchup_fighter_id'], 'a-fighter')
+        self.assertEqual(pick['matchup_opponent_id'], 'b-fighter')
+        self.assertEqual(pick['fighter_name'], 'Fighter A')
+        self.assertEqual(pick['opponent_name'], 'Fighter B')
+        for field, value in rows[0]['selection'].items():
+            self.assertEqual(pick[field], value)
+
     def test_empty_initialization_is_idempotent(self):
         class Store:
             def __init__(self,*args): pass
