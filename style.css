@@ -85,7 +85,13 @@ a { color: var(--blue); }
 .matchup-market strong { color: var(--ink); }
 .upcoming-event-list { display: grid; min-width: 0; gap: 18px; }
 .upcoming-event-group { min-width: 0; overflow: hidden; border: 1px solid var(--line); border-radius: var(--radius-md); background: #0d151d; }
-.upcoming-event-header { display: flex; align-items: center; justify-content: space-between; gap: 18px; padding: 15px 17px; border-bottom: 1px solid var(--line); background: var(--paper-2); }
+.upcoming-event-header { display: flex; align-items: center; justify-content: space-between; gap: 18px; padding: 15px 17px; list-style: none; background: var(--paper-2); }
+.upcoming-event-header::-webkit-details-marker { display: none; }
+.upcoming-event-header > div { flex: 1; min-width: 0; }
+.upcoming-event-header:hover, .upcoming-event-header:focus-visible { background: #17232d; }
+.upcoming-event-expand { display: grid; flex: 0 0 26px; height: 26px; place-items: center; border-radius: 50%; color: var(--ink-soft); background: #0d151d; font-size: 20px; font-weight: 500; }
+.upcoming-event-expand::before { content: "+"; }
+.upcoming-event-group[open] > .upcoming-event-header .upcoming-event-expand::before { content: "\2212"; }
 .upcoming-event-header h3 { margin: 2px 0 0; font-family: "Manrope", sans-serif; font-size: 18px; line-height: 1.25; letter-spacing: -.02em; }
 .upcoming-event-count { flex: 0 0 auto; color: var(--ink-soft); font-size: 12px; font-weight: 700; }
 .upcoming-event-bouts { display: grid; min-width: 0; }
@@ -230,7 +236,7 @@ input[type="search"]:focus, select:focus { border-color: var(--teal); box-shadow
 details { border: 1px solid var(--line); border-radius: 13px; background: var(--paper); }
 details { min-width: 0; max-width: 100%; }
 summary { padding: 15px 17px; cursor: pointer; font-weight: 700; }
-details[open] summary { border-bottom: 1px solid var(--line); }
+details[open] > summary { border-bottom: 1px solid var(--line); }
 .details-body { min-width: 0; max-width: 100%; padding: 17px; }
 .fight-history { display: grid; gap: 5px; }
 .fight-history > details { border-radius: 9px; }

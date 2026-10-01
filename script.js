@@ -2416,21 +2416,24 @@ function renderCurrentCard() {
   const matchupCount = events.reduce((total, event) => total + event.matchups.length, 0);
   $("#current-card-title").textContent = "All upcoming UFC fights";
   $("#current-card-meta").textContent = events.length
-    ? `${events.length} events · ${matchupCount} scheduled matchups · main event first within each card`
+    ? `${events.length} events · ${matchupCount} scheduled matchups · expand a card to see its fights, main event first`
     : "No announced event schedule is currently published.";
   if (!events.length) {
     container.append(element("div", "empty-state", "No upcoming matchups are published yet. Use the matchup builder below to research any two fighters."));
     return;
   }
   events.forEach((event) => {
-    const group = element("section", "upcoming-event-group");
+    const group = element("details", "upcoming-event-group");
     group.dataset.eventId = event.event_id || "";
-    const header = element("header", "upcoming-event-header");
+    const header = element("summary", "upcoming-event-header");
     const heading = element("div");
     appendText(heading, "p", "eyebrow", formatDate(event.event_date));
     appendText(heading, "h3", "", event.event_title);
     appendText(header, "span", "upcoming-event-count", `${event.matchups.length} bouts`);
     header.prepend(heading);
+    const expand = element("span", "upcoming-event-expand");
+    expand.setAttribute("aria-hidden", "true");
+    header.append(expand);
     const bouts = element("div", "upcoming-event-bouts");
     event.matchups.forEach((matchup, index) => bouts.append(renderUpcomingBout(matchup, index, event.matchups.length)));
     group.append(header, bouts);

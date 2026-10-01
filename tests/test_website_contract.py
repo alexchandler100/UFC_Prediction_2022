@@ -168,7 +168,7 @@ class WebsiteExplorerContractTests(unittest.TestCase):
         self.assertIn("function upcomingBookPriceDetails", script)
         self.assertIn("stored book price", script)
         self.assertIn("Consensus unavailable", script)
-        self.assertIn("main event first within each card", script)
+        self.assertIn("expand a card to see its fights, main event first", script)
         self.assertIn(".upcoming-event-group", style)
         self.assertIn(".upcoming-bout-summary", style)
         self.assertIn(".upcoming-bout-details", style)
