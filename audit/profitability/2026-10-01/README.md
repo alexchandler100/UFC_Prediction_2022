@@ -415,3 +415,12 @@ histories reduces correct strike-leader selections from 120/228 to 109/228.
 The fixed candidate failed its pass condition, so no new fight simulation
 screen was run. Better numerical transfer alone has not established a useful
 winner forecast or betting advantage.
+
+The [fixed precision follow-up](../../../SIMULATION_STRIKE_RESAMPLE_PRECISION_REPORT_2026-10-01.md)
+used two runs of 100 training-history resamples. They recovered 119/228 and
+123/228 correct strike leaders, so much of the ten-member loss was numerical
+instability. They still failed the fixed advancement requirements: 14 different
+leader choices between runs and one run below the required 120. Further
+simulation expansion is deferred; the next priority is prospective obtainable-
+price coverage and selected-bet probability quality, without additional retries
+of this simulation test.

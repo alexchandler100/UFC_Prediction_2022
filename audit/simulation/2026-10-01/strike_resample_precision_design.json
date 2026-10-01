@@ -1,0 +1,40 @@
+{
+  "schema_version": 1,
+  "purpose": "Check whether the failed ten-member observation predictor is unstable because too few training-card resamples were averaged",
+  "cohort": "development_2024",
+  "expected_fights": 229,
+  "expected_cards": 30,
+  "estimator": "observation_bootstrap from b19e6280; unchanged observation contexts, equal-bout weighted effects, and original strictly earlier-card shrinkage selections; no covariates",
+  "streams": {"original_seed": 2903, "independent_seed": 20261001},
+  "members_per_stream": 100,
+  "workers": 4,
+  "diagnostic_prefix_sizes": [10, 25, 50, 100],
+  "seed_contract": "For each stream/card, add int(canonical_sha256({event_id,date:cutoff.isoformat()})[:8],16) to the stream root. SeedSequence(event_seed).generate_state(100,dtype=uint64) supplies PCG64DXSM member seeds. Sample sorted strictly earlier event IDs with replacement. The first ten original-seed members must reproduce the saved handoff candidate.",
+  "maximum_runtime_seconds": 1800,
+  "new_trajectories": 0,
+  "stability_rule": {
+    "compare": "Both independent 100-member means, with each fight a single physical observation",
+    "minimum_strike_leader_agreement": 0.95,
+    "maximum_accuracy_rms_difference": 0.01,
+    "maximum_pace_relative_rms_difference": 0.02,
+    "pace_denominator": "Original observation-reference rate for the same fighter side"
+  },
+  "performance_rule": {
+    "apply_to": "Each 100-member stream separately; both must pass",
+    "minimum_correct_strike_leaders": 120,
+    "decisive_fights": 228,
+    "probability_errors": "Pace and landing-accuracy mean negative log likelihood must each be lower than both the original marginal-fighter baseline and rejected v2 conditional baseline by more than 0.000001",
+    "no_seed_selection": "Never select the better stream, a favorable intermediate prefix, or the pooled 200-member mean to override either failed stream"
+  },
+  "advance_rule": "All reproduction checks, all stability requirements, and both streams' performance requirements must pass. Passing allows a separately bounded development simulation screen only; this precision check generates no trajectories and enables no production mode.",
+  "uncertainty": "4000 whole-card resamples with seed 20261001 after averaging members within each fighter side. Scores use mean predictions; fighter ordering uses the mean of member-specific pace times accuracy. Separately retain within-fight standard error of the predicted red-minus-blue landed rate across training resamples.",
+  "reporting": "Report all four fixed prefixes for both streams and their paired differences to reference, ten-member candidate, marginal fighter and rejected v2. Pooled 200-member results are descriptive only. Do not examine or change the study in response to partial scores.",
+  "failure_action": "Keep this route research-only. Do not add members, retry new seeds, alter averaging, center predictions on the reference or winners, or change the estimator to make the result pass. Defer further simulator expansion and prioritize prospective obtainable-price evidence.",
+  "locked_cohorts": ["confirmation_2025_a", "final_holdout_2025_b"],
+  "limitations": [
+    "The 229 development outcomes have already been studied; this is a numerical stability diagnostic, not untouched validation",
+    "Averaging predictions from resampled histories can differ systematically from fitting once to all training data",
+    "Strike-leader accuracy is not a calibrated winner probability or demonstrated betting profit",
+    "Two fixed random streams quantify repeatability at this sample count; they cannot prove convergence at infinite precision"
+  ]
+}

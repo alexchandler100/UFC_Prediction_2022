@@ -2,6 +2,12 @@
 
 Date: 2026-10-01. Research only. No production forecasts or betting rules changed.
 
+Follow-up: the [fixed higher-precision check](SIMULATION_STRIKE_RESAMPLE_PRECISION_REPORT_2026-10-01.md)
+recovered much of the ten-member ordering loss (119/228 and 123/228 at 100
+members), but failed its separate stability/advance requirements. Read that
+result before interpreting this earlier ten-member comparison as persistent
+damage from resampling.
+
 The proposed correction preserves the strike predictor through the engine, but
 it fails the requirement to preserve useful fighter ordering. It therefore
 does not advance to another fight simulation screen.

@@ -1,0 +1,1302 @@
+{
+  "stability_checks": {
+    "strike_leader_agreement": false,
+    "accuracy_rms_difference": true,
+    "pace_relative_rms_difference": true
+  },
+  "performance_checks": {
+    "original_seed_100": {
+      "preserves_reference_winner_count": false,
+      "complete_decisive_cohort": true,
+      "lower_pace_nll_than_simulator_bootstrap_covariates": true,
+      "lower_accuracy_nll_than_simulator_bootstrap_covariates": true,
+      "lower_pace_nll_than_original_marginal": true,
+      "lower_accuracy_nll_than_original_marginal": true
+    },
+    "independent_seed_100": {
+      "preserves_reference_winner_count": true,
+      "complete_decisive_cohort": true,
+      "lower_pace_nll_than_simulator_bootstrap_covariates": true,
+      "lower_accuracy_nll_than_simulator_bootstrap_covariates": true,
+      "lower_pace_nll_than_original_marginal": true,
+      "lower_accuracy_nll_than_original_marginal": true
+    }
+  },
+  "candidate_advances_to_simulation_screen": false,
+  "schema_version": 1,
+  "research_only": true,
+  "production_changed": false,
+  "new_trajectories": 0,
+  "locked_cohorts_opened": [],
+  "cohort": "development_2024",
+  "fights": 229,
+  "cards": 30,
+  "members_per_stream": 100,
+  "streams": {
+    "original_seed": 2903,
+    "independent_seed": 20261001
+  },
+  "member_side_rows": 91600,
+  "design_sha256": "9553a178124d160420b913a5f43cd7a227c9be99f0a3068504a114709452b8e3",
+  "handoff_report_sha256": "8b31f8b832ff277945fe659e592fc645ededaf6b90fb2c19e72360b72495a068",
+  "historical_source_sha256": {
+    "profiles": "88341fc47df0dac282a4c91c6f5df4d60e9e5905204eda4ce950459720c01230",
+    "raw": "6cfb14c9ebcaf2946d942447f4af0166df8b1e5cefa9111edb184b74d7197d49",
+    "round_stats": "2ca7e38eaf679ddcccd5a1b9d1e6d1943874072a9492eeaf2f2bdb3815e45cce"
+  },
+  "elapsed_seconds": 253.8279999999795,
+  "reproduction_maximum_errors": {
+    "original_reference": 1.7763568394002505e-15,
+    "original_ten_member_prefix": 1.7763568394002505e-15
+  },
+  "scores": {
+    "independent_seed_010": {
+      "pace_nll": 16.1567563012541,
+      "accuracy_nll": 4.580861123339858,
+      "attempt_bias_per_side": 8.098019637818014,
+      "strike_leader_wins": 116.0,
+      "decisive_fights": 228,
+      "ranking_card_interval": {
+        "mean": 0.5087719298245614,
+        "card_95_interval": [
+          0.4369369369369369,
+          0.5770960925468286
+        ]
+      }
+    },
+    "independent_seed_025": {
+      "pace_nll": 16.114595254648005,
+      "accuracy_nll": 4.523638851230601,
+      "attempt_bias_per_side": 8.014763949793423,
+      "strike_leader_wins": 117.0,
+      "decisive_fights": 228,
+      "ranking_card_interval": {
+        "mean": 0.5131578947368421,
+        "card_95_interval": [
+          0.45534821428571426,
+          0.5696803278688525
+        ]
+      }
+    },
+    "independent_seed_050": {
+      "pace_nll": 16.090067532388684,
+      "accuracy_nll": 4.508205145176052,
+      "attempt_bias_per_side": 7.869057296103437,
+      "strike_leader_wins": 120.0,
+      "decisive_fights": 228,
+      "ranking_card_interval": {
+        "mean": 0.5263157894736842,
+        "card_95_interval": [
+          0.47032619812974874,
+          0.5826842272518625
+        ]
+      }
+    },
+    "independent_seed_100": {
+      "pace_nll": 16.118878020166083,
+      "accuracy_nll": 4.517444743739002,
+      "attempt_bias_per_side": 7.954553896461489,
+      "strike_leader_wins": 123.0,
+      "decisive_fights": 228,
+      "ranking_card_interval": {
+        "mean": 0.5394736842105263,
+        "card_95_interval": [
+          0.4821347402597403,
+          0.5983272172302626
+        ]
+      }
+    },
+    "observation_bootstrap": {
+      "pace_nll": 16.17453819618943,
+      "accuracy_nll": 4.554863914187118,
+      "attempt_bias_per_side": 8.006886328204702,
+      "strike_leader_wins": 109.0,
+      "decisive_fights": 228,
+      "ranking_card_interval": {
+        "mean": 0.4780701754385965,
+        "card_95_interval": [
+          0.41628151260504204,
+          0.5371197083979935
+        ]
+      }
+    },
+    "observation_reference": {
+      "pace_nll": 16.01725072086803,
+      "accuracy_nll": 4.493713421107088,
+      "attempt_bias_per_side": 7.019526484981177,
+      "strike_leader_wins": 120.0,
+      "decisive_fights": 228,
+      "ranking_card_interval": {
+        "mean": 0.5263157894736842,
+        "card_95_interval": [
+          0.4657534246575342,
+          0.589041095890411
+        ]
+      }
+    },
+    "original_marginal": {
+      "pace_nll": 16.178988579655073,
+      "accuracy_nll": 4.619872680693189,
+      "attempt_bias_per_side": 7.410984984390174,
+      "strike_leader_wins": 117.0,
+      "decisive_fights": 228,
+      "ranking_card_interval": {
+        "mean": 0.5131578947368421,
+        "card_95_interval": [
+          0.4510595554711246,
+          0.572073752857335
+        ]
+      }
+    },
+    "original_seed_010": {
+      "pace_nll": 16.174538196189435,
+      "accuracy_nll": 4.554863914187118,
+      "attempt_bias_per_side": 8.006886328204702,
+      "strike_leader_wins": 109.0,
+      "decisive_fights": 228,
+      "ranking_card_interval": {
+        "mean": 0.4780701754385965,
+        "card_95_interval": [
+          0.41628151260504204,
+          0.5371197083979935
+        ]
+      }
+    },
+    "original_seed_025": {
+      "pace_nll": 16.104688793391635,
+      "accuracy_nll": 4.523638803769791,
+      "attempt_bias_per_side": 7.842806073799689,
+      "strike_leader_wins": 117.0,
+      "decisive_fights": 228,
+      "ranking_card_interval": {
+        "mean": 0.5131578947368421,
+        "card_95_interval": [
+          0.454166211790393,
+          0.5747777272351337
+        ]
+      }
+    },
+    "original_seed_050": {
+      "pace_nll": 16.108015477033057,
+      "accuracy_nll": 4.519415052345757,
+      "attempt_bias_per_side": 7.931628402433769,
+      "strike_leader_wins": 118.0,
+      "decisive_fights": 228,
+      "ranking_card_interval": {
+        "mean": 0.5175438596491229,
+        "card_95_interval": [
+          0.4523757763975155,
+          0.5848350391986064
+        ]
+      }
+    },
+    "original_seed_100": {
+      "pace_nll": 16.119094038924363,
+      "accuracy_nll": 4.509169157206811,
+      "attempt_bias_per_side": 7.942342708435934,
+      "strike_leader_wins": 119.0,
+      "decisive_fights": 228,
+      "ranking_card_interval": {
+        "mean": 0.5219298245614035,
+        "card_95_interval": [
+          0.4633002700663251,
+          0.581081081081081
+        ]
+      }
+    },
+    "pooled_200_descriptive": {
+      "pace_nll": 16.116816274057403,
+      "accuracy_nll": 4.511983474400594,
+      "attempt_bias_per_side": 7.9484483024487105,
+      "strike_leader_wins": 119.0,
+      "decisive_fights": 228,
+      "ranking_card_interval": {
+        "mean": 0.5219298245614035,
+        "card_95_interval": [
+          0.46638608358141465,
+          0.5800865800865801
+        ]
+      }
+    },
+    "simulator_bootstrap_covariates": {
+      "pace_nll": 17.710570375043115,
+      "accuracy_nll": 4.554863918728524,
+      "attempt_bias_per_side": 20.665987898997077,
+      "strike_leader_wins": 106.0,
+      "decisive_fights": 228,
+      "ranking_card_interval": {
+        "mean": 0.4649122807017544,
+        "card_95_interval": [
+          0.4117647058823529,
+          0.5169602063375092
+        ]
+      }
+    }
+  },
+  "paired_card_intervals": {
+    "original_seed_100_minus_observation_reference": {
+      "pace_nll": {
+        "mean": 0.10184331805633517,
+        "card_95_interval": [
+          0.020126949815968548,
+          0.17994399042571646
+        ]
+      },
+      "accuracy_nll": {
+        "mean": 0.015455736099722351,
+        "card_95_interval": [
+          -0.0022999616029560147,
+          0.033503728030603586
+        ]
+      },
+      "ranking": {
+        "mean": -0.0043859649122807015,
+        "card_95_interval": [
+          -0.03043810518321625,
+          0.02392632039013619
+        ]
+      }
+    },
+    "original_seed_100_minus_original_marginal": {
+      "pace_nll": {
+        "mean": -0.05989454073070735,
+        "card_95_interval": [
+          -0.23689299595895852,
+          0.09859226751392652
+        ]
+      },
+      "accuracy_nll": {
+        "mean": -0.11070352348637846,
+        "card_95_interval": [
+          -0.19538295057050964,
+          -0.025728719418184474
+        ]
+      },
+      "ranking": {
+        "mean": 0.008771929824561403,
+        "card_95_interval": [
+          -0.03278688524590164,
+          0.053662364650552345
+        ]
+      }
+    },
+    "original_seed_100_minus_simulator_bootstrap_covariates": {
+      "pace_nll": {
+        "mean": -1.5914763361187505,
+        "card_95_interval": [
+          -2.242171419149123,
+          -0.9183775384550649
+        ]
+      },
+      "accuracy_nll": {
+        "mean": -0.04569476152171305,
+        "card_95_interval": [
+          -0.0997501633501433,
+          0.005606706778179379
+        ]
+      },
+      "ranking": {
+        "mean": 0.05701754385964912,
+        "card_95_interval": [
+          0.012658227848101266,
+          0.10573200552527443
+        ]
+      }
+    },
+    "original_seed_100_minus_observation_bootstrap": {
+      "pace_nll": {
+        "mean": -0.055444157265070376,
+        "card_95_interval": [
+          -0.19217117054369856,
+          0.08392130461415685
+        ]
+      },
+      "accuracy_nll": {
+        "mean": -0.04569475698030903,
+        "card_95_interval": [
+          -0.09975015687170273,
+          0.005606707885807493
+        ]
+      },
+      "ranking": {
+        "mean": 0.043859649122807015,
+        "card_95_interval": [
+          0.008547008547008548,
+          0.08189655172413793
+        ]
+      }
+    },
+    "independent_seed_100_minus_observation_reference": {
+      "pace_nll": {
+        "mean": 0.10162729929805249,
+        "card_95_interval": [
+          0.009613936064155868,
+          0.18368899970350872
+        ]
+      },
+      "accuracy_nll": {
+        "mean": 0.023731322631914485,
+        "card_95_interval": [
+          0.010159723063807339,
+          0.03774963857029494
+        ]
+      },
+      "ranking": {
+        "mean": 0.013157894736842105,
+        "card_95_interval": [
+          -0.012932433945364979,
+          0.0392156862745098
+        ]
+      }
+    },
+    "independent_seed_100_minus_original_marginal": {
+      "pace_nll": {
+        "mean": -0.060110559488990044,
+        "card_95_interval": [
+          -0.2407318931284326,
+          0.10409457800019456
+        ]
+      },
+      "accuracy_nll": {
+        "mean": -0.10242793695418635,
+        "card_95_interval": [
+          -0.18829870522680472,
+          -0.013647733026843795
+        ]
+      },
+      "ranking": {
+        "mean": 0.02631578947368421,
+        "card_95_interval": [
+          -0.012875536480686695,
+          0.06550782130922363
+        ]
+      }
+    },
+    "independent_seed_100_minus_simulator_bootstrap_covariates": {
+      "pace_nll": {
+        "mean": -1.591692354877033,
+        "card_95_interval": [
+          -2.244459736938791,
+          -0.901933142144913
+        ]
+      },
+      "accuracy_nll": {
+        "mean": -0.03741917498952091,
+        "card_95_interval": [
+          -0.08946623936078697,
+          0.014972681486912168
+        ]
+      },
+      "ranking": {
+        "mean": 0.07456140350877193,
+        "card_95_interval": [
+          0.02608695652173913,
+          0.12217194570135746
+        ]
+      }
+    },
+    "independent_seed_100_minus_observation_bootstrap": {
+      "pace_nll": {
+        "mean": -0.05566017602335307,
+        "card_95_interval": [
+          -0.24279716163994106,
+          0.1178080008002707
+        ]
+      },
+      "accuracy_nll": {
+        "mean": -0.03741917044811689,
+        "card_95_interval": [
+          -0.08946623331644052,
+          0.014972694919402743
+        ]
+      },
+      "ranking": {
+        "mean": 0.06140350877192982,
+        "card_95_interval": [
+          0.02643171806167401,
+          0.09829059829059829
+        ]
+      }
+    },
+    "pooled_200_descriptive_minus_observation_reference": {
+      "pace_nll": {
+        "mean": 0.0995655531893722,
+        "card_95_interval": [
+          0.020276782578114185,
+          0.17115686191778134
+        ]
+      },
+      "accuracy_nll": {
+        "mean": 0.018270053293505565,
+        "card_95_interval": [
+          0.005270858633071313,
+          0.0312968998591864
+        ]
+      },
+      "ranking": {
+        "mean": -0.0043859649122807015,
+        "card_95_interval": [
+          -0.029538993778159193,
+          0.022321428571428572
+        ]
+      }
+    },
+    "pooled_200_descriptive_minus_original_marginal": {
+      "pace_nll": {
+        "mean": -0.06217230559767031,
+        "card_95_interval": [
+          -0.23923943232387537,
+          0.09594846403084846
+        ]
+      },
+      "accuracy_nll": {
+        "mean": -0.10788920629259528,
+        "card_95_interval": [
+          -0.19168365357989187,
+          -0.021986847587827058
+        ]
+      },
+      "ranking": {
+        "mean": 0.008771929824561403,
+        "card_95_interval": [
+          -0.03333333333333333,
+          0.052889933628318606
+        ]
+      }
+    },
+    "pooled_200_descriptive_minus_simulator_bootstrap_covariates": {
+      "pace_nll": {
+        "mean": -1.5937541009857132,
+        "card_95_interval": [
+          -2.2429428086184764,
+          -0.9104486959560104
+        ]
+      },
+      "accuracy_nll": {
+        "mean": -0.04288044432792983,
+        "card_95_interval": [
+          -0.09524063267074262,
+          0.007445020190531635
+        ]
+      },
+      "ranking": {
+        "mean": 0.05701754385964912,
+        "card_95_interval": [
+          0.01666322314049587,
+          0.0991476344173885
+        ]
+      }
+    },
+    "pooled_200_descriptive_minus_observation_bootstrap": {
+      "pace_nll": {
+        "mean": -0.05772192213203333,
+        "card_95_interval": [
+          -0.2174447957513105,
+          0.0960492735265635
+        ]
+      },
+      "accuracy_nll": {
+        "mean": -0.04288043978652581,
+        "card_95_interval": [
+          -0.0952406354924966,
+          0.007445022898211955
+        ]
+      },
+      "ranking": {
+        "mean": 0.043859649122807015,
+        "card_95_interval": [
+          0.008509736747205194,
+          0.0811965811965812
+        ]
+      }
+    }
+  },
+  "stability": {
+    "strike_leader_agreement": 0.9385964912280702,
+    "strike_leader_disagreements": 14,
+    "accuracy_rms_difference": 0.005074085937249008,
+    "pace_relative_rms_difference": 0.01388965035098074
+  },
+  "differential_precision": {
+    "independent_seed": {
+      "fights": 229,
+      "mean_standard_error": 0.07162688127829488,
+      "unresolved_signs": 36
+    },
+    "original_seed": {
+      "fights": 229,
+      "mean_standard_error": 0.0720606069578011,
+      "unresolved_signs": 40
+    }
+  },
+  "causal_checks": [
+    {
+      "event_id": "6750e338922a099d",
+      "cutoff": "2024-04-13T00:00:00+00:00",
+      "training_latest": "2024-04-06T00:00:00+00:00",
+      "training_cards": 685,
+      "training_fights": 7586,
+      "inner_cards": [
+        "899eaba48fa864a6",
+        "dba230fe33011201",
+        "79ff6545b0abc685",
+        "c398235fcaf8d71d",
+        "a9df5ae20a97b090",
+        "e4a9dbade7c7e1a7",
+        "902ab9197b83d0db",
+        "dab0e6cb8c932162"
+      ],
+      "selected_ridge": {
+        "strike_pace": 10.0,
+        "strike_accuracy": 5.0
+      },
+      "member_seed_hashes": {
+        "original_seed": "824dfe1cf88c4c8d689f8a54386407271eb3322a3be8282fe8ccf313c00bb5cf",
+        "independent_seed": "ce3d1fd5b2b41cb4c03cff60991f3fbfdddf80e6fdee08cbf2f8d69592db8e46"
+      }
+    },
+    {
+      "event_id": "a16ce18149021139",
+      "cutoff": "2024-04-27T00:00:00+00:00",
+      "training_latest": "2024-04-13T00:00:00+00:00",
+      "training_cards": 686,
+      "training_fights": 7599,
+      "inner_cards": [
+        "6750e338922a099d",
+        "899eaba48fa864a6",
+        "dba230fe33011201",
+        "79ff6545b0abc685",
+        "c398235fcaf8d71d",
+        "a9df5ae20a97b090",
+        "e4a9dbade7c7e1a7",
+        "902ab9197b83d0db"
+      ],
+      "selected_ridge": {
+        "strike_pace": 10.0,
+        "strike_accuracy": 5.0
+      },
+      "member_seed_hashes": {
+        "original_seed": "7a514e3b03783e1d599a0cef837a11f3716d2b5e1942e7c8f9f7a1dbe11a9faa",
+        "independent_seed": "7cc35b459a37a8922f155083714acd00a9cd0831d87260efa53debb797d6229d"
+      }
+    },
+    {
+      "event_id": "981ab7a0576f76a0",
+      "cutoff": "2024-05-04T00:00:00+00:00",
+      "training_latest": "2024-04-27T00:00:00+00:00",
+      "training_cards": 687,
+      "training_fights": 7612,
+      "inner_cards": [
+        "a16ce18149021139",
+        "6750e338922a099d",
+        "899eaba48fa864a6",
+        "dba230fe33011201",
+        "79ff6545b0abc685",
+        "c398235fcaf8d71d",
+        "a9df5ae20a97b090",
+        "e4a9dbade7c7e1a7"
+      ],
+      "selected_ridge": {
+        "strike_pace": 10.0,
+        "strike_accuracy": 5.0
+      },
+      "member_seed_hashes": {
+        "original_seed": "1827593750b9ec7fb9e8f6ac1dfbcd1085d04bef7267bbccb874e2f3a29eaa1f",
+        "independent_seed": "7de7aac2c15a93751af13e42e53c0781dd5ceb2245a2c8b9d6e7ed9623a51059"
+      }
+    },
+    {
+      "event_id": "5dfe71ade71f3a4b",
+      "cutoff": "2024-05-11T00:00:00+00:00",
+      "training_latest": "2024-05-04T00:00:00+00:00",
+      "training_cards": 688,
+      "training_fights": 7625,
+      "inner_cards": [
+        "981ab7a0576f76a0",
+        "a16ce18149021139",
+        "6750e338922a099d",
+        "899eaba48fa864a6",
+        "dba230fe33011201",
+        "79ff6545b0abc685",
+        "c398235fcaf8d71d",
+        "a9df5ae20a97b090"
+      ],
+      "selected_ridge": {
+        "strike_pace": 20.0,
+        "strike_accuracy": 5.0
+      },
+      "member_seed_hashes": {
+        "original_seed": "ee32d972e1bc9e93cc93daab6036c8c5fa82ab5f66e0cf3a9ae03ed061d42fcd",
+        "independent_seed": "f69c65fcc4366ac3f2625a27fc055f142d1d9ea46ce7f19a9b56a27bb1531c2c"
+      }
+    },
+    {
+      "event_id": "46baf0f57edfa4df",
+      "cutoff": "2024-05-18T00:00:00+00:00",
+      "training_latest": "2024-05-11T00:00:00+00:00",
+      "training_cards": 689,
+      "training_fights": 7637,
+      "inner_cards": [
+        "5dfe71ade71f3a4b",
+        "981ab7a0576f76a0",
+        "a16ce18149021139",
+        "6750e338922a099d",
+        "899eaba48fa864a6",
+        "dba230fe33011201",
+        "79ff6545b0abc685",
+        "c398235fcaf8d71d"
+      ],
+      "selected_ridge": {
+        "strike_pace": 10.0,
+        "strike_accuracy": 5.0
+      },
+      "member_seed_hashes": {
+        "original_seed": "dbb64ec79c377e11a3b81d21b52c4bb8e96e82656f9d9a3247e0bf9625e4c81f",
+        "independent_seed": "b064a5d8f1c6c7c0c9e30dda493d4d1f686c7b251589c7badf6c3c20da6143e7"
+      }
+    },
+    {
+      "event_id": "6e4acc2c115215b5",
+      "cutoff": "2024-06-01T00:00:00+00:00",
+      "training_latest": "2024-05-18T00:00:00+00:00",
+      "training_cards": 690,
+      "training_fights": 7649,
+      "inner_cards": [
+        "46baf0f57edfa4df",
+        "5dfe71ade71f3a4b",
+        "981ab7a0576f76a0",
+        "a16ce18149021139",
+        "6750e338922a099d",
+        "899eaba48fa864a6",
+        "dba230fe33011201",
+        "79ff6545b0abc685"
+      ],
+      "selected_ridge": {
+        "strike_pace": 10.0,
+        "strike_accuracy": 5.0
+      },
+      "member_seed_hashes": {
+        "original_seed": "da1283d7f11875dc8d84abc615aa9617bf1edbe2179d1d6173da42a69f6c95d7",
+        "independent_seed": "7cc95d0bf883581809cb2e9983a60e93cf3fc0cd3a4bf3978476fb0354e584c5"
+      }
+    },
+    {
+      "event_id": "cba3a2dfbc06ce79",
+      "cutoff": "2024-06-08T00:00:00+00:00",
+      "training_latest": "2024-06-01T00:00:00+00:00",
+      "training_cards": 691,
+      "training_fights": 7661,
+      "inner_cards": [
+        "6e4acc2c115215b5",
+        "46baf0f57edfa4df",
+        "5dfe71ade71f3a4b",
+        "981ab7a0576f76a0",
+        "a16ce18149021139",
+        "6750e338922a099d",
+        "899eaba48fa864a6",
+        "dba230fe33011201"
+      ],
+      "selected_ridge": {
+        "strike_pace": 5.0,
+        "strike_accuracy": 5.0
+      },
+      "member_seed_hashes": {
+        "original_seed": "33e5bfefac6191d118bfdc2d5dea05cc913c1fb93409ebb94aa736fbe6e47aae",
+        "independent_seed": "8535dc003cc16ea4e60b2fad248ab1bcea88541e564ad02ef0225c2d543703b5"
+      }
+    },
+    {
+      "event_id": "9c5828c6fd9dc948",
+      "cutoff": "2024-06-15T00:00:00+00:00",
+      "training_latest": "2024-06-08T00:00:00+00:00",
+      "training_cards": 692,
+      "training_fights": 7675,
+      "inner_cards": [
+        "cba3a2dfbc06ce79",
+        "6e4acc2c115215b5",
+        "46baf0f57edfa4df",
+        "5dfe71ade71f3a4b",
+        "981ab7a0576f76a0",
+        "a16ce18149021139",
+        "6750e338922a099d",
+        "899eaba48fa864a6"
+      ],
+      "selected_ridge": {
+        "strike_pace": 5.0,
+        "strike_accuracy": 5.0
+      },
+      "member_seed_hashes": {
+        "original_seed": "6196b36e38bf119b8e4ed3dda4a053c86a47f64bae0c3dc2c8ccf6011d8b042d",
+        "independent_seed": "a4aa680105bc33268e45cefa60d6c2e914d0d7cfaf0633b3406ed718514ab398"
+      }
+    },
+    {
+      "event_id": "b12a1d19ee383b7c",
+      "cutoff": "2024-06-22T00:00:00+00:00",
+      "training_latest": "2024-06-15T00:00:00+00:00",
+      "training_cards": 693,
+      "training_fights": 7686,
+      "inner_cards": [
+        "9c5828c6fd9dc948",
+        "cba3a2dfbc06ce79",
+        "6e4acc2c115215b5",
+        "46baf0f57edfa4df",
+        "5dfe71ade71f3a4b",
+        "981ab7a0576f76a0",
+        "a16ce18149021139",
+        "6750e338922a099d"
+      ],
+      "selected_ridge": {
+        "strike_pace": 5.0,
+        "strike_accuracy": 5.0
+      },
+      "member_seed_hashes": {
+        "original_seed": "a9361f7058a1416a6d58ce1ac7f478cc9970ba625f17d90fdca1aa7b543bc944",
+        "independent_seed": "7d99c1bb36a8b6f3393366669ec8c9574077fcc1786a71492cb93158c1118ac1"
+      }
+    },
+    {
+      "event_id": "f3743d8ef5dde970",
+      "cutoff": "2024-06-29T00:00:00+00:00",
+      "training_latest": "2024-06-22T00:00:00+00:00",
+      "training_cards": 694,
+      "training_fights": 7697,
+      "inner_cards": [
+        "b12a1d19ee383b7c",
+        "9c5828c6fd9dc948",
+        "cba3a2dfbc06ce79",
+        "6e4acc2c115215b5",
+        "46baf0f57edfa4df",
+        "5dfe71ade71f3a4b",
+        "981ab7a0576f76a0",
+        "a16ce18149021139"
+      ],
+      "selected_ridge": {
+        "strike_pace": 5.0,
+        "strike_accuracy": 5.0
+      },
+      "member_seed_hashes": {
+        "original_seed": "e1bcd1f718e43c9997e733cd9438fb8e5e4db34fbe4c1cb516f6e97e8b65cd4b",
+        "independent_seed": "5491189eb24b5553e7a71d870d21c821986754aebe29cccfbe9f7f3a41e01805"
+      }
+    },
+    {
+      "event_id": "66e0a70352fef46a",
+      "cutoff": "2024-07-13T00:00:00+00:00",
+      "training_latest": "2024-06-29T00:00:00+00:00",
+      "training_cards": 695,
+      "training_fights": 7710,
+      "inner_cards": [
+        "f3743d8ef5dde970",
+        "b12a1d19ee383b7c",
+        "9c5828c6fd9dc948",
+        "cba3a2dfbc06ce79",
+        "6e4acc2c115215b5",
+        "46baf0f57edfa4df",
+        "5dfe71ade71f3a4b",
+        "981ab7a0576f76a0"
+      ],
+      "selected_ridge": {
+        "strike_pace": 5.0,
+        "strike_accuracy": 10.0
+      },
+      "member_seed_hashes": {
+        "original_seed": "0e0d9e870605b0c52d71e7019bc37a4150efefb9e21823013b82c2f4035fad7c",
+        "independent_seed": "a393d0153e45afbe3fc067525810bcce4e81ec546029e09bb32863646c09ef68"
+      }
+    },
+    {
+      "event_id": "c11036da9162cb5f",
+      "cutoff": "2024-07-20T00:00:00+00:00",
+      "training_latest": "2024-07-13T00:00:00+00:00",
+      "training_cards": 696,
+      "training_fights": 7722,
+      "inner_cards": [
+        "66e0a70352fef46a",
+        "f3743d8ef5dde970",
+        "b12a1d19ee383b7c",
+        "9c5828c6fd9dc948",
+        "cba3a2dfbc06ce79",
+        "6e4acc2c115215b5",
+        "46baf0f57edfa4df",
+        "5dfe71ade71f3a4b"
+      ],
+      "selected_ridge": {
+        "strike_pace": 5.0,
+        "strike_accuracy": 5.0
+      },
+      "member_seed_hashes": {
+        "original_seed": "4cdf580d7bd713a2d5cae8c84e9a74134de2fd64820c4cbf579d4570121a8f6d",
+        "independent_seed": "49bc39338bdfe9b2b024e752e402c10af26b9b742b39f0298f3f0db7a89a2664"
+      }
+    },
+    {
+      "event_id": "026b4f7049085842",
+      "cutoff": "2024-07-27T00:00:00+00:00",
+      "training_latest": "2024-07-20T00:00:00+00:00",
+      "training_cards": 697,
+      "training_fights": 7733,
+      "inner_cards": [
+        "c11036da9162cb5f",
+        "66e0a70352fef46a",
+        "f3743d8ef5dde970",
+        "b12a1d19ee383b7c",
+        "9c5828c6fd9dc948",
+        "cba3a2dfbc06ce79",
+        "6e4acc2c115215b5",
+        "46baf0f57edfa4df"
+      ],
+      "selected_ridge": {
+        "strike_pace": 5.0,
+        "strike_accuracy": 5.0
+      },
+      "member_seed_hashes": {
+        "original_seed": "5c7a426f9ae97a1ff0f4dbf8d9a839eb7efa62ca5e8ae0d18aec2e50601ca885",
+        "independent_seed": "4ec90a49c4ca149d32ce255c66bffa102e7c637af22e82f13f4f35856fe9a7eb"
+      }
+    },
+    {
+      "event_id": "fe435e440b5de0ff",
+      "cutoff": "2024-08-03T00:00:00+00:00",
+      "training_latest": "2024-07-27T00:00:00+00:00",
+      "training_cards": 698,
+      "training_fights": 7747,
+      "inner_cards": [
+        "026b4f7049085842",
+        "c11036da9162cb5f",
+        "66e0a70352fef46a",
+        "f3743d8ef5dde970",
+        "b12a1d19ee383b7c",
+        "9c5828c6fd9dc948",
+        "cba3a2dfbc06ce79",
+        "6e4acc2c115215b5"
+      ],
+      "selected_ridge": {
+        "strike_pace": 5.0,
+        "strike_accuracy": 10.0
+      },
+      "member_seed_hashes": {
+        "original_seed": "a3dd8a86ffcb0571b833c918def1c9f2472566fe0f27e452f2967fa4f2cba464",
+        "independent_seed": "caba32aea9186f0cea94b13798c45683e19573cabee2c463740a76cec682d351"
+      }
+    },
+    {
+      "event_id": "2c733e059462c1dc",
+      "cutoff": "2024-08-10T00:00:00+00:00",
+      "training_latest": "2024-08-03T00:00:00+00:00",
+      "training_cards": 699,
+      "training_fights": 7760,
+      "inner_cards": [
+        "fe435e440b5de0ff",
+        "026b4f7049085842",
+        "c11036da9162cb5f",
+        "66e0a70352fef46a",
+        "f3743d8ef5dde970",
+        "b12a1d19ee383b7c",
+        "9c5828c6fd9dc948",
+        "cba3a2dfbc06ce79"
+      ],
+      "selected_ridge": {
+        "strike_pace": 10.0,
+        "strike_accuracy": 10.0
+      },
+      "member_seed_hashes": {
+        "original_seed": "7703705dcead2484d8fa8e48e834fe692e0b1d5692ad1c332fdf20e31056c218",
+        "independent_seed": "8496e81dd27c3aed926f7bed1adeb43144e24f61f8bfff87ae8c9e8fc4aeee8a"
+      }
+    },
+    {
+      "event_id": "32ba186f4b0e3267",
+      "cutoff": "2024-08-17T00:00:00+00:00",
+      "training_latest": "2024-08-10T00:00:00+00:00",
+      "training_cards": 700,
+      "training_fights": 7770,
+      "inner_cards": [
+        "2c733e059462c1dc",
+        "fe435e440b5de0ff",
+        "026b4f7049085842",
+        "c11036da9162cb5f",
+        "66e0a70352fef46a",
+        "f3743d8ef5dde970",
+        "b12a1d19ee383b7c",
+        "9c5828c6fd9dc948"
+      ],
+      "selected_ridge": {
+        "strike_pace": 10.0,
+        "strike_accuracy": 5.0
+      },
+      "member_seed_hashes": {
+        "original_seed": "00befc8126ca38199eac4c9a64f8e5c0bed3a238fc75eb19fdb7ecd7a9bc37bb",
+        "independent_seed": "526aff0496481acf0792704f97dbd8b467551ba7fbd2f2ebba5417794df52693"
+      }
+    },
+    {
+      "event_id": "be8ad887e4d674b0",
+      "cutoff": "2024-08-24T00:00:00+00:00",
+      "training_latest": "2024-08-17T00:00:00+00:00",
+      "training_cards": 701,
+      "training_fights": 7782,
+      "inner_cards": [
+        "32ba186f4b0e3267",
+        "2c733e059462c1dc",
+        "fe435e440b5de0ff",
+        "026b4f7049085842",
+        "c11036da9162cb5f",
+        "66e0a70352fef46a",
+        "f3743d8ef5dde970",
+        "b12a1d19ee383b7c"
+      ],
+      "selected_ridge": {
+        "strike_pace": 10.0,
+        "strike_accuracy": 5.0
+      },
+      "member_seed_hashes": {
+        "original_seed": "399037bd3a5048fbd47a223c2883dab541df0fa9288c8593d8497be29facc1bd",
+        "independent_seed": "07144aa999713f9c2067c7e402d467031974953f5f36360e23797e8f61545ede"
+      }
+    },
+    {
+      "event_id": "ee0b69e307c857e5",
+      "cutoff": "2024-09-07T00:00:00+00:00",
+      "training_latest": "2024-08-24T00:00:00+00:00",
+      "training_cards": 702,
+      "training_fights": 7793,
+      "inner_cards": [
+        "be8ad887e4d674b0",
+        "32ba186f4b0e3267",
+        "2c733e059462c1dc",
+        "fe435e440b5de0ff",
+        "026b4f7049085842",
+        "c11036da9162cb5f",
+        "66e0a70352fef46a",
+        "f3743d8ef5dde970"
+      ],
+      "selected_ridge": {
+        "strike_pace": 10.0,
+        "strike_accuracy": 5.0
+      },
+      "member_seed_hashes": {
+        "original_seed": "384f9562b6c9c250281e4c8ee64cfc98ad79d7d349f62c91ca54156ec6b9ef7d",
+        "independent_seed": "7a3b509271942aaa200ccd6c8ac0a9aab99f21df937e3b440917c8a5e1392920"
+      }
+    },
+    {
+      "event_id": "0c01568b1ac77bff",
+      "cutoff": "2024-09-14T00:00:00+00:00",
+      "training_latest": "2024-09-07T00:00:00+00:00",
+      "training_cards": 703,
+      "training_fights": 7805,
+      "inner_cards": [
+        "ee0b69e307c857e5",
+        "be8ad887e4d674b0",
+        "32ba186f4b0e3267",
+        "2c733e059462c1dc",
+        "fe435e440b5de0ff",
+        "026b4f7049085842",
+        "c11036da9162cb5f",
+        "66e0a70352fef46a"
+      ],
+      "selected_ridge": {
+        "strike_pace": 10.0,
+        "strike_accuracy": 5.0
+      },
+      "member_seed_hashes": {
+        "original_seed": "3a9c29b8706a41cddd743c106f8b3b755067928e24b714ff7d1dfd287d6b61c7",
+        "independent_seed": "770825a672fe93179e339228b44cc4f378f257e250e94ba50b2e1d1e26cfe364"
+      }
+    },
+    {
+      "event_id": "079488710f012779",
+      "cutoff": "2024-09-28T00:00:00+00:00",
+      "training_latest": "2024-09-14T00:00:00+00:00",
+      "training_cards": 704,
+      "training_fights": 7815,
+      "inner_cards": [
+        "0c01568b1ac77bff",
+        "ee0b69e307c857e5",
+        "be8ad887e4d674b0",
+        "32ba186f4b0e3267",
+        "2c733e059462c1dc",
+        "fe435e440b5de0ff",
+        "026b4f7049085842",
+        "c11036da9162cb5f"
+      ],
+      "selected_ridge": {
+        "strike_pace": 5.0,
+        "strike_accuracy": 5.0
+      },
+      "member_seed_hashes": {
+        "original_seed": "274c27298a5cfa440e30f8eee3f1118fcbb8acd62858ec7ace87be6dfb48e2b2",
+        "independent_seed": "969fb49bf382aa9d86908475a0fa559e13f38ed15c289c355ca64cf71fe20899"
+      }
+    },
+    {
+      "event_id": "eee8efec7b951d84",
+      "cutoff": "2024-10-05T00:00:00+00:00",
+      "training_latest": "2024-09-28T00:00:00+00:00",
+      "training_cards": 705,
+      "training_fights": 7829,
+      "inner_cards": [
+        "079488710f012779",
+        "0c01568b1ac77bff",
+        "ee0b69e307c857e5",
+        "be8ad887e4d674b0",
+        "32ba186f4b0e3267",
+        "2c733e059462c1dc",
+        "fe435e440b5de0ff",
+        "026b4f7049085842"
+      ],
+      "selected_ridge": {
+        "strike_pace": 5.0,
+        "strike_accuracy": 5.0
+      },
+      "member_seed_hashes": {
+        "original_seed": "9c85f3dca8c73c8b2ca40dd1ceb0f0dba9e76068a9b67fb1f83bb7a58e854da2",
+        "independent_seed": "d37bdd2c5796c3b841d7c91132ee1e115bdd823195248c69257908b0fd56a0bb"
+      }
+    },
+    {
+      "event_id": "5bdcbd8dd681a257",
+      "cutoff": "2024-10-12T00:00:00+00:00",
+      "training_latest": "2024-10-05T00:00:00+00:00",
+      "training_cards": 706,
+      "training_fights": 7841,
+      "inner_cards": [
+        "eee8efec7b951d84",
+        "079488710f012779",
+        "0c01568b1ac77bff",
+        "ee0b69e307c857e5",
+        "be8ad887e4d674b0",
+        "32ba186f4b0e3267",
+        "2c733e059462c1dc",
+        "fe435e440b5de0ff"
+      ],
+      "selected_ridge": {
+        "strike_pace": 5.0,
+        "strike_accuracy": 5.0
+      },
+      "member_seed_hashes": {
+        "original_seed": "ef88b7337ba910e7c8e70be5bff021615c419b8e3a895e9a7978a77fe5e827cc",
+        "independent_seed": "ebdd66b08f0b5a5d94da0a9bc4805ca6d004a9f34ac1eb5b3cd4de70fae0d684"
+      }
+    },
+    {
+      "event_id": "6a0047ac8c99fece",
+      "cutoff": "2024-10-19T00:00:00+00:00",
+      "training_latest": "2024-10-12T00:00:00+00:00",
+      "training_cards": 707,
+      "training_fights": 7853,
+      "inner_cards": [
+        "5bdcbd8dd681a257",
+        "eee8efec7b951d84",
+        "079488710f012779",
+        "0c01568b1ac77bff",
+        "ee0b69e307c857e5",
+        "be8ad887e4d674b0",
+        "32ba186f4b0e3267",
+        "2c733e059462c1dc"
+      ],
+      "selected_ridge": {
+        "strike_pace": 5.0,
+        "strike_accuracy": 5.0
+      },
+      "member_seed_hashes": {
+        "original_seed": "bc335b99d931f11ace3e96ebc7197cedcf928246ad8adc872423bcc1ee24ecd6",
+        "independent_seed": "e1eed1b2dd3dcf607d23adbb4873796b5c08ec45a04cf54538c5fc9a1571e110"
+      }
+    },
+    {
+      "event_id": "221b2a3070c7ce3e",
+      "cutoff": "2024-10-26T00:00:00+00:00",
+      "training_latest": "2024-10-19T00:00:00+00:00",
+      "training_cards": 708,
+      "training_fights": 7864,
+      "inner_cards": [
+        "6a0047ac8c99fece",
+        "5bdcbd8dd681a257",
+        "eee8efec7b951d84",
+        "079488710f012779",
+        "0c01568b1ac77bff",
+        "ee0b69e307c857e5",
+        "be8ad887e4d674b0",
+        "32ba186f4b0e3267"
+      ],
+      "selected_ridge": {
+        "strike_pace": 5.0,
+        "strike_accuracy": 5.0
+      },
+      "member_seed_hashes": {
+        "original_seed": "2c9093fbae404cf23d02ac118276df536fc05dac48133d6300279ea7e907c679",
+        "independent_seed": "eb747f522ae097c86adc5e32bc251f51dd0a979bad401c13c8f0b3adcc9e1942"
+      }
+    },
+    {
+      "event_id": "3ab0df1ddd5f1dc2",
+      "cutoff": "2024-11-02T00:00:00+00:00",
+      "training_latest": "2024-10-26T00:00:00+00:00",
+      "training_cards": 709,
+      "training_fights": 7877,
+      "inner_cards": [
+        "221b2a3070c7ce3e",
+        "6a0047ac8c99fece",
+        "5bdcbd8dd681a257",
+        "eee8efec7b951d84",
+        "079488710f012779",
+        "0c01568b1ac77bff",
+        "ee0b69e307c857e5",
+        "be8ad887e4d674b0"
+      ],
+      "selected_ridge": {
+        "strike_pace": 5.0,
+        "strike_accuracy": 5.0
+      },
+      "member_seed_hashes": {
+        "original_seed": "14d7c022d3a18660163b09dbb9cbd1ef25a2a7482ee62920f7730c7ff9c5a630",
+        "independent_seed": "5ac2ef98dd996c9e0828369177b265dc52fa49385580eeaa727921a4f8cfc817"
+      }
+    },
+    {
+      "event_id": "585f9ffdb0cd0466",
+      "cutoff": "2024-11-09T00:00:00+00:00",
+      "training_latest": "2024-11-02T00:00:00+00:00",
+      "training_cards": 710,
+      "training_fights": 7890,
+      "inner_cards": [
+        "3ab0df1ddd5f1dc2",
+        "221b2a3070c7ce3e",
+        "6a0047ac8c99fece",
+        "5bdcbd8dd681a257",
+        "eee8efec7b951d84",
+        "079488710f012779",
+        "0c01568b1ac77bff",
+        "ee0b69e307c857e5"
+      ],
+      "selected_ridge": {
+        "strike_pace": 5.0,
+        "strike_accuracy": 5.0
+      },
+      "member_seed_hashes": {
+        "original_seed": "e0f3648d09cd617929beb427cff862e0231b85fe8816430decfe5302d6f68799",
+        "independent_seed": "f6c11f34089cde9eb31af8a2221561bb7ddfd9d3d680d79503e7bb4dd184d3b6"
+      }
+    },
+    {
+      "event_id": "daff32bc96d1eabf",
+      "cutoff": "2024-11-16T00:00:00+00:00",
+      "training_latest": "2024-11-09T00:00:00+00:00",
+      "training_cards": 711,
+      "training_fights": 7901,
+      "inner_cards": [
+        "585f9ffdb0cd0466",
+        "3ab0df1ddd5f1dc2",
+        "221b2a3070c7ce3e",
+        "6a0047ac8c99fece",
+        "5bdcbd8dd681a257",
+        "eee8efec7b951d84",
+        "079488710f012779",
+        "0c01568b1ac77bff"
+      ],
+      "selected_ridge": {
+        "strike_pace": 5.0,
+        "strike_accuracy": 5.0
+      },
+      "member_seed_hashes": {
+        "original_seed": "0fa96833a39380613ae2334f7b1beeb20835fb5101966eb1c5363b02a75ede63",
+        "independent_seed": "9cca551905813c94e4c4096b7964149170f5dd4228f15299f0f3d1dbfe513f7d"
+      }
+    },
+    {
+      "event_id": "e955046551f8c7dd",
+      "cutoff": "2024-11-23T00:00:00+00:00",
+      "training_latest": "2024-11-16T00:00:00+00:00",
+      "training_cards": 712,
+      "training_fights": 7913,
+      "inner_cards": [
+        "daff32bc96d1eabf",
+        "585f9ffdb0cd0466",
+        "3ab0df1ddd5f1dc2",
+        "221b2a3070c7ce3e",
+        "6a0047ac8c99fece",
+        "5bdcbd8dd681a257",
+        "eee8efec7b951d84",
+        "079488710f012779"
+      ],
+      "selected_ridge": {
+        "strike_pace": 20.0,
+        "strike_accuracy": 5.0
+      },
+      "member_seed_hashes": {
+        "original_seed": "4aa228901e39ba012da6cd008589762663e9e0c23937c52129cd3fbbe6414f77",
+        "independent_seed": "79456242f48e443fd5700af2dce3bd446cf8bb62e9f57163c6910d7f49f58c1e"
+      }
+    },
+    {
+      "event_id": "ad23903ef3af7406",
+      "cutoff": "2024-12-07T00:00:00+00:00",
+      "training_latest": "2024-11-23T00:00:00+00:00",
+      "training_cards": 713,
+      "training_fights": 7926,
+      "inner_cards": [
+        "e955046551f8c7dd",
+        "daff32bc96d1eabf",
+        "585f9ffdb0cd0466",
+        "3ab0df1ddd5f1dc2",
+        "221b2a3070c7ce3e",
+        "6a0047ac8c99fece",
+        "5bdcbd8dd681a257",
+        "eee8efec7b951d84"
+      ],
+      "selected_ridge": {
+        "strike_pace": 10.0,
+        "strike_accuracy": 5.0
+      },
+      "member_seed_hashes": {
+        "original_seed": "eaa39c3ce7f927a6fe57a18171dd113d90f7a19a99bed9d893c8d8e951709699",
+        "independent_seed": "06192c11c5ef161debf10d755073f7b2451b353f53efd04e68bc1b4e605a363e"
+      }
+    },
+    {
+      "event_id": "72c9c2eadfc3277e",
+      "cutoff": "2024-12-14T00:00:00+00:00",
+      "training_latest": "2024-12-07T00:00:00+00:00",
+      "training_cards": 714,
+      "training_fights": 7940,
+      "inner_cards": [
+        "ad23903ef3af7406",
+        "e955046551f8c7dd",
+        "daff32bc96d1eabf",
+        "585f9ffdb0cd0466",
+        "3ab0df1ddd5f1dc2",
+        "221b2a3070c7ce3e",
+        "6a0047ac8c99fece",
+        "5bdcbd8dd681a257"
+      ],
+      "selected_ridge": {
+        "strike_pace": 10.0,
+        "strike_accuracy": 5.0
+      },
+      "member_seed_hashes": {
+        "original_seed": "9a6f8f654e292fa429354ab85cdb1745f9d428b8213fd9b91778b3dc1e1af81e",
+        "independent_seed": "c7c7bc65b8644b074e179ead2bbfd3d05f1cb5b3f9a72d591f479db56ed0e5e8"
+      }
+    }
+  ],
+  "limitations": [
+    "The 229 development outcomes have already been studied; this is a numerical stability diagnostic, not untouched validation",
+    "Averaging predictions from resampled histories can differ systematically from fitting once to all training data",
+    "Strike-leader accuracy is not a calibrated winner probability or demonstrated betting profit",
+    "Two fixed random streams quantify repeatability at this sample count; they cannot prove convergence at infinite precision"
+  ],
+  "output_sha256": {
+    "member_rows.csv": "509e4858f5057dd561a25d497ea441fc6a992f130a6adc9fc11cc4a7353251ce",
+    "side_rows.csv": "686f7b41a3bfa2dda1a3b012e4304029a905e38ec21562ea10b25eb484634e51",
+    "differential_precision.csv": "ade164cde7b1e9e4586eff7bbb334a001b7715d3cf0fd456b8552d3083713358"
+  },
+  "seed_storage_verification": {
+    "exact_seed_strings": 91600,
+    "seed_sequence_hashes_verified": 60,
+    "non_seed_columns_unchanged_sha256": "f4bf3ccfc52a397c9a1eb736a298d0a40e3df46985651304cc58ec4b9f8629fc",
+    "note": "Decimal seed text preserves uint64 precision; prediction text and scores were not modified."
+  },
+  "report_sha256": "9cf38ee466871e6ec1e27f429c4e8c31335de0bbb1d66ec48e3760e6d61d2c0b"
+}

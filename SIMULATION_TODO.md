@@ -1,7 +1,39 @@
 # Fight simulation continuation TODO
 
-Status updated 2026-10-01 after the fixed strike-estimator handoff comparison.
+Status updated 2026-10-01 after the fixed two-run resampling precision check.
 This file is the handoff contract for the next simulation session.
+
+## Completed: higher-precision training-resample check
+
+See `SIMULATION_STRIKE_RESAMPLE_PRECISION_REPORT_2026-10-01.md`. Two fixed runs
+of 100 resampled training histories per card completed all 229 development
+fights / 30 cards in 254 seconds, with no new fight trajectories.
+
+The original seed improves from 109/228 correct strike leaders at ten members
+to 119/228 at 100; the separate seed produces 123/228. Much of the earlier loss
+was sensitive to low numerical precision. Neither run has a resolved ordering
+advantage/disadvantage against the original 120/228 observation reference.
+
+The candidate still fails the fixed advance rule: the runs disagree on 14/228
+leaders (93.86% agreement against 95% required), and the original-seed run is
+one selection below 120. Both runs pass the numerical-value stability and
+marginal/v2 probability-error comparisons. Their pace errors remain slightly
+worse than the original observation reference. The descriptive pooled 200-member
+forecast gives 119/228 and does not override either failed requirement.
+
+## Next priority: prospective price evidence; defer this simulator route
+
+Do not run another simulation screen, increase the member count, replace seeds,
+or change averaging to make this completed precision test pass. The research
+correction remains available for reproduction, with production/default behavior
+unchanged and both 2025 confirmation cohorts unevaluated.
+
+Move the next profit-research work to the prospective price capture and selected-
+bet evidence: verify actual early/decision/late coverage, preserve missing data,
+and compare obtainable entry prices with independent late-market references.
+Do not backfill historical decisions or turn the unvalidated simulator into a
+betting signal. Revisit simulation expansion only with a separately specified
+research question and new evidence, not another retry of this failed rule.
 
 ## Completed: strike-estimator handoff correction and comparison
 
@@ -19,14 +51,9 @@ this to 108/228; adding the existing age/experience/layoff adjustment gives
 ordering is not preserved. Do not run a new simulation screen or substitute
 another diagnostic arm after seeing these outcomes.
 
-## Next bounded question: training-resample precision
-
-If simulator work continues, first determine whether the ten-member loss is
-numerical averaging noise or persists under more training-card resamples of
-the exact same observation estimator. Freeze one higher-precision sample count,
-seeds and decision rule before running it. Do not alter the estimator, add an
-attenuation scalar, center its predictions on the observed winners, or repeat
-the test until it passes. This can be assessed without new fight trajectories.
+The follow-up precision question is now completed above. Its results revise
+the interpretation of this ten-member result; do not treat the 109/228 score
+as proof that all resampled estimators inherently damage fighter ordering.
 
 The research correction remains isolated in `strike_handoff.py`; it is not
 registered as a default snapshot mode. A further simulation screen still
