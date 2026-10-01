@@ -539,6 +539,7 @@ details[open] > summary { border-bottom: 1px solid var(--line); }
 .performance-filter-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
 .performance-filter-grid input { width: 100%; min-height: 42px; padding: 9px 11px; border: 1px solid var(--line); border-radius: 9px; color: var(--ink); background: #0d151d; font: inherit; }
 .performance-data-note { margin: 16px 0 0; color: var(--ink-soft); font-size: 12px; }
+.performance-comparison-subtitle { margin-top: 28px; }
 .performance-reasons { padding-left: 20px; color: var(--ink-soft); font-size: 13px; line-height: 1.7; }
 .performance-diagnostics { margin-top: 16px; border-top: 1px solid var(--line); padding-top: 12px; }
 .performance-diagnostics summary { cursor: pointer; font-weight: 600; }

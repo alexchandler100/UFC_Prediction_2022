@@ -266,6 +266,7 @@ class WebsiteExplorerContractTests(unittest.TestCase):
         self.assertIn('id="performance-staking"', page)
         self.assertIn('value="robust_bayesian_kelly"', page)
         self.assertIn('value="half_kelly"', page)
+        self.assertIn('value="tiered_expected_return"', page)
         self.assertIn('value="half_kelly_model_blend"', page)
         self.assertIn('value="half_kelly_sim_blend"', page)
         self.assertIn('value="half_kelly_model_sim_blend"', page)

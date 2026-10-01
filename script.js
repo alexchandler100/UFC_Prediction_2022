@@ -3466,6 +3466,15 @@ function performanceStakePlan(record, staking) {
     return { fraction: Math.max(0, allocated === null ? fraction : Math.min(fraction, allocated)), probability, label: allocated === null ? "Conservative Bayesian chance" : "Published capped paper stake" };
   }
   if (staking === "flat_one_percent") return { fraction: 0.01, probability: published, label: "Published estimate" };
+  if (staking === "tiered_expected_return") {
+    const decimal = decimalOdds(record.offered_moneyline);
+    if (decimal === null || published <= 0 || published >= 1) return null;
+    // Use only the chance and price saved with this pick, never its result.
+    const expectedReturn = published * decimal - 1;
+    const edge = expectedReturn + 1e-12; // Keep exact tier boundaries stable in floating-point arithmetic.
+    const fraction = edge < 0.05 ? 0 : edge < 0.10 ? 0.01 : edge < 0.20 ? 0.02 : 0.03;
+    return { fraction, probability: published, expectedReturn, label: "Published expected-return tier" };
+  }
   const ordinaryFactor = staking === "full_kelly" ? 1 : staking === "half_kelly" ? 0.5 : staking === "third_kelly" ? 1 / 3 : null;
   if (ordinaryFactor !== null) return { fraction: Math.max(0, Number(record.kelly_fraction) * ordinaryFactor), probability: published, label: "Published estimate" };
   const model = finite(record.model_support_probability);
@@ -3609,7 +3618,8 @@ function performanceDecision(record, staking) {
       && finite(record.allocated_fraction) === 0
       && Number(record.bayesian_kelly?.recommended_fraction) > 0;
     return { record, plan, phase, decision: "pass", reason: allocationPass
-      ? "Saved portfolio allocation is zero" : "Estimated chance does not beat the price" };
+      ? "Saved portfolio allocation is zero" : staking === "tiered_expected_return"
+        ? "Estimated return is below the 5% minimum" : "Estimated chance does not beat the price" };
   }
   return { record, plan, phase, decision: "bet", reason: "Positive planned stake" };
 }
@@ -3637,6 +3647,16 @@ function sharedPerformanceComparison(records, strategies, initialBankroll) {
     cards: new Set(shared.map((record) => record.event_id)).size,
     comparisons: strategies.map((staking) => ({ staking,
       result: simulatePaperBankroll(shared, initialBankroll, staking) })) };
+}
+
+function performanceComparisonGroups(records, initialBankroll) {
+  const sizingRules = ['flat_one_percent', 'tiered_expected_return', 'third_kelly', 'half_kelly', 'full_kelly'];
+  const alternativeRules = ['robust_bayesian_kelly', 'half_kelly_model_blend', 'half_kelly_sim_blend', 'half_kelly_model_sim_blend'];
+  return {
+    sizing: sharedPerformanceComparison(records, sizingRules, initialBankroll),
+    alternatives: alternativeRules.map(staking => ({ staking,
+      comparison: sharedPerformanceComparison(records, ['half_kelly', staking], initialBankroll) })),
+  };
 }
 
 function performanceTable(headers) {
@@ -3700,18 +3720,37 @@ function renderPerformanceCoverage(selected, staking) {
 function renderSharedPerformanceComparison(selected, initialBankroll) {
   const container = $("#performance-comparison"); container.replaceChildren();
   const options = [...$("#performance-staking").options];
-  const comparison = sharedPerformanceComparison(selected, options.map((option) => option.value), initialBankroll);
-  appendText(container, "p", "section-note", `${comparison.records.length} shared settled selections across ${comparison.fights} fights and ${comparison.cards} cards; ${comparison.excluded} selections excluded for missing estimates. Every rule uses the same selections, prices and starting bankroll. Zero-stake passes stay in the comparison.`);
+  const groups = performanceComparisonGroups(selected, initialBankroll);
+  const comparison = groups.sizing;
+  appendText(container, "h3", "", "Stake sizes: same picks and probabilities");
+  appendText(container, "p", "section-note", `${comparison.records.length} settled selections across ${comparison.fights} fights and ${comparison.cards} cards. These rules use the same saved probabilities, prices and starting bankroll.${comparison.excluded ? ` ${comparison.excluded} selections lack required price or probability data.` : ''}`);
   if (!comparison.records.length) {
-    appendText(container, "p", "empty-state", "No settled selections have the estimates required by every rule. Missing data cannot be treated as a decision to pass."); return;
+    appendText(container, "p", "section-note", "No settled selections with a saved price and probability match these filters.");
+  } else {
+    const headers = ["Stake rule", "Bets / passes", "Amount risked", "Profit", "Return on stakes", "Largest drop"];
+    const table = performanceTable(headers); table.wrap.dataset.comparison = "sizing";
+    comparison.comparisons.forEach(({ staking, result }) => {
+      const counts = fundedPerformanceCounts(result.rows); const row = element("tr"); row.dataset.staking = staking;
+      [options.find((option) => option.value === staking).text, `${counts.funded} / ${counts.zeroStake}`,
+        formatCurrency(result.totalStaked), formatCurrency(result.profit), result.roi === null ? "No stake" : formatPercent(result.roi), formatPercent(result.maxDrawdown)]
+        .forEach((value, index) => appendPerformanceCell(row, headers[index], String(value), index ? "numeric" : ""));
+      table.body.append(row);
+    });
+    container.append(table.wrap);
+    appendText(container, "p", "section-note", "A pass is a valid zero-stake decision. Largest drop measures the decline from an earlier bankroll high.");
   }
-  appendText(container, "p", "section-note", "This small subset is determined by saved-data availability. Returns here do not establish which strategy is better.");
-  const headers = ["Probability & stake rule", "Bets with stake", "Zero stake / pass", "Amount risked", "Profit", "Return on stakes"];
-  const table = performanceTable(headers);
-  comparison.comparisons.forEach(({ staking, result }) => {
-    const counts = fundedPerformanceCounts(result.rows); const row = element("tr");
-    [options.find((option) => option.value === staking).text, counts.funded, counts.zeroStake,
-      formatCurrency(result.totalStaked), formatCurrency(result.profit), result.roi === null ? "No stake" : formatPercent(result.roi)]
+  appendText(container, "h3", "performance-comparison-subtitle", "Other rules vs Half Kelly");
+  appendText(container, "p", "section-note", "Each row compares that rule with Half Kelly on exactly the same saved selections and prices. Missing estimates only reduce that row's sample; passes remain included. Samples differ between rows, so compare each rule with its own Half Kelly result.");
+  const headers = ["Rule", "Matched / missing", "Bets / passes", "Rule profit", "Half Kelly profit", "Difference"];
+  const table = performanceTable(headers); table.wrap.dataset.comparison = "alternatives";
+  groups.alternatives.forEach(({ staking, comparison: paired }) => {
+    const baseline = paired.comparisons[0].result; const result = paired.comparisons[1].result;
+    const counts = fundedPerformanceCounts(result.rows); const row = element("tr"); row.dataset.staking = staking;
+    const hasRecords = paired.records.length > 0;
+    [options.find((option) => option.value === staking).text, `${paired.records.length} / ${paired.excluded}`,
+      hasRecords ? `${counts.funded} / ${counts.zeroStake}` : '—',
+      hasRecords ? formatCurrency(result.profit) : '—', hasRecords ? formatCurrency(baseline.profit) : '—',
+      hasRecords ? formatCurrency(result.profit - baseline.profit) : '—']
       .forEach((value, index) => appendPerformanceCell(row, headers[index], String(value), index ? "numeric" : ""));
     table.body.append(row);
   });
@@ -3745,12 +3784,15 @@ function renderBetPerformance() {
     : `Published-price replay includes recovered website boards and automatic archives from ${archiveStart}. Official locked bets before that archive are retained.`;
   const blendStrategy = staking.includes("_blend");
   const bayesianStrategy = staking === "robust_bayesian_kelly";
+  const tieredStrategy = staking === "tiered_expected_return";
   const researchStrategy = blendStrategy || bayesianStrategy;
   $("#performance-rule-note").textContent = bayesianStrategy
     ? "Robust Bayesian Kelly changes the probability as well as the stake. It uses a conservative calibrated chance, can choose zero, and honors any saved portfolio allocation. Missing estimates are counted separately."
     : blendStrategy
       ? "This rule combines the published probability with the named saved predictions, then applies half Kelly. It can pass when the combined chance no longer beats the price. The winner model supports moneylines only."
-      : "This rule keeps the published probability. Full, half and one-third Kelly change the stake multiplier; flat 1% uses the same fraction for each published selection.";
+      : tieredStrategy
+        ? "Estimated return below 5%: pass. From 5% to under 10%: stake 1%; 10% to under 20%: stake 2%; 20% or more: stake 3%. Return is calculated from the saved probability and price; 10% means an estimated $10 net gain per $100 staked. These starting thresholds were not fitted to past winners. Stakes use the bankroll at the start of each card, with the same cash limits as other rules."
+        : "This rule keeps the published probability. Full, half and one-third Kelly change the stake multiplier; flat 1% uses the same fraction for each published selection.";
   $("#performance-data-note").textContent = bayesianStrategy
     ? `${baseDataNote} New portfolio records use their saved capped allocation. Older robust Bayesian Kelly values remain historical research comparisons. A saved zero stake records a pass.`
     : blendStrategy
@@ -3773,7 +3815,7 @@ function renderBetPerformance() {
     const row = document.createElement("tr");
     appendPerformanceCell(row, "Date", formatDate(record.event_date));
     const bet = element("div", "performance-bet"); appendText(bet, "strong", "", `${record.fighter_name} vs ${record.opponent_name}`); appendText(bet, "span", "", `${record.selection} · ${record.category}`); appendPerformanceCell(row, "Fight / bet", bet);
-    const price = element("div", "performance-price"); appendText(price, "strong", "", `${formatOdds(record.offered_moneyline)} · ${record.target_book}`); appendText(price, "span", "", `${formatTimestamp(record.published_at_utc)} · ${formatPercent(record.estimated_win_probability)} published`); if (researchStrategy) appendText(price, "span", "", `${formatPercent(record.sizing_probability)} used for sizing · ${record.sizing_label}`); appendPerformanceCell(row, "Published price", price);
+    const price = element("div", "performance-price"); appendText(price, "strong", "", `${formatOdds(record.offered_moneyline)} · ${record.target_book}`); appendText(price, "span", "", `${formatTimestamp(record.published_at_utc)} · ${formatPercent(record.estimated_win_probability)} published`); if (researchStrategy) appendText(price, "span", "", `${formatPercent(record.sizing_probability)} used for sizing · ${record.sizing_label}`); if (tieredStrategy) appendText(price, "span", "", `${formatPercent(record.estimated_win_probability * decimalOdds(record.offered_moneyline) - 1)} estimated return`); appendPerformanceCell(row, "Published price", price);
     appendPerformanceCell(row, "Result", element("span", `pill ${record.status === "won" ? "win" : record.status === "lost" ? "loss" : "neutral"}`, record.status.toUpperCase()));
     appendPerformanceCell(row, "Stake", `${formatCurrency(record.stake)} (${formatPercent(record.stake_fraction)})`, "numeric");
     appendPerformanceCell(row, "Profit", `${record.profit >= 0 ? "+" : ""}${formatCurrency(record.profit)}`, `numeric ${record.profit >= 0 ? "is-profit" : "is-loss"}`);
