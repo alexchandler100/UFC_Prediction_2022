@@ -5,6 +5,7 @@ import unittest
 import pandas as pd
 from pathlib import Path
 from types import SimpleNamespace
+from unittest.mock import patch
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -12,6 +13,8 @@ sys.path.insert(0, str(ROOT / "src"))
 
 from market_tracker._common import canonical_hash  # noqa: E402
 from market_tracker.bankroll import (  # noqa: E402
+    _attach_research_support,
+    _support_fields,
     archive_upcoming_bet_board,
     bet_support_key,
     build_bet_performance_publication,
@@ -22,6 +25,86 @@ from market_tracker.bankroll import (  # noqa: E402
 
 
 class BetPerformanceTests(unittest.TestCase):
+    def test_saved_support_survives_newer_forecasts_for_both_sources(self):
+        for source in ("model", "simulation"):
+            with self.subTest(source=source):
+                row = self._support_record()
+                key = self._support_key(row)
+                prior = {**row, f"{source}_support_probability": 0.61,
+                         f"{source}_support_source": "saved",
+                         f"{source}_support_issued_at_utc": "2026-09-01T10:00:00Z"}
+                # Even a different forecast issued before the pick must not
+                # replace a saved estimate when the view is rebuilt later.
+                history = [{"probability": 0.2, "source": "newer",
+                            "issued_at_utc": issued} for issued in (
+                                "2026-09-01T11:00:00Z", "2026-09-02T10:00:00Z")]
+                kwargs = {"model_support": {}, "simulation_support": {}}
+                kwargs[f"{source}_support"] = {key: history}
+                _attach_research_support([row], prior_support={row["record_id"]: prior}, **kwargs)
+                self.assertEqual(row[f"{source}_support_probability"], 0.61)
+                self.assertEqual(row[f"{source}_support_source"], "saved")
+
+    def test_support_chooses_latest_eligible_version_and_preserves_capture_provenance(self):
+        row = self._support_record()
+        key = self._support_key(row)
+        history = [
+            {"probability": 0.52, "source": "early", "issued_at_utc": "2026-09-01T09:00:00Z"},
+            {"probability": 0.62, "source": "captured", "issued_at_utc": "2026-09-01T10:00:00Z",
+             "available_at_utc": "2026-09-01T12:00:00Z", "capture_id": "saved-capture"},
+            {"probability": 0.72, "source": "captured_too_late", "issued_at_utc": "2026-09-01T11:00:00Z",
+             "available_at_utc": "2026-09-01T12:00:01Z", "capture_id": "late-capture"},
+            {"probability": 0.82, "source": "future", "issued_at_utc": "2026-09-02T09:00:00Z"},
+        ]
+        for versions in (history, list(reversed(history))):
+            result = dict(row)
+            _attach_research_support([result], model_support={key: versions}, simulation_support={}, prior_support={})
+            self.assertEqual(result["model_support_probability"], 0.62)
+            self.assertEqual(result["model_support_capture_id"], "saved-capture")
+            self.assertEqual(result["model_support_available_at_utc"], "2026-09-01T12:00:00Z")
+            rebuilt = dict(row)
+            _attach_research_support([rebuilt], model_support={}, simulation_support={}, prior_support={row["record_id"]: result})
+            self.assertEqual(result, rebuilt)
+
+    def test_capture_loader_uses_native_versions_correct_side_and_matched_capture_time(self):
+        from update_bet_performance import _model_support
+        base = dict(capture_id="capture", event_id="event", fighter_id="beta", opponent_id="alpha",
+                    model_probability=0.3, forecast_issued_at_utc="2026-09-01T10:00:00Z",
+                    forecast_capture_id="forecast", probability_provenance="native_probability")
+        quote = dict(capture_id="capture", event_id="event", fighter_id="alpha", opponent_id="beta",
+                     observed_at_utc="2026-09-01T11:00:00Z")
+        with tempfile.TemporaryDirectory() as directory, patch(
+            "update_bet_performance.PREDICTION_HISTORY", Path(directory) / "absent.json"
+        ):
+            support = _model_support([
+                SimpleNamespace(**base),
+                SimpleNamespace(**{**base, "capture_id": "unmatched"}),
+                SimpleNamespace(**{**base, "probability_provenance": "legacy_odds"}),
+            ], [SimpleNamespace(**quote), SimpleNamespace(**{**quote, "fighter_id": "other",
+                  "observed_at_utc": "2026-09-01T09:00:00Z"})])
+        row = self._support_record()
+        entries = support[self._support_key(row)]
+        self.assertEqual(len(entries), 1)
+        self.assertAlmostEqual(entries[0]["probability"], 0.7)
+        self.assertEqual(entries[0]["available_at_utc"], "2026-09-01T11:00:00+00:00")
+        _attach_research_support([row], model_support=support, simulation_support={}, prior_support={})
+        self.assertAlmostEqual(row["model_support_probability"], 0.7)
+
+    def test_captured_support_requires_a_retained_forecast_identity(self):
+        with self.assertRaisesRegex(ValueError, "capture identity"):
+            _support_fields("model", {"probability": 0.6, "source": "captured",
+                "issued_at_utc": "2026-09-01T10:00:00Z",
+                "available_at_utc": "2026-09-01T11:00:00Z"})
+
+    @staticmethod
+    def _support_record():
+        return dict(record_id="record", event_id="event", fighter_id="alpha", opponent_id="beta",
+                    category="Moneyline", side="fighter", selection="Alpha", published_at_utc="2026-09-01T12:00:00Z")
+
+    @staticmethod
+    def _support_key(row):
+        return bet_support_key(**{key: row[key] for key in (
+            "event_id", "fighter_id", "opponent_id", "category", "side", "selection")})
+
     def test_verified_total_assessment_and_allocated_stake_survive_archive_and_settlement(self):
         from bayesian_total_calibration import BayesianTotalCalibrator, fit_total_calibration
         rows = pd.DataFrame([{

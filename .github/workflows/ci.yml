@@ -43,3 +43,6 @@ jobs:
 
       - name: Check browser JavaScript syntax
         run: node --check script.js
+
+      - name: Test browser strategy calculations
+        run: node --test tests/*.cjs

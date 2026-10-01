@@ -424,3 +424,27 @@ leader choices between runs and one run below the required 120. Further
 simulation expansion is deferred; the next priority is prospective obtainable-
 price coverage and selected-bet probability quality, without additional retries
 of this simulation test.
+
+## Performance-tab coverage repair
+
+The default first-publication replay contains 31 settled selections across 24
+fights and six cards. Robust Kelly has eight zero-stake moneylines, 23 old totals
+without saved uncertainty estimates, and two pending positive-stake selections.
+The new coverage view makes these distinct counts visible. Combined rules also
+explain missing predictions and the winner model's incompatibility with totals.
+The common comparison uses identical selections/prices for all eight rules,
+retaining zero stakes. Only two settled selections currently have every estimate;
+that subset cannot establish which strategy is better.
+
+The support loader now preserves valid saved predictions and retains forecast
+versions. It also reads native winner forecasts from the immutable capture ledger,
+requiring both issuance and matching capture no later than the original pick.
+This restores Eric Nolan's missing support on one pending record. Original picks,
+prices, settlements, probability estimates and Bayesian assessments are unchanged;
+all 37 capture/decision/settlement/archive files retain their bytes. Repeat
+rebuilds are identical. No staking thresholds or historical decisions changed.
+
+Evidence: [record preservation and source hashes](performance_repair_validation.json)
+and [desktop/mobile checks](performance_repair_ui_validation.json). Regression
+tests cover saved-support preservation, timestamp boundaries, fighter orientation,
+missing/zero/pending counts and identical comparison selections including passes.

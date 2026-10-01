@@ -9,7 +9,7 @@
   "official_wins": 1,
   "paper_only": true,
   "policy_version": "published-paper-bankroll-replay-v1",
-  "publication_sha256": "a124049d019261dd97bbee8c843c40f71766eb5b0d81efc2460c46326f144abc",
+  "publication_sha256": "ec6d79dfeb22fc011e3e4c09dac24d30e9e4f70171e7f99431586327eba353ba",
   "record_count": 81,
   "records": [
     {
@@ -3989,9 +3989,11 @@
       "market_key": "moneyline:matchup_ae0ef3e530a55bf48ed14f36581c97d6bdd70675620ae2bc4f9937ffe3a70da3",
       "matchup_id": "matchup_ae0ef3e530a55bf48ed14f36581c97d6bdd70675620ae2bc4f9937ffe3a70da3",
       "minimum_expected_return": 0.05,
-      "model_support_issued_at_utc": null,
-      "model_support_probability": null,
-      "model_support_source": null,
+      "model_support_available_at_utc": "2026-10-01T15:50:33.277758+00:00",
+      "model_support_capture_id": "855d6d52b797cbd0daec7f4d0601147b352409fe11ef2145ed83db8acba2105d",
+      "model_support_issued_at_utc": "2026-10-01T03:01:45.000000Z",
+      "model_support_probability": 0.7707909649,
+      "model_support_source": "captured_production_winner_model",
       "offered_moneyline": -200,
       "official": false,
       "opponent_id": "64b12fe31be7560c",
@@ -4017,7 +4019,7 @@
     "bayesian_kelly_calibration_artifact_sha256": "2e84f775d3cfec880299d798214205805caf46ee008050a12d335215a16a1a7c",
     "bayesian_kelly_supported_records": 17,
     "both_supported_records": 2,
-    "model_supported_records": 6,
+    "model_supported_records": 7,
     "rule": "Robust Bayesian Kelly sizes moneylines from the lower 10th-percentile calibrated chance and caps one bet at 5% of bankroll. Other research strategies combine probabilities in log-odds space, then apply half Kelly. Unsupported bets are excluded.",
     "simulation_supported_records": 12
   },

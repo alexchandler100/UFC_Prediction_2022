@@ -3483,10 +3483,147 @@ function fundedPerformanceCounts(rows) {
     voids: funded.filter((row) => row.status === "void").length };
 }
 
+function performanceDecision(record, staking) {
+  const plan = performanceStakePlan(record, staking);
+  const phase = record.status === "pending" ? "pending" : "settled";
+  if (plan === null) {
+    let reason = "Required saved estimate is unavailable";
+    if (staking === "robust_bayesian_kelly") {
+      reason = record.category === "Total rounds"
+        ? "No usable uncertainty estimate saved for this total"
+        : "No usable uncertainty estimate saved for this moneyline";
+    } else if (staking.includes("_blend")) {
+      const needsModel = staking.includes("model");
+      const needsSimulation = staking.includes("sim");
+      const missing = [];
+      if (needsModel && finite(record.model_support_probability) === null) missing.push("winner model");
+      if (needsSimulation && finite(record.simulation_support_probability) === null) missing.push("simulation");
+      reason = needsModel && record.category === "Total rounds"
+        ? "Winner model does not predict total rounds"
+        : `No prediction saved by pick time: ${missing.join(" and ")}`;
+    }
+    return { record, plan, phase, decision: "missing", reason };
+  }
+  if (plan.fraction <= 0) {
+    const allocationPass = staking === "robust_bayesian_kelly"
+      && finite(record.allocated_fraction) === 0
+      && Number(record.bayesian_kelly?.recommended_fraction) > 0;
+    return { record, plan, phase, decision: "pass", reason: allocationPass
+      ? "Saved portfolio allocation is zero" : "Estimated chance does not beat the price" };
+  }
+  return { record, plan, phase, decision: "bet", reason: "Positive planned stake" };
+}
+
+function performanceCoverage(records, staking) {
+  const decisions = records.map((record) => performanceDecision(record, staking));
+  const counts = (phase) => {
+    const items = decisions.filter((item) => item.phase === phase);
+    return { total: items.length, bet: items.filter((item) => item.decision === "bet").length,
+      pass: items.filter((item) => item.decision === "pass").length,
+      missing: items.filter((item) => item.decision === "missing").length };
+  };
+  return { decisions, settled: counts("settled"), pending: counts("pending") };
+}
+
+function sharedPerformanceComparison(records, strategies, initialBankroll) {
+  const settled = records.filter((record) => ["won", "lost", "void"].includes(record.status));
+  // Select on estimate availability alone. A zero stake is a valid decision;
+  // requiring every strategy to bet would hide disagreements and bias results.
+  const shared = strategies.length ? settled.filter((record) =>
+    strategies.every((strategy) => performanceStakePlan(record, strategy) !== null)) : [];
+  return { records: shared, excluded: settled.length - shared.length,
+    fights: new Set(shared.map((record) => JSON.stringify([record.event_id,
+      [record.fighter_id, record.opponent_id].sort()]))).size,
+    cards: new Set(shared.map((record) => record.event_id)).size,
+    comparisons: strategies.map((staking) => ({ staking,
+      result: simulatePaperBankroll(shared, initialBankroll, staking) })) };
+}
+
+function performanceTable(headers) {
+  const wrap = element("div", "performance-table-wrap");
+  const table = element("table", "performance-table");
+  const head = element("thead"); const row = element("tr");
+  headers.forEach((label) => row.append(element("th", "", label)));
+  head.append(row); const body = element("tbody"); table.append(head, body); wrap.append(table);
+  return { wrap, body };
+}
+
+function renderPerformanceCoverage(selected, staking) {
+  const container = $("#performance-coverage"); container.replaceChildren();
+  const coverage = performanceCoverage(selected, staking);
+  const headers = ["Recorded selections", "Total", "Positive planned stake", "Zero stake / pass", "Missing estimate"];
+  const table = performanceTable(headers);
+  for (const [phase, label] of [["settled", "Settled"], ["pending", "Pending"]]) {
+    const counts = coverage[phase]; const row = element("tr");
+    [label, counts.total, counts.bet, counts.pass, counts.missing].forEach((value, index) =>
+      appendPerformanceCell(row, headers[index], String(value), index ? "numeric" : ""));
+    table.body.append(row);
+  }
+  container.append(table.wrap);
+  const reasons = new Map();
+  coverage.decisions.filter((item) => item.decision !== "bet").forEach((item) => {
+    const key = `${item.phase === "pending" ? "Pending" : "Settled"}: ${item.reason}`;
+    reasons.set(key, (reasons.get(key) || 0) + 1);
+  });
+  if (reasons.size) {
+    const list = element("ul", "performance-reasons");
+    reasons.forEach((count, reason) => list.append(element("li", "", `${count} · ${reason}`)));
+    container.append(list);
+  }
+  const omitted = coverage.decisions.filter((item) => item.phase === "settled" && item.decision !== "bet");
+  const pending = coverage.decisions.filter((item) => item.phase === "pending");
+  for (const [label, items] of [["Inspect settled passes and missing estimates", omitted], ["Pending recorded picks", pending]]) {
+    if (!items.length) continue;
+    const details = element("details", "performance-diagnostics");
+    details.append(element("summary", "", `${label} (${items.length})`));
+    if (items === pending) appendText(details, "p", "section-note", "These are saved selections awaiting results. Their recorded prices may no longer be available; they do not affect settled returns.");
+    const columns = ["Fight / selection", "Recorded price", "Decision / reason"];
+    const detailTable = performanceTable(columns);
+    items.forEach(({ record, plan, decision, reason }) => {
+      const row = element("tr");
+      appendPerformanceCell(row, columns[0], `${formatDate(record.event_date)} · ${record.fighter_name} vs ${record.opponent_name} · ${record.selection}`);
+      appendPerformanceCell(row, columns[1], `${formatOdds(record.offered_moneyline)} · ${record.target_book}`);
+      const explanation = element("div", "performance-price");
+      appendText(explanation, "strong", "", reason);
+      if (plan !== null) {
+        appendText(explanation, "span", "", `${formatPercent(plan.probability)} sizing chance; ${formatPercent(1 / decimalOdds(record.offered_moneyline))} needed to break even.`);
+        if (decision === "bet") appendText(explanation, "span", "", `${formatPercent(plan.fraction)} planned stake before card cash limits.`);
+      } else if (staking === "robust_bayesian_kelly" && record.category !== "Total rounds" && record.bayesian_kelly?.reason) {
+        appendText(explanation, "span", "", record.bayesian_kelly.reason);
+      }
+      appendPerformanceCell(row, columns[2], explanation); detailTable.body.append(row);
+    });
+    details.append(detailTable.wrap); container.append(details);
+  }
+}
+
+function renderSharedPerformanceComparison(selected, initialBankroll) {
+  const container = $("#performance-comparison"); container.replaceChildren();
+  const options = [...$("#performance-staking").options];
+  const comparison = sharedPerformanceComparison(selected, options.map((option) => option.value), initialBankroll);
+  appendText(container, "p", "section-note", `${comparison.records.length} shared settled selections across ${comparison.fights} fights and ${comparison.cards} cards; ${comparison.excluded} selections excluded for missing estimates. Every rule uses the same selections, prices and starting bankroll. Zero-stake passes stay in the comparison.`);
+  if (!comparison.records.length) {
+    appendText(container, "p", "empty-state", "No settled selections have the estimates required by every rule. Missing data cannot be treated as a decision to pass."); return;
+  }
+  appendText(container, "p", "section-note", "This small subset is determined by saved-data availability. Returns here do not establish which strategy is better.");
+  const headers = ["Probability & stake rule", "Bets with stake", "Zero stake / pass", "Amount risked", "Profit", "Return on stakes"];
+  const table = performanceTable(headers);
+  comparison.comparisons.forEach(({ staking, result }) => {
+    const counts = fundedPerformanceCounts(result.rows); const row = element("tr");
+    [options.find((option) => option.value === staking).text, counts.funded, counts.zeroStake,
+      formatCurrency(result.totalStaked), formatCurrency(result.profit), result.roi === null ? "No stake" : formatPercent(result.roi)]
+      .forEach((value, index) => appendPerformanceCell(row, headers[index], String(value), index ? "numeric" : ""));
+    table.body.append(row);
+  });
+  container.append(table.wrap);
+}
+
 function renderBetPerformance() {
   const publication = state.betPerformance;
   const summary = $("#performance-summary"); const rows = $("#performance-rows");
   summary.replaceChildren(); rows.replaceChildren();
+  $("#performance-coverage").replaceChildren(); $("#performance-comparison").replaceChildren();
+  $("#performance-rule-note").textContent = "";
   if (!publication || publication.paper_only !== true || publication.execution_enabled !== false || !Array.isArray(publication.records)) {
     $("#performance-data-note").textContent = "No valid timestamped paper-bet history is available yet.";
     $("#performance-summary-note").textContent = "The history will populate after a successful settlement update.";
@@ -3500,6 +3637,8 @@ function renderBetPerformance() {
   const candidates = publication.records.filter((record) => market === "all" || record.category === market);
   const selected = selectPerformanceRecords(candidates, timing);
   const result = simulatePaperBankroll(selected, initial, staking);
+  renderPerformanceCoverage(selected, staking);
+  renderSharedPerformanceComparison(selected, initial);
   const archiveStart = publication.archive_started_at_utc ? formatDate(publication.archive_started_at_utc) : "the next archived board";
   const baseDataNote = timing === "official_t24"
     ? `Exact locked T-24 ledger · ${publication.official_settled_count} settled bets. Earlier website totals are intentionally included only in the published-price strategies.`
@@ -3507,10 +3646,15 @@ function renderBetPerformance() {
   const blendStrategy = staking.includes("_blend");
   const bayesianStrategy = staking === "robust_bayesian_kelly";
   const researchStrategy = blendStrategy || bayesianStrategy;
+  $("#performance-rule-note").textContent = bayesianStrategy
+    ? "Robust Bayesian Kelly changes the probability as well as the stake. It uses a conservative calibrated chance, can choose zero, and honors any saved portfolio allocation. Missing estimates are counted separately."
+    : blendStrategy
+      ? "This rule combines the published probability with the named saved predictions, then applies half Kelly. It can pass when the combined chance no longer beats the price. The winner model supports moneylines only."
+      : "This rule keeps the published probability. Full, half and one-third Kelly change the stake multiplier; flat 1% uses the same fraction for each published selection.";
   $("#performance-data-note").textContent = bayesianStrategy
     ? `${baseDataNote} New portfolio records use their saved capped allocation. Older robust Bayesian Kelly values remain historical research comparisons. A saved zero stake records a pass.`
     : blendStrategy
-      ? `${baseDataNote} Research blend: probabilities are averaged in log-odds space before half Kelly is calculated; a bet is excluded when a required saved prediction is unavailable.`
+      ? `${baseDataNote} Research blend: only predictions available by the original pick time can support a selection. Recovered saved forecasts improve replay coverage; they do not create new historical picks.`
       : baseDataNote;
   const fundedCounts = fundedPerformanceCounts(result.rows);
   $("#performance-summary-note").textContent = `${fundedCounts.funded} settled paper bet${fundedCounts.funded === 1 ? "" : "s"} · ${fundedCounts.wins}-${fundedCounts.losses}${fundedCounts.voids ? ` · ${fundedCounts.voids} void` : ""} · ${fundedCounts.zeroStake} zero-stake record${fundedCounts.zeroStake === 1 ? "" : "s"}${result.pending.length ? ` · ${result.pending.length} pending record${result.pending.length === 1 ? "" : "s"}` : ""}${result.unsupported.length ? ` · ${result.unsupported.length} excluded because this strategy lacks a valid saved estimate` : ""}. This paper replay groups settlements by card and does not track account exposure between cards.`;

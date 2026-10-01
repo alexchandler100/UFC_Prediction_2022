@@ -13,7 +13,7 @@ import os
 from pathlib import Path
 import re
 import tempfile
-from typing import Iterable, Mapping
+from typing import Iterable, Mapping, Sequence
 
 from bayesian_total_calibration import (
     KELLY_POLICY_VERSION as TOTAL_KELLY_POLICY_VERSION,
@@ -38,6 +38,9 @@ RESEARCH_STAKING_STRATEGIES = (
     "half_kelly_model_sim_blend",
 )
 SUPPORT_SOURCES = ("model", "simulation")
+SupportLookup = Mapping[
+    tuple[str, ...], Mapping[str, object] | Sequence[Mapping[str, object]]
+]
 
 
 def _validate_saved_assessment(record: Mapping[str, object], assessment: object) -> dict:
@@ -124,7 +127,16 @@ def _support_fields(source: str, value: Mapping[str, object] | None) -> dict[str
     label = str(value.get("source") or "").strip()
     if not label:
         raise ValueError(f"{source} support source is missing")
-    return {probability_key: chance, source_key: label, issued_key: issued}
+    fields = {probability_key: chance, source_key: label, issued_key: issued}
+    if value.get("available_at_utc") is not None:
+        available = str(value["available_at_utc"])
+        utc_datetime(available, "support available_at_utc")
+        capture_id = str(value.get("capture_id") or "").strip()
+        if not capture_id:
+            raise ValueError(f"{source} support capture identity is missing")
+        fields[f"{source}_support_available_at_utc"] = available
+        fields[f"{source}_support_capture_id"] = capture_id
+    return fields
 
 
 def _atomic_json(path: Path, value: Mapping[str, object]) -> None:
@@ -505,8 +517,8 @@ def _archive_records(
 def _attach_research_support(
     records: list[dict[str, object]],
     *,
-    model_support: Mapping[tuple[str, ...], Mapping[str, object]],
-    simulation_support: Mapping[tuple[str, ...], Mapping[str, object]],
+    model_support: SupportLookup,
+    simulation_support: SupportLookup,
     prior_support: Mapping[str, Mapping[str, object]],
 ) -> None:
     support_maps = {"model": model_support, "simulation": simulation_support}
@@ -523,26 +535,36 @@ def _attach_research_support(
         published = utc_datetime(record["published_at_utc"], "published_at_utc")
         for source, support_map in support_maps.items():
             probability_key = f"{source}_support_probability"
-            existing = None
-            if record.get(probability_key) is not None:
-                existing = {
-                    "probability": record[probability_key],
-                    "source": record.get(f"{source}_support_source"),
-                    "issued_at_utc": record.get(f"{source}_support_issued_at_utc"),
-                }
-            candidate = support_map.get(key) or existing
-            if candidate is None and prior.get(probability_key) is not None:
-                candidate = {
-                    "probability": prior[probability_key],
-                    "source": prior.get(f"{source}_support_source"),
-                    "issued_at_utc": prior.get(f"{source}_support_issued_at_utc"),
-                }
-            fields = _support_fields(source, candidate)
-            issued = fields[f"{source}_support_issued_at_utc"]
-            if issued is not None and utc_datetime(
-                issued, f"{source}_support_issued_at_utc"
-            ) > published:
-                fields = _support_fields(source, None)
+            # Freeze valid saved support. Later forecasts must neither replace it
+            # nor erase it merely because they were issued after the bet.
+            candidates = []
+            for saved in (prior, record):
+                if saved.get(probability_key) is not None:
+                    candidates.append({
+                        "probability": saved[probability_key],
+                        "source": saved.get(f"{source}_support_source"),
+                        "issued_at_utc": saved.get(f"{source}_support_issued_at_utc"),
+                        "available_at_utc": saved.get(f"{source}_support_available_at_utc"),
+                        "capture_id": saved.get(f"{source}_support_capture_id"),
+                    })
+            history = support_map.get(key, ())
+            if isinstance(history, Mapping):
+                history = (history,)
+            candidates.extend(sorted(history, key=lambda item: (
+                utc_datetime(item["issued_at_utc"], "support issued_at_utc"),
+                str(item.get("available_at_utc") or ""),
+                str(item.get("capture_id") or ""),
+            ), reverse=True))
+            fields = _support_fields(source, None)
+            for candidate in candidates:
+                issued = utc_datetime(candidate["issued_at_utc"], "support issued_at_utc")
+                available = utc_datetime(
+                    candidate.get("available_at_utc") or candidate["issued_at_utc"],
+                    "support available_at_utc",
+                )
+                if issued <= available <= published:
+                    fields = _support_fields(source, candidate)
+                    break
             record.update(fields)
 
 
@@ -595,8 +617,8 @@ def build_bet_performance_publication(
     archive: Mapping[str, object],
     outcomes: Mapping[tuple[str, str, str], int | None] | None = None,
     durations: Mapping[tuple[str, str, str], float] | None = None,
-    model_support: Mapping[tuple[str, ...], Mapping[str, object]] | None = None,
-    simulation_support: Mapping[tuple[str, ...], Mapping[str, object]] | None = None,
+    model_support: SupportLookup | None = None,
+    simulation_support: SupportLookup | None = None,
     prior_support: Mapping[str, Mapping[str, object]] | None = None,
     bayesian_kelly_calibrator: BayesianKellyCalibrator | None = None,
 ) -> dict[str, object]:
@@ -741,6 +763,15 @@ def validate_bet_performance_publication(value: object) -> dict[str, object]:
                 record["published_at_utc"], "published_at_utc"
             ):
                 raise ValueError(f"bet performance {source} support is from the future")
+            available = record.get(f"{source}_support_available_at_utc")
+            capture_id = record.get(f"{source}_support_capture_id")
+            if available is not None or capture_id is not None:
+                if not available or not capture_id or not (
+                    utc_datetime(issued, "support issued")
+                    <= utc_datetime(available, "support captured")
+                    <= utc_datetime(record["published_at_utc"], "published_at_utc")
+                ):
+                    raise ValueError(f"bet performance {source} capture timing is invalid")
         if record["category"] != "Moneyline" and record.get("model_support_probability") is not None:
             raise ValueError("winner-model support cannot size a total-round bet")
         if has_bayesian_contract:

@@ -7,6 +7,7 @@ import json
 import math
 from pathlib import Path
 import subprocess
+from typing import Iterable
 
 import pandas as pd
 
@@ -27,6 +28,7 @@ from market_tracker.bankroll import (
     validate_published_bet_archive,
     write_bet_performance_publication,
 )
+from market_tracker._common import utc_datetime
 from upcoming_bet_board import validate_upcoming_bet_board
 
 
@@ -95,17 +97,48 @@ def _stores() -> dict[str, object]:
     }
 
 
-def _model_support() -> dict[tuple[str, ...], dict[str, object]]:
+def _model_support(
+    forecasts: Iterable[object] = (), quotes: Iterable[object] = (),
+) -> dict[tuple[str, ...], list[dict[str, object]]]:
+    """Retain forecast versions; each bet chooses only support already available.
+
+    The capture timestamp is checked as well as issuance, so importing an old
+    forecast after a bet cannot silently supply that bet's missing evidence.
+    """
+    output: dict[tuple[str, ...], list[dict[str, object]]] = {}
+    captured_at = {}
+    for quote in quotes:
+        key = (quote.capture_id, quote.event_id, *sorted((quote.fighter_id, quote.opponent_id)))
+        observed = utc_datetime(quote.observed_at_utc, "quote observed_at_utc")
+        if key not in captured_at or observed < captured_at[key]:
+            captured_at[key] = observed
+    for forecast in forecasts:
+        key = (forecast.capture_id, forecast.event_id, *sorted((forecast.fighter_id, forecast.opponent_id)))
+        available = captured_at.get(key)
+        if available is None or forecast.probability_provenance != "native_probability":
+            continue
+        for side, chance in (("fighter", float(forecast.model_probability)),
+                            ("opponent", 1.0 - float(forecast.model_probability))):
+            support_key = bet_support_key(
+                event_id=forecast.event_id, fighter_id=forecast.fighter_id,
+                opponent_id=forecast.opponent_id, category="Moneyline",
+                side=side, selection="",
+            )
+            output.setdefault(support_key, []).append({
+                "probability": chance, "source": "captured_production_winner_model",
+                "issued_at_utc": forecast.forecast_issued_at_utc,
+                "available_at_utc": available.isoformat(),
+                "capture_id": forecast.forecast_capture_id,
+            })
     if not PREDICTION_HISTORY.exists():
-        return {}
+        return output
     frame = pd.read_json(PREDICTION_HISTORY)
     required = {
         "event id", "fighter id", "opponent id", "model probability",
         "forecast issued at",
     }
     if not required.issubset(frame.columns):
-        return {}
-    output: dict[tuple[str, ...], dict[str, object]] = {}
+        return output
     for _, row in frame.iterrows():
         event_id = _identity(row.get("event id"))
         fighter_id = _identity(row.get("fighter id"))
@@ -130,21 +163,21 @@ def _model_support() -> dict[tuple[str, ...], dict[str, object]]:
                 side=side,
                 selection="",
             )
-            output[key] = {
+            output.setdefault(key, []).append({
                 "probability": chance,
                 "source": "production_winner_model",
                 "issued_at_utc": issued,
-            }
+            })
     return output
 
 
-def _simulation_support() -> dict[tuple[str, ...], dict[str, object]]:
+def _simulation_support() -> dict[tuple[str, ...], list[dict[str, object]]]:
     if not SIMULATION_FORECASTS.exists():
         return {}
     publication = json.loads(SIMULATION_FORECASTS.read_text(encoding="utf-8"))
     legacy_event_id = _identity(publication.get("event_id"))
     legacy_issued = str(publication.get("forecast_issued_at_utc") or "")
-    output: dict[tuple[str, ...], dict[str, object]] = {}
+    output: dict[tuple[str, ...], list[dict[str, object]]] = {}
     for matchup in publication.get("matchups", []):
         if not isinstance(matchup, dict) or matchup.get("status") != "available":
             continue
@@ -175,11 +208,11 @@ def _simulation_support() -> dict[tuple[str, ...], dict[str, object]]:
                 side=side,
                 selection="",
             )
-            output[key] = {
+            output.setdefault(key, []).append({
                 "probability": chance,
                 "source": "frozen_pre_event_monte_carlo",
                 "issued_at_utc": issued,
-            }
+            })
         for total in aggregate.get("total_lines", []):
             if not isinstance(total, dict):
                 continue
@@ -197,11 +230,11 @@ def _simulation_support() -> dict[tuple[str, ...], dict[str, object]]:
                     side=side,
                     selection=f"{side.title()} {line:g} rounds",
                 )
-                output[key] = {
+                output.setdefault(key, []).append({
                     "probability": chance,
                     "source": "frozen_pre_event_monte_carlo",
                     "issued_at_utc": issued,
-                }
+                })
     return output
 
 
@@ -229,7 +262,7 @@ def update_bet_performance() -> dict[str, object]:
         archive=archive,
         outcomes=outcomes,
         durations=durations,
-        model_support=_model_support(),
+        model_support=_model_support(records["forecasts"], records["quotes"]),
         simulation_support=_simulation_support(),
         prior_support=_prior_support(),
     )

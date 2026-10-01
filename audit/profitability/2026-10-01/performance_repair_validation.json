@@ -1,0 +1,294 @@
+{
+  "source_revision": "654d40d6",
+  "before_publication_sha256": "a124049d019261dd97bbee8c843c40f71766eb5b0d81efc2460c46326f144abc",
+  "after_publication_sha256": "ec6d79dfeb22fc011e3e4c09dac24d30e9e4f70171e7f99431586327eba353ba",
+  "existing_predictions_preserved": true,
+  "original_bets_prices_probabilities_assessments_and_settlements_unchanged": true,
+  "repeat_rebuild_identical": true,
+  "ledger_files_unchanged": 37,
+  "ledger_sha256": {
+    "src/content/data/market/bayesian_filtered_paper_decisions.csv": "dcc671c9696812fe5c729cea59928bd74aa97be4e23ba7843d445309e0bcdba0",
+    "src/content/data/market/bayesian_filtered_paper_decisions.jsonl": "946f453d843fa6d3f08962af416cbd9e6150f321593d1b0dafac717e3511a3a3",
+    "src/content/data/market/bayesian_logistic_shadow_forecasts.csv": "ea09da42a119adcbb250dde2dc451765680d2a64765d7e7911e1e7cdebef23a9",
+    "src/content/data/market/bayesian_logistic_shadow_forecasts.jsonl": "3301c0eceee1fedf6937b8ec6da672d848ac78f7c62d50ee1b6881e5fb7712e2",
+    "src/content/data/market/early_market_observations.csv": "ee13d370d673647ec3b5f69472df323ff1b44895403edea26d594c82c4a544fb",
+    "src/content/data/market/early_market_observations.jsonl": "b55cb819ceee927670e8b53a0f2c569d46bb5756ca83f7f6166c4778b0ad10a6",
+    "src/content/data/market/early_market_ufc_links.csv": "3cd385351991f6affc7171058fa7491fa52e74b7d53adc553d02bc278ce844b3",
+    "src/content/data/market/early_market_ufc_links.jsonl": "2a74be9c4ad06155dee25dfa5dcb990a3dc32aa08f4c8a6377d377605cb33651",
+    "src/content/data/market/forecast_captures.csv": "aa623325d722d7c3a64ebddf1121157d96297dd1748178eaccf58adf0837fdee",
+    "src/content/data/market/forecast_captures.jsonl": "9316113b660548d83e1df856a59f30910ab8a7790fc330df3eb48a9a0d7b4ee0",
+    "src/content/data/market/market_first_paper_decisions.csv": "0f2c64ad6ff3aedb06c5dc38aeb44b6cf7cfe32e0c5efb772ab4a8a4022b77ac",
+    "src/content/data/market/market_first_paper_decisions.jsonl": "106eadd39760e7fb87502189eb45ce299764005d0179d2d4a63dbbe1e4f2a64b",
+    "src/content/data/market/market_first_paper_settlements.csv": "d298164d23a45f5cc1208ffad9edb5c4e20b6816a0483d1ba3081187b6236e99",
+    "src/content/data/market/market_first_paper_settlements.jsonl": "6099c0f2ac08a28ac256cde694f41ef72b3d63baab3c8954998cec8235235f48",
+    "src/content/data/market/method_forecast_captures.csv": "ee451709fd87c0c3fade4918b7c2dbfc25d2065dfb91a9accfcf5c228f4cd097",
+    "src/content/data/market/method_forecast_captures.jsonl": "a6f112a6efe53d563d0b0f65cb7e71bebf480f975ca05ff959ffc257cc75d196",
+    "src/content/data/market/method_market_snapshots.csv": "ceeef5561b1396e8402536d8f8472f2b2aede86411682200a5bcd40f0a41f7b6",
+    "src/content/data/market/method_market_snapshots.jsonl": "1aef5e9291db1477e3dc3a56b2e82dc8770e7c7834940db89c527b4637aa7a23",
+    "src/content/data/market/paper_decisions.csv": "326ffff5b3a4272d9122cc052ee4bfba18929e714bb13e3f131693d989499a48",
+    "src/content/data/market/paper_decisions.jsonl": "46e46ce881018b6b8c5af429f0717bd8bac549d57e11db9c5ac78c4e5e2083b3",
+    "src/content/data/market/paper_settlements.csv": "081bdce5993a4dae457118faaec2321c8b5466ceb652c4232068bd7b7feeb6f4",
+    "src/content/data/market/paper_settlements.jsonl": "10ec9b006e34d807dd891a131b26c6f6a1362d060eb4b257d149cbd2df75830f",
+    "src/content/data/market/published_bet_snapshots.json": "dd89497355a0bc9b6b6117ac784f3c308d8b7b61aef20f8796730b5bba567757",
+    "src/content/data/market/quote_snapshots.csv": "d5104ca9be0eab3f079238e3bac703fcd10b0cf241ecc09ad8567f7633942b72",
+    "src/content/data/market/quote_snapshots.jsonl": "2a067210f6b1a8ee96b3050de72b2e4550ab8002363858b85c76086c6b3715f6",
+    "src/content/data/market/quote_source_metadata.csv": "76f7e83a80af07bdc9df04ffb3dc21144f1150dc2f304c6fcc4008eecc5acde3",
+    "src/content/data/market/quote_source_metadata.jsonl": "6d26be23cbb95794168c32774ef333454db182b1e45f30cc92247baf31141f20",
+    "src/content/data/market/simulation_comparisons.csv": "59c8f87d63671b6a5fc8eac66b4e47004c1f527f2927c56a6b8fccabcba3f870",
+    "src/content/data/market/simulation_comparisons.jsonl": "bada551b7dda7a3127ebbec061e2801096bcea76c1c82a2d7acf8f00952b0124",
+    "src/content/data/market/total_round_forecast_captures.csv": "416479f2ef7a7bfa4cfa497adc5134d3e0b67b454574543d78bae38d439bce55",
+    "src/content/data/market/total_round_forecast_captures.jsonl": "9498554d775b215db9ee5cf59894c538219023e5b6c8085c74e1ffae94281314",
+    "src/content/data/market/total_round_paper_decisions.csv": "177ed3cfb3cf2a4d3d200d5489050c168f2969e0c53cc82da40e074058e7d9c2",
+    "src/content/data/market/total_round_paper_decisions.jsonl": "150b216b041abafeb007be698f404b119fdf6fa775633fa0f29f964b8adf0d4f",
+    "src/content/data/market/total_round_paper_settlements.csv": "e4ef5b7c1baef9582f6e183126442b04d28ebd2a1e93dc40cae0587ba32367f4",
+    "src/content/data/market/total_round_paper_settlements.jsonl": "3b3c87542d33e5f9a3260f819451cde4854c53d94bb54d26e3bdc7ba16e1fc99",
+    "src/content/data/market/total_round_quote_snapshots.csv": "48c6fce53a32aee19c76851217f732013c5e0bc75a029b76ea5694c486b9dbf0",
+    "src/content/data/market/total_round_quote_snapshots.jsonl": "8653923be1d17ab93a9a1bbb671f225498706c52a2ec883bf36406fd3d9e710a"
+  },
+  "new_support": [
+    {
+      "record_id": "c80f489a9850ffb3a43f2c9b376529537725b075703e236362133e56a5af046f",
+      "selection": "Eric Nolan",
+      "status": "pending",
+      "published_at_utc": "2026-10-01T15:50:33.277758Z",
+      "source": "model",
+      "issued_at_utc": "2026-10-01T03:01:45.000000Z",
+      "available_at_utc": "2026-10-01T15:50:33.277758+00:00",
+      "capture_id": "855d6d52b797cbd0daec7f4d0601147b352409fe11ef2145ed83db8acba2105d"
+    }
+  ],
+  "settled_replays_preserved": 144,
+  "default_coverage": {
+    "full_kelly": {
+      "settled": {
+        "total": 31,
+        "bet": 31,
+        "pass": 0,
+        "missing": 0
+      },
+      "pending": {
+        "total": 2,
+        "bet": 2,
+        "pass": 0,
+        "missing": 0
+      }
+    },
+    "half_kelly": {
+      "settled": {
+        "total": 31,
+        "bet": 31,
+        "pass": 0,
+        "missing": 0
+      },
+      "pending": {
+        "total": 2,
+        "bet": 2,
+        "pass": 0,
+        "missing": 0
+      }
+    },
+    "third_kelly": {
+      "settled": {
+        "total": 31,
+        "bet": 31,
+        "pass": 0,
+        "missing": 0
+      },
+      "pending": {
+        "total": 2,
+        "bet": 2,
+        "pass": 0,
+        "missing": 0
+      }
+    },
+    "flat_one_percent": {
+      "settled": {
+        "total": 31,
+        "bet": 31,
+        "pass": 0,
+        "missing": 0
+      },
+      "pending": {
+        "total": 2,
+        "bet": 2,
+        "pass": 0,
+        "missing": 0
+      }
+    },
+    "robust_bayesian_kelly": {
+      "settled": {
+        "total": 31,
+        "bet": 0,
+        "pass": 8,
+        "missing": 23
+      },
+      "pending": {
+        "total": 2,
+        "bet": 2,
+        "pass": 0,
+        "missing": 0
+      }
+    },
+    "half_kelly_model_blend": {
+      "settled": {
+        "total": 31,
+        "bet": 6,
+        "pass": 0,
+        "missing": 25
+      },
+      "pending": {
+        "total": 2,
+        "bet": 1,
+        "pass": 0,
+        "missing": 1
+      }
+    },
+    "half_kelly_sim_blend": {
+      "settled": {
+        "total": 31,
+        "bet": 5,
+        "pass": 1,
+        "missing": 25
+      },
+      "pending": {
+        "total": 2,
+        "bet": 0,
+        "pass": 1,
+        "missing": 1
+      }
+    },
+    "half_kelly_model_sim_blend": {
+      "settled": {
+        "total": 31,
+        "bet": 2,
+        "pass": 0,
+        "missing": 29
+      },
+      "pending": {
+        "total": 2,
+        "bet": 0,
+        "pass": 0,
+        "missing": 2
+      }
+    }
+  },
+  "shared_comparison": {
+    "record_ids": [
+      "00c5bded54e79c16d861df219cf0b957758acca6d357a9fa4e7ed0bd1832c939",
+      "54978399596cebafc0c34be98ced29a1121cb4095ebbff817e54880c48444ed0"
+    ],
+    "fights": 2,
+    "cards": 2,
+    "excluded": 29,
+    "rows": [
+      {
+        "staking": "full_kelly",
+        "funded": 2,
+        "zeroStake": 0,
+        "wins": 1,
+        "losses": 1,
+        "voids": 0,
+        "profit": 50.10227143095858,
+        "amount_risked": 24.94138395968797,
+        "return_on_stakes": 2.00880077512689
+      },
+      {
+        "staking": "half_kelly",
+        "funded": 2,
+        "zeroStake": 0,
+        "wins": 1,
+        "losses": 1,
+        "voids": 0,
+        "profit": 25.234090415989613,
+        "amount_risked": 12.287737279333674,
+        "return_on_stakes": 2.0535994416506584
+      },
+      {
+        "staking": "third_kelly",
+        "funded": 2,
+        "zeroStake": 0,
+        "wins": 1,
+        "losses": 1,
+        "voids": 0,
+        "profit": 16.86338354410657,
+        "amount_risked": 8.151168252775713,
+        "return_on_stakes": 2.0688302610321028
+      },
+      {
+        "staking": "flat_one_percent",
+        "funded": 2,
+        "zeroStake": 0,
+        "wins": 1,
+        "losses": 1,
+        "voids": 0,
+        "profit": 39.5,
+        "amount_risked": 20.5,
+        "return_on_stakes": 1.9268292682926829
+      },
+      {
+        "staking": "robust_bayesian_kelly",
+        "funded": 0,
+        "zeroStake": 2,
+        "wins": 0,
+        "losses": 0,
+        "voids": 0,
+        "profit": 0,
+        "amount_risked": 0,
+        "return_on_stakes": null
+      },
+      {
+        "staking": "half_kelly_model_blend",
+        "funded": 2,
+        "zeroStake": 0,
+        "wins": 1,
+        "losses": 1,
+        "voids": 0,
+        "profit": 156.43758667694533,
+        "amount_risked": 43.41717605007733,
+        "return_on_stakes": 3.603126709496499
+      },
+      {
+        "staking": "half_kelly_sim_blend",
+        "funded": 2,
+        "zeroStake": 0,
+        "wins": 1,
+        "losses": 1,
+        "voids": 0,
+        "profit": 471.7255063582502,
+        "amount_risked": 128.9093868480593,
+        "return_on_stakes": 3.659357304323039
+      },
+      {
+        "staking": "half_kelly_model_sim_blend",
+        "funded": 2,
+        "zeroStake": 0,
+        "wins": 1,
+        "losses": 1,
+        "voids": 0,
+        "profit": 415.94688315212943,
+        "amount_risked": 111.85610956474247,
+        "return_on_stakes": 3.7185888618035547
+      }
+    ]
+  },
+  "validation": {
+    "full_python_suite": {
+      "tests": 567,
+      "result": "passed"
+    },
+    "final_targeted_python_suite": {
+      "tests": 10,
+      "result": "passed"
+    },
+    "javascript_tests": {
+      "tests": 26,
+      "result": "passed"
+    },
+    "data_validation": {
+      "command": "python src/validate_data.py --allow-stale --require-model-artifact --require-market-data",
+      "result": "passed"
+    },
+    "javascript_syntax": "passed",
+    "desktop_and_mobile_browser_checks": "passed"
+  }
+}

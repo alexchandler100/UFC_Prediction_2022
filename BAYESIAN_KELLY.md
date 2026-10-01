@@ -70,6 +70,34 @@ use that adjustment for Kelly sizing.
 - Production execution remains disabled. Prospective paper results are needed
   before choosing any real-money policy.
 
+## Reading the Performance tab
+
+The probability and stake selector includes different kinds of rules. Full,
+half and one-third Kelly use the same published chance and change only the
+stake multiplier. Robust Kelly changes the chance used for sizing. Combined
+rules require saved model/simulation predictions and can also choose zero.
+The winner-model combinations apply to moneylines, not fight totals.
+
+The coverage table separates settled and pending records, then positive planned
+stakes, zero-stake passes, and missing estimates. Expand the details to see the
+missing source or the sizing chance against the price's break-even probability.
+Pending records are saved picks, not a list of currently available prices.
+
+The shared comparison selects settled records for which every displayed rule
+has its required estimate. Each rule receives exactly those same selections,
+prices and starting bankroll, including records on which it chooses zero.
+Requiring positive stakes from every rule would hide their disagreements.
+Availability determines this subset; its return does not establish a superior
+strategy. Multiple selections can refer to one physical fight.
+
+Valid saved model/simulation support is frozen when the page is rebuilt. Newer
+forecasts cannot replace or erase it. When support is missing, retained native
+winner forecasts can fill it only when both issuance and the matching quote
+capture precede or equal the original pick timestamp. The view preserves that
+forecast's capture ID and availability time. Recovery improves replay coverage;
+it does not create a historical decision or make a retrospective rule prospective.
+Missing historical totals uncertainty estimates remain missing.
+
 Regenerate and validate the frozen calibration artifact with:
 
 ```bash
