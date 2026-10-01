@@ -11,7 +11,9 @@ import pandas as pd
 
 from market_tracker._storage import atomic_write_text, exclusive_store_lock
 from market_tracker.bayesian_kelly import BayesianKellyCalibrator
-from market_tracker.equal_stake_experiment import VERSION, build_records, report, seal, verify
+from market_tracker.equal_stake_experiment import (
+    VERSION, CAPTURE_CONTRACT_VERSION, build_records, report, seal, verify,
+)
 from update_market_first_paper import _stores, RAW_PATH
 from update_market_performance import _result_index
 
@@ -19,7 +21,10 @@ ROOT = Path(__file__).resolve().parent / "content" / "data" / "market" / "equal_
 
 
 def write(path, value):
-    atomic_write_text(path, json.dumps(value, indent=2, sort_keys=True, allow_nan=False) + "\n")
+    rendered = json.dumps(value, indent=2, sort_keys=True, allow_nan=False) + "\n"
+    if path.exists() and path.read_text(encoding="utf-8") == rendered:
+        return
+    atomic_write_text(path, rendered)
 
 
 def load(path, default):
@@ -52,6 +57,19 @@ def update(*, validate_only=False, root=ROOT):
     if policy["calibration"]["training_last_event_date"] >= policy["activated_at_utc"][:10]:
         raise ValueError("calibration training must precede activation")
     with exclusive_store_lock(root / "write.lock"):
+        contract_path = root / "capture_contract.json"
+        contract = load(contract_path, None)
+        if contract is None and not validate_only:
+            contract = seal({"version": CAPTURE_CONTRACT_VERSION,
+                "activated_at_utc": now.isoformat(), "policy_sha256": policy["record_sha256"],
+                "decision_window_basis": "card_start", "require_before": ["card_start", "provider_bout_start"],
+                "historical_decision_backfill": False})
+            write(contract_path, contract)
+        if contract is not None:
+            verify(contract)
+            if (contract["version"] != CAPTURE_CONTRACT_VERSION
+                    or contract["policy_sha256"] != policy["record_sha256"]):
+                raise ValueError("unsupported capture contract")
         records = load(root / "decisions.json", [])
         settlements = load(root / "settlements.json", [])
         for collection in (records, settlements):
@@ -63,6 +81,12 @@ def update(*, validate_only=False, root=ROOT):
         for row in records:
             if row["policy_sha256"] != policy["record_sha256"]:
                 raise ValueError("frozen decision policy mismatch")
+            version = row.get("capture_contract_version")
+            if version is not None:
+                if (contract is None or version != contract["version"]
+                        or datetime.fromisoformat(row["recorded_at_utc"].replace("Z", "+00:00"))
+                        < datetime.fromisoformat(contract["activated_at_utc"].replace("Z", "+00:00"))):
+                    raise ValueError("record predates or disagrees with its capture contract")
         for row in settlements:
             if row["matchup_id"] not in decisions or row["decision_sha256"] != decisions[row["matchup_id"]]["record_sha256"]:
                 raise ValueError("settlement references unknown or changed decision")
@@ -71,7 +95,7 @@ def update(*, validate_only=False, root=ROOT):
         if not validate_only:
             quotes, forecasts, metadata, _, _ = _stores()
             records += build_records(quotes.read(), forecasts.read(), metadata.read(),
-                                     records, policy, calibrator, now)
+                                     records, policy, calibrator, now, capture_contract=contract)
             # Preserve every existing decision value; additions only. Atomic replacement
             # prevents a crash from leaving a partial JSON ledger.
             write(root / "decisions.json", records)
@@ -91,6 +115,21 @@ def update(*, validate_only=False, root=ROOT):
                         "result_source_sha256": sha256(raw_bytes).hexdigest()}))
             write(root / "settlements.json", settlements)
         result = report(records, settlements, policy)
+        result["capture_contract"] = contract
+        # Explain the latest observed capture without manufacturing decisions
+        # from an old quote. Actual records are created only above, at now.
+        quotes, forecasts, metadata, _, _ = _stores()
+        quote_rows = [r for r in quotes.read()
+                      if datetime.fromisoformat(r.observed_at_utc.replace("Z", "+00:00")) <= now]
+        latest = max((r.observed_at_utc for r in quote_rows), default=None)
+        diagnostics = {}
+        if latest is not None:
+            latest_rows = [r for r in quote_rows if r.observed_at_utc == latest]
+            build_records(latest_rows, forecasts.read(), metadata.read(), records,
+                          policy, calibrator, latest, capture_contract=contract, diagnostics=diagnostics)
+        result["latest_capture_diagnostics"] = {"observed_at_utc": latest,
+            "interpretation": "Quote eligibility at collection time; actual decisions also require creation within five minutes and after repair activation.",
+            **diagnostics}
         if not validate_only:
             write(root / "report.json", result)
         return result

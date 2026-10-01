@@ -1,0 +1,47 @@
+{
+  "local_validation_errors": 4,
+  "differences": [
+    {
+      "path": "bayesian_moneyline_challenger.forecast_metrics.log_loss",
+      "saved": 0.8363632367906315,
+      "rebuilt": 0.8363632367906317,
+      "numeric_delta": 2.220446049250313e-16
+    },
+    {
+      "path": "prospective_simulation_comparison.scores.market_simulation_half.log_loss",
+      "saved": 0.683063575410832,
+      "rebuilt": 0.6830635754108321,
+      "numeric_delta": 1.1102230246251565e-16
+    },
+    {
+      "path": "total_rounds.next_residual_weight_selection.market_log_loss",
+      "saved": 0.6263974461746058,
+      "rebuilt": 0.6263974461746057,
+      "numeric_delta": -1.1102230246251565e-16
+    },
+    {
+      "path": "total_rounds.next_residual_weight_selection.selected_log_loss",
+      "saved": 0.6263974461746058,
+      "rebuilt": 0.6263974461746057,
+      "numeric_delta": -1.1102230246251565e-16
+    },
+    {
+      "path": "prospective_bayesian_logistic_blend.metrics.published_production.log_loss",
+      "saved": 0.8192558380943546,
+      "rebuilt": 0.8192558380943545,
+      "numeric_delta": -1.1102230246251565e-16
+    },
+    {
+      "path": "prospective_bayesian_logistic_blend.paired_log_loss_intervals.blend_minus_production.point_difference",
+      "saved": 0.018752420548985824,
+      "rebuilt": 0.01875242054898582,
+      "numeric_delta": -3.469446951953614e-18
+    },
+    {
+      "path": "prospective_bayesian_logistic_blend.paired_log_loss_intervals.blend_minus_production.ci_95_lower",
+      "saved": 0.000629671338541552,
+      "rebuilt": 0.00062967133854155,
+      "numeric_delta": -2.0599841277224584e-18
+    }
+  ]
+}

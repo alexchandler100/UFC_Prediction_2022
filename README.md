@@ -1372,10 +1372,37 @@ and collector share one publisher concurrency group and exact path allowlists;
 the dependent paper-shadow job uses a separate group and cannot delay a price
 capture. The collector creates no live wager.
 
-The source's free Starter tier currently includes 500 request credits per
-month. The configured `h2h,totals` request across `us,us2` costs up to four
-credits, so the three updater runs plus the maximum fourteen scheduled captures use roughly 295 credits
-in an average month (and post-commencement no-ops use none). Create a free key
+Additional checks at minutes 7 and 37 of every hour use only the saved card
+start and capture report. They request odds only when the 20–28 hour or final
+15–90 minute pre-card window has not yet been captured. Final checks stop
+30 minutes before the card to leave time for validation and collection. A
+stable card start therefore permits at most two extra requests per card;
+regular and manual collections continue normally. Clock-only checks do not
+occupy the shared publication queue. Unknown card starts wait for the regular
+collector. Scheduling delays and unavailable sources can still leave gaps.
+
+The monitoring page reports fresh-price coverage for early (32–144 hour),
+day-before (20–28 hour), and final (15–90 minute) windows. A final reference is
+the last fresh same-book quote in that declared window after a paper decision,
+not the exact closing price of an individual bout. Provider updates must be
+within 30 minutes of collection. Missing references stay missing. The
+independent price comparison requires at least three other books and excludes
+the entry book. Full-fight totals are counted separately for each observed line.
+
+The equal-stake comparison now follows the card start even when the provider
+estimates a later individual bout start. Both collection and decision must
+precede both starts. Quotes still need four fresh books and decisions must be
+recorded within five minutes of collection. Its sealed `capture_contract.json`
+records repair activation; older decisions are preserved, results before and
+after the repair are separate, and historical missed bets are never backfilled.
+The monitoring page explains exclusions from the latest capture.
+
+At four credits per configured `h2h,totals` request across `us,us2`, three updater
+runs plus sixteen regular captures and up to two extra captures per weekly card
+would use roughly 365 credits in an average month. This is a planning estimate,
+not an account allowance or usage guarantee: manual runs, retries, changed
+start times, and provider billing can change it. Post-commencement no-ops and
+clock-only checks use no odds credits. Check the account's actual usage. Create a key
 at [The Odds API](https://the-odds-api.com/), then add
 it to the repository under **Settings -> Secrets and variables -> Actions ->
 New repository secret** with the exact name `THE_ODDS_API_KEY`. Never commit

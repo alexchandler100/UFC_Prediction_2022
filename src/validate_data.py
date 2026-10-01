@@ -253,6 +253,47 @@ def _records_match_with_float_tolerance(
     return True
 
 
+def _report_metrics_match(stored: object, rebuilt: object) -> bool:
+    """Permit only platform rounding in derived floats, never identity changes.
+
+    The report's content hash and input ledger hashes are checked separately.
+    Counts, booleans, strings, dictionary keys and list order remain exact.
+    """
+    if type(stored) is not type(rebuilt):
+        return False
+    if isinstance(stored, dict):
+        return stored.keys() == rebuilt.keys() and all(
+            _report_metrics_match(stored[k], rebuilt[k]) for k in stored)
+    if isinstance(stored, list):
+        return len(stored) == len(rebuilt) and all(
+            _report_metrics_match(a, b) for a, b in zip(stored, rebuilt))
+    if isinstance(stored, float):
+        return math.isfinite(stored) and math.isfinite(rebuilt) and math.isclose(
+            stored, rebuilt, rel_tol=1e-14, abs_tol=1e-15)
+    return stored == rebuilt
+
+
+def _paper_decision_reproduces(stored, rebuilt) -> bool:
+    """Check exact frozen inputs/actions and hashes; allow derived math rounding."""
+    try:
+        stored.validate_integrity()
+        rebuilt.validate_integrity()
+    except (MarketDataError, StoreIntegrityError, ValueError):
+        return False
+    derived = {"blend_probability", "fighter_break_even_probability",
+               "opponent_break_even_probability", "fighter_edge", "opponent_edge",
+               "fighter_expected_return", "opponent_expected_return", "action_probability"}
+    left, right = stored.to_mapping(), rebuilt.to_mapping()
+    # Both IDs were checked against their own exact canonical contents above.
+    # An exp/log rounding difference changes the replay ID, not the saved ID.
+    left.pop("decision_id")
+    right.pop("decision_id")
+    return left.keys() == right.keys() and all(
+        _report_metrics_match(value, right[key]) if key in derived else
+        type(value) is type(right[key]) and value == right[key]
+        for key, value in left.items())
+
+
 def _require_columns(
     df: pd.DataFrame, required: set[str], dataset: str, report: ValidationReport
 ) -> bool:
@@ -2164,7 +2205,7 @@ def validate_market_data(
                 fight_id=decision.fight_id,
             )
             report.require(
-                rebuilt == decision,
+                _paper_decision_reproduces(decision, rebuilt),
                 "paper decision cannot be reproduced from its frozen inputs",
             )
         except (MarketDataError, StoreIntegrityError, ValueError) as error:
@@ -2420,7 +2461,7 @@ def validate_market_data(
                     )
                     for key, value in expected_total.items():
                         report.require(
-                            total_performance.get(key) == value,
+                            _report_metrics_match(total_performance.get(key), value),
                             f"total-round performance {key} cannot be reproduced",
                         )
                 bayesian_performance = performance.get(
@@ -2441,8 +2482,8 @@ def validate_market_data(
                     else pd.DataFrame()
                 )
                 report.require(
-                    bayesian_performance
-                    == _bayesian_prediction_history_performance(history),
+                    _report_metrics_match(bayesian_performance,
+                        _bayesian_prediction_history_performance(history)),
                     "Bayesian performance report cannot be reproduced",
                 )
                 bayesian_filtered_performance = performance.get(
@@ -2458,13 +2499,13 @@ def validate_market_data(
                     "Bayesian filtered performance contract must remain paper-only",
                 )
                 report.require(
-                    bayesian_filtered_performance
-                    == _bayesian_filtered_policy_performance(
+                    _report_metrics_match(bayesian_filtered_performance,
+                        _bayesian_filtered_policy_performance(
                         bayesian_filtered_decisions,
                         decisions,
                         settlements,
                         quotes,
-                    ),
+                    )),
                     "Bayesian filtered performance report cannot be reproduced",
                 )
             if int(performance.get("schema_version", 1)) >= 4:
@@ -2480,8 +2521,8 @@ def validate_market_data(
                     "prospective model/market comparison must remain paper-only",
                 )
                 report.require(
-                    prospective
-                    == prospective_comparison_report(decisions, settlements),
+                    _report_metrics_match(prospective,
+                        prospective_comparison_report(decisions, settlements)),
                     "prospective model/market comparison cannot be reproduced",
                 )
             if int(performance.get("schema_version", 1)) >= 5:
@@ -2504,12 +2545,12 @@ def validate_market_data(
                     "simulation comparison report hash is stale",
                 )
                 report.require(
-                    simulation_report
-                    == simulation_comparison_report(
+                    _report_metrics_match(simulation_report,
+                        simulation_comparison_report(
                         simulation_comparisons,
                         settlements,
                         decisions,
-                    ),
+                    )),
                     "prospective simulation comparison cannot be reproduced",
                 )
             if int(performance.get("schema_version", 1)) >= 6:
@@ -2537,15 +2578,15 @@ def validate_market_data(
                     )
                 )
                 report.require(
-                    bayesian_logistic_report
-                    == expected_bayesian_logistic_report,
+                    _report_metrics_match(bayesian_logistic_report,
+                        expected_bayesian_logistic_report),
                     "prospective Bayesian logistic blend cannot be reproduced",
                 )
             expected_metrics = summarize_paper_settlements(
                 decisions, settlements
             ).to_mapping()
             report.require(
-                performance.get("paper_metrics") == expected_metrics,
+                _report_metrics_match(performance.get("paper_metrics"), expected_metrics),
                 "performance report metrics cannot be reproduced",
             )
         except (

@@ -1,0 +1,351 @@
+{
+  "remote_sha": "e8444907cd409a2aadaa1ba9f04b6c9aa9c6d47b",
+  "verified_source_files": 116,
+  "weekly_published_probabilities": {
+    "2026-08-22": {
+      "model": {
+        "fights": 13,
+        "log_loss": 0.7612692065131801,
+        "brier_score": 0.25749799812286395,
+        "accuracy_with_half_credit_for_ties": 0.6538461538461539
+      },
+      "market": {
+        "fights": 13,
+        "log_loss": 0.6062027191678087,
+        "brier_score": 0.21465138432867129,
+        "accuracy_with_half_credit_for_ties": 0.6153846153846154
+      },
+      "blend": {
+        "fights": 13,
+        "log_loss": 0.6611458443602033,
+        "brier_score": 0.23455014763611254,
+        "accuracy_with_half_credit_for_ties": 0.6153846153846154
+      }
+    },
+    "2026-08-29": {
+      "model": {
+        "fights": 13,
+        "log_loss": 1.0188230652111139,
+        "brier_score": 0.3468884974904383,
+        "accuracy_with_half_credit_for_ties": 0.5769230769230769
+      },
+      "market": {
+        "fights": 13,
+        "log_loss": 0.6432711783849654,
+        "brier_score": 0.22601507180671526,
+        "accuracy_with_half_credit_for_ties": 0.6153846153846154
+      },
+      "blend": {
+        "fights": 13,
+        "log_loss": 0.7881798068566782,
+        "brier_score": 0.2835732989188642,
+        "accuracy_with_half_credit_for_ties": 0.6153846153846154
+      }
+    },
+    "2026-09-05": {
+      "model": {
+        "fights": 13,
+        "log_loss": 1.096523205127324,
+        "brier_score": 0.37855020277235635,
+        "accuracy_with_half_credit_for_ties": 0.46153846153846156
+      },
+      "market": {
+        "fights": 13,
+        "log_loss": 0.5971137902390811,
+        "brier_score": 0.20601655799314214,
+        "accuracy_with_half_credit_for_ties": 0.6923076923076923
+      },
+      "blend": {
+        "fights": 13,
+        "log_loss": 0.800865815372173,
+        "brier_score": 0.2911260744325379,
+        "accuracy_with_half_credit_for_ties": 0.46153846153846156
+      }
+    },
+    "2026-09-12": {
+      "model": {
+        "fights": 11,
+        "log_loss": 0.5659460521249403,
+        "brier_score": 0.1933638066801014,
+        "accuracy_with_half_credit_for_ties": 0.6363636363636364
+      },
+      "market": {
+        "fights": 11,
+        "log_loss": 0.565309492741844,
+        "brier_score": 0.19435733327316165,
+        "accuracy_with_half_credit_for_ties": 0.6363636363636364
+      },
+      "blend": {
+        "fights": 11,
+        "log_loss": 0.5511258131835026,
+        "brier_score": 0.1860612298902566,
+        "accuracy_with_half_credit_for_ties": 0.6363636363636364
+      }
+    },
+    "2026-09-19": {
+      "model": {
+        "fights": 11,
+        "log_loss": 0.8389903382800782,
+        "brier_score": 0.2949640622534004,
+        "accuracy_with_half_credit_for_ties": 0.6363636363636364
+      },
+      "market": {
+        "fights": 11,
+        "log_loss": 0.763293401569401,
+        "brier_score": 0.2646915880032059,
+        "accuracy_with_half_credit_for_ties": 0.6363636363636364
+      },
+      "blend": {
+        "fights": 11,
+        "log_loss": 0.7899244202878197,
+        "brier_score": 0.27296726458054416,
+        "accuracy_with_half_credit_for_ties": 0.6363636363636364
+      }
+    },
+    "2026-09-26": {
+      "model": {
+        "fights": 7,
+        "log_loss": 0.5757844615825698,
+        "brier_score": 0.1955361445903791,
+        "accuracy_with_half_credit_for_ties": 0.8571428571428571
+      },
+      "market": {
+        "fights": 7,
+        "log_loss": 0.7669784052837321,
+        "brier_score": 0.28445594776997624,
+        "accuracy_with_half_credit_for_ties": 0.5714285714285714
+      },
+      "blend": {
+        "fights": 7,
+        "log_loss": 0.6608592801828364,
+        "brier_score": 0.23690337478383858,
+        "accuracy_with_half_credit_for_ties": 0.5714285714285714
+      }
+    },
+    "pooled": {
+      "model": {
+        "fights": 68,
+        "log_loss": 0.8364822459500623,
+        "brier_score": 0.2870373036678638,
+        "accuracy_with_half_credit_for_ties": 0.6176470588235294
+      },
+      "market": {
+        "fights": 68,
+        "log_loss": 0.6468988325838815,
+        "brier_score": 0.22717071988383458,
+        "accuracy_with_half_credit_for_ties": 0.6323529411764706
+      },
+      "blend": {
+        "fights": 68,
+        "log_loss": 0.715147891104737,
+        "brier_score": 0.2533511887574025,
+        "accuracy_with_half_credit_for_ties": 0.5882352941176471
+      }
+    }
+  },
+  "main_paper_bets": [
+    {
+      "day": "2026-08-22",
+      "selection": "Jeisla Chaves",
+      "moneyline": 450,
+      "model_weight": 0.0,
+      "profit_units": -1.0,
+      "decision_id": "30dc1ca97b928526451beb2033f87f045d643f29f501c885265f518ee1dbdbe8"
+    },
+    {
+      "day": "2026-08-22",
+      "selection": "Terrance Chatman",
+      "moneyline": 750,
+      "model_weight": 0.0,
+      "profit_units": -1.0,
+      "decision_id": "359c8bfcf414a032b5e773b1e19abe335bca6b71f84842bab37d209c1c05b425"
+    },
+    {
+      "day": "2026-09-19",
+      "selection": "Sean Sharaf",
+      "moneyline": 1248,
+      "model_weight": 0.0,
+      "profit_units": 12.48,
+      "decision_id": "1f132569e602c443fea1d17200ee3286fa193b2748cd331e4b9792063b37f139"
+    },
+    {
+      "day": "2026-09-26",
+      "selection": "Vanessa Demopoulos",
+      "moneyline": 675,
+      "model_weight": 0.0,
+      "profit_units": -1.0,
+      "decision_id": "54978399596cebafc0c34be98ced29a1121cb4095ebbff817e54880c48444ed0"
+    }
+  ],
+  "method_settled_bets": {
+    "counts": {
+      "loss": 25,
+      "win": 2
+    },
+    "profit_units": -6.5,
+    "model_expected_wins": 5.032023132453347,
+    "mean_claimed_expected_return": 1.3032940702179532
+  },
+  "equal_stake_time_comparison": {
+    "quotes": {
+      "t24_quotes": 231,
+      "same_start": 27,
+      "different_provider_start": 204
+    },
+    "by_day": {
+      "2026-09-19": {
+        "t24_quotes": 105,
+        "different_provider_start": 96
+      },
+      "2026-09-26": {
+        "t24_quotes": 126,
+        "different_provider_start": 108
+      }
+    },
+    "matchups_with_rejected_quotes": 16,
+    "matchups_with_same_start_quotes": 2,
+    "note": "Static timing diagnostic; not a replacement decision ledger or a counterfactual return claim."
+  },
+  "retained_simulations": {
+    "exclusions": {
+      "not_in_completed_results": 61,
+      "later_record_of_same_physical_fight": 1
+    },
+    "by_card": {
+      "2026-09-05": {
+        "fights": 7,
+        "cards": 1,
+        "winner": {
+          "fights": 7,
+          "log_loss": 0.8767209410081254,
+          "brier_score": 0.3342308899786701,
+          "accuracy_with_half_credit_for_ties": 0.2857142857142857
+        },
+        "predicted_decisions": 2.7919921875,
+        "actual_decisions": 4,
+        "predicted_kos": 3.30078125,
+        "actual_kos": 3,
+        "predicted_submissions": 0.73974609375,
+        "actual_submissions": 0,
+        "mean_duration_error_seconds": -82.83211979990931
+      },
+      "2026-09-12": {
+        "fights": 8,
+        "cards": 1,
+        "winner": {
+          "fights": 8,
+          "log_loss": 0.6970098811991242,
+          "brier_score": 0.25208139874183216,
+          "accuracy_with_half_credit_for_ties": 0.5
+        },
+        "predicted_decisions": 3.322021484375,
+        "actual_decisions": 7,
+        "predicted_kos": 3.495849609375,
+        "actual_kos": 0,
+        "predicted_submissions": 0.999267578125,
+        "actual_submissions": 1,
+        "mean_duration_error_seconds": -276.3767111474915
+      },
+      "2026-09-19": {
+        "fights": 9,
+        "cards": 1,
+        "winner": {
+          "fights": 9,
+          "log_loss": 1.0016766842040399,
+          "brier_score": 0.37883642388880134,
+          "accuracy_with_half_credit_for_ties": 0.3333333333333333
+        },
+        "predicted_decisions": 2.57080078125,
+        "actual_decisions": 4,
+        "predicted_kos": 5.318115234375,
+        "actual_kos": 4,
+        "predicted_submissions": 0.968017578125,
+        "actual_submissions": 1,
+        "mean_duration_error_seconds": -119.04203237540693
+      },
+      "2026-09-26": {
+        "fights": 7,
+        "cards": 1,
+        "winner": {
+          "fights": 7,
+          "log_loss": 0.8154200241983957,
+          "brier_score": 0.2894429676384444,
+          "accuracy_with_half_credit_for_ties": 0.5714285714285714
+        },
+        "predicted_decisions": 2.76416015625,
+        "actual_decisions": 3,
+        "predicted_kos": 2.899658203125,
+        "actual_kos": 3,
+        "predicted_submissions": 1.18115234375,
+        "actual_submissions": 1,
+        "mean_duration_error_seconds": -100.72873916162108
+      }
+    },
+    "by_profile": {
+      "mechanics-8ba01f34444f": {
+        "fights": 31,
+        "cards": 4,
+        "winner": {
+          "fights": 31,
+          "log_loss": 0.8527792246411289,
+          "brier_score": 0.3158676131694734,
+          "accuracy_with_half_credit_for_ties": 0.41935483870967744
+        },
+        "predicted_decisions": 11.448974609375,
+        "actual_decisions": 18,
+        "predicted_kos": 15.014404296875,
+        "actual_kos": 10,
+        "predicted_submissions": 3.88818359375,
+        "actual_submissions": 3,
+        "mean_duration_error_seconds": -147.33283849320347
+      }
+    },
+    "pooled": {
+      "all": {
+        "fights": 31,
+        "cards": 4,
+        "winner": {
+          "fights": 31,
+          "log_loss": 0.8527792246411289,
+          "brier_score": 0.3158676131694734,
+          "accuracy_with_half_credit_for_ties": 0.41935483870967744
+        },
+        "predicted_decisions": 11.448974609375,
+        "actual_decisions": 18,
+        "predicted_kos": 15.014404296875,
+        "actual_kos": 10,
+        "predicted_submissions": 3.88818359375,
+        "actual_submissions": 3,
+        "mean_duration_error_seconds": -147.33283849320347
+      }
+    },
+    "schedule_matched": {
+      "matched": {
+        "fights": 30,
+        "cards": 4,
+        "winner": {
+          "fights": 30,
+          "log_loss": 0.834756496160667,
+          "brier_score": 0.3075571636401346,
+          "accuracy_with_half_credit_for_ties": 0.43333333333333335
+        },
+        "predicted_decisions": 11.337890625,
+        "actual_decisions": 18,
+        "predicted_kos": 14.196533203125,
+        "actual_kos": 9,
+        "predicted_submissions": 3.826904296875,
+        "actual_submissions": 3,
+        "mean_duration_error_seconds": -154.370251151237
+      }
+    },
+    "schedule_mismatches": [
+      {
+        "day": "2026-09-19",
+        "fighter": "Arman Tsarukyan",
+        "opponent": "Mauricio Ruffy",
+        "simulated_rounds": 3,
+        "recorded_schedule": "5 Rnd (5-5-5-5-5)"
+      }
+    ]
+  }
+}

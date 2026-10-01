@@ -1,0 +1,60 @@
+{
+  "status": "implemented_locally_not_published",
+  "base_revision": "e8444907cd409a2aadaa1ba9f04b6c9aa9c6d47b",
+  "full_unit_suite": {
+    "tests": 541,
+    "passed": true
+  },
+  "subsequent_reliability_suite": {
+    "tests": 46,
+    "passed": true,
+    "includes_added_moneyline_hash_rounding_regression": true
+  },
+  "strict_repository_validation": {
+    "command": "python -B src/validate_data.py --require-model-artifact --require-market-data",
+    "passed": true,
+    "facts": [
+      "external MMA: 10,448 bouts / 1 snapshots",
+      "published paper-bet history: 80 timestamped records / 5 settled locked bets",
+      "market ledger: 7,622 quotes / 747 forecasts / 2,437 total-round quotes / 715 total-round forecasts / 30 total decisions / 30 total settlements / 69 captures / 44 paper decisions / 44 settlements / 31 Bayesian-filtered decisions / 67 Bayesian-blend shadows / 13,308 distinct early price states / 66 official UFC links",
+      "raw fights: 17,776 rows / 8,888 fights",
+      "optional simulation per-round data is present (not validated; use --require-simulation-artifact)",
+      "optional simulation research files present but not validated: none",
+      "fighter stats: 2,750 source IDs",
+      "point-in-time replay: 716,106 feature cells reproduced",
+      "point-in-time fights: 8,733 rows / 82 features",
+      "winner model: 943fc1ab01ef1bf51da0 / 4950 fights",
+      "Bayesian winner challenger: 82 coefficients / 90% interval",
+      "candidate outcome forecasts: 14/14 matchups",
+      "all announced UFC forecasts: 8 events / 93 matchups",
+      "qualified all-upcoming paper bets: 0 at or above 5% EV",
+      "fighter explorer: 5,757 fighters / 8,888 fights",
+      "latest completed fight: 2026-09-26 (5 days old)"
+    ],
+    "warnings": [
+      "market ledger has 140 legacy API quote(s) without source-side update timestamps",
+      "optional simulation research bundle is incomplete: parameter_model.json.gz, backtest_report.json, research_status.json",
+      "Display names are not unique; ID-based joins are required: Bruno Silva",
+      "legacy ufc_fights_reported_derived_doubled.csv is an unsupported notebook-era artifact; it is excluded from the production model and website because its historical composite formulas are not valid production features"
+    ]
+  },
+  "additional_checks": [
+    "Report reproduction",
+    "Original policy/decisions/settlements unchanged",
+    "Desktop and mobile monitoring UI",
+    "JavaScript syntax",
+    "Workflow YAML and publish dependency/concurrency",
+    "git diff --check"
+  ],
+  "live_capture_with_repaired_code_run": false,
+  "production_code_sha256": {
+    "src/market_capture_windows.py": "8c1dad1be767cbcc603863c217b4a1b40d0e7577b9732bc10c94baf6a74a00a5",
+    "src/market_tracker/equal_stake_experiment.py": "ad78157cd99eb8f1cfabdcf3b6bd025923b1fe66239ddbe7c45d5622cf57c4e5",
+    "src/update_equal_stake_experiment.py": "37081d5de07d70b44dfac8442d47f193c931f01f1ae35307e844dcfa7ac09c47",
+    "src/update_research_monitor.py": "9062c4f165a16ae1cccf5ef91b0602c2390e7d4909060234fe0b642add00430e",
+    "src/validate_data.py": "53452604d4d7ccb2931dd60e5cce8c09a86e2ad8faab5c5633dfd19a39d919a2",
+    "script.js": "5870765f8ea6a758faf0b915321f4510ad861e87a6bc3ec8a1a8620571ca8475",
+    ".github/workflows/collect-market-snapshot.yml": "086c79b0775737d8de79047da63a9f04a251a06fbd7fe1d20f2eb2d5ce837fbb",
+    ".github/workflows/update-data.yml": "5bf63a2f0c485e096ff28f5c25300a2df81aff6f28de78b207d4577fb795e22d"
+  }
+}

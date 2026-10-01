@@ -1,0 +1,587 @@
+{
+  "remote_sha": "e8444907cd409a2aadaa1ba9f04b6c9aa9c6d47b",
+  "local_sha": "9933ae25",
+  "ahead_by": 51,
+  "files": [
+    {
+      "path": "src/content/data/market/performance_report.json",
+      "sha256": "831b5a280603aa819de7cfc82deafccae4306880d2146e3a33f1e8a25e497175",
+      "bytes": 43885
+    },
+    {
+      "path": "src/content/data/market/capture_report.json",
+      "sha256": "53dd85298dc965fbad4fbedd1c24f03a2dd36fd7872709298ee8347c58bb492a",
+      "bytes": 7283
+    },
+    {
+      "path": "src/content/data/market/method_capture_report.json",
+      "sha256": "7b9097a442bb158d32983bedcd01d1bcbc61f5a66dd6df3e9fd868dd0a2c29c1",
+      "bytes": 1444
+    },
+    {
+      "path": "src/content/data/market/research_monitor.json",
+      "sha256": "71f0ff93f6afbb5b8e1fc2242461fbbc01cb62c66ad5eecfe0c03a6713d7e14f",
+      "bytes": 68375
+    },
+    {
+      "path": "src/content/data/market/bet_performance.json",
+      "sha256": "4eb9835ca1ab58d69ef12f04d80b251307456bf6fb1a58fed02b4028e9d80c3d",
+      "bytes": 172841
+    },
+    {
+      "path": "src/content/data/market/market_first_paper_report.json",
+      "sha256": "36ed89a2be6c68aa143445099b268908bca21bc381335efc322b6360a0ddd4d9",
+      "bytes": 5675
+    },
+    {
+      "path": "src/content/data/market/equal_stake_experiment/report.json",
+      "sha256": "ca2e3f3e46d4941705bb10f1a3aa5b1af7699624796973ae527557e5f57ac962",
+      "bytes": 73949
+    },
+    {
+      "path": "src/content/data/market/equal_stake_experiment/decisions.json",
+      "sha256": "2bf8c86e7887c1c39831aa9fe8ce681c30faeedcdb4341c61cf437529f562c82",
+      "bytes": 83509
+    },
+    {
+      "path": "src/content/data/market/method_paper/report.json",
+      "sha256": "227d7bd69037f20f2b8afd4f8a9b3d970df9584ae7213ce368154d7643fbbde8",
+      "bytes": 55727
+    },
+    {
+      "path": "src/content/data/market/method_paper/decisions.json",
+      "sha256": "63ddd143c15c982fd767dac73fea0e4fa94f05aa5dda385534e48f86fdade1fd",
+      "bytes": 340918
+    },
+    {
+      "path": "src/content/data/market/method_paper/settlements.json",
+      "sha256": "1e16f21e0c13e85425f79bbb6ccda157150c4f38d8b986e6f52b8cb69b063c58",
+      "bytes": 17251
+    },
+    {
+      "path": "src/content/data/market/simulation_conditions/report.json",
+      "sha256": "2be5cd14acf7a6adcd1ec71b40406941d3fc4dfbffcd3964e61d6fcc5e48826a",
+      "bytes": 36947
+    },
+    {
+      "path": "src/content/data/market/paper_decisions.jsonl",
+      "sha256": "e4023cf1dc1573643c230b12e7734abe2ccd3195b778ac4751ba13c9f461a963",
+      "bytes": 72484
+    },
+    {
+      "path": "src/content/data/market/paper_settlements.jsonl",
+      "sha256": "c0b9ec502f7ab6bb6ea71de65e1031be434610afd39d631eccbe6f0252fad52d",
+      "bytes": 36356
+    },
+    {
+      "path": "src/content/data/market/forecast_captures.jsonl",
+      "sha256": "e1d807852581ef609174578366c5d210c52426da825c59d9f2ebd5ae19ef1d32",
+      "bytes": 706953
+    },
+    {
+      "path": "src/content/data/market/quote_snapshots.jsonl",
+      "sha256": "a6cfec167f33dcf8e0f2fa0aff60feec72857650a0d3db3d98a97dce3e6466f3",
+      "bytes": 7661243
+    },
+    {
+      "path": "src/content/data/market/quote_source_metadata.jsonl",
+      "sha256": "9134bd455505f95c8b800d8a92c948cd5fe518e98122ddd224398af4b75d4fb7",
+      "bytes": 5073576
+    },
+    {
+      "path": "src/content/data/market/simulation_comparisons.jsonl",
+      "sha256": "e2c5b796adb17fa966563f53753b3e9aa489973f8bfa301cad7aa8a7af8a48a1",
+      "bytes": 28395
+    },
+    {
+      "path": "src/content/data/external/prediction_history.json",
+      "sha256": "f04e8827a8d8c0589407485019d7981e256f3b46b7498f916aedb757645a762e",
+      "bytes": 3213059
+    },
+    {
+      "path": "src/content/data/external/outcome_model_evaluation.json",
+      "sha256": "3f3e1f328a977396088081fcd23d95a775dfe17251331fbaec46b85d422b3eb5",
+      "bytes": 34893
+    },
+    {
+      "path": "src/content/data/external/simulation_forecasts.json",
+      "sha256": "f3d050fa3b682ca4a01050c35716713496c74c2130b1f6d63a422247f0fa2d93",
+      "bytes": 2195133
+    },
+    {
+      "path": "src/content/data/external/card_info.json",
+      "sha256": "853716cbaaa7cbfd8579ec03c406d5e8b481d1de0677231a92500bf2a62a11c9",
+      "bytes": 163
+    },
+    {
+      "path": "src/content/data/processed/ufc_fights_reported_doubled.csv",
+      "sha256": "f08fc6a966fdc3eed715e407408479b1466ab988ffe4628948651e2029e23b64",
+      "bytes": 6153227
+    },
+    {
+      "path": "src/content/data/simulation/upcoming_matchups/039d437eca585df98f20db4df5e533a4f94bba92cc326badf6ce9360e33fbde3.json",
+      "sha256": "c5e13ef18b055218d57aa0137fb30419399084bccf00a385101656fb7d67009b",
+      "bytes": 31873
+    },
+    {
+      "path": "src/content/data/simulation/upcoming_matchups/0b044c59e92a34f061721b2b4aecd3127062625f862900ce060608c8cb776918.json",
+      "sha256": "b221468b7dadc36bdc92d6cbb0fe82b78de3a8f962974167efcfd295b4e4e484",
+      "bytes": 31786
+    },
+    {
+      "path": "src/content/data/simulation/upcoming_matchups/1462e42b9b18abf38917553e03732a89c6a1581b3b5d37f496c7e5d266ac505c.json",
+      "sha256": "7fc40fc28a290cf656db417866c1e119059c4c6d2b8b3eafd42041b3d26862ee",
+      "bytes": 31902
+    },
+    {
+      "path": "src/content/data/simulation/upcoming_matchups/151536991485139759971198b27bc02d7c8431d0665bba11182b498cf19c7ec5.json",
+      "sha256": "98ab7da612a9074ce1ca6bd34d956b09d78b22de2c9eaea9a21e780e4f0f4649",
+      "bytes": 31861
+    },
+    {
+      "path": "src/content/data/simulation/upcoming_matchups/1647cc03f047fbc38b4c1ec49f6a00aa50e28abf61a8db14e7a964153d81234c.json",
+      "sha256": "d77526c0769b2504af9b4587d02dc34230390044dd05f176cbd27ab40c2338ef",
+      "bytes": 31688
+    },
+    {
+      "path": "src/content/data/simulation/upcoming_matchups/1c68e42efa5b733e9f3eaad5ca38664666c3f63d7cacb5266be93bc1dcacd6f8.json",
+      "sha256": "5f5911114d289b32249ca86b0342cc71d0f6a50a488e5ea5c7a2140881a3f406",
+      "bytes": 31905
+    },
+    {
+      "path": "src/content/data/simulation/upcoming_matchups/1c7a20c691a0778621aab4c42ada49b3e7f983051b4dbc5ad8f1e4fa02e43208.json",
+      "sha256": "3aedcd4308fa295d11431580ee8c6471d003654a53332576198ed8bf0eafd3af",
+      "bytes": 31803
+    },
+    {
+      "path": "src/content/data/simulation/upcoming_matchups/1e01e004af1edac642a4400a4b9c37c474bbf7a464946c53f57da5f768cc7d6c.json",
+      "sha256": "cd6a1624b8e932cc0a76a28e8be6accd52e01ffbe352a170b96366f848d547cc",
+      "bytes": 31808
+    },
+    {
+      "path": "src/content/data/simulation/upcoming_matchups/1f723385f63889cce7f173fb2e669dc2b5d225c9141fdd6ece65e1710fcba932.json",
+      "sha256": "d1a3364a2b746d0c86606c29fe8d6d53830371ec5bc9fd2adfc98aea4b456527",
+      "bytes": 31859
+    },
+    {
+      "path": "src/content/data/simulation/upcoming_matchups/20e8f3f811de940ba1747ae51e765db608b0bd436d3287ad8adb40d697b440ce.json",
+      "sha256": "877071f15fc07c2b96099d7e32b96d370b863df9857974bd4106dcd524c3d6a9",
+      "bytes": 31855
+    },
+    {
+      "path": "src/content/data/simulation/upcoming_matchups/252ec9cc9a8597f1dacd417fbc76e1b3279109f716fd44e8b762c5e8b6dc4306.json",
+      "sha256": "2333c5ee1a63702b72d19bdd72dd3383bacef80bf439943858924c64fc67590a",
+      "bytes": 31787
+    },
+    {
+      "path": "src/content/data/simulation/upcoming_matchups/257dc4a2e3d315f770e3272762f9ea7bf6baef457c2175b8dcda1c086a2fe9d1.json",
+      "sha256": "f30e07308512aa170964e27e1c746b46407f7daba84d0b8022c8199e90eff1a9",
+      "bytes": 31905
+    },
+    {
+      "path": "src/content/data/simulation/upcoming_matchups/28671faa221e2c3d6af56c215bcd31bbb125d1ed4515060461b215ab67f38839.json",
+      "sha256": "b9224c723189c7d0eefbed52d2573da012af8dc1bedc262b651181c377dadc6b",
+      "bytes": 31818
+    },
+    {
+      "path": "src/content/data/simulation/upcoming_matchups/29fc2acf01f70032b1bf07c8c58c8c34572154014ed53e9655e2273abc362dc2.json",
+      "sha256": "6600acdac4d26b149748ab1fd00444494f7ea53084146c11022659fe240a8900",
+      "bytes": 31892
+    },
+    {
+      "path": "src/content/data/simulation/upcoming_matchups/29fd57b759abdb780c0419686a46f5683bed81a8058bf6e3090795c299e35ff7.json",
+      "sha256": "f9111ec2e539664623121305c700cd72c3d82e968474a404eb9d4fd655188c34",
+      "bytes": 31798
+    },
+    {
+      "path": "src/content/data/simulation/upcoming_matchups/2bc10a991e919eace76571b7d7a7c47d7ef385a50e615c4bde9bfd7c9d990dbb.json",
+      "sha256": "284571206fdafa6ba8571ed43be702e9aa3c2ad0967a200a9c7037c138b4b74a",
+      "bytes": 31451
+    },
+    {
+      "path": "src/content/data/simulation/upcoming_matchups/311497d8a7d28129eb122504361f5b5dd039114c0afb0128a788b4a1c1145b82.json",
+      "sha256": "610b1c7acf6df584f20ceda85b673f7494a0ddd26355c471ffc388da6e6d269c",
+      "bytes": 31860
+    },
+    {
+      "path": "src/content/data/simulation/upcoming_matchups/3775cc8c7cdef3fd1ec5a4fc624a4ca64cbfbe010b1b3246f6f1f701d51a52f0.json",
+      "sha256": "19aceb954cb3f51fe451f6673bc178a2a22405be11f5d5805368af7c9e778c94",
+      "bytes": 31911
+    },
+    {
+      "path": "src/content/data/simulation/upcoming_matchups/3b365a458091c35950fd1c1ce1fffac294ebbd00fe709810fe5968adfcd45ad6.json",
+      "sha256": "1fac41234a03ed800c112d9713297f07a9cd1bb5308289eea6376f563425c1e2",
+      "bytes": 31927
+    },
+    {
+      "path": "src/content/data/simulation/upcoming_matchups/3b7ecc25dc66d0184a7da8e1070005a31591a443ed983d5527174ef6cb47048e.json",
+      "sha256": "10425edc26ec340339d3be4aa13d035f75f8ef4d1d5ccd0427aa3232421d1085",
+      "bytes": 31872
+    },
+    {
+      "path": "src/content/data/simulation/upcoming_matchups/3e655c83a0c2fc187556c335568d8f5c2edd8d6ae2ec5b983294e74a6677a666.json",
+      "sha256": "c1f460ea31d0889ee86ce905c692680e71904da7da9f94ad69e73e4240960446",
+      "bytes": 42420
+    },
+    {
+      "path": "src/content/data/simulation/upcoming_matchups/465f59cec8f6003378fb26495c07fe6ab1b36909a0cd9c3313ce7208613a167c.json",
+      "sha256": "34e46102e32b87d7442159059f75396bd1f5bc605473635aa27e348abbea148c",
+      "bytes": 31901
+    },
+    {
+      "path": "src/content/data/simulation/upcoming_matchups/48bf718eebf4b948ddcd5b749e81ce2b87ab613890cfc5a1be3a67902a47416b.json",
+      "sha256": "ce1383da141d4e27bdd8792da2145b7fb7723f2a9a2aec29261b09c65fb5ba76",
+      "bytes": 42632
+    },
+    {
+      "path": "src/content/data/simulation/upcoming_matchups/48c824b4d3da6eded316422be3feedb8e47ac2d3b0551a3a9b4e53aba7be6f82.json",
+      "sha256": "56600d1e23ac584330cd7241dab3cd16158f3fd04935bb120437ea38b09c74b2",
+      "bytes": 31738
+    },
+    {
+      "path": "src/content/data/simulation/upcoming_matchups/494bd8b33f9a3c7df277247b4e0d0634385e5e10057e33ae538bcc5e76ea5bdb.json",
+      "sha256": "61f22562843e1b46abd62989ba24f83e6a951ea2b5cc00ad84f8620c18467c52",
+      "bytes": 31880
+    },
+    {
+      "path": "src/content/data/simulation/upcoming_matchups/495225441e5cfd7fd7dfd9c0041b45381a9dea33e181f20fb0ae24a834eda1bf.json",
+      "sha256": "57045e2a45e286143f7343ae94ce8fc692ddc882dab90fa50468b63bc7a43dbc",
+      "bytes": 31830
+    },
+    {
+      "path": "src/content/data/simulation/upcoming_matchups/4aba71e541a23abc5b6a12f20f130da3772acd46023b4b43a7b562c4b196b1e5.json",
+      "sha256": "39652559eff07f51cd9a90c759521c9406ed341dcd322149a00d470b382f9e23",
+      "bytes": 31757
+    },
+    {
+      "path": "src/content/data/simulation/upcoming_matchups/4b83d8a3d78457eac7ac9de11ea481d9da11d2ca975d749dc8531ce8b47d98c4.json",
+      "sha256": "70d0346c2f8de343bf3beb54e3587cb4bcaa3a20da5731fab6426045ab036a16",
+      "bytes": 31885
+    },
+    {
+      "path": "src/content/data/simulation/upcoming_matchups/4c2d081362fa27144f106a0749dec5ac82eeb68af57ef1777342bca038526e38.json",
+      "sha256": "c2f5fa452448928df63f158b988e0882f2edd905dbc0af77b02fe4caf8177822",
+      "bytes": 31882
+    },
+    {
+      "path": "src/content/data/simulation/upcoming_matchups/4e3acdffc192d7f46c44153a44c9460020dca8c0d857177acafe25010acc8a54.json",
+      "sha256": "740bd1995cdff02d7157f6fb141d676be7f1178909b1f1853444b79c6e542531",
+      "bytes": 31816
+    },
+    {
+      "path": "src/content/data/simulation/upcoming_matchups/4f32b7aa54ad5581b782d3917bfc76d1b07bb2572266f35bade157f200bc221c.json",
+      "sha256": "88aa109f82c5932b44d4212549bae0450454a733106112815c47d74780af876b",
+      "bytes": 31791
+    },
+    {
+      "path": "src/content/data/simulation/upcoming_matchups/51e9a8dead1a90b287f84786411b091d222b4721f37b1ecba97cd1caa8d1f5ba.json",
+      "sha256": "3f886699c902dabce926fa88db29da129b3eb1844e6f051140a74b181955e1cb",
+      "bytes": 31907
+    },
+    {
+      "path": "src/content/data/simulation/upcoming_matchups/54eb82e5a9fc1544a62dd19cefee285fed867729b61182b01c78a09901212944.json",
+      "sha256": "e6a6ec670aec640f8371765220275b7e6cb9a2f9a071b17e60f63e7d7c22380a",
+      "bytes": 31653
+    },
+    {
+      "path": "src/content/data/simulation/upcoming_matchups/5a7d1ea2ec324b6db53f7d3262853f5aa730d90788f6cf0725236e1184927723.json",
+      "sha256": "24e0dca581c168b2517328db23396d62acd0d582421aadea210f2e38703e3374",
+      "bytes": 31768
+    },
+    {
+      "path": "src/content/data/simulation/upcoming_matchups/5b13a6d11242e41206bf018c04955eeeeaa155a9c20c99f3583579f5ee65b67d.json",
+      "sha256": "1e8802a9695ba591af1e0907168dd026b83c23c38e48a1530332c5ff890cef82",
+      "bytes": 42501
+    },
+    {
+      "path": "src/content/data/simulation/upcoming_matchups/6108a06d8500ea718b622f213b538583974b988c7b6a426fe91b4bd15fe2b67e.json",
+      "sha256": "d047b51ad80ab9f2abfd34b5d42a4741c4266a548fdedf516acde7d9e658626e",
+      "bytes": 31886
+    },
+    {
+      "path": "src/content/data/simulation/upcoming_matchups/61529f68cd0e114eebb67170c4e00d04c22841f221b17fe6ef2f36a77d1026f0.json",
+      "sha256": "e556497908b2ff71aa24a60861eb9a9c8fc9f7e0e587bb5e9ca1f1740cecd6f8",
+      "bytes": 31901
+    },
+    {
+      "path": "src/content/data/simulation/upcoming_matchups/64e8b6eb0fb60e81effff309dabbd090985d0a6a1cc37c3ece3312eda4d28340.json",
+      "sha256": "e2a4737ac0e6f7ad357152c9c3b6be6cc0e97f3dcaee65d9d13fd966b1525a2e",
+      "bytes": 31878
+    },
+    {
+      "path": "src/content/data/simulation/upcoming_matchups/68c8b6f5884a7c6b1894a0853dbd7c491473efc14e458589e014b3f6db551c67.json",
+      "sha256": "d73672f81dbd8dc5da22e6ead6f8aea3c98e000468da6b7700310b0d0b3b0b1d",
+      "bytes": 31922
+    },
+    {
+      "path": "src/content/data/simulation/upcoming_matchups/6d4c53372453bd8c1b33608f1310d3266e1d530e38a0a2028fe5058dc2fddfd3.json",
+      "sha256": "d5514ec4e2da164adff49fd92ad0d6fee1c5eab807f9aef86a2537dd770ff5df",
+      "bytes": 42525
+    },
+    {
+      "path": "src/content/data/simulation/upcoming_matchups/6f13afde4f0e65ccfaba6a116e471bccb2d58d13b88c7b7ebda51e0967994728.json",
+      "sha256": "4d86edc335847f75402e114c3533c86502e0cad9c87d144f61caef35ba3af6e3",
+      "bytes": 42495
+    },
+    {
+      "path": "src/content/data/simulation/upcoming_matchups/71474a86fbd1cced1fe095df753558f075cecf1e16bb051d8838d67c09b00d03.json",
+      "sha256": "a3f0353540d56e241cf464063ecf40f5ca056edd9e11b743d8a813f9c63ff5de",
+      "bytes": 31907
+    },
+    {
+      "path": "src/content/data/simulation/upcoming_matchups/72be78f94b4c78f0240fa64f0b3a3ca4fe7e2608f711f395301b9e9872a5dfcc.json",
+      "sha256": "001a707b293d4b2a2d4925ef1dbe64687bdfeb2c54b6bc780220103a148adcda",
+      "bytes": 31881
+    },
+    {
+      "path": "src/content/data/simulation/upcoming_matchups/7aa4a76ea60f2b71d5b7f2f22697533672dbd5e258a47031a91b7e8c2ba3a51d.json",
+      "sha256": "0ba73a3a017302eca0c0861829b7ada579b2a46f2a7130744c808f93df2b69c7",
+      "bytes": 31885
+    },
+    {
+      "path": "src/content/data/simulation/upcoming_matchups/7fe5652854cfe87a2ed1c071354e58a43e50d369e0da5a4a582225a662499639.json",
+      "sha256": "8add87247a659009802b9e4f6693b24b0446e3dcca0b0e661f59f7ef63d165c8",
+      "bytes": 31908
+    },
+    {
+      "path": "src/content/data/simulation/upcoming_matchups/8008332c2bf3934effa1dd6d07178173908461646cfef95213434ba14a216e1c.json",
+      "sha256": "4be74a0c020cf8058f37e474c02f36a5530b79a0193311fdc12fd710b12450b9",
+      "bytes": 31077
+    },
+    {
+      "path": "src/content/data/simulation/upcoming_matchups/88250c37d1bc78383bb5fc6ab355b17f7f5825e61c1e235e412bedd4dc7f2098.json",
+      "sha256": "ed05bd13aa0c030153be74d64fd57f53cf2cb419d3b1445382af5af5829d60df",
+      "bytes": 31878
+    },
+    {
+      "path": "src/content/data/simulation/upcoming_matchups/895b0709b6156ad480e67265c1f95afebc318ae51bf4eec48b93f65e6e760990.json",
+      "sha256": "0d1c135df87d8e15606a3994df964441d966d03bfa0104232bff8bf800567424",
+      "bytes": 31866
+    },
+    {
+      "path": "src/content/data/simulation/upcoming_matchups/8d3dd53e73cb15ec74809cfb62a6bacfb64584a459b3f7df6cb96c5f03843c7d.json",
+      "sha256": "5a3afd2899e286bf57ac476adeef3d0b00f7f08682926380176c43506b533b8d",
+      "bytes": 42041
+    },
+    {
+      "path": "src/content/data/simulation/upcoming_matchups/8efb00a17fe17892ea51495d9bfe23a908c1983f2d698dc3e82e40e7b434b931.json",
+      "sha256": "39933112caca94da17ecb7ed32166359fc26db5fdd355180deb2c1b67b66ddb9",
+      "bytes": 42648
+    },
+    {
+      "path": "src/content/data/simulation/upcoming_matchups/930711301d509e2d857440abe236648312eef497f3dd4333585e24a14a00d662.json",
+      "sha256": "83926ef46229d52bfdaac186e8f85744945d886c84f07a99f5290790863abfa2",
+      "bytes": 31891
+    },
+    {
+      "path": "src/content/data/simulation/upcoming_matchups/97824355628b63d8e9d25e985b2949584556d95e520711a86a711c7bea8cd95f.json",
+      "sha256": "338502afddcde36c6cdfd6f3508449897c8034015b0a530b768a1acab38a3cb2",
+      "bytes": 31893
+    },
+    {
+      "path": "src/content/data/simulation/upcoming_matchups/9a21e79c137e0a2df57bd8aff8e54390ad51b9c7a36ad40a406b451b9b786e9b.json",
+      "sha256": "75ac9345bbc3b47b072f6b14457d67b25a0a73c1ea30c1f958dc07c9045dcfaf",
+      "bytes": 31795
+    },
+    {
+      "path": "src/content/data/simulation/upcoming_matchups/9b92226a1cd282d3bbebc12de1454d9d1fe737f4ce5658020167596174d1ace8.json",
+      "sha256": "316bbee6fb94bdf5e698d5a2abcf9cb4ff57324ade8cab1d05a2adfe061c812a",
+      "bytes": 31895
+    },
+    {
+      "path": "src/content/data/simulation/upcoming_matchups/9ec32f96249483a77e6247338b53c05db25d781389c9cc8d1a64d27a09e68c05.json",
+      "sha256": "4871cbba566a6a0e565ba9637f20ea4bd2d60a7488e4cefbc8ee253784150548",
+      "bytes": 31766
+    },
+    {
+      "path": "src/content/data/simulation/upcoming_matchups/a4e9a2966841ec50dbbb6d0374c32487b4e831a117c1aa50405bd5c64df2b75a.json",
+      "sha256": "ddea3f49e6f0e7a3609b6be7c5e89362551ad800691122961c8d64a8f58c2272",
+      "bytes": 31562
+    },
+    {
+      "path": "src/content/data/simulation/upcoming_matchups/ab8c4b3742b3f89663bcbca60c2b8cd12877e7b61c42f00323e31463d7e6299a.json",
+      "sha256": "0d5055f3b57fa9ba6c617181c461b1ee1804d48a9beea2dd76eb68972f485dde",
+      "bytes": 31826
+    },
+    {
+      "path": "src/content/data/simulation/upcoming_matchups/ae9cf4ed65f0b536adcb731fef31ab63ad80b542f47e48f70a34c8dcd7f37d24.json",
+      "sha256": "58aaf4ce3219ea672ede93c1e80c3b085a0a9deb5e74c342ad622b103787f6d9",
+      "bytes": 31445
+    },
+    {
+      "path": "src/content/data/simulation/upcoming_matchups/b073639d4218a0565faf642c6ef6c04705c24d6e256ace229b32615a875f0f52.json",
+      "sha256": "debe9d55a1d773cdd544ed404af9acfdf6113c5380967f5d8452d95c025e6bbe",
+      "bytes": 31772
+    },
+    {
+      "path": "src/content/data/simulation/upcoming_matchups/b62fb757b4a7468ea4d56adfc6ffc8598db6507a314e4a38a0bfbc0aa701c8ac.json",
+      "sha256": "8307de7bb12b00f1fe7140ff228bb7181d96ba70041b87cac61edee614557697",
+      "bytes": 42297
+    },
+    {
+      "path": "src/content/data/simulation/upcoming_matchups/b89284fbe118691f3ee9c3d0b1e5195b92c9d67e0a32f1a3bbedabb2faa9aa10.json",
+      "sha256": "6e02bdd2cd50242a868ae9cd8e27f0a0a7e1c0d4f5776bf6c9d1f94365349d23",
+      "bytes": 31891
+    },
+    {
+      "path": "src/content/data/simulation/upcoming_matchups/bbd40d601b5f44511059b8ed3dc8cc361b5eb26c4cbff2b867e900c4b9f23a6d.json",
+      "sha256": "5fcc5cd39a2d3a59b2311ded2d2d23f062893001215fb5b7b2f94de5e92fa876",
+      "bytes": 31846
+    },
+    {
+      "path": "src/content/data/simulation/upcoming_matchups/bdcc5d356bdf1153895ebe0ca0a88c7dcd5d0d122db73bbeadd73ac528a676bc.json",
+      "sha256": "64ed059d6b1658ecbd193562d85b116fcc95af55a80049ae0e1940adde4ad3a9",
+      "bytes": 31862
+    },
+    {
+      "path": "src/content/data/simulation/upcoming_matchups/be409f2811796fee991f3694ac28db19282b67a50105fb648dee5566e39135b5.json",
+      "sha256": "9aa1675a59406ae4747de6b757e6f8252c683aaed23ada8e7c6858309ca90561",
+      "bytes": 42488
+    },
+    {
+      "path": "src/content/data/simulation/upcoming_matchups/c055435f651a5aed257580b57607c82dfe1f46c6383da5730da14d59a9c2c481.json",
+      "sha256": "880625b140595b95cc54dc5770f3df02e1ae360ff22f4f197e0a9afffaf1fd86",
+      "bytes": 31878
+    },
+    {
+      "path": "src/content/data/simulation/upcoming_matchups/c371c5ace186377c74f7fea91d89bbbd5d3bc1bade8722a53a375d672ea4bc9e.json",
+      "sha256": "b0dae02178392941df28b2629970fafb17c2871e371b4740844ceb65d46d7016",
+      "bytes": 42422
+    },
+    {
+      "path": "src/content/data/simulation/upcoming_matchups/c6828dd0717125ea3d2b8ae45c2d9f59c057b0e2e45823818f65d873b584df4c.json",
+      "sha256": "3c1866d18f689745186a9393a0913dc6693094c07686cfac89874e00871351c8",
+      "bytes": 41701
+    },
+    {
+      "path": "src/content/data/simulation/upcoming_matchups/c6bb661d6da47b6698923ce7db1652f9bb2ad0bcaeddf8721ed429d6a3caab66.json",
+      "sha256": "36b8af49e67d511d8bcd20b24495976f7194a7521e4cc4cb8733bc7d2f4bab23",
+      "bytes": 31814
+    },
+    {
+      "path": "src/content/data/simulation/upcoming_matchups/c7a74f284737ef7b822b689c1e7befe3a976c781a5c73f2f604741a17330fe1f.json",
+      "sha256": "0cd9440f3331fe847dfc8634f41803cb5d7348636b6c4d3950cc2754cbd91807",
+      "bytes": 31778
+    },
+    {
+      "path": "src/content/data/simulation/upcoming_matchups/c7e4fa232082dd7d06f3f3ae726a9ae61cec727ddfee05feb1dd61a3ec09b51c.json",
+      "sha256": "573bc6c91e32421225b5908e74c342cb35a0172257c7162b9d259d3f5dfdf3dc",
+      "bytes": 31894
+    },
+    {
+      "path": "src/content/data/simulation/upcoming_matchups/c8563db9731d03c91ebdb3e91a14e2488b4fc1918134ae020fb6f5812594625b.json",
+      "sha256": "425a058cd0451e7042908abf38868ee71b843110d8574afa39a7778b852e73ac",
+      "bytes": 31852
+    },
+    {
+      "path": "src/content/data/simulation/upcoming_matchups/ca0705742264d427fe192b22bb710f2a235eb980d9a56b1a5c46843e59fcdc96.json",
+      "sha256": "ec6934c516a79a3d946ab240ed0de777415db028b1740002bad0abed4183b9fb",
+      "bytes": 31910
+    },
+    {
+      "path": "src/content/data/simulation/upcoming_matchups/caf97183c4e6db6728f618fcf982435f44fbe7240d82e0b85bdb1df1ec92d324.json",
+      "sha256": "d9d964abbd32fbe5da05f495361b6d78f4158d6fc916b61015aea898b0849a22",
+      "bytes": 42580
+    },
+    {
+      "path": "src/content/data/simulation/upcoming_matchups/cb03e3524d2800b036d2d698b1496139c0693e48281b9083eeb6b16743803ba7.json",
+      "sha256": "1c995fabd76b25265948e8795dc10ccf35810ef9d19433a45d773d595830d352",
+      "bytes": 31915
+    },
+    {
+      "path": "src/content/data/simulation/upcoming_matchups/d48b22e46e4dd1c41672c21dd843e222e8d09214f273084ce5f562d5d5deaca4.json",
+      "sha256": "35977afab178a02c2094c41dfb76f56e0d9b314f5dc2bedaa8299474cc7d5dbf",
+      "bytes": 31931
+    },
+    {
+      "path": "src/content/data/simulation/upcoming_matchups/daaf91bba3cc8f7ad469d5371b6a84437fcaba5f294aaa97fe03ab36ca8e725f.json",
+      "sha256": "c0cb213b95b39aa2b37e6b3c9e895d623e53808cfc0e4bf2ab902e455a7e390f",
+      "bytes": 31903
+    },
+    {
+      "path": "src/content/data/simulation/upcoming_matchups/ddc3f94ce31128b72fec224c18d610753f03c05041ebb9418978997f11f7633f.json",
+      "sha256": "cec8c2320ad5455eea511f1c22f910cac14e4167215ba6f4ef281bbafefe8c07",
+      "bytes": 31898
+    },
+    {
+      "path": "src/content/data/simulation/upcoming_matchups/e10a5b053b62570fab3aa826cadd67ea9f98ae7f509d1ab02d79f44883e8deb4.json",
+      "sha256": "f18c4f9ee144a2bf4b018b2122e2c975e8a32573dd589f33f8c6948bd331fc7b",
+      "bytes": 31866
+    },
+    {
+      "path": "src/content/data/simulation/upcoming_matchups/e2c2115a2291e5e20ba20fad74adf6428ad39badb44095dce14d02f3bc9c0e51.json",
+      "sha256": "f0ef23c8b3f1822238fc23fdebb5d7e98e56196575bddc9faf25ba878c3703f7",
+      "bytes": 31687
+    },
+    {
+      "path": "src/content/data/simulation/upcoming_matchups/e2d35a6b7f4e82210bbd17825a77843c0813e196e5f6da3316f286d2532c9f34.json",
+      "sha256": "a3d7dbcf9e45c9a135be6202a8c531be9cea94a99675d0f2d3e7b52fce111e34",
+      "bytes": 31781
+    },
+    {
+      "path": "src/content/data/simulation/upcoming_matchups/e375c28e39bc49538b5d6fac44d263ed1f3b8ac262929dd63ca7c8a7af4c5e34.json",
+      "sha256": "06735dc7f04f2a4b704733dc2a6d67da34ce3f7b806baee34a0fce19aca8a256",
+      "bytes": 31917
+    },
+    {
+      "path": "src/content/data/simulation/upcoming_matchups/e4c57fc18400dfdfda32d63378f1ccd663c099b91ae0e45cf29f8794767cb491.json",
+      "sha256": "83f82e27cdfe61c5de2861e585c84bb0d247d622b5051b874853e4c2b63e4631",
+      "bytes": 31914
+    },
+    {
+      "path": "src/content/data/simulation/upcoming_matchups/e793b48aa320554eabf928d7814286b43be10d093de0774cc3a9e0fd7cc44d97.json",
+      "sha256": "495669d8f481c8b1dd1d9d625f7aa7070f93f756f0e521ba2b39324928c04998",
+      "bytes": 31887
+    },
+    {
+      "path": "src/content/data/simulation/upcoming_matchups/e7cbdcac72d699c3c790fb6574801998e1b21c572ff961499a49ffb67010a965.json",
+      "sha256": "27afa63af515a0f2c104f54d112b4e015d04a28d6e26cfb41daffe60b2055eee",
+      "bytes": 31802
+    },
+    {
+      "path": "src/content/data/simulation/upcoming_matchups/ea3dc9bba050b2e7c1193c7ce8cd1fc8187bab051abe90305eb4804fa11eb2bb.json",
+      "sha256": "0b06c6a429a3255b7fab19c5f97ca4a835bac58e204a280b910e3aaea15b76eb",
+      "bytes": 31818
+    },
+    {
+      "path": "src/content/data/simulation/upcoming_matchups/eb804312e74562949ad6297d1980337328e3eb0de17c2d1801934cb8123bc7bc.json",
+      "sha256": "65f98bbe1e818aa296bc4312191eaa876cf772554d0b589242697a56a733eeae",
+      "bytes": 31673
+    },
+    {
+      "path": "src/content/data/simulation/upcoming_matchups/ecf746604ea49aa6011045c0a03ba7008fd1b27d3c94e090da00078bc302fae7.json",
+      "sha256": "cdadad5ba1da5db7ec1f594529418dd4fdcc741bdc311eb8668c465da2592a4a",
+      "bytes": 31849
+    },
+    {
+      "path": "src/content/data/simulation/upcoming_matchups/f1ab685f6150abb5b7b2f0c48e73f53bfbddde9569933c440d1626974bbb0cfd.json",
+      "sha256": "56168c6b55848d93723102f6954d609b8a0851099f7caf8ae5eab95e278cb219",
+      "bytes": 31906
+    },
+    {
+      "path": "src/content/data/simulation/upcoming_matchups/f3cfe8a01466b06354fac09687e77de3a220b65b0c003f73a0f2be42be6400f2.json",
+      "sha256": "79b0f780fe4ed4310060f3a616a2dc582e533cc16db30141c5d458891899d743",
+      "bytes": 31914
+    },
+    {
+      "path": "src/content/data/simulation/upcoming_matchups/f482ee58d9c350512365f0b08b40ffd42d7cf2f878f1b9fe61dae02091abc09b.json",
+      "sha256": "ec9f1303016414d1321d825b24df2ba5c0780082a95dcbd66287ca2f06974195",
+      "bytes": 31900
+    },
+    {
+      "path": "src/content/data/simulation/upcoming_matchups/f4beb2ae507fabb4b6fa0cbb6741b3ac3bc3756b8d8bc29798111aa4b8526aed.json",
+      "sha256": "fbac17c776758b8e2718f069b31868d5a3cad6ad820c5424b800b15dabf9f4cf",
+      "bytes": 31892
+    },
+    {
+      "path": "src/content/data/simulation/upcoming_matchups/f54ac75ac9dd69672d9467859298435e7fbf80dadd37a123637a7a19fe47f6a4.json",
+      "sha256": "99e4866aea256640b5f6ceaa458f6ddf7de60597ec482a72ce46809a4caacb22",
+      "bytes": 31878
+    },
+    {
+      "path": "src/content/data/simulation/upcoming_matchups/fbe45a88a4af341e9568809356f9eb75d51f496ca4ee0040a89e4d338672037c.json",
+      "sha256": "fa1de487b8fe8bc5ff2fdaaa69cc2578fb2ef06af59b1cbbd63cdf98918778fe",
+      "bytes": 31770
+    }
+  ]
+}

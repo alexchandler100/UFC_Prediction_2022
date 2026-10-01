@@ -9,7 +9,10 @@ from unittest.mock import patch
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 from test_market_first_paper import quote, forecast, metadata, OBSERVED
 from market_tracker.bayesian_kelly import BayesianKellyCalibrator
-from market_tracker.equal_stake_experiment import build_records, choose, report, seal, verify
+from market_tracker import StoreIntegrityError
+from market_tracker.equal_stake_experiment import (
+    CAPTURE_CONTRACT_VERSION, LEGACY_CAPTURE_CONTRACT, build_records, choose, report, seal, verify,
+)
 import update_equal_stake_experiment as runner
 
 
@@ -56,6 +59,52 @@ class EqualStakeTests(unittest.TestCase):
         self.assertEqual(self.build(forecasts=[]), [])
         self.assertEqual(self.build(forecasts=[replace(forecast(), forecast_issued_at_utc="2026-09-04T12:01:00Z")]), [])
         self.assertEqual(self.build(forecasts=[replace(forecast(), probability_provenance="legacy_reconstructed_american_odds")]), [])
+
+    def test_later_bout_starts_keep_card_window_and_preserve_both_times(self):
+        source = [replace(m, source_commence_time_utc="2026-09-05T18:00:00Z")
+                  for m in metadata(self.quotes)]
+        rows = self.build(source=source)
+        self.assertEqual(len(rows), 1)
+        self.assertEqual(rows[0]["event_start_utc"], "2026-09-05T12:00:00.000000Z")
+        self.assertTrue(all(o["source_metadata"]["source_commence_time_utc"] ==
+                            "2026-09-05T18:00:00Z" for o in rows[0]["offers"]))
+        self.assertEqual(rows[0]["capture_contract_version"], CAPTURE_CONTRACT_VERSION)
+
+    def test_started_bout_is_rejected_even_if_card_clock_is_future(self):
+        source = [replace(m, source_commence_time_utc=OBSERVED) for m in metadata(self.quotes)]
+        diagnostic = {}
+        rows = build_records(self.quotes, [forecast()], source, (), self.policy,
+                             self.calibrator, OBSERVED, diagnostics=diagnostic)
+        self.assertEqual(rows, [])
+        self.assertEqual(diagnostic["quote_exclusions"], {"card_or_bout_started": 4})
+        self.assertEqual(diagnostic["outcomes"], {"fewer_than_four_eligible_books": 1})
+
+    def test_source_identity_and_forecast_card_time_are_still_checked(self):
+        source = list(metadata(self.quotes))
+        source[0] = replace(source[0], event_id="wrong-event")
+        with self.assertRaisesRegex(ValueError, "identity mismatch"):
+            self.build(source=source)
+        with self.assertRaises(StoreIntegrityError):
+            self.build(forecasts=[replace(forecast(), event_start_utc="2026-09-05T18:00:00Z")])
+
+    def test_repair_cannot_backfill_pre_activation_captures(self):
+        contract = {"activated_at_utc": "2026-09-04T12:01:00Z"}
+        self.assertEqual(build_records(self.quotes, [forecast()], metadata(self.quotes), (),
+                         self.policy, self.calibrator, "2026-09-04T12:02:00Z",
+                         capture_contract=contract), [])
+
+    def test_legacy_and_repaired_results_are_reported_separately(self):
+        new = self.build()[0]
+        old = dict(new, matchup_id="legacy")
+        old.pop("capture_contract_version")
+        result = report([old, new], [{"matchup_id": "legacy", "target": 1},
+                                    {"matchup_id": new["matchup_id"], "target": 0}], self.policy)
+        cohorts = {r["capture_contract_version"]: r for r in result["capture_cohorts"]}
+        for version, profit in [(LEGACY_CAPTURE_CONTRACT, 2), (CAPTURE_CONTRACT_VERSION, -1)]:
+            row = next(r for r in cohorts[version]["results"] if r["strategy"] == "market"
+                       and r["book"] == "all_books_hypothetical" and r["winning_payout_reduction"] == 0)
+            self.assertEqual(row["profit_units"], profit)
+        self.assertNotIn("capture_contract_version", old)
 
     def test_target_book_does_not_influence_own_consensus(self):
         first = self.build()[0]
@@ -130,6 +179,9 @@ class EqualStakeTests(unittest.TestCase):
                 self.assertEqual(captured["frozen_fights"], 1)
                 self.assertEqual(captured["settled_fights"], 0)
                 decision_bytes = (root / "decisions.json").read_bytes()
+                # A no-op must preserve the original file even on a CRLF checkout.
+                decision_bytes = decision_bytes.replace(b"\n", b"\r\n")
+                (root / "decisions.json").write_bytes(decision_bytes)
             key = ("future-event", "fighter-a", "fighter-b")
             Clock.moment = datetime(2026, 9, 5, 18, tzinfo=timezone.utc)
             with patch.object(runner, "RAW_PATH", raw), patch.object(runner, "_result_index", return_value=({key: (1, "fight")}, set(), set())):

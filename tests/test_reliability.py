@@ -51,6 +51,8 @@ from ufcstats_client import (
 )
 from validate_data import (
     _records_match_with_float_tolerance,
+    _report_metrics_match,
+    _paper_decision_reproduces,
     validate_point_in_time,
     validate_raw_fights,
 )
@@ -90,6 +92,43 @@ class FloatReproductionFixture:
 
 
 class CrossPlatformReproductionTests(unittest.TestCase):
+    def test_paper_replay_keeps_input_identity_action_and_content_hash_exact(self):
+        from dataclasses import replace
+        from market_tracker import PaperDecision, consensus_as_of
+        from market_tracker._common import canonical_hash
+        from test_market_first_paper import quote, forecast, OBSERVED
+        quotes = [quote(book, -110, -110) for book in ('A', 'B', 'C', 'Target')]
+        target = quotes[-1]
+        market = consensus_as_of(quotes, capture_id=target.capture_id, matchup_id=target.matchup_id,
+            as_of_utc=OBSERVED, min_books=3, exclude_books=('Target',))
+        stored = PaperDecision.create(market, target, forecast(), selected_gamma=0,
+                                      decision_issued_at_utc=OBSERVED)
+        def reseal(**changes):
+            body = {**stored.to_mapping(), **changes}
+            body.pop('decision_id')
+            return replace(stored, **changes, decision_id=canonical_hash(body))
+        rounded = reseal(blend_probability=stored.blend_probability + 1e-16,
+                         fighter_edge=stored.fighter_edge + 1e-16)
+        self.assertNotEqual(rounded.decision_id, stored.decision_id)
+        self.assertTrue(_paper_decision_reproduces(stored, rounded))
+        self.assertFalse(_paper_decision_reproduces(stored, replace(rounded, decision_id=stored.decision_id)))
+        for changed in (reseal(reference_quote_id='changed'), reseal(paper_action='fighter'),
+                        reseal(selected_gamma=1e-16), reseal(model_probability=.6000000000000001),
+                        reseal(blend_probability=stored.blend_probability + 1e-13)):
+            self.assertFalse(_paper_decision_reproduces(stored, changed))
+
+    def test_nested_report_rounding_preserves_exact_contracts(self):
+        baseline = {"count": 31, "execution_enabled": False, "input_sha256": "abc",
+                    "scores": [{"log_loss": .8363632367906315}]}
+        rounded = {**baseline, "scores": [{"log_loss": .8363632367906317}]}
+        self.assertTrue(_report_metrics_match(baseline, rounded))
+        for changed in ({**rounded, "count": 32}, {**rounded, "count": 31.0},
+                        {**rounded, "execution_enabled": 0}, {**rounded, "input_sha256": "def"},
+                        {**rounded, "scores": [{"log_loss": .836364}]},
+                        {**rounded, "scores": [{"log_loss": float("nan")}]},
+                        {**rounded, "extra": None}):
+            self.assertFalse(_report_metrics_match(baseline, changed))
+
     def test_only_machine_precision_float_differences_are_tolerated(self):
         stored = FloatReproductionFixture("stored-hash", 0.45920859794821695, "pass")
         rounded = FloatReproductionFixture("rebuilt-hash", 0.4592085979482169, "pass")

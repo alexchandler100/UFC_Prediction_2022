@@ -8,6 +8,7 @@ import json
 from pathlib import Path
 
 from market_tracker._storage import atomic_write_text
+from market_capture_windows import price_window_report
 
 ROOT = Path(__file__).resolve().parent / 'content/data/market'
 QUOTES = {'moneyline': 'quote_snapshots.jsonl', 'total_rounds': 'total_round_quote_snapshots.jsonl',
@@ -99,7 +100,13 @@ def build(root, now):
     report = {'version': 1, 'generated_at_utc': now.isoformat(), 'feeds': feeds, 'experiments': experiments,
         'equal_stake': {'recorded': equal.get('frozen_fights', 0), 'settled': equal.get('settled_fights', 0),
             'review_fights': 200, 'review_cards': 20,
+            'capture_contract': equal.get('capture_contract'),
+            'capture_cohorts': equal.get('capture_cohorts', []),
+            'latest_capture_diagnostics': equal.get('latest_capture_diagnostics'),
             'results': equal.get('results', [])},
+        'price_windows': price_window_report(quote_sets,
+            read(root, 'quote_source_metadata.jsonl', []), read(root, 'forecast_captures.jsonl', []),
+            read(root, 'paper_decisions.jsonl', []), now),
         'simulation_conditions': read(root, 'simulation_conditions/report.json', None),
         'workflow_runs_url': 'https://github.com/alexchandler100/UFC_Prediction_2022/actions',
         'workflow_failure_status': 'unavailable_from_ledgers',

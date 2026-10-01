@@ -3838,6 +3838,26 @@ function renderResearchMonitor() {
   const equal=report.equal_stake;
   appendText(container,'p','section-note',`Equal-stake winner comparison: ${equal.recorded} fights recorded, ${equal.settled} settled. First review requires at least ${equal.review_fights} fights across ${equal.review_cards} cards; this does not establish profitability.`);
   table(['Strategy (all books)','Cards','Settled bets','Paper profit','Return per unit'],equal.results.filter(r=>r.book==='all_books_hypothetical' && r.winning_payout_reduction===0).map(r=>[r.strategy,r.settled_cards,r.settled_bets,r.profit_units.toFixed(2),r.return_per_unit===null?'Unavailable':formatPercent(r.return_per_unit)]));
+  if (equal.capture_contract) {
+    appendText(container,'p','section-note',`Collection timing repaired ${formatTimestamp(equal.capture_contract.activated_at_utc)}. The decision window follows card start; later individual bout estimates are allowed. Older decisions remain unchanged.`);
+    table(['Collection period','Recorded fights','Settled fights'],(equal.capture_cohorts || []).map(c=>[c.capture_contract_version===equal.capture_contract.version?'After timing repair':'Before timing repair',c.frozen_fights,c.settled_fights]));
+    table(['Collection period','Strategy (all books)','Settled bets','Paper profit'],(equal.capture_cohorts || []).flatMap(c=>c.results.filter(r=>r.book==='all_books_hypothetical' && r.winning_payout_reduction===0 && r.strategy!=='no_bet').map(r=>[c.capture_contract_version===equal.capture_contract.version?'After timing repair':'Before timing repair',r.strategy,r.settled_bets,r.profit_units.toFixed(2)])));
+    const diagnostic=equal.latest_capture_diagnostics;
+    if (diagnostic) {
+      const reasons={missing_source_or_card_time:'Missing source or card time',card_or_bout_started:'Card or bout already started',outside_card_decision_window:'Outside the 20–28 hour card window',stale_or_future_source_quote:'Stale or future quote timestamp',incompatible_decision_inputs:'Quote and forecast disagree',before_activation:'Collected before repair activation',capture_outside_five_minutes:'Capture outside the five-minute decision limit'};
+      appendText(container,'p','section-note',`Latest capture check: ${formatTimestamp(diagnostic.observed_at_utc)}. ${diagnostic.matchups_considered || 0} matchups checked; ${diagnostic.outcomes?.already_recorded || 0} already recorded; ${diagnostic.outcomes?.fewer_than_four_eligible_books || 0} lacked four eligible books. This explains collection eligibility; it does not create past bets.`);
+      table(['Excluded quote reason','Quotes'],Object.entries(diagnostic.quote_exclusions || {}).map(([reason,count])=>[reasons[reason] || reason.replaceAll('_',' '),count]));
+    }
+  }
+  if (report.price_windows) {
+    const windows=report.price_windows;
+    appendText(container,'p','section-note','Price coverage: early means 32–144 hours before the card; day-before means 20–28 hours; final reference means 15–90 minutes. Quotes must have a provider update no more than 30 minutes before collection. A final reference is not the exact closing price of an individual bout. Missing observations are shown explicitly.');
+    const windowNames={early:'Early',t24:'Day before',final:'Final pre-card'};
+    table(['Market / window','Captured','Not due','Due but missing','Missed','Unknown start'],Object.entries(windows.summary).map(([key,counts])=>{const [market,window]=key.split(':');return [`${market==='moneyline'?'Winner':'Total rounds'} / ${windowNames[window]}`,counts.captured || 0,counts.not_due || 0,counts.due_missing || 0,counts.missed || 0,counts.unknown_start || 0];}));
+    const refs=windows.moneyline_references.filter(r=>!r.book || marketBookAllowed(r.book));
+    table(['Recorded entry book','Final reference','Collected','Other-book probability advantage'],refs.map(r=>[r.book || 'Unknown',r.status==='available'?'Available':r.status==='fewer_than_three_other_books'?'Same-book price only':'Missing',formatTimestamp(r.observed_at_utc),r.independent_probability_advantage==null?'Unavailable':`${(100*r.independent_probability_advantage).toFixed(2)} percentage points`]));
+    appendText(container,'p','section-note','The last column compares the entry price with final probabilities from at least three other books, after removing their price margin. Positive favors the recorded entry. It is supporting evidence, not proof of profit.');
+  }
   const conditions=report.simulation_conditions;
   if (conditions) {
     appendText(container,'p','section-note',`Conditional model study: ${conditions.recorded_comparisons} fights recorded since ${formatTimestamp(conditions.policy.activated_at_utc)}. Tests substantial striking/grappling data, recent history, and narrow simulation ranges. Rules stay fixed; missing indicators are unavailable. Negative error differences favor the simulation. This does not prove profitable betting.`);

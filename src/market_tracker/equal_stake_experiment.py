@@ -1,7 +1,7 @@
 """Prospective moneyline comparison; fixed one-unit paper stakes, no execution."""
 from __future__ import annotations
 
-from collections import defaultdict
+from collections import Counter, defaultdict
 import random
 
 from ._common import MarketDataError, canonical_hash, utc_datetime
@@ -9,6 +9,8 @@ from .paper import PaperDecision, _profit_for_one_unit_risk
 from .quotes import consensus_as_of
 
 VERSION = "prospective-equal-stake-moneylines-v1"
+CAPTURE_CONTRACT_VERSION = "equal-stake-card-start-v2"
+LEGACY_CAPTURE_CONTRACT = "equal-stake-identical-starts-v1"
 STRATEGIES = ("market", "adjusted_market", "production_model")
 
 
@@ -24,13 +26,27 @@ def verify(value):
     return value
 
 
-def build_records(quotes, forecasts, metadata, existing, policy, calibrator, now):
+def build_records(quotes, forecasts, metadata, existing, policy, calibrator, now,
+                  *, capture_contract=None, diagnostics=None):
     """Freeze the first usable capture per physical matchup after activation."""
     now = utc_datetime(now, "now")
     start = utc_datetime(policy["activated_at_utc"], "activation")
+    if capture_contract is not None:
+        start = max(start, utc_datetime(capture_contract["activated_at_utc"], "capture activation"))
+    outcomes, exclusions = Counter(), Counter()
+    details = []
+
+    def skip(matchup, reason):
+        outcomes[reason] += 1
+        details.append({"matchup_id": matchup, "status": reason})
+
     grouped = defaultdict(list)
     for quote in quotes:
         observed = utc_datetime(quote.observed_at_utc, "observed")
+        if observed < start:
+            exclusions["before_activation"] += 1
+        elif not 0 <= (now - observed).total_seconds() <= 300:
+            exclusions["capture_outside_five_minutes"] += 1
         if observed >= start and 0 <= (now - observed).total_seconds() <= 300:
             grouped[(quote.observed_at_utc, quote.capture_id, quote.matchup_id)].append(quote)
     forecast_index = {}
@@ -46,16 +62,20 @@ def build_records(quotes, forecasts, metadata, existing, policy, calibrator, now
     pending = []
     for (_, capture, matchup), group in sorted(grouped.items()):
         if matchup in seen:
+            skip(matchup, "already_recorded")
             continue
         forecast = forecast_index.get((capture, matchup))
         if forecast is None or forecast.probability_provenance != "native_probability":
+            skip(matchup, "missing_native_forecast")
             continue
         if utc_datetime(forecast.forecast_issued_at_utc, "forecast") > utc_datetime(group[0].observed_at_utc, "observed"):
+            skip(matchup, "forecast_issued_after_capture")
             continue
         fresh = []
         for quote in group:
             source = meta.get(quote.quote_id)
             if source is None or not quote.event_start_utc or quote.timing_precision != "timestamp":
+                exclusions["missing_source_or_card_time"] += 1
                 continue
             if any(getattr(source, key) != getattr(quote, key) for key in
                    ("capture_id", "matchup_id", "event_id", "book", "source", "observed_at_utc")):
@@ -63,15 +83,22 @@ def build_records(quotes, forecasts, metadata, existing, policy, calibrator, now
             updated = utc_datetime(source.source_quote_updated_at_utc, "provider quote")
             observed = utc_datetime(quote.observed_at_utc, "observed")
             event = utc_datetime(quote.event_start_utc, "event")
-            if utc_datetime(source.source_commence_time_utc, "provider start") != event:
+            bout_start = utc_datetime(source.source_commence_time_utc, "provider start")
+            # Provider bout estimates can be hours after the card starts. Keep
+            # both clocks and require the quote and decision before BOTH.
+            if min(event, bout_start) <= max(now, observed):
+                exclusions["card_or_bout_started"] += 1
+                continue
+            if not (20 * 3600 <= (event - observed).total_seconds() <= 28 * 3600):
+                exclusions["outside_card_decision_window"] += 1
                 continue
             if not (0 <= (observed - updated).total_seconds() <= 1800
-                    and 0 <= (now - updated).total_seconds() <= 1800
-                    and 20 * 3600 <= (event - observed).total_seconds() <= 28 * 3600
-                    and event > now):
+                    and 0 <= (now - updated).total_seconds() <= 1800):
+                exclusions["stale_or_future_source_quote"] += 1
                 continue
             fresh.append(quote)
         if len({q.book.casefold() for q in fresh}) < 4:
+            skip(matchup, "fewer_than_four_eligible_books")
             continue
         offers = []
         for quote in sorted(fresh, key=lambda q: (q.book.casefold(), q.quote_id)):
@@ -81,6 +108,7 @@ def build_records(quotes, forecasts, metadata, existing, policy, calibrator, now
                 checked = PaperDecision.create(market, quote, forecast, selected_gamma=0,
                     decision_issued_at_utc=now, maximum_quote_age_seconds=300)
             except MarketDataError:
+                exclusions["incompatible_decision_inputs"] += 1
                 continue
             p = checked.market_probability
             adjusted = calibrator.assessment(p, quote.fighter_moneyline)["posterior_mean_probability"]
@@ -98,6 +126,7 @@ def build_records(quotes, forecasts, metadata, existing, policy, calibrator, now
                                          for key, value in probabilities.items()}})
         if offers:
             row = seal({"policy_sha256": policy["record_sha256"], "matchup_id": matchup,
+                "capture_contract_version": CAPTURE_CONTRACT_VERSION,
                 "event_id": forecast.event_id, "event_date": forecast.event_date,
                 "event_start_utc": forecast.event_start_utc,
                 "fighter_id": forecast.fighter_id, "opponent_id": forecast.opponent_id,
@@ -105,6 +134,13 @@ def build_records(quotes, forecasts, metadata, existing, policy, calibrator, now
                 "forecast": forecast.to_mapping(), "offers": offers})
             pending.append(row)
             seen.add(matchup)
+            skip(matchup, "eligible")
+        else:
+            skip(matchup, "no_compatible_offers")
+    if diagnostics is not None:
+        diagnostics.update({"contract_version": CAPTURE_CONTRACT_VERSION,
+            "matchups_considered": len(grouped), "outcomes": dict(sorted(outcomes.items())),
+            "quote_exclusions": dict(sorted(exclusions.items())), "matchups": details})
     return pending
 
 
@@ -118,7 +154,7 @@ def choose(record, strategy, book, minimum_ev):
                offer["book"].casefold(), offer["side"], offer["quote_id"]), default=None)
 
 
-def report(records, settlements, policy):
+def report(records, settlements, policy, *, include_cohorts=True):
     """Card-level accounting; pending bets never enter settled returns."""
     settled = {item["matchup_id"]: item for item in settlements}
     books = sorted({offer["book"] for row in records for offer in row["offers"]})
@@ -175,8 +211,18 @@ def report(records, settlements, policy):
                     "return_per_unit": profit / risk if risk else None,
                     "ending_normalized_bankroll": balance, "bankroll_growth": profit / 100,
                     "max_card_end_drawdown": drawdown, "card_bootstrap_roi_95": interval})
-    return {"policy": policy, "paper_only": True, "execution_enabled": False,
+    result = {"policy": policy, "paper_only": True, "execution_enabled": False,
             "status": "collecting_results", "frozen_fights": len(records),
             "settled_fights": len(settlements), "results": results,
             "model_ids": sorted({row["forecast"]["model_id"] for row in records}),
             "records_sha256": canonical_hash(records), "settlements_sha256": canonical_hash(settlements)}
+    if include_cohorts:
+        result["capture_cohorts"] = []
+        for version in (LEGACY_CAPTURE_CONTRACT, CAPTURE_CONTRACT_VERSION):
+            subset = [r for r in records if r.get("capture_contract_version", LEGACY_CAPTURE_CONTRACT) == version]
+            ids = {r["matchup_id"] for r in subset}
+            scored = report(subset, [s for s in settlements if s["matchup_id"] in ids], policy,
+                            include_cohorts=False)
+            result["capture_cohorts"].append({"capture_contract_version": version,
+                **{k: scored[k] for k in ("frozen_fights", "settled_fights", "results")}})
+    return result

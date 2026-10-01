@@ -7,7 +7,8 @@ on:
     # midweek movement, T-24, and the final hours. Together with the
     # Sunday/Wednesday updater this is about 19 requests/week; at the configured
     # two-region request cost across moneyline and totals that is roughly 330 credits in
-    # an average month, within the current 500-credit development allowance.
+    # an average month before the extra window captures below. Check the
+    # provider's actual usage counter against the account's allowance.
     # The collector exits successfully without using an API credit once a
     # previously timed card has commenced.
     # Sunday captures follow the 9:33 AM publisher and its 8:33 PM retry.
@@ -21,20 +22,44 @@ on:
       timezone: "America/Chicago"
     - cron: "17 9,12,15,18 * * 6"
       timezone: "America/Chicago"
+    # Cheap clock checks only. Odds requests run at most once in an uncovered
+    # T-24 or final pre-card window, including unusually early/weekday cards.
+    - cron: "7,37 * * * *"
+      timezone: "America/Chicago"
 
 permissions:
   contents: write
 
-concurrency:
-  # Serialize with the authoritative updater: both workflows publish commits
-  # derived from the exact revision they checked out.
-  group: publish-ufc-data-main
-  cancel-in-progress: false
-
 jobs:
-  capture_market:
+  capture_window_check:
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    outputs:
+      capture: ${{ steps.window.outputs.capture }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 1
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /src/market_capture_windows.py
+            /src/content/data/external/card_info.json
+            /src/content/data/market/capture_report.json
+      - name: Check declared card windows without an odds request
+        id: window
+        env:
+          CAPTURE_SCHEDULE: ${{ github.event.schedule }}
+        run: python src/market_capture_windows.py
+
+  capture_market:
+    needs: capture_window_check
+    if: github.ref == 'refs/heads/main' && needs.capture_window_check.outputs.capture == 'true'
+    runs-on: ubuntu-24.04
+    # Clock-only checks must not occupy the shared publication queue.
+    concurrency:
+      group: publish-ufc-data-main
+      cancel-in-progress: false
     timeout-minutes: 30
     env:
       PYTHONDONTWRITEBYTECODE: "1"
@@ -196,6 +221,7 @@ jobs:
             src/content/data/market/market_first_paper_settlements.jsonl \
             src/content/data/market/market_first_paper_report.json \
             src/content/data/market/equal_stake_experiment/policy.json \
+            src/content/data/market/equal_stake_experiment/capture_contract.json \
             src/content/data/market/equal_stake_experiment/decisions.json \
             src/content/data/market/equal_stake_experiment/settlements.json \
             src/content/data/market/equal_stake_experiment/report.json \
@@ -247,6 +273,7 @@ jobs:
               src/content/data/market/market_first_paper_settlements.jsonl|\
               src/content/data/market/market_first_paper_report.json|\
               src/content/data/market/equal_stake_experiment/policy.json|\
+              src/content/data/market/equal_stake_experiment/capture_contract.json|\
               src/content/data/market/equal_stake_experiment/decisions.json|\
               src/content/data/market/equal_stake_experiment/settlements.json|\
               src/content/data/market/equal_stake_experiment/report.json|\
