@@ -1,0 +1,898 @@
+{
+  "scores": {
+    "mapped_candidate": {
+      "pace_nll": 16.174538196189438,
+      "accuracy_nll": 4.55486391418712,
+      "attempt_bias_per_side": 8.006886328204704,
+      "landed_bias_per_side": 2.960343709955573,
+      "strike_leader_wins": 109.0,
+      "decisive_fights": 228,
+      "ranking_card_interval": {
+        "mean": 0.4780701754385965,
+        "card_95_interval": [
+          0.41628151260504204,
+          0.5371197083979935
+        ]
+      }
+    },
+    "observation_bootstrap": {
+      "pace_nll": 16.174538196189435,
+      "accuracy_nll": 4.554863914187118,
+      "attempt_bias_per_side": 8.006886328204702,
+      "landed_bias_per_side": 2.9603437099555725,
+      "strike_leader_wins": 109.0,
+      "decisive_fights": 228,
+      "ranking_card_interval": {
+        "mean": 0.4780701754385965,
+        "card_95_interval": [
+          0.41628151260504204,
+          0.5371197083979935
+        ]
+      }
+    },
+    "observation_bootstrap_covariates": {
+      "pace_nll": 17.007320614763128,
+      "accuracy_nll": 4.554863914187118,
+      "attempt_bias_per_side": 16.392937558429683,
+      "landed_bias_per_side": 6.900415317030596,
+      "strike_leader_wins": 105.0,
+      "decisive_fights": 228,
+      "ranking_card_interval": {
+        "mean": 0.4605263157894737,
+        "card_95_interval": [
+          0.4067796610169492,
+          0.5129338455772114
+        ]
+      }
+    },
+    "observation_reference": {
+      "pace_nll": 16.017250720868027,
+      "accuracy_nll": 4.49371342110709,
+      "attempt_bias_per_side": 7.019526484981177,
+      "landed_bias_per_side": 2.540312676250623,
+      "strike_leader_wins": 120.0,
+      "decisive_fights": 228,
+      "ranking_card_interval": {
+        "mean": 0.5263157894736842,
+        "card_95_interval": [
+          0.4657534246575342,
+          0.589041095890411
+        ]
+      }
+    },
+    "original_marginal": {
+      "pace_nll": 16.178988579655073,
+      "accuracy_nll": 4.619872680693189,
+      "attempt_bias_per_side": 7.410984984390174,
+      "landed_bias_per_side": 2.8579123183897757,
+      "strike_leader_wins": 117.0,
+      "decisive_fights": 228,
+      "ranking_card_interval": {
+        "mean": 0.5131578947368421,
+        "card_95_interval": [
+          0.4510595554711246,
+          0.572073752857335
+        ]
+      }
+    },
+    "simulator_bootstrap": {
+      "pace_nll": 16.584592193169062,
+      "accuracy_nll": 4.554863918728524,
+      "attempt_bias_per_side": 11.993780361742514,
+      "landed_bias_per_side": 4.829177010573447,
+      "strike_leader_wins": 108.0,
+      "decisive_fights": 228,
+      "ranking_card_interval": {
+        "mean": 0.47368421052631576,
+        "card_95_interval": [
+          0.41249451754385963,
+          0.531923472889499
+        ]
+      }
+    },
+    "simulator_bootstrap_covariates": {
+      "pace_nll": 17.710570375043115,
+      "accuracy_nll": 4.554863918728524,
+      "attempt_bias_per_side": 20.665987898997077,
+      "landed_bias_per_side": 8.902999136503702,
+      "strike_leader_wins": 106.0,
+      "decisive_fights": 228,
+      "ranking_card_interval": {
+        "mean": 0.4649122807017544,
+        "card_95_interval": [
+          0.4117647058823529,
+          0.5169602063375092
+        ]
+      }
+    }
+  },
+  "paired_card_intervals": {
+    "observation_bootstrap_minus_observation_reference": {
+      "pace_nll": {
+        "mean": 0.15728747532140813,
+        "card_95_interval": [
+          -0.023886179381143822,
+          0.3401128724917278
+        ]
+      },
+      "accuracy_nll": {
+        "mean": 0.061150493080030406,
+        "card_95_interval": [
+          0.008034974013277935,
+          0.11573142227907467
+        ]
+      },
+      "ranking": {
+        "mean": -0.04824561403508772,
+        "card_95_interval": [
+          -0.08658008658008658,
+          -0.009388574437277869
+        ]
+      }
+    },
+    "simulator_bootstrap_minus_observation_bootstrap": {
+      "pace_nll": {
+        "mean": 0.4100539969796263,
+        "card_95_interval": [
+          0.2145641933117436,
+          0.5920319896018202
+        ]
+      },
+      "accuracy_nll": {
+        "mean": 4.54140448730568e-09,
+        "card_95_interval": [
+          -1.5029197654347706e-09,
+          1.0378733596545231e-08
+        ]
+      },
+      "ranking": {
+        "mean": -0.0043859649122807015,
+        "card_95_interval": [
+          -0.014084507042253521,
+          0.0
+        ]
+      }
+    },
+    "simulator_bootstrap_covariates_minus_simulator_bootstrap": {
+      "pace_nll": {
+        "mean": 1.1259781818740529,
+        "card_95_interval": [
+          0.672742631593494,
+          1.5522351916626058
+        ]
+      },
+      "accuracy_nll": {
+        "mean": 0.0,
+        "card_95_interval": [
+          0.0,
+          0.0
+        ]
+      },
+      "ranking": {
+        "mean": -0.008771929824561403,
+        "card_95_interval": [
+          -0.05140790224211311,
+          0.03271028037383177
+        ]
+      }
+    },
+    "observation_bootstrap_covariates_minus_observation_bootstrap": {
+      "pace_nll": {
+        "mean": 0.8327824185736951,
+        "card_95_interval": [
+          0.388260001034472,
+          1.250092987987283
+        ]
+      },
+      "accuracy_nll": {
+        "mean": 0.0,
+        "card_95_interval": [
+          0.0,
+          0.0
+        ]
+      },
+      "ranking": {
+        "mean": -0.017543859649122806,
+        "card_95_interval": [
+          -0.058253515607993384,
+          0.022727272727272728
+        ]
+      }
+    },
+    "observation_bootstrap_minus_simulator_bootstrap_covariates": {
+      "pace_nll": {
+        "mean": -1.5360321788536788,
+        "card_95_interval": [
+          -2.1336753758437714,
+          -0.9061618629930975
+        ]
+      },
+      "accuracy_nll": {
+        "mean": -4.54140448730568e-09,
+        "card_95_interval": [
+          -1.0378733596545231e-08,
+          1.502919765434771e-09
+        ]
+      },
+      "ranking": {
+        "mean": 0.013157894736842105,
+        "card_95_interval": [
+          -0.028112449799196786,
+          0.05509011559790676
+        ]
+      }
+    },
+    "observation_bootstrap_minus_original_marginal": {
+      "pace_nll": {
+        "mean": -0.004450383465636909,
+        "card_95_interval": [
+          -0.2563003642581707,
+          0.22287490636171362
+        ]
+      },
+      "accuracy_nll": {
+        "mean": -0.06500876650606945,
+        "card_95_interval": [
+          -0.1552637535396924,
+          0.02723567002785432
+        ]
+      },
+      "ranking": {
+        "mean": -0.03508771929824561,
+        "card_95_interval": [
+          -0.08695652173913043,
+          0.017857142857142856
+        ]
+      }
+    }
+  },
+  "performance_gates": {
+    "lower_pace_nll_than_simulator_bootstrap_covariates": true,
+    "lower_accuracy_nll_than_simulator_bootstrap_covariates": true,
+    "lower_pace_nll_than_original_marginal": true,
+    "lower_accuracy_nll_than_original_marginal": true,
+    "preserves_original_winner_ordering": false
+  },
+  "schema_version": 1,
+  "research_only": true,
+  "candidate": "observation_bootstrap",
+  "production_changed": false,
+  "new_trajectories": 0,
+  "locked_cohorts_opened": [],
+  "fights": 229,
+  "cards": 30,
+  "member_side_rows": 4580,
+  "comparison_rows": 27480,
+  "calculation_seconds": 349.73399999993853,
+  "total_seconds": 351.39099999982864,
+  "design_sha256": "d16d22e0ecb4c30cec8340477836c6cd0a0ae821795753d8d623c32653fa18bf",
+  "source_sha256": {
+    "profiles": "88341fc47df0dac282a4c91c6f5df4d60e9e5905204eda4ce950459720c01230",
+    "raw": "6cfb14c9ebcaf2946d942447f4af0166df8b1e5cefa9111edb184b74d7197d49",
+    "round_stats": "2ca7e38eaf679ddcccd5a1b9d1e6d1943874072a9492eeaf2f2bdb3815e45cce"
+  },
+  "prior_bridge_report_sha256": "8805bf65e11f96a4094450201d7a875711b5581f51e8fc76a360e2e9421be85f",
+  "reproduction_maximum_errors": {
+    "observation_reference": 1.7763568394002505e-15,
+    "old_v2_conditional": 7.105427357601002e-15
+  },
+  "mapping_maximum_errors": {
+    "rate_absolute_error": 7.105427357601002e-15,
+    "accuracy_absolute_error": 2.220446049250313e-16
+  },
+  "causal_checks": [
+    {
+      "event_id": "6750e338922a099d",
+      "cutoff": "2024-04-13T00:00:00+00:00",
+      "training_latest": "2024-04-06T00:00:00+00:00",
+      "inner_cards": [
+        "899eaba48fa864a6",
+        "dba230fe33011201",
+        "79ff6545b0abc685",
+        "c398235fcaf8d71d",
+        "a9df5ae20a97b090",
+        "e4a9dbade7c7e1a7",
+        "902ab9197b83d0db",
+        "dab0e6cb8c932162"
+      ],
+      "artifact_sha256": "be49221565f323523c405fe2eb529041ca44189484229ec8d14fe2e60c39f27e",
+      "selected_ridge": {
+        "strike_pace": 10.0,
+        "strike_accuracy": 5.0
+      }
+    },
+    {
+      "event_id": "a16ce18149021139",
+      "cutoff": "2024-04-27T00:00:00+00:00",
+      "training_latest": "2024-04-13T00:00:00+00:00",
+      "inner_cards": [
+        "6750e338922a099d",
+        "899eaba48fa864a6",
+        "dba230fe33011201",
+        "79ff6545b0abc685",
+        "c398235fcaf8d71d",
+        "a9df5ae20a97b090",
+        "e4a9dbade7c7e1a7",
+        "902ab9197b83d0db"
+      ],
+      "artifact_sha256": "85277ef874c3c17d6b485c085fe94d9f7da3724b38eaabf31f1b8fb64f95a437",
+      "selected_ridge": {
+        "strike_pace": 10.0,
+        "strike_accuracy": 5.0
+      }
+    },
+    {
+      "event_id": "981ab7a0576f76a0",
+      "cutoff": "2024-05-04T00:00:00+00:00",
+      "training_latest": "2024-04-27T00:00:00+00:00",
+      "inner_cards": [
+        "a16ce18149021139",
+        "6750e338922a099d",
+        "899eaba48fa864a6",
+        "dba230fe33011201",
+        "79ff6545b0abc685",
+        "c398235fcaf8d71d",
+        "a9df5ae20a97b090",
+        "e4a9dbade7c7e1a7"
+      ],
+      "artifact_sha256": "ceeb183267360bb8e467d4f584b27b53ee8d28c4740adb123695dd10dc5c4eb0",
+      "selected_ridge": {
+        "strike_pace": 10.0,
+        "strike_accuracy": 5.0
+      }
+    },
+    {
+      "event_id": "5dfe71ade71f3a4b",
+      "cutoff": "2024-05-11T00:00:00+00:00",
+      "training_latest": "2024-05-04T00:00:00+00:00",
+      "inner_cards": [
+        "981ab7a0576f76a0",
+        "a16ce18149021139",
+        "6750e338922a099d",
+        "899eaba48fa864a6",
+        "dba230fe33011201",
+        "79ff6545b0abc685",
+        "c398235fcaf8d71d",
+        "a9df5ae20a97b090"
+      ],
+      "artifact_sha256": "a428ff791cbf1f514923d38717f86c2004825ffcfe58e05cd4e9c9a9f15c13ce",
+      "selected_ridge": {
+        "strike_pace": 20.0,
+        "strike_accuracy": 5.0
+      }
+    },
+    {
+      "event_id": "46baf0f57edfa4df",
+      "cutoff": "2024-05-18T00:00:00+00:00",
+      "training_latest": "2024-05-11T00:00:00+00:00",
+      "inner_cards": [
+        "5dfe71ade71f3a4b",
+        "981ab7a0576f76a0",
+        "a16ce18149021139",
+        "6750e338922a099d",
+        "899eaba48fa864a6",
+        "dba230fe33011201",
+        "79ff6545b0abc685",
+        "c398235fcaf8d71d"
+      ],
+      "artifact_sha256": "f4fe79e372f0274da0aece6a726ce1d09f5964636ddff9566e1b6ba51af6ce08",
+      "selected_ridge": {
+        "strike_pace": 10.0,
+        "strike_accuracy": 5.0
+      }
+    },
+    {
+      "event_id": "6e4acc2c115215b5",
+      "cutoff": "2024-06-01T00:00:00+00:00",
+      "training_latest": "2024-05-18T00:00:00+00:00",
+      "inner_cards": [
+        "46baf0f57edfa4df",
+        "5dfe71ade71f3a4b",
+        "981ab7a0576f76a0",
+        "a16ce18149021139",
+        "6750e338922a099d",
+        "899eaba48fa864a6",
+        "dba230fe33011201",
+        "79ff6545b0abc685"
+      ],
+      "artifact_sha256": "16ea72ecb5e9d3ba37dc2caa4204279e04ff923ceb9dd457f3064eaab202fefb",
+      "selected_ridge": {
+        "strike_pace": 10.0,
+        "strike_accuracy": 5.0
+      }
+    },
+    {
+      "event_id": "cba3a2dfbc06ce79",
+      "cutoff": "2024-06-08T00:00:00+00:00",
+      "training_latest": "2024-06-01T00:00:00+00:00",
+      "inner_cards": [
+        "6e4acc2c115215b5",
+        "46baf0f57edfa4df",
+        "5dfe71ade71f3a4b",
+        "981ab7a0576f76a0",
+        "a16ce18149021139",
+        "6750e338922a099d",
+        "899eaba48fa864a6",
+        "dba230fe33011201"
+      ],
+      "artifact_sha256": "cbb9eadcf854d997289eabcad3f801ef6bfe74d571d9f7612bdb0c5a49909bca",
+      "selected_ridge": {
+        "strike_pace": 5.0,
+        "strike_accuracy": 5.0
+      }
+    },
+    {
+      "event_id": "9c5828c6fd9dc948",
+      "cutoff": "2024-06-15T00:00:00+00:00",
+      "training_latest": "2024-06-08T00:00:00+00:00",
+      "inner_cards": [
+        "cba3a2dfbc06ce79",
+        "6e4acc2c115215b5",
+        "46baf0f57edfa4df",
+        "5dfe71ade71f3a4b",
+        "981ab7a0576f76a0",
+        "a16ce18149021139",
+        "6750e338922a099d",
+        "899eaba48fa864a6"
+      ],
+      "artifact_sha256": "79fa8d743c5020e9ea7a75687653f39173950a71e5edd3cca09627374ec9a593",
+      "selected_ridge": {
+        "strike_pace": 5.0,
+        "strike_accuracy": 5.0
+      }
+    },
+    {
+      "event_id": "b12a1d19ee383b7c",
+      "cutoff": "2024-06-22T00:00:00+00:00",
+      "training_latest": "2024-06-15T00:00:00+00:00",
+      "inner_cards": [
+        "9c5828c6fd9dc948",
+        "cba3a2dfbc06ce79",
+        "6e4acc2c115215b5",
+        "46baf0f57edfa4df",
+        "5dfe71ade71f3a4b",
+        "981ab7a0576f76a0",
+        "a16ce18149021139",
+        "6750e338922a099d"
+      ],
+      "artifact_sha256": "43c6b3a81119ab099917f3c9df7b44a4ca4591be509f66c9b69b3d8f6c3bd590",
+      "selected_ridge": {
+        "strike_pace": 5.0,
+        "strike_accuracy": 5.0
+      }
+    },
+    {
+      "event_id": "f3743d8ef5dde970",
+      "cutoff": "2024-06-29T00:00:00+00:00",
+      "training_latest": "2024-06-22T00:00:00+00:00",
+      "inner_cards": [
+        "b12a1d19ee383b7c",
+        "9c5828c6fd9dc948",
+        "cba3a2dfbc06ce79",
+        "6e4acc2c115215b5",
+        "46baf0f57edfa4df",
+        "5dfe71ade71f3a4b",
+        "981ab7a0576f76a0",
+        "a16ce18149021139"
+      ],
+      "artifact_sha256": "8c0b560caf8e0ce692c4a464b368544337565121ae18a582f63f24e54734f2eb",
+      "selected_ridge": {
+        "strike_pace": 5.0,
+        "strike_accuracy": 5.0
+      }
+    },
+    {
+      "event_id": "66e0a70352fef46a",
+      "cutoff": "2024-07-13T00:00:00+00:00",
+      "training_latest": "2024-06-29T00:00:00+00:00",
+      "inner_cards": [
+        "f3743d8ef5dde970",
+        "b12a1d19ee383b7c",
+        "9c5828c6fd9dc948",
+        "cba3a2dfbc06ce79",
+        "6e4acc2c115215b5",
+        "46baf0f57edfa4df",
+        "5dfe71ade71f3a4b",
+        "981ab7a0576f76a0"
+      ],
+      "artifact_sha256": "6868e461bb772249d1811a22f1478cccdaff278913fa871ca3a4117a108b892a",
+      "selected_ridge": {
+        "strike_pace": 5.0,
+        "strike_accuracy": 10.0
+      }
+    },
+    {
+      "event_id": "c11036da9162cb5f",
+      "cutoff": "2024-07-20T00:00:00+00:00",
+      "training_latest": "2024-07-13T00:00:00+00:00",
+      "inner_cards": [
+        "66e0a70352fef46a",
+        "f3743d8ef5dde970",
+        "b12a1d19ee383b7c",
+        "9c5828c6fd9dc948",
+        "cba3a2dfbc06ce79",
+        "6e4acc2c115215b5",
+        "46baf0f57edfa4df",
+        "5dfe71ade71f3a4b"
+      ],
+      "artifact_sha256": "012bb1484f4302ae36c06fd6e599c6b2f6e81ad158396c3d1016a9a24f05ff91",
+      "selected_ridge": {
+        "strike_pace": 5.0,
+        "strike_accuracy": 5.0
+      }
+    },
+    {
+      "event_id": "026b4f7049085842",
+      "cutoff": "2024-07-27T00:00:00+00:00",
+      "training_latest": "2024-07-20T00:00:00+00:00",
+      "inner_cards": [
+        "c11036da9162cb5f",
+        "66e0a70352fef46a",
+        "f3743d8ef5dde970",
+        "b12a1d19ee383b7c",
+        "9c5828c6fd9dc948",
+        "cba3a2dfbc06ce79",
+        "6e4acc2c115215b5",
+        "46baf0f57edfa4df"
+      ],
+      "artifact_sha256": "c6bc4c8f9ab306ef9b135bc54f7b6be4a55e8ec2fda710554e703c26d683fd18",
+      "selected_ridge": {
+        "strike_pace": 5.0,
+        "strike_accuracy": 5.0
+      }
+    },
+    {
+      "event_id": "fe435e440b5de0ff",
+      "cutoff": "2024-08-03T00:00:00+00:00",
+      "training_latest": "2024-07-27T00:00:00+00:00",
+      "inner_cards": [
+        "026b4f7049085842",
+        "c11036da9162cb5f",
+        "66e0a70352fef46a",
+        "f3743d8ef5dde970",
+        "b12a1d19ee383b7c",
+        "9c5828c6fd9dc948",
+        "cba3a2dfbc06ce79",
+        "6e4acc2c115215b5"
+      ],
+      "artifact_sha256": "97904192bbeef4cf57eae0644af7b650fa5eac44d4d45a2c5d5320c4147d9a68",
+      "selected_ridge": {
+        "strike_pace": 5.0,
+        "strike_accuracy": 10.0
+      }
+    },
+    {
+      "event_id": "2c733e059462c1dc",
+      "cutoff": "2024-08-10T00:00:00+00:00",
+      "training_latest": "2024-08-03T00:00:00+00:00",
+      "inner_cards": [
+        "fe435e440b5de0ff",
+        "026b4f7049085842",
+        "c11036da9162cb5f",
+        "66e0a70352fef46a",
+        "f3743d8ef5dde970",
+        "b12a1d19ee383b7c",
+        "9c5828c6fd9dc948",
+        "cba3a2dfbc06ce79"
+      ],
+      "artifact_sha256": "72a10bd27d38f8b33005a4d99f23f0c2b9713502cd02206563ca174a09b83614",
+      "selected_ridge": {
+        "strike_pace": 10.0,
+        "strike_accuracy": 10.0
+      }
+    },
+    {
+      "event_id": "32ba186f4b0e3267",
+      "cutoff": "2024-08-17T00:00:00+00:00",
+      "training_latest": "2024-08-10T00:00:00+00:00",
+      "inner_cards": [
+        "2c733e059462c1dc",
+        "fe435e440b5de0ff",
+        "026b4f7049085842",
+        "c11036da9162cb5f",
+        "66e0a70352fef46a",
+        "f3743d8ef5dde970",
+        "b12a1d19ee383b7c",
+        "9c5828c6fd9dc948"
+      ],
+      "artifact_sha256": "3369fa3e4ff8ec5252a5aaceb04788a1eeb501ac49d564e00e10a70e80f46528",
+      "selected_ridge": {
+        "strike_pace": 10.0,
+        "strike_accuracy": 5.0
+      }
+    },
+    {
+      "event_id": "be8ad887e4d674b0",
+      "cutoff": "2024-08-24T00:00:00+00:00",
+      "training_latest": "2024-08-17T00:00:00+00:00",
+      "inner_cards": [
+        "32ba186f4b0e3267",
+        "2c733e059462c1dc",
+        "fe435e440b5de0ff",
+        "026b4f7049085842",
+        "c11036da9162cb5f",
+        "66e0a70352fef46a",
+        "f3743d8ef5dde970",
+        "b12a1d19ee383b7c"
+      ],
+      "artifact_sha256": "6abf82ca7e2aa8e2d200ac6de85a9a58f9c4a4717f7210c3307d60b038cfe95a",
+      "selected_ridge": {
+        "strike_pace": 10.0,
+        "strike_accuracy": 5.0
+      }
+    },
+    {
+      "event_id": "ee0b69e307c857e5",
+      "cutoff": "2024-09-07T00:00:00+00:00",
+      "training_latest": "2024-08-24T00:00:00+00:00",
+      "inner_cards": [
+        "be8ad887e4d674b0",
+        "32ba186f4b0e3267",
+        "2c733e059462c1dc",
+        "fe435e440b5de0ff",
+        "026b4f7049085842",
+        "c11036da9162cb5f",
+        "66e0a70352fef46a",
+        "f3743d8ef5dde970"
+      ],
+      "artifact_sha256": "64283ff82a6bb5e6afa4e236d65e5a2a3b067d6064ad85a4d0a4e5dcdf81008a",
+      "selected_ridge": {
+        "strike_pace": 10.0,
+        "strike_accuracy": 5.0
+      }
+    },
+    {
+      "event_id": "0c01568b1ac77bff",
+      "cutoff": "2024-09-14T00:00:00+00:00",
+      "training_latest": "2024-09-07T00:00:00+00:00",
+      "inner_cards": [
+        "ee0b69e307c857e5",
+        "be8ad887e4d674b0",
+        "32ba186f4b0e3267",
+        "2c733e059462c1dc",
+        "fe435e440b5de0ff",
+        "026b4f7049085842",
+        "c11036da9162cb5f",
+        "66e0a70352fef46a"
+      ],
+      "artifact_sha256": "b90f73ccf2114f29f5b9e422c787c7412dc07c2b26a667581644456d87bf16d9",
+      "selected_ridge": {
+        "strike_pace": 10.0,
+        "strike_accuracy": 5.0
+      }
+    },
+    {
+      "event_id": "079488710f012779",
+      "cutoff": "2024-09-28T00:00:00+00:00",
+      "training_latest": "2024-09-14T00:00:00+00:00",
+      "inner_cards": [
+        "0c01568b1ac77bff",
+        "ee0b69e307c857e5",
+        "be8ad887e4d674b0",
+        "32ba186f4b0e3267",
+        "2c733e059462c1dc",
+        "fe435e440b5de0ff",
+        "026b4f7049085842",
+        "c11036da9162cb5f"
+      ],
+      "artifact_sha256": "4755b165d2ce58248a03ca69142155035dbcac0eca1903980926c7647b5879a6",
+      "selected_ridge": {
+        "strike_pace": 5.0,
+        "strike_accuracy": 5.0
+      }
+    },
+    {
+      "event_id": "eee8efec7b951d84",
+      "cutoff": "2024-10-05T00:00:00+00:00",
+      "training_latest": "2024-09-28T00:00:00+00:00",
+      "inner_cards": [
+        "079488710f012779",
+        "0c01568b1ac77bff",
+        "ee0b69e307c857e5",
+        "be8ad887e4d674b0",
+        "32ba186f4b0e3267",
+        "2c733e059462c1dc",
+        "fe435e440b5de0ff",
+        "026b4f7049085842"
+      ],
+      "artifact_sha256": "696f20d12be661bc9db3adae30f7bbae0d0f9252f7f8454f4a81417b71e86878",
+      "selected_ridge": {
+        "strike_pace": 5.0,
+        "strike_accuracy": 5.0
+      }
+    },
+    {
+      "event_id": "5bdcbd8dd681a257",
+      "cutoff": "2024-10-12T00:00:00+00:00",
+      "training_latest": "2024-10-05T00:00:00+00:00",
+      "inner_cards": [
+        "eee8efec7b951d84",
+        "079488710f012779",
+        "0c01568b1ac77bff",
+        "ee0b69e307c857e5",
+        "be8ad887e4d674b0",
+        "32ba186f4b0e3267",
+        "2c733e059462c1dc",
+        "fe435e440b5de0ff"
+      ],
+      "artifact_sha256": "c0b84fc3ba5ab716e4aa5e16279abc881447d874f7f41d12b2dfc9345fa76af2",
+      "selected_ridge": {
+        "strike_pace": 5.0,
+        "strike_accuracy": 5.0
+      }
+    },
+    {
+      "event_id": "6a0047ac8c99fece",
+      "cutoff": "2024-10-19T00:00:00+00:00",
+      "training_latest": "2024-10-12T00:00:00+00:00",
+      "inner_cards": [
+        "5bdcbd8dd681a257",
+        "eee8efec7b951d84",
+        "079488710f012779",
+        "0c01568b1ac77bff",
+        "ee0b69e307c857e5",
+        "be8ad887e4d674b0",
+        "32ba186f4b0e3267",
+        "2c733e059462c1dc"
+      ],
+      "artifact_sha256": "7e962ca863007dc10410833b1e79ab5be3a7f73cc97a91d4b470bd2ca1c16317",
+      "selected_ridge": {
+        "strike_pace": 5.0,
+        "strike_accuracy": 5.0
+      }
+    },
+    {
+      "event_id": "221b2a3070c7ce3e",
+      "cutoff": "2024-10-26T00:00:00+00:00",
+      "training_latest": "2024-10-19T00:00:00+00:00",
+      "inner_cards": [
+        "6a0047ac8c99fece",
+        "5bdcbd8dd681a257",
+        "eee8efec7b951d84",
+        "079488710f012779",
+        "0c01568b1ac77bff",
+        "ee0b69e307c857e5",
+        "be8ad887e4d674b0",
+        "32ba186f4b0e3267"
+      ],
+      "artifact_sha256": "611093a5841150419c58b3e281e3f1011dfb271391b4bb328ebeeff89a6ab352",
+      "selected_ridge": {
+        "strike_pace": 5.0,
+        "strike_accuracy": 5.0
+      }
+    },
+    {
+      "event_id": "3ab0df1ddd5f1dc2",
+      "cutoff": "2024-11-02T00:00:00+00:00",
+      "training_latest": "2024-10-26T00:00:00+00:00",
+      "inner_cards": [
+        "221b2a3070c7ce3e",
+        "6a0047ac8c99fece",
+        "5bdcbd8dd681a257",
+        "eee8efec7b951d84",
+        "079488710f012779",
+        "0c01568b1ac77bff",
+        "ee0b69e307c857e5",
+        "be8ad887e4d674b0"
+      ],
+      "artifact_sha256": "1eab792b1d87dc929f469663f15c22855c390c0731ff9a115fa55fe9473ef4d9",
+      "selected_ridge": {
+        "strike_pace": 5.0,
+        "strike_accuracy": 5.0
+      }
+    },
+    {
+      "event_id": "585f9ffdb0cd0466",
+      "cutoff": "2024-11-09T00:00:00+00:00",
+      "training_latest": "2024-11-02T00:00:00+00:00",
+      "inner_cards": [
+        "3ab0df1ddd5f1dc2",
+        "221b2a3070c7ce3e",
+        "6a0047ac8c99fece",
+        "5bdcbd8dd681a257",
+        "eee8efec7b951d84",
+        "079488710f012779",
+        "0c01568b1ac77bff",
+        "ee0b69e307c857e5"
+      ],
+      "artifact_sha256": "3d83d18a31d4f394386b2335435ce4342200290db5b4051cc7e3a78ff7ab2738",
+      "selected_ridge": {
+        "strike_pace": 5.0,
+        "strike_accuracy": 5.0
+      }
+    },
+    {
+      "event_id": "daff32bc96d1eabf",
+      "cutoff": "2024-11-16T00:00:00+00:00",
+      "training_latest": "2024-11-09T00:00:00+00:00",
+      "inner_cards": [
+        "585f9ffdb0cd0466",
+        "3ab0df1ddd5f1dc2",
+        "221b2a3070c7ce3e",
+        "6a0047ac8c99fece",
+        "5bdcbd8dd681a257",
+        "eee8efec7b951d84",
+        "079488710f012779",
+        "0c01568b1ac77bff"
+      ],
+      "artifact_sha256": "fc531fe59ff85a3fcedfdc62bf6169b96005a009ba039965718bb28c14dd2282",
+      "selected_ridge": {
+        "strike_pace": 5.0,
+        "strike_accuracy": 5.0
+      }
+    },
+    {
+      "event_id": "e955046551f8c7dd",
+      "cutoff": "2024-11-23T00:00:00+00:00",
+      "training_latest": "2024-11-16T00:00:00+00:00",
+      "inner_cards": [
+        "daff32bc96d1eabf",
+        "585f9ffdb0cd0466",
+        "3ab0df1ddd5f1dc2",
+        "221b2a3070c7ce3e",
+        "6a0047ac8c99fece",
+        "5bdcbd8dd681a257",
+        "eee8efec7b951d84",
+        "079488710f012779"
+      ],
+      "artifact_sha256": "542b01dd4acb128abe58d3df4dfd6f7e37e1da2a42f6a491e4bc06fff5c332cf",
+      "selected_ridge": {
+        "strike_pace": 20.0,
+        "strike_accuracy": 5.0
+      }
+    },
+    {
+      "event_id": "ad23903ef3af7406",
+      "cutoff": "2024-12-07T00:00:00+00:00",
+      "training_latest": "2024-11-23T00:00:00+00:00",
+      "inner_cards": [
+        "e955046551f8c7dd",
+        "daff32bc96d1eabf",
+        "585f9ffdb0cd0466",
+        "3ab0df1ddd5f1dc2",
+        "221b2a3070c7ce3e",
+        "6a0047ac8c99fece",
+        "5bdcbd8dd681a257",
+        "eee8efec7b951d84"
+      ],
+      "artifact_sha256": "2fcad58bea7fff33c8bcb726841efafc54d65a6d8bdead7511a08e1e8ca8ab30",
+      "selected_ridge": {
+        "strike_pace": 10.0,
+        "strike_accuracy": 5.0
+      }
+    },
+    {
+      "event_id": "72c9c2eadfc3277e",
+      "cutoff": "2024-12-14T00:00:00+00:00",
+      "training_latest": "2024-12-07T00:00:00+00:00",
+      "inner_cards": [
+        "ad23903ef3af7406",
+        "e955046551f8c7dd",
+        "daff32bc96d1eabf",
+        "585f9ffdb0cd0466",
+        "3ab0df1ddd5f1dc2",
+        "221b2a3070c7ce3e",
+        "6a0047ac8c99fece",
+        "5bdcbd8dd681a257"
+      ],
+      "artifact_sha256": "9f3d93178146c6f479d9ece54cfd9426db4afc583e7dc89084675dbc0ff193e3",
+      "selected_ridge": {
+        "strike_pace": 10.0,
+        "strike_accuracy": 5.0
+      }
+    }
+  ],
+  "limitations": [
+    "The development outcomes were already studied; fixed diagnostic comparisons are not untouched validation",
+    "Context phase shares are occupancy proxies, not observed time; the mapping contract applies at neutral stamina/damage",
+    "Only ten parameter members were retained; Monte Carlo variation in the parameter resample can change small ranking differences",
+    "A strike leader is not a calibrated winner probability or a profitable bet"
+  ],
+  "output_sha256": {
+    "member_rows.csv": "b55f0cd07d0532a46ee3c21cc9ecb032962b103338aa8bdc6b5fa4b0cbecadd3",
+    "mapping_rows.csv": "9ca97c184d16824295d13e8fa04d2140dfad4cebcba3d6c6cd4d2e79afb41a86",
+    "side_rows.csv": "f168429ba34248adb3c593977feaab0aa68f68b53d92c533215243f6b1627411"
+  },
+  "candidate_advances_to_simulation_screen": false,
+  "report_sha256": "8b31f8b832ff277945fe659e592fc645ededaf6b90fb2c19e72360b72495a068"
+}

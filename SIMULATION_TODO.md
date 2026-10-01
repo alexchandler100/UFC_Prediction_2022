@@ -1,9 +1,42 @@
 # Fight simulation continuation TODO
 
-Status updated 2026-10-01 after the conditional-to-engine strike bridge audit.
+Status updated 2026-10-01 after the fixed strike-estimator handoff comparison.
 This file is the handoff contract for the next simulation session.
 
-## Frozen next action: preserve the tested observation predictor
+## Completed: strike-estimator handoff correction and comparison
+
+See `SIMULATION_STRIKE_HANDOFF_REPORT_2026-10-01.md`. All 229 development fights
+/ 30 cards completed in 351 seconds with no new trajectories. Both the original
+observation forecasts and rejected v2 conditional forecasts reproduce to
+numerical rounding. The new research-only mapping preserves pace and landing
+accuracy through the neutral engine across all 4,580 fighter/member pairs.
+
+The proposed estimator still fails: fitting the original observation method
+to the ten matching card resamples reduces correct strike-leader selections
+from 120/228 decisive fights to 109/228. Changing to simulator contexts reduces
+this to 108/228; adding the existing age/experience/layoff adjustment gives
+106/228. Pace error improves with the proposed correction, but useful fighter
+ordering is not preserved. Do not run a new simulation screen or substitute
+another diagnostic arm after seeing these outcomes.
+
+## Next bounded question: training-resample precision
+
+If simulator work continues, first determine whether the ten-member loss is
+numerical averaging noise or persists under more training-card resamples of
+the exact same observation estimator. Freeze one higher-precision sample count,
+seeds and decision rule before running it. Do not alter the estimator, add an
+attenuation scalar, center its predictions on the observed winners, or repeat
+the test until it passes. This can be assessed without new fight trajectories.
+
+The research correction remains isolated in `strike_handoff.py`; it is not
+registered as a default snapshot mode. A further simulation screen still
+requires improved conditional strike likelihood and preserved/improved fighter
+ordering, then the existing bounded 229-fight / 100-path development comparison
+against full and reliability-weighted snapshots with frozen mechanics/common
+seeds. Both 2025 confirmation cohorts remain unevaluated. Prospective obtainable
+prices remain the priority for determining whether a betting advantage exists.
+
+## Completed: conditional-to-engine strike bridge audit
 
 The bridge audit is complete: all 229 development fights / 30 cards, ten exact
 cached parameter members per fight, 279 seconds of calculation and no new
@@ -17,23 +50,9 @@ passes through only about 36.3% of opponent accuracy effects in their learned
 log-odds units. Duration rescaling explains roughly one third of the simulated
 attempt shortage; it is not an isolated causal intervention.
 
-Do not run an `opponent_adjusted_v3` Monte Carlo screen yet. First isolate the
-estimator handoff discrepancy using fixed comparisons on `development_2024`:
-preserve the original observation context/fighter effects, then inspect changes
-from bootstrap reconstruction and age/experience/layoff covariates. Use only
-strictly earlier cards and the existing inner selection scheme.
-
-Specify one mapping that preserves conditional strike pace under its explicit
-context occupancy proxy and opponent accuracy effects in the same log-odds
-units. Verify it algebraically and with tests. Do not tune an attenuation scalar
-or try many mappings against these outer outcomes. Require improved conditional
-strike likelihood and preserved/improved winner ordering before another
-100-path, 229-fight development screen against full and reliability-weighted
-snapshots using frozen mechanics/common seeds and the existing 3,300-second cap.
-
-Both 2025 confirmation cohorts stay unopened. No production/default change is
-authorized by this diagnostic. Prospective price collection remains the higher
-priority for establishing a betting advantage.
+That audit motivated the fixed handoff comparison now completed above. The
+existing simulation-screen cap remains 3,300 seconds. Neither diagnostic
+authorizes a production/default change.
 
 ## Completed: bout-clustered v2 simulator screen
 

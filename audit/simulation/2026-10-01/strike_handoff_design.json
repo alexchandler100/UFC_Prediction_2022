@@ -1,0 +1,36 @@
+{
+  "schema_version": 1,
+  "purpose": "Isolate the observation-estimator handoff discrepancy and evaluate one predetermined research correction",
+  "cohort": "development_2024",
+  "expected_fights": 229,
+  "expected_cards": 30,
+  "bootstrap_members": 10,
+  "historical_source_revision": "59a16cd2",
+  "maximum_runtime_seconds": 1800,
+  "new_trajectories": 0,
+  "arms": {
+    "observation_reference": "Original observation context and opponent effects with equal bout weights, no covariates; must reproduce saved predictions",
+    "observation_bootstrap": "Original observation context formula and opponent effects using matching saved card-bootstrap weights, no covariates; sole candidate chosen before results",
+    "simulator_bootstrap": "Saved simulator context and matching card-bootstrap effects, no covariates",
+    "simulator_bootstrap_covariates": "Saved simulator context and matching card-bootstrap effects with original age/experience/layoff adjustments; must reproduce saved v2 conditional predictions",
+    "observation_bootstrap_covariates": "Original observation context formula and matching card-bootstrap effects with the same covariate adjustments; diagnostic only"
+  },
+  "training": "Fit strictly before each card; reuse target-specific shrinkage choices from the original eight-prior-card selector, verify saved selections; weight physical fighter-side bouts, never individual actions",
+  "candidate": "observation_bootstrap",
+  "mapping": "Compute combined actor/opponent landing probability in the original log-odds units. Preserve full fighter phase-rate shape but deterministically normalize exact neutral engine intensity to the predicted pace under the saved context occupancy proxy (ground split equally). Set matchup strike defense to neutral, encode the combined landing probability via a monotone inverse of exact phase-weighted engine hit probabilities. Preserve phase modifiers, fatigue, damage, caps and all non-strike parameters. No outer outcomes enter this mapping.",
+  "uncertainty": "Average predictions within each physical fighter side, average member-specific landed products for winner ranking; resample whole cards 4000 times with seed 20261001",
+  "advance_gate": {
+    "reproduction": "Reference and old v2 conditional predictions reproduce within relative 1e-9 and absolute 1e-9; all 4580 member-side mapped rates/probabilities reproduce the candidate within relative/absolute 1e-8",
+    "proper_scores": "Candidate has lower mean pace and accuracy negative log likelihood than both rebuilt v2 conditional and original marginal-fighter predictions",
+    "winner_ranking": "Candidate strike leader identifies at least as many winners as original opponent-adjusted observation reference (120 of 228 decisive fights)",
+    "interpretation": "Passing authorizes at most a bounded development simulation comparison; it does not validate a model or enable production"
+  },
+  "failure_action": "Keep the candidate research-only and report the failed gate; do not switch to another diagnostic arm or tune an attenuation scalar on these outcomes",
+  "locked_cohorts": ["confirmation_2025_a", "final_holdout_2025_b"],
+  "limitations": [
+    "The development outcomes were already studied; fixed diagnostic comparisons are not untouched validation",
+    "Context phase shares are occupancy proxies, not observed time; the mapping contract applies at neutral stamina/damage",
+    "Only ten parameter members were retained; Monte Carlo variation in the parameter resample can change small ranking differences",
+    "A strike leader is not a calibrated winner probability or a profitable bet"
+  ]
+}

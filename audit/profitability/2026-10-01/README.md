@@ -407,3 +407,11 @@ simulator task is to preserve that tested predictor before another expensive
 screen. This reinforces the priority order: collect obtainable prospective
 prices, test the selected bets' probabilities, and keep simulator repairs as
 bounded research until they demonstrate a useful improvement.
+
+The [next handoff experiment](../../../SIMULATION_STRIKE_HANDOFF_REPORT_2026-10-01.md)
+is also complete. The research mapping now preserves predicted pace and landing
+accuracy exactly, but fitting the observation method on ten resampled training
+histories reduces correct strike-leader selections from 120/228 to 109/228.
+The fixed candidate failed its pass condition, so no new fight simulation
+screen was run. Better numerical transfer alone has not established a useful
+winner forecast or betting advantage.
