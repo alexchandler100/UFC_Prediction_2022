@@ -1,0 +1,253 @@
+{
+  "id": 36886864389,
+  "status": "completed",
+  "conclusion": "success",
+  "head_sha": "0f2b6b9d2cde12a4667df8b1ffaf350aa5a53345",
+  "html_url": "https://github.com/alexchandler100/UFC_Prediction_2022/actions/runs/36886864389",
+  "created_at": "2026-10-01T15:46:20Z",
+  "updated_at": "2026-10-01T15:54:54Z",
+  "published_commit": "a9b0d000",
+  "jobs": [
+    {
+      "name": "capture_window_check",
+      "conclusion": "success",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run actions/checkout@v7",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Check declared card windows without an odds request",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Post Run actions/checkout@v7",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success"
+        }
+      ]
+    },
+    {
+      "name": "capture_market",
+      "conclusion": "success",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Check out frozen publication",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Set up Python 3.11",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Install dependencies",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run offline contract tests",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Validate frozen publication",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Verify market API credential",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Capture fresh MMA market data",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Record equal-stake prospective comparison",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Capture bounded method-of-victory prices",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Record and settle method paper recommendations",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Settle completed paper decisions and refresh metrics",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Record conditional simulation evidence",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Validate conditional simulation evidence",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Publish bankroll history",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Update frozen market-first prospective paper test",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Publish compact current-card odds history",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Publish candidate explanations",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Publish research monitoring and selection histories",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Validate research monitoring",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Revalidate market ledgers and reports",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Revalidate optional method-price outputs",
+          "status": "completed",
+          "conclusion": "skipped"
+        },
+        {
+          "name": "Commit only market capture outputs",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Post Set up Python 3.11",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Post Check out frozen publication",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success"
+        }
+      ]
+    }
+  ],
+  "capture": {
+    "capture_id": "capture_20261001T155033007026Z_36886864389_1_631efd2fb238",
+    "captured_at_utc": "2026-10-01T15:50:33.277758Z",
+    "event_start_utc": "2026-10-03T22:15:00.000000Z",
+    "quote_records_in_capture": 118,
+    "forecast_records_in_capture": 12,
+    "total_round_records_in_capture": 44,
+    "total_round_forecast_records_in_capture": 14
+  },
+  "equal_stake_diagnostics": {
+    "contract_version": "equal-stake-card-start-v2",
+    "interpretation": "Quote eligibility at collection time; actual decisions also require creation within five minutes and after repair activation.",
+    "matchups": [
+      {
+        "matchup_id": "matchup_03086047eba4d3b8053fce964b47c70aa4cc3ea154511951d73e1508fefec1b2",
+        "status": "fewer_than_four_eligible_books"
+      },
+      {
+        "matchup_id": "matchup_2262ab8db3220297f56095b4d9b401e1da328c568e1c75089d05cb062284a744",
+        "status": "fewer_than_four_eligible_books"
+      },
+      {
+        "matchup_id": "matchup_2af7bc98c3d9b6e7473054b59710c038af09974d8f8ab4201ae8b92e6a32cc1b",
+        "status": "fewer_than_four_eligible_books"
+      },
+      {
+        "matchup_id": "matchup_2f017da39e97cecb240cde1f4cc8bd428e1f1ba43c6fe898e2ed8a48bb787fb5",
+        "status": "fewer_than_four_eligible_books"
+      },
+      {
+        "matchup_id": "matchup_45f81cc18a58b8e7b4de3d623dee6a0fa0c900c04c78e3ffa9d439c784117462",
+        "status": "fewer_than_four_eligible_books"
+      },
+      {
+        "matchup_id": "matchup_47771d7cdbcd1a079df9c13cdaaefafabc66f27fe0f5a9955af59c7bcc43e4b5",
+        "status": "fewer_than_four_eligible_books"
+      },
+      {
+        "matchup_id": "matchup_4811f9d3f9bbc6c0085c39682d7c0cc84ddb3131c2e89dc00d9fe12cbb965472",
+        "status": "fewer_than_four_eligible_books"
+      },
+      {
+        "matchup_id": "matchup_7d336af9109719eb87c6700a284cb685965411a9a8b650072f0e59998fa0c99b",
+        "status": "fewer_than_four_eligible_books"
+      },
+      {
+        "matchup_id": "matchup_ae0ef3e530a55bf48ed14f36581c97d6bdd70675620ae2bc4f9937ffe3a70da3",
+        "status": "fewer_than_four_eligible_books"
+      },
+      {
+        "matchup_id": "matchup_b1e9339d567d33747815ea9ee232b8c84cb2ee38d345a6b3a0f442fb0ed390bc",
+        "status": "fewer_than_four_eligible_books"
+      },
+      {
+        "matchup_id": "matchup_ed41d7d1cb3097c77c7076f680f2cb3681e8e5c75938bd485e15ed89e97731bf",
+        "status": "fewer_than_four_eligible_books"
+      },
+      {
+        "matchup_id": "matchup_f84fdeccea811e8a8d8d7634ec81040e40757e251636341c6e5e24a26fe1c2d1",
+        "status": "fewer_than_four_eligible_books"
+      }
+    ],
+    "matchups_considered": 12,
+    "observed_at_utc": "2026-10-01T15:50:33.277758Z",
+    "outcomes": {
+      "fewer_than_four_eligible_books": 12
+    },
+    "quote_exclusions": {
+      "outside_card_decision_window": 118
+    }
+  },
+  "followup_diagnostic_label": {
+    "outside_card_decision_window": 12
+  }
+}

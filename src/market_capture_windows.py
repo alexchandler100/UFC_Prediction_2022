@@ -69,7 +69,7 @@ def quote_rejection(quote, source, now):
     return None
 
 
-def price_window_report(quote_sets, metadata, forecasts, decisions, now):
+def price_window_report(quote_sets, metadata, forecasts, decisions, now, *, additional_decisions=None):
     """Rebuild coverage and explicit missing references from saved evidence only."""
     now = utc(now)
     sources = {row["quote_id"]: row for row in metadata}
@@ -126,7 +126,8 @@ def price_window_report(quote_sets, metadata, forecasts, decisions, now):
         coverage.append({**group, "windows": windows})
 
     references = []
-    for d in decisions:
+    decision_sets = {"locked_market": decisions, **(additional_decisions or {})}
+    for strategy, d in ((name, d) for name, rows in decision_sets.items() for d in rows):
         if d["paper_action"] == "pass":
             continue
         entry_quote = next((q for q in quote_sets.get("moneyline", [])
@@ -134,6 +135,9 @@ def price_window_report(quote_sets, metadata, forecasts, decisions, now):
         row = {"decision_id": d["decision_id"], "event_id": d["event_id"], "matchup_id": d["matchup_id"],
             "book": entry_quote["book"] if entry_quote else None, "status": "missing_final_same_book_quote"}
         selected_id = d[d["paper_action"] + "_id"]
+        row.update({"strategy": strategy, "event_date": d.get("event_date"), "selected_fighter_id": selected_id,
+            "selection": next((entry_quote.get(side + "_name", selected_id) for side in ("fighter", "opponent")
+                               if entry_quote[side + "_id"] == selected_id), selected_id) if entry_quote else selected_id})
         candidates = []
         for (event, matchup, capture), quotes in valid_moneylines.items():
             if (event, matchup) != (d["event_id"], d["matchup_id"]):
@@ -167,6 +171,16 @@ def price_window_report(quote_sets, metadata, forecasts, decisions, now):
                 "other_books": sorted(other_books), "independent_probability": independent,
                 "independent_probability_advantage": None if independent is None else independent - entry_break_even})
         references.append(row)
+    reference_summary = {}
+    for strategy in decision_sets:
+        rows = [r for r in references if r["strategy"] == strategy]
+        independent = [r["independent_probability_advantage"] for r in rows
+                       if r.get("independent_probability_advantage") is not None]
+        same_book = [r["same_book_probability_movement"] for r in rows if "same_book_probability_movement" in r]
+        reference_summary[strategy] = {"recorded_bets": len(rows), "same_book_references": len(same_book),
+            "independent_references": len(independent), "missing_same_book_references": len(rows) - len(same_book),
+            "mean_same_book_probability_movement": sum(same_book) / len(same_book) if same_book else None,
+            "mean_independent_probability_advantage": sum(independent) / len(independent) if independent else None}
     return {"version": "declared-card-price-windows-v1", "windows_seconds_before_card": {k: list(v) for k, v in WINDOWS.items()},
         "maximum_source_quote_age_seconds": MAX_QUOTE_AGE,
         "interpretation": "Final reference: last fresh same-book quote 15–90 minutes before saved card start, after the decision; not an exact bout closing price. Missing references remain missing. Positive advantage favors the entry price.",
@@ -174,7 +188,7 @@ def price_window_report(quote_sets, metadata, forecasts, decisions, now):
         "coverage_scope": "Recorded moneyline forecasts and observed full-fight total lines; unquoted total lines are unknown.",
         "summary": {key: dict(value) for key, value in sorted(summary.items())},
         "rejected_quotes": dict(sorted(rejected.items())), "coverage": coverage,
-        "moneyline_references": references}
+        "moneyline_references": references, "moneyline_reference_summary": reference_summary}
 
 
 def main():

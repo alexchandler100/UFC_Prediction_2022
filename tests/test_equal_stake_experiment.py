@@ -60,6 +60,16 @@ class EqualStakeTests(unittest.TestCase):
         self.assertEqual(self.build(forecasts=[replace(forecast(), forecast_issued_at_utc="2026-09-04T12:01:00Z")]), [])
         self.assertEqual(self.build(forecasts=[replace(forecast(), probability_provenance="legacy_reconstructed_american_odds")]), [])
 
+    def test_outside_window_does_not_claim_a_shortage_of_books(self):
+        observed = "2026-09-04T18:00:00Z"
+        quotes = [quote(book, -110, -110, observed=observed) for book in ('A', 'B', 'C', 'D')]
+        diagnostic = {}
+        records = build_records(quotes, [forecast()], metadata(quotes), [], self.policy,
+                                self.calibrator, observed, diagnostics=diagnostic)
+        self.assertEqual(records, [])
+        self.assertEqual(diagnostic['outcomes'], {'outside_card_decision_window': 1})
+        self.assertEqual(diagnostic['quote_exclusions'], {'outside_card_decision_window': 4})
+
     def test_later_bout_starts_keep_card_window_and_preserve_both_times(self):
         source = [replace(m, source_commence_time_utc="2026-09-05T18:00:00Z")
                   for m in metadata(self.quotes)]

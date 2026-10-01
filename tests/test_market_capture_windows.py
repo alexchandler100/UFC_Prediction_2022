@@ -85,6 +85,14 @@ class CaptureWindowTests(unittest.TestCase):
         self.assertEqual(build(separate_capture, separate_source)["moneyline_references"][0]["status"], "fewer_than_three_other_books")
         # Publication round trip remains exactly reproducible.
         self.assertEqual(json.loads(json.dumps(result)), result)
+        policies = price_window_report({'moneyline': early + final}, em + fm, [], [decision],
+            utc('2026-09-06T12:00:00Z'), additional_decisions={'market_first': [decision]})
+        self.assertEqual(len(policies['moneyline_references']), 2)
+        self.assertEqual({r['strategy'] for r in policies['moneyline_references']}, {'locked_market', 'market_first'})
+        for summary in policies['moneyline_reference_summary'].values():
+            self.assertEqual(summary['recorded_bets'], 1)
+            self.assertEqual(summary['independent_references'], 1)
+            self.assertEqual(summary['missing_same_book_references'], 0)
 
     def test_totals_coverage_keeps_lines_separate_and_ignores_partial_periods(self):
         qs, ms = self.capture("2026-09-05T11:00:00Z")

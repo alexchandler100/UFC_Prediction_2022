@@ -1387,7 +1387,12 @@ the last fresh same-book quote in that declared window after a paper decision,
 not the exact closing price of an individual bout. Provider updates must be
 within 30 minutes of collection. Missing references stay missing. The
 independent price comparison requires at least three other books and excludes
-the entry book. Full-fight totals are counted separately for each observed line.
+the entry book. The market-only and market-adjustment strategies are displayed
+separately, with both same-book movement and independent probability advantage.
+A favorable move at one book does not by itself mean the entry price was
+favorable compared with the other books. The selected-book filter applies to
+these summaries and individual price references. Full-fight totals are counted
+separately for each observed line.
 
 The equal-stake comparison now follows the card start even when the provider
 estimates a later individual bout start. Both collection and decision must

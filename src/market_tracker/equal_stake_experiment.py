@@ -72,6 +72,7 @@ def build_records(quotes, forecasts, metadata, existing, policy, calibrator, now
             skip(matchup, "forecast_issued_after_capture")
             continue
         fresh = []
+        outside_window_quotes = 0
         for quote in group:
             source = meta.get(quote.quote_id)
             if source is None or not quote.event_start_utc or quote.timing_precision != "timestamp":
@@ -91,12 +92,16 @@ def build_records(quotes, forecasts, metadata, existing, policy, calibrator, now
                 continue
             if not (20 * 3600 <= (event - observed).total_seconds() <= 28 * 3600):
                 exclusions["outside_card_decision_window"] += 1
+                outside_window_quotes += 1
                 continue
             if not (0 <= (observed - updated).total_seconds() <= 1800
                     and 0 <= (now - updated).total_seconds() <= 1800):
                 exclusions["stale_or_future_source_quote"] += 1
                 continue
             fresh.append(quote)
+        if outside_window_quotes == len(group):
+            skip(matchup, "outside_card_decision_window")
+            continue
         if len({q.book.casefold() for q in fresh}) < 4:
             skip(matchup, "fewer_than_four_eligible_books")
             continue

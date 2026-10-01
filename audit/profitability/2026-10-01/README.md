@@ -288,3 +288,113 @@ gap report on the next card. Continue the fixed paper comparisons; the next
 research session should audit selected prices and long shots against other
 books. The simulator diagnostic remains a separate bounded task, as specified
 in priority 5 above. No new evidence here establishes a profitable strategy.
+
+## Selected-price audit — subsequent research
+
+The collection repair was pushed in `0f2b6b9d`. The next research step used the
+same pinned `e8444907` data so later collections cannot change this audit's
+sample. The [design](selected_price_design.json) specifies one alternative
+margin calculation and no threshold search. These outcomes were already known;
+this is a sensitivity analysis, not a new prospective test. Reproduce it with:
+
+```powershell
+.venv/Scripts/python.exe -B audit/profitability/2026-10-01/selected_price_audit.py
+```
+
+The apparent long-shot edge is fragile. The ordinary calculation divides each
+book's two implied win probabilities by their sum. The alternative raises
+each implied probability to a common power until the pair sums to one; with
+positive book margins this removes proportionally more probability from the
+long shot. This is the power method described by
+[Clarke, Kovalchik and Ingram (2017)](https://doi.org/10.11648/j.ajss.20170506.12),
+whose evidence is not specific to UFC. Applying it to the same other-book
+quotes makes all four original main selections fail the unchanged 5% entry
+threshold:
+
+| Recorded selection | Entry book / price | Expected return, ordinary market calculation | Expected return, power calculation |
+| --- | --- | ---: | ---: |
+| Jeisla Chaves | Bovada +450 | +6.52% | −7.88% |
+| Terrance Chatman | BetMGM +750 | +7.89% | −18.42% |
+| Sean Sharaf | BetOnline.ag +1248 | +13.65% | −36.29% |
+| Vanessa Demopoulos | DraftKings +675 | +7.90% | −14.38% |
+
+These expected returns are estimates, not observed profits. Sharaf still won
+and the original four-bet ledger still made 9.48 units. A 5% reduction in winning
+payout would leave 8.86 units, but that does not address uncertainty in the
+estimated chance of winning. Excluding any one additional comparison book
+preserves positive ordinary-market edges on all four, so no single comparison
+book explains the finding. All selected quotes and consensus inputs pass the
+strict source-time check. That rules out these two simple explanations within
+the stored data; it does not establish that the prices were obtainable.
+
+The market-adjustment model presents a different problem. It selected 18 bets
+across three cards, won 11, and lost 2.34 units. It predicted about 12.70 wins
+among those selections, versus 11.61 from the other books' ordinary market
+probabilities. None of the 18 meets its original 2.5% threshold using the
+ordinary market estimate alone, or the power market estimate alone. Their
+qualification depends on the learned model adjustment, which has not earned
+that confidence on this sample.
+
+The later-price report also needs two distinct comparisons:
+
+| Strategy | Bets with qualifying final same-book and independent prices | Mean same-book improvement | Mean advantage versus final other-book probabilities |
+| --- | ---: | ---: | ---: |
+| Main market-only policy | 2 of 4 | +0.83 percentage points | +1.06 percentage points |
+| Market-adjustment policy | 9 of 18 | +1.35 percentage points | −1.98 percentage points |
+
+A positive same-book move can coexist with an unattractive entry price after
+the other books' margins are removed. Seven of the nine market-adjustment
+entries have negative independent final advantage under ordinary margin
+removal. Under power removal, the average independent advantage is −0.49
+points and only three of nine are positive. The main policy's two available
+references also turn negative under power removal (−2.17 points on average).
+The monitoring page now reports both price measures, separate strategy counts,
+missing references, fighter names and card dates. It respects the existing
+selected-book filter. These comparisons are not bookmaker settlement evidence.
+
+There is no reason to adopt the power method from this result alone. On the
+same 31 fights across three cards, ordinary market probabilities still have
+the lowest probability error:
+
+| Estimate | Log loss — lower is better |
+| --- | ---: |
+| Ordinary market | 0.6970 |
+| Existing frozen calibrated market | 0.7113 |
+| Power market sensitivity | 0.7176 |
+| Winner model | 0.8876 |
+
+This error penalizes confident wrong forecasts. Three cards cannot reliably
+rank small differences. The frozen calibration was available before these
+31 decisions; its later creation makes it unavailable for the two August 22
+selections in this audit. Those rows are explicitly missing that comparison.
+Different sample counts must not be presented as a fair probability contest.
+
+Keep all live selection rules fixed and paper-only. Prioritize new evidence
+about independently favorable entry prices and calibration on the selections,
+especially long shots. Keep the power calculation as a sensitivity check;
+do not select it because it suppresses these bets. No new bookmaker weights,
+margin alternatives, or thresholds were fitted. Book-specific results are in
+the evidence, but access to a recorded book remains unverified until the user
+supplies their usable books.
+
+Detailed outputs: [computed evidence](selected_price_evidence.json),
+[individual selections](selected_price_rows.csv), and
+[reproducible code](selected_price_audit.py).
+
+The [live verification run](https://github.com/alexchandler100/UFC_Prediction_2022/actions/runs/36886864389)
+succeeded and published `a9b0d000`: 118 moneyline quotes, 44 total-round quotes,
+12 winner forecasts and 14 total-line forecasts. Optional method-price output
+validation was skipped, so it did not block the healthy core publication.
+All 12 matchups were outside the 20–28 hour decision window; zero new
+equal-stake decisions is expected. The follow-up report labels this as a timing
+skip instead of a shortage of eligible books. See
+[recorded live evidence](live_repair_verification.json).
+
+The expanded monitoring report was rebuilt from that live data and reproduced
+exactly. The policy and decision/settlement ledgers were unchanged. The full
+545-test suite passed; the subsequent diagnostic-label adjustment passed all
+15 equal-stake tests. Three independent audit tests check margin conversion,
+fighter orientation, target-book exclusion, capture separation and minimum
+book counts. Desktop/mobile and single-book filtering also passed; see
+[browser evidence](selected_price_ui_validation.json) and
+[follow-up validation](selected_price_validation.json).

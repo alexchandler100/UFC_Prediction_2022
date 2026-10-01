@@ -3845,7 +3845,7 @@ function renderResearchMonitor() {
     const diagnostic=equal.latest_capture_diagnostics;
     if (diagnostic) {
       const reasons={missing_source_or_card_time:'Missing source or card time',card_or_bout_started:'Card or bout already started',outside_card_decision_window:'Outside the 20–28 hour card window',stale_or_future_source_quote:'Stale or future quote timestamp',incompatible_decision_inputs:'Quote and forecast disagree',before_activation:'Collected before repair activation',capture_outside_five_minutes:'Capture outside the five-minute decision limit'};
-      appendText(container,'p','section-note',`Latest capture check: ${formatTimestamp(diagnostic.observed_at_utc)}. ${diagnostic.matchups_considered || 0} matchups checked; ${diagnostic.outcomes?.already_recorded || 0} already recorded; ${diagnostic.outcomes?.fewer_than_four_eligible_books || 0} lacked four eligible books. This explains collection eligibility; it does not create past bets.`);
+      appendText(container,'p','section-note',`Latest capture check: ${formatTimestamp(diagnostic.observed_at_utc)}. ${diagnostic.matchups_considered || 0} matchups checked; ${diagnostic.outcomes?.already_recorded || 0} already recorded; ${diagnostic.outcomes?.outside_card_decision_window || 0} outside the decision window; ${diagnostic.outcomes?.fewer_than_four_eligible_books || 0} lacked four eligible books. This explains collection eligibility; it does not create past bets.`);
       table(['Excluded quote reason','Quotes'],Object.entries(diagnostic.quote_exclusions || {}).map(([reason,count])=>[reasons[reason] || reason.replaceAll('_',' '),count]));
     }
   }
@@ -3855,8 +3855,15 @@ function renderResearchMonitor() {
     const windowNames={early:'Early',t24:'Day before',final:'Final pre-card'};
     table(['Market / window','Captured','Not due','Due but missing','Missed','Unknown start'],Object.entries(windows.summary).map(([key,counts])=>{const [market,window]=key.split(':');return [`${market==='moneyline'?'Winner':'Total rounds'} / ${windowNames[window]}`,counts.captured || 0,counts.not_due || 0,counts.due_missing || 0,counts.missed || 0,counts.unknown_start || 0];}));
     const refs=windows.moneyline_references.filter(r=>!r.book || marketBookAllowed(r.book));
-    table(['Recorded entry book','Final reference','Collected','Other-book probability advantage'],refs.map(r=>[r.book || 'Unknown',r.status==='available'?'Available':r.status==='fewer_than_three_other_books'?'Same-book price only':'Missing',formatTimestamp(r.observed_at_utc),r.independent_probability_advantage==null?'Unavailable':`${(100*r.independent_probability_advantage).toFixed(2)} percentage points`]));
+    const strategyNames={locked_market:'Market only',market_first:'Market adjustment'};
+    const points=value=>value==null?'Unavailable':`${(100*value).toFixed(2)} percentage points`;
+    table(['Strategy / selected books','Recorded bets','Same-book / independent references','Missing final price','Mean same-book movement','Mean other-book advantage'],Object.keys(windows.moneyline_reference_summary || {}).map(strategy=>{
+      const rows=refs.filter(r=>r.strategy===strategy),same=rows.filter(r=>r.same_book_probability_movement!=null),independent=rows.filter(r=>r.independent_probability_advantage!=null);
+      return [strategyNames[strategy] || strategy,rows.length,`${same.length} / ${independent.length}`,rows.length-same.length,points(same.length?same.reduce((s,r)=>s+r.same_book_probability_movement,0)/same.length:null),points(independent.length?independent.reduce((s,r)=>s+r.independent_probability_advantage,0)/independent.length:null)];
+    }));
+    table(['Strategy / selection','Card','Recorded entry book','Final reference','Collected','Other-book probability advantage'],refs.map(r=>[`${strategyNames[r.strategy] || 'Market only'} / ${r.selection || 'Selection unavailable'}`,r.event_date || 'Unknown',r.book || 'Unknown',r.status==='available'?'Available':r.status==='fewer_than_three_other_books'?'Same-book price only':'Missing',formatTimestamp(r.observed_at_utc),points(r.independent_probability_advantage)]));
     appendText(container,'p','section-note','The last column compares the entry price with final probabilities from at least three other books, after removing their price margin. Positive favors the recorded entry. It is supporting evidence, not proof of profit.');
+    appendText(container,'p','section-note','A price can improve at the entry book while remaining unattractive compared with other books after their margin is removed. Keep these two comparisons separate. Strategies use different selection rules; their results must not be added together.');
   }
   const conditions=report.simulation_conditions;
   if (conditions) {

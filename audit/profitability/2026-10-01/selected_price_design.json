@@ -1,0 +1,29 @@
+{
+  "version": "selected-price-diagnostic-v1",
+  "source_revision": "e8444907cd409a2aadaa1ba9f04b6c9aa9c6d47b",
+  "status": "exploratory_existing_outcomes_already_seen",
+  "execution_enabled": false,
+  "production_policy_changes": false,
+  "questions": [
+    "Do recorded selected prices retain positive estimated return when sportsbook margin removal changes?",
+    "Does excluding any one additional comparison book erase the entry-price advantage?",
+    "Do selections beat fresh final same-book prices and independent other-book probabilities?",
+    "How do unadjusted market, frozen calibrated market, and winner-model probabilities compare on the same post-calibration-freeze fights?"
+  ],
+  "single_margin_alternative": "power: choose k so implied_fighter^k + implied_opponent^k = 1; average adjusted probabilities across non-target books",
+  "alternative_source": "https://doi.org/10.11648/j.ajss.20170506.12",
+  "power_selection_time": "chosen for this diagnostic after prior aggregate results were known; not a prospective or untouched evaluation",
+  "selected_bets": "Existing immutable main moneyline and market-first selections only; preserve their respective thresholds and show them separately",
+  "same_fight_comparison": "Main locked decisions issued after calibration artifact creation; each method scores the same fighter orientation, fight and excluded target book",
+  "longshot_definition": "selected American moneyline at least +300; descriptive only",
+  "additional_book_omission": "Retain at least three other books; report minimum and maximum probability, never treat these as confidence intervals",
+  "worse_payout_scenarios": [0.0, 0.02, 0.05],
+  "final_reference": "Last same-book fresh quote 15-90 minutes before saved card start, after decision; at least three other books for independent probability",
+  "no_go": [
+    "No retrospective paper decisions",
+    "No parameter or threshold sweep",
+    "No production adoption based on this sample",
+    "No assumption that all recorded sportsbooks are accessible",
+    "No opening simulator confirmation cohorts"
+  ]
+}

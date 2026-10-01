@@ -1,0 +1,2880 @@
+{
+  "design": {
+    "additional_book_omission": "Retain at least three other books; report minimum and maximum probability, never treat these as confidence intervals",
+    "alternative_source": "https://doi.org/10.11648/j.ajss.20170506.12",
+    "execution_enabled": false,
+    "final_reference": "Last same-book fresh quote 15-90 minutes before saved card start, after decision; at least three other books for independent probability",
+    "longshot_definition": "selected American moneyline at least +300; descriptive only",
+    "no_go": [
+      "No retrospective paper decisions",
+      "No parameter or threshold sweep",
+      "No production adoption based on this sample",
+      "No assumption that all recorded sportsbooks are accessible",
+      "No opening simulator confirmation cohorts"
+    ],
+    "power_selection_time": "chosen for this diagnostic after prior aggregate results were known; not a prospective or untouched evaluation",
+    "production_policy_changes": false,
+    "questions": [
+      "Do recorded selected prices retain positive estimated return when sportsbook margin removal changes?",
+      "Does excluding any one additional comparison book erase the entry-price advantage?",
+      "Do selections beat fresh final same-book prices and independent other-book probabilities?",
+      "How do unadjusted market, frozen calibrated market, and winner-model probabilities compare on the same post-calibration-freeze fights?"
+    ],
+    "same_fight_comparison": "Main locked decisions issued after calibration artifact creation; each method scores the same fighter orientation, fight and excluded target book",
+    "selected_bets": "Existing immutable main moneyline and market-first selections only; preserve their respective thresholds and show them separately",
+    "single_margin_alternative": "power: choose k so implied_fighter^k + implied_opponent^k = 1; average adjusted probabilities across non-target books",
+    "source_revision": "e8444907cd409a2aadaa1ba9f04b6c9aa9c6d47b",
+    "status": "exploratory_existing_outcomes_already_seen",
+    "version": "selected-price-diagnostic-v1",
+    "worse_payout_scenarios": [
+      0.0,
+      0.02,
+      0.05
+    ]
+  },
+  "input_sha256": {
+    "src/content/data/market/capture_report.json": "53dd85298dc965fbad4fbedd1c24f03a2dd36fd7872709298ee8347c58bb492a",
+    "src/content/data/market/equal_stake_experiment/policy.json": "789265971aed47ab25279aefa3bc79da093b0b50218132b282bc09f1e95a947c",
+    "src/content/data/market/forecast_captures.jsonl": "e1d807852581ef609174578366c5d210c52426da825c59d9f2ebd5ae19ef1d32",
+    "src/content/data/market/market_first_paper_decisions.jsonl": "404cd6dbaa480977931d04454fc114985350a155332cd2e88516f35175c9e0a7",
+    "src/content/data/market/market_first_paper_settlements.jsonl": "788c29ec7cf3c37d552709f44bbd0b0a11696757da2f2ff4420db004bbd673e5",
+    "src/content/data/market/paper_decisions.jsonl": "e4023cf1dc1573643c230b12e7734abe2ccd3195b778ac4751ba13c9f461a963",
+    "src/content/data/market/paper_settlements.jsonl": "c0b9ec502f7ab6bb6ea71de65e1031be434610afd39d631eccbe6f0252fad52d",
+    "src/content/data/market/quote_snapshots.jsonl": "a6cfec167f33dcf8e0f2fa0aff60feec72857650a0d3db3d98a97dce3e6466f3",
+    "src/content/data/market/quote_source_metadata.jsonl": "9134bd455505f95c8b800d8a92c948cd5fe518e98122ddd224398af4b75d4fb7"
+  },
+  "interpretation": "Selected-price sensitivity on already observed outcomes. Policies are separate, not additive. Book-omission ranges are not confidence intervals.",
+  "same_fight_probability_scores": {
+    "calibrated_market": {
+      "actual_wins": 15,
+      "brier": 0.24860799933328756,
+      "cards": 3,
+      "expected_wins": 14.20166686332154,
+      "fights": 31,
+      "log_loss": 0.7113380799823111
+    },
+    "market": {
+      "actual_wins": 15,
+      "brier": 0.24485864316811828,
+      "cards": 3,
+      "expected_wins": 14.289805729389013,
+      "fights": 31,
+      "log_loss": 0.6970080443832543
+    },
+    "power_market": {
+      "actual_wins": 15,
+      "brier": 0.24835636231848157,
+      "cards": 3,
+      "expected_wins": 14.186552897340174,
+      "fights": 31,
+      "log_loss": 0.7176260045728844
+    },
+    "winner_model": {
+      "actual_wins": 15,
+      "brier": 0.30756484945034485,
+      "cards": 3,
+      "expected_wins": 15.714668891799999,
+      "fights": 31,
+      "log_loss": 0.8875544070585181
+    }
+  },
+  "same_fight_rows": [
+    {
+      "calibrated_market": 0.7804402435827654,
+      "event_date": "2026-09-05",
+      "event_id": "2144954270be834d",
+      "market": 0.7525887247326051,
+      "matchup_id": "matchup_efceb8a2cf0faca403b487b7f86a45ed53496d69cfb44431d1fce10df1751431",
+      "power_market": 0.7725312050268303,
+      "target": 1,
+      "winner_model": 0.6449791242
+    },
+    {
+      "calibrated_market": 0.5736059200262916,
+      "event_date": "2026-09-05",
+      "event_id": "2144954270be834d",
+      "market": 0.5643900246956384,
+      "matchup_id": "matchup_c6f99d827d99147ec40154996f5cd9c439402f8c1fe7b0c6d927bd3c81990c61",
+      "power_market": 0.568918141490553,
+      "target": 1,
+      "winner_model": 0.5
+    },
+    {
+      "calibrated_market": 0.7618261479066033,
+      "event_date": "2026-09-05",
+      "event_id": "2144954270be834d",
+      "market": 0.7348194898534437,
+      "matchup_id": "matchup_c4fdd2478b8f9bfba7f679889348ae3848153f5d11360f550d52e07349e29e17",
+      "power_market": 0.751530376499258,
+      "target": 1,
+      "winner_model": 0.8380788126000001
+    },
+    {
+      "calibrated_market": 0.4945272888630466,
+      "event_date": "2026-09-05",
+      "event_id": "2144954270be834d",
+      "market": 0.49522208845469073,
+      "matchup_id": "matchup_1fce52baf78bc8d3d8b338f10139cc7aeb18fe188c5bae17140a9dcc62f262e6",
+      "power_market": 0.49480842102717654,
+      "target": 0,
+      "winner_model": 0.6553684336
+    },
+    {
+      "calibrated_market": 0.2092493409870355,
+      "event_date": "2026-09-05",
+      "event_id": "2144954270be834d",
+      "market": 0.2374610406217271,
+      "matchup_id": "matchup_cf3205b162a0dde589038b55f4225ba43c70eea4bcc574f1ed3694825204d030",
+      "power_market": 0.2163741556601582,
+      "target": 0,
+      "winner_model": 0.35991107059999994
+    },
+    {
+      "calibrated_market": 0.7451275237532199,
+      "event_date": "2026-09-05",
+      "event_id": "2144954270be834d",
+      "market": 0.7190730047731353,
+      "matchup_id": "matchup_5ba9978871b848d5b7445f82c33ad8b233afd688c6347983e72b3aec7be3e696",
+      "power_market": 0.7354302800488617,
+      "target": 0,
+      "winner_model": 0.9371078453
+    },
+    {
+      "calibrated_market": 0.4108010140734317,
+      "event_date": "2026-09-05",
+      "event_id": "2144954270be834d",
+      "market": 0.42189508401135295,
+      "matchup_id": "matchup_59d3204bd6591089d45ebe3e85e99fc60ec6d3301eb3884ceb1d0451d9599614",
+      "power_market": 0.4158723401397522,
+      "target": 1,
+      "winner_model": 0.33654160329999994
+    },
+    {
+      "calibrated_market": 0.4790683063283043,
+      "event_date": "2026-09-05",
+      "event_id": "2144954270be834d",
+      "market": 0.481722969942222,
+      "matchup_id": "matchup_28fea7b40a742271baa73e0e4459f1d5777e4498f310623c111e7397e38f7183",
+      "power_market": 0.48030182916584024,
+      "target": 0,
+      "winner_model": 0.9247972707
+    },
+    {
+      "calibrated_market": 0.6923077188871991,
+      "event_date": "2026-09-05",
+      "event_id": "2144954270be834d",
+      "market": 0.6702775157532452,
+      "matchup_id": "matchup_a98b162dd2ff1d5415a572a5a20b0f37599fc71cd28b0ac30b961720373d1199",
+      "power_market": 0.6826781479562167,
+      "target": 0,
+      "winner_model": 0.7513614164
+    },
+    {
+      "calibrated_market": 0.30323908809114675,
+      "event_date": "2026-09-05",
+      "event_id": "2144954270be834d",
+      "market": 0.3256603563813688,
+      "matchup_id": "matchup_86b2eb61db67ca8fa121533f6e961a913c37fc9cd4cd9b044b5534cfa1159816",
+      "power_market": 0.3128896359265637,
+      "target": 0,
+      "winner_model": 0.24202491169999996
+    },
+    {
+      "calibrated_market": 0.3370792974859467,
+      "event_date": "2026-09-05",
+      "event_id": "2144954270be834d",
+      "market": 0.3563293721779144,
+      "matchup_id": "matchup_e77fa0e4f3862227418eef40fbbb1a99437034414985a81107bee615f9da08ca",
+      "power_market": 0.3464919956144022,
+      "target": 0,
+      "winner_model": 0.35023962750000004
+    },
+    {
+      "calibrated_market": 0.5314369377532442,
+      "event_date": "2026-09-05",
+      "event_id": "2144954270be834d",
+      "market": 0.5274555452937468,
+      "matchup_id": "matchup_4b14d6546c8101cf4e7844a682d653e6a80eb09ed63c589aec54a33e149df254",
+      "power_market": 0.5295176080603835,
+      "target": 0,
+      "winner_model": 0.5
+    },
+    {
+      "calibrated_market": 0.15489496099099342,
+      "event_date": "2026-09-05",
+      "event_id": "2144954270be834d",
+      "market": 0.18348748277784482,
+      "matchup_id": "matchup_0dc64302fb9aa1e8a2fefa3fcd256374a63542df95f08a12b53d18c5af710d5b",
+      "power_market": 0.1566434307117953,
+      "target": 0,
+      "winner_model": 0.8890807601
+    },
+    {
+      "calibrated_market": 0.25013640065052434,
+      "event_date": "2026-09-19",
+      "event_id": "8a0a35e7c74bebcc",
+      "market": 0.27647848596570257,
+      "matchup_id": "matchup_46acdff5f3e3f7792daa1d5df06232e0e473168e2b7cb8890421fed3e858632b",
+      "power_market": 0.2579772107810321,
+      "target": 0,
+      "winner_model": 0.2523123301
+    },
+    {
+      "calibrated_market": 0.06360262743846559,
+      "event_date": "2026-09-19",
+      "event_id": "8a0a35e7c74bebcc",
+      "market": 0.08431220737906908,
+      "matchup_id": "matchup_24d2abb788a1cd512c495fdc548d6e73ba97540b84f658b9ddefdfce49e378d6",
+      "power_market": 0.04726465874219815,
+      "target": 1,
+      "winner_model": 0.08680082619999996
+    },
+    {
+      "calibrated_market": 0.5610774239172819,
+      "event_date": "2026-09-19",
+      "event_id": "8a0a35e7c74bebcc",
+      "market": 0.5533965525442776,
+      "matchup_id": "matchup_6e355a8ad7d197cbe29ce642d75d50d2a8e45844e42d87852e64e4bf6ec40b9c",
+      "power_market": 0.557416743511082,
+      "target": 1,
+      "winner_model": 0.7779829299000001
+    },
+    {
+      "calibrated_market": 0.8394426732723231,
+      "event_date": "2026-09-19",
+      "event_id": "8a0a35e7c74bebcc",
+      "market": 0.8107546412386335,
+      "matchup_id": "matchup_41ba239087a241674fcd8f74181fb92a25ca542b10d45301b7c21c7489209f99",
+      "power_market": 0.8375426873246511,
+      "target": 1,
+      "winner_model": 0.5353771359999999
+    },
+    {
+      "calibrated_market": 0.7053491750893099,
+      "event_date": "2026-09-19",
+      "event_id": "8a0a35e7c74bebcc",
+      "market": 0.6821983805863573,
+      "matchup_id": "matchup_476907300c352a3007df1648d5891307dad34b5ffaf7f0940510328bb5dda3c1",
+      "power_market": 0.6961233951535745,
+      "target": 0,
+      "winner_model": 0.7084329221
+    },
+    {
+      "calibrated_market": 0.16545926434461425,
+      "event_date": "2026-09-19",
+      "event_id": "8a0a35e7c74bebcc",
+      "market": 0.19420206177121868,
+      "matchup_id": "matchup_c79dcc9635165d1f4a1e239bf9c5b598ecfcf90c75e2f49b00cff1c9260a3fd4",
+      "power_market": 0.1682462254522584,
+      "target": 0,
+      "winner_model": 0.3650763641
+    },
+    {
+      "calibrated_market": 0.7943036760301664,
+      "event_date": "2026-09-19",
+      "event_id": "8a0a35e7c74bebcc",
+      "market": 0.7659868812643056,
+      "matchup_id": "matchup_730df33900ec43538f5d7a9c368cd8fc9d91aef0d76aae08a2e109ea2630641f",
+      "power_market": 0.7878936145223006,
+      "target": 1,
+      "winner_model": 0.7508323863999999
+    },
+    {
+      "calibrated_market": 0.6790167723162663,
+      "event_date": "2026-09-19",
+      "event_id": "8a0a35e7c74bebcc",
+      "market": 0.6582027530380268,
+      "matchup_id": "matchup_8cb639734e70349cede5526c9186ce46910e1a9fe372bc84895459f47f63314c",
+      "power_market": 0.670322517616063,
+      "target": 1,
+      "winner_model": 0.5531087991
+    },
+    {
+      "calibrated_market": 0.3669264053522259,
+      "event_date": "2026-09-19",
+      "event_id": "8a0a35e7c74bebcc",
+      "market": 0.3830470743435529,
+      "matchup_id": "matchup_acd0e6b31a1c8fb3bae358145f988d378eaf334300bf13546996916eed3530b8",
+      "power_market": 0.3749085224779335,
+      "target": 0,
+      "winner_model": 0.29303726789999995
+    },
+    {
+      "calibrated_market": 0.2754089119222945,
+      "event_date": "2026-09-19",
+      "event_id": "8a0a35e7c74bebcc",
+      "market": 0.30006771303706514,
+      "matchup_id": "matchup_bec90fe45f91dcb38f05be1a35565a02b9c8e1ca4de8ffb24483749c9958aa9c",
+      "power_market": 0.28406429377516107,
+      "target": 1,
+      "winner_model": 0.24533110900000002
+    },
+    {
+      "calibrated_market": 0.3314920760921195,
+      "event_date": "2026-09-19",
+      "event_id": "8a0a35e7c74bebcc",
+      "market": 0.35129571360302014,
+      "matchup_id": "matchup_ae4469d6e6c383f48dab6d33688d521769dc4791855bdb3c6cf4abaa090c38c7",
+      "power_market": 0.3406158820295977,
+      "target": 1,
+      "winner_model": 0.2723364243
+    },
+    {
+      "calibrated_market": 0.5832382247417762,
+      "event_date": "2026-09-26",
+      "event_id": "7e654edcddd71550",
+      "market": 0.572857456051272,
+      "matchup_id": "matchup_7aa95ba68484517158ef35e7f68d68ddaa97e6998cad2e106c8088000ff50d60",
+      "power_market": 0.5780771149827029,
+      "target": 1,
+      "winner_model": 0.5853064635
+    },
+    {
+      "calibrated_market": 0.6291660690251591,
+      "event_date": "2026-09-26",
+      "event_id": "7e654edcddd71550",
+      "market": 0.6134744923388812,
+      "matchup_id": "matchup_e7c500b651f8f8feef8228bdb897ec8da3fd58afb4035308f5df77b252e53330",
+      "power_market": 0.62168813037676,
+      "target": 0,
+      "winner_model": 0.4252103816
+    },
+    {
+      "calibrated_market": 0.11259349881934058,
+      "event_date": "2026-09-26",
+      "event_id": "7e654edcddd71550",
+      "market": 0.13922457451608233,
+      "matchup_id": "matchup_34028b84a7ec0b53a2fa9219c106e593df1824e7fab7bcebd62d525afd645b53",
+      "power_market": 0.11047881956025617,
+      "target": 0,
+      "winner_model": 0.1491701311
+    },
+    {
+      "calibrated_market": 0.5990407494683454,
+      "event_date": "2026-09-26",
+      "event_id": "7e654edcddd71550",
+      "market": 0.5867829742510582,
+      "matchup_id": "matchup_d14c691a367e024e5705220669d896edb1db21b218621339498702e2778d28e0",
+      "power_market": 0.5931560660638594,
+      "target": 1,
+      "winner_model": 0.549106168
+    },
+    {
+      "calibrated_market": 0.21871862366505826,
+      "event_date": "2026-09-26",
+      "event_id": "7e654edcddd71550",
+      "market": 0.24660252082906126,
+      "matchup_id": "matchup_bd37b6457569db68ac2f9d98f3c91207a45248f8fc97c57786bba8dce606713e",
+      "power_market": 0.22614231039296798,
+      "target": 1,
+      "winner_model": 0.5720518408
+    },
+    {
+      "calibrated_market": 0.21945311995153025,
+      "event_date": "2026-09-26",
+      "event_id": "7e654edcddd71550",
+      "market": 0.24730877246484995,
+      "matchup_id": "matchup_77abcf3c53b775efe29136d638e75a9874c26ecf33cd29728d274597c66b3704",
+      "power_market": 0.22759587922355828,
+      "target": 1,
+      "winner_model": 0.30709780529999997
+    },
+    {
+      "calibrated_market": 0.33363738249550845,
+      "event_date": "2026-09-26",
+      "event_id": "7e654edcddd71550",
+      "market": 0.3532297746976462,
+      "matchup_id": "matchup_e6fbd5b4ed13b05288ca09bebeb9979c204884c0b08d8693b89a0d3ae9faae5a",
+      "power_market": 0.34305125802642866,
+      "target": 0,
+      "winner_model": 0.3566067304
+    }
+  ],
+  "same_fight_scores_by_card": {
+    "2026-09-05": {
+      "calibrated_market": {
+        "actual_wins": 4,
+        "brier": 0.2075575895806813,
+        "cards": 1,
+        "expected_wins": 6.473603788729228,
+        "fights": 13,
+        "log_loss": 0.5983847683811687
+      },
+      "market": {
+        "actual_wins": 4,
+        "brier": 0.20772494624251506,
+        "cards": 1,
+        "expected_wins": 6.470382699468935,
+        "fights": 13,
+        "log_loss": 0.600419175412524
+      },
+      "power_market": {
+        "actual_wins": 4,
+        "brier": 0.20712682565630441,
+        "cards": 1,
+        "expected_wins": 6.4639875673277905,
+        "fights": 13,
+        "log_loss": 0.5975986650260563
+      },
+      "winner_model": {
+        "actual_wins": 4,
+        "brier": 0.37855020277235635,
+        "cards": 1,
+        "expected_wins": 7.929490875999999,
+        "fights": 13,
+        "log_loss": 1.096523205127324
+      }
+    },
+    "2026-09-19": {
+      "calibrated_market": {
+        "actual_wins": 7,
+        "brier": 0.2667859504119216,
+        "cards": 1,
+        "expected_wins": 5.032215406425592,
+        "fights": 11,
+        "log_loss": 0.7879030084359536
+      },
+      "market": {
+        "actual_wins": 7,
+        "brier": 0.26203063814337274,
+        "cards": 1,
+        "expected_wins": 5.059942464771229,
+        "fights": 11,
+        "log_loss": 0.7616584679532511
+      },
+      "power_market": {
+        "actual_wins": 7,
+        "brier": 0.2682734431496692,
+        "cards": 1,
+        "expected_wins": 5.0223757513858525,
+        "fights": 11,
+        "log_loss": 0.8119314252687742
+      },
+      "winner_model": {
+        "actual_wins": 7,
+        "brier": 0.2949640622534004,
+        "cards": 1,
+        "expected_wins": 4.8406284951,
+        "fights": 11,
+        "log_loss": 0.8389903382800782
+      }
+    },
+    "2026-09-26": {
+      "calibrated_market": {
+        "actual_wins": 4,
+        "brier": 0.2962791228931314,
+        "cards": 1,
+        "expected_wins": 2.6958476681667185,
+        "fights": 7,
+        "log_loss": 0.8007921996715659
+      },
+      "market": {
+        "actual_wins": 4,
+        "brier": 0.2868366596402673,
+        "cards": 1,
+        "expected_wins": 2.759480565148851,
+        "fights": 7,
+        "log_loss": 0.7747938497189011
+      },
+      "power_market": {
+        "actual_wins": 4,
+        "brier": 0.29362723195637286,
+        "cards": 1,
+        "expected_wins": 2.7001895786265333,
+        "fights": 7,
+        "log_loss": 0.7923396883520242
+      },
+      "winner_model": {
+        "actual_wins": 4,
+        "brier": 0.19553614459037905,
+        "cards": 1,
+        "expected_wins": 2.9445495207000008,
+        "fights": 7,
+        "log_loss": 0.5757844615825697
+      }
+    }
+  },
+  "selected_rows": [
+    {
+      "book": "Bovada",
+      "calibrated_lower_probability": null,
+      "calibrated_market_ev": null,
+      "calibrated_market_probability": null,
+      "comparison_mean_overround": 1.053832404095927,
+      "decision_id": "30dc1ca97b928526451beb2033f87f045d643f29f501c885265f518ee1dbdbe8",
+      "event_date": "2026-08-22",
+      "event_id": "a0a69dc9914ef6e1",
+      "final_independent_probability_advantage": null,
+      "final_observed_at_utc": null,
+      "final_power_probability_advantage": null,
+      "final_quote_id": null,
+      "final_same_book_probability_movement": null,
+      "final_status": "missing_final_same_book_quote",
+      "longshot": true,
+      "matchup_id": "matchup_f02d13336e28fd11d4d67ce3b551ef79a82807effcfdfa6987ffff00233b14ae",
+      "minimum_expected_return": 0.05,
+      "moneyline": 450,
+      "omission_max_ev": 0.0750118829648263,
+      "omission_min_ev": 0.05573741022519618,
+      "other_book_count": 10,
+      "other_book_quote_ids": [
+        "46b985c7a8f271f984c7f64f1ff4911b0205abc2b9347f9163b994ad85e581e3",
+        "b47378ae130016aa3bab62044f9375f2f85002f48e2a128a07373e10daa97fa7",
+        "a688c0e67017f01c5926be294eca2fe2b149cd6880e8e156059486c7bb1e537d",
+        "40c2ceee7ae284d01fd9aa5c2c76ec61620fdbc993d95ce0d82db5d002411136",
+        "0e2e929b1b2c89686fa1ca905ddf3e2a29a83609643bddb6fd127dc08b0a1303",
+        "3f98001804b07a9410c284c5fdf8cf4d9fa4d65d1582fe62678202182784f6cd",
+        "6bb67c5e52ac8acb878c71119a316da2f91405385731448378d9324fa09f8462",
+        "aefa005767555c52087aaaa246b68d65877f279ec1185a0de2b9d7ce1b0cedea",
+        "e9e4433a2aaf6af34649df78229ad62afd24a1df66a3f3c8f4d172fe4eb69131",
+        "bc0cd0eb3cb9b39c521297ba514483b141db1e911ac14a366af1cecb32cea438"
+      ],
+      "power_market_ev": -0.07876472048976002,
+      "power_market_probability": 0.16749732354731636,
+      "profit_units": -1.0,
+      "proportional_market_ev": 0.06522643070895273,
+      "proportional_market_probability": 0.19367753285617323,
+      "recorded_ev": 0.06522643070895273,
+      "recorded_probability": 0.19367753285617323,
+      "selected_fighter_id": "8061a3136026a673",
+      "selection": "Jeisla Chaves",
+      "source_quality_failures": [],
+      "strategy": "locked_market",
+      "target_quote_age_seconds": 112.218293,
+      "won": 0
+    },
+    {
+      "book": "BetMGM",
+      "calibrated_lower_probability": null,
+      "calibrated_market_ev": null,
+      "calibrated_market_probability": null,
+      "comparison_mean_overround": 1.050089765231363,
+      "decision_id": "359c8bfcf414a032b5e773b1e19abe335bca6b71f84842bab37d209c1c05b425",
+      "event_date": "2026-08-22",
+      "event_id": "a0a69dc9914ef6e1",
+      "final_independent_probability_advantage": null,
+      "final_observed_at_utc": null,
+      "final_power_probability_advantage": null,
+      "final_quote_id": null,
+      "final_same_book_probability_movement": null,
+      "final_status": "missing_final_same_book_quote",
+      "longshot": true,
+      "matchup_id": "matchup_fed9bd92cf25bf722674809712169440431c7630ef62bc2874998709ca4801e9",
+      "minimum_expected_return": 0.05,
+      "moneyline": 750,
+      "omission_max_ev": 0.08545604697121578,
+      "omission_min_ev": 0.07236939928036779,
+      "other_book_count": 10,
+      "other_book_quote_ids": [
+        "fe76704a5e6e1712e8507a311a5d8884143a1749707f53f5bcf235a7938ec58c",
+        "ecb0565d0c5681c9a75a29acf657e7dc0364e44256c643f7c83bd92851d78273",
+        "909e721a1fb772742bc6882828fa921ead617105c9534d8a50217067c3e1f01f",
+        "82d2467611a355b71a09853bbadaad03f2d5cdd07602aa12ca6725778be7c8c0",
+        "928e64256c21205a89133c1128e1cac6b4090f506434191b06a78f82e5109b68",
+        "4685f01abe8ca6f2b16a398519cbfd33b477cca043bfce62b6ca526bc493f440",
+        "f689e16bfffba901e5207125c96123da207ae30ef25cff2f2c992811b872f165",
+        "7892bf70b7305aebece601f2a0c04922326b3b16490b0e6bfa68dafd7f28e5eb",
+        "a22cd397799203c9e4c260cb5bdac95df912685ce4324fc569165489e251c046",
+        "403e689c7474556b81aa777c2de8224cab8161442c10080a4b3c9c143ba5b595"
+      ],
+      "power_market_ev": -0.18419857256124794,
+      "power_market_probability": 0.09597663852220613,
+      "profit_units": -1.0,
+      "proportional_market_ev": 0.07891044227409427,
+      "proportional_market_probability": 0.1269306402675405,
+      "recorded_ev": 0.07891044227409405,
+      "recorded_probability": 0.12693064026754047,
+      "selected_fighter_id": "23a81656507b56a3",
+      "selection": "Terrance Chatman",
+      "source_quality_failures": [],
+      "strategy": "locked_market",
+      "target_quote_age_seconds": 10.218293,
+      "won": 0
+    },
+    {
+      "book": "BetOnline.ag",
+      "calibrated_lower_probability": 0.04162189903770127,
+      "calibrated_market_ev": -0.14263658212948382,
+      "calibrated_market_probability": 0.06360262743846559,
+      "comparison_mean_overround": 1.050909469337428,
+      "decision_id": "1f132569e602c443fea1d17200ee3286fa193b2748cd331e4b9792063b37f139",
+      "event_date": "2026-09-19",
+      "event_id": "8a0a35e7c74bebcc",
+      "final_independent_probability_advantage": 0.010893297360460838,
+      "final_observed_at_utc": "2026-09-19T20:29:05.039584Z",
+      "final_power_probability_advantage": -0.02514318544630157,
+      "final_quote_id": "d5c0b67dfae51a46c326935ed01902f43f12b3621efbe827f83e9a5a31e2da22",
+      "final_same_book_probability_movement": 0.002739100661949337,
+      "final_status": "available",
+      "longshot": true,
+      "matchup_id": "matchup_24d2abb788a1cd512c495fdc548d6e73ba97540b84f658b9ddefdfce49e378d6",
+      "minimum_expected_return": 0.05,
+      "moneyline": 1248,
+      "omission_max_ev": 0.15377981008876795,
+      "omission_min_ev": 0.10995570778795094,
+      "other_book_count": 9,
+      "other_book_quote_ids": [
+        "79a17e4aa2aaaa1d6be13e72ec200e38e437c5df8054c47fa6f38c077b61f078",
+        "eb1bda0ff82419220b6bbb9af1eb74a81e4615f54f1251b19f0b5be26c4e2249",
+        "daa59ee8d73db18149622e158a02d73f542e38c600f5377280854bb402120b66",
+        "b93077b7e607acd69d66849369f514eff783aea83367456346ffe0c6aa2ec393",
+        "991c8fe657b7d708593f9fa2afeb2a7c762553256167bbdae1d179d4e3cc9f00",
+        "6598dc622e8c4c1b82adc478e745c2862bcae395b5bba75ffd050034c439800e",
+        "3dadb09112b3f9d1e2a984bf026818919eb7205a842b949f5b918b0e5f2909b7",
+        "ae16303e4fb3f18028db4cdd34a7211061b1d1b5a5214c0663dc706a9dada0b1",
+        "39e62e590e93b513e31380f2bcb7bca63e3a67a0a0a9518aeea0c6567402de5b"
+      ],
+      "power_market_ev": -0.36287240015516886,
+      "power_market_probability": 0.04726465874219815,
+      "profit_units": 12.48,
+      "proportional_market_ev": 0.1365285554698512,
+      "proportional_market_probability": 0.08431220737906908,
+      "recorded_ev": 0.1365285554698512,
+      "recorded_probability": 0.08431220737906908,
+      "selected_fighter_id": "0f3a990526c5e706",
+      "selection": "Sean Sharaf",
+      "source_quality_failures": [],
+      "strategy": "locked_market",
+      "target_quote_age_seconds": 290.71557,
+      "won": 1
+    },
+    {
+      "book": "DraftKings",
+      "calibrated_lower_probability": 0.08350061169339712,
+      "calibrated_market_ev": -0.12740038415011046,
+      "calibrated_market_probability": 0.11259349881934058,
+      "comparison_mean_overround": 1.048891043219076,
+      "decision_id": "54978399596cebafc0c34be98ced29a1121cb4095ebbff817e54880c48444ed0",
+      "event_date": "2026-09-26",
+      "event_id": "7e654edcddd71550",
+      "final_independent_probability_advantage": 0.010304816447829213,
+      "final_observed_at_utc": "2026-09-26T20:29:17.907609Z",
+      "final_power_probability_advantage": -0.018323680729637942,
+      "final_quote_id": "fadaa48afec22ff2036faaa13544a3e4a37e8e86b0e02d48c96adc8344a1d544",
+      "final_same_book_probability_movement": 0.013824884792626724,
+      "final_status": "available",
+      "longshot": true,
+      "matchup_id": "matchup_34028b84a7ec0b53a2fa9219c106e593df1824e7fab7bcebd62d525afd645b53",
+      "minimum_expected_return": 0.05,
+      "moneyline": 675,
+      "omission_max_ev": 0.09059884125090001,
+      "omission_min_ev": 0.0645416502877958,
+      "other_book_count": 8,
+      "other_book_quote_ids": [
+        "4a9a116d949515660513f4a3d9782b081aadbf175e45e425d6559ac8e76aff7c",
+        "dcbdf01b281aec92a2d43101057a05fbc134fb2ad234776924c578c40347db6a",
+        "e729b94c8d7ed4ad357ec426bf740b3385c98a936429dbce71e10ebc70386b53",
+        "d1629faaae087d950e98b14a1b29498c6ce13ceba243b398cf2ea724db2245cc",
+        "a7e8b5a8c6685489aabba93820b82f428845b24089a44e3e1715c396617222a3",
+        "780338e45251cbb7c7ec2f792030d65521792d8b09665238a9d5fff82c041232",
+        "8f92bb938e688198f8b38132a32c504d9b8a080246d1354fa2caeccb7a29f320",
+        "a5f825b2f6a8a64c5c7b25c062d75a5dcf9c3b7f267ad1945c65965429b28f4d"
+      ],
+      "power_market_ev": -0.1437891484080147,
+      "power_market_probability": 0.11047881956025617,
+      "profit_units": -1.0,
+      "proportional_market_ev": 0.0789904524996381,
+      "proportional_market_probability": 0.13922457451608233,
+      "recorded_ev": 0.07899045249963788,
+      "recorded_probability": 0.1392245745160823,
+      "selected_fighter_id": "2c483cf443f38ece",
+      "selection": "Vanessa Demopoulos",
+      "source_quality_failures": [],
+      "strategy": "locked_market",
+      "target_quote_age_seconds": 35.317988,
+      "won": 0
+    },
+    {
+      "book": "Hard Rock Bet",
+      "calibrated_lower_probability": 0.4999717282981492,
+      "calibrated_market_ev": -4.9249806029272314e-05,
+      "calibrated_market_probability": 0.49997537509698536,
+      "comparison_mean_overround": 1.0509885928202356,
+      "decision_id": "17fee00ad83952ec81e7b087f7d19e3149237f38f06999450f1bb072a5981b9b",
+      "event_date": "2026-09-05",
+      "event_id": "2144954270be834d",
+      "final_independent_probability_advantage": null,
+      "final_observed_at_utc": null,
+      "final_power_probability_advantage": null,
+      "final_quote_id": null,
+      "final_same_book_probability_movement": null,
+      "final_status": "missing_final_same_book_quote",
+      "longshot": false,
+      "matchup_id": "matchup_1fce52baf78bc8d3d8b338f10139cc7aeb18fe188c5bae17140a9dcc62f262e6",
+      "minimum_expected_return": 0.025,
+      "moneyline": 100,
+      "omission_max_ev": 0.004937772463345258,
+      "omission_min_ev": -0.005315518368250172,
+      "other_book_count": 9,
+      "other_book_quote_ids": [
+        "4612901182431b1efb896558277e8899ad725de722660de6d6ac543a32b9c81d",
+        "c455881a9e40ecbeb7fc7b7ce973406a0cf23e5e36e4386888ce79f9fec0e482",
+        "699d9622cc4e10cf0147e3bee7072ed25facf34d34ad704e2e9aa3f5e8b1ceed",
+        "6bd4f3d8df2d64f539822e1951c1237f10c46b42c4200a9904bd1d48f02a629e",
+        "6c9603b86db657450b3bcb62f084ca7cfff8a496390562ed5558f640fd575336",
+        "3cf2eeed4c6665c741673290f6f3ec2598a6dce14e6d15f0698d1bf7fff5e2ca",
+        "51b8c337dd71bb40769df26bce758756efaa917b5edabd91673881bbb8634444",
+        "9efbbdbbc1f8d68df49d03358ba6b4b90d35c333d6d571c26bb2e7ac01115886",
+        "1baf6c73edbc6f15d0325ea620148519efb538b37026140e29cee0536f34bee1"
+      ],
+      "power_market_ev": -0.0002671609317319579,
+      "power_market_probability": 0.499866419534134,
+      "profit_units": -1.0,
+      "proportional_market_ev": -4.2996716044130245e-05,
+      "proportional_market_probability": 0.49997850164197793,
+      "recorded_ev": 0.059467699491635884,
+      "recorded_probability": 0.5297338497458179,
+      "selected_fighter_id": "9f5e3c20ce40b344",
+      "selection": "Klaudia Sygula",
+      "source_quality_failures": [],
+      "strategy": "market_first",
+      "target_quote_age_seconds": 16.686757,
+      "won": 0
+    },
+    {
+      "book": "DraftKings",
+      "calibrated_lower_probability": 0.6721642028258524,
+      "calibrated_market_ev": 0.0017127194608730356,
+      "calibrated_market_probability": 0.6981634105333357,
+      "comparison_mean_overround": 1.0484070831505559,
+      "decision_id": "257f9d4eb82d2395145f14c7c52b9ceadb82aa395266c77b680eda7b6f49e5e2",
+      "event_date": "2026-09-05",
+      "event_id": "2144954270be834d",
+      "final_independent_probability_advantage": null,
+      "final_observed_at_utc": null,
+      "final_power_probability_advantage": null,
+      "final_quote_id": null,
+      "final_same_book_probability_movement": null,
+      "final_status": "missing_final_same_book_quote",
+      "longshot": false,
+      "matchup_id": "matchup_86b2eb61db67ca8fa121533f6e961a913c37fc9cd4cd9b044b5534cfa1159816",
+      "minimum_expected_return": 0.025,
+      "moneyline": -230,
+      "omission_max_ev": -0.02919039759267339,
+      "omission_min_ev": -0.03161907874848757,
+      "other_book_count": 10,
+      "other_book_quote_ids": [
+        "f9525c0cc26ca00ff173bda0b12db19d29b37a86543513e392a9bf3373922b51",
+        "acbc80eab291f030b0ed603e769838bd014e98c968f01ab95a7d288e62a9c7bd",
+        "2dbdd24470762e33e30452235e9ba64cacef1a97544073b239ac8bfbf2159c7c",
+        "bc2cfd01c062d132e3a3915b0e6c2afe39bdbd7805023ab0c68b808c20047f86",
+        "3aac146e39557249e1dd528716789657502d296db1581cebe0a05cca505706f8",
+        "4f039490d25e873a97b3f880e74aef3b75301bc9e00891ed4f83f89af6c59e35",
+        "f16fde7134a3582f2faafd6b91384eb0f9209a8975a85271251bed4504aff24a",
+        "2c97a9a78032fe1c8ced1224fb954a4130bca05f0b8b3a532e0fdd5ec9ead9de",
+        "26f4c335f2b657858d838e1b1beee64df52c1fa01b6aa959b8e6932074e5658f",
+        "f786338158a519be36ebf8fe35c4b887a9e57bfcfd74f519a9307f94b3370a21"
+      ],
+      "power_market_ev": -0.011945155835604293,
+      "power_market_probability": 0.6886442853267001,
+      "profit_units": 0.43478260869565216,
+      "proportional_market_ev": -0.03063108391711722,
+      "proportional_market_probability": 0.6756207596941305,
+      "recorded_ev": 0.03861330518334016,
+      "recorded_probability": 0.7238820005823281,
+      "selected_fighter_id": "70dd69b6a703257e",
+      "selection": "Daniil Donchenko",
+      "source_quality_failures": [],
+      "strategy": "market_first",
+      "target_quote_age_seconds": 41.686757,
+      "won": 1
+    },
+    {
+      "book": "BetAnything",
+      "calibrated_lower_probability": 0.6392959102001614,
+      "calibrated_market_ev": -0.004761359240419094,
+      "calibrated_market_probability": 0.6612659425181108,
+      "comparison_mean_overround": 1.046286584647307,
+      "decision_id": "3725276d11aafd1af4d482475b305374e4d4c487c682b045a76e92d9c514423a",
+      "event_date": "2026-09-05",
+      "event_id": "2144954270be834d",
+      "final_independent_probability_advantage": null,
+      "final_observed_at_utc": null,
+      "final_power_probability_advantage": null,
+      "final_quote_id": null,
+      "final_same_book_probability_movement": null,
+      "final_status": "missing_final_same_book_quote",
+      "longshot": false,
+      "matchup_id": "matchup_e77fa0e4f3862227418eef40fbbb1a99437034414985a81107bee615f9da08ca",
+      "minimum_expected_return": 0.025,
+      "moneyline": -198,
+      "omission_max_ev": -0.030692007192786308,
+      "omission_min_ev": -0.03449708032664989,
+      "other_book_count": 10,
+      "other_book_quote_ids": [
+        "ebdefc351817e0ed476ad9b20c0a117b37bd6284242838656d520461b0977249",
+        "f04a485afc18be7f3da451aa3115e4d1845b8d357b265af8b6dbefdfcbefb700",
+        "b087d2f40207ac6fe45abde2349f50217c0c540c8265934bb27c3b07582cb15b",
+        "cfe9e0005695a8fb9c152e4769291be82cf7ce8b52e56e6e738b8a83e2cb308a",
+        "29ee824931eafc1a7f16d5f87992b8c42c0843a930f1a8637d2c502a3eef7154",
+        "2f4c590bbc5a9d6d6f71f770d65048554ce297d5701c5200f6b75a018b97c0fb",
+        "c46b8c81d6052c148d8d6618bfdbe4735b5cda7981e73a2a0a3c052d9025e316",
+        "dec69ac91d60c796c8aaec504b35ae5af5562bcfd3771cf8be8bd35e73a77677",
+        "6eec6bde43b84a0d85d75959f828b34160a6059e6519c85aa990e6b7ae7113e6",
+        "fb72ec8ab582be6eb7d368f5af0d56257071bca0950a9a6bc3ae0621907e51e4"
+      ],
+      "power_market_ev": -0.01839709552611568,
+      "power_market_probability": 0.652205956663856,
+      "profit_units": 0.5050505050505051,
+      "proportional_market_ev": -0.03348379684096214,
+      "proportional_market_probability": 0.6421819067969445,
+      "recorded_ev": 0.030312467174774316,
+      "recorded_probability": 0.6845700285255212,
+      "selected_fighter_id": "9256f591b30c073e",
+      "selection": "Felipe Lima",
+      "source_quality_failures": [],
+      "strategy": "market_first",
+      "target_quote_age_seconds": 39.686757,
+      "won": 1
+    },
+    {
+      "book": "FanDuel",
+      "calibrated_lower_probability": 0.6691838059111356,
+      "calibrated_market_ev": -0.00304776418863395,
+      "calibrated_market_probability": 0.6948454976867097,
+      "comparison_mean_overround": 1.0466293997454235,
+      "decision_id": "595d0e38ace34a0d1183c1585f101f84f093a318193c7c6beb12c87bc47cd9f7",
+      "event_date": "2026-09-05",
+      "event_id": "2144954270be834d",
+      "final_independent_probability_advantage": null,
+      "final_observed_at_utc": null,
+      "final_power_probability_advantage": null,
+      "final_quote_id": null,
+      "final_same_book_probability_movement": null,
+      "final_status": "missing_final_same_book_quote",
+      "longshot": false,
+      "matchup_id": "matchup_a98b162dd2ff1d5415a572a5a20b0f37599fc71cd28b0ac30b961720373d1199",
+      "minimum_expected_return": 0.025,
+      "moneyline": -230,
+      "omission_max_ev": -0.032670485058412524,
+      "omission_min_ev": -0.03735430767701775,
+      "other_book_count": 10,
+      "other_book_quote_ids": [
+        "1585bde6bd3a247a1a2881e4dfd6ac3d8d07f1abe869ac4779deee7babb74506",
+        "8f12cbefa020b0b2fddf974da6444fe7465b3e98ba78fc1057205f0080458729",
+        "e1ca4478b2415942ffe03bed182a4be1c9bc5ee2b84407c921c6c1f52a6ca503",
+        "b681c4244a09654f74779371602d3aa481b7ca76b83838934083be6a7143675f",
+        "4b97be3130f3bbabdb6746bd7b382ebfa81b0029cba3187f8f6e109dc0100735",
+        "4586e815c0d89b37374dacbc76a8f0950a2ee96ee1ed012ee5f6b011fb05c122",
+        "cf6733d31904182f9e915dec961013ee0cfe96124b4ac46242819b253570ff6d",
+        "4eb8fab8fbc76256001b9b3d46dd0ea02b7315dbaaa183731ff6602aab437fca",
+        "e45cd4211e5fcf6a27d0b5ec88d885bff85006f88bfa4c4b62a889eb283130d1",
+        "54e68daee2983bd8582728df1fa246a3e80a59cc1713b66083522ed00b6ef679"
+      ],
+      "power_market_ev": -0.01736504097863023,
+      "power_market_probability": 0.6848667896209547,
+      "profit_units": -1.0,
+      "proportional_market_ev": -0.03497757256148981,
+      "proportional_market_probability": 0.6725913888207798,
+      "recorded_ev": 0.07207299696142955,
+      "recorded_probability": 0.7472023918216024,
+      "selected_fighter_id": "46e2011d92463b7e",
+      "selection": "Oumar Sy",
+      "source_quality_failures": [],
+      "strategy": "market_first",
+      "target_quote_age_seconds": 41.686757,
+      "won": 0
+    },
+    {
+      "book": "BetMGM",
+      "calibrated_lower_probability": 0.7320845791045215,
+      "calibrated_market_ev": -0.0016127824725924444,
+      "calibrated_market_probability": 0.763472578109194,
+      "comparison_mean_overround": 1.0457201160930958,
+      "decision_id": "612caf1fcbd1210a324edbd43b8c2adf6ba1266f92d0891d1ffd3dd9da7785fd",
+      "event_date": "2026-09-05",
+      "event_id": "2144954270be834d",
+      "final_independent_probability_advantage": null,
+      "final_observed_at_utc": null,
+      "final_power_probability_advantage": null,
+      "final_quote_id": null,
+      "final_same_book_probability_movement": null,
+      "final_status": "missing_final_same_book_quote",
+      "longshot": false,
+      "matchup_id": "matchup_c4fdd2478b8f9bfba7f679889348ae3848153f5d11360f550d52e07349e29e17",
+      "minimum_expected_return": 0.025,
+      "moneyline": -325,
+      "omission_max_ev": -0.03582154023482054,
+      "omission_min_ev": -0.038896633851720264,
+      "other_book_count": 10,
+      "other_book_quote_ids": [
+        "44021b7816fd59b31509734c0a220b7fdbffdfa1d8183875e294aa816d161db9",
+        "575c28273c753bf2a83873044a8da66950a7043dfb981afbbd26e719adad6ca0",
+        "348f9f542ab2dc8b8095005ffbc976c84e14ddda92607d48b56973938af9f099",
+        "eda4dd732e08173efa788c5d14624babff9a30db4e7cc74060647d0291d686bd",
+        "958e8cb3591f9092f0096619434eec5480ef518a9397fca69865bf8128d8a953",
+        "bf26d8a185e3e208b9844dba79e2cff304f00007cd7d1fd4f4ddb773de25b78e",
+        "c10faf521a31ddcdba03727375cc3b049733bbdab52e1759079860da91d664ef",
+        "c2599a28b62cfd828e61a56c7fe0df00ede8a1f179a92782f008869e7e406582",
+        "03ae6675897b94d8998df3e67556a6b291c896d81939f192423cdf12c9d3225a",
+        "e90ed45177ab5d52089ba58b972818de0979224fa11d906e29823a8b12ab31ef"
+      ],
+      "power_market_ev": -0.015271345858107743,
+      "power_market_probability": 0.7530277943438,
+      "profit_units": 0.3076923076923077,
+      "proportional_market_ev": -0.0370393862113384,
+      "proportional_market_probability": 0.7363816458383883,
+      "recorded_ev": 0.057614834988607866,
+      "recorded_probability": 0.8087642855795236,
+      "selected_fighter_id": "39d309957c5c210d",
+      "selection": "Mario Pinto",
+      "source_quality_failures": [],
+      "strategy": "market_first",
+      "target_quote_age_seconds": 41.686757,
+      "won": 1
+    },
+    {
+      "book": "Bovada",
+      "calibrated_lower_probability": 0.7155620579102632,
+      "calibrated_market_ev": 0.0029060435910530646,
+      "calibrated_market_probability": 0.7457506477984753,
+      "comparison_mean_overround": 1.048408358839653,
+      "decision_id": "726bb53513a9f8e3751b5e5d0339702d73994ad2b44a4f1c4b70d2831ead9d0d",
+      "event_date": "2026-09-05",
+      "event_id": "2144954270be834d",
+      "final_independent_probability_advantage": null,
+      "final_observed_at_utc": null,
+      "final_power_probability_advantage": null,
+      "final_quote_id": null,
+      "final_same_book_probability_movement": null,
+      "final_status": "missing_final_same_book_quote",
+      "longshot": false,
+      "matchup_id": "matchup_5ba9978871b848d5b7445f82c33ad8b233afd688c6347983e72b3aec7be3e696",
+      "minimum_expected_return": 0.025,
+      "moneyline": -290,
+      "omission_max_ev": -0.031074876980628385,
+      "omission_min_ev": -0.03259673972685739,
+      "other_book_count": 10,
+      "other_book_quote_ids": [
+        "707064894d0a0615ace79cfdf090b3b8b0218466610704ea1cb0f92dcb53c62a",
+        "8e3eb3192515f9b9d5a6ed81def382324ddb239e0315041ffdb197a49431377f",
+        "c714dc45d37c2de0b67241fd529b9b2048086762d82d93081883f9e220c98bbe",
+        "e57553448840bf04fb1eaf6481636f381ed7b8d5bce1b34a2f393a2d9f52c829",
+        "8b326daf45d9aeec6f570eeea20f79c79fc63d601e63550374e10a865608db49",
+        "4bb7b7a443d90ddd6dcbd5d8ce0cc6a668168b9594d98dac3dbe4923d8f415e3",
+        "0ee0b95fa30d4fd5ee281fc08555494f606b77063102096e7e3957e00ed367d3",
+        "a68e50c33178c7b9df19060c7386ed8a5786bbfcdb23b007d2a1ca1625b045ef",
+        "bb4b8ce16cefccc92c907619e32bdf4871c6be489d0593befbd579400f651659",
+        "6915114c60e8a20f0970716932819d940216071984616cd0f7e1b89d846e33c0"
+      ],
+      "power_market_ev": -0.010117303382234932,
+      "power_market_probability": 0.7360666205619278,
+      "profit_units": -1.0,
+      "proportional_market_ev": -0.03218470508509608,
+      "proportional_market_probability": 0.7196575269880054,
+      "recorded_ev": 0.07913311425560399,
+      "recorded_probability": 0.802432315728526,
+      "selected_fighter_id": "329e403448756217",
+      "selection": "Nathaniel Wood",
+      "source_quality_failures": [],
+      "strategy": "market_first",
+      "target_quote_age_seconds": 189.686757,
+      "won": 0
+    },
+    {
+      "book": "BetOnline.ag",
+      "calibrated_lower_probability": 0.48015298176960997,
+      "calibrated_market_ev": -0.020096357375384732,
+      "calibrated_market_probability": 0.4827111540022735,
+      "comparison_mean_overround": 1.052460422584948,
+      "decision_id": "73c2face3c0e1c82a43d27d68600a959603a405b9a455be56513091fb754eb44",
+      "event_date": "2026-09-05",
+      "event_id": "2144954270be834d",
+      "final_independent_probability_advantage": null,
+      "final_observed_at_utc": null,
+      "final_power_probability_advantage": null,
+      "final_quote_id": null,
+      "final_same_book_probability_movement": null,
+      "final_status": "missing_final_same_book_quote",
+      "longshot": false,
+      "matchup_id": "matchup_28fea7b40a742271baa73e0e4459f1d5777e4498f310623c111e7397e38f7183",
+      "minimum_expected_return": 0.025,
+      "moneyline": 103,
+      "omission_max_ev": -0.013716998663781843,
+      "omission_min_ev": -0.020021346489868863,
+      "other_book_count": 8,
+      "other_book_quote_ids": [
+        "ad2438a4ca536a2bb5fa7793e9eede21f87649c694403cf1ea6676bf8071882f",
+        "c6f040faf53a5c176cca7f6a47d503bdc3c2da598ea0e4ab97a4f8e9389965f2",
+        "d74373ccc9fdff1aa927e0acac7e17e4f93e5646506711fdf22b2691718adce4",
+        "4e29c48eb215d2938f293da9a156b80c3082e4ffada5a06b01745c73c36e96db",
+        "9634f262a541dc6efe8873f77d5d611c9162b19a9e4718f63af1d6000ff24dc0",
+        "1e5da9390debb5144ef165c16b892ad9f702bfcd5fe29b03a2a2342e8e22656d",
+        "f8ccdeae8c58527b0d22e350306a112a666c29c97f2ad74dcf450e0eed1906ea",
+        "4a07566085106377cc7d5f69a394e4bb78e9cad3d66215c27df29d11de959d4a"
+      ],
+      "power_market_ev": -0.01816057941928151,
+      "power_market_probability": 0.48366473920232433,
+      "profit_units": -1.0,
+      "proportional_market_ev": -0.015643678178635212,
+      "proportional_market_probability": 0.4849045920302289,
+      "recorded_ev": 0.21437653246228372,
+      "recorded_probability": 0.5982150406218145,
+      "selected_fighter_id": "33a86e839ad202d8",
+      "selection": "Luis Felipe Dias",
+      "source_quality_failures": [],
+      "strategy": "market_first",
+      "target_quote_age_seconds": 31.686757,
+      "won": 0
+    },
+    {
+      "book": "BetOnline.ag",
+      "calibrated_lower_probability": 0.12311568553074899,
+      "calibrated_market_ev": -0.1465287649396263,
+      "calibrated_market_probability": 0.15489496099099342,
+      "comparison_mean_overround": 1.0530739556224837,
+      "decision_id": "c1a99656820e151f84794020bd93939b34f5c32bb4a1fd8aaf27ec4cebacd97b",
+      "event_date": "2026-09-05",
+      "event_id": "2144954270be834d",
+      "final_independent_probability_advantage": null,
+      "final_observed_at_utc": null,
+      "final_power_probability_advantage": null,
+      "final_quote_id": null,
+      "final_same_book_probability_movement": null,
+      "final_status": "missing_final_same_book_quote",
+      "longshot": true,
+      "matchup_id": "matchup_0dc64302fb9aa1e8a2fefa3fcd256374a63542df95f08a12b53d18c5af710d5b",
+      "minimum_expected_return": 0.025,
+      "moneyline": 451,
+      "omission_max_ev": 0.018810368456912308,
+      "omission_min_ev": -0.0031044042703602948,
+      "other_book_count": 7,
+      "other_book_quote_ids": [
+        "d633bc9fce7b5015783d32cada2e354a18ae37239f648283bf8c2660b7cbb981",
+        "abb02ff708211ee84435414ff012ba93785bacadca8c5f93f9321e99393fc354",
+        "69d91780cca0e3972ddf6ba20e721b1680c5517dacc1eaa3d333fd324371ff7f",
+        "fba50e0abf38a63ce4364943aec7bf27adb89ca17aa5f8bc5fb0d2cb46f6ea6c",
+        "e0cdf175013cdbe5b99b7e0c140a761197fb4a49f3b4d8a0e17cf49fc6c386eb",
+        "037adf43d7b2ab239f6776c92b731daacc3c44db1aec65694a78f55d6791240c",
+        "c40d42a667b45f642b92b8a0e6882c68dd82eac41810a4c1d462c1e65e483b8e"
+      ],
+      "power_market_ev": -0.13689469677800803,
+      "power_market_probability": 0.1566434307117953,
+      "profit_units": -1.0,
+      "proportional_market_ev": 0.011016030105925001,
+      "proportional_market_probability": 0.18348748277784482,
+      "recorded_ev": 0.15954204922677206,
+      "recorded_probability": 0.21044320312645592,
+      "selected_fighter_id": "193b9d1858bc4df3",
+      "selection": "Dan Hooker",
+      "source_quality_failures": [],
+      "strategy": "market_first",
+      "target_quote_age_seconds": 31.686757,
+      "won": 0
+    },
+    {
+      "book": "BetOnline.ag",
+      "calibrated_lower_probability": 0.7502014218247838,
+      "calibrated_market_ev": 0.006229868081722545,
+      "calibrated_market_probability": 0.7826232307302287,
+      "comparison_mean_overround": 1.0523398297771018,
+      "decision_id": "d86a09a5667ea042cd7c47273b7cfb426ee8363d50e79bfdd0af99227a73c464",
+      "event_date": "2026-09-05",
+      "event_id": "2144954270be834d",
+      "final_independent_probability_advantage": null,
+      "final_observed_at_utc": null,
+      "final_power_probability_advantage": null,
+      "final_quote_id": null,
+      "final_same_book_probability_movement": null,
+      "final_status": "missing_final_same_book_quote",
+      "longshot": false,
+      "matchup_id": "matchup_efceb8a2cf0faca403b487b7f86a45ed53496d69cfb44431d1fce10df1751431",
+      "minimum_expected_return": 0.025,
+      "moneyline": -350,
+      "omission_max_ev": -0.0264905326115622,
+      "omission_min_ev": -0.031835503804410026,
+      "other_book_count": 9,
+      "other_book_quote_ids": [
+        "9f0acb87cc6d7cc5b9215d6bd669f5ad23ff14c86905772b7ab43bfa5143e4cd",
+        "f1bff31659b1dc93cf9534264ea4c14d632eb8f997c431915f63b3fe96acf2fd",
+        "af482124761e4c5e90b160494de2f541a2ec0f5c2b7c23d5853d912a876efb7b",
+        "d3770f52406d8a1c7dedaeae46337fa972ce9028191279f144e295d43dceb943",
+        "5c8ff2f8b2fe4a3d885c9aa2765e8cf649d516b25b96b2dc5accb5e91bbff249",
+        "3b325e8c114fd2efcffa5c7b7f51f561d628fd331b6e54de6563d0cd135852e0",
+        "2eaa86b662d71d7abb0ca13db2de6e873d713eacd1f95ae296c80baa07e27452",
+        "bb5f62a00db32ee89051771392f93ab7e18cb3a7df4e54f7822a16f7a83e0586",
+        "d15fc325121e1e216481d1b80ea9717a999cd655bc8902c4a4e7602543e99e6c"
+      ],
+      "power_market_ev": -0.0030325293778477036,
+      "power_market_probability": 0.7754191438172297,
+      "profit_units": 0.2857142857142857,
+      "proportional_market_ev": -0.029685875519669724,
+      "proportional_market_probability": 0.7546887634847014,
+      "recorded_ev": 0.0592013612900637,
+      "recorded_probability": 0.823823281003383,
+      "selected_fighter_id": "5b43d68174b6e2ab",
+      "selection": "Losene Keita",
+      "source_quality_failures": [],
+      "strategy": "market_first",
+      "target_quote_age_seconds": 31.686757,
+      "won": 1
+    },
+    {
+      "book": "BetAnything",
+      "calibrated_lower_probability": 0.6805807745191127,
+      "calibrated_market_ev": -0.0037235697044006866,
+      "calibrated_market_probability": 0.7075006533983241,
+      "comparison_mean_overround": 1.0487024466232184,
+      "decision_id": "1e78f442d5925669fa48390288017df53f6887de2885b9e012aaff5e79ffefdf",
+      "event_date": "2026-09-19",
+      "event_id": "8a0a35e7c74bebcc",
+      "final_independent_probability_advantage": -0.03297251747097241,
+      "final_observed_at_utc": "2026-09-19T20:29:05.039584Z",
+      "final_power_probability_advantage": -0.019791698931326263,
+      "final_quote_id": "043271d95c3992030343783da4f3ef01b4d3fc4e24cb6c860ac2f553299c9abe",
+      "final_same_book_probability_movement": 0.01207729468599028,
+      "final_status": "available",
+      "longshot": false,
+      "matchup_id": "matchup_476907300c352a3007df1648d5891307dad34b5ffaf7f0940510328bb5dda3c1",
+      "minimum_expected_return": 0.025,
+      "moneyline": -245,
+      "omission_max_ev": -0.03226348966872683,
+      "omission_min_ev": -0.038419033297792726,
+      "other_book_count": 9,
+      "other_book_quote_ids": [
+        "7f4ebcb039e4c7fc5f6046a10af18006e26db882f181b4c765463b4e8f22632f",
+        "ab561c8f1b7357682e69e872745dd634981e38de514f906a8076bb36d1a8069c",
+        "e9c72187e21ac1bb2118f407cd497f31d22a33efe77c9f342586a37703c86c04",
+        "0b31c8c78e60507f76a55433275069035a78d30bea5386724b7ed017117daaea",
+        "1ecd50dcecdcf20ba4422dc22a355e2447478598b384faa7c5f4cac1f181f252",
+        "2bbe951d7e5c38c135be90924a49c9baa45acd19c75b19ffc0fa67da4d5b9b54",
+        "857cc545cbdc118d5b1c23c995d464caa921cd0c483cc08468c9c9e3a16ac1d2",
+        "8cb5dfccaed9e66118b3fd622eaa8a53fe62e9e7c862050bba9c468a215e3f68",
+        "2e7f3df9aabd4a27cef8956305d315502f87744385bb6793110bb9d04c2d4193"
+      ],
+      "power_market_ev": -0.01721076365022145,
+      "power_market_probability": 0.6979227910310022,
+      "profit_units": -1.0,
+      "proportional_market_ev": -0.03657361302224715,
+      "proportional_market_probability": 0.68417236176681,
+      "recorded_ev": 0.074070718490167,
+      "recorded_probability": 0.7627458725509881,
+      "selected_fighter_id": "1c23ec2f1b71be40",
+      "selection": "Iwo Baraniewski",
+      "source_quality_failures": [],
+      "strategy": "market_first",
+      "target_quote_age_seconds": 128.71557,
+      "won": 0
+    },
+    {
+      "book": "BetOnline.ag",
+      "calibrated_lower_probability": 0.8026361504255137,
+      "calibrated_market_ev": 0.0034238747712549422,
+      "calibrated_market_probability": 0.8361865623093792,
+      "comparison_mean_overround": 1.053777242244977,
+      "decision_id": "97e7ec717a487e7d083b3c5743248851bdd75e08c3dc3c7e657a656c5f86025f",
+      "event_date": "2026-09-19",
+      "event_id": "8a0a35e7c74bebcc",
+      "final_independent_probability_advantage": -0.031018986016309147,
+      "final_observed_at_utc": "2026-09-19T20:29:05.039584Z",
+      "final_power_probability_advantage": -0.006580072669230552,
+      "final_quote_id": "ae0c26b93cbff97be304b4bc482a1e5426113d936d91c648937d97f233ce7a59",
+      "final_same_book_probability_movement": 0.004065040650406471,
+      "final_status": "available",
+      "longshot": false,
+      "matchup_id": "matchup_c79dcc9635165d1f4a1e239bf9c5b598ecfcf90c75e2f49b00cff1c9260a3fd4",
+      "minimum_expected_return": 0.025,
+      "moneyline": -500,
+      "omission_max_ev": -0.02676301023775962,
+      "omission_min_ev": -0.03251874714732306,
+      "other_book_count": 9,
+      "other_book_quote_ids": [
+        "89c57ec82f956eccf838ca1a9aeb36047a7567cb94dee99c0b89ebc2649386e7",
+        "2ac0ca5499c8776f11a9f8e5194775eff1f18e760b5185ecd4005b97515a6e75",
+        "4b599075f8dd59725f7f10d4fce41c307494c5cbd45349447574db1d0b9279b9",
+        "2a5351cce633a2177785a61ee4bdd7e6334be6c8e174450891bfd5ca86590866",
+        "b49239b3809dcc726fb8618c6d4048fac370d655e8325093faf16e4401ba17e9",
+        "f40d6cde990e8de9c67f6b6c87a4a18e2a32484d90cc7d278d6f67e03c50e581",
+        "ad93fa2add88a3d891e57b8525605bd9874cb9dd68680a6ad5c0bba6afc0bd8a",
+        "5bf7d173ac748731248f5d08d81f8fc0b9ef100bf6aafe43c0390498fe418a60",
+        "f395a318c5bb23d718717474f543a452bcfb7ff3d3a4513684e60ba36b74257c"
+      ],
+      "power_market_ev": 0.0004904643585792456,
+      "power_market_probability": 0.8337420536321495,
+      "profit_units": 0.2,
+      "proportional_market_ev": -0.031048813031123168,
+      "proportional_market_probability": 0.807459322474064,
+      "recorded_ev": 0.06073964569847723,
+      "recorded_probability": 0.883949704748731,
+      "selected_fighter_id": "e463ce0a2ca474f4",
+      "selection": "Ryan Gandra",
+      "source_quality_failures": [],
+      "strategy": "market_first",
+      "target_quote_age_seconds": 290.71557,
+      "won": 1
+    },
+    {
+      "book": "DraftKings",
+      "calibrated_lower_probability": 0.7213182430144272,
+      "calibrated_market_ev": -0.005483698623518829,
+      "calibrated_market_probability": 0.7519513498212419,
+      "comparison_mean_overround": 1.0530859527056182,
+      "decision_id": "c09464a7b909039de6c153f9d76c15c7da9b51d982499e00c831f13c53fa34ea",
+      "event_date": "2026-09-19",
+      "event_id": "8a0a35e7c74bebcc",
+      "final_independent_probability_advantage": -0.031949970571440556,
+      "final_observed_at_utc": "2026-09-19T20:29:05.039584Z",
+      "final_power_probability_advantage": -0.01431819713353899,
+      "final_quote_id": "bb80642e2bc97f33f41f20fbf55803639b8d07bf141bc82132658cdecbf3b95b",
+      "final_same_book_probability_movement": 0.0,
+      "final_status": "available",
+      "longshot": false,
+      "matchup_id": "matchup_46acdff5f3e3f7792daa1d5df06232e0e473168e2b7cb8890421fed3e858632b",
+      "minimum_expected_return": 0.025,
+      "moneyline": -310,
+      "omission_max_ev": -0.03920364049704439,
+      "omission_min_ev": -0.04345328291997419,
+      "other_book_count": 9,
+      "other_book_quote_ids": [
+        "c78f7a6fabb85d1ccec1ac42e1329563db46f3da3e277e08f03473fdf2a3d248",
+        "cdc43056a2bc01452ea5bab8337fbda4771c817ce9ba80f06088e3ca3c786c7c",
+        "ea67ac3e09b284d317d684c1c7641f762141de5b9b6013f2c65b1279573e39ad",
+        "b4e3e0859aff411c941502658c4f2e4fb507d439f50669d1d9a302fed58dbc8f",
+        "2ce7a559f70e767452dedca13a586338347cb00632335170ded374a1219a278f",
+        "4f98980bad0fdc4d00e512ce9fc3e9dd1e839fa0914901b2f7e93de01607af5f",
+        "7006c4c870b978e2dd6ffda89b494decd9088e187b942e50b03da18d623b5161",
+        "880b21a6b318ef0d17396efc1bf38baa78ffde33928be0de97545a10a404459a",
+        "1e3267dbce72bb26afcbda5abb66a8a24e7bc6d60ddb3c19449df1dc8b31e937"
+      ],
+      "power_market_ev": -0.015979888089923566,
+      "power_market_probability": 0.7440152065661554,
+      "profit_units": 0.3225806451612903,
+      "proportional_market_ev": -0.04048517778305161,
+      "proportional_market_probability": 0.7254868167981805,
+      "recorded_ev": 0.04774574871412307,
+      "recorded_probability": 0.7921980051253126,
+      "selected_fighter_id": "eae48ff31db420c2",
+      "selection": "Arman Tsarukyan",
+      "source_quality_failures": [],
+      "strategy": "market_first",
+      "target_quote_age_seconds": 58.71557,
+      "won": 1
+    },
+    {
+      "book": "Bovada",
+      "calibrated_lower_probability": 0.5541565101204811,
+      "calibrated_market_ev": -0.01946464718912566,
+      "calibrated_market_probability": 0.5632862665083747,
+      "comparison_mean_overround": 1.0496241791698184,
+      "decision_id": "c2cb741c83ef3ce96d4a89ac48f045894a40a4fe4d86a335cb48e189f6975de6",
+      "event_date": "2026-09-19",
+      "event_id": "8a0a35e7c74bebcc",
+      "final_independent_probability_advantage": 0.011096005972681788,
+      "final_observed_at_utc": "2026-09-19T20:29:05.039584Z",
+      "final_power_probability_advantage": 0.017482089085839037,
+      "final_quote_id": "3220de0d1fbb268367c235c53ecaf8caa8a96373647eeb6499bee095efe3921f",
+      "final_same_book_probability_movement": 0.04530377801148766,
+      "final_status": "available",
+      "longshot": false,
+      "matchup_id": "matchup_6e355a8ad7d197cbe29ce642d75d50d2a8e45844e42d87852e64e4bf6ec40b9c",
+      "minimum_expected_return": 0.025,
+      "moneyline": -135,
+      "omission_max_ev": -0.03144532133585387,
+      "omission_min_ev": -0.03650544633329811,
+      "other_book_count": 9,
+      "other_book_quote_ids": [
+        "910542e3c6f1341ab9ab57580ea283c3ede43134c068298a417f71aa5a1929ed",
+        "52c9dbba3d733a2854821d60e53423aafe3a0554a89e387e873105e833b0a1e2",
+        "ab64e9aebade7087261fca2d1c119b9b91dfd54bc7ca99455dc57c763bab9fc0",
+        "f764a8af3bfc26396b999f652f22b5e24789ad06b7f909f29825450c5b0ec5a2",
+        "259054de69416aba7aec2afd582ce142f326546d0ca65a91c6f9e7e98ce50e27",
+        "dad7b5781e12fb0ca2c96d9452560617396a45d2e29cc1f8904c7e44f56b7610",
+        "61e3e99ede8cf2eadc06f507c636969ea45f6d343492f802cd7593fe3210ec55",
+        "68a9d944f940e3e552f1f1411c43fccecbf483196cf1069ea60a1e5a6a39b1b1",
+        "b8bd34c915ecd2be4e7626de5691d4ff1762363311853b6042a19bcf6e58a676"
+      ],
+      "power_market_ev": -0.02613768571321151,
+      "power_market_probability": 0.5594528188456019,
+      "profit_units": 0.7407407407407407,
+      "proportional_market_ev": -0.03330873093348807,
+      "proportional_market_probability": 0.5553332822296984,
+      "recorded_ev": 0.07738615843805774,
+      "recorded_probability": 0.6189239633580331,
+      "selected_fighter_id": "17e97649403ba428",
+      "selection": "Joshua Van",
+      "source_quality_failures": [],
+      "strategy": "market_first",
+      "target_quote_age_seconds": 125.71557,
+      "won": 1
+    },
+    {
+      "book": "BetOnline.ag",
+      "calibrated_lower_probability": 0.6158654284355111,
+      "calibrated_market_ev": -0.012851451330735064,
+      "calibrated_market_probability": 0.6345954955730989,
+      "comparison_mean_overround": 1.04632318563001,
+      "decision_id": "d815bdab20808440abdbf5bc64e004531ddb6e77da8ccb46ccec30003a1da698",
+      "event_date": "2026-09-19",
+      "event_id": "8a0a35e7c74bebcc",
+      "final_independent_probability_advantage": -0.021575545521796857,
+      "final_observed_at_utc": "2026-09-19T20:29:05.039584Z",
+      "final_power_probability_advantage": -0.012647223281376685,
+      "final_quote_id": "498261e87d5d6b7ac972be73642944b32ca8b100c1ee74e704b8d718cb8959ac",
+      "final_same_book_probability_movement": -0.013227513227513255,
+      "final_status": "available",
+      "longshot": false,
+      "matchup_id": "matchup_acd0e6b31a1c8fb3bae358145f988d378eaf334300bf13546996916eed3530b8",
+      "minimum_expected_return": 0.025,
+      "moneyline": -180,
+      "omission_max_ev": -0.036706637038635304,
+      "omission_min_ev": -0.04080698267850935,
+      "other_book_count": 8,
+      "other_book_quote_ids": [
+        "19badfa7d473b5134d37e83a6d4d019579705d88280434a3fada17dfc466b76b",
+        "90d1df82cc9858d8a4c76ca8c4ce97cb1d39a8b9b953486a441d32091810af8d",
+        "3d2c605527d485717ee9d6a3bfce709ed3246b9fd6feb736f8ad0d69e29fb204",
+        "ebe12c7a3ec795df9454df93a23a2148b8b248765e9c73b22a88dad9e9c88851",
+        "600d0f95c7432d1b0e7d56af7dc1edcac55f551126caa8ef35c88835199b10f2",
+        "8853904f6cf570f3699203d1d0744dad1bf468083d46f82f82920846dd5aa0c6",
+        "7ff923ba5d4cec686cee6f8402dd4a473254e5098c20b6b3d0176443c316a3b7",
+        "5fb91d45960f0caf8e047b815374c16235be79930c2cf516ae113821160b8d27"
+      ],
+      "power_market_ev": -0.025337652606507777,
+      "power_market_probability": 0.6265686518958165,
+      "profit_units": 0.5555555555555556,
+      "proportional_market_ev": -0.03818626857385443,
+      "proportional_market_probability": 0.6183088273453793,
+      "recorded_ev": 0.03221037380976477,
+      "recorded_probability": 0.6635638117348488,
+      "selected_fighter_id": "4144798612ef96e5",
+      "selection": "Edmen Shahbazyan",
+      "source_quality_failures": [],
+      "strategy": "market_first",
+      "target_quote_age_seconds": 290.71557,
+      "won": 1
+    },
+    {
+      "book": "Hard Rock Bet",
+      "calibrated_lower_probability": 0.858233235324858,
+      "calibrated_market_ev": -0.01173421058634494,
+      "calibrated_market_probability": 0.8894392104722895,
+      "comparison_mean_overround": 1.0481319917412306,
+      "decision_id": "2bb18a96477a32da835b0fe29692cfffca602aa1a93e1a9e0db9dca7c502bcd4",
+      "event_date": "2026-09-26",
+      "event_id": "7e654edcddd71550",
+      "final_independent_probability_advantage": -0.03885302397746948,
+      "final_observed_at_utc": "2026-09-26T20:29:17.907609Z",
+      "final_power_probability_advantage": -0.010553361635761815,
+      "final_quote_id": "bad994d24bd9bac6018d4ab977af08adff046c3120660535573b13f3591729ac",
+      "final_same_book_probability_movement": 0.0,
+      "final_status": "available",
+      "longshot": false,
+      "matchup_id": "matchup_34028b84a7ec0b53a2fa9219c106e593df1824e7fab7bcebd62d525afd645b53",
+      "minimum_expected_return": 0.025,
+      "moneyline": -900,
+      "omission_max_ev": -0.03873032956446265,
+      "omission_min_ev": -0.04324664126109723,
+      "other_book_count": 8,
+      "other_book_quote_ids": [
+        "4a9a116d949515660513f4a3d9782b081aadbf175e45e425d6559ac8e76aff7c",
+        "dcbdf01b281aec92a2d43101057a05fbc134fb2ad234776924c578c40347db6a",
+        "e729b94c8d7ed4ad357ec426bf740b3385c98a936429dbce71e10ebc70386b53",
+        "d1629faaae087d950e98b14a1b29498c6ce13ceba243b398cf2ea724db2245cc",
+        "a7e8b5a8c6685489aabba93820b82f428845b24089a44e3e1715c396617222a3",
+        "780338e45251cbb7c7ec2f792030d65521792d8b09665238a9d5fff82c041232",
+        "8f92bb938e688198f8b38132a32c504d9b8a080246d1354fa2caeccb7a29f320",
+        "d696fd33e136c0fc26e0af3171562b1e3b14308c5837b27ee78a993b0dbcb8d2"
+      ],
+      "power_market_ev": -0.009530661100241367,
+      "power_market_probability": 0.8914224050097828,
+      "profit_units": 0.1111111111111111,
+      "proportional_market_ev": -0.041149469694756635,
+      "proportional_market_probability": 0.862965477274719,
+      "recorded_ev": 0.030275577758485772,
+      "recorded_probability": 0.9272480199826372,
+      "selected_fighter_id": "40cb680ae1cd331f",
+      "selection": "Yazmin Jauregui",
+      "source_quality_failures": [],
+      "strategy": "market_first",
+      "target_quote_age_seconds": 50.317988,
+      "won": 1
+    },
+    {
+      "book": "Hard Rock Bet",
+      "calibrated_lower_probability": 0.7515442213093771,
+      "calibrated_market_ev": 0.00803902088685926,
+      "calibrated_market_probability": 0.7840303495786684,
+      "comparison_mean_overround": 1.0499588507783653,
+      "decision_id": "4ef14056fb0c9fcae73a1a3c125c7fc81403d154817b942e3c3f29431624d8c4",
+      "event_date": "2026-09-26",
+      "event_id": "7e654edcddd71550",
+      "final_independent_probability_advantage": -0.0392291671428987,
+      "final_observed_at_utc": "2026-09-26T20:29:17.907609Z",
+      "final_power_probability_advantage": -0.022157101728569772,
+      "final_quote_id": "18faa2d21863fd792e6a5e3cac088332c60f7b3fce5fc9fc37a575d1b59b8969",
+      "final_same_book_probability_movement": 0.0,
+      "final_status": "available",
+      "longshot": false,
+      "matchup_id": "matchup_77abcf3c53b775efe29136d638e75a9874c26ecf33cd29728d274597c66b3704",
+      "minimum_expected_return": 0.025,
+      "moneyline": -350,
+      "omission_max_ev": -0.025602919036816996,
+      "omission_min_ev": -0.03078284238864637,
+      "other_book_count": 8,
+      "other_book_quote_ids": [
+        "5ccb38d5544a521a0f1c4bf050729bbcb59aa69bc9c34d52f20ae43b227bd120",
+        "7f47af0cf44831d4a2e534aa97f3f272743acc6dc9649919b59a2e9d376b71d5",
+        "17a2290d80fa922dd011139097664a1a2825ced9c286d77fb93df90479e63c44",
+        "5042e46837078bf5b733a2f000a60ada3453105e96a35294dcab4a1f33fc10ac",
+        "e8048f19ece7fb5e9ffd77ec8df74572574ac5b336e25c113473ac82be282833",
+        "c67f4240d3ae209643cb198c745ac2653de7ed3274bdb25342bb556274cbf21c",
+        "4a145ef22643910ca5da8dbbcf39c120c6781ae41622548055073ccbfd4a63e2",
+        "a214b6c24674192999d27c97a5903fc80ff5e43d1678550da4b616c5c3ca99ff"
+      ],
+      "power_market_ev": -0.0024544490764489835,
+      "power_market_probability": 0.7758687618294287,
+      "profit_units": -1.0,
+      "proportional_market_ev": -0.02794305160619459,
+      "proportional_market_probability": 0.7560442931951821,
+      "recorded_ev": 0.05364732989786836,
+      "recorded_probability": 0.8195034788094533,
+      "selected_fighter_id": "5fa2974cbd18e05c",
+      "selection": "John Castaneda",
+      "source_quality_failures": [],
+      "strategy": "market_first",
+      "target_quote_age_seconds": 50.317988,
+      "won": 0
+    },
+    {
+      "book": "Bally Bet",
+      "calibrated_lower_probability": 0.576141882944105,
+      "calibrated_market_ev": 0.0006054508392085989,
+      "calibrated_market_probability": 0.5888336603703985,
+      "comparison_mean_overround": 1.0467365549027958,
+      "decision_id": "c2cfe6b1f521322c592a8a9a3523a5d3f03182d77fa57d9f48618c7857c062d4",
+      "event_date": "2026-09-26",
+      "event_id": "7e654edcddd71550",
+      "final_independent_probability_advantage": 0.008402828457641731,
+      "final_observed_at_utc": "2026-09-26T20:29:17.907609Z",
+      "final_power_probability_advantage": 0.015299383732339966,
+      "final_quote_id": "cdd0219f60820d77fec70d7413f1962cd854264d396538017b7a92b186a957d2",
+      "final_same_book_probability_movement": 0.047886270108492335,
+      "final_status": "available",
+      "longshot": false,
+      "matchup_id": "matchup_7aa95ba68484517158ef35e7f68d68ddaa97e6998cad2e106c8088000ff50d60",
+      "minimum_expected_return": 0.025,
+      "moneyline": -143,
+      "omission_max_ev": -0.013779728383129464,
+      "omission_min_ev": -0.023345673656995136,
+      "other_book_count": 8,
+      "other_book_quote_ids": [
+        "17ed17c2df7b8827e06dcfcb9f200d05805186691212ffb9bccde2e71188451f",
+        "b5727e5d9957ddcf06500b03af67a1527857ae84e94d77ac811cf162376197df",
+        "b7d4975a9b667e987dfc6ffef9764f18e4a37e8178831cc8fafc7484b212d6df",
+        "f06ef12bc5eb0baeeba2c7c9d3bdec8bc0066196ea991f9bacdfc195925c0fa5",
+        "24d8995e7d0a0a8f6d5eee3113810e1c5d8294a090fbb6cf89d72bfcb325c2f1",
+        "0e89f3b56d2b0a37b6291ee55795370788bc0fd8fa80e8d78121823e0c66e66d",
+        "679692e1df3db8bf16c5cdb9dcad1301180c244a2b52d3720090781946db649b",
+        "aa951ebc4b931c31e08f9fe89677960769cf0aa475854b740310d776d7a39353"
+      ],
+      "power_market_ev": -0.009049466050379928,
+      "power_market_probability": 0.5831519603078011,
+      "profit_units": 0.6993006993006993,
+      "proportional_market_ev": -0.018172722217821624,
+      "proportional_market_probability": 0.577783130546714,
+      "recorded_ev": 0.05382444799188835,
+      "recorded_probability": 0.6201518356495476,
+      "selected_fighter_id": "06e4245d16fc5315",
+      "selection": "Ailin Perez",
+      "source_quality_failures": [],
+      "strategy": "market_first",
+      "target_quote_age_seconds": 17.317988,
+      "won": 1
+    },
+    {
+      "book": "Hard Rock Bet",
+      "calibrated_lower_probability": 0.6461030906438464,
+      "calibrated_market_ev": 0.00344066260426934,
+      "calibrated_market_probability": 0.6689604417361795,
+      "comparison_mean_overround": 1.0451446301476208,
+      "decision_id": "c84b1db0072e4867e9b81e43fee94a3243540b907c99d50d38d1c1092a1b89ce",
+      "event_date": "2026-09-26",
+      "event_id": "7e654edcddd71550",
+      "final_independent_probability_advantage": -0.002355360153879049,
+      "final_observed_at_utc": "2026-09-26T20:29:17.907609Z",
+      "final_power_probability_advantage": 0.009349752733105565,
+      "final_quote_id": "c62212b12e3d59f00362f304285ff7acdc7a49556f9f7113874ca7191e089222",
+      "final_same_book_probability_movement": 0.02564102564102566,
+      "final_status": "available",
+      "longshot": false,
+      "matchup_id": "matchup_e6fbd5b4ed13b05288ca09bebeb9979c204884c0b08d8693b89a0d3ae9faae5a",
+      "minimum_expected_return": 0.025,
+      "moneyline": -200,
+      "omission_max_ev": -0.024097890880709905,
+      "omission_min_ev": -0.028123337998187337,
+      "other_book_count": 8,
+      "other_book_quote_ids": [
+        "bb82c2581e930771885706229480f728dbbbd0ac7da3f486a02245d980464085",
+        "b6ab512f63bad17c28ba0472cd3364785c89a70c07cf68ef8c5a803c132d82e5",
+        "1895c6e1980967cfc3c9ce2944caeff77e1cbcbdf029e0fd1633ee7c71141aaa",
+        "3c5c16e1618727bb2b4345f9f500819b97117d77cde85aaf79a44812f3f768f6",
+        "b95719821e153ec4f8ff7dc2fc2ace97e024b9e9ece64ee8d5de34ee2e8cb2db",
+        "b810dc82d6e833dc261b1f5c5d4348a2c341e2b514bc89604c926bc2db56b942",
+        "33da8471bb3b13288bce07679c45160f078ba9e24281e89e328aea99fde44cfb",
+        "a633114294b532ffc063411ec9852338721de2acb58fc643c2942d83642da90d"
+      ],
+      "power_market_ev": -0.011086689060002541,
+      "power_market_probability": 0.6592755406266649,
+      "profit_units": 0.5,
+      "proportional_market_ev": -0.026331315836737756,
+      "proportional_market_probability": 0.6491124561088415,
+      "recorded_ev": 0.025332656569572176,
+      "recorded_probability": 0.6835551043797148,
+      "selected_fighter_id": "cc1a8b4b38b92c6d",
+      "selection": "Montel Jackson",
+      "source_quality_failures": [],
+      "strategy": "market_first",
+      "target_quote_age_seconds": 50.317988,
+      "won": 1
+    }
+  ],
+  "strategy_summary": {
+    "locked_market": {
+      "all": {
+        "additional_book_omission_available": 4,
+        "additional_book_omission_positive_edge": 4,
+        "bets": 4,
+        "cards": 3,
+        "final_reference_statuses": {
+          "available": 2,
+          "missing_final_same_book_quote": 2
+        },
+        "mean_final_independent_advantage": 0.010599056904145025,
+        "mean_final_power_advantage": -0.021733433087969756,
+        "mean_final_same_book_movement": 0.00828199272728803,
+        "positive_final_independent_advantage": 2,
+        "positive_final_power_advantage": 0,
+        "probability_checks_on_selected_bets": {
+          "calibrated_market_probability": {
+            "actual_wins": 1,
+            "brier": 0.444758667658263,
+            "cards": 2,
+            "expected_wins": 0.17619612625780617,
+            "fights": 2,
+            "log_loss": 1.4372763057642601
+          },
+          "power_market_probability": {
+            "actual_wins": 1,
+            "brier": 0.23929426714764612,
+            "cards": 3,
+            "expected_wins": 0.42121744037197684,
+            "fights": 4,
+            "log_loss": 0.8633208286293311
+          },
+          "proportional_market_probability": {
+            "actual_wins": 1,
+            "brier": 0.22787249746903973,
+            "cards": 3,
+            "expected_wins": 0.5441449550188651,
+            "fights": 4,
+            "log_loss": 0.743540515937686
+          },
+          "recorded_probability": {
+            "actual_wins": 1,
+            "brier": 0.22787249746903973,
+            "cards": 3,
+            "expected_wins": 0.5441449550188651,
+            "fights": 4,
+            "log_loss": 0.743540515937686
+          }
+        },
+        "profit_units": 9.48,
+        "retained_at_original_threshold": {
+          "power_market_ev": 0,
+          "proportional_market_ev": 4
+        },
+        "settled_bets": 4,
+        "source_quality_failures": 0,
+        "wins": 1,
+        "worse_winning_payout_profit_units": {
+          "0": 9.48,
+          "0.02": 9.2304,
+          "0.05": 8.856
+        }
+      },
+      "by_book": {
+        "BetMGM": {
+          "additional_book_omission_available": 1,
+          "additional_book_omission_positive_edge": 1,
+          "bets": 1,
+          "cards": 1,
+          "final_reference_statuses": {
+            "missing_final_same_book_quote": 1
+          },
+          "mean_final_independent_advantage": null,
+          "mean_final_power_advantage": null,
+          "mean_final_same_book_movement": null,
+          "positive_final_independent_advantage": 0,
+          "positive_final_power_advantage": 0,
+          "probability_checks_on_selected_bets": {
+            "calibrated_market_probability": {
+              "fights": 0
+            },
+            "power_market_probability": {
+              "actual_wins": 0,
+              "brier": 0.009211515142022222,
+              "cards": 1,
+              "expected_wins": 0.09597663852220613,
+              "fights": 1,
+              "log_loss": 0.10090007658117585
+            },
+            "proportional_market_probability": {
+              "actual_wins": 0,
+              "brier": 0.016111387438727774,
+              "cards": 1,
+              "expected_wins": 0.1269306402675405,
+              "fights": 1,
+              "log_loss": 0.135740276433148
+            },
+            "recorded_probability": {
+              "actual_wins": 0,
+              "brier": 0.016111387438727767,
+              "cards": 1,
+              "expected_wins": 0.12693064026754047,
+              "fights": 1,
+              "log_loss": 0.135740276433148
+            }
+          },
+          "profit_units": -1.0,
+          "retained_at_original_threshold": {
+            "power_market_ev": 0,
+            "proportional_market_ev": 1
+          },
+          "settled_bets": 1,
+          "source_quality_failures": 0,
+          "wins": 0,
+          "worse_winning_payout_profit_units": {
+            "0": -1,
+            "0.02": -1,
+            "0.05": -1
+          }
+        },
+        "BetOnline.ag": {
+          "additional_book_omission_available": 1,
+          "additional_book_omission_positive_edge": 1,
+          "bets": 1,
+          "cards": 1,
+          "final_reference_statuses": {
+            "available": 1
+          },
+          "mean_final_independent_advantage": 0.010893297360460838,
+          "mean_final_power_advantage": -0.02514318544630157,
+          "mean_final_same_book_movement": 0.002739100661949337,
+          "positive_final_independent_advantage": 1,
+          "positive_final_power_advantage": 0,
+          "probability_checks_on_selected_bets": {
+            "calibrated_market_probability": {
+              "actual_wins": 1,
+              "brier": 0.8768400393401451,
+              "cards": 1,
+              "expected_wins": 0.06360262743846559,
+              "fights": 1,
+              "log_loss": 2.755100497563815
+            },
+            "power_market_probability": {
+              "actual_wins": 1,
+              "brier": 0.9077046304816202,
+              "cards": 1,
+              "expected_wins": 0.04726465874219815,
+              "fights": 1,
+              "log_loss": 3.0519924352261016
+            },
+            "proportional_market_probability": {
+              "actual_wins": 1,
+              "brier": 0.838484133554993,
+              "cards": 1,
+              "expected_wins": 0.08431220737906908,
+              "fights": 1,
+              "log_loss": 2.4732286156909744
+            },
+            "recorded_probability": {
+              "actual_wins": 1,
+              "brier": 0.838484133554993,
+              "cards": 1,
+              "expected_wins": 0.08431220737906908,
+              "fights": 1,
+              "log_loss": 2.4732286156909744
+            }
+          },
+          "profit_units": 12.48,
+          "retained_at_original_threshold": {
+            "power_market_ev": 0,
+            "proportional_market_ev": 1
+          },
+          "settled_bets": 1,
+          "source_quality_failures": 0,
+          "wins": 1,
+          "worse_winning_payout_profit_units": {
+            "0": 12.48,
+            "0.02": 12.2304,
+            "0.05": 11.856
+          }
+        },
+        "Bovada": {
+          "additional_book_omission_available": 1,
+          "additional_book_omission_positive_edge": 1,
+          "bets": 1,
+          "cards": 1,
+          "final_reference_statuses": {
+            "missing_final_same_book_quote": 1
+          },
+          "mean_final_independent_advantage": null,
+          "mean_final_power_advantage": null,
+          "mean_final_same_book_movement": null,
+          "positive_final_independent_advantage": 0,
+          "positive_final_power_advantage": 0,
+          "probability_checks_on_selected_bets": {
+            "calibrated_market_probability": {
+              "fights": 0
+            },
+            "power_market_probability": {
+              "actual_wins": 0,
+              "brier": 0.02805535339551438,
+              "cards": 1,
+              "expected_wins": 0.16749732354731636,
+              "fights": 1,
+              "log_loss": 0.18331884217452762
+            },
+            "proportional_market_probability": {
+              "actual_wins": 0,
+              "brier": 0.03751098673325406,
+              "cards": 1,
+              "expected_wins": 0.19367753285617323,
+              "fights": 1,
+              "log_loss": 0.21527153318249803
+            },
+            "recorded_probability": {
+              "actual_wins": 0,
+              "brier": 0.03751098673325406,
+              "cards": 1,
+              "expected_wins": 0.19367753285617323,
+              "fights": 1,
+              "log_loss": 0.21527153318249803
+            }
+          },
+          "profit_units": -1.0,
+          "retained_at_original_threshold": {
+            "power_market_ev": 0,
+            "proportional_market_ev": 1
+          },
+          "settled_bets": 1,
+          "source_quality_failures": 0,
+          "wins": 0,
+          "worse_winning_payout_profit_units": {
+            "0": -1,
+            "0.02": -1,
+            "0.05": -1
+          }
+        },
+        "DraftKings": {
+          "additional_book_omission_available": 1,
+          "additional_book_omission_positive_edge": 1,
+          "bets": 1,
+          "cards": 1,
+          "final_reference_statuses": {
+            "available": 1
+          },
+          "mean_final_independent_advantage": 0.010304816447829213,
+          "mean_final_power_advantage": -0.018323680729637942,
+          "mean_final_same_book_movement": 0.013824884792626724,
+          "positive_final_independent_advantage": 1,
+          "positive_final_power_advantage": 0,
+          "probability_checks_on_selected_bets": {
+            "calibrated_market_probability": {
+              "actual_wins": 0,
+              "brier": 0.01267729597638085,
+              "cards": 1,
+              "expected_wins": 0.11259349881934058,
+              "fights": 1,
+              "log_loss": 0.1194521139647052
+            },
+            "power_market_probability": {
+              "actual_wins": 0,
+              "brier": 0.01220556957142764,
+              "cards": 1,
+              "expected_wins": 0.11047881956025617,
+              "fights": 1,
+              "log_loss": 0.1170719605355193
+            },
+            "proportional_market_probability": {
+              "actual_wins": 0,
+              "brier": 0.019383482149184162,
+              "cards": 1,
+              "expected_wins": 0.13922457451608233,
+              "fights": 1,
+              "log_loss": 0.14992163844412368
+            },
+            "recorded_probability": {
+              "actual_wins": 0,
+              "brier": 0.019383482149184155,
+              "cards": 1,
+              "expected_wins": 0.1392245745160823,
+              "fights": 1,
+              "log_loss": 0.14992163844412368
+            }
+          },
+          "profit_units": -1.0,
+          "retained_at_original_threshold": {
+            "power_market_ev": 0,
+            "proportional_market_ev": 1
+          },
+          "settled_bets": 1,
+          "source_quality_failures": 0,
+          "wins": 0,
+          "worse_winning_payout_profit_units": {
+            "0": -1,
+            "0.02": -1,
+            "0.05": -1
+          }
+        }
+      },
+      "by_card": {
+        "2026-08-22": {
+          "additional_book_omission_available": 2,
+          "additional_book_omission_positive_edge": 2,
+          "bets": 2,
+          "cards": 1,
+          "final_reference_statuses": {
+            "missing_final_same_book_quote": 2
+          },
+          "mean_final_independent_advantage": null,
+          "mean_final_power_advantage": null,
+          "mean_final_same_book_movement": null,
+          "positive_final_independent_advantage": 0,
+          "positive_final_power_advantage": 0,
+          "probability_checks_on_selected_bets": {
+            "calibrated_market_probability": {
+              "fights": 0
+            },
+            "power_market_probability": {
+              "actual_wins": 0,
+              "brier": 0.0186334342687683,
+              "cards": 1,
+              "expected_wins": 0.2634739620695225,
+              "fights": 2,
+              "log_loss": 0.14210945937785174
+            },
+            "proportional_market_probability": {
+              "actual_wins": 0,
+              "brier": 0.026811187085990916,
+              "cards": 1,
+              "expected_wins": 0.3206081731237137,
+              "fights": 2,
+              "log_loss": 0.17550590480782302
+            },
+            "recorded_probability": {
+              "actual_wins": 0,
+              "brier": 0.026811187085990913,
+              "cards": 1,
+              "expected_wins": 0.3206081731237137,
+              "fights": 2,
+              "log_loss": 0.17550590480782302
+            }
+          },
+          "profit_units": -2.0,
+          "retained_at_original_threshold": {
+            "power_market_ev": 0,
+            "proportional_market_ev": 2
+          },
+          "settled_bets": 2,
+          "source_quality_failures": 0,
+          "wins": 0,
+          "worse_winning_payout_profit_units": {
+            "0": -2,
+            "0.02": -2,
+            "0.05": -2
+          }
+        },
+        "2026-09-19": {
+          "additional_book_omission_available": 1,
+          "additional_book_omission_positive_edge": 1,
+          "bets": 1,
+          "cards": 1,
+          "final_reference_statuses": {
+            "available": 1
+          },
+          "mean_final_independent_advantage": 0.010893297360460838,
+          "mean_final_power_advantage": -0.02514318544630157,
+          "mean_final_same_book_movement": 0.002739100661949337,
+          "positive_final_independent_advantage": 1,
+          "positive_final_power_advantage": 0,
+          "probability_checks_on_selected_bets": {
+            "calibrated_market_probability": {
+              "actual_wins": 1,
+              "brier": 0.8768400393401451,
+              "cards": 1,
+              "expected_wins": 0.06360262743846559,
+              "fights": 1,
+              "log_loss": 2.755100497563815
+            },
+            "power_market_probability": {
+              "actual_wins": 1,
+              "brier": 0.9077046304816202,
+              "cards": 1,
+              "expected_wins": 0.04726465874219815,
+              "fights": 1,
+              "log_loss": 3.0519924352261016
+            },
+            "proportional_market_probability": {
+              "actual_wins": 1,
+              "brier": 0.838484133554993,
+              "cards": 1,
+              "expected_wins": 0.08431220737906908,
+              "fights": 1,
+              "log_loss": 2.4732286156909744
+            },
+            "recorded_probability": {
+              "actual_wins": 1,
+              "brier": 0.838484133554993,
+              "cards": 1,
+              "expected_wins": 0.08431220737906908,
+              "fights": 1,
+              "log_loss": 2.4732286156909744
+            }
+          },
+          "profit_units": 12.48,
+          "retained_at_original_threshold": {
+            "power_market_ev": 0,
+            "proportional_market_ev": 1
+          },
+          "settled_bets": 1,
+          "source_quality_failures": 0,
+          "wins": 1,
+          "worse_winning_payout_profit_units": {
+            "0": 12.48,
+            "0.02": 12.2304,
+            "0.05": 11.856
+          }
+        },
+        "2026-09-26": {
+          "additional_book_omission_available": 1,
+          "additional_book_omission_positive_edge": 1,
+          "bets": 1,
+          "cards": 1,
+          "final_reference_statuses": {
+            "available": 1
+          },
+          "mean_final_independent_advantage": 0.010304816447829213,
+          "mean_final_power_advantage": -0.018323680729637942,
+          "mean_final_same_book_movement": 0.013824884792626724,
+          "positive_final_independent_advantage": 1,
+          "positive_final_power_advantage": 0,
+          "probability_checks_on_selected_bets": {
+            "calibrated_market_probability": {
+              "actual_wins": 0,
+              "brier": 0.01267729597638085,
+              "cards": 1,
+              "expected_wins": 0.11259349881934058,
+              "fights": 1,
+              "log_loss": 0.1194521139647052
+            },
+            "power_market_probability": {
+              "actual_wins": 0,
+              "brier": 0.01220556957142764,
+              "cards": 1,
+              "expected_wins": 0.11047881956025617,
+              "fights": 1,
+              "log_loss": 0.1170719605355193
+            },
+            "proportional_market_probability": {
+              "actual_wins": 0,
+              "brier": 0.019383482149184162,
+              "cards": 1,
+              "expected_wins": 0.13922457451608233,
+              "fights": 1,
+              "log_loss": 0.14992163844412368
+            },
+            "recorded_probability": {
+              "actual_wins": 0,
+              "brier": 0.019383482149184155,
+              "cards": 1,
+              "expected_wins": 0.1392245745160823,
+              "fights": 1,
+              "log_loss": 0.14992163844412368
+            }
+          },
+          "profit_units": -1.0,
+          "retained_at_original_threshold": {
+            "power_market_ev": 0,
+            "proportional_market_ev": 1
+          },
+          "settled_bets": 1,
+          "source_quality_failures": 0,
+          "wins": 0,
+          "worse_winning_payout_profit_units": {
+            "0": -1,
+            "0.02": -1,
+            "0.05": -1
+          }
+        }
+      },
+      "longshots": {
+        "additional_book_omission_available": 4,
+        "additional_book_omission_positive_edge": 4,
+        "bets": 4,
+        "cards": 3,
+        "final_reference_statuses": {
+          "available": 2,
+          "missing_final_same_book_quote": 2
+        },
+        "mean_final_independent_advantage": 0.010599056904145025,
+        "mean_final_power_advantage": -0.021733433087969756,
+        "mean_final_same_book_movement": 0.00828199272728803,
+        "positive_final_independent_advantage": 2,
+        "positive_final_power_advantage": 0,
+        "probability_checks_on_selected_bets": {
+          "calibrated_market_probability": {
+            "actual_wins": 1,
+            "brier": 0.444758667658263,
+            "cards": 2,
+            "expected_wins": 0.17619612625780617,
+            "fights": 2,
+            "log_loss": 1.4372763057642601
+          },
+          "power_market_probability": {
+            "actual_wins": 1,
+            "brier": 0.23929426714764612,
+            "cards": 3,
+            "expected_wins": 0.42121744037197684,
+            "fights": 4,
+            "log_loss": 0.8633208286293311
+          },
+          "proportional_market_probability": {
+            "actual_wins": 1,
+            "brier": 0.22787249746903973,
+            "cards": 3,
+            "expected_wins": 0.5441449550188651,
+            "fights": 4,
+            "log_loss": 0.743540515937686
+          },
+          "recorded_probability": {
+            "actual_wins": 1,
+            "brier": 0.22787249746903973,
+            "cards": 3,
+            "expected_wins": 0.5441449550188651,
+            "fights": 4,
+            "log_loss": 0.743540515937686
+          }
+        },
+        "profit_units": 9.48,
+        "retained_at_original_threshold": {
+          "power_market_ev": 0,
+          "proportional_market_ev": 4
+        },
+        "settled_bets": 4,
+        "source_quality_failures": 0,
+        "wins": 1,
+        "worse_winning_payout_profit_units": {
+          "0": 9.48,
+          "0.02": 9.2304,
+          "0.05": 8.856
+        }
+      }
+    },
+    "market_first": {
+      "all": {
+        "additional_book_omission_available": 18,
+        "additional_book_omission_positive_edge": 0,
+        "bets": 18,
+        "cards": 3,
+        "final_reference_statuses": {
+          "available": 9,
+          "missing_final_same_book_quote": 9
+        },
+        "mean_final_independent_advantage": -0.01982841515827141,
+        "mean_final_power_advantage": -0.0048796033142799455,
+        "mean_final_same_book_movement": 0.013527321763321018,
+        "positive_final_independent_advantage": 2,
+        "positive_final_power_advantage": 3,
+        "probability_checks_on_selected_bets": {
+          "calibrated_market_probability": {
+            "actual_wins": 11,
+            "brier": 0.20409488103513299,
+            "cards": 3,
+            "expected_wins": 11.908486787234262,
+            "fights": 18,
+            "log_loss": 0.592680248925357
+          },
+          "power_market_probability": {
+            "actual_wins": 11,
+            "brier": 0.20366236040275276,
+            "cards": 3,
+            "expected_wins": 11.801825369527123,
+            "fights": 18,
+            "log_loss": 0.5910425076868049
+          },
+          "proportional_market_probability": {
+            "actual_wins": 11,
+            "brier": 0.2037611734494407,
+            "cards": 3,
+            "expected_wins": 11.606158535812586,
+            "fights": 18,
+            "log_loss": 0.5925064722660515
+          },
+          "recorded_probability": {
+            "actual_wins": 11,
+            "brier": 0.21924782100397772,
+            "cards": 3,
+            "expected_wins": 12.700906193074239,
+            "fights": 18,
+            "log_loss": 0.629899948505615
+          }
+        },
+        "profit_units": -2.337471540977852,
+        "retained_at_original_threshold": {
+          "power_market_ev": 0,
+          "proportional_market_ev": 0
+        },
+        "settled_bets": 18,
+        "source_quality_failures": 0,
+        "wins": 11,
+        "worse_winning_payout_profit_units": {
+          "0": -2.337471540977852,
+          "0.02": -2.430722110158296,
+          "0.05": -2.5705979639289596
+        }
+      },
+      "by_book": {
+        "Bally Bet": {
+          "additional_book_omission_available": 1,
+          "additional_book_omission_positive_edge": 0,
+          "bets": 1,
+          "cards": 1,
+          "final_reference_statuses": {
+            "available": 1
+          },
+          "mean_final_independent_advantage": 0.008402828457641731,
+          "mean_final_power_advantage": 0.015299383732339966,
+          "mean_final_same_book_movement": 0.047886270108492335,
+          "positive_final_independent_advantage": 1,
+          "positive_final_power_advantage": 1,
+          "probability_checks_on_selected_bets": {
+            "calibrated_market_probability": {
+              "actual_wins": 1,
+              "brier": 0.1690577588444048,
+              "cards": 1,
+              "expected_wins": 0.5888336603703985,
+              "fights": 1,
+              "log_loss": 0.5296115454528453
+            },
+            "power_market_probability": {
+              "actual_wins": 1,
+              "brier": 0.173762288195229,
+              "cards": 1,
+              "expected_wins": 0.5831519603078011,
+              "fights": 1,
+              "log_loss": 0.5393074742665713
+            },
+            "proportional_market_probability": {
+              "actual_wins": 1,
+              "brier": 0.17826708485093312,
+              "cards": 1,
+              "expected_wins": 0.577783130546714,
+              "fights": 1,
+              "log_loss": 0.5485566873839778
+            },
+            "recorded_probability": {
+              "actual_wins": 1,
+              "brier": 0.14428462796040833,
+              "cards": 1,
+              "expected_wins": 0.6201518356495476,
+              "fights": 1,
+              "log_loss": 0.4777909347162338
+            }
+          },
+          "profit_units": 0.6993006993006993,
+          "retained_at_original_threshold": {
+            "power_market_ev": 0,
+            "proportional_market_ev": 0
+          },
+          "settled_bets": 1,
+          "source_quality_failures": 0,
+          "wins": 1,
+          "worse_winning_payout_profit_units": {
+            "0": 0.6993006993006993,
+            "0.02": 0.6853146853146853,
+            "0.05": 0.6643356643356643
+          }
+        },
+        "BetAnything": {
+          "additional_book_omission_available": 2,
+          "additional_book_omission_positive_edge": 0,
+          "bets": 2,
+          "cards": 2,
+          "final_reference_statuses": {
+            "available": 1,
+            "missing_final_same_book_quote": 1
+          },
+          "mean_final_independent_advantage": -0.03297251747097241,
+          "mean_final_power_advantage": -0.019791698931326263,
+          "mean_final_same_book_movement": 0.01207729468599028,
+          "positive_final_independent_advantage": 0,
+          "positive_final_power_advantage": 0,
+          "probability_checks_on_selected_bets": {
+            "calibrated_market_probability": {
+              "actual_wins": 1,
+              "brier": 0.3076489681285997,
+              "cards": 2,
+              "expected_wins": 1.3687665959164348,
+              "fights": 2,
+              "log_loss": 0.8214460162925932
+            },
+            "power_market_probability": {
+              "actual_wins": 1,
+              "brier": 0.3040284594103038,
+              "cards": 2,
+              "expected_wins": 1.3501287476948582,
+              "fights": 2,
+              "log_loss": 0.8122337589636925
+            },
+            "proportional_market_probability": {
+              "actual_wins": 1,
+              "brier": 0.2980628042145226,
+              "cards": 2,
+              "expected_wins": 1.3263542685637546,
+              "fights": 2,
+              "log_loss": 0.797721167170799
+            },
+            "recorded_probability": {
+              "actual_wins": 1,
+              "brier": 0.3406386664989794,
+              "cards": 2,
+              "expected_wins": 1.4473159010765093,
+              "fights": 2,
+              "log_loss": 0.9087938889922537
+            }
+          },
+          "profit_units": -0.4949494949494949,
+          "retained_at_original_threshold": {
+            "power_market_ev": 0,
+            "proportional_market_ev": 0
+          },
+          "settled_bets": 2,
+          "source_quality_failures": 0,
+          "wins": 1,
+          "worse_winning_payout_profit_units": {
+            "0": -0.4949494949494949,
+            "0.02": -0.505050505050505,
+            "0.05": -0.5202020202020202
+          }
+        },
+        "BetMGM": {
+          "additional_book_omission_available": 1,
+          "additional_book_omission_positive_edge": 0,
+          "bets": 1,
+          "cards": 1,
+          "final_reference_statuses": {
+            "missing_final_same_book_quote": 1
+          },
+          "mean_final_independent_advantage": null,
+          "mean_final_power_advantage": null,
+          "mean_final_same_book_movement": null,
+          "positive_final_independent_advantage": 0,
+          "positive_final_power_advantage": 0,
+          "probability_checks_on_selected_bets": {
+            "calibrated_market_probability": {
+              "actual_wins": 1,
+              "brier": 0.055945221306311334,
+              "cards": 1,
+              "expected_wins": 0.763472578109194,
+              "fights": 1,
+              "log_loss": 0.2698780710009359
+            },
+            "power_market_probability": {
+              "actual_wins": 1,
+              "brier": 0.060995270366688364,
+              "cards": 1,
+              "expected_wins": 0.7530277943438,
+              "fights": 1,
+              "log_loss": 0.28365314038430534
+            },
+            "proportional_market_probability": {
+              "actual_wins": 1,
+              "brier": 0.06949463665087695,
+              "cards": 1,
+              "expected_wins": 0.7363816458383883,
+              "fights": 1,
+              "log_loss": 0.30600675410766115
+            },
+            "recorded_probability": {
+              "actual_wins": 1,
+              "brier": 0.036571098469909996,
+              "cards": 1,
+              "expected_wins": 0.8087642855795236,
+              "fights": 1,
+              "log_loss": 0.21224776954618413
+            }
+          },
+          "profit_units": 0.3076923076923077,
+          "retained_at_original_threshold": {
+            "power_market_ev": 0,
+            "proportional_market_ev": 0
+          },
+          "settled_bets": 1,
+          "source_quality_failures": 0,
+          "wins": 1,
+          "worse_winning_payout_profit_units": {
+            "0": 0.3076923076923077,
+            "0.02": 0.30153846153846153,
+            "0.05": 0.2923076923076923
+          }
+        },
+        "BetOnline.ag": {
+          "additional_book_omission_available": 5,
+          "additional_book_omission_positive_edge": 0,
+          "bets": 5,
+          "cards": 2,
+          "final_reference_statuses": {
+            "available": 2,
+            "missing_final_same_book_quote": 3
+          },
+          "mean_final_independent_advantage": -0.026297265769053002,
+          "mean_final_power_advantage": -0.009613647975303619,
+          "mean_final_same_book_movement": -0.004581236288553392,
+          "positive_final_independent_advantage": 0,
+          "positive_final_power_advantage": 0,
+          "probability_checks_on_selected_bets": {
+            "calibrated_market_probability": {
+              "actual_wins": 3,
+              "brier": 0.0929220922360519,
+              "cards": 2,
+              "expected_wins": 2.8910114036059738,
+              "fights": 5,
+              "log_loss": 0.3412446261308875
+            },
+            "power_market_probability": {
+              "actual_wins": 3,
+              "brier": 0.09519959635479251,
+              "cards": 2,
+              "expected_wins": 2.8760380192593153,
+              "fights": 5,
+              "log_loss": 0.34700882728469734
+            },
+            "proportional_market_probability": {
+              "actual_wins": 3,
+              "brier": 0.10234755725068467,
+              "cards": 2,
+              "expected_wins": 2.8488489881122185,
+              "fights": 5,
+              "log_loss": 0.3684391695342739
+            },
+            "recorded_probability": {
+              "actual_wins": 3,
+              "brier": 0.11196855853739718,
+              "cards": 2,
+              "expected_wins": 3.179995041235234,
+              "fights": 5,
+              "log_loss": 0.3750812746591023
+            }
+          },
+          "profit_units": -0.9587301587301589,
+          "retained_at_original_threshold": {
+            "power_market_ev": 0,
+            "proportional_market_ev": 0
+          },
+          "settled_bets": 5,
+          "source_quality_failures": 0,
+          "wins": 3,
+          "worse_winning_payout_profit_units": {
+            "0": -0.9587301587301589,
+            "0.02": -0.9795555555555555,
+            "0.05": -1.010793650793651
+          }
+        },
+        "Bovada": {
+          "additional_book_omission_available": 2,
+          "additional_book_omission_positive_edge": 0,
+          "bets": 2,
+          "cards": 2,
+          "final_reference_statuses": {
+            "available": 1,
+            "missing_final_same_book_quote": 1
+          },
+          "mean_final_independent_advantage": 0.011096005972681788,
+          "mean_final_power_advantage": 0.017482089085839037,
+          "mean_final_same_book_movement": 0.04530377801148766,
+          "positive_final_independent_advantage": 1,
+          "positive_final_power_advantage": 1,
+          "probability_checks_on_selected_bets": {
+            "calibrated_market_probability": {
+              "actual_wins": 1,
+              "brier": 0.37343145685602,
+              "cards": 2,
+              "expected_wins": 1.30903691430685,
+              "fights": 2,
+              "log_loss": 0.9717035528685884
+            },
+            "power_market_probability": {
+              "actual_wins": 1,
+              "brier": 0.3679379443642716,
+              "cards": 2,
+              "expected_wins": 1.2955194394075298,
+              "fights": 2,
+              "log_loss": 0.9564273202172855
+            },
+            "proportional_market_probability": {
+              "actual_wins": 1,
+              "brier": 0.35781772302155246,
+              "cards": 2,
+              "expected_wins": 1.2749908092177038,
+              "fights": 2,
+              "log_loss": 0.9299650711295223
+            },
+            "recorded_probability": {
+              "actual_wins": 1,
+              "brier": 0.3945582835140973,
+              "cards": 2,
+              "expected_wins": 1.421356279086559,
+              "fights": 2,
+              "log_loss": 1.0507234499461902
+            }
+          },
+          "profit_units": -0.2592592592592593,
+          "retained_at_original_threshold": {
+            "power_market_ev": 0,
+            "proportional_market_ev": 0
+          },
+          "settled_bets": 2,
+          "source_quality_failures": 0,
+          "wins": 1,
+          "worse_winning_payout_profit_units": {
+            "0": -0.2592592592592593,
+            "0.02": -0.27407407407407414,
+            "0.05": -0.2962962962962964
+          }
+        },
+        "DraftKings": {
+          "additional_book_omission_available": 2,
+          "additional_book_omission_positive_edge": 0,
+          "bets": 2,
+          "cards": 2,
+          "final_reference_statuses": {
+            "available": 1,
+            "missing_final_same_book_quote": 1
+          },
+          "mean_final_independent_advantage": -0.031949970571440556,
+          "mean_final_power_advantage": -0.01431819713353899,
+          "mean_final_same_book_movement": 0.0,
+          "positive_final_independent_advantage": 0,
+          "positive_final_power_advantage": 0,
+          "probability_checks_on_selected_bets": {
+            "calibrated_market_probability": {
+              "actual_wins": 2,
+              "brier": 0.07631672979818577,
+              "cards": 2,
+              "expected_wins": 1.4501147603545776,
+              "fights": 2,
+              "log_loss": 0.32219287130979785
+            },
+            "power_market_probability": {
+              "actual_wins": 2,
+              "brier": 0.08123529776454472,
+              "cards": 2,
+              "expected_wins": 1.4326594918928555,
+              "fights": 2,
+              "log_loss": 0.3343621117246508
+            },
+            "proportional_market_probability": {
+              "actual_wins": 2,
+              "brier": 0.09028968964650438,
+              "cards": 2,
+              "expected_wins": 1.4011075764923109,
+              "fights": 2,
+              "log_loss": 0.3565178723747686
+            },
+            "recorded_probability": {
+              "actual_wins": 2,
+              "brier": 0.059711409338158536,
+              "cards": 2,
+              "expected_wins": 1.5160800057076407,
+              "fights": 2,
+              "log_loss": 0.2780353972216961
+            }
+          },
+          "profit_units": 0.7573632538569425,
+          "retained_at_original_threshold": {
+            "power_market_ev": 0,
+            "proportional_market_ev": 0
+          },
+          "settled_bets": 2,
+          "source_quality_failures": 0,
+          "wins": 2,
+          "worse_winning_payout_profit_units": {
+            "0": 0.7573632538569425,
+            "0.02": 0.7422159887798037,
+            "0.05": 0.7194950911640953
+          }
+        },
+        "FanDuel": {
+          "additional_book_omission_available": 1,
+          "additional_book_omission_positive_edge": 0,
+          "bets": 1,
+          "cards": 1,
+          "final_reference_statuses": {
+            "missing_final_same_book_quote": 1
+          },
+          "mean_final_independent_advantage": null,
+          "mean_final_power_advantage": null,
+          "mean_final_same_book_movement": null,
+          "positive_final_independent_advantage": 0,
+          "positive_final_power_advantage": 0,
+          "probability_checks_on_selected_bets": {
+            "calibrated_market_probability": {
+              "actual_wins": 0,
+              "brier": 0.48281026565549123,
+              "cards": 1,
+              "expected_wins": 0.6948454976867097,
+              "fights": 1,
+              "log_loss": 1.186937065673835
+            },
+            "power_market_probability": {
+              "actual_wins": 0,
+              "brier": 0.469042519525713,
+              "cards": 1,
+              "expected_wins": 0.6848667896209547,
+              "fights": 1,
+              "log_loss": 1.1547598394571104
+            },
+            "proportional_market_probability": {
+              "actual_wins": 0,
+              "brier": 0.45237917631586544,
+              "cards": 1,
+              "expected_wins": 0.6725913888207798,
+              "fights": 1,
+              "log_loss": 1.1165463126829225
+            },
+            "recorded_probability": {
+              "actual_wins": 0,
+              "brier": 0.5583114143439235,
+              "cards": 1,
+              "expected_wins": 0.7472023918216024,
+              "fights": 1,
+              "log_loss": 1.375166078073823
+            }
+          },
+          "profit_units": -1.0,
+          "retained_at_original_threshold": {
+            "power_market_ev": 0,
+            "proportional_market_ev": 0
+          },
+          "settled_bets": 1,
+          "source_quality_failures": 0,
+          "wins": 0,
+          "worse_winning_payout_profit_units": {
+            "0": -1,
+            "0.02": -1,
+            "0.05": -1
+          }
+        },
+        "Hard Rock Bet": {
+          "additional_book_omission_available": 4,
+          "additional_book_omission_positive_edge": 0,
+          "bets": 4,
+          "cards": 2,
+          "final_reference_statuses": {
+            "available": 3,
+            "missing_final_same_book_quote": 1
+          },
+          "mean_final_independent_advantage": -0.026812517091415744,
+          "mean_final_power_advantage": -0.0077869035437420075,
+          "mean_final_same_book_movement": 0.008547008547008553,
+          "positive_final_independent_advantage": 0,
+          "positive_final_power_advantage": 1,
+          "probability_checks_on_selected_bets": {
+            "calibrated_market_probability": {
+              "actual_wins": 2,
+              "brier": 0.24662246052007905,
+              "cards": 2,
+              "expected_wins": 2.8424053768841224,
+              "fights": 4,
+              "log_loss": 0.6862274467331033
+            },
+            "power_market_probability": {
+              "actual_wins": 2,
+              "brier": 0.24493025607742916,
+              "cards": 2,
+              "expected_wins": 2.8264331270000103,
+              "fights": 4,
+              "log_loss": 0.679988541504939
+            },
+            "proportional_market_probability": {
+              "actual_wins": 2,
+              "brier": 0.24087050106341876,
+              "cards": 2,
+              "expected_wins": 2.76810072822072,
+              "fights": 4,
+              "log_loss": 0.6708506693982039
+            },
+            "recorded_probability": {
+              "actual_wins": 2,
+              "brier": 0.2644085314769752,
+              "cards": 2,
+              "expected_wins": 2.960040452917623,
+              "fights": 4,
+              "log_loss": 0.7306206112872595
+            }
+          },
+          "profit_units": -1.3888888888888888,
+          "retained_at_original_threshold": {
+            "power_market_ev": 0,
+            "proportional_market_ev": 0
+          },
+          "settled_bets": 4,
+          "source_quality_failures": 0,
+          "wins": 2,
+          "worse_winning_payout_profit_units": {
+            "0": -1.3888888888888888,
+            "0.02": -1.401111111111111,
+            "0.05": -1.4194444444444443
+          }
+        }
+      },
+      "by_card": {
+        "2026-09-05": {
+          "additional_book_omission_available": 9,
+          "additional_book_omission_positive_edge": 0,
+          "bets": 9,
+          "cards": 1,
+          "final_reference_statuses": {
+            "missing_final_same_book_quote": 9
+          },
+          "mean_final_independent_advantage": null,
+          "mean_final_power_advantage": null,
+          "mean_final_same_book_movement": null,
+          "positive_final_independent_advantage": 0,
+          "positive_final_power_advantage": 0,
+          "probability_checks_on_selected_bets": {
+            "calibrated_market_probability": {
+              "actual_wins": 4,
+              "brier": 0.20610846075031136,
+              "cards": 1,
+              "expected_wins": 5.4837027974663055,
+              "fights": 9,
+              "log_loss": 0.5960895823022659
+            },
+            "power_market_probability": {
+              "actual_wins": 4,
+              "brier": 0.2053896311235731,
+              "cards": 1,
+              "expected_wins": 5.4304051797827215,
+              "fights": 9,
+              "log_loss": 0.5943880985660367
+            },
+            "proportional_market_probability": {
+              "actual_wins": 4,
+              "brier": 0.20577696367278805,
+              "cards": 1,
+              "expected_wins": 5.369492568073001,
+              "fights": 9,
+              "log_loss": 0.5966637352512515
+            },
+            "recorded_probability": {
+              "actual_wins": 4,
+              "brier": 0.2364801238997007,
+              "cards": 1,
+              "expected_wins": 5.929066396734973,
+              "fights": 9,
+              "log_loss": 0.6675062871055755
+            }
+          },
+          "profit_units": -3.4667602928472494,
+          "retained_at_original_threshold": {
+            "power_market_ev": 0,
+            "proportional_market_ev": 0
+          },
+          "settled_bets": 9,
+          "source_quality_failures": 0,
+          "wins": 4,
+          "worse_winning_payout_profit_units": {
+            "0": -3.4667602928472494,
+            "0.02": -3.4974250869903045,
+            "0.05": -3.543422278204887
+          }
+        },
+        "2026-09-19": {
+          "additional_book_omission_available": 5,
+          "additional_book_omission_positive_edge": 0,
+          "bets": 5,
+          "cards": 1,
+          "final_reference_statuses": {
+            "available": 5
+          },
+          "mean_final_independent_advantage": -0.021284202721567436,
+          "mean_final_power_advantage": -0.007171020585926691,
+          "mean_final_same_book_movement": 0.009643720024074232,
+          "positive_final_independent_advantage": 1,
+          "positive_final_power_advantage": 1,
+          "probability_checks_on_selected_bets": {
+            "calibrated_market_probability": {
+              "actual_wins": 4,
+              "brier": 0.1826318973316484,
+              "cards": 1,
+              "expected_wins": 3.493520327610419,
+              "fights": 5,
+              "log_loss": 0.5444029679034844
+            },
+            "power_market_probability": {
+              "actual_wins": 4,
+              "brier": 0.18275978640206422,
+              "cards": 1,
+              "expected_wins": 3.461701521970725,
+              "fights": 5,
+              "log_loss": 0.5445781332582341
+            },
+            "proportional_market_probability": {
+              "actual_wins": 4,
+              "brier": 0.1847875724068779,
+              "cards": 1,
+              "expected_wins": 3.3907606106141324,
+              "fights": 5,
+              "log_loss": 0.5512575406638206
+            },
+            "recorded_probability": {
+              "actual_wins": 4,
+              "brier": 0.17936777213450172,
+              "cards": 1,
+              "expected_wins": 3.721381357517914,
+              "fights": 5,
+              "log_loss": 0.5369651153402978
+            }
+          },
+          "profit_units": 0.8188769414575865,
+          "retained_at_original_threshold": {
+            "power_market_ev": 0,
+            "proportional_market_ev": 0
+          },
+          "settled_bets": 5,
+          "source_quality_failures": 0,
+          "wins": 4,
+          "worse_winning_payout_profit_units": {
+            "0": 0.8188769414575865,
+            "0.02": 0.7824994026284349,
+            "0.05": 0.7279330943847071
+          }
+        },
+        "2026-09-26": {
+          "additional_book_omission_available": 4,
+          "additional_book_omission_positive_edge": 0,
+          "bets": 4,
+          "cards": 1,
+          "final_reference_statuses": {
+            "available": 4
+          },
+          "mean_final_independent_advantage": -0.018008680704151375,
+          "mean_final_power_advantage": -0.002015331724721514,
+          "mean_final_same_book_movement": 0.0183818239373795,
+          "positive_final_independent_advantage": 1,
+          "positive_final_power_advantage": 2,
+          "probability_checks_on_selected_bets": {
+            "calibrated_market_probability": {
+              "actual_wins": 3,
+              "brier": 0.22639305630533743,
+              "cards": 1,
+              "expected_wins": 2.931263662157536,
+              "fights": 4,
+              "log_loss": 0.6453558501046527
+            },
+            "power_market_probability": {
+              "actual_wins": 3,
+              "brier": 0.2259042187817677,
+              "cards": 1,
+              "expected_wins": 2.9097186677736775,
+              "fights": 4,
+              "log_loss": 0.6415953962442469
+            },
+            "proportional_market_probability": {
+              "actual_wins": 3,
+              "brier": 0.22294264675011272,
+              "cards": 1,
+              "expected_wins": 2.8459053571254564,
+              "fights": 4,
+              "log_loss": 0.63471379505214
+            },
+            "recorded_probability": {
+              "actual_wins": 3,
+              "brier": 0.2303252005754461,
+              "cards": 1,
+              "expected_wins": 3.050458438821353,
+              "fights": 4,
+              "log_loss": 0.6614542281123508
+            }
+          },
+          "profit_units": 0.31041181041181043,
+          "retained_at_original_threshold": {
+            "power_market_ev": 0,
+            "proportional_market_ev": 0
+          },
+          "settled_bets": 4,
+          "source_quality_failures": 0,
+          "wins": 3,
+          "worse_winning_payout_profit_units": {
+            "0": 0.31041181041181043,
+            "0.02": 0.2842035742035742,
+            "0.05": 0.24489121989121976
+          }
+        }
+      },
+      "longshots": {
+        "additional_book_omission_available": 1,
+        "additional_book_omission_positive_edge": 0,
+        "bets": 1,
+        "cards": 1,
+        "final_reference_statuses": {
+          "missing_final_same_book_quote": 1
+        },
+        "mean_final_independent_advantage": null,
+        "mean_final_power_advantage": null,
+        "mean_final_same_book_movement": null,
+        "positive_final_independent_advantage": 0,
+        "positive_final_power_advantage": 0,
+        "probability_checks_on_selected_bets": {
+          "calibrated_market_probability": {
+            "actual_wins": 0,
+            "brier": 0.023992448940401374,
+            "cards": 1,
+            "expected_wins": 0.15489496099099342,
+            "fights": 1,
+            "log_loss": 0.16829435283084399
+          },
+          "power_market_probability": {
+            "actual_wins": 0,
+            "brier": 0.02453716438516101,
+            "cards": 1,
+            "expected_wins": 0.1566434307117953,
+            "fights": 1,
+            "log_loss": 0.17036543379258667
+          },
+          "proportional_market_probability": {
+            "actual_wins": 0,
+            "brier": 0.033667656336149904,
+            "cards": 1,
+            "expected_wins": 0.18348748277784482,
+            "fights": 1,
+            "log_loss": 0.20271303634968268
+          },
+          "recorded_probability": {
+            "actual_wins": 0,
+            "brier": 0.04428634174212279,
+            "cards": 1,
+            "expected_wins": 0.21044320312645592,
+            "fights": 1,
+            "log_loss": 0.23628350756554128
+          }
+        },
+        "profit_units": -1.0,
+        "retained_at_original_threshold": {
+          "power_market_ev": 0,
+          "proportional_market_ev": 0
+        },
+        "settled_bets": 1,
+        "source_quality_failures": 0,
+        "wins": 0,
+        "worse_winning_payout_profit_units": {
+          "0": -1,
+          "0.02": -1,
+          "0.05": -1
+        }
+      }
+    }
+  }
+}
