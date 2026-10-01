@@ -2534,12 +2534,63 @@
   "latest_capture_diagnostics": {
     "contract_version": "equal-stake-card-start-v2",
     "interpretation": "Quote eligibility at collection time; actual decisions also require creation within five minutes and after repair activation.",
-    "matchups": [],
-    "matchups_considered": 0,
-    "observed_at_utc": "2026-09-30T23:30:56.868807Z",
-    "outcomes": {},
+    "matchups": [
+      {
+        "matchup_id": "matchup_03086047eba4d3b8053fce964b47c70aa4cc3ea154511951d73e1508fefec1b2",
+        "status": "fewer_than_four_eligible_books"
+      },
+      {
+        "matchup_id": "matchup_2262ab8db3220297f56095b4d9b401e1da328c568e1c75089d05cb062284a744",
+        "status": "fewer_than_four_eligible_books"
+      },
+      {
+        "matchup_id": "matchup_2af7bc98c3d9b6e7473054b59710c038af09974d8f8ab4201ae8b92e6a32cc1b",
+        "status": "fewer_than_four_eligible_books"
+      },
+      {
+        "matchup_id": "matchup_2f017da39e97cecb240cde1f4cc8bd428e1f1ba43c6fe898e2ed8a48bb787fb5",
+        "status": "fewer_than_four_eligible_books"
+      },
+      {
+        "matchup_id": "matchup_45f81cc18a58b8e7b4de3d623dee6a0fa0c900c04c78e3ffa9d439c784117462",
+        "status": "fewer_than_four_eligible_books"
+      },
+      {
+        "matchup_id": "matchup_47771d7cdbcd1a079df9c13cdaaefafabc66f27fe0f5a9955af59c7bcc43e4b5",
+        "status": "fewer_than_four_eligible_books"
+      },
+      {
+        "matchup_id": "matchup_4811f9d3f9bbc6c0085c39682d7c0cc84ddb3131c2e89dc00d9fe12cbb965472",
+        "status": "fewer_than_four_eligible_books"
+      },
+      {
+        "matchup_id": "matchup_7d336af9109719eb87c6700a284cb685965411a9a8b650072f0e59998fa0c99b",
+        "status": "fewer_than_four_eligible_books"
+      },
+      {
+        "matchup_id": "matchup_ae0ef3e530a55bf48ed14f36581c97d6bdd70675620ae2bc4f9937ffe3a70da3",
+        "status": "fewer_than_four_eligible_books"
+      },
+      {
+        "matchup_id": "matchup_b1e9339d567d33747815ea9ee232b8c84cb2ee38d345a6b3a0f442fb0ed390bc",
+        "status": "fewer_than_four_eligible_books"
+      },
+      {
+        "matchup_id": "matchup_ed41d7d1cb3097c77c7076f680f2cb3681e8e5c75938bd485e15ed89e97731bf",
+        "status": "fewer_than_four_eligible_books"
+      },
+      {
+        "matchup_id": "matchup_f84fdeccea811e8a8d8d7634ec81040e40757e251636341c6e5e24a26fe1c2d1",
+        "status": "fewer_than_four_eligible_books"
+      }
+    ],
+    "matchups_considered": 12,
+    "observed_at_utc": "2026-10-01T15:50:33.277758Z",
+    "outcomes": {
+      "fewer_than_four_eligible_books": 12
+    },
     "quote_exclusions": {
-      "before_activation": 99
+      "outside_card_decision_window": 118
     }
   },
   "model_ids": [
