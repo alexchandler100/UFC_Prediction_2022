@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "purpose": "Diagnose the rejected opponent_adjusted_v2 strike transfer; no policy or simulator promotion",
+  "cohort": "development_2024",
+  "expected_fights": 229,
+  "expected_cards": 30,
+  "bootstrap_members": 10,
+  "historical_source_revision": "59a16cd2",
+  "source_integrity": "Historical CSV bytes must match all three saved run hashes, allowing only LF/CRLF normalization",
+  "training": "Reuse exact cached card-cutoff parameters and matching bootstrap seeds; reconstruct v2 effects using its original eight-prior-card ridge selection",
+  "new_trajectories": 0,
+  "maximum_runtime_seconds": 1800,
+  "comparisons": [
+    "Saved original observation audit: context, marginal fighter, opponent adjusted",
+    "Member-specific conditional v2 observation formula at actual duration/attempt exposure",
+    "Snapshot phase-rate conversion before mechanics, at the context occupancy proxy",
+    "Exact neutral-state engine hazards and hit probabilities at the same context occupancy proxy, splitting ground time equally",
+    "Exact neutral-state engine under saved member-specific simulated phase/top occupancy, standardized to actual duration (post-outcome diagnostic only)",
+    "Saved member-specific endogenous strike counts standardized to actual duration (ratio of means diagnostic only)",
+    "Saved full and v2 endogenous member means and pooled count distributions"
+  ],
+  "effects": "Measure local log-odds sensitivity to actor accuracy and opponent vulnerability separately; one fixed numerical derivative step 0.00001, no tuning",
+  "uncertainty": "Average members within physical fighter sides/fights first, then resample whole cards 4000 times with seed 20261001",
+  "limitations": [
+    "Observed phase time is unavailable; the context phase mix is an explicit proxy, not measured exposure",
+    "Saved simulated phase occupancy and duration cannot identify isolated causal effects of the finish clock, fatigue, damage or phase transitions",
+    "Saved phase/control seconds were rounded per path; use their normalized top/bottom ratio and sum phase means for approximate member duration",
+    "The compact ledger retains member-specific means but omits member-specific count distributions; pooled distributions are retained",
+    "Development results have been seen; no probability of profit or prospective validation is claimed"
+  ],
+  "locked_cohorts": ["confirmation_2025_a", "final_holdout_2025_b"],
+  "next_screen": "Do not execute in this audit; specify one concrete correction after identifying a translation error, without selecting an attenuation scalar on these outcomes"
+}

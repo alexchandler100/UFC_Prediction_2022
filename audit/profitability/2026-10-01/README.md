@@ -398,3 +398,12 @@ fighter orientation, target-book exclusion, capture separation and minimum
 book counts. Desktop/mobile and single-book filtering also passed; see
 [browser evidence](selected_price_ui_validation.json) and
 [follow-up validation](selected_price_validation.json).
+
+The subsequent [simulator bridge audit](../../../SIMULATION_STRIKE_BRIDGE_AUDIT_REPORT_2026-10-01.md)
+completed all 229 development fights without new trajectories. It identified
+loss of fighter ordering when the observation predictor is rebuilt for the
+simulator, plus phase-rate and opponent-defense mapping mismatches. The next
+simulator task is to preserve that tested predictor before another expensive
+screen. This reinforces the priority order: collect obtainable prospective
+prices, test the selected bets' probabilities, and keep simulator repairs as
+bounded research until they demonstrate a useful improvement.

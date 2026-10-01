@@ -1,31 +1,39 @@
 # Fight simulation continuation TODO
 
-Status updated 2026-08-27 after the bout-clustered v2 simulator screen.
+Status updated 2026-10-01 after the conditional-to-engine strike bridge audit.
 This file is the handoff contract for the next simulation session.
 
-## Frozen next action: conditional-to-endogenous strike bridge audit
+## Frozen next action: preserve the tested observation predictor
 
-Do not run an `opponent_adjusted_v3` Monte Carlo screen yet. First implement a
-fast, causal bridge audit on the open `development_2024` cohort that explains
-why an opponent model that improved strike observation likelihood made the
-simulator's strike-attempt distribution and fight-outcome ranking worse.
+The bridge audit is complete: all 229 development fights / 30 cards, ten exact
+cached parameter members per fight, 279 seconds of calculation and no new
+trajectories. See `SIMULATION_STRIKE_BRIDGE_AUDIT_REPORT_2026-10-01.md`.
 
-For every outer fight and bootstrap member, compare:
+The original observation strike leader won 120/228 decisive fights. Rebuilding
+that predictor using simulator contexts and covariates reduces this to 106/228
+before engine mechanics. The snapshot's phase normalization then reduces pace
+by 11.5% on average under the original context occupancy proxy. The engine
+passes through only about 36.3% of opponent accuracy effects in their learned
+log-odds units. Duration rescaling explains roughly one third of the simulated
+attempt shortage; it is not an isolated causal intervention.
 
-1. the audit's conditional-on-observed-duration strike pace/accuracy forecast;
-2. the effective v2 snapshot matchup intensity after the exact engine offense,
-   defense, phase, and mechanics transforms, still evaluated at observed
-   exposure; and
-3. the existing full and v2 endogenous simulated attempts/landed distributions.
+Do not run an `opponent_adjusted_v3` Monte Carlo screen yet. First isolate the
+estimator handoff discrepancy using fixed comparisons on `development_2024`:
+preserve the original observation context/fighter effects, then inspect changes
+from bootstrap reconstruction and age/experience/layoff covariates. Use only
+strictly earlier cards and the existing inner selection scheme.
 
-Verify signs and magnitudes separately for actor offense and opponent
-vulnerability, quantify whether phase allocation or the endogenous finish
-clock causes the divergence, and measure whether each predicted strike
-differential ranks the actual winner. Use only strictly earlier cards and
-event-card uncertainty. This should execute no new fight trajectories and stay
-well below one hour. Another simulator screen is authorized only if this audit
-identifies a concrete translation error or a prospectively specified mapping
-that improves both conditional strike likelihood and winner ranking.
+Specify one mapping that preserves conditional strike pace under its explicit
+context occupancy proxy and opponent accuracy effects in the same log-odds
+units. Verify it algebraically and with tests. Do not tune an attenuation scalar
+or try many mappings against these outer outcomes. Require improved conditional
+strike likelihood and preserved/improved winner ordering before another
+100-path, 229-fight development screen against full and reliability-weighted
+snapshots using frozen mechanics/common seeds and the existing 3,300-second cap.
+
+Both 2025 confirmation cohorts stay unopened. No production/default change is
+authorized by this diagnostic. Prospective price collection remains the higher
+priority for establishing a betting advantage.
 
 ## Completed: bout-clustered v2 simulator screen
 
