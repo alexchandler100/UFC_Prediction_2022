@@ -17,25 +17,25 @@
   "execution_enabled": false,
   "last_build": {
     "captures_at_locked_horizon": 6,
-    "captures_considered": 73,
+    "captures_considered": 74,
     "matchups_already_frozen": 62,
-    "matchups_considered": 795,
+    "matchups_considered": 807,
     "matchups_without_forecast": 0,
     "matchups_without_fresh_quotes": 0
   },
-  "last_update_utc": "2026-10-02T23:29:59Z",
+  "last_update_utc": "2026-10-03T04:42:10Z",
   "latest_available_same_book_price_movement": {
-    "count": 16,
+    "count": 18,
     "definition": "later implied probability minus locked break-even probability; positive means the recorded paper price was better",
     "interval": {
       "bootstrap_samples": 10000,
-      "ci_95_lower": 0.0019871913399666257,
+      "ci_95_lower": 0.007172549322409035,
       "ci_95_upper": 0.0183818239373795,
       "event_count": 3,
-      "point": 0.00847851470310347
+      "point": 0.010349935542865027
     },
-    "mean_probability_advantage": 0.00847851470310347,
-    "positive_rate": 0.4375
+    "mean_probability_advantage": 0.010349935542865027,
+    "positive_rate": 0.5
   },
   "paper_only": true,
   "paper_return_interval": {
@@ -144,7 +144,7 @@
     }
   },
   "prospective_first_capture_utc": "2026-08-30T00:20:36.000000Z",
-  "report_sha256": "19be4ebf0e8a45688034eebe51e833e8b2e40aba078142638940b25d87a59f78",
+  "report_sha256": "3cac5a602b87e58b2968c2a50a3809b45b3eee4c686954364c2d21e143dfc5b8",
   "results": {
     "losses": 7,
     "maximum_drawdown_units": 4.0601668862538425,
