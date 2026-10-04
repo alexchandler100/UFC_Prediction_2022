@@ -696,7 +696,8 @@ def _paired_interval(
     candidate_field: str,
 ) -> dict[str, object]:
     grouped: dict[str, list[float]] = {}
-    for event_id, target, record in rows:
+    ordered = sorted(rows, key=lambda item: (item[0], item[2].forecast_id, item[1]))
+    for event_id, target, record in ordered:
         difference = _loss(target, float(getattr(record, candidate_field))) - _loss(
             target, record.published_model_probability
         )
@@ -714,7 +715,10 @@ def _paired_interval(
     if len(grouped) < 2:
         return result
     blocks = [grouped[key] for key in sorted(grouped)]
-    generator = random.Random(int(canonical_hash({"blocks": blocks})[:16], 16))
+    # Seed from immutable inputs. A one-ULP platform difference in log loss
+    # must not change all 10,000 sampled cards and invalidate the publication.
+    seed_inputs = [(event, record.forecast_id, target) for event, target, record in ordered]
+    generator = random.Random(int(canonical_hash({"forecast_results": seed_inputs})[:16], 16))
     samples = []
     for _ in range(10_000):
         chosen = [generator.choice(blocks) for _ in blocks]

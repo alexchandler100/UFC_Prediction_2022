@@ -3,6 +3,8 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
+from types import SimpleNamespace
+from unittest.mock import patch
 
 import numpy as np
 import pandas as pd
@@ -22,6 +24,7 @@ from fight_predictor.bayesian_logistic_shadow import (  # noqa: E402
     score_shadow_forecasts,
 )
 from market_tracker import MarketDataError, StoreIntegrityError  # noqa: E402
+import fight_predictor.bayesian_logistic_shadow as shadow
 
 
 class _Builder:
@@ -35,6 +38,19 @@ class _Builder:
 
 
 class BayesianLogisticShadowTests(unittest.TestCase):
+    def test_uncertainty_range_survives_platform_rounding_and_input_reordering(self):
+        rows = [(f'event-{i}', (i + j) % 2, SimpleNamespace(
+            forecast_id=f'forecast-{i}-{j}', published_model_probability=0.13 + i * 0.06 + j * 0.01,
+            frozen_blend_probability=0.18 + i * 0.05 + j * 0.02,
+        )) for i in range(10) for j in range(i % 3 + 1)]
+        expected = shadow._paired_interval(rows, 'frozen_blend_probability')
+        loss = shadow._loss
+        with patch.object(shadow, '_loss', side_effect=lambda y, p: float(np.nextafter(loss(y, p), np.inf))):
+            rebuilt = shadow._paired_interval(list(reversed(rows)), 'frozen_blend_probability')
+        for key in ('point_difference', 'ci_95_lower', 'ci_95_upper'):
+            self.assertAlmostEqual(expected[key], rebuilt[key], places=13)
+        self.assertEqual(expected['bootstrap_samples'], rebuilt['bootstrap_samples'])
+
     @staticmethod
     def _forecast(*, event="event-one", fighter="fighter-a", opponent="fighter-b"):
         return BayesianLogisticShadowForecast.create(

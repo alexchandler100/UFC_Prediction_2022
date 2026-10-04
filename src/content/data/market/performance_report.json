@@ -520,7 +520,7 @@
         "brier_score": 0.2545866480324061,
         "count": 64,
         "expected_calibration_error": 0.1312924334671459,
-        "log_loss": 0.7578244986098975,
+        "log_loss": 0.7578244986098974,
         "positive_rate": 0.59375,
         "roc_auc": 0.6234817813765182
       }
@@ -528,12 +528,12 @@
     "paired_log_loss_intervals": {
       "bayesian_minus_production": {
         "bootstrap_samples": 10000,
-        "ci_95_lower": -0.029295974670592233,
+        "ci_95_lower": -0.027453202885699617,
         "ci_95_upper": 0.04061116184218929,
         "definition": "bayesian_probability minus published production log loss",
         "event_count": 5,
         "fight_count": 64,
-        "point_difference": 0.005292047461484886
+        "point_difference": 0.00529204746148489
       },
       "blend_minus_production": {
         "bootstrap_samples": 10000,
@@ -542,7 +542,7 @@
         "definition": "frozen_blend_probability minus published production log loss",
         "event_count": 5,
         "fight_count": 64,
-        "point_difference": 0.002616799263226475
+        "point_difference": 0.002616799263226473
       }
     },
     "paper_only": true,
@@ -995,7 +995,7 @@
     "status": "collecting_results"
   },
   "quote_dataset_sha256": "828066685ec4d5a32dc89a2d3d1e37cd5c1f1f8e71f03a2f7856102cdaa98043",
-  "report_sha256": "43e5210e92a9305c5ba886a2d698881a11ac3f9afe3b233578c37db79d7684f4",
+  "report_sha256": "c593722d709eb01e4fad7f3719156a19d931b31160140df6116e4bd52dbd3adc",
   "result_source_sha256": "80f9bb7d025cd55192cd3ccc17f2f72963bd2e0b98f745939bbed3f1f08eeccd",
   "schema_version": 6,
   "settlement_dataset_sha256": "3386814a26f4e9720a5ab258acf438e882f35839a45b8b865d465a20196145c9",
