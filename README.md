@@ -423,7 +423,17 @@ submission, and decision when listed. The Market tab shows those real
 prices beside the candidate method probabilities and labels the raw EV as
 unvalidated research. Six-way no-vig probabilities are produced only for
 complete book boards. Weekly snapshots retain first available, T-72, T-24, and
-T-6 observations; historical method collection is resumable and stored outside
+T-6 observations for each fight. A partially priced card continues to be checked
+on regular runs until its other announced fights receive opening prices; a
+retry never replaces an opening quote or an already recorded pick. The same
+outcome model is now published for every announced card in
+`external/upcoming_outcome_forecasts/`. The shared BestFightOdds page is checked
+for later cards with source start times as well as the current card. Later
+cards collect opening prices only, stopping more than 72 hours before their
+earliest quoted bout until they become the current card with verified timing.
+Cards without source start times are explicitly reported as awaiting timing.
+Source event dates are checked before joining fighter names, so an older
+rematch cannot supply a future fight's odds. Historical method collection is resumable and stored outside
 Git. See `METHOD_ODDS_COLLECTION.md` for commands and safeguards.
 Historical mean method prices are evaluated as individual yes/no props because
 the source usually quotes only one fighter's three methods, not a complete
@@ -1356,7 +1366,7 @@ match an official UFCStats forecast; unlinked promotion-unknown rows remain
 excluded.
 
 `.github/workflows/collect-market-snapshot.yml` runs separately Sunday at
-10:17 AM and 9:17 PM; Monday at 11:17 PM; Tuesday through Thursday at 12:17 PM
+10:17 AM and 9:17 PM; Monday at 12:17 PM, 6:17 PM, and 11:17 PM; Tuesday through Thursday at 12:17 PM
 and 6:17 PM; Friday at 12:17 PM, 6:17 PM, and 11:17 PM; and Saturday at 9:17 AM,
 12:17 PM, 3:17 PM, and 6:17 PM (America/Chicago). Once a previously timed card
 has commenced, a late retry exits successfully without spending another API

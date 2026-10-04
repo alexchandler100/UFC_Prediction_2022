@@ -1219,6 +1219,16 @@ def validate_publication(
             )
 
     upcoming_board_path = data_root / "market" / "upcoming_bet_board.json"
+    future_outcome_directory = data_root / 'external' / 'upcoming_outcome_forecasts'
+    if future_outcome_directory.is_dir():
+        try:
+            for path in sorted(future_outcome_directory.glob('*.json')):
+                future = validate_outcome_forecast_publication(json.loads(path.read_text(encoding='utf-8')))
+                if path.stem != future['event_id']:
+                    raise ValueError(f'{path.name} event ID differs from its filename')
+            report.facts.append('upcoming-card outcome publications validated')
+        except (TypeError, ValueError) as error:
+            report.errors.append(f'upcoming outcome forecasts are invalid: {error}')
     if upcoming_board_path.exists():
         try:
             upcoming_board = validate_upcoming_bet_board(

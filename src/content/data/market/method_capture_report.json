@@ -1,14 +1,98 @@
 {
   "ambiguous_book_markets_discarded": 0,
   "candidate_only": true,
-  "capture_id": "method_capture_20261004T165349407375Z_298cb9c57863",
+  "capture_id": "method_capture_20261004T224305807938Z_550a2d8aa7bf",
+  "collection_scope": "announced_upcoming_cards_with_source_start_times",
   "current_publication_sha256": "fa891c1daa20a7d0250b4e242d3a6b4a9af881b73ef0d9c3adfca14e0a33a730",
   "dataset_sha256": "af9830dd946a4c63b4921ddc14c30af7b7e2f827883afa26c46cc3853afbd334",
   "event_date": "2026-10-10",
   "event_id": "7f98d9d5a10fa25c",
   "event_start_utc": "2026-10-11T00:00:00Z",
+  "events": [
+    {
+      "ambiguous_book_markets_discarded": 0,
+      "event_date": "2026-10-10",
+      "event_id": "7f98d9d5a10fa25c",
+      "event_start_utc": "2026-10-11T00:00:00Z",
+      "matched_fights_with_prices": 0,
+      "matchup_count": 12,
+      "matchups_without_opening_prices": 12,
+      "merged_complete_six_way_markets": 0,
+      "opening_priced_matchups": 0,
+      "records_built": 0,
+      "source_complete_six_way_markets": 0,
+      "source_duplicate_matchups_merged": 0,
+      "source_matchups_mapped_to_card": 0,
+      "source_method_selections": 0,
+      "source_nonempty_book_markets": 0,
+      "timing_basis": "current_card_capture"
+    },
+    {
+      "ambiguous_book_markets_discarded": 0,
+      "event_date": "2026-10-24",
+      "event_id": "cc18abc046b382c9",
+      "event_start_utc": "2026-10-25T03:30:00Z",
+      "matched_fights_with_prices": 0,
+      "matchup_count": 9,
+      "matchups_without_opening_prices": 9,
+      "merged_complete_six_way_markets": 0,
+      "opening_priced_matchups": 0,
+      "records_built": 0,
+      "source_complete_six_way_markets": 0,
+      "source_duplicate_matchups_merged": 0,
+      "source_matchups_mapped_to_card": 0,
+      "source_method_selections": 0,
+      "source_nonempty_book_markets": 0,
+      "timing_basis": "earliest_quoted_bout_opening_only"
+    },
+    {
+      "ambiguous_book_markets_discarded": 0,
+      "event_date": "2026-11-14",
+      "event_id": "402ea3b5ee233852",
+      "event_start_utc": "2026-11-15T05:00:00Z",
+      "matched_fights_with_prices": 0,
+      "matchup_count": 12,
+      "matchups_without_opening_prices": 12,
+      "merged_complete_six_way_markets": 0,
+      "opening_priced_matchups": 0,
+      "records_built": 0,
+      "source_complete_six_way_markets": 0,
+      "source_duplicate_matchups_merged": 0,
+      "source_matchups_mapped_to_card": 0,
+      "source_method_selections": 0,
+      "source_nonempty_book_markets": 0,
+      "timing_basis": "earliest_quoted_bout_opening_only"
+    }
+  ],
+  "events_awaiting_timing": [
+    {
+      "event_date": "2026-10-17",
+      "event_id": "55e94a9b525dcf45",
+      "matchup_count": 13,
+      "status": "awaiting_source_start_time"
+    },
+    {
+      "event_date": "2026-10-31",
+      "event_id": "0a66de3a797cf73a",
+      "matchup_count": 11,
+      "status": "awaiting_source_start_time"
+    },
+    {
+      "event_date": "2026-11-07",
+      "event_id": "110404b505fb562c",
+      "matchup_count": 13,
+      "status": "awaiting_source_start_time"
+    },
+    {
+      "event_date": "2026-11-21",
+      "event_id": "cbf69fa846c7e3ee",
+      "matchup_count": 9,
+      "status": "awaiting_source_start_time"
+    }
+  ],
   "execution_enabled": false,
-  "lead_time_seconds": 543971.469049,
+  "future_records_built": 0,
+  "lead_time_seconds": 523016.303077,
   "matched_fights_with_prices": 0,
   "merged_complete_six_way_markets": 0,
   "method_forecast_dataset_sha256": "b50a4f055548ac9b93fa2e00386c8826bf1d482e2fa96407fedcbe1efcbac74a",
@@ -17,7 +101,7 @@
   "method_forecasts_duplicate": 0,
   "method_forecasts_total": 207,
   "method_forecasts_unmatched": 0,
-  "observed_at_utc": "2026-10-04T16:53:49.407375Z",
+  "observed_at_utc": "2026-10-04T22:43:05.807938Z",
   "paper_only": true,
   "records_added": 0,
   "records_built": 0,
@@ -28,9 +112,10 @@
   "source_complete_six_way_markets": 0,
   "source_duplicate_matchups_merged": 0,
   "source_matchups_mapped_to_card": 0,
-  "source_method_selections": 30,
-  "source_nonempty_book_markets": 46,
-  "source_payload_sha256": "298cb9c5786306f5081aa345b74d15c0f2961b69754657f3fe516e8daa52870c",
+  "source_method_selections": 0,
+  "source_nonempty_book_markets": 0,
+  "source_page_method_selections": 30,
+  "source_payload_sha256": "550a2d8aa7bf0ddc1479853608f97ad83d5985ec4cc7b0db4f619afb44997a9a",
   "stored_horizons": [],
   "timed_horizon": null
 }

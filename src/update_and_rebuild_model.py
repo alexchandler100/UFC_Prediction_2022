@@ -30,6 +30,7 @@ from fight_predictor.bayesian_logistic_shadow import (
     build_shadow_forecasts as build_bayesian_logistic_shadow_forecasts,
 )
 from fight_predictor.outcome_model import InsufficientVerifiedScheduleData
+from fight_predictor.upcoming_outcomes import publish_upcoming_outcomes
 from market_tracker import EarlyMarketObservationStore
 from market_tracker._common import canonical_hash
 from upcoming_bet_board import (
@@ -318,6 +319,17 @@ write_outcome_forecast_publication(
     / 'content/data/external/outcome_forecasts.json',
     outcome_publication,
     archive_directory=Path(__file__).resolve().parent / 'content/data/market/joint_forecast_archive',
+)
+publish_upcoming_outcomes(
+    outcome_model, feature_builder, all_upcoming_forecasts,
+    Path(__file__).resolve().parent / 'content/data/external/upcoming_outcome_forecasts',
+    archive_directory=Path(__file__).resolve().parent / 'content/data/market/joint_forecast_archive',
+    selected_c=float(outcome_evaluation['selected_c']),
+    training_input_sha256=outcome_training_sha256,
+    model_trained_through=str(point_in_time_fights['date'].max()),
+    forecast_issued_at_utc=forecast_issued_at,
+    source_commit_sha=forecast_source_revision,
+    unavailable_reason=outcome_evaluation.get('reason', 'Insufficient verified schedule history.'),
 )
 
 # Merge available sportsbook odds from the configured market source.

@@ -1,21 +1,24 @@
 """Capture bounded UFC method-of-victory prices from BestFightOdds.
 
-The command is designed to run immediately after the existing moneyline/totals
-capture, whose report supplies the verified current UFC card and start time.
-It stores at most four snapshots per book/fight/card: first available, about
-72 hours, 24 hours, and 6 hours before the card.  All output is paper-only
-market research; there is no wager or recommendation code here.
+The moneyline/totals report supplies the verified current card and start time;
+the all-upcoming board supplies early timing for later announced cards. One
+shared source request fills missing openings fight by fight. Each book/fight
+retains at most four snapshots: first available, T-72, T-24, and T-6. Later
+cards collect openings only until current-card timing is available. All output
+is paper-only market research; there is no wager or recommendation code here.
 """
 
 from __future__ import annotations
 
 import argparse
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
+from dataclasses import dataclass
 from hashlib import sha256
 import io
 import json
 import math
 import os
+import re
 from pathlib import Path
 import sys
 import time
@@ -23,6 +26,7 @@ from typing import Mapping, Sequence
 
 import pandas as pd
 import requests
+from bs4 import BeautifulSoup
 
 from audit_historical_odds_sources import BESTFIGHTODDS_ROOT
 from backfill_bestfightodds_history import _robots_allows_public_paths
@@ -60,6 +64,7 @@ from market_tracker import (
 )
 from market_tracker._common import StoreIntegrityError, canonical_hash
 from market_tracker._storage import atomic_write_text
+from upcoming_bet_board import validate_upcoming_forecast_publication, validate_upcoming_bet_board
 
 
 ROOT = Path(__file__).resolve().parent
@@ -71,6 +76,9 @@ METHOD_FORECAST_JSONL_PATH = MARKET_ROOT / "method_forecast_captures.jsonl"
 REPORT_PATH = MARKET_ROOT / "method_capture_report.json"
 CURRENT_METHOD_PATH = MARKET_ROOT / "current_method_markets.json"
 OUTCOME_FORECAST_PATH = ROOT / "content" / "data" / "external" / "outcome_forecasts.json"
+UPCOMING_OUTCOME_DIRECTORY = OUTCOME_FORECAST_PATH.parent / "upcoming_outcome_forecasts"
+UPCOMING_FORECAST_PATH = OUTCOME_FORECAST_PATH.parent / "all_upcoming_forecasts.json"
+UPCOMING_BOARD_PATH = MARKET_ROOT / "upcoming_bet_board.json"
 SOURCE = "bestfightodds.com"
 SOURCE_POLICY_ENV = "BESTFIGHTODDS_SOURCE_POLICY_ACKNOWLEDGED"
 REPORT_SIZE_LIMIT = 32 * 1024
@@ -80,6 +88,69 @@ SOURCE_TIMEOUT_SECONDS = 45.0
 
 class MethodCaptureSkipped(RuntimeError):
     """Expected no-op because no capture horizon is currently due."""
+
+
+@dataclass(frozen=True)
+class MethodMatchup:
+    fighter_name: str
+    opponent_name: str
+    fighter_id: str
+    opponent_id: str
+    matchup_id: str
+    fight_id: str | None = None
+
+
+@dataclass(frozen=True)
+class MethodCard:
+    event_date: str
+    event_id: str
+    matchups: tuple[PublishedMatchup | MethodMatchup, ...]
+    event_start_utc: str
+    timed_horizon: str | None
+
+
+def _future_cards(observed: datetime, current_event_id: str) -> tuple[list[MethodCard], list[dict]]:
+    """Use announced identities and source start times; never invent card times.
+
+    Only opening prices are collected for later cards. Their earliest quoted
+    bout is a provisional start reference, so stop at least 72.5 hours before
+    it; the current-card collector supplies verified timing closer to the card.
+    """
+    if not UPCOMING_FORECAST_PATH.is_file():
+        return [], []
+    announced = validate_upcoming_forecast_publication(
+        _json_object(UPCOMING_FORECAST_PATH.read_bytes(), UPCOMING_FORECAST_PATH))
+    market_rows = []
+    if UPCOMING_BOARD_PATH.is_file():
+        board = validate_upcoming_bet_board(
+            _json_object(UPCOMING_BOARD_PATH.read_bytes(), UPCOMING_BOARD_PATH))
+        if board['forecast_publication_sha256'] == announced['publication_sha256']:
+            market_rows = board.get('market_matchups', [])
+    cards, unavailable = [], []
+    for event in announced['events']:
+        event_id, event_date = event['event_id'], event['event_date']
+        if event_id == current_event_id or event_date <= observed.date().isoformat():
+            continue
+        rows = [row for row in announced['matchups'] if row['event_id'] == event_id and row.get('matchup_id')]
+        identities = {row['matchup_id'] for row in rows}
+        starts = [_as_utc(row['event_start_utc'], 'future event start') for row in market_rows
+                  if row['event_id'] == event_id and row['matchup_id'] in identities and row.get('event_start_utc')]
+        if not starts:
+            unavailable.append({'event_id': event_id, 'event_date': event_date,
+                                'status': 'awaiting_source_start_time', 'matchup_count': len(rows)})
+            continue
+        start = min(starts)
+        if (start - observed).total_seconds() <= 72.5 * 3600:
+            unavailable.append({'event_id': event_id, 'event_date': event_date,
+                                'status': 'awaiting_current_card_timing', 'matchup_count': len(rows)})
+            continue
+        if abs((start.date() - datetime.fromisoformat(event_date).date()).days) > 1:
+            raise CaptureError('future method card and source start date disagree')
+        cards.append(MethodCard(event_date, event_id, tuple(MethodMatchup(
+            fighter_name=row['fighter_name'], opponent_name=row['opponent_name'],
+            fighter_id=row['fighter_id'], opponent_id=row['opponent_id'], matchup_id=row['matchup_id'],
+        ) for row in rows), start.isoformat().replace('+00:00', 'Z'), None))
+    return cards, unavailable
 
 
 def _method_output_paths() -> tuple[Path, ...]:
@@ -207,19 +278,19 @@ def _timed_horizon(lead_seconds: float) -> str | None:
 
 
 def _capture_is_due(
-    event_records: Sequence[MethodMarketSnapshot], timed_horizon: str | None
+    event_records: Sequence[MethodMarketSnapshot], timed_horizon: str | None,
+    published: Sequence[PublishedMatchup | MethodMatchup],
 ) -> bool:
-    if not event_records:
-        return True
-    if timed_horizon is None:
-        return False
-    return timed_horizon not in {record.horizon for record in event_records}
+    expected = {row.matchup_id for row in published if row.matchup_id}
+    horizons = ('opening', timed_horizon) if timed_horizon else ('opening',)
+    return any(expected - {row.matchup_id for row in event_records if row.horizon == horizon}
+               for horizon in horizons)
 
 
 def _source_matches(
     selections: Sequence[MethodPropSelection],
-    published: Sequence[PublishedMatchup],
-) -> dict[int, tuple[PublishedMatchup, bool]]:
+    published: Sequence[PublishedMatchup | MethodMatchup],
+) -> dict[int, tuple[PublishedMatchup | MethodMatchup, bool]]:
     pairs: dict[int, tuple[str, str]] = {}
     for selection in selections:
         pair = selection.fighter_1_name, selection.fighter_2_name
@@ -266,10 +337,33 @@ def _book_names(
     return output
 
 
+def _event_selections(html: str, event_date: str) -> tuple[MethodPropSelection, ...]:
+    """Exclude historical/rematch tables before matching fighters by name.
+
+    The source often labels a Saturday US card with its Sunday UTC date.
+    Accept that one-day difference, but never a different week or promotion.
+    """
+    day = datetime.fromisoformat(event_date).date()
+    accepted = {day, day + timedelta(days=1)}
+    result = []
+    for container in BeautifulSoup(html, 'html.parser').select('.table-div'):
+        header = container.select_one('.table-header')
+        label = container.select_one('.table-header-date')
+        title = header.select_one('h1') if header else None
+        if label is None or title is None or not title.get_text(strip=True).upper().startswith('UFC'):
+            continue
+        date_text = re.sub(r'(\d+)(?:st|nd|rd|th)\b', r'\1', label.get_text(' ', strip=True))
+        dates = [pd.to_datetime(date_text if re.search(r'\b\d{4}\b', date_text) else f'{date_text}, {year}', errors='coerce')
+                 for year in {value.year for value in accepted}]
+        if any(not pd.isna(value) and value.date() in accepted for value in dates):
+            result.extend(parse_bestfightodds_method_props(str(container)))
+    return tuple(result)
+
+
 def _build_snapshots(
     *,
     selections: Sequence[MethodPropSelection],
-    published: Sequence[PublishedMatchup],
+    published: Sequence[PublishedMatchup | MethodMatchup],
     event_day: str,
     event_id: str,
     event_start_utc: str,
@@ -348,7 +442,7 @@ def _build_snapshots(
         matchup = board["matchup"]
         prices = board["prices"]
         source_ids = board["source_ids"]
-        assert isinstance(matchup, PublishedMatchup)
+        assert isinstance(matchup, (PublishedMatchup, MethodMatchup))
         assert isinstance(prices, dict) and isinstance(source_ids, set)
         matched_fights_with_prices.add(matchup_id)
         fighter_prices = {
@@ -420,14 +514,16 @@ def _decimal_odds(moneyline: int) -> float:
 
 
 def _outcome_forecasts(event_id: str) -> dict[str, object] | None:
-    if not OUTCOME_FORECAST_PATH.is_file():
-        return None
-    publication = validate_outcome_forecast_publication(_json_object(
-        OUTCOME_FORECAST_PATH.read_bytes(), OUTCOME_FORECAST_PATH
-    ))
-    if _text(publication.get("event_id")) != event_id or not outcome_forecasts_usable(publication):
-        return None
-    return publication
+    # Event IDs originate in validated UFC publications, not arbitrary paths.
+    if not event_id or any(character not in 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_' for character in event_id):
+        raise CaptureError('invalid outcome event ID')
+    for path in (OUTCOME_FORECAST_PATH, UPCOMING_OUTCOME_DIRECTORY / f'{event_id}.json'):
+        if not path.is_file():
+            continue
+        publication = validate_outcome_forecast_publication(_json_object(path.read_bytes(), path))
+        if _text(publication.get('event_id')) == event_id and outcome_forecasts_usable(publication):
+            return publication
+    return None
 
 
 def _build_method_forecast_captures(
@@ -465,7 +561,9 @@ def _build_method_forecast_captures(
         if natural_key in existing_keys:
             continue
         forecast = by_pair.get(frozenset((snapshot.fighter_id, snapshot.opponent_id)))
-        if forecast is None:
+        if (forecast is None or outcome_forecasts.get('event_id', snapshot.event_id) != snapshot.event_id
+                or outcome_forecasts.get('event_date', snapshot.event_date) != snapshot.event_date
+                or _as_utc(outcome_forecasts['forecast_issued_at_utc'], 'forecast issued') > _as_utc(snapshot.observed_at_utc, 'quote observed')):
             missing += 1
             continue
         terminal = forecast.get("terminal_probabilities")
@@ -767,10 +865,13 @@ def capture_method_snapshot() -> dict[str, object]:
     store = MethodMarketStore(METHOD_CSV_PATH, METHOD_JSONL_PATH)
     existing = store.read()
     timed_horizon = _timed_horizon(lead_seconds)
-    event_existing = [item for item in existing if item.event_id == event_id]
-    if not _capture_is_due(event_existing, timed_horizon):
+    future_cards, unavailable_cards = _future_cards(started, event_id)
+    cards = [MethodCard(event_day, event_id, published, event_start, timed_horizon), *future_cards]
+    due = [card for card in cards if _capture_is_due(
+        [item for item in existing if item.event_id == card.event_id], card.timed_horizon, card.matchups)]
+    if not due:
         raise MethodCaptureSkipped(
-            "opening method prices and the currently due horizon are already stored"
+            "every covered upcoming fight has opening prices and its currently due horizon"
         )
 
     robots = _fetch(f"{BESTFIGHTODDS_ROOT}/robots.txt")
@@ -782,17 +883,29 @@ def capture_method_snapshot() -> dict[str, object]:
         raise CaptureError("the UFC card commenced during method-price retrieval")
     payload_sha = sha256(response.content).hexdigest()
     selections = parse_bestfightodds_method_props(response.text)
-    snapshots, counters = _build_snapshots(
-        selections=selections,
-        published=published,
-        event_day=event_day,
-        event_id=event_id,
-        event_start_utc=event_start,
-        observed=observed,
-        payload_sha=payload_sha,
-        existing=existing,
-        timed_horizon=timed_horizon,
-    )
+    snapshots, event_reports = [], []
+    counters = {}
+    for card in cards:
+        new_rows, counts = _build_snapshots(
+            selections=_event_selections(response.text, card.event_date), published=card.matchups, event_day=card.event_date,
+            event_id=card.event_id, event_start_utc=card.event_start_utc,
+            observed=observed, payload_sha=payload_sha, existing=existing,
+            timed_horizon=card.timed_horizon,
+        )
+        snapshots.extend(new_rows)
+        priced = {item.matchup_id for item in (*existing, *new_rows)
+                  if item.event_id == card.event_id and item.horizon == 'opening'}
+        expected = {item.matchup_id for item in card.matchups if item.matchup_id}
+        event_reports.append({
+            'event_id': card.event_id, 'event_date': card.event_date,
+            'event_start_utc': card.event_start_utc,
+            'timing_basis': 'current_card_capture' if card.event_id == event_id else 'earliest_quoted_bout_opening_only',
+            'matchup_count': len(expected), 'opening_priced_matchups': len(priced & expected),
+            'matchups_without_opening_prices': len(expected - priced),
+            'records_built': len(new_rows), **counts,
+        })
+        if card.event_id == event_id:
+            counters = counts
     result = store.append(snapshots)
     final = store.read()
     outcome_publication = _outcome_forecasts(event_id)
@@ -800,11 +913,15 @@ def capture_method_snapshot() -> dict[str, object]:
         METHOD_FORECAST_CSV_PATH, METHOD_FORECAST_JSONL_PATH
     )
     existing_forecasts = forecast_store.read()
-    forecast_rows, unmatched_forecasts = _build_method_forecast_captures(
-        snapshots,
-        outcome_forecasts=outcome_publication,
-        existing=existing_forecasts,
-    )
+    forecast_rows, unmatched_forecasts = [], 0
+    for card in cards:
+        new_forecasts, missing = _build_method_forecast_captures(
+            [row for row in snapshots if row.event_id == card.event_id],
+            outcome_forecasts=outcome_publication if card.event_id == event_id else _outcome_forecasts(card.event_id),
+            existing=existing_forecasts,
+        )
+        forecast_rows.extend(new_forecasts)
+        unmatched_forecasts += missing
     if forecast_rows:
         forecast_result = forecast_store.append(forecast_rows)
         final_forecasts = forecast_store.read()
@@ -839,6 +956,11 @@ def capture_method_snapshot() -> dict[str, object]:
         "capture_id": _capture_id(observed, payload_sha),
         "source_payload_sha256": payload_sha,
         **counters,
+        "collection_scope": "announced_upcoming_cards_with_source_start_times",
+        "source_page_method_selections": len(selections),
+        "events": event_reports,
+        "events_awaiting_timing": unavailable_cards,
+        "future_records_built": sum(row.event_id != event_id for row in snapshots),
         "records_built": len(snapshots),
         "records_added": len(result.added_ids),
         "records_duplicate": len(result.duplicate_ids),

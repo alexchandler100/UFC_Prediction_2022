@@ -165,9 +165,9 @@ class MethodMarketTests(unittest.TestCase):
             horizon="t24",
             observed_at_utc="2026-08-28T07:30:00Z",
         )
-        self.assertFalse(_capture_is_due((opening,), None))
-        self.assertTrue(_capture_is_due((opening,), "t24"))
-        self.assertFalse(_capture_is_due((opening, t24), "t24"))
+        self.assertFalse(_capture_is_due((opening,), None, (_published(),)))
+        self.assertTrue(_capture_is_due((opening,), "t24", (_published(),)))
+        self.assertFalse(_capture_is_due((opening, t24), "t24", (_published(),)))
 
     def test_source_side_is_aligned_to_published_fighter(self):
         # Source order is Beta, Alpha while the published order is Alpha, Beta.

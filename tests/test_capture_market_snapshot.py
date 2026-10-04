@@ -692,7 +692,7 @@ class CaptureMarketSnapshotTests(unittest.TestCase):
             "current_opportunities.json",
         ):
             self.assertIn(filename, collector_workflow)
-        self.assertIn('cron: "17 23 * * 1"', collector_workflow)
+        self.assertIn('cron: "17 12,18,23 * * 1"', collector_workflow)
         self.assertIn('cron: "17 12,18 * * 2,3,4"', collector_workflow)
         self.assertIn('cron: "17 12,18,23 * * 5"', collector_workflow)
         self.assertIn('cron: "17 9,12,15,18 * * 6"', collector_workflow)
