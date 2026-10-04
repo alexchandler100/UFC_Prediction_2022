@@ -317,6 +317,7 @@ write_outcome_forecast_publication(
     Path(__file__).resolve().parent
     / 'content/data/external/outcome_forecasts.json',
     outcome_publication,
+    archive_directory=Path(__file__).resolve().parent / 'content/data/market/joint_forecast_archive',
 )
 
 # Merge available sportsbook odds from the configured market source.

@@ -3419,10 +3419,44 @@ function renderRecordedPaperBets() {
   for (const [phase, selector] of [['upcoming', '#recorded-paper-bets'], ['awaiting', '#recorded-awaiting-picks'], ['resolved', '#recorded-results']]) {
     const container = $(selector); container.replaceChildren();
     renderMarketPickEvents(container, sections[phase], phase);
-    if (!sections[phase].length) appendText(container, 'p', 'section-note', phase === 'upcoming'
-      ? 'No upcoming picks for these filters.' : 'No confirmed results for these filters.');
+    if (!sections[phase].length) {
+      if (phase === 'upcoming') {
+        const all = marketRecommendationGroups(state.publishedBets, state.upcomingBetBoard, state.betPerformance, state.methodPaper);
+        const explanation = upcomingMarketExplanation(state.allUpcoming, state.candidateReport, all, type, state.marketBookSelection);
+        appendText(container, 'p', 'section-note', explanation.message);
+        if (explanation.checkedAt) appendText(container, 'p', 'section-note', `Last price check: ${formatTimestamp(explanation.checkedAt)}. Saved prices may have changed.`);
+      } else appendText(container, 'p', 'section-note', 'No confirmed results for these filters.');
+    }
   }
   $('#recorded-awaiting-panel').hidden = !sections.awaiting.length;
+}
+
+function upcomingMarketExplanation(forecasts, candidates, groups, type = 'all', books = null, nowMs = Date.now()) {
+  const future = row => recordedPaperStatus(row, nowMs) === 'Upcoming';
+  if (groups.some(group => future(group.latest))) return { message: 'Upcoming picks are hidden by your market or sportsbook filters. Select all markets and books to see them.' };
+  const starts = new Map();
+  for (const row of candidates?.rows || []) {
+    const start = Date.parse(row.event_start_utc);
+    if (Number.isFinite(start)) starts.set(row.event_id, Math.min(starts.get(row.event_id) ?? Infinity, start));
+  }
+  const matchups = (forecasts?.matchups || []).filter(row => starts.has(row.event_id)
+    ? starts.get(row.event_id) > nowMs : future(row));
+  if (!matchups.length) return { message: 'No upcoming card is available in the saved data. Picks will appear after the next card and price update.' };
+  if (type === 'Method') return { message: 'No method picks have been recorded for a future card. Method forecasts and prices are collected for the published card.' };
+  if (type === 'Total rounds') return { message: 'No upcoming totals were selected. New totals are excluded until the duration predictions have passed the betting checks.' };
+  const nextDate = matchups.map(row => row.event_date).sort()[0];
+  const next = matchups.filter(row => row.event_date === nextDate);
+  const rows = (candidates?.rows || []).filter(row => future(row) && row.event_date === nextDate && row.market === 'Moneyline'
+    && (books === null || [...books].some(book => book.toLowerCase() === String(row.book).toLowerCase())));
+  const priced = rows.filter(row => finite(row.moneyline) !== null);
+  const count = new Set(priced.map(row => row.matchup_id)).size;
+  const adjusted = priced.map(row => finite(row.adjusted_ev)).filter(value => value !== null);
+  const best = adjusted.length ? Math.max(...adjusted) : null;
+  const prefix = `${nextDate}: prices saved for ${count} of ${next.length} fights${books === null ? '' : ' at your selected books'}.`;
+  const detail = !count ? 'Waiting for matched prices.' : best === null ? 'The saved prices lack enough comparison books or a usable probability estimate.'
+    : best < 0.05 ? `Best adjusted expected return: ${(best * 100).toFixed(1)}%; the minimum is 5%.`
+      : 'No pick passed every probability, price freshness and exposure check.';
+  return { message: `${prefix} ${detail}`, checkedAt: candidates?.captured_at_utc, pricedFights: count, totalFights: next.length, bestExpectedReturn: best };
 }
 
 function selectPerformanceRecords(records, timing) {
@@ -3455,6 +3489,12 @@ function selectPerformanceRecords(records, timing) {
 }
 
 function performanceStakePlan(record, staking) {
+  if (staking.startsWith('portfolio_')) {
+    if (!portfolioRecordValid(record)) return null;
+    const underlying = {portfolio_flat_v1: 'flat_one_percent', portfolio_half_kelly_v1: 'half_kelly', portfolio_tiered_v1: 'tiered_expected_return'}[staking];
+    const plan = underlying ? performanceStakePlan(record, underlying) : null;
+    return plan && Number.isFinite(plan.fraction) && plan.fraction >= 0 ? plan : null;
+  }
   const published = finite(record.estimated_win_probability);
   if (published === null) return null;
   if (staking === "robust_bayesian_kelly") {
@@ -3494,6 +3534,7 @@ function performanceStakePlan(record, staking) {
 }
 
 function simulatePaperBankroll(records, initialBankroll, staking) {
+  if (staking.startsWith('portfolio_')) return simulatePortfolioBankroll(records, initialBankroll, staking);
   const planned = records.map((record) => ({ record, plan: performanceStakePlan(record, staking) }));
   const unsupported = planned.filter((item) => item.plan === null).map((item) => item.record);
   const supported = planned.filter((item) => item.plan !== null);
@@ -3548,6 +3589,138 @@ function simulatePaperBankroll(records, initialBankroll, staking) {
   };
 }
 
+function portfolioRecordValid(record) {
+  const published = Date.parse(record.published_at_utc);
+  const start = Date.parse(record.event_start_utc);
+  const date = Date.parse(`${record.event_date}T00:00:00Z`);
+  return Boolean(record.record_id && record.event_id && record.fighter_id && record.opponent_id
+    && record.fighter_id !== record.opponent_id && record.selection && Number.isFinite(published) && Number.isFinite(date)
+    && (Number.isFinite(start) ? published < start : published < date + 86400000)
+    && decimalOdds(record.offered_moneyline) !== null
+    && finite(record.estimated_win_probability) > 0 && finite(record.estimated_win_probability) < 1
+    && (record.status === 'pending' || (['won', 'lost', 'void'].includes(record.status) && finite(record.unit_profit) !== null)));
+}
+
+function portfolioFightKey(record) {
+  return JSON.stringify([record.event_id, [record.fighter_id, record.opponent_id].sort()]);
+}
+
+function portfolioContractKey(record) {
+  let selection = record.category === 'Moneyline'
+    ? (record.side === 'opponent' ? record.opponent_id : record.fighter_id)
+    : String(record.selection).trim().toLowerCase().replace(/\s+/g, ' ');
+  if (record.category === 'Total rounds') {
+    const total = selection.match(/^(over|under)\s+(\d+(?:\.\d+)?)$/);
+    if (total) selection = `${total[1]} ${Number(total[2])}`;
+  }
+  return JSON.stringify([portfolioFightKey(record), record.category, selection]);
+}
+
+function allocatePortfolioBatch(items, account, bankroll, staking) {
+  // Every item in a batch was published at the same instant. Later prices
+  // cannot displace stakes already reserved by earlier batches.
+  const tiered = staking === 'portfolio_tiered_v1';
+  const openStake = account.positions.reduce((sum, row) => sum + (row.released ? 0 : row.stake), 0);
+  const rows = items.map(({record, plan}) => {
+    const card = String(record.event_id), fight = portfolioFightKey(record), contract = portfolioContractKey(record);
+    if (!account.cards.has(card)) account.cards.set(card, {base: bankroll, used: 0});
+    if (!account.fights.has(fight)) account.fights.set(fight, {used: 0, budgetFraction: 0});
+    const cardAccount = account.cards.get(card), fightAccount = account.fights.get(fight);
+    fightAccount.budgetFraction = Math.max(fightAccount.budgetFraction, tiered ? plan.fraction : 0.01);
+    return {...record, card, fight, contract, sizing_probability: plan.probability, sizing_label: plan.label,
+      planned_fraction: plan.fraction, planned_stake: cardAccount.base * plan.fraction,
+      stake: 0, stake_fraction: 0, bankroll_before_event: cardAccount.base, allocation_reason: 'Within shared limits'};
+  });
+  // One quote per identical logical selection. Books are assumed accessible
+  // for this hypothetical replay; no actual wagers or account balances are inferred.
+  const ranked = [...rows].sort((a, b) => decimalOdds(b.offered_moneyline) - decimalOdds(a.offered_moneyline)
+    || String(a.record_id).localeCompare(String(b.record_id)));
+  const batchContracts = new Set();
+  for (const row of ranked) {
+    if (account.contracts.has(row.contract) || batchContracts.has(row.contract)) row.allocation_reason = 'Selection already reserved or duplicate quote';
+    else if (row.planned_stake <= 0) row.allocation_reason = 'Underlying rule passed';
+    else { batchContracts.add(row.contract); row.stake = row.planned_stake; }
+  }
+  const scaleGroup = (group, limit, reason) => {
+    const wanted = group.reduce((sum, row) => sum + row.stake, 0);
+    const scale = wanted > 0 ? Math.min(1, Math.max(0, limit) / wanted) : 1;
+    if (scale < 1 - 1e-12) group.forEach(row => { if (row.stake > 0) { row.stake *= scale; row.allocation_reason = reason; } });
+  };
+  for (const fight of new Set(rows.map(row => row.fight))) {
+    const group = rows.filter(row => row.fight === fight), held = account.fights.get(fight);
+    const base = account.cards.get(group[0].card).base;
+    scaleGroup(group, base * held.budgetFraction - held.used, 'Shared fight budget');
+  }
+  for (const card of new Set(rows.map(row => row.card))) {
+    const held = account.cards.get(card);
+    scaleGroup(rows.filter(row => row.card === card), held.base * 0.05 - held.used, 'Shared 5% card limit');
+  }
+  scaleGroup(rows, bankroll * 0.10 - openStake, '10% outstanding limit');
+  rows.forEach(row => {
+    if (row.stake < 1e-10) row.stake = 0;
+    row.stake_fraction = row.bankroll_before_event > 0 ? row.stake / row.bankroll_before_event : 0;
+    account.cards.get(row.card).used += row.stake;
+    account.fights.get(row.fight).used += row.stake;
+    if (row.stake > 0) account.contracts.add(row.contract);
+    account.positions.push(row);
+  });
+  return rows;
+}
+
+function simulatePortfolioBankroll(records, initialBankroll, staking) {
+  const planned = records.map(record => ({record, plan: performanceStakePlan(record, staking)}));
+  const unsupported = planned.filter(item => item.plan === null).map(item => item.record);
+  const batches = new Map();
+  planned.filter(item => item.plan !== null).forEach(item => {
+    const at = Date.parse(item.record.published_at_utc);
+    if (!batches.has(at)) batches.set(at, []);
+    batches.get(at).push(item);
+  });
+  const account = {cards: new Map(), fights: new Map(), contracts: new Set(), positions: []};
+  let bankroll = initialBankroll, peak = initialBankroll, maxDrawdown = 0, peakOutstanding = 0, peakOutstandingFraction = 0;
+  const curve = [{label: 'Start', date: '', bankroll}];
+  const release = until => {
+    const due = account.positions.filter(row => !row.released && row.release_at <= until);
+    const dates = [...new Set(due.map(row => row.release_at))].sort((a, b) => a - b);
+    for (const date of dates) {
+      const group = due.filter(row => row.release_at === date);
+      for (const row of group) { row.profit = row.stake * Number(row.unit_profit); bankroll += row.profit; row.released = true; }
+      group.forEach(row => { row.bankroll_after_event = bankroll; });
+      peak = Math.max(peak, bankroll);
+      maxDrawdown = Math.max(maxDrawdown, peak > 0 ? (peak - bankroll) / peak : 0);
+      curve.push({label: 'Settlements', date: new Date(date).toISOString(), bankroll});
+    }
+  };
+  for (const [at, items] of [...batches.entries()].sort(([a], [b]) => a - b)) {
+    release(at);
+    const rows = allocatePortfolioBatch(items, account, bankroll, staking);
+    for (const row of rows) {
+      const recorded = Date.parse(row.settled_at_utc);
+      // Date-only recovered history cannot establish intraday cash availability.
+      // This explicit replay convention releases it at UTC event date + 48h.
+      row.approximate_settlement_time = row.status !== 'pending' && !Number.isFinite(recorded);
+      row.release_at = row.status === 'pending' ? Infinity : Math.max(at + 1,
+        Number.isFinite(recorded) ? recorded : Date.parse(`${row.event_date}T00:00:00Z`) + 172800000);
+    }
+    const open = account.positions.reduce((sum, row) => sum + (row.released ? 0 : row.stake), 0);
+    peakOutstanding = Math.max(peakOutstanding, open);
+    peakOutstandingFraction = Math.max(peakOutstandingFraction, bankroll > 0 ? open / bankroll : 0);
+  }
+  release(Number.MAX_SAFE_INTEGER);
+  const rows = account.positions.filter(row => row.released), pending = account.positions.filter(row => !row.released);
+  const profit = bankroll - initialBankroll, totalStaked = rows.reduce((sum, row) => sum + row.stake, 0);
+  return {rows, pending, unsupported, curve, endingBankroll: bankroll, profit, totalStaked,
+    roi: totalStaked ? profit / totalStaked : null, maxDrawdown,
+    wins: rows.filter(row => row.status === 'won' && row.stake > 0).length,
+    losses: rows.filter(row => row.status === 'lost' && row.stake > 0).length,
+    voids: rows.filter(row => row.status === 'void' && row.stake > 0).length,
+    reservedStake: pending.reduce((sum, row) => sum + row.stake, 0), peakOutstanding, peakOutstandingFraction,
+    maximumFightFraction: Math.max(0, ...[...account.fights.entries()].map(([key, value]) => value.used / account.cards.get(JSON.parse(key)[0]).base)),
+    maximumCardFraction: Math.max(0, ...[...account.cards.values()].map(card => card.base > 0 ? card.used / card.base : 0)),
+    approximateSettlements: rows.filter(row => row.approximate_settlement_time).length,
+    policyVersion: staking};
+}
+
 function renderPerformanceChart(curve, initialBankroll) {
   const container = $("#performance-chart"); container.replaceChildren();
   if (curve.length < 2) {
@@ -3597,7 +3770,8 @@ function performanceDecision(record, staking) {
   const phase = record.status === "pending" ? "pending" : "settled";
   if (plan === null) {
     let reason = "Required saved estimate is unavailable";
-    if (staking === "robust_bayesian_kelly") {
+    if (staking.startsWith('portfolio_')) reason = 'Missing valid price, probability, fight identity or pre-fight publication time';
+    else if (staking === "robust_bayesian_kelly") {
       reason = record.category === "Total rounds"
         ? "No usable uncertainty estimate saved for this total"
         : "No usable uncertainty estimate saved for this moneyline";
@@ -3618,7 +3792,7 @@ function performanceDecision(record, staking) {
       && finite(record.allocated_fraction) === 0
       && Number(record.bayesian_kelly?.recommended_fraction) > 0;
     return { record, plan, phase, decision: "pass", reason: allocationPass
-      ? "Saved portfolio allocation is zero" : staking === "tiered_expected_return"
+      ? "Saved portfolio allocation is zero" : ['tiered_expected_return', 'portfolio_tiered_v1'].includes(staking)
         ? "Estimated return is below the 5% minimum" : "Estimated chance does not beat the price" };
   }
   return { record, plan, phase, decision: "bet", reason: "Positive planned stake" };
@@ -3668,10 +3842,22 @@ function performanceTable(headers) {
   return { wrap, body };
 }
 
-function renderPerformanceCoverage(selected, staking) {
+function renderPerformanceCoverage(selected, staking, replay = null) {
   const container = $("#performance-coverage"); container.replaceChildren();
   const coverage = performanceCoverage(selected, staking);
-  const headers = ["Recorded selections", "Total", "Positive planned stake", "Zero stake / pass", "Missing estimate"];
+  if (staking.startsWith('portfolio_') && replay) {
+    const allocations = new Map([...replay.rows, ...replay.pending].map(row => [row.record_id, row]));
+    coverage.decisions.forEach(item => {
+      const row = allocations.get(item.record.record_id);
+      if (row) { item.decision = row.stake > 0 ? 'bet' : 'pass'; item.reason = row.allocation_reason; item.allocation = row; }
+    });
+    for (const phase of ['settled', 'pending']) {
+      const items = coverage.decisions.filter(item => item.phase === phase);
+      coverage[phase] = {total: items.length, bet: items.filter(item => item.decision === 'bet').length,
+        pass: items.filter(item => item.decision === 'pass').length, missing: items.filter(item => item.decision === 'missing').length};
+    }
+  }
+  const headers = ["Recorded selections", "Total", staking.startsWith('portfolio_') ? 'Stake after limits' : "Positive planned stake", "Zero stake / pass", "Missing estimate"];
   const table = performanceTable(headers);
   for (const [phase, label] of [["settled", "Settled"], ["pending", "Pending"]]) {
     const counts = coverage[phase]; const row = element("tr");
@@ -3696,10 +3882,12 @@ function renderPerformanceCoverage(selected, staking) {
     if (!items.length) continue;
     const details = element("details", "performance-diagnostics");
     details.append(element("summary", "", `${label} (${items.length})`));
-    if (items === pending) appendText(details, "p", "section-note", "These are saved selections awaiting results. Their recorded prices may no longer be available; they do not affect settled returns.");
+    if (items === pending) appendText(details, "p", "section-note", staking.startsWith('portfolio_')
+      ? 'These selections reserve simulated funds until results arrive. Prices are the saved quotes.'
+      : "These are saved selections awaiting results. Their recorded prices may no longer be available; they do not affect settled returns.");
     const columns = ["Fight / selection", "Recorded price", "Decision / reason"];
     const detailTable = performanceTable(columns);
-    items.forEach(({ record, plan, decision, reason }) => {
+    items.forEach(({ record, plan, decision, reason, allocation }) => {
       const row = element("tr");
       appendPerformanceCell(row, columns[0], `${formatDate(record.event_date)} · ${record.fighter_name} vs ${record.opponent_name} · ${record.selection}`);
       appendPerformanceCell(row, columns[1], `${formatOdds(record.offered_moneyline)} · ${record.target_book}`);
@@ -3707,7 +3895,8 @@ function renderPerformanceCoverage(selected, staking) {
       appendText(explanation, "strong", "", reason);
       if (plan !== null) {
         appendText(explanation, "span", "", `${formatPercent(plan.probability)} sizing chance; ${formatPercent(1 / decimalOdds(record.offered_moneyline))} needed to break even.`);
-        if (decision === "bet") appendText(explanation, "span", "", `${formatPercent(plan.fraction)} planned stake before card cash limits.`);
+        if (allocation) appendText(explanation, 'span', '', `${formatCurrency(allocation.planned_stake)} requested; ${formatCurrency(allocation.stake)} reserved.`);
+        else if (decision === "bet") appendText(explanation, "span", "", `${formatPercent(plan.fraction)} planned stake before card cash limits.`);
       } else if (staking === "robust_bayesian_kelly" && record.category !== "Total rounds" && record.bayesian_kelly?.reason) {
         appendText(explanation, "span", "", record.bayesian_kelly.reason);
       }
@@ -3721,6 +3910,25 @@ function renderSharedPerformanceComparison(selected, initialBankroll) {
   const container = $("#performance-comparison"); container.replaceChildren();
   const options = [...$("#performance-staking").options];
   const groups = performanceComparisonGroups(selected, initialBankroll);
+  const portfolioRules = ['portfolio_flat_v1', 'portfolio_half_kelly_v1', 'portfolio_tiered_v1'];
+  const portfolioRecords = selected.filter(record => portfolioRules.every(rule => performanceStakePlan(record, rule) !== null));
+  appendText(container, 'h3', '', 'Shared fight and card budgets');
+  appendText(container, 'p', 'section-note', 'All three replay the same recorded prices in publication order and reserve pending stakes. Flat and half Kelly share a 1% fight cap; tiers allow up to 3%. Every rule has a 5% card and 10% outstanding limit. Compare returns together with the amount risked.');
+  const portfolioHeaders = ['Stake rule', 'Bets / passes', 'Amount risked', 'Profit', 'Max fight / card', 'Pending reserve'];
+  const portfolioTable = performanceTable(portfolioHeaders); portfolioTable.wrap.dataset.comparison = 'portfolio';
+  portfolioRules.forEach(staking => {
+    // Pending positions must compete for funds even though only settled P/L is scored.
+    const result = simulatePaperBankroll(portfolioRecords, initialBankroll, staking), counts = fundedPerformanceCounts(result.rows);
+    const row = element('tr'); row.dataset.staking = staking;
+    [options.find(option => option.value === staking).text, `${counts.funded} / ${counts.zeroStake}`,
+      formatCurrency(result.totalStaked), formatCurrency(result.profit),
+      `${formatPercent(result.maximumFightFraction)} / ${formatPercent(result.maximumCardFraction)}`, formatCurrency(result.reservedStake)]
+      .forEach((value, index) => appendPerformanceCell(row, portfolioHeaders[index], value, index ? 'numeric' : ''));
+    portfolioTable.body.append(row);
+  });
+  container.append(portfolioTable.wrap);
+  const portfolioSettled = portfolioRecords.filter(record => record.status !== 'pending').length;
+  appendText(container, 'p', 'section-note', `${portfolioSettled} settled selections; ${selected.length - portfolioRecords.length} records lack required inputs. Older records without settlement times release funds 48 hours after the UTC event date.`);
   const comparison = groups.sizing;
   appendText(container, "h3", "", "Stake sizes: same picks and probabilities");
   appendText(container, "p", "section-note", `${comparison.records.length} settled selections across ${comparison.fights} fights and ${comparison.cards} cards. These rules use the same saved probabilities, prices and starting bankroll.${comparison.excluded ? ` ${comparison.excluded} selections lack required price or probability data.` : ''}`);
@@ -3776,7 +3984,7 @@ function renderBetPerformance() {
   const candidates = publication.records.filter((record) => market === "all" || record.category === market);
   const selected = selectPerformanceRecords(candidates, timing);
   const result = simulatePaperBankroll(selected, initial, staking);
-  renderPerformanceCoverage(selected, staking);
+  renderPerformanceCoverage(selected, staking, result);
   renderSharedPerformanceComparison(selected, initial);
   const archiveStart = publication.archive_started_at_utc ? formatDate(publication.archive_started_at_utc) : "the next archived board";
   const baseDataNote = timing === "official_t24"
@@ -3784,22 +3992,27 @@ function renderBetPerformance() {
     : `Published-price replay includes recovered website boards and automatic archives from ${archiveStart}. Official locked bets before that archive are retained.`;
   const blendStrategy = staking.includes("_blend");
   const bayesianStrategy = staking === "robust_bayesian_kelly";
-  const tieredStrategy = staking === "tiered_expected_return";
+  const portfolioStrategy = staking.startsWith('portfolio_');
+  const tieredStrategy = ['tiered_expected_return', 'portfolio_tiered_v1'].includes(staking);
   const researchStrategy = blendStrategy || bayesianStrategy;
-  $("#performance-rule-note").textContent = bayesianStrategy
+  $("#performance-rule-note").textContent = portfolioStrategy
+    ? `${tieredStrategy ? 'Expected return of 5–<10%, 10–<20%, or 20%+ requests a 1%, 2%, or 3% total fight budget; below 5% passes.' : 'Selections request flat 1% or half Kelly, with at most 1% total per fight.'} All picks on a fight share its budget, with 5% per card and 10% outstanding at entry. Same-time picks share proportionally; earlier stakes stay reserved. This controls combined loss; it does not estimate which bets diversify each other.`
+    : bayesianStrategy
     ? "Robust Bayesian Kelly changes the probability as well as the stake. It uses a conservative calibrated chance, can choose zero, and honors any saved portfolio allocation. Missing estimates are counted separately."
     : blendStrategy
       ? "This rule combines the published probability with the named saved predictions, then applies half Kelly. It can pass when the combined chance no longer beats the price. The winner model supports moneylines only."
       : tieredStrategy
         ? "Estimated return below 5%: pass. From 5% to under 10%: stake 1%; 10% to under 20%: stake 2%; 20% or more: stake 3%. Return is calculated from the saved probability and price; 10% means an estimated $10 net gain per $100 staked. These starting thresholds were not fitted to past winners. Stakes use the bankroll at the start of each card, with the same cash limits as other rules."
         : "This rule keeps the published probability. Full, half and one-third Kelly change the stake multiplier; flat 1% uses the same fraction for each published selection.";
-  $("#performance-data-note").textContent = bayesianStrategy
+  $("#performance-data-note").textContent = portfolioStrategy
+    ? `${baseDataNote} Version 1 replays bookings in publication order. Card budgets use bankroll at the first selected price. ${result.approximateSettlements} settled records lack a settlement timestamp: this replay releases those stakes 48 hours after the UTC event date. Pending records stay reserved. All exposure is hypothetical; methods remain a separate experiment.`
+    : bayesianStrategy
     ? `${baseDataNote} New portfolio records use their saved capped allocation. Older robust Bayesian Kelly values remain historical research comparisons. A saved zero stake records a pass.`
     : blendStrategy
       ? `${baseDataNote} Research blend: only predictions available by the original pick time can support a selection. Recovered saved forecasts improve replay coverage; they do not create new historical picks.`
       : baseDataNote;
   const fundedCounts = fundedPerformanceCounts(result.rows);
-  $("#performance-summary-note").textContent = `${fundedCounts.funded} settled paper bet${fundedCounts.funded === 1 ? "" : "s"} · ${fundedCounts.wins}-${fundedCounts.losses}${fundedCounts.voids ? ` · ${fundedCounts.voids} void` : ""} · ${fundedCounts.zeroStake} zero-stake record${fundedCounts.zeroStake === 1 ? "" : "s"}${result.pending.length ? ` · ${result.pending.length} pending record${result.pending.length === 1 ? "" : "s"}` : ""}${result.unsupported.length ? ` · ${result.unsupported.length} excluded because this strategy lacks a valid saved estimate` : ""}. This paper replay groups settlements by card and does not track account exposure between cards.`;
+  $("#performance-summary-note").textContent = `${fundedCounts.funded} settled paper bet${fundedCounts.funded === 1 ? "" : "s"} · ${fundedCounts.wins}-${fundedCounts.losses}${fundedCounts.voids ? ` · ${fundedCounts.voids} void` : ""} · ${fundedCounts.zeroStake} zero-stake record${fundedCounts.zeroStake === 1 ? "" : "s"}${result.pending.length ? ` · ${result.pending.length} pending record${result.pending.length === 1 ? "" : "s"}` : ""}${result.unsupported.length ? ` · ${result.unsupported.length} excluded because this strategy lacks required saved inputs` : ""}. ${portfolioStrategy ? `${formatCurrency(result.reservedStake)} reserved for pending picks; maximum fight/card stakes ${formatPercent(result.maximumFightFraction)} / ${formatPercent(result.maximumCardFraction)}.` : 'This paper replay groups settlements by card and does not track account exposure between cards.'}`;
   [
     [formatCurrency(result.endingBankroll), "Ending bankroll", `${formatCurrency(result.profit)} total profit`],
     [formatCurrency(result.totalStaked), "Total amount risked", `${formatPercent(result.roi)} return on amount risked`],
@@ -3817,7 +4030,12 @@ function renderBetPerformance() {
     const bet = element("div", "performance-bet"); appendText(bet, "strong", "", `${record.fighter_name} vs ${record.opponent_name}`); appendText(bet, "span", "", `${record.selection} · ${record.category}`); appendPerformanceCell(row, "Fight / bet", bet);
     const price = element("div", "performance-price"); appendText(price, "strong", "", `${formatOdds(record.offered_moneyline)} · ${record.target_book}`); appendText(price, "span", "", `${formatTimestamp(record.published_at_utc)} · ${formatPercent(record.estimated_win_probability)} published`); if (researchStrategy) appendText(price, "span", "", `${formatPercent(record.sizing_probability)} used for sizing · ${record.sizing_label}`); if (tieredStrategy) appendText(price, "span", "", `${formatPercent(record.estimated_win_probability * decimalOdds(record.offered_moneyline) - 1)} estimated return`); appendPerformanceCell(row, "Published price", price);
     appendPerformanceCell(row, "Result", element("span", `pill ${record.status === "won" ? "win" : record.status === "lost" ? "loss" : "neutral"}`, record.status.toUpperCase()));
-    appendPerformanceCell(row, "Stake", `${formatCurrency(record.stake)} (${formatPercent(record.stake_fraction)})`, "numeric");
+    if (portfolioStrategy) {
+      const stake = element('div', 'performance-price');
+      appendText(stake, 'strong', '', `${formatCurrency(record.stake)} (${formatPercent(record.stake_fraction)})`);
+      appendText(stake, 'span', '', `${formatCurrency(record.planned_stake)} requested · ${record.allocation_reason}`);
+      appendPerformanceCell(row, 'Stake', stake, 'numeric');
+    } else appendPerformanceCell(row, "Stake", `${formatCurrency(record.stake)} (${formatPercent(record.stake_fraction)})`, "numeric");
     appendPerformanceCell(row, "Profit", `${record.profit >= 0 ? "+" : ""}${formatCurrency(record.profit)}`, `numeric ${record.profit >= 0 ? "is-profit" : "is-loss"}`);
     appendPerformanceCell(row, "Bankroll", formatCurrency(record.bankroll_after_event), "numeric");
     rows.append(row);

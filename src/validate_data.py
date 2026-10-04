@@ -48,6 +48,7 @@ from fight_predictor.bayesian import (
 from fight_predictor.outcome_publication import (
     validate_outcome_forecast_publication,
 )
+from fight_predictor.joint_grid import validate_joint_archive
 from fight_predictor.bayesian_logistic_shadow import (
     POLICY_VERSION as BAYESIAN_LOGISTIC_SHADOW_POLICY_VERSION,
     BayesianLogisticShadowStore,
@@ -3043,6 +3044,12 @@ def validate_repository(
         pd.read_csv(point_path, low_memory=False) if point_path.exists() else None
     )
     report = ValidationReport()
+    try:
+        archived = validate_joint_archive(data_root / "market" / "joint_forecast_archive")
+        if archived:
+            report.facts.append(f"pre-event raw joint forecast publications: {archived}")
+    except (OSError, TypeError, KeyError, ValueError) as error:
+        report.errors.append(f"joint forecast archive is invalid: {error}")
     auxiliary_path = processed / "external_mma_auxiliary_doubled.csv"
     try:
         auxiliary_fights = load_approved_auxiliary(

@@ -26,6 +26,7 @@ from fight_semantics import SCHEDULE_CONTRACT_VERSION, upcoming_schedule
 from market_tracker import matchup_id_for
 
 from .outcome_model import DiscreteTimeOutcomeModel
+from .joint_grid import build_joint_grid, validate_joint_grid, archive_joint_publication
 
 
 OUTCOME_FORECAST_SCHEMA_VERSION = 1
@@ -184,6 +185,9 @@ def build_outcome_forecast_publication(
                 "total_round_over_probability_posteriors": total_posteriors,
             }
         )
+        joint_grid = build_joint_grid(prediction)
+        if joint_grid is not None:
+            item["joint_outcome_grid"] = joint_grid
         matchups.append(item)
 
     body: dict[str, object] = {
@@ -353,6 +357,8 @@ def validate_outcome_forecast_publication(
         expected_lines = {f"{value / 2:.1f}" for value in range(1, rounds * 2, 2)}
         if set(totals) != expected_lines:
             raise ValueError("total-round forecast lines disagree with scheduled rounds")
+        if "joint_outcome_grid" in item:
+            validate_joint_grid(item["joint_outcome_grid"], terminal, totals, rounds)
         posteriors = item.get("total_round_over_probability_posteriors")
         if not isinstance(posteriors, dict):
             raise ValueError("total-round probability posteriors are missing")
@@ -386,9 +392,11 @@ def validate_outcome_forecast_publication(
 
 
 def write_outcome_forecast_publication(
-    path: str | Path, publication: Mapping[str, object]
+    path: str | Path, publication: Mapping[str, object], *, archive_directory: str | Path | None = None
 ) -> None:
     validated = validate_outcome_forecast_publication(dict(publication))
+    if archive_directory is not None:
+        archive_joint_publication(archive_directory, validated)
     destination = Path(path)
     destination.parent.mkdir(parents=True, exist_ok=True)
     encoded = json.dumps(

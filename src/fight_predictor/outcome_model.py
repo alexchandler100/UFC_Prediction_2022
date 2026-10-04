@@ -122,6 +122,9 @@ class CompetingRiskPrediction:
     terminal_probabilities: dict[str, float]
     survival_after_seconds: dict[int, float]
     scheduled_rounds: int
+    # Raw joint model output, not sportsbook settlement scenarios. In particular,
+    # decision hazards may appear early and draw/NC contracts are not modeled.
+    interval_outcomes: tuple[tuple[str, int, int, float], ...] = ()
 
     @property
     def fighter_win_probability(self) -> float:
@@ -303,10 +306,15 @@ class DiscreteTimeOutcomeModel:
         survival = 1.0
         survival_curve: dict[int, float] = {}
         final_row = {name: 0.0 for name in MODEL_CLASSES}
+        interval_outcomes = []
         for index, values in enumerate(probabilities):
             conditional = dict(zip(classes, values))
             for outcome in TERMINAL_OUTCOMES:
-                terminal[outcome] += survival * float(conditional.get(outcome, 0.0))
+                mass = survival * float(conditional.get(outcome, 0.0))
+                terminal[outcome] += mass
+                if mass > 0:
+                    interval_outcomes.append((outcome, index * self.interval_seconds,
+                                              min((index + 1) * self.interval_seconds, horizon), mass))
             survival *= float(conditional.get(CONTINUE, 0.0))
             elapsed_after = min((index + 1) * self.interval_seconds, horizon)
             survival_curve[elapsed_after] = survival
@@ -324,12 +332,16 @@ class DiscreteTimeOutcomeModel:
         )
         terminal["fighter_decision"] += survival * fighter_share
         terminal["opponent_decision"] += survival * (1.0 - fighter_share)
+        for side, share in (("fighter", fighter_share), ("opponent", 1.0 - fighter_share)):
+            if survival * share > 0:
+                interval_outcomes.append((f"{side}_decision", horizon, horizon, survival * share))
         survival_curve[horizon] = 0.0
         total = sum(terminal.values())
         if total <= 0:
             raise RuntimeError("competing-risk prediction has no terminal probability")
         terminal = {key: value / total for key, value in terminal.items()}
-        return CompetingRiskPrediction(terminal, survival_curve, scheduled_rounds)
+        return CompetingRiskPrediction(terminal, survival_curve, scheduled_rounds,
+            tuple((outcome, start, end, mass / total) for outcome, start, end, mass in interval_outcomes))
 
 
 def evaluate_outcome_model(

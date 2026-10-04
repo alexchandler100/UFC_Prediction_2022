@@ -1,0 +1,27 @@
+{
+  "python_tests": {
+    "count": 579,
+    "exit_code": 0
+  },
+  "javascript_tests": {
+    "count": 43,
+    "exit_code": 0
+  },
+  "legacy_replays": {
+    "unchanged": 162,
+    "includes_all_nine_existing_rules": true
+  },
+  "browser": {
+    "desktop_width": 1440,
+    "mobile_width": 390,
+    "controls_passed": true,
+    "unexpected_console_errors": 0,
+    "horizontal_overflow": false
+  },
+  "saved_data_validation": {
+    "command": "python src/validate_data.py --allow-stale --require-model-artifact",
+    "exit_code": 0,
+    "result": "Validation passed"
+  },
+  "joint_archive_current_state": "No historical forecasts generated. First archive is created by the next pre-event model publication."
+}

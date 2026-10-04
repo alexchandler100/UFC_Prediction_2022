@@ -1,0 +1,65 @@
+{
+  "as_of_utc": "2026-10-04T06:00:00Z",
+  "initial_bankroll": 1000,
+  "timing": "first_qualifying",
+  "performance_publication_sha256": "ed23ff106eae406d5c4b4467532f6af13f099221c0c9dd839ed995446fc46cef",
+  "website_sha256": "817d3484253c07b5c4bd672d7cbb9e6c0b22516edd86486a6a0763051fa8f8b0",
+  "results": {
+    "portfolio_flat_v1": {
+      "settled_bets": 30,
+      "settled_passes": 1,
+      "missing_inputs": 0,
+      "total_staked": 159.67922740150328,
+      "profit": 41.438712748823946,
+      "return_on_stakes": 0.2595122322619268,
+      "maximum_drawdown": 0.02,
+      "maximum_fight_fraction": 0.01,
+      "maximum_card_fraction": 0.05000000000000002,
+      "peak_outstanding_at_entry_fraction": 0.07000000000000002,
+      "pending_reserve": 50.724183096405255,
+      "multi_pick_fights": 7,
+      "approximate_settlement_times": 26
+    },
+    "portfolio_half_kelly_v1": {
+      "settled_bets": 30,
+      "settled_passes": 1,
+      "missing_inputs": 0,
+      "total_staked": 145.64386400698433,
+      "profit": 20.93555390484937,
+      "return_on_stakes": 0.14374483983647543,
+      "maximum_drawdown": 0.015389654183614125,
+      "maximum_fight_fraction": 0.010000000000000002,
+      "maximum_card_fraction": 0.05000000000000001,
+      "peak_outstanding_at_entry_fraction": 0.06815391084136117,
+      "pending_reserve": 45.23577678669463,
+      "multi_pick_fights": 7,
+      "approximate_settlement_times": 26
+    },
+    "portfolio_tiered_v1": {
+      "settled_bets": 30,
+      "settled_passes": 1,
+      "missing_inputs": 0,
+      "total_staked": 179.80742053357469,
+      "profit": 116.43417128543024,
+      "return_on_stakes": 0.6475493110346299,
+      "maximum_drawdown": 0.02717210095988451,
+      "maximum_fight_fraction": 0.02,
+      "maximum_card_fraction": 0.05000000000000001,
+      "peak_outstanding_at_entry_fraction": 0.08,
+      "pending_reserve": 49.92936491402715,
+      "multi_pick_fights": 7,
+      "approximate_settlement_times": 26
+    }
+  },
+  "market_empty_state": {
+    "message": "2026-10-10: prices saved for 10 of 12 fights. Best adjusted expected return: 1.5%; the minimum is 5%.",
+    "checkedAt": "2026-10-03T18:57:28.191696Z",
+    "pricedFights": 10,
+    "totalFights": 12,
+    "bestExpectedReturn": 0.01492119750838139
+  },
+  "interpretation": "Retrospective diagnostics, not evidence of improved expected profitability. Methods remain a separate experiment.",
+  "settlement_convention": "Exact saved settlement timestamps when present; otherwise UTC event date plus 48 hours for already settled records. Pending stays reserved.",
+  "allocation": "Chronological bookings; same-time proposals scaled proportionally; no duplicate logical selections; existing reservations survive new captures.",
+  "raw_joint_forecasts": "New model publications export and archive the raw winner/method/time grid before the event date. Historical grids are not reconstructed. Decision timing, draws/NC and book settlement rules remain unresolved; settlement_ready is always false."
+}

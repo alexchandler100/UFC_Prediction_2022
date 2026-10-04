@@ -93,7 +93,8 @@ def main() -> int:
         source_commit_sha=next(iter(commits)),
         unavailable_reason=evaluation.get("reason", "Insufficient verified schedule history."),
     )
-    write_outcome_forecast_publication(FORECAST_PATH, publication)
+    write_outcome_forecast_publication(FORECAST_PATH, publication,
+        archive_directory=ROOT / "content/data/market/joint_forecast_archive")
     print(
         "Candidate outcome forecasts: "
         f"{publication['forecast_matchup_count']}/"

@@ -1,5 +1,5 @@
 {
-  "status": "proposed; no live policy or existing strategy changed",
+  "status": "Implementation started 2026-10-04: shared-budget replays shipped; raw joint forecast archiving added; live recommendation policy unchanged.",
   "date": "2026-10-03",
   "recommendation": "Replace the permanent one-pick restriction with a shared fight budget and joint payoff allocation after prediction and contract checks. Keep the existing conservative board as the comparison policy while validating the replacement.",
   "priority_order": [
@@ -90,10 +90,34 @@
     "https://web.stanford.edu/~boyd/papers/pdf/kelly.pdf",
     "https://stanford.edu/~boyd/papers/robust_kelly.html"
   ],
-  "evidence": ["correlation_audit.json", "replay_exposure_audit.json"],
+  "evidence": [
+    "correlation_audit.json",
+    "replay_exposure_audit.json"
+  ],
   "reproduce": [
     ".venv/Scripts/python.exe audit/profitability/2026-10-03/correlation_audit.py",
     "node audit/profitability/2026-10-03/replay_exposure_audit.cjs",
     ".venv/Scripts/python.exe -m unittest discover -s tests -p test_correlation_audit.py"
-  ]
+  ],
+  "implementation": {
+    "date": "2026-10-04",
+    "completed": [
+      "Versioned flat, half-Kelly and tiered shared-budget replays; chronological reservations include pending positions, duplicate contracts and multiple markets.",
+      "Market empty-state diagnosis: next card has quotes for 10 of 12 fights, best adjusted return 1.492% below 5%.",
+      "Future model publications preserve and archive raw winner/method/time probabilities, with validation against their marginals and no historical backfill."
+    ],
+    "evidence": "../2026-10-04/shared_budget_validation.json",
+    "remaining": [
+      "Distinguish normal and technical decisions; correct early normal-decision probability and test on later cards.",
+      "Add draw/NC and verified book-specific settlement mappings before marking joint scenarios usable.",
+      "Calibrate longshot probabilities and implement joint allocation comparisons with equal risk budgets.",
+      "Freeze prospective policies and collect the predeclared 20-card/200-fight review sample before considering promotion."
+    ],
+    "limits": [
+      "Historical replay only; no actual user wager/account state inferred.",
+      "26 selected settled records lack exact settlement times: explicit UTC event date + 48h release convention.",
+      "Methods remain a separately labeled experiment; no cross-experiment returns are pooled.",
+      "Raw joint grids are not payout-ready; ordinary/technical decision timing and exceptional outcomes remain unresolved."
+    ]
+  }
 }
