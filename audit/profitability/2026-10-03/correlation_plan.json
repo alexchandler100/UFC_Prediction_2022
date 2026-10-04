@@ -1,0 +1,99 @@
+{
+  "status": "proposed; no live policy or existing strategy changed",
+  "date": "2026-10-03",
+  "recommendation": "Replace the permanent one-pick restriction with a shared fight budget and joint payoff allocation after prediction and contract checks. Keep the existing conservative board as the comparison policy while validating the replacement.",
+  "priority_order": [
+    {
+      "step": 1,
+      "name": "Make exposure consistent across selections",
+      "work": [
+        "Add a new versioned portfolio replay with aggregate fight, card and outstanding-stake limits; preserve existing replay outputs and labels.",
+        "Use the same fight identity across moneyline, total lines, methods, books and recording times.",
+        "Retain 1% per fight, 5% per card and 10% outstanding as initial conservative comparison caps, not statistically optimized values.",
+        "In a tiered comparison, 1%, 2% and 3% are total fight budgets, never independent stakes for every selection. Allow unspent budget. Show planned and capped stakes separately.",
+        "Keep separate research experiments separately labeled; adding their returns or allocations together must be an explicit combined portfolio with its own limits.",
+        "Include existing open positions before allocating additional stakes; the current snapshot assumption of no open bets is inadequate for repeated betting.",
+        "Distinguish hypothetical recorded positions from actual user bets. Actual exposure requires user-entered positions or an explicitly authorized account connection; never infer actual wagers from displayed recommendations."
+      ],
+      "acceptance": [
+        "Two 3% proposed selections cannot silently create 6% fight exposure under a 3% fight budget.",
+        "Reversed fighter identities, multiple totals lines, repeated snapshots and multiple books all share the same exposure account.",
+        "A new capture cannot add another full fight budget to already open positions."
+      ]
+    },
+    {
+      "step": 2,
+      "name": "Preserve one consistent set of fight scenarios",
+      "work": [
+        "Archive winner, method and finishing-time joint probabilities from the existing duration model before results; its interval probabilities already contain useful starting information.",
+        "Use the detailed fight simulator only as a separately tested source, not as an assumed reliable joint distribution. A complete simulator rebuild is not required for the first portfolio prototype.",
+        "Retain the best accessible fresh quote per identical settlement contract, with stake limits and timestamps; keep inferior quotes only when capacity or settlement differences justify them.",
+        "Map every offered bet to win, loss or refund for each complete fight scenario. Include draws, no contests, disqualifications, technical decisions, exact total-line boundaries, cancellations and schedule changes using verified book-specific rules.",
+        "Check logical consistency: probabilities sum to one, a named fighter's KO probability cannot exceed that fighter's win probability, and longer-duration totals cannot be more likely than shorter ones. Normal decisions occur at the scheduled end; technical decisions need explicit treatment."
+      ],
+      "acceptance": [
+        "All market probabilities are recoverable from the same saved scenario table.",
+        "No multiplication of separate moneyline, method and total probabilities under an independence assumption.",
+        "Historical marginal-only records are labeled as incomplete; no invented joint forecasts are backfilled into the prospective record."
+      ]
+    },
+    {
+      "step": 3,
+      "name": "Correct the inputs that favor implausible longshots",
+      "work": [
+        "Compare method and duration probabilities with sufficiently complete, contemporaneous market prices while excluding the entry book from the reference where feasible.",
+        "Measure forecast accuracy and realized returns by odds range and method on later cards than the training data; do not pick odds cutoffs from the 27 settled method wagers.",
+        "Evaluate market-anchored and calibrated joint probabilities, with uncertainty represented by complete scenario distributions rather than unrelated probability floors.",
+        "Stress-test common model error, adverse price changes and unavailable books. Large raw estimated returns alone do not justify a larger stake."
+      ],
+      "acceptance": [
+        "The longshot and submission estimates must improve on held-out future cards before they can justify increased exposure.",
+        "Any calibration or market adjustment preserves a coherent joint probability distribution and pre-fight provenance."
+      ]
+    },
+    {
+      "step": 4,
+      "name": "Optimize all stakes in a fight together",
+      "work": [
+        "Maximize conservative expected log bankroll growth across complete scenarios, with cash as an allowed choice and the shared exposure limits from step 1.",
+        "Evaluate an additional bet by its contribution to the existing portfolio, not by standalone EV or standalone Kelly size.",
+        "Test nominal joint Kelly, fractional joint Kelly and an uncertainty-aware joint objective as explicitly separate candidates; choose settings before the prospective comparison.",
+        "Allow multiple selections, or one, or none. Do not impose an arbitrary minimum number of selections or a rule that every positive-EV price must be funded.",
+        "Report combined worst-case fight loss, plausible drawdown and total stake alongside the selections."
+      ],
+      "acceptance": [
+        "Duplicate identical bets do not manufacture diversification or double the optimal exposure.",
+        "Mutually exclusive outcomes can both receive stakes when doing so improves the combined objective.",
+        "A second positive-EV bet can be rejected when it worsens the portfolio's growth or violates limits.",
+        "One-fight budgets cannot be independently optimized against the same unreserved card bankroll."
+      ]
+    },
+    {
+      "step": 5,
+      "name": "Compare strategies at the same risk budget before promotion",
+      "work": [
+        "Keep the current highest-EV single pick, best conservative single pick, equal-budget split and joint optimizer as separate frozen comparisons, alongside cash and a market-only baseline where supported.",
+        "Use identical accessible prices, capture times, available funds, eligibility and aggregate exposure caps; preserve all alternatives and reasons for skipping them.",
+        "Track net bankroll growth, return on amount risked, worst fight/card exposure, drawdown, closing-price movement and sensitivity to price deterioration.",
+        "Calculate uncertainty with whole fight cards kept together; multiple selections on a fight and repeated snapshots are not independent evidence.",
+        "Predeclare a review floor of 20 settled cards and 200 settled fights for the prospective portfolio experiment. This is an operational review point, not proof or an automatic promotion trigger.",
+        "Promote only with stable probability accuracy and convincing net improvement after price stress at matched risk; otherwise keep the existing comparison policy and gather more data."
+      ],
+      "acceptance": [
+        "The new rule's gains must not be explained solely by more total money risked.",
+        "Settings are frozen before scoring new cards; historical diagnostics are not presented as new prospective performance.",
+        "Missing quotes, missing joint forecasts and passes remain distinct."
+      ]
+    }
+  ],
+  "sources": [
+    "https://web.stanford.edu/~boyd/papers/pdf/kelly.pdf",
+    "https://stanford.edu/~boyd/papers/robust_kelly.html"
+  ],
+  "evidence": ["correlation_audit.json", "replay_exposure_audit.json"],
+  "reproduce": [
+    ".venv/Scripts/python.exe audit/profitability/2026-10-03/correlation_audit.py",
+    "node audit/profitability/2026-10-03/replay_exposure_audit.cjs",
+    ".venv/Scripts/python.exe -m unittest discover -s tests -p test_correlation_audit.py"
+  ]
+}
