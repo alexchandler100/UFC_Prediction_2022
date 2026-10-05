@@ -8,8 +8,8 @@
     "one_selection_per_fight": true,
     "ranking": "calibrated_mean_expected_return_descending"
   },
-  "announced_event_count": 7,
-  "announced_matchup_count": 79,
+  "announced_event_count": 8,
+  "announced_matchup_count": 82,
   "bayesian_kelly": {
     "calibration_artifact_sha256": "2e84f775d3cfec880299d798214205805caf46ee008050a12d335215a16a1a7c",
     "moneyline_only": false,
@@ -23,9 +23,9 @@
   "bets": [],
   "eligible_offer_count": 0,
   "execution_enabled": false,
-  "forecast_publication_sha256": "b8cf955958fc48b132837787dcb0ddfb16c0eeafbc055f336e9eb6255c7bbe05",
-  "market_evaluable_matchup_count": 14,
-  "market_matched_matchup_count": 14,
+  "forecast_publication_sha256": "bd1458e22e22cd0c0121f4930f11db801ee2a80a10caa11228857a3a0de5382d",
+  "market_evaluable_matchup_count": 15,
+  "market_matched_matchup_count": 17,
   "market_matchups": [
     {
       "book_count": 7,
@@ -1255,6 +1255,108 @@
       "event_start_utc": "2026-10-25T03:30:00.000000Z",
       "latest_source_quote_updated_at_utc": "2026-10-04T16:53:10.000000Z",
       "matchup_id": "matchup_a91c6bb8eb567c5fce4b3b9bdd41e64bd4b0f549dfaf323850e05e8a59f7ed74"
+    },
+    {
+      "book_count": 2,
+      "book_quotes": [
+        {
+          "book": "BetOnline.ag",
+          "book_key": "betonlineag",
+          "fighter_moneyline": -168,
+          "first_observed_at_utc": "2026-10-04T16:53:23.461606Z",
+          "no_vig_fighter_probability": 0.6036909972790726,
+          "opponent_moneyline": 143,
+          "source_quote_updated_at_utc": "2026-10-04T16:52:45.000000Z"
+        },
+        {
+          "book": "DraftKings",
+          "book_key": "draftkings",
+          "fighter_moneyline": -166,
+          "first_observed_at_utc": "2026-10-04T16:53:23.461606Z",
+          "no_vig_fighter_probability": 0.5996387718242023,
+          "opponent_moneyline": 140,
+          "source_quote_updated_at_utc": "2026-10-04T16:52:40.000000Z"
+        }
+      ],
+      "consensus_fighter_probability": 0.6016648845516375,
+      "event_id": "fa2fca260beeb9c0",
+      "event_start_utc": "2026-12-13T03:30:00.000000Z",
+      "latest_source_quote_updated_at_utc": "2026-10-04T16:52:45.000000Z",
+      "matchup_id": "matchup_3c59b086efd6f80871152b4d7c633d5c1dbd191c5b8da2bc0dc2d94356a3082f"
+    },
+    {
+      "book_count": 1,
+      "book_quotes": [
+        {
+          "book": "BetOnline.ag",
+          "book_key": "betonlineag",
+          "fighter_moneyline": -145,
+          "first_observed_at_utc": "2026-10-04T16:53:23.461606Z",
+          "no_vig_fighter_probability": 0.5700245700245701,
+          "opponent_moneyline": 124,
+          "source_quote_updated_at_utc": "2026-10-04T16:52:45.000000Z"
+        }
+      ],
+      "consensus_fighter_probability": null,
+      "event_id": "fa2fca260beeb9c0",
+      "event_start_utc": "2026-12-13T03:00:00.000000Z",
+      "latest_source_quote_updated_at_utc": "2026-10-04T16:52:45.000000Z",
+      "matchup_id": "matchup_7cc8aa815428fa314bfc3733714b0a93f3febcad81ea73e31642a4aec22c6647"
+    },
+    {
+      "book_count": 5,
+      "book_quotes": [
+        {
+          "book": "Bally Bet",
+          "book_key": "ballybet",
+          "fighter_moneyline": -175,
+          "first_observed_at_utc": "2026-10-04T16:53:23.461606Z",
+          "no_vig_fighter_probability": 0.6023138105567607,
+          "opponent_moneyline": 138,
+          "source_quote_updated_at_utc": "2026-10-04T16:53:10.000000Z"
+        },
+        {
+          "book": "BetOnline.ag",
+          "book_key": "betonlineag",
+          "fighter_moneyline": -148,
+          "first_observed_at_utc": "2026-10-04T16:53:23.461606Z",
+          "no_vig_fighter_probability": 0.5742343084741106,
+          "opponent_moneyline": 126,
+          "source_quote_updated_at_utc": "2026-10-04T16:52:45.000000Z"
+        },
+        {
+          "book": "betPARX",
+          "book_key": "betparx",
+          "fighter_moneyline": -175,
+          "first_observed_at_utc": "2026-10-04T16:53:23.461606Z",
+          "no_vig_fighter_probability": 0.6023138105567607,
+          "opponent_moneyline": 138,
+          "source_quote_updated_at_utc": "2026-10-04T16:52:10.000000Z"
+        },
+        {
+          "book": "BetRivers",
+          "book_key": "betrivers",
+          "fighter_moneyline": -175,
+          "first_observed_at_utc": "2026-10-04T16:53:23.461606Z",
+          "no_vig_fighter_probability": 0.6023138105567607,
+          "opponent_moneyline": 138,
+          "source_quote_updated_at_utc": "2026-10-04T16:52:40.000000Z"
+        },
+        {
+          "book": "DraftKings",
+          "book_key": "draftkings",
+          "fighter_moneyline": -192,
+          "first_observed_at_utc": "2026-10-04T16:53:23.461606Z",
+          "no_vig_fighter_probability": 0.6309403437815976,
+          "opponent_moneyline": 160,
+          "source_quote_updated_at_utc": "2026-10-04T16:52:40.000000Z"
+        }
+      ],
+      "consensus_fighter_probability": 0.6024232167851981,
+      "event_id": "fa2fca260beeb9c0",
+      "event_start_utc": "2026-12-13T04:00:00.000000Z",
+      "latest_source_quote_updated_at_utc": "2026-10-04T16:53:10.000000Z",
+      "matchup_id": "matchup_a39dc3880934774d6f938890ee338d85b496feb3d35db65688962bafa4f7691c"
     }
   ],
   "minimum_consensus_books_excluding_target": 3,
@@ -1264,7 +1366,7 @@
   "offers": [],
   "paper_only": true,
   "policy_version": "calibrated-upcoming-paper-allocation-v2",
-  "publication_sha256": "7ec3d6a16c547658b244d5bf3c8ff98fe8daf2c16bac8b7515224560915d45d8",
+  "publication_sha256": "30401049509770e817fa2f6b05d7e2be8302baa4550dbb1d29c5ba5cc9bb921d",
   "qualification_policy": "calibrated_mean_5pct_positive_probability_floor_and_stake",
   "qualified_bet_count": 0,
   "schema_version": 2,
