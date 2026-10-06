@@ -1,6 +1,6 @@
 {
   "archive_started_at_utc": "2026-08-29T04:31:48.487351Z",
-  "as_of_utc": "2026-10-05T23:30:39.358415Z",
+  "as_of_utc": "2026-10-06T04:39:14.103723Z",
   "execution_enabled": false,
   "limitations": "Only timestamped paper bets are included. The exact official history starts with the locked ledger; alternative timing replays start when the publication archive begins.",
   "official_bet_count": 8,
@@ -9,8 +9,8 @@
   "official_wins": 1,
   "paper_only": true,
   "policy_version": "published-paper-bankroll-replay-v1",
-  "publication_sha256": "51d9232ef89a0e0f096bdb09144d01ddf76c97833724b89d0696070946f25867",
-  "record_count": 86,
+  "publication_sha256": "aa10318d7442120edd9f85db3db3bb4a99057c45eafe27060769b823b456313a",
+  "record_count": 87,
   "records": [
     {
       "bayesian_kelly": {
@@ -4319,15 +4319,78 @@
       "status": "pending",
       "target_book": "DraftKings",
       "unit_profit": null
+    },
+    {
+      "allocated_fraction": 0.01,
+      "allocation_policy_version": null,
+      "bayesian_kelly": {
+        "assessment_timing": "prospective_at_publication",
+        "break_even_probability": 0.3846153846153846,
+        "calibration_artifact_sha256": "2e84f775d3cfec880299d798214205805caf46ee008050a12d335215a16a1a7c",
+        "calibration_trained_through": "2026-04-04",
+        "calibration_training_events": 58,
+        "calibration_training_fights": 503,
+        "cap_applied": false,
+        "expected_log_growth_at_probability_floor": 0.0005363215499188737,
+        "maximum_single_bet_fraction": 0.05,
+        "nominal_probability": 0.42397938550804204,
+        "policy_version": "robust-bayesian-kelly-moneyline-v1",
+        "posterior_interval_mass": 0.8,
+        "posterior_lower_probability": 0.4005887799156977,
+        "posterior_mean_full_kelly_fraction": 0.04639769189093666,
+        "posterior_mean_probability": 0.4131678103944226,
+        "posterior_upper_probability": 0.4255845956642794,
+        "probability_positive_edge": 0.9961089494163424,
+        "recommended_fraction": 0.025956767363008795,
+        "robust_uncapped_kelly_fraction": 0.025956767363008795,
+        "status": "available"
+      },
+      "bout_order": 0,
+      "category": "Moneyline",
+      "estimated_expected_return": 0.07423630702549877,
+      "estimated_win_probability": 0.4131678103944226,
+      "event_date": "2026-12-12",
+      "event_id": "fa2fca260beeb9c0",
+      "event_start_utc": "2026-12-13T04:00:00.000000Z",
+      "event_title": "UFC 335: Oliveira vs. Lopes",
+      "fighter_id": "07225ba28ae309b6",
+      "fighter_name": "Charles Oliveira",
+      "hours_before_start": 1631.3460822991667,
+      "kelly_fraction": 0.04639769189093666,
+      "market_key": "moneyline:matchup_a39dc3880934774d6f938890ee338d85b496feb3d35db65688962bafa4f7691c",
+      "matchup_id": "matchup_a39dc3880934774d6f938890ee338d85b496feb3d35db65688962bafa4f7691c",
+      "minimum_expected_return": 0.05,
+      "model_support_issued_at_utc": null,
+      "model_support_probability": null,
+      "model_support_source": null,
+      "offered_moneyline": 160,
+      "official": false,
+      "opponent_id": "f166e93d04a8c274",
+      "opponent_name": "Diego Lopes",
+      "probability_source": "leave_one_book_out_no_vig_market_consensus",
+      "published_at_utc": "2026-10-06T04:39:14.103723Z",
+      "raw_estimated_win_probability": 0.42397938550804204,
+      "record_id": "81c0a23ba4c0702acc4aba679115f6a7437b9beac69e7b141b9fc9d835d1658c",
+      "record_type": "published_snapshot",
+      "selection": "Diego Lopes",
+      "selection_role": "underdog",
+      "settled_at_utc": null,
+      "side": "opponent",
+      "simulation_support_issued_at_utc": "2026-10-05T02:16:29.536406+00:00",
+      "simulation_support_probability": 0.43782319625707955,
+      "simulation_support_source": "frozen_pre_event_monte_carlo",
+      "status": "pending",
+      "target_book": "DraftKings",
+      "unit_profit": null
     }
   ],
   "research_support": {
     "bayesian_kelly_calibration_artifact_sha256": "2e84f775d3cfec880299d798214205805caf46ee008050a12d335215a16a1a7c",
-    "bayesian_kelly_supported_records": 22,
+    "bayesian_kelly_supported_records": 23,
     "both_supported_records": 3,
     "model_supported_records": 10,
     "rule": "Robust Bayesian Kelly sizes moneylines from the lower 10th-percentile calibrated chance and caps one bet at 5% of bankroll. Other research strategies combine probabilities in log-odds space, then apply half Kelly. Unsupported bets are excluded.",
-    "simulation_supported_records": 15
+    "simulation_supported_records": 16
   },
   "schema_version": 1,
   "source_hashes": {
@@ -4335,7 +4398,7 @@
     "official_settlements": "3386814a26f4e9720a5ab258acf438e882f35839a45b8b865d465a20196145c9",
     "official_total_decisions": "160965399f7d8e850ee8d4bb79ae4de5befd0cd6f286b5cf4f7250be57fc3be0",
     "official_total_settlements": "6e199f7c6d9493fdf7f27a3d01a55a69e8e772d42100fcba42658c15f2d8c521",
-    "published_archive": "04ec861b3907612ca2c9253f0fa2dbc4ba519dc973905111aa60df1b68084370"
+    "published_archive": "68cdf193b0b547fdfe367df44ff23e1f49bfe5925f304039fd1b6fadf258b6af"
   },
   "staking_strategies": [
     "full_kelly",
