@@ -119,6 +119,9 @@ jobs:
         # restores every method file if capture or validation fails part-way.
         run: python src/capture_method_market_snapshot.py --optional-workflow
 
+      - name: Record and settle independent total-model paper recommendations
+        run: python src/update_total_model_paper.py
+
       - name: Record and settle method paper recommendations
         run: python src/update_method_paper.py
 
@@ -158,6 +161,7 @@ jobs:
           python src/update_equal_stake_experiment.py --validate-only
           python src/update_candidate_report.py --validate-only
           python src/update_method_paper.py --validate-only
+          python src/update_total_model_paper.py --validate-only
           python src/validate_data.py --require-model-artifact --require-market-data
 
       - name: Revalidate optional method-price outputs
@@ -227,9 +231,13 @@ jobs:
             src/content/data/market/equal_stake_experiment/report.json \
             src/content/data/market/candidate_report.json \
             src/content/data/market/method_paper/policy.json \
+            src/content/data/market/total_model_paper/policy.json \
             src/content/data/market/method_paper/decisions.json \
+            src/content/data/market/total_model_paper/decisions.json \
             src/content/data/market/method_paper/settlements.json \
+            src/content/data/market/total_model_paper/settlements.json \
             src/content/data/market/method_paper/report.json \
+            src/content/data/market/total_model_paper/report.json \
             src/content/data/market/research_monitor.json \
             src/content/data/market/bet_odds_history.json \
             src/content/data/market/simulation_conditions/policy.json \
@@ -279,9 +287,13 @@ jobs:
               src/content/data/market/equal_stake_experiment/report.json|\
               src/content/data/market/candidate_report.json|\
               src/content/data/market/method_paper/policy.json|\
+              src/content/data/market/total_model_paper/policy.json|\
               src/content/data/market/method_paper/decisions.json|\
+              src/content/data/market/total_model_paper/decisions.json|\
               src/content/data/market/method_paper/settlements.json|\
+              src/content/data/market/total_model_paper/settlements.json|\
               src/content/data/market/method_paper/report.json|\
+              src/content/data/market/total_model_paper/report.json|\
               src/content/data/market/paper_decisions.csv|\
               src/content/data/market/paper_decisions.jsonl|\
               src/content/data/market/bayesian_filtered_paper_decisions.csv|\

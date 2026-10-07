@@ -185,3 +185,22 @@ test('method picks retain the selected opponent and canonical matchup names', ()
   assert.equal(sandbox.marketRecommendationGroups(null, null, null, methods, new Set(['Other'])).length, 0);
   assert.equal(JSON.stringify(methods), before);
 });
+
+
+test('total model experiment preserves names, book filtering and resolved results separately', () => {
+  const row = {book: 'Book', moneyline: 150, probability: .6, expected_return: .5,
+    fighter_name: 'A', opponent_name: 'B', matchup_fighter_id: 'a', matchup_opponent_id: 'b',
+    decision_sha256: 'total-decision', event_id: 'card', event_date: '2026-09-05',
+    event_start_utc: '2026-09-05T14:00:00Z', selection: 'Over 1.5 rounds', settlement_status: 'win', profit_units: 1.5};
+  const report = {paper_only: true, execution_enabled: false, recommendations: [row]};
+  const groups = sandbox.marketRecommendationGroups(null,null,null,null,null,report);
+  assert.equal(groups.length, 1);
+  assert.equal(groups[0].latest.category, 'Total rounds');
+  assert.equal(groups[0].latest.experimental, true);
+  assert.equal(groups[0].latest.fighter_name, 'A');
+  assert.equal(groups[0].latest.opponent_name, 'B');
+  assert.equal(groups[0].latest.unit_profit, 1.5);
+  assert.equal(sandbox.partitionMarketRecommendations(groups, now).resolved.length,1);
+  assert.equal(sandbox.marketRecommendationGroups(null,null,null,null,new Set(['Other']),report).length,0);
+  assert.equal(sandbox.marketRecommendationGroups(null,null,null,null,null,{...report,execution_enabled:true}).length,0);
+});

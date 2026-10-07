@@ -10,6 +10,7 @@ const DATA_PATHS = {
   oddsHistory: "src/content/data/market/odds_history.json",
   upcomingBetBoard: "src/content/data/market/upcoming_bet_board.json",
   candidateReport: "src/content/data/market/candidate_report.json",
+  totalModelPaper: "src/content/data/market/total_model_paper/report.json",
   methodPaper: "src/content/data/market/method_paper/report.json",
   researchMonitor: "src/content/data/market/research_monitor.json",
   publishedBets: "src/content/data/market/published_bet_snapshots.json",
@@ -35,6 +36,7 @@ const state = {
   upcomingBetBoard: null,
   candidateReport: null,
   methodPaper: null,
+  totalModelPaper: null,
   candidateSort: "supported",
   allUpcoming: null,
   methodMarkets: null,
@@ -1237,7 +1239,7 @@ async function fetchJson(path, required = true) {
 }
 
 async function loadData() {
-  const [explorer, vegas, card, model, bayesian, market, oddsHistory, upcomingBetBoard, allUpcoming, methodMarkets, performance, betPerformance, outcomes, outcomeEvaluation, candidateReport, methodPaper, researchMonitor, publishedBets] = await Promise.all([
+  const [explorer, vegas, card, model, bayesian, market, oddsHistory, upcomingBetBoard, allUpcoming, methodMarkets, performance, betPerformance, outcomes, outcomeEvaluation, candidateReport, methodPaper, researchMonitor, publishedBets, totalModelPaper] = await Promise.all([
     fetchJson(DATA_PATHS.explorer),
     fetchJson(DATA_PATHS.vegas, false),
     fetchJson(DATA_PATHS.card, false),
@@ -1256,6 +1258,7 @@ async function loadData() {
     fetchJson(DATA_PATHS.methodPaper, false),
     fetchJson(DATA_PATHS.researchMonitor, false),
     fetchJson(DATA_PATHS.publishedBets, false),
+    fetchJson(DATA_PATHS.totalModelPaper, false),
   ]);
   state.explorer = explorer;
   state.vegas = vegas;
@@ -1267,6 +1270,7 @@ async function loadData() {
   state.upcomingBetBoard = upcomingBetBoard;
   state.candidateReport = candidateReport;
   state.methodPaper = methodPaper;
+  state.totalModelPaper = totalModelPaper;
   state.researchMonitor = researchMonitor;
   state.publishedBets = publishedBets;
   state.allUpcoming = allUpcoming;
@@ -3021,6 +3025,7 @@ function availableMarketBooks() {
   (state.publishedBets?.snapshots || []).forEach((bet) => add(bet.target_book));
   (state.betPerformance?.records || []).forEach((bet) => add(bet.target_book));
   (state.methodPaper?.recommendations || []).forEach((bet) => add(bet.book));
+  (state.totalModelPaper?.recommendations || []).forEach((bet) => add(bet.book));
   (state.upcomingBetBoard?.market_matchups || []).forEach((matchup) => (matchup.book_quotes || []).forEach((quote) => add(quote.book)));
   (currentMarket()?.matchups || []).forEach((matchup) => (matchup.book_quotes || []).forEach((quote) => add(quote.book)));
   (currentMarket()?.prop_markets?.total_rounds?.markets || []).forEach((market) => (market.book_quotes || []).forEach((quote) => add(quote.book)));
@@ -3309,7 +3314,7 @@ function recordedPaperGroups(archive, board, performance, selectedBooks = null) 
   }).sort((a,b)=>String(b.latest.event_date).localeCompare(String(a.latest.event_date)) || b.latest.estimated_expected_return-a.latest.estimated_expected_return);
 }
 
-function marketRecommendationGroups(archive, board, performance, methods, selectedBooks = null) {
+function marketRecommendationGroups(archive, board, performance, methods, selectedBooks = null, totals = null) {
   const groups = recordedPaperGroups(archive, board, performance, selectedBooks);
   if (methods?.paper_only === true && methods.execution_enabled === false) {
     for (const row of methods.recommendations || []) {
@@ -3319,6 +3324,16 @@ function marketRecommendationGroups(archive, board, performance, methods, select
         selected_fighter_id: row.fighter_id,
         fighter_id: row.matchup_fighter_id, opponent_id: row.matchup_opponent_id };
       groups.push({ key: `method:${row.decision_sha256}`, versions: [bet], latest: bet });
+    }
+  }
+  if (totals?.paper_only === true && totals.execution_enabled === false) {
+    for (const row of totals.recommendations || []) {
+      if (selectedBooks !== null && ![...selectedBooks].some(book => book.toLowerCase() === String(row.book).toLowerCase())) continue;
+      const bet = {...row, category: 'Total rounds', experimental: true, target_book: row.book,
+        offered_moneyline: row.moneyline, estimated_win_probability: row.probability,
+        estimated_expected_return: row.expected_return, unit_profit: row.profit_units,
+        fighter_id: row.matchup_fighter_id, opponent_id: row.matchup_opponent_id};
+      groups.push({key: `total-model:${row.decision_sha256}`, versions: [bet], latest: bet});
     }
   }
   return groups;
@@ -3346,7 +3361,7 @@ function renderMarketRecommendation({ key, versions, latest: bet }) {
   const summary = element('summary', 'market-pick-summary');
   const fight = element('div', 'market-pick-fight');
   appendText(fight, 'strong', '', `${bet.fighter_name || 'Fighter unavailable'} vs ${bet.opponent_name || 'Opponent unavailable'}`);
-  appendText(fight, 'span', '', `${bet.selection} · ${bet.category === 'Method' ? 'Method · experimental' : bet.category === 'Moneyline' ? 'Fight winner' : 'Round total'}`);
+  appendText(fight, 'span', '', `${bet.selection} · ${bet.category === 'Method' ? 'Method · experimental' : bet.category === 'Moneyline' ? 'Fight winner' : bet.experimental ? 'Round total · experimental' : 'Round total'}`);
   const price = element('div', 'market-pick-price');
   appendText(price, 'small', '', 'Recorded price');
   appendText(price, 'strong', '', `${formatOdds(bet.offered_moneyline)} · ${bet.target_book}`);
@@ -3357,6 +3372,10 @@ function renderMarketRecommendation({ key, versions, latest: bet }) {
   const body = element('div', 'details-body');
   appendText(body, 'p', 'section-note', `Pick recorded ${formatTimestamp(bet.observed_at_utc)} · estimated chance ${formatPercent(bet.estimated_win_probability)}. The displayed price is the recorded quote, not a live offer.`);
   if (status === 'Void') appendText(body, 'p', 'section-note', 'Void: this pick is not counted as correct or incorrect.');
+  if (bet.experimental) {
+    const profit = finite(bet.unit_profit);
+    appendText(body, 'p', 'section-note', `Independent totals experiment · 1 unit per pick${profit !== null ? ` · result ${profit > 0 ? '+' : ''}${profit.toFixed(2)} units` : ''}.`);
+  }
   if (versions.length > 1) {
     const history = element('details', 'market-pick-history'); history.append(element('summary', '', 'Price history'));
     const table = performanceTable(['Recorded', 'Sportsbook', 'Price']);
@@ -3408,7 +3427,7 @@ function renderMarketPickEvents(container, groups, phase) {
 }
 
 function renderRecordedPaperBets() {
-  const groups = marketRecommendationGroups(state.publishedBets, state.upcomingBetBoard, state.betPerformance, state.methodPaper, state.marketBookSelection);
+  const groups = marketRecommendationGroups(state.publishedBets, state.upcomingBetBoard, state.betPerformance, state.methodPaper, state.marketBookSelection, state.totalModelPaper);
   const type = $('#market-pick-type').value;
   const sections = partitionMarketRecommendations(groups.filter(group => type === 'all' || group.latest.category === type));
   $('#recorded-upcoming-status').textContent = `${sections.upcoming.length} upcoming picks · tracked selections, no bets placed.`;
@@ -3421,7 +3440,7 @@ function renderRecordedPaperBets() {
     renderMarketPickEvents(container, sections[phase], phase);
     if (!sections[phase].length) {
       if (phase === 'upcoming') {
-        const all = marketRecommendationGroups(state.publishedBets, state.upcomingBetBoard, state.betPerformance, state.methodPaper);
+        const all = marketRecommendationGroups(state.publishedBets, state.upcomingBetBoard, state.betPerformance, state.methodPaper, null, state.totalModelPaper);
         const explanation = upcomingMarketExplanation(state.allUpcoming, state.candidateReport, all, type, state.marketBookSelection);
         appendText(container, 'p', 'section-note', explanation.message);
         if (explanation.checkedAt) appendText(container, 'p', 'section-note', `Last price check: ${formatTimestamp(explanation.checkedAt)}. Saved prices may have changed.`);
@@ -4208,7 +4227,7 @@ function renderCandidateDiagnostics() {
   appendText(container, "p", "section-note", "Usable prices first. Best supported prioritizes moneylines with at least 5% adjusted EV and a positive conservative EV, then ranks by adjusted EV. Fights and their offers follow the selected ranking. This is an evidence ranking, not a guarantee of profit.");
   const above = (key) => rows.filter((row) => finite(row[key]) !== null && finite(row[key]) >= 0.05).length;
   appendText(container, "p", "section-note", `Stored price comparisons at or above 5% EV: raw market ${above("raw_market_ev")}, adjusted ${above("adjusted_ev")}, independent model ${above("model_ev")}. These count side/book offers, not distinct fights or executable bets. Capture: ${formatTimestamp(report.captured_at_utc)}.`);
-  appendText(container, "p", "section-note", "The moneyline paper board uses adjusted market probabilities and a conservative uncertainty check; the independent model is compared here for research. Stored prices paired with newer forecasts are diagnostic only, not prospective results. Totals remain excluded from the conservative staking policy pending betting evidence. Method paper recommendations use the separate fixed-stake experiment.");
+  appendText(container, "p", "section-note", "The moneyline paper board uses adjusted market probabilities and a conservative uncertainty check; the independent model is compared here for research. Stored prices paired with newer forecasts are diagnostic only, not prospective results. Totals remain excluded from the conservative staking policy pending betting evidence. Method and model-based total paper recommendations use separate fixed-stake experiments.");
   appendText(container, "p", "section-note", `Totals coverage in this capture: ${report.totals_coverage?.quote_count || 0} saved prices and ${report.totals_coverage?.forecast_count || 0} eligible paired forecasts. A newer duration prediction is not attached retrospectively to an old capture.`);
   const groups = new Map();
   rows.forEach((row) => { const key = row.matchup_id; if (!groups.has(key)) groups.set(key, []); groups.get(key).push(row); });

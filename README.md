@@ -1443,3 +1443,21 @@ to inspect its files locally.
 Accuracy from a random split was misleading because it mixed old and recent eras. Evaluation now uses expanding chronological folds and reports log loss, Brier score, calibration, AUC, accuracy, and coverage. The model artifact contains the exact current results; [AUDIT.md](AUDIT.md) explains the original 59.6% / 0.706 chronological failure, the corrected evaluation, data-integrity findings, and remaining work.
 
 Historical prediction records span legacy model versions, so their aggregate accuracy is descriptive rather than a clean current-model backtest. The current website does not run a second prediction model in the browser; it reads the validated weekly artifacts and keeps model forecasts distinct from market probabilities. Follow [Preview the website locally](#preview-the-website-locally) to inspect those artifacts in a browser.
+
+### Independent totals paper experiment
+
+`python src/update_total_model_paper.py` freezes the first fresh post-activation
+model-based total for each fight, including passes. It selects the highest model
+expected return across quoted books and lines when it reaches 5%, and risks one
+hypothetical unit. Prices must have a provider timestamp within 30 minutes, and
+the forecast must precede capture and fight start. Historical captures are not
+backfilled. The policy, decisions, and settlements are sealed independently of
+the conservative betting board in `src/content/data/market/total_model_paper`.
+
+The Market tab labels these picks **Round total · experimental**, keeps both
+fighter names and the original price, and separates upcoming, pending, and
+resolved picks. Results use active fight seconds; draws, no contests,
+disqualifications, schedule changes, and exact line boundaries are void.
+Unknown or ambiguous results remain pending. This is a paper convention, not
+verified bookmaker settlement. `--validate-only` checks saved records and report.
+Both data workflows update, validate, and publish the experiment automatically.
