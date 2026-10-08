@@ -94,7 +94,7 @@
   ],
   "excluded_matchups": 30,
   "execution_enabled": false,
-  "generated_at_utc": "2026-10-05T02:16:29.536406+00:00",
+  "generated_at_utc": "2026-10-08T03:04:27.475317+00:00",
   "matchup_count": 82,
   "matchups": [
     {
@@ -6761,6 +6761,27 @@
       "status": "available"
     },
     {
+      "bout_order": 4,
+      "division": "Bantamweight",
+      "event_date": "2026-10-10",
+      "event_id": "7f98d9d5a10fa25c",
+      "event_matchup_count": 12,
+      "event_title": "UFC Fight Night: Allen vs. Duncan",
+      "event_url": "http://ufcstats.com/event-details/7f98d9d5a10fa25c",
+      "fighter_id": "2e45d08b3f2f02c8",
+      "fighter_name": "Malcolm Wellmaker",
+      "fighter_prior_ufc_fights": 4,
+      "matchup_id": "matchup_5350e3108f063f484783274acc3c6f0fe64dc5d72cd2b3592189b7b5c827c5b1",
+      "opponent_id": "b9124c308671e303",
+      "opponent_name": "Otari Tanzilovi",
+      "opponent_prior_ufc_fights": 1,
+      "schedule_basis": "ufc_standard_non_main_non_title",
+      "scheduled_rounds": 3,
+      "simulation_input_sha256": "05dae0d99c22458bb8a2a6ff5804d79eeba763b7d93a78534daa6df73d68319c",
+      "status": "withheld_insufficient_history",
+      "unavailable_reason": "Simulation withheld: both fighters need at least 3 prior UFCStats fights; observed 4 and 1."
+    },
+    {
       "aggregate": {
         "bootstrap_members": 64,
         "decision_type_counts": {
@@ -8249,7 +8270,7 @@
         ]
       },
       "bootstrap_members": 64,
-      "bout_order": 4,
+      "bout_order": 5,
       "division": "Light Heavyweight",
       "event_date": "2026-10-10",
       "event_id": "7f98d9d5a10fa25c",
@@ -8273,27 +8294,6 @@
       "scheduled_rounds": 3,
       "simulation_input_sha256": "4c2d081362fa27144f106a0749dec5ac82eeb68af57ef1777342bca038526e38",
       "status": "available"
-    },
-    {
-      "bout_order": 5,
-      "division": "Bantamweight",
-      "event_date": "2026-10-10",
-      "event_id": "7f98d9d5a10fa25c",
-      "event_matchup_count": 12,
-      "event_title": "UFC Fight Night: Allen vs. Duncan",
-      "event_url": "http://ufcstats.com/event-details/7f98d9d5a10fa25c",
-      "fighter_id": "2e45d08b3f2f02c8",
-      "fighter_name": "Malcolm Wellmaker",
-      "fighter_prior_ufc_fights": 4,
-      "matchup_id": "matchup_5350e3108f063f484783274acc3c6f0fe64dc5d72cd2b3592189b7b5c827c5b1",
-      "opponent_id": "b9124c308671e303",
-      "opponent_name": "Otari Tanzilovi",
-      "opponent_prior_ufc_fights": 1,
-      "schedule_basis": "ufc_standard_non_main_non_title",
-      "scheduled_rounds": 3,
-      "simulation_input_sha256": "05dae0d99c22458bb8a2a6ff5804d79eeba763b7d93a78534daa6df73d68319c",
-      "status": "withheld_insufficient_history",
-      "unavailable_reason": "Simulation withheld: both fighters need at least 3 prior UFCStats fights; observed 4 and 1."
     },
     {
       "aggregate": {
@@ -18107,48 +18107,6 @@
       "status": "available"
     },
     {
-      "bout_order": 7,
-      "division": "Middleweight",
-      "event_date": "2026-10-17",
-      "event_id": "55e94a9b525dcf45",
-      "event_matchup_count": 13,
-      "event_title": "UFC Fight Night: Buckley vs. Malott",
-      "event_url": "http://ufcstats.com/event-details/55e94a9b525dcf45",
-      "fighter_id": "cd0dfd9846bd03b9",
-      "fighter_name": "Julien Leblanc",
-      "fighter_prior_ufc_fights": 1,
-      "matchup_id": "matchup_52a8a6cb6fa0aa2328a1ea4f2eac919eb03087c73fce4768404eec7342087732",
-      "opponent_id": "b12fb759e02378de",
-      "opponent_name": "Gilbert Urbina",
-      "opponent_prior_ufc_fights": 5,
-      "schedule_basis": "ufc_standard_non_main_non_title",
-      "scheduled_rounds": 3,
-      "simulation_input_sha256": "df86176ee6d1f3de6ce0db1ad2af6c4f19e04cfaf365c9ed967104160b182826",
-      "status": "withheld_insufficient_history",
-      "unavailable_reason": "Simulation withheld: both fighters need at least 3 prior UFCStats fights; observed 1 and 5."
-    },
-    {
-      "bout_order": 8,
-      "division": "Heavyweight",
-      "event_date": "2026-10-17",
-      "event_id": "55e94a9b525dcf45",
-      "event_matchup_count": 13,
-      "event_title": "UFC Fight Night: Buckley vs. Malott",
-      "event_url": "http://ufcstats.com/event-details/55e94a9b525dcf45",
-      "fighter_id": "e9f9add1481fc11c",
-      "fighter_name": "Javad Mahjoub",
-      "fighter_prior_ufc_fights": 0,
-      "matchup_id": "matchup_9f45055cc6f1d2bc8b01039b707c99b0e9df357497ca6ce9bfd8e155bcb63a6f",
-      "opponent_id": "cdb7b38b1b357f26",
-      "opponent_name": "Louie Sutherland",
-      "opponent_prior_ufc_fights": 4,
-      "schedule_basis": "ufc_standard_non_main_non_title",
-      "scheduled_rounds": 3,
-      "simulation_input_sha256": "0fe5ae5c9813c058acfcd6cb9675e4e7e990ab7d3525a7dd166cb108745f76ee",
-      "status": "withheld_insufficient_history",
-      "unavailable_reason": "Simulation withheld: both fighters need at least 3 prior UFCStats fights; observed 0 and 4."
-    },
-    {
       "aggregate": {
         "bootstrap_members": 64,
         "decision_type_counts": {
@@ -19597,7 +19555,7 @@
         ]
       },
       "bootstrap_members": 64,
-      "bout_order": 9,
+      "bout_order": 7,
       "division": "Women's Flyweight",
       "event_date": "2026-10-17",
       "event_id": "55e94a9b525dcf45",
@@ -19623,7 +19581,7 @@
       "status": "available"
     },
     {
-      "bout_order": 10,
+      "bout_order": 8,
       "division": "Bantamweight",
       "event_date": "2026-10-17",
       "event_id": "55e94a9b525dcf45",
@@ -21132,7 +21090,7 @@
         ]
       },
       "bootstrap_members": 64,
-      "bout_order": 11,
+      "bout_order": 9,
       "division": "Women's Bantamweight",
       "event_date": "2026-10-17",
       "event_id": "55e94a9b525dcf45",
@@ -21158,7 +21116,7 @@
       "status": "available"
     },
     {
-      "bout_order": 12,
+      "bout_order": 10,
       "division": "Bantamweight",
       "event_date": "2026-10-17",
       "event_id": "55e94a9b525dcf45",
@@ -21177,6 +21135,48 @@
       "simulation_input_sha256": "9793f99237e68fb12afc19640a99608a22eacb4ca5cc9c15e1986a7aa059c7a3",
       "status": "withheld_insufficient_history",
       "unavailable_reason": "Simulation withheld: both fighters need at least 3 prior UFCStats fights; observed 0 and 4."
+    },
+    {
+      "bout_order": 11,
+      "division": "Middleweight",
+      "event_date": "2026-10-17",
+      "event_id": "55e94a9b525dcf45",
+      "event_matchup_count": 13,
+      "event_title": "UFC Fight Night: Buckley vs. Malott",
+      "event_url": "http://ufcstats.com/event-details/55e94a9b525dcf45",
+      "fighter_id": "cd0dfd9846bd03b9",
+      "fighter_name": "Julien Leblanc",
+      "fighter_prior_ufc_fights": 1,
+      "matchup_id": "matchup_dd91d959762f5f4f8fb833819c57570f23083fdca84717ccf27fc3fe9a88fc0c",
+      "opponent_id": "8988705468d04ef7",
+      "opponent_name": "Nicholas Galanti",
+      "opponent_prior_ufc_fights": 0,
+      "schedule_basis": "ufc_standard_non_main_non_title",
+      "scheduled_rounds": 3,
+      "simulation_input_sha256": "f19905fd8926b8e16acecc566f5372e9f5e81ed22ccca9cb42de01c74421f02f",
+      "status": "withheld_insufficient_history",
+      "unavailable_reason": "Simulation withheld: both fighters need at least 3 prior UFCStats fights; observed 1 and 0."
+    },
+    {
+      "bout_order": 12,
+      "division": "Heavyweight",
+      "event_date": "2026-10-17",
+      "event_id": "55e94a9b525dcf45",
+      "event_matchup_count": 13,
+      "event_title": "UFC Fight Night: Buckley vs. Malott",
+      "event_url": "http://ufcstats.com/event-details/55e94a9b525dcf45",
+      "fighter_id": "e9f9add1481fc11c",
+      "fighter_name": "Javad Mahjoub",
+      "fighter_prior_ufc_fights": 0,
+      "matchup_id": "matchup_9b13be6dc34bfc2bc90b34f9360a47df594619c904a43884853a87b197e22aad",
+      "opponent_id": "6188ad39d85a8bf8",
+      "opponent_name": "Joel Faglier",
+      "opponent_prior_ufc_fights": 0,
+      "schedule_basis": "ufc_standard_non_main_non_title",
+      "scheduled_rounds": 3,
+      "simulation_input_sha256": "acf83aca79647033bd15af624a53d7702e923b976b797e424c31241e512dec2a",
+      "status": "withheld_insufficient_history",
+      "unavailable_reason": "Simulation withheld: both fighters need at least 3 prior UFCStats fights; observed 0 and 0."
     },
     {
       "aggregate": {
@@ -27833,27 +27833,6 @@
       "status": "available"
     },
     {
-      "bout_order": 4,
-      "division": "Featherweight",
-      "event_date": "2026-10-24",
-      "event_id": "cc18abc046b382c9",
-      "event_matchup_count": 9,
-      "event_title": "UFC 333: Volkanovski vs. Evloev",
-      "event_url": "http://ufcstats.com/event-details/cc18abc046b382c9",
-      "fighter_id": "040a74bb0a465c54",
-      "fighter_name": "Arnold Allen",
-      "fighter_prior_ufc_fights": 15,
-      "matchup_id": "matchup_cc66d575449a8712bd1cf3063a10014c5d84cdfc25296b02c8742ed077767ea4",
-      "opponent_id": "5537efc6e496dd84",
-      "opponent_name": "Aaron Pico",
-      "opponent_prior_ufc_fights": 2,
-      "schedule_basis": "ufc_standard_non_main_non_title",
-      "scheduled_rounds": 3,
-      "simulation_input_sha256": "f44199b0c2b53c87309737983a903e26ecd81014cd1e422b856b79cb257b3f40",
-      "status": "withheld_insufficient_history",
-      "unavailable_reason": "Simulation withheld: both fighters need at least 3 prior UFCStats fights; observed 15 and 2."
-    },
-    {
       "aggregate": {
         "bootstrap_members": 64,
         "decision_type_counts": {
@@ -29337,7 +29316,7 @@
         ]
       },
       "bootstrap_members": 64,
-      "bout_order": 5,
+      "bout_order": 4,
       "division": "Light Heavyweight",
       "event_date": "2026-10-24",
       "event_id": "cc18abc046b382c9",
@@ -30830,7 +30809,7 @@
         ]
       },
       "bootstrap_members": 64,
-      "bout_order": 6,
+      "bout_order": 5,
       "division": "Light Heavyweight",
       "event_date": "2026-10-24",
       "event_id": "cc18abc046b382c9",
@@ -32340,7 +32319,7 @@
         ]
       },
       "bootstrap_members": 64,
-      "bout_order": 7,
+      "bout_order": 6,
       "division": "Middleweight",
       "event_date": "2026-10-24",
       "event_id": "cc18abc046b382c9",
@@ -33850,7 +33829,7 @@
         ]
       },
       "bootstrap_members": 64,
-      "bout_order": 8,
+      "bout_order": 7,
       "division": "Lightweight",
       "event_date": "2026-10-24",
       "event_id": "cc18abc046b382c9",
@@ -33874,6 +33853,27 @@
       "scheduled_rounds": 3,
       "simulation_input_sha256": "4f32b7aa54ad5581b782d3917bfc76d1b07bb2572266f35bade157f200bc221c",
       "status": "available"
+    },
+    {
+      "bout_order": 8,
+      "division": "Featherweight",
+      "event_date": "2026-10-24",
+      "event_id": "cc18abc046b382c9",
+      "event_matchup_count": 9,
+      "event_title": "UFC 333: Volkanovski vs. Evloev",
+      "event_url": "http://ufcstats.com/event-details/cc18abc046b382c9",
+      "fighter_id": "5537efc6e496dd84",
+      "fighter_name": "Aaron Pico",
+      "fighter_prior_ufc_fights": 2,
+      "matchup_id": "matchup_7366329456f9322a4a0c1e691b79b643c3d0283e30a016e7d36bd3494586b0b2",
+      "opponent_id": "5b43d68174b6e2ab",
+      "opponent_name": "Losene Keita",
+      "opponent_prior_ufc_fights": 2,
+      "schedule_basis": "ufc_standard_non_main_non_title",
+      "scheduled_rounds": 3,
+      "simulation_input_sha256": "afa1fbef0785c049be88bf76731cbff4eba7fa9bbf5f307ada9f65904427e0dc",
+      "status": "withheld_insufficient_history",
+      "unavailable_reason": "Simulation withheld: both fighters need at least 3 prior UFCStats fights; observed 2 and 2."
     },
     {
       "aggregate": {
@@ -84196,8 +84196,8 @@
   "pending_matchups": 0,
   "precision_tier": "automatic_preview",
   "production_influence": "none",
-  "publication_sha256": "cc2279852e75dd2597d534c08a0b2bfc5bee7388bd623ab1279b9d8c4e0307e5",
+  "publication_sha256": "93abacad1d4df9526af0f55f827e3fd8e490b4cfd0f245cf4ebb90de303e01bc",
   "publication_version": "candidate-fight-sim-catalog-v1",
   "schema_version": 2,
-  "source_upcoming_publication_sha256": "bd1458e22e22cd0c0121f4930f11db801ee2a80a10caa11228857a3a0de5382d"
+  "source_upcoming_publication_sha256": "b8c2d9bda890ebca237720931cd5d22a3840af26d579607a33b11a7e1676198d"
 }
