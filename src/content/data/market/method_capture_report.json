@@ -1,19 +1,19 @@
 {
   "ambiguous_book_markets_discarded": 0,
   "candidate_only": true,
-  "capture_id": "method_capture_20261008T233309262783Z_699031658073",
+  "capture_id": "method_capture_20261009T172219518067Z_1bc2e96f65ae",
   "collection_scope": "announced_upcoming_cards_with_source_start_times",
-  "current_publication_sha256": "75390e2c0e4465793b2595e9b66d0d99d125d19a6b86ed9019cd9b224680294c",
+  "current_publication_sha256": "707850eddc5de13f752e8e0023cd69e6a4c1b44bc67f9e675ea566ea88f9274a",
   "dataset_sha256": "c63ee4a720d0f4b9090a9af13ce1bea868276e2e56ff516f96b7e984e23459e8",
   "event_date": "2026-10-10",
   "event_id": "7f98d9d5a10fa25c",
-  "event_start_utc": "2026-10-10T21:00:00Z",
+  "event_start_utc": "2026-10-10T21:15:00Z",
   "events": [
     {
       "ambiguous_book_markets_discarded": 0,
       "event_date": "2026-10-10",
       "event_id": "7f98d9d5a10fa25c",
-      "event_start_utc": "2026-10-10T21:00:00Z",
+      "event_start_utc": "2026-10-10T21:15:00Z",
       "matched_fights_with_prices": 11,
       "matchup_count": 12,
       "matchups_without_opening_prices": 1,
@@ -26,6 +26,24 @@
       "source_method_selections": 36,
       "source_nonempty_book_markets": 46,
       "timing_basis": "current_card_capture"
+    },
+    {
+      "ambiguous_book_markets_discarded": 0,
+      "event_date": "2026-10-17",
+      "event_id": "55e94a9b525dcf45",
+      "event_start_utc": "2026-10-17T21:00:00Z",
+      "matched_fights_with_prices": 0,
+      "matchup_count": 13,
+      "matchups_without_opening_prices": 13,
+      "merged_complete_six_way_markets": 0,
+      "opening_priced_matchups": 0,
+      "records_built": 0,
+      "source_complete_six_way_markets": 0,
+      "source_duplicate_matchups_merged": 0,
+      "source_matchups_mapped_to_card": 0,
+      "source_method_selections": 0,
+      "source_nonempty_book_markets": 0,
+      "timing_basis": "earliest_quoted_bout_opening_only"
     },
     {
       "ambiguous_book_markets_discarded": 0,
@@ -84,12 +102,6 @@
   ],
   "events_awaiting_timing": [
     {
-      "event_date": "2026-10-17",
-      "event_id": "55e94a9b525dcf45",
-      "matchup_count": 13,
-      "status": "awaiting_source_start_time"
-    },
-    {
       "event_date": "2026-10-31",
       "event_id": "0a66de3a797cf73a",
       "matchup_count": 11,
@@ -110,7 +122,7 @@
   ],
   "execution_enabled": false,
   "future_records_built": 0,
-  "lead_time_seconds": 163611.663249,
+  "lead_time_seconds": 100361.486713,
   "matched_fights_with_prices": 11,
   "merged_complete_six_way_markets": 0,
   "method_forecast_dataset_sha256": "6c02e018f54d7a8ec510772ebea847f83b46ae5af6fbab7dc03d7a4090479c88",
@@ -119,7 +131,7 @@
   "method_forecasts_duplicate": 0,
   "method_forecasts_total": 209,
   "method_forecasts_unmatched": 0,
-  "observed_at_utc": "2026-10-08T23:33:09.262783Z",
+  "observed_at_utc": "2026-10-09T17:22:19.518067Z",
   "paper_only": true,
   "records_added": 0,
   "records_built": 0,
@@ -133,7 +145,7 @@
   "source_method_selections": 36,
   "source_nonempty_book_markets": 46,
   "source_page_method_selections": 57,
-  "source_payload_sha256": "699031658073173e0b786ca391e313a94753ced6e451991c749e4233d15bb76b",
+  "source_payload_sha256": "1bc2e96f65aea8f369969c73f291507446b9072aa04f28df7dc82f0e278948ea",
   "stored_horizons": [
     "opening",
     "t72"
