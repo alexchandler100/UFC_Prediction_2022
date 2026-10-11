@@ -23,7 +23,7 @@
     "matchups_without_forecast": 0,
     "matchups_without_fresh_quotes": 0
   },
-  "last_update_utc": "2026-10-10T23:31:53Z",
+  "last_update_utc": "2026-10-11T14:51:10Z",
   "latest_available_same_book_price_movement": {
     "count": 22,
     "definition": "later implied probability minus locked break-even probability; positive means the recorded paper price was better",
@@ -40,10 +40,10 @@
   "paper_only": true,
   "paper_return_interval": {
     "bootstrap_samples": 10000,
-    "ci_95_lower": -0.29941887303388004,
-    "ci_95_upper": 0.12547652798548853,
-    "event_count": 4,
-    "point": -0.09501646634516014
+    "ci_95_lower": -0.5633801288996024,
+    "ci_95_upper": 0.07520757234804896,
+    "event_count": 5,
+    "point": -0.21178853520384916
   },
   "policy": {
     "candidate_only": true,
@@ -110,55 +110,55 @@
   "probability_quality_on_all_scored_fights": {
     "candidate_minus_market_log_loss": {
       "bootstrap_samples": 10000,
-      "ci_95_lower": -0.007078071705578805,
-      "ci_95_upper": 0.0790135919911465,
-      "event_count": 4,
-      "point": 0.03545555661566816
+      "ci_95_lower": 0.004882671064429734,
+      "ci_95_upper": 0.09016124884576984,
+      "event_count": 5,
+      "point": 0.04839987678474153
     },
     "current_model": {
-      "accuracy": 0.6511627906976745,
-      "brier_score": 0.282188980658062,
-      "count": 43,
-      "expected_calibration_error": 0.24075224286976743,
-      "log_loss": 0.8451027834213096,
-      "positive_rate": 0.4418604651162791,
-      "roc_auc": 0.5778508771929824
+      "accuracy": 0.5961538461538461,
+      "brier_score": 0.29418172973797807,
+      "count": 52,
+      "expected_calibration_error": 0.2137920382576923,
+      "log_loss": 0.8593582630688541,
+      "positive_rate": 0.46153846153846156,
+      "roc_auc": 0.5453869047619048
     },
     "leave_one_out_market": {
-      "accuracy": 0.7209302325581395,
-      "brier_score": 0.21012834918940818,
-      "count": 43,
-      "expected_calibration_error": 0.21645624913786424,
-      "log_loss": 0.6159143015299842,
-      "positive_rate": 0.4418604651162791,
-      "roc_auc": 0.7171052631578947
+      "accuracy": 0.6730769230769231,
+      "brier_score": 0.22948638458830722,
+      "count": 52,
+      "expected_calibration_error": 0.21617340651304498,
+      "log_loss": 0.6564910579332861,
+      "positive_rate": 0.46153846153846156,
+      "roc_auc": 0.6666666666666666
     },
     "market_first_candidate": {
-      "accuracy": 0.6744186046511628,
-      "brier_score": 0.22082763449226975,
-      "count": 43,
-      "expected_calibration_error": 0.1763650332559715,
-      "log_loss": 0.6513698581456522,
-      "positive_rate": 0.4418604651162791,
-      "roc_auc": 0.7083333333333334
+      "accuracy": 0.6346153846153846,
+      "brier_score": 0.24517075627383828,
+      "count": 52,
+      "expected_calibration_error": 0.14079512002972944,
+      "log_loss": 0.7048909347180273,
+      "positive_rate": 0.46153846153846156,
+      "roc_auc": 0.6458333333333334
     }
   },
   "prospective_first_capture_utc": "2026-08-30T00:20:36.000000Z",
-  "report_sha256": "59e738d27687634e99540ae93609c6eec4ecfd7690795da4f08391071eee7d56",
+  "report_sha256": "e98f7e6cb7e6d4182534e3257d1808e318f86b79584206e1318392115cbb940e",
   "results": {
-    "losses": 9,
-    "maximum_drawdown_units": 4.0601668862538425,
-    "profit_units": -2.5654445913193236,
-    "recommended_bets": 27,
-    "risk_units": 27.0,
-    "roi": -0.09501646634516013,
-    "scored_fights": 43,
+    "losses": 13,
+    "maximum_drawdown_units": 7.158851184725917,
+    "profit_units": -6.565444591319324,
+    "recommended_bets": 31,
+    "risk_units": 31.0,
+    "roi": -0.21178853520384916,
+    "scored_fights": 52,
     "voids": 0,
     "wins": 18
   },
   "schema_version": 1,
-  "settled_events": 4,
-  "settlement_dataset_sha256": "afe60596d431178ccbf704980a947c13e02c6a1b396b521e503df917cbd897b6",
-  "settlements_total": 43,
-  "unsettled_decisions": 10
+  "settled_events": 5,
+  "settlement_dataset_sha256": "871ffba5fafb02d4c4050de8d217adffc2df60622bc83502538690cb15846014",
+  "settlements_total": 53,
+  "unsettled_decisions": 0
 }
