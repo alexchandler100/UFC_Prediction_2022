@@ -1461,3 +1461,47 @@ disqualifications, schedule changes, and exact line boundaries are void.
 Unknown or ambiguous results remain pending. This is a paper convention, not
 verified bookmaker settlement. `--validate-only` checks saved records and report.
 Both data workflows update, validate, and publish the experiment automatically.
+
+### Frozen-pick edge audit and model-input inventory
+
+Research monitoring now includes a bet-by-bet audit of the existing locked
+winner, market-first, locked totals, independent totals, method, and equal-stake
+experiments. It retains each experiment's frozen selection rules. Final price
+references are the last fresh same-book observations 15–90 minutes before
+recorded card start, not exact individual-bout closing odds. The fair comparison
+uses at least three other books from the same observation and capture, removes
+each book's margin, and preserves exact fighter and totals-line identities.
+Missing, stale, in-play, and unsupported method references stay unavailable.
+
+The Performance tab's research monitoring shows original estimated returns,
+final-market estimates, settled paper returns, profit without the largest win,
+and separate bookmaker, odds-range, entry-window, and collection-period results.
+These are diagnostic comparisons, not proof of profitable betting; overlapping
+strategy profits must not be added. `python src/update_research_monitor.py
+--validate-only` reconstructs the saved report from its source records.
+
+`python src/audit_model_inputs.py` inventories the actual published winner model
+and refreshes `src/content/data/model_research/model_input_inventory.json`.
+The current model includes `days_since_fight_log_diff`: each fighter's
+log-transformed days since the latest source fight, then their difference.
+Days are capped at five years; fighters without history get a two-year default
+plus a separate history indicator. This is not guaranteed to be the last MMA
+fight anywhere when external-history replay is disabled. Stored external bouts,
+rankings, round data, or research features are not automatically production inputs.
+The weekly updater refreshes and validates this inventory with the model.
+
+Prioritized feature research: age-by-layoff, nonlinear inactivity buckets, time
+since a KO/TKO loss, and shared duration context for both fighters. Broader
+external fight history remains the leading stored feature candidate; stance and
+round-cardio additions were already tested and rejected for the leading winner
+candidate. New features must be built from information known before each fight
+and checked on later untouched cards against market probabilities and matched
+prices; none is promoted automatically.
+
+Potential additional sources: [official UFC weigh-in reports](https://www.ufc.com/news/official-weigh-results-ufc-324-gaethje-vs-pimblett)
+for actual weights/misses, and timestamped official opponent announcements for
+short-notice changes. Historical market observations are the highest-priority
+additional evaluation data: [The Odds API documents MMA history from June 2020](https://the-odds-api.com/sports/mma-ufc-odds.html),
+with [historical snapshots on paid plans](https://the-odds-api.com/historical-odds-data/).
+Book and exact totals-line coverage must be checked before buying access. No
+subscription or collection permissions are changed by this audit.

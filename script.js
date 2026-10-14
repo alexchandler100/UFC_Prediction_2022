@@ -4358,6 +4358,42 @@ function renderResearchMonitor() {
   const table=(headers,rows)=>{const wrap=element('div','book-table-wrap'), t=element('table','data-table'),head=element('tr');headers.forEach(label=>head.append(element('th','',label)));t.append(head);rows.forEach(values=>{const row=element('tr');values.forEach(value=>row.append(element('td','',String(value))));t.append(row);});wrap.append(t);container.append(wrap);};
   table(['Feed','Last collection','Captures / past 7 days','Fights / past 7 days','Check'],report.feeds.map(f=>[f.market,formatTimestamp(f.last_collected_at_utc),f.captures_last_7_days,f.fights_last_7_days,!f.ledger_available?'Ledger missing':!f.captures_last_7_days?'No captures this week':f.market!=='method' && Date.now()-Date.parse(f.last_collected_at_utc)>48*3600000?'No collection in over 48 hours':'Recent captures recorded']));
   table(['Experiment','Recorded / past 7 days','Recommendations','Settled decisions','Pending','Overdue >2 days','Paper profit'],report.experiments.map(e=>[e.name,`${e.recorded} / ${e.recorded_last_7_days}`,e.recommendations,e.settled,e.pending,e.overdue_review,`${e.profit_units.toFixed(2)} units`]));
+  if (report.edge_audit) {
+    const audit = report.edge_audit;
+    appendText(container, 'h3', '', 'Are our estimated edges holding up?');
+    appendText(container, 'p', 'section-note', 'Final references use fresh prices 15–90 minutes before card start, with bookmaker margin removed and the selected book excluded. They are market estimates, not exact bout closing prices or proof of profit. Strategies overlap; do not add their returns together.');
+    table(['Strategy','Settled bets','Paper profit','Without biggest win','Final references','Claimed edge (matched)','Edge at final prices'],
+      audit.breakdowns.filter(r => r.dimension === 'strategy').map(r => [r.strategy, r.settled_bets,
+        `${r.profit_units.toFixed(2)} units`, `${r.profit_without_largest_win_units.toFixed(2)} units`,
+        `${r.final_reference_bets} / ${r.recorded_bets}`, r.mean_claimed_expected_return_on_final_sample === null ? 'Unavailable' : formatPercent(r.mean_claimed_expected_return_on_final_sample), r.mean_final_fair_expected_return === null ? 'Unavailable' : formatPercent(r.mean_final_fair_expected_return)]));
+    const details = element('details', 'market-pick-history'); details.append(element('summary', '', 'Audit individual picks'));
+    const auditTable = performanceTable(['Strategy / fight','Pick / book','Claimed edge','Final market edge','Result','Final price check']);
+    for (const r of audit.records) {
+      const row = element('tr');
+      const selected = r.selection || (r.market === 'total_rounds' ? `${r.side} ${r.line} rounds` : r.selected_fighter_id === r.fighter_id ? r.fighter_name : r.opponent_name);
+      const status = {available:'Available',not_due:'Not due',missing_final_same_book_quote:'No final quote at this book',fewer_than_three_other_books:'Too few other books',method_final_source_timing_unavailable:'Method timing unavailable',missing_card_start:'Card start unknown'}[r.final_status] || r.final_status;
+      const result = r.settlement_status ? `${r.settlement_status}${r.profit_units !== null ? ` · ${r.profit_units.toFixed(2)} units` : ''}` : 'Pending';
+      [`${r.strategy} · ${r.event_date} · ${r.fighter_name || r.fighter_id} vs ${r.opponent_name || r.opponent_id}`,
+        `${selected} · ${formatOdds(r.moneyline)} · ${r.book}`, formatPercent(r.claimed_expected_return),
+        r.final_fair_expected_return === null ? 'Unavailable' : formatPercent(r.final_fair_expected_return), result,
+        `${status}${r.final_observed_at_utc ? ` · ${formatTimestamp(r.final_observed_at_utc)}` : ''}`]
+        .forEach((v, i) => appendPerformanceCell(row, ['Strategy / fight','Pick / book','Claimed edge','Final market edge','Result','Final price check'][i], v));
+      auditTable.body.append(row);
+    }
+    details.append(auditTable.wrap); container.append(details);
+    const splits = element('details', 'market-pick-history'); splits.append(element('summary', '', 'Compare books, odds ranges and entry times'));
+    const splitTable = performanceTable(['Strategy','Group','Settled bets','Profit','Final market edge']);
+    for (const r of audit.breakdowns.filter(r => r.dimension !== 'strategy')) {
+      const row = element('tr');
+      const dimension = {book:'Sportsbook',odds_range:'Odds range',entry_window:'Entry time',collection_period:'Collection period'}[r.dimension] || r.dimension;
+      const label = r.dimension === 'collection_period' ? (r.group === report.equal_stake?.capture_contract?.version ? 'After timing repair' : 'Before timing repair') : r.dimension === 'entry_window' ? ({early:'Early',t24:'Day before',final:'Final pre-card',outside_declared_windows:'Outside standard windows',unknown:'Start unknown'}[r.group] || r.group) : r.group;
+      [r.strategy, `${dimension}: ${label}`, r.settled_bets, `${r.profit_units.toFixed(2)} units`,
+        r.mean_final_fair_expected_return === null ? 'Unavailable' : formatPercent(r.mean_final_fair_expected_return)]
+        .forEach((v,i) => appendPerformanceCell(row, ['Strategy','Group','Settled bets','Profit','Final market edge'][i], v));
+      splitTable.body.append(row);
+    }
+    splits.append(splitTable.wrap); container.append(splits);
+  }
   const equal=report.equal_stake;
   appendText(container,'p','section-note',`Equal-stake winner comparison: ${equal.recorded} fights recorded, ${equal.settled} settled. First review requires at least ${equal.review_fights} fights across ${equal.review_cards} cards; this does not establish profitability.`);
   table(['Strategy (all books)','Cards','Settled bets','Paper profit','Return per unit'],equal.results.filter(r=>r.book==='all_books_hypothetical' && r.winning_payout_reduction===0).map(r=>[r.strategy,r.settled_cards,r.settled_bets,r.profit_units.toFixed(2),r.return_per_unit===null?'Unavailable':formatPercent(r.return_per_unit)]));

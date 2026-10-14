@@ -9,6 +9,7 @@ from pathlib import Path
 
 from market_tracker._storage import atomic_write_text
 from market_capture_windows import price_window_report
+from market_tracker.edge_audit import build_edge_audit, normalize_picks
 
 ROOT = Path(__file__).resolve().parent / 'content/data/market'
 QUOTES = {'moneyline': 'quote_snapshots.jsonl', 'total_rounds': 'total_round_quote_snapshots.jsonl',
@@ -96,8 +97,12 @@ def build(root, now):
         [('Winner locked paper', 'paper'), ('Totals locked paper', 'total_round_paper'), ('Market-first paper', 'market_first_paper')]]
     experiments.append(experiment('Method paper', read(root, 'method_paper/decisions.json', []),
         read(root, 'method_paper/settlements.json', []), now, 'matchup_id'))
+    experiments.append(experiment('Independent model totals', read(root, 'total_model_paper/decisions.json', []),
+        read(root, 'total_model_paper/settlements.json', []), now, 'matchup_id'))
     equal = read(root, 'equal_stake_experiment/report.json', {})
     report = {'version': 1, 'generated_at_utc': now.isoformat(), 'feeds': feeds, 'experiments': experiments,
+        'edge_audit': build_edge_audit(normalize_picks(lambda name, default: read(root, name, default), quote_sets),
+            quote_sets, read(root, 'quote_source_metadata.jsonl', []), now),
         'equal_stake': {'recorded': equal.get('frozen_fights', 0), 'settled': equal.get('settled_fights', 0),
             'review_fights': 200, 'review_cards': 20,
             'capture_contract': equal.get('capture_contract'),

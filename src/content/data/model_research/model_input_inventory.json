@@ -1,0 +1,251 @@
+{
+  "coverage_note": "A dataset being stored does not mean production uses it. Winner, outcome and simulation models have different contracts. Historical results, post-fight stats, and later market prices must not enter earlier forecasts.",
+  "data_through": "2026-10-10",
+  "evaluation_rule": "Use all valid chronological coverage; select settings on earlier fights, test on later untouched cards, and compare probability quality and price-matched returns with the market. No automatic promotion.",
+  "external_history_enabled": false,
+  "external_history_records_available": 10448,
+  "feature_columns": [
+    "elo_slow_diff",
+    "elo_medium_diff",
+    "elo_fast_diff",
+    "division_elo_slow_diff",
+    "division_elo_medium_diff",
+    "division_elo_fast_diff",
+    "elo_medium_reliable_diff",
+    "rating_uncertainty_diff",
+    "average_opponent_elo_diff",
+    "days_since_fight_log_diff",
+    "has_history_diff",
+    "age_diff",
+    "age_squared_diff",
+    "age_known_diff",
+    "height_diff",
+    "height_known_diff",
+    "reach_diff",
+    "reach_known_diff",
+    "career_fights_log_diff",
+    "career_wins_log_diff",
+    "career_losses_log_diff",
+    "career_win_rate_diff",
+    "career_finish_win_rate_diff",
+    "career_ko_win_rate_diff",
+    "career_sub_win_rate_diff",
+    "career_finish_loss_rate_diff",
+    "recent_1y_fights_log_diff",
+    "recent_1y_wins_log_diff",
+    "recent_1y_losses_log_diff",
+    "recent_1y_win_rate_diff",
+    "recent_1y_finish_win_rate_diff",
+    "recent_1y_ko_win_rate_diff",
+    "recent_1y_sub_win_rate_diff",
+    "recent_1y_finish_loss_rate_diff",
+    "recent_3y_fights_log_diff",
+    "recent_3y_wins_log_diff",
+    "recent_3y_losses_log_diff",
+    "recent_3y_win_rate_diff",
+    "recent_3y_finish_win_rate_diff",
+    "recent_3y_ko_win_rate_diff",
+    "recent_3y_sub_win_rate_diff",
+    "recent_3y_finish_loss_rate_diff",
+    "division_fights_log_diff",
+    "division_wins_log_diff",
+    "division_losses_log_diff",
+    "division_win_rate_diff",
+    "division_finish_win_rate_diff",
+    "division_ko_win_rate_diff",
+    "division_sub_win_rate_diff",
+    "division_finish_loss_rate_diff",
+    "career_sig_landed_per15_diff",
+    "career_sig_absorbed_per15_diff",
+    "career_sig_accuracy_diff",
+    "career_sig_defence_diff",
+    "career_total_landed_per15_diff",
+    "career_total_absorbed_per15_diff",
+    "career_td_landed_per15_diff",
+    "career_td_absorbed_per15_diff",
+    "career_td_accuracy_diff",
+    "career_td_defence_diff",
+    "career_control_per15_diff",
+    "career_control_absorbed_per15_diff",
+    "career_knockdowns_per15_diff",
+    "career_knockdowns_absorbed_per15_diff",
+    "career_sub_attempts_per15_diff",
+    "career_reversals_per15_diff",
+    "recent_3y_sig_landed_per15_diff",
+    "recent_3y_sig_absorbed_per15_diff",
+    "recent_3y_sig_accuracy_diff",
+    "recent_3y_sig_defence_diff",
+    "recent_3y_total_landed_per15_diff",
+    "recent_3y_total_absorbed_per15_diff",
+    "recent_3y_td_landed_per15_diff",
+    "recent_3y_td_absorbed_per15_diff",
+    "recent_3y_td_accuracy_diff",
+    "recent_3y_td_defence_diff",
+    "recent_3y_control_per15_diff",
+    "recent_3y_control_absorbed_per15_diff",
+    "recent_3y_knockdowns_per15_diff",
+    "recent_3y_knockdowns_absorbed_per15_diff",
+    "recent_3y_sub_attempts_per15_diff",
+    "recent_3y_reversals_per15_diff"
+  ],
+  "feature_count": 82,
+  "layoff_contract": "For this point-in-time feature contract: log(1+days) per fighter, capped at five years, then fighter minus opponent. No recorded history uses two years plus has_history. This is time since the latest replayed source fight, not necessarily the latest MMA fight anywhere.",
+  "layoff_feature_present": true,
+  "model_id": "863e02377681e2d5a1cf",
+  "model_sha256": "83fb89d77c64bdc5571928aa96860394e122676f1cc3ff626db6208bbc1ee1b0",
+  "model_version": "point-in-time-elo-logistic-v2",
+  "next_feature_candidates": [
+    {
+      "group": "Layoff and recovery",
+      "inputs": "Layoff buckets; age-by-layoff; time since KO/TKO loss; recent activity count.",
+      "source": "Existing dated source fight history; broader MMA history needed to correct regional-fight gaps.",
+      "status": "Proposed chronological research; not production inputs."
+    },
+    {
+      "group": "Fight duration context",
+      "inputs": "Both fighters' absolute activity and age; division finish rates; explicit three/five-round schedule.",
+      "source": "Existing history and verified schedule data. Relative-only features can hide shared context.",
+      "status": "Proposed duration-model research; compare against market totals at identical lines."
+    },
+    {
+      "group": "Pre-fight changes",
+      "inputs": "Official weigh-in results and weight misses; timestamped opponent changes and announcement lead time.",
+      "source": "Official UFC event announcements/weigh-in reports; record first observation and stable identities.",
+      "status": "Not yet a structured training source; no retrospectively guessed short-notice flags."
+    }
+  ],
+  "researched_groups": [
+    {
+      "artifact": "external_mma/winner_feature_factorial.json",
+      "decision": {
+        "best_variant": "external_history",
+        "combined_improved_on_both_single_candidates": false,
+        "external_history_improved_production_point_log_loss": true,
+        "production_action": "none; separately review dependent outcome-model effects and prospective evidence before changing the weekly feature contract",
+        "ranked_by_production_walk_forward_log_loss": [
+          "external_history",
+          "external_style",
+          "style",
+          "baseline"
+        ],
+        "recommendation": "retain external_history as the leading research challenger",
+        "style_improved_production_point_log_loss": true
+      },
+      "sample": {
+        "extended_events": 197,
+        "extended_fights": 2383,
+        "extended_years": [
+          2022,
+          2023,
+          2024,
+          2025,
+          2026
+        ],
+        "market_paired_events": 58,
+        "market_paired_fights": 503,
+        "production_events": 155,
+        "production_fights": 1877,
+        "production_years": [
+          2023,
+          2024,
+          2025,
+          2026
+        ]
+      },
+      "sha256": "7bae37b1f4eed7dcf0a91d41a469daa7db869f3f42078321a09fa590c6cf3833"
+    },
+    {
+      "artifact": "external_mma/round_cardio_factorial.json",
+      "decision": {
+        "best_variant": "external_history",
+        "cardio_group_retained_for_leading_challenger": false,
+        "cardio_improved_baseline_log_loss_and_brier": false,
+        "cardio_improved_external_log_loss_and_brier": false,
+        "production_action": "none",
+        "ranked_by_primary_log_loss": [
+          "external_history",
+          "baseline",
+          "external_cardio",
+          "cardio"
+        ],
+        "recommendation": "reject round cardio from the leading winner challenger"
+      },
+      "sample": {
+        "evidence_active_any_prior_round_2_sample": 290,
+        "evidence_active_both_prior_round_2_samples": 182,
+        "evidence_active_fights": 346,
+        "evidence_active_year": 2026,
+        "extended_fights": 2383,
+        "extended_years": [
+          2022,
+          2023,
+          2024,
+          2025,
+          2026
+        ],
+        "market_paired_fights": 503,
+        "production_fights": 1877,
+        "production_years": [
+          2023,
+          2024,
+          2025,
+          2026
+        ]
+      },
+      "sha256": "79579035e9b211a4ec783802b20ad31e9ccf5f39f3bf1e81b7f008a9be28faf4"
+    },
+    {
+      "artifact": "external_mma/stance_matchup_factorial.json",
+      "decision": {
+        "best_variant": "external_history",
+        "production_action": "none",
+        "ranked_by_production_walk_forward_log_loss": [
+          "external_history",
+          "baseline",
+          "external_stance",
+          "stance"
+        ],
+        "recommendation": "reject the stance group from the leading winner challenger",
+        "stance_group_retained_for_leading_challenger": false,
+        "stance_improved_baseline_point_log_loss": false,
+        "stance_improved_external_point_log_loss": false
+      },
+      "sample": {
+        "extended_events": 197,
+        "extended_fights": 2383,
+        "extended_years": [
+          2022,
+          2023,
+          2024,
+          2025,
+          2026
+        ],
+        "market_paired_events": 58,
+        "market_paired_fights": 503,
+        "production_events": 155,
+        "production_fights": 1877,
+        "production_years": [
+          2023,
+          2024,
+          2025,
+          2026
+        ]
+      },
+      "sha256": "db86cdd63d11d18d6e674cffda9e53d7bcb86cbed7464606f13a3336d2d8a31a"
+    },
+    {
+      "artifact": "external_mma/outcome_feature_comparison.json",
+      "decision": {
+        "joint_outcome_point_log_loss_improved": true,
+        "method_point_log_loss_improved": true,
+        "production_action": "none; this checks for collateral degradation before a separate winner-model policy review",
+        "winner_point_log_loss_improved": false
+      },
+      "sample": null,
+      "sha256": "ca70c3ba336a8d6d354f2dc5010346b13a008681dcdb3bfc80dd0b1556ac6786"
+    }
+  ],
+  "training_fights": 4952,
+  "training_window_start": "2016-11-05",
+  "version": "published-model-input-inventory-v1"
+}

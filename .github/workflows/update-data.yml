@@ -76,6 +76,9 @@ jobs:
           THE_ODDS_API_KEY: ${{ secrets.THE_ODDS_API_KEY }}
         run: python update_and_rebuild_model.py
 
+      - name: Inventory published model inputs
+        run: python src/audit_model_inputs.py
+
       - name: Record equal-stake prospective comparison
         run: python src/update_equal_stake_experiment.py
 
@@ -112,7 +115,9 @@ jobs:
         run: python src/update_research_monitor.py
 
       - name: Validate research monitoring
-        run: python src/update_research_monitor.py --validate-only
+        run: |
+          python src/update_research_monitor.py --validate-only
+          python src/audit_model_inputs.py --validate-only
 
       - name: Validate generated data
         run: |
@@ -190,6 +195,7 @@ jobs:
             src/content/data/market/method_paper/report.json \
             src/content/data/market/total_model_paper/report.json \
             src/content/data/market/research_monitor.json \
+            src/content/data/model_research/model_input_inventory.json \
             src/content/data/market/bet_odds_history.json \
             src/content/data/market/simulation_conditions/policy.json \
             src/content/data/market/simulation_conditions/records.json \
