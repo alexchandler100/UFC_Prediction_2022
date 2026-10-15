@@ -76,6 +76,14 @@ jobs:
           THE_ODDS_API_KEY: ${{ secrets.THE_ODDS_API_KEY }}
         run: python update_and_rebuild_model.py
 
+      - name: Refresh bounded external MMA research history
+        shell: bash
+        run: |
+          if ! python src/collect_event_results.py --start-year 2022 --max-pages 20 || ! python src/collect_event_results.py --validate-only; then
+            git restore -- src/content/data/external_mma/event_results/
+            echo "::warning::External research collection failed; retained the previous validated research history."
+          fi
+
       - name: Inventory published model inputs
         run: python src/audit_model_inputs.py
 
@@ -196,6 +204,7 @@ jobs:
             src/content/data/market/total_model_paper/report.json \
             src/content/data/market/research_monitor.json \
             src/content/data/model_research/model_input_inventory.json \
+            src/content/data/external_mma/event_results/ \
             src/content/data/market/bet_odds_history.json \
             src/content/data/market/simulation_conditions/policy.json \
             src/content/data/market/simulation_conditions/records.json \

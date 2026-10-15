@@ -100,7 +100,12 @@ def build(root, now):
     experiments.append(experiment('Independent model totals', read(root, 'total_model_paper/decisions.json', []),
         read(root, 'total_model_paper/settlements.json', []), now, 'matchup_id'))
     equal = read(root, 'equal_stake_experiment/report.json', {})
-    report = {'version': 1, 'generated_at_utc': now.isoformat(), 'feeds': feeds, 'experiments': experiments,
+    history_coverage=read(root,'../external_mma/event_results/coverage.json',{})
+    report = {'version': 1, 'generated_at_utc': now.isoformat(), 'external_history_coverage':{
+            'promotions':history_coverage.get('promotions',[]),
+            'generated_at_utc':history_coverage.get('generated_at_utc'),
+            'approved_ufcstats_identity_links':history_coverage.get('approved_ufcstats_identity_links',0),
+            'production_enabled':False}, 'feeds': feeds, 'experiments': experiments,
         'edge_audit': build_edge_audit(normalize_picks(lambda name, default: read(root, name, default), quote_sets),
             quote_sets, read(root, 'quote_source_metadata.jsonl', []), now),
         'equal_stake': {'recorded': equal.get('frozen_fights', 0), 'settled': equal.get('settled_fights', 0),

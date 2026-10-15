@@ -2252,6 +2252,7 @@ function upcomingBoutDetails(matchup, fighter, opponent) {
     const posteriorRange = element("span");
     appendText(posteriorRange, "strong", "", `${formatPercent(bayesian.lower)}-${formatPercent(bayesian.upper)}`);
     appendText(posteriorRange, "span", "", bayesian.status === "paper_only_challenger" ? ` ${formatPercent(bayesian.credible_level, 0)} credible interval` : " parameter interval · EV abstains for low history");
+    posteriorRange.title = "Conditional on this model and its recorded data. A credible interval does not guarantee coverage of the real-world fight probability.";
     posterior.append(posteriorValue, posteriorRange);
     matchupData.append(posterior);
   }
@@ -3192,7 +3193,7 @@ function appendQualifiedBetExplanation(container, bet) {
       ? `A Bayesian logistic calibration was fitted specifically for the ${formatNumber(bayesian.line, 1)}-round cutoff. It learned from duration-model predictions for fights that occurred after that model's training period, rather than treating the original ${formatPercent(chance)} estimate as exact.`
       : "A Bayesian logistic calibration measured how reliable earlier market-consensus probabilities were on later completed fights.";
     cards.push(
-      ["Bayesian chance range", `${formatPercent(bayesian.posterior_mean_probability)} average, with an 80% range of ${formatPercent(bayesian.posterior_lower_probability)} to ${formatPercent(bayesian.posterior_upper_probability)}. ${calibrationExplanation} The calibration used ${formatNumber(bayesian.calibration_training_fights, 0)} earlier fights across ${formatNumber(bayesian.calibration_training_events, 0)} events.`],
+      ["Bayesian chance range", `${formatPercent(bayesian.posterior_mean_probability)} average, with an 80% range of ${formatPercent(bayesian.posterior_lower_probability)} to ${formatPercent(bayesian.posterior_upper_probability)}. ${calibrationExplanation} The range reflects uncertainty in the calibration coefficient conditional on this model; missing information and model errors can put the actual chance outside it. The calibration used ${formatNumber(bayesian.calibration_training_fights, 0)} earlier fights across ${formatNumber(bayesian.calibration_training_events, 0)} events.`],
       ["Allocated paper stake", `${formatPercent(bet.allocated_fraction)} of bankroll after portfolio limits. The original robust Bayesian Kelly calculation was ${formatPercent(bayesian.recommended_fraction)} and remains a research sizing reference. Allocation uses at most 1% per fight, 5% per card, and 10% across this snapshot. The conservative ${formatPercent(bayesian.posterior_lower_probability)} chance still implies a positive estimated return.`],
     );
   } else {
@@ -4393,6 +4394,20 @@ function renderResearchMonitor() {
       splitTable.body.append(row);
     }
     splits.append(splitTable.wrap); container.append(splits);
+  }
+  const historyCoverage = report.external_history_coverage;
+  if (historyCoverage?.promotions?.length) {
+    const coverageDetails = element('details', 'market-pick-history');
+    coverageDetails.append(element('summary', '', 'Additional fight-history coverage'));
+    appendText(coverageDetails, 'p', 'section-note', `Revision-pinned research results; ${historyCoverage.approved_ufcstats_identity_links} fighter identities linked through dated UFC bouts. These records are separate from production training. Missing and unresolved identities remain explicit.`);
+    const coverageTable = performanceTable(['Promotion / series','Bouts collected','Latest result','Unlinked participant entries']);
+    for (const r of historyCoverage.promotions) {
+      const row=element('tr');
+      [r.promotion,r.bouts,r.last_event_date || 'No usable results collected',r.unresolved_participant_occurrences]
+        .forEach((v,i)=>appendPerformanceCell(row,['Promotion / series','Bouts collected','Latest result','Unlinked participant entries'][i],v));
+      coverageTable.body.append(row);
+    }
+    coverageDetails.append(coverageTable.wrap);container.append(coverageDetails);
   }
   const equal=report.equal_stake;
   appendText(container,'p','section-note',`Equal-stake winner comparison: ${equal.recorded} fights recorded, ${equal.settled} settled. First review requires at least ${equal.review_fights} fights across ${equal.review_cards} cards; this does not establish profitability.`);

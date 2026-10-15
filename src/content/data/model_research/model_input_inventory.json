@@ -1,4 +1,138 @@
 {
+  "additional_event_results": {
+    "approved_ufcstats_identity_links": 379,
+    "note": "Separate revision-pinned secondary-source research ledger. Unlinked identities do not merge into production history.",
+    "production_enabled": false,
+    "promotions": [
+      {
+        "bouts": 465,
+        "events": 96,
+        "first_event_date": "2017-07-11",
+        "last_event_date": "2026-10-13",
+        "promotion": "Contender Series",
+        "status": "collected_research_only",
+        "unresolved_participant_occurrences": 674
+      },
+      {
+        "bouts": 145,
+        "events": 16,
+        "first_event_date": "2022-06-09",
+        "last_event_date": "2026-08-28",
+        "promotion": "Road to UFC",
+        "status": "collected_research_only",
+        "unresolved_participant_occurrences": 268
+      },
+      {
+        "bouts": 198,
+        "events": 19,
+        "first_event_date": "2026-02-07",
+        "last_event_date": "2026-10-10",
+        "promotion": "PFL",
+        "status": "collected_research_only",
+        "unresolved_participant_occurrences": 307
+      },
+      {
+        "bouts": 467,
+        "events": 37,
+        "first_event_date": "2022-01-29",
+        "last_event_date": "2024-09-14",
+        "promotion": "Bellator",
+        "status": "collected_research_only",
+        "unresolved_participant_occurrences": 524
+      },
+      {
+        "bouts": 98,
+        "events": 43,
+        "first_event_date": "2026-01-16",
+        "last_event_date": "2026-10-09",
+        "promotion": "ONE",
+        "status": "collected_research_only",
+        "unresolved_participant_occurrences": 176
+      },
+      {
+        "bouts": 99,
+        "events": 8,
+        "first_event_date": "2026-03-07",
+        "last_event_date": "2026-10-03",
+        "promotion": "Rizin",
+        "status": "collected_research_only",
+        "unresolved_participant_occurrences": 151
+      },
+      {
+        "bouts": 78,
+        "events": 9,
+        "first_event_date": "2026-01-17",
+        "last_event_date": "2026-10-10",
+        "promotion": "KSW",
+        "status": "collected_research_only",
+        "unresolved_participant_occurrences": 112
+      },
+      {
+        "bouts": 165,
+        "events": 11,
+        "first_event_date": "2026-01-09",
+        "last_event_date": "2026-10-04",
+        "promotion": "ACA",
+        "status": "collected_research_only",
+        "unresolved_participant_occurrences": 293
+      },
+      {
+        "bouts": 139,
+        "events": 13,
+        "first_event_date": "2026-01-17",
+        "last_event_date": "2026-09-26",
+        "promotion": "OKTAGON",
+        "status": "collected_research_only",
+        "unresolved_participant_occurrences": 247
+      },
+      {
+        "bouts": 123,
+        "events": 11,
+        "first_event_date": "2026-02-21",
+        "last_event_date": "2026-09-26",
+        "promotion": "Cage Warriors",
+        "status": "collected_research_only",
+        "unresolved_participant_occurrences": 246
+      },
+      {
+        "bouts": 240,
+        "events": 20,
+        "first_event_date": "2026-01-16",
+        "last_event_date": "2026-10-09",
+        "promotion": "LFA",
+        "status": "collected_research_only",
+        "unresolved_participant_occurrences": 477
+      },
+      {
+        "bouts": 0,
+        "events": 0,
+        "first_event_date": null,
+        "last_event_date": null,
+        "promotion": "Invicta",
+        "status": "no_usable_results_collected",
+        "unresolved_participant_occurrences": 0
+      },
+      {
+        "bouts": 53,
+        "events": 5,
+        "first_event_date": "2026-02-14",
+        "last_event_date": "2026-09-05",
+        "promotion": "BRAVE",
+        "status": "collected_research_only",
+        "unresolved_participant_occurrences": 97
+      },
+      {
+        "bouts": 265,
+        "events": 21,
+        "first_event_date": "2026-01-24",
+        "last_event_date": "2026-10-03",
+        "promotion": "UFC",
+        "status": "collected_research_only",
+        "unresolved_participant_occurrences": 192
+      }
+    ],
+    "records": 2535
+  },
   "coverage_note": "A dataset being stored does not mean production uses it. Winner, outcome and simulation models have different contracts. Historical results, post-fight stats, and later market prices must not enter earlier forecasts.",
   "data_through": "2026-10-10",
   "evaluation_rule": "Use all valid chronological coverage; select settings on earlier fights, test on later untouched cards, and compare probability quality and price-matched returns with the market. No automatic promotion.",

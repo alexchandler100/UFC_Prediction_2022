@@ -23,6 +23,8 @@ def build(data=DATA):
             artifacts.append({'artifact': str(path.relative_to(data)).replace('\\', '/'),
                 'sha256': canonical_hash(d), 'sample': d.get('sample'), 'decision': d.get('decision')})
     external_path = data / 'external_mma/bouts.jsonl'
+    event_path=data/'external_mma/event_results/coverage.json'
+    events=read(event_path) if event_path.exists() else {}
     return {'version': 'published-model-input-inventory-v1', 'model_id': model['model_id'],
         'model_sha256': canonical_hash(model), 'model_version': model['model_version'],
         'training_fights': model['training_fights'], 'training_window_start': model['training_window_start'],
@@ -32,6 +34,9 @@ def build(data=DATA):
         'external_history_enabled': policy.get('enable_auxiliary_replay', False),
         'external_history_records_available': sum(bool(line.strip()) for line in external_path.open(encoding='utf-8')) if external_path.exists() else 0,
         'researched_groups': artifacts,
+        'additional_event_results': {'production_enabled':False, 'records':events.get('validation',{}).get('observations',0),
+            'approved_ufcstats_identity_links':events.get('approved_ufcstats_identity_links',0), 'promotions':events.get('promotions',[]),
+            'note':'Separate revision-pinned secondary-source research ledger. Unlinked identities do not merge into production history.'},
         'coverage_note': 'A dataset being stored does not mean production uses it. Winner, outcome and simulation models have different contracts. Historical results, post-fight stats, and later market prices must not enter earlier forecasts.',
         'next_feature_candidates': [
             {'group':'Layoff and recovery', 'inputs':'Layoff buckets; age-by-layoff; time since KO/TKO loss; recent activity count.',

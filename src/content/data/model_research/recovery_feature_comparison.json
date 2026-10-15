@@ -1,0 +1,199 @@
+{
+  "baseline": {
+    "accuracy": 0.639967637540453,
+    "auc": 0.6910446626178715,
+    "brier": 0.22230357702714001,
+    "ece_10_bin": 0.019784404661157256,
+    "fights": 2472,
+    "log_loss": 0.6348104852116321
+  },
+  "decision": "No convincing improvement; retain production feature contract.",
+  "evaluation_years": [
+    2022,
+    2023,
+    2024,
+    2025,
+    2026
+  ],
+  "feature_columns_added": [
+    "layoff_under_90_days_diff",
+    "layoff_180_to_365_days_diff",
+    "layoff_over_365_days_diff",
+    "age_times_log_layoff_diff",
+    "prior_ko_loss_diff",
+    "log_days_since_ko_loss_diff",
+    "ko_loss_within_180_days_diff",
+    "fights_last_180_days_log_diff"
+  ],
+  "first_test_date": "2022-01-15",
+  "last_test_date": "2026-10-10",
+  "limitations": [
+    "This grouped experiment cannot identify which individual feature caused a difference.",
+    "A historical comparison remains development evidence, not a new prospective profit record."
+  ],
+  "market_paired": {
+    "baseline": {
+      "accuracy": 0.6560636182902585,
+      "auc": 0.7106336558527795,
+      "brier": 0.21722673351534783,
+      "ece_10_bin": 0.043624721016967266,
+      "fights": 503,
+      "log_loss": 0.6237212173363456
+    },
+    "events": 58,
+    "fights": 503,
+    "market": {
+      "accuracy": 0.6779324055666004,
+      "auc": 0.7367197875166003,
+      "brier": 0.20759785223485688,
+      "ece_10_bin": 0.02734751785347141,
+      "fights": 503,
+      "log_loss": 0.6015220676228912
+    },
+    "recovery": {
+      "accuracy": 0.658051689860835,
+      "auc": 0.7115031935749065,
+      "brier": 0.21708922007989545,
+      "ece_10_bin": 0.05060044368385248,
+      "fights": 503,
+      "log_loss": 0.6234988551201102
+    },
+    "recovery_minus_market": {
+      "bootstrap_samples": 10000,
+      "ci_95_lower": -0.0018746484402739666,
+      "ci_95_upper": 0.04452480788526053,
+      "definition": "recovery_probability minus market_probability paired log loss; negative favors candidate",
+      "event_count": 58,
+      "fight_count": 503,
+      "method": "nonparametric whole-event block bootstrap",
+      "point_difference": 0.02197678749721888,
+      "seed": 20260822
+    }
+  },
+  "method": "For each test year, train and select settings/calibration only on earlier fights. Both variants replay identical source history; no external research results or new production features are enabled.",
+  "paired_log_loss_interval": {
+    "bootstrap_samples": 10000,
+    "ci_95_lower": -0.0005315038073831212,
+    "ci_95_upper": 0.0019986997780246673,
+    "definition": "recovery_probability minus baseline_probability paired log loss; negative favors candidate",
+    "event_count": 204,
+    "fight_count": 2472,
+    "method": "nonparametric whole-event block bootstrap",
+    "point_difference": 0.0007444359291893506,
+    "seed": 20260822
+  },
+  "per_year": {
+    "2022": {
+      "baseline": {
+        "accuracy": 0.6383399209486166,
+        "auc": 0.6732332707942464,
+        "brier": 0.22684335036182338,
+        "ece_10_bin": 0.061659308201248375,
+        "fights": 506,
+        "log_loss": 0.643893975367954
+      },
+      "fights": 506,
+      "recovery": {
+        "accuracy": 0.6304347826086957,
+        "auc": 0.6763914946841776,
+        "brier": 0.2261867190465341,
+        "ece_10_bin": 0.05437300570598534,
+        "fights": 506,
+        "log_loss": 0.6426171109989687
+      }
+    },
+    "2023": {
+      "baseline": {
+        "accuracy": 0.6111111111111112,
+        "auc": 0.6634469696969698,
+        "brier": 0.22907845724064055,
+        "ece_10_bin": 0.03841329551042511,
+        "fights": 504,
+        "log_loss": 0.6485036412772955
+      },
+      "fights": 504,
+      "recovery": {
+        "accuracy": 0.625,
+        "auc": 0.6639204545454546,
+        "brier": 0.22900948170758448,
+        "ece_10_bin": 0.03477560965675289,
+        "fights": 504,
+        "log_loss": 0.6483687467453019
+      }
+    },
+    "2024": {
+      "baseline": {
+        "accuracy": 0.6510721247563352,
+        "auc": 0.7064168518462147,
+        "brier": 0.21801486980146878,
+        "ece_10_bin": 0.0556531573498745,
+        "fights": 513,
+        "log_loss": 0.6257049634966839
+      },
+      "fights": 513,
+      "recovery": {
+        "accuracy": 0.6413255360623782,
+        "auc": 0.703342364007184,
+        "brier": 0.21893593941211253,
+        "ece_10_bin": 0.04381262030158833,
+        "fights": 513,
+        "log_loss": 0.6276288811401322
+      }
+    },
+    "2025": {
+      "baseline": {
+        "accuracy": 0.6517509727626459,
+        "auc": 0.7114344169129347,
+        "brier": 0.21683648182625181,
+        "ece_10_bin": 0.042437416504713193,
+        "fights": 514,
+        "log_loss": 0.6236189448542894
+      },
+      "fights": 514,
+      "recovery": {
+        "accuracy": 0.6595330739299611,
+        "auc": 0.7092217928317042,
+        "brier": 0.21728516103830106,
+        "ece_10_bin": 0.04237989160043051,
+        "fights": 514,
+        "log_loss": 0.6247068350555927
+      }
+    },
+    "2026": {
+      "baseline": {
+        "accuracy": 0.6482758620689655,
+        "auc": 0.6976088523339128,
+        "brier": 0.2206909995675351,
+        "ece_10_bin": 0.04968216961077929,
+        "fights": 435,
+        "log_loss": 0.6323414914351932
+      },
+      "fights": 435,
+      "recovery": {
+        "accuracy": 0.6413793103448275,
+        "auc": 0.6941535591639463,
+        "brier": 0.22177110056122334,
+        "ece_10_bin": 0.045678338512822735,
+        "fights": 435,
+        "log_loss": 0.6346591477966385
+      }
+    }
+  },
+  "production_enabled": false,
+  "recovery": {
+    "accuracy": 0.6395631067961165,
+    "auc": 0.6901248990423445,
+    "brier": 0.22262961045890023,
+    "ece_10_bin": 0.019715768184968438,
+    "fights": 2472,
+    "log_loss": 0.6355549211408213
+  },
+  "scored_events": 204,
+  "scored_fights": 2472,
+  "source_data_sha256": {
+    "fighter_stats.csv": "849974eb2e9014fbca493c9fdb704723ea6c08e29b2ce691088f94c4062ea5c0",
+    "ufc_fights_reported_doubled.csv": "07a0bb9d46ef213a8af2488b72bb905e4ebb9f4e6efbd94c54cc5ef54c85b962"
+  },
+  "source_hash_protocol": "SHA-256 of UTF-8 source CSV with CRLF normalized to LF",
+  "version": "predeclared-recovery-group-v1"
+}
