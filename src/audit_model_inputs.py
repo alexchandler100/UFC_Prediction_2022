@@ -23,6 +23,12 @@ def build(data=DATA):
             artifacts.append({'artifact': str(path.relative_to(data)).replace('\\', '/'),
                 'sha256': canonical_hash(d), 'sample': d.get('sample'), 'decision': d.get('decision')})
     external_path = data / 'external_mma/bouts.jsonl'
+    recovery_path=data/'model_research/recovery_feature_comparison.json'
+    recovery=read(recovery_path) if recovery_path.exists() else {}
+    if recovery:
+        artifacts.append({'artifact':'model_research/recovery_feature_comparison.json','sha256':canonical_hash(recovery),
+            'sample':{'scored_fights':recovery['scored_fights'],'scored_events':recovery['scored_events']},
+            'decision':recovery['decision']})
     event_path=data/'external_mma/event_results/coverage.json'
     events=read(event_path) if event_path.exists() else {}
     return {'version': 'published-model-input-inventory-v1', 'model_id': model['model_id'],
@@ -41,7 +47,7 @@ def build(data=DATA):
         'next_feature_candidates': [
             {'group':'Layoff and recovery', 'inputs':'Layoff buckets; age-by-layoff; time since KO/TKO loss; recent activity count.',
              'source':'Existing dated source fight history; broader MMA history needed to correct regional-fight gaps.',
-             'status':'Proposed chronological research; not production inputs.'},
+             'status':recovery.get('decision','Proposed chronological research; not production inputs.')},
             {'group':'Fight duration context', 'inputs':'Both fighters\' absolute activity and age; division finish rates; explicit three/five-round schedule.',
              'source':'Existing history and verified schedule data. Relative-only features can hide shared context.',
              'status':'Proposed duration-model research; compare against market totals at identical lines.'},

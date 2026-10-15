@@ -233,7 +233,7 @@
       "group": "Layoff and recovery",
       "inputs": "Layoff buckets; age-by-layoff; time since KO/TKO loss; recent activity count.",
       "source": "Existing dated source fight history; broader MMA history needed to correct regional-fight gaps.",
-      "status": "Proposed chronological research; not production inputs."
+      "status": "No convincing improvement; retain production feature contract."
     },
     {
       "group": "Fight duration context",
@@ -377,6 +377,15 @@
       },
       "sample": null,
       "sha256": "ca70c3ba336a8d6d354f2dc5010346b13a008681dcdb3bfc80dd0b1556ac6786"
+    },
+    {
+      "artifact": "model_research/recovery_feature_comparison.json",
+      "decision": "No convincing improvement; retain production feature contract.",
+      "sample": {
+        "scored_events": 204,
+        "scored_fights": 2472
+      },
+      "sha256": "49e1fb5c3dd9c22cc4b8ece84400cde1fd49f1f0b5cfb9f482ae8be822de35f2"
     }
   ],
   "training_fights": 4952,
