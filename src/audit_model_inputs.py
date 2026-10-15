@@ -29,6 +29,12 @@ def build(data=DATA):
         artifacts.append({'artifact':'model_research/recovery_feature_comparison.json','sha256':canonical_hash(recovery),
             'sample':{'scored_fights':recovery['scored_fights'],'scored_events':recovery['scored_events']},
             'decision':recovery['decision']})
+    career_path=data/'model_research/career_feature_comparison.json'
+    if career_path.exists():
+        career=read(career_path)
+        artifacts.append({'artifact':'model_research/career_feature_comparison.json','sha256':canonical_hash(career),
+            'sample':{'scored_fights':career['scored_fights'],'scored_events':career['scored_events']},
+            'decision':career['decision']})
     event_path=data/'external_mma/event_results/coverage.json'
     events=read(event_path) if event_path.exists() else {}
     bayes_path=data/'external/bayesian_winner_challenger.json'

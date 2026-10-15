@@ -1,0 +1,265 @@
+{
+  "baseline": {
+    "accuracy": 0.639967637540453,
+    "auc": 0.6910446626178715,
+    "brier": 0.22230357702714001,
+    "ece_10_bin": 0.019784404661157256,
+    "fights": 2472,
+    "log_loss": 0.6348104852116321
+  },
+  "career": {
+    "accuracy": 0.6452265372168284,
+    "auc": 0.6975151305369374,
+    "brier": 0.22073162382228195,
+    "ece_10_bin": 0.0221007978695799,
+    "fights": 2472,
+    "log_loss": 0.631574039820793
+  },
+  "coverage": {
+    "approved_identity_links": 2362,
+    "external_bouts": 6506,
+    "linked_fighters": 460,
+    "linked_participants": 1167,
+    "linked_participants_by_promotion": {
+      "ACA": 1,
+      "Bellator": 31,
+      "Bellator MMA": 941,
+      "Contender Series": 85,
+      "One Championship": 104,
+      "PFL": 2,
+      "Road to UFC": 3
+    },
+    "promotions": {
+      "ACA": 165,
+      "BRAVE": 53,
+      "Bellator": 467,
+      "Bellator MMA": 2898,
+      "Cage Warriors": 123,
+      "Contender Series": 465,
+      "KSW": 78,
+      "LFA": 240,
+      "OKTAGON": 139,
+      "ONE": 98,
+      "One Championship": 1338,
+      "PFL": 198,
+      "Rizin": 99,
+      "Road to UFC": 145
+    },
+    "ufc_witnesses_excluded": 6477,
+    "unlinked_participants": 11845
+  },
+  "decision": "Retain for prospective testing only; no automatic promotion.",
+  "evaluation_years": [
+    2022,
+    2023,
+    2024,
+    2025,
+    2026
+  ],
+  "feature_columns_added": [
+    "external_history_present_diff",
+    "external_fights_log_diff",
+    "external_win_balance_diff",
+    "external_opponent_rating_diff",
+    "career_rating_diff"
+  ],
+  "fights_with_external_history": {
+    "baseline": {
+      "accuracy": 0.6541450777202072,
+      "auc": 0.7003032809484422,
+      "brier": 0.22004376660839467,
+      "ece_10_bin": 0.03488016092060717,
+      "fights": 772,
+      "log_loss": 0.6296896326855094
+    },
+    "career": {
+      "accuracy": 0.667098445595855,
+      "auc": 0.7201207744087366,
+      "brier": 0.21496290190399514,
+      "ece_10_bin": 0.03813419553311918,
+      "fights": 772,
+      "log_loss": 0.6191699527095714
+    },
+    "events": 201,
+    "fights": 772,
+    "paired_log_loss_interval": {
+      "bootstrap_samples": 10000,
+      "ci_95_lower": -0.016529386687030603,
+      "ci_95_upper": -0.004447682194453255,
+      "definition": "career_probability minus baseline_probability paired log loss; negative favors candidate",
+      "event_count": 201,
+      "fight_count": 772,
+      "method": "nonparametric whole-event block bootstrap",
+      "point_difference": -0.01051967997593802,
+      "seed": 20260822
+    }
+  },
+  "first_test_date": "2022-01-15",
+  "input_and_code_sha256": "104241f73680fefa13fe2aced143931a7ea5f6141c5c68dcae1629d27692bccc",
+  "last_test_date": "2026-10-10",
+  "limitations": [
+    "This grouped experiment cannot identify which individual feature caused a difference.",
+    "A historical comparison remains development evidence, not a new prospective profit record.",
+    "Sources and identity links were assembled retrospectively; this is not an as-collected historical betting replay.",
+    "Uneven promotion coverage and unresolved identities mean recorded experience is incomplete.",
+    "Elo begins at 1500 with fixed K=32; disconnected regional opponent groups have no independently established common strength."
+  ],
+  "market_paired": {
+    "baseline": {
+      "accuracy": 0.6560636182902585,
+      "auc": 0.7106336558527795,
+      "brier": 0.21722673351534783,
+      "ece_10_bin": 0.043624721016967266,
+      "fights": 503,
+      "log_loss": 0.6237212173363456
+    },
+    "career": {
+      "accuracy": 0.6640159045725647,
+      "auc": 0.7174950989692026,
+      "brier": 0.2156606079934055,
+      "ece_10_bin": 0.04272754418546439,
+      "fights": 503,
+      "log_loss": 0.6211044183106719
+    },
+    "career_minus_market": {
+      "bootstrap_samples": 10000,
+      "ci_95_lower": -0.003644665414610859,
+      "ci_95_upper": 0.04194593674238779,
+      "definition": "career_probability minus market_probability paired log loss; negative favors candidate",
+      "event_count": 58,
+      "fight_count": 503,
+      "method": "nonparametric whole-event block bootstrap",
+      "point_difference": 0.019582350687780626,
+      "seed": 20260822
+    },
+    "events": 58,
+    "fights": 503,
+    "market": {
+      "accuracy": 0.6779324055666004,
+      "auc": 0.7367197875166003,
+      "brier": 0.20759785223485688,
+      "ece_10_bin": 0.02734751785347141,
+      "fights": 503,
+      "log_loss": 0.6015220676228912
+    }
+  },
+  "method": "For each test year, train and select settings/calibration only on earlier fights. Original inputs are identical. Added features use only results before each fight date; all same-day results are excluded. External bouts supply history only, never UFC training labels. Identities use approved crosswalks; no name-only career merges.",
+  "paired_log_loss_interval": {
+    "bootstrap_samples": 10000,
+    "ci_95_lower": -0.0052084821783704984,
+    "ci_95_upper": -0.0012992764528904246,
+    "definition": "career_probability minus baseline_probability paired log loss; negative favors candidate",
+    "event_count": 204,
+    "fight_count": 2472,
+    "method": "nonparametric whole-event block bootstrap",
+    "point_difference": -0.00323644539083897,
+    "seed": 20260822
+  },
+  "per_year": {
+    "2022": {
+      "baseline": {
+        "accuracy": 0.6383399209486166,
+        "auc": 0.6732332707942464,
+        "brier": 0.22684335036182338,
+        "ece_10_bin": 0.061659308201248375,
+        "fights": 506,
+        "log_loss": 0.643893975367954
+      },
+      "career": {
+        "accuracy": 0.6304347826086957,
+        "auc": 0.6772045028142588,
+        "brier": 0.2260226839010176,
+        "ece_10_bin": 0.05725191561196425,
+        "fights": 506,
+        "log_loss": 0.6421882996693318
+      },
+      "fights": 506
+    },
+    "2023": {
+      "baseline": {
+        "accuracy": 0.6111111111111112,
+        "auc": 0.6634469696969698,
+        "brier": 0.22907845724064055,
+        "ece_10_bin": 0.03841329551042511,
+        "fights": 504,
+        "log_loss": 0.6485036412772955
+      },
+      "career": {
+        "accuracy": 0.6130952380952381,
+        "auc": 0.6660353535353536,
+        "brier": 0.2282013604602166,
+        "ece_10_bin": 0.03533979566766083,
+        "fights": 504,
+        "log_loss": 0.6466009074930641
+      },
+      "fights": 504
+    },
+    "2024": {
+      "baseline": {
+        "accuracy": 0.6510721247563352,
+        "auc": 0.7064168518462147,
+        "brier": 0.21801486980146878,
+        "ece_10_bin": 0.0556531573498745,
+        "fights": 513,
+        "log_loss": 0.6257049634966839
+      },
+      "career": {
+        "accuracy": 0.6627680311890838,
+        "auc": 0.7130680953395635,
+        "brier": 0.21661264223981333,
+        "ece_10_bin": 0.05156773795887115,
+        "fights": 513,
+        "log_loss": 0.6226782898255997
+      },
+      "fights": 513
+    },
+    "2025": {
+      "baseline": {
+        "accuracy": 0.6517509727626459,
+        "auc": 0.7114344169129347,
+        "brier": 0.21683648182625181,
+        "ece_10_bin": 0.042437416504713193,
+        "fights": 514,
+        "log_loss": 0.6236189448542894
+      },
+      "career": {
+        "accuracy": 0.6673151750972762,
+        "auc": 0.722164128210957,
+        "brier": 0.21451608137641515,
+        "ece_10_bin": 0.04990176780966405,
+        "fights": 514,
+        "log_loss": 0.6195121275856124
+      },
+      "fights": 514
+    },
+    "2026": {
+      "baseline": {
+        "accuracy": 0.6482758620689655,
+        "auc": 0.6976088523339128,
+        "brier": 0.2206909995675351,
+        "ece_10_bin": 0.04968216961077929,
+        "fights": 435,
+        "log_loss": 0.6323414914351932
+      },
+      "career": {
+        "accuracy": 0.6528735632183909,
+        "auc": 0.7065120617289185,
+        "brier": 0.21812427371566737,
+        "ece_10_bin": 0.049614625798865594,
+        "fights": 435,
+        "log_loss": 0.6265602141799467
+      },
+      "fights": 435
+    }
+  },
+  "predictions_sha256": "45abb0160ad812a1549533b39b0f4374fc49ac7f09b8e2be85cacb0ac5f637c9",
+  "production_enabled": false,
+  "scored_events": 204,
+  "scored_fights": 2472,
+  "source_data_sha256": {
+    "fighter_stats.csv": "849974eb2e9014fbca493c9fdb704723ea6c08e29b2ce691088f94c4062ea5c0",
+    "ufc_fights_reported_doubled.csv": "07a0bb9d46ef213a8af2488b72bb905e4ebb9f4e6efbd94c54cc5ef54c85b962"
+  },
+  "source_hash_protocol": "SHA-256 with CRLF normalized to LF; combined input/code digest uses NUL-separated file contents in script order",
+  "version": "predeclared-career-group-v1"
+}
