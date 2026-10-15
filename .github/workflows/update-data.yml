@@ -84,6 +84,17 @@ jobs:
             echo "::warning::External research collection failed; retained the previous validated research history."
           fi
 
+      - name: Record prospective career-model predictions
+        shell: bash
+        run: |
+          shadow_backup=$(mktemp -d)
+          cp -a src/content/data/market/career_shadow "$shadow_backup/state"
+          if ! python src/update_career_shadow.py || ! python src/update_career_shadow.py --validate-only; then
+            rm -rf src/content/data/market/career_shadow
+            cp -a "$shadow_backup/state" src/content/data/market/career_shadow
+            echo "::warning::Career shadow recording failed; retained its previous validated records."
+          fi
+
       - name: Inventory published model inputs
         run: python src/audit_model_inputs.py
 
@@ -205,6 +216,7 @@ jobs:
             src/content/data/market/research_monitor.json \
             src/content/data/model_research/model_input_inventory.json \
             src/content/data/external_mma/event_results/ \
+            src/content/data/market/career_shadow/ \
             src/content/data/market/bet_odds_history.json \
             src/content/data/market/simulation_conditions/policy.json \
             src/content/data/market/simulation_conditions/records.json \

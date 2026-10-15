@@ -118,6 +118,7 @@ def build(root, now):
             read(root, 'quote_source_metadata.jsonl', []), read(root, 'forecast_captures.jsonl', []),
             read(root, 'paper_decisions.jsonl', []), now,
             additional_decisions={'market_first': read(root, 'market_first_paper_decisions.jsonl', [])}),
+        'career_shadow': read(root, 'career_shadow/report.json', None),
         'simulation_conditions': read(root, 'simulation_conditions/report.json', None),
         'workflow_runs_url': 'https://github.com/alexchandler100/UFC_Prediction_2022/actions',
         'workflow_failure_status': 'unavailable_from_ledgers',

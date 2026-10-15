@@ -1596,3 +1596,40 @@ retrospectively; the historical test is development evidence, not a prospective
 profit record. Disconnected regional opponent groups also lack independently
 established relative strength. Production remains unchanged. The candidate merits
 frozen prospective evaluation alongside continued evidence-based identity work.
+
+### Prospective career-model forecasts
+
+`python src/update_career_shadow.py` now trains the fixed career feature recipe
+on completed history and records upcoming predictions under
+`src/content/data/market/career_shadow/`. The regular data-update workflow runs
+this command after refreshing the schedule and source data, then validates the
+saved records. It does not change betting recommendations or stake sizes.
+
+Each capture preserves both fighters' IDs, event/date, the feature vector,
+probability, recording time, model ID, baseline forecast, and available market
+reference quotes observed in the preceding 24 hours. Archived model coefficients
+and calibration reproduce each probability. Changed data creates a separate
+model artifact; old captures are retained. Same-day captures are excluded because
+exact bout start times are unavailable. Settlements require the same event, date,
+and fighter pair; draws/no-contests are void. Primary evaluation uses the first
+recorded forecast for each matchup, never the most successful later version.
+
+`python src/update_career_shadow.py --validate-only` checks archived probabilities,
+checksums, capture dates, unique records, and settlement references. Performance →
+Research monitoring includes a collapsed table of upcoming career-model forecasts.
+
+`python src/link_series_history.py` uses the previously downloaded MMA research
+archive at `artifacts/free_data_audit/mmastats/dataset_global_v3.duckdb` (optional
+`duckdb` dependency) to connect series history. Each accepted connection requires
+a unique dated opponent pair with a matching result plus a separate UFC bout
+witness anchoring the archive's fighter ID. Name order, punctuation, accents and
+camel-case spacing may be normalized; name alone never approves a link. The
+separate `series_identity_map.csv` and `series_identity_evidence.json` retain
+accepted links and their supporting observations without modifying source results.
+
+The first pass adds 141 identity links: 148 more Contender Series appearances and
+5 more Road to UFC appearances now connect to UFCStats IDs, bringing those totals
+to 233 and 8. These are secondary-source matches; remaining identities stay
+unresolved. The earlier historical career comparison remains the original test,
+not a claim about the newly connected dataset. New model versions are tracked
+prospectively before any production decision.

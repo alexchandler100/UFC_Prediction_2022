@@ -4396,6 +4396,20 @@ function renderResearchMonitor() {
     splits.append(splitTable.wrap); container.append(splits);
   }
   const historyCoverage = report.external_history_coverage;
+  const careerShadow = report.career_shadow;
+  if (careerShadow) {
+    const details = element('details', 'market-pick-history');
+    details.append(element('summary', '', `Career-model forecasts: ${careerShadow.upcoming_matchups} upcoming, ${careerShadow.first_capture_settled_fights} scored`));
+    appendText(details, 'p', 'section-note', 'Tracking predictions before fights. Results use the first recorded prediction; later model versions remain separate. These are forecasts, not betting recommendations.');
+    const forecastTable = performanceTable(['Date','Fight','First forecast','Latest forecast','Recorded']);
+    for (const r of careerShadow.upcoming || []) {
+      const row = element('tr');
+      [r.event_date, `${r.fighter_name} vs ${r.opponent_name}`, `${r.fighter_name}: ${formatPercent(r.first_probability_for_fighter)}`, formatPercent(r.probability_for_fighter), formatTimestamp(r.recorded_at_utc)]
+        .forEach((v,i)=>appendPerformanceCell(row,['Date','Fight','First forecast','Latest forecast','Recorded'][i],v));
+      forecastTable.body.append(row);
+    }
+    details.append(forecastTable.wrap);container.append(details);
+  }
   if (historyCoverage?.promotions?.length) {
     const coverageDetails = element('details', 'market-pick-history');
     coverageDetails.append(element('summary', '', 'Additional fight-history coverage'));

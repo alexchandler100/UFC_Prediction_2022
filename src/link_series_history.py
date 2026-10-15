@@ -1,0 +1,131 @@
+"""Bridge series identities with a dated series bout and a separate UFC witness."""
+from collections import defaultdict, Counter
+from datetime import datetime, timezone
+import json
+import re
+from pathlib import Path
+
+import pandas as pd
+
+from external_mma.identity import IDENTITY_COLUMNS, normalize_name, propose_ufcstats_crosswalk
+from external_mma.integration import load_identity_map, is_ufc_promotion
+from external_mma.storage import ExternalMmaStore
+from market_tracker._storage import atomic_write_text
+from online_data_research import load_mma_archive_observations
+
+DATA=Path(__file__).resolve().parent/'content/data'
+
+
+def identity_name(name):
+    # Discovery still requires a unique date + BOTH participants and a separate
+    # UFC witness. This accommodates Korean name order and HyunSung/Hyun-sung.
+    return ' '.join(sorted(normalize_name(re.sub(r'(?<=[a-z])(?=[A-Z])',' ',name)).split()))
+
+
+def match_key(date,a,b):
+    return (date,tuple(sorted((identity_name(a),identity_name(b)))))
+
+
+def extend_archive_crosswalk(archive, raw, crosswalk, now):
+    index=defaultdict(list)
+    for _,group in raw.groupby('fight_url',sort=False):
+        if len(group)!=2:continue
+        r=group.iloc[0]
+        index[match_key(str(r.date)[:10],r.fighter,r.opponent)].append(group)
+    witnesses=defaultdict(list)
+    for r in archive:
+        if not is_ufc_promotion(r.promotion):continue
+        matches=index.get(match_key(r.event_date,r.fighter_name,r.opponent_name),[])
+        if len(matches)!=1:continue
+        group=matches[0]
+        for fid,name in ((r.fighter_source_id,r.fighter_name),(r.opponent_source_id,r.opponent_name)):
+            rows=group.loc[group.fighter.map(identity_name).eq(identity_name(name))]
+            if len(rows)!=1:continue
+            actual=rows.iloc[0]
+            expected=r.result if fid==r.fighter_source_id else {'W':'L','L':'W','D':'D','NC':'NC'}[r.result]
+            if actual.result!=expected:continue
+            witnesses[(r.source,fid)].append((str(actual.fighter_url).rstrip('/').rsplit('/',1)[-1],name,r.source_bout_id,str(actual.fight_url)))
+    existing={(r.source,r.source_fighter_id):r.canonical_fighter_id for r in crosswalk.itertuples(index=False)}
+    additions=[]
+    for (source,fid),proof in sorted(witnesses.items()):
+        ids={p[0] for p in proof}
+        if len(ids)!=1:continue
+        canonical=next(iter(ids))
+        if (source,fid) in existing:
+            if existing[(source,fid)]!=canonical:raise ValueError('Name-order witness conflicts with existing identity')
+            continue
+        additions.append({'source':source,'source_fighter_id':fid,'source_fighter_name':proof[0][1],
+            'canonical_fighter_id':canonical,'canonical_source':'ufcstats','status':'approved',
+            'match_method':'dated_ufc_pair_name_token_order','evidence_count':len(proof),
+            'reviewed_at_utc':now.isoformat(),'notes':json.dumps([{'archive_bout_id':p[2],'ufc_fight_url':p[3]} for p in proof],sort_keys=True)})
+    return pd.concat([crosswalk,pd.DataFrame(additions,columns=IDENTITY_COLUMNS)],ignore_index=True)
+
+
+def propose(series, archive, crosswalk, existing, now):
+    index=defaultdict(list)
+    for bout in archive:index[match_key(bout.event_date,bout.fighter_name,bout.opponent_name)].append(bout)
+    approved={(r.source,r.source_fighter_id):r for r in crosswalk.itertuples(index=False)}
+    candidates=defaultdict(list)
+    for bout in series:
+        if bout.promotion not in ('Contender Series','Road to UFC'):continue
+        matches=index.get(match_key(bout.event_date,bout.fighter_name,bout.opponent_name),[])
+        if len(matches)!=1:continue
+        witness=matches[0]
+        same=identity_name(bout.fighter_name)==identity_name(witness.fighter_name)
+        expected=witness.result if same else {'W':'L','L':'W','D':'D','NC':'NC'}[witness.result]
+        if expected!=bout.result:continue
+        for source_id,name in ((bout.fighter_source_id,bout.fighter_name),(bout.opponent_source_id,bout.opponent_name)):
+            archive_id=witness.fighter_source_id if identity_name(name)==identity_name(witness.fighter_name) else witness.opponent_source_id
+            link=approved.get((witness.source,archive_id))
+            if link is None:continue
+            candidates[(bout.source,source_id)].append({'source_name':name,
+                'canonical_fighter_id':link.canonical_fighter_id,'promotion':bout.promotion,
+                'series_observation_id':bout.observation_id,'series_source_url':bout.source_url,
+                'name_match_rule':'case/accent/punctuation/camel-case normalization and name-token order; exact dated opponent pair required',
+                'archive_observation':witness.to_dict(),'ufc_crosswalk_evidence':link._asdict()})
+    mappings=[];evidence=[];conflicts=[]
+    for (source,source_id),witnesses in sorted(candidates.items()):
+        ids={w['canonical_fighter_id'] for w in witnesses}
+        previous=existing.get((source,source_id))
+        if len(ids)!=1 or (previous and previous not in ids):
+            conflicts.append({'source':source,'source_fighter_id':source_id,'candidate_ids':sorted(ids),'existing':previous})
+            continue
+        canonical=next(iter(ids))
+        if previous:continue
+        mappings.append({'source':source,'source_fighter_id':source_id,'source_fighter_name':witnesses[0]['source_name'],
+            'canonical_fighter_id':canonical,'canonical_source':'ufcstats','status':'approved',
+            'match_method':'dated_series_bout_plus_archive_ufc_witness','evidence_count':len(witnesses),
+            'reviewed_at_utc':now.isoformat(),'notes':'Exact date/opponent pair and matching result; archive source ID independently anchored by a dated UFC bout. See series_identity_evidence.json.'})
+        evidence.append({'source':source,'source_fighter_id':source_id,'canonical_fighter_id':canonical,'witnesses':witnesses})
+    return pd.DataFrame(mappings,columns=IDENTITY_COLUMNS),evidence,conflicts
+
+
+def main():
+    root=DATA/'external_mma/event_results'
+    archive,audit=load_mma_archive_observations(Path(__file__).resolve().parents[1]/'artifacts/free_data_audit/mmastats/dataset_global_v3.duckdb')
+    raw=pd.read_csv(DATA/'processed/ufc_fights_reported_doubled.csv',low_memory=False)
+    crosswalk,review=propose_ufcstats_crosswalk(archive,raw)
+    crosswalk=extend_archive_crosswalk(archive,raw,crosswalk,datetime.now(timezone.utc))
+    series=ExternalMmaStore(root).observations()
+    mapping,evidence,conflicts=propose(series,archive,crosswalk,load_identity_map(root/'identity_map.csv'),datetime.now(timezone.utc))
+    # A repeat may add evidence; it must never silently remove or change an accepted link.
+    path=root/'series_identity_map.csv'
+    if path.exists():
+        previous=load_identity_map(path)
+        current={(r.source,r.source_fighter_id):r.canonical_fighter_id for r in mapping.itertuples(index=False)}
+        if any(current.get(k)!=v for k,v in previous.items()):raise ValueError('Previously accepted series link changed; review required')
+    atomic_write_text(path,mapping.to_csv(index=False,lineterminator='\n'))
+    report={'generated_at_utc':datetime.now(timezone.utc).isoformat(),'archive_audit':audit,
+        'new_identity_links':len(mapping),'conflicts':conflicts,'evidence':evidence,
+        'limitations':['Both archives are secondary sources, not independent primary verification.',
+            'Ambiguous or conflicting date/name-pair witnesses are excluded. Name alone never links a career.']}
+    atomic_write_text(root/'series_identity_evidence.json',json.dumps(report,sort_keys=True,indent=2)+'\n')
+    counts=Counter()
+    new={(r.source,r.source_fighter_id) for r in mapping.itertuples(index=False)}
+    for r in series:
+        for fid in (r.fighter_source_id,r.opponent_source_id):
+            if (r.source,fid) in new:counts[r.promotion]+=1
+    print(json.dumps({'new_links':len(mapping),'new_linked_appearances':counts,'conflicts':len(conflicts)}),flush=True)
+
+
+if __name__=='__main__':main()

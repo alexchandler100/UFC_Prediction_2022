@@ -38,6 +38,10 @@ def load_career_bouts(raw, roots):
                       _identity_token(r.opponent_url), r.result, False))
     for root in roots:
         mapping = load_identity_map(root/'identity_map.csv')
+        for identity_key, value in load_identity_map(root/'series_identity_map.csv').items():
+            if identity_key in mapping and mapping[identity_key] != value:
+                raise ValueError('Conflicting series identity mapping')
+            mapping[identity_key] = value
         counts['approved_identity_links'] += len(mapping)
         for r in ExternalMmaStore(root).observations():
             if r.discipline != 'mma' or not r.professional:

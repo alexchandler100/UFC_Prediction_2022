@@ -25,6 +25,7 @@ def evaluate(data=DATA):
     files=[data/'processed'/name for name in ('ufc_fights_reported_doubled.csv','fighter_stats.csv','ufc_fights_point_in_time.csv')]
     files += [Path(__file__),Path(__file__).parent/'fight_predictor/career_features.py',Path(__file__).parent/'fight_predictor/point_in_time.py']
     files += [root/name for root in roots for name in ('bouts.jsonl','identity_map.csv')]
+    files += [root/'series_identity_map.csv' for root in roots if (root/'series_identity_map.csv').exists()]
     files += [Path(__file__).parent/'external_mma'/name for name in ('identity.py','integration.py','schema.py','storage.py')]
     files += [Path(__file__).parent/'evaluate_style_matchup_challenger.py']
     source_key=sha256(b'\0'.join(p.read_bytes().replace(b'\r\n',b'\n') for p in files)).hexdigest()
