@@ -390,5 +390,15 @@
   ],
   "training_fights": 4952,
   "training_window_start": "2016-11-05",
+  "uncertainty_scope": {
+    "production_winner": "zero-intercept L2 logistic with symmetric logit calibration",
+    "published_bayesian_winner": {
+      "calibration_uncertainty": "fixed_from_causal_out_of-fold_calibration",
+      "credible_level": 0.9,
+      "model_type": "Gaussian-prior logistic regression with Laplace posterior",
+      "posterior_approximation": "inverse penalized-likelihood Hessian at MAP"
+    },
+    "robust_kelly": "80% central calibration-slope posterior band; lower 10th percentile used for sizing. Conditional on the model and recorded data; not all sources of fight uncertainty."
+  },
   "version": "published-model-input-inventory-v1"
 }

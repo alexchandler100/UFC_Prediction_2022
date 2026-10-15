@@ -31,10 +31,16 @@ def build(data=DATA):
             'decision':recovery['decision']})
     event_path=data/'external_mma/event_results/coverage.json'
     events=read(event_path) if event_path.exists() else {}
+    bayes_path=data/'external/bayesian_winner_challenger.json'
+    bayes=read(bayes_path) if bayes_path.exists() else {}
     return {'version': 'published-model-input-inventory-v1', 'model_id': model['model_id'],
         'model_sha256': canonical_hash(model), 'model_version': model['model_version'],
         'training_fights': model['training_fights'], 'training_window_start': model['training_window_start'],
         'data_through': model['data_through'], 'feature_count': len(features), 'feature_columns': features,
+        'uncertainty_scope':{'production_winner':model.get('model_type'),
+            'published_bayesian_winner':{'model_type':bayes.get('model_type'), 'posterior_approximation':bayes.get('posterior_approximation'),
+                'calibration_uncertainty':bayes.get('calibration_uncertainty'),'credible_level':bayes.get('credible_level')},
+            'robust_kelly':'80% central calibration-slope posterior band; lower 10th percentile used for sizing. Conditional on the model and recorded data; not all sources of fight uncertainty.'},
         'layoff_feature_present': 'days_since_fight_log_diff' in features,
         'layoff_contract': 'For this point-in-time feature contract: log(1+days) per fighter, capped at five years, then fighter minus opponent. No recorded history uses two years plus has_history. This is time since the latest replayed source fight, not necessarily the latest MMA fight anywhere.',
         'external_history_enabled': policy.get('enable_auxiliary_replay', False),
