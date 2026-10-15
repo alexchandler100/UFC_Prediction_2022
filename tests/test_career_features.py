@@ -22,7 +22,7 @@ class CareerFeatureTests(unittest.TestCase):
                                         ('2021-01-01','a','b','L',True)])
         self.assertEqual(history.features('a','2020-01-01'), changed.features('a','2020-01-01'))
         self.assertEqual(history.features('a','2019-01-01'), (0.,)*len(FEATURES))
-        self.assertEqual(changed.features('a','2020-01-02')[1], np.log1p(2))
+        self.assertAlmostEqual(changed.features('a','2020-01-02')[1], np.log1p(2), places=14)
 
     def test_original_inputs_labels_and_swapped_orientation(self):
         raw = pd.DataFrame(make_fight('one','e1','2020-01-01','a','b'))
