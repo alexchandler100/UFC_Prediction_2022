@@ -1,7 +1,7 @@
 {
   "ambiguous_historical_matchup_keys": 1,
   "ambiguous_result_decisions": 0,
-  "as_of_utc": "2026-10-15T23:28:36.924529Z",
+  "as_of_utc": "2026-10-16T17:21:28.595933Z",
   "bayesian_filtered_moneyline_policy": {
     "base_policy_on_same_cohort": {
       "hypothetical_profit_units": 11.71,
@@ -19,8 +19,8 @@
       "selections": 3,
       "wins": 1
     },
-    "decision_count": 53,
-    "decision_dataset_sha256": "1372920a3861dca310216cf45af6dd1abd90a8e82116dbd7081652ec6116afdc",
+    "decision_count": 65,
+    "decision_dataset_sha256": "929aad18b28fd64e962e4af752eb3df4179748dee30e839b874ee5b1faa2a545",
     "execution_enabled": false,
     "filtered_return_interval": {
       "bootstrap_samples": 10000,
@@ -74,7 +74,7 @@
     "settled_events": 5,
     "source": "immutable_t24_decision_ledger",
     "veto_counts": {
-      "base_policy_pass": 47,
+      "base_policy_pass": 59,
       "bayesian_mean_ev_veto": 0,
       "bayesian_probability_veto": 1,
       "bayesian_status_veto": 2,
@@ -128,23 +128,23 @@
     "wins": 16
   },
   "betting_status": "disabled_paper_only_no_execution",
-  "decision_dataset_sha256": "93118c4f12473e2ad48c8697a51dcb79ae474e4c0c91b311b1907925999aeaa2",
-  "decisions_total": 66,
+  "decision_dataset_sha256": "d90bb26592d96c951f4d61783202bfd9fd80520b4de494464b4bbd1f260aedc5",
+  "decisions_total": 78,
   "entry_timing_experiment": {
     "coverage": {
       "matchups_classified_pickem": 0,
       "matchups_with_early_capture": 105,
       "matchups_with_eligible_capture": 105,
       "matchups_with_late_capture": 77,
-      "matchups_with_t24_capture": 66
+      "matchups_with_t24_capture": 78
     },
     "execution_enabled": false,
     "favorite_definition": "side above 50% in the full no-vig consensus at the first eligible capture; classification never changes after a line flip",
     "ledger_counts": {
-      "eligible_captures": 1044,
+      "eligible_captures": 1056,
       "frozen_classifications": 105,
-      "quotes": 11781,
-      "source_metadata": 11383
+      "quotes": 11900,
+      "source_metadata": 11502
     },
     "paper_only": true,
     "policy_version": "favorite-early-dog-late-v1",
@@ -444,7 +444,7 @@
   },
   "paper_metrics": {
     "betting_status": "disabled_paper_only_no_execution",
-    "decisions": 66,
+    "decisions": 78,
     "forecast_metrics": {
       "accuracy": 0.6615384615384615,
       "brier_score": 0.22661157178630348,
@@ -586,12 +586,13 @@
       "one_frozen_decision_per_matchup": true,
       "source": "immutable_t24_paper_decisions"
     },
-    "decision_dataset_sha256": "36aee2a2f1e8393af0f406d8f3907d0e11b10cffa0b2efe9a91df0e69ed855be",
-    "eligible_frozen_decisions": 53,
+    "decision_dataset_sha256": "840adf4785a294879f9a48ae11afc08f27b5fbe6f64d11648a373a0ccb4a9f1d",
+    "eligible_frozen_decisions": 65,
     "execution_enabled": false,
     "model_ids": [
       "47ee3bc302e84e048137",
       "5ca0c9b4a2b142fb5faf",
+      "863e02377681e2d5a1cf",
       "943fc1ab01ef1bf51da0",
       "a045d30a0223107ddda6",
       "e4113b1ea477d7f2641c"
@@ -727,8 +728,8 @@
       "source": "immutable_t24_market_decision_plus_preexisting_simulation",
       "withheld_simulations_are_not_imputed": true
     },
-    "comparison_dataset_sha256": "e330988a2d54317f27eb38f24412cf0c1607ff01562bc769f3d7d0793d96e1b5",
-    "eligible_base_decisions": 53,
+    "comparison_dataset_sha256": "2d33746032d83f7862c8d3dcb4cfae233660e22c3baaa3e894aeb47054a3f06e",
+    "eligible_base_decisions": 65,
     "execution_enabled": false,
     "fixed_forecasts": {
       "equal_three_way_logit": "market_model_simulation_thirds",
@@ -744,8 +745,8 @@
       ],
       "weight_search_allowed": false
     },
-    "frozen_simulation_comparisons": 32,
-    "missing_simulation_comparisons": 21,
+    "frozen_simulation_comparisons": 37,
+    "missing_simulation_comparisons": 28,
     "paired_event_intervals_vs_market": {
       "market_model_half": {
         "accuracy": {
@@ -992,21 +993,21 @@
       }
     },
     "settled_events": 5,
-    "simulation_coverage": 0.6037735849056604,
+    "simulation_coverage": 0.5692307692307692,
     "status": "collecting_results"
   },
-  "quote_dataset_sha256": "326eaf8c29431a92d629d9b4f30016e09460fcfa6022d6959297ef01d123b1aa",
-  "report_sha256": "e80935e087aa214bca448a814fc22cb5b17f3d2ba87cc927c17d9c73b3e3c0c0",
+  "quote_dataset_sha256": "978a699423830b6116b489de6b187563a1cd92df95ee0f0a03d08bf03e93e599",
+  "report_sha256": "4721b12b3f3410869d07e52adb97c066523da1d404e5555b52eb0d992348c5ee",
   "result_source_sha256": "07a0bb9d46ef213a8af2488b72bb905e4ebb9f4e6efbd94c54cc5ef54c85b962",
   "schema_version": 6,
   "settlement_dataset_sha256": "d2c7b599a544d0d845ffaed223462b198731fafbe1cadc6f8e1fe308b0ab664b",
   "settlements_total": 66,
-  "simulation_comparison_dataset_sha256": "24e6e0df94df4e2c3a7f0348d41ea2c23467bd9e59319f8b6677667fc69140d1",
-  "source_metadata_dataset_sha256": "081e91af7a045e56ac42365912700fc894b5f2327b5659610f8223ad7d7114e7",
+  "simulation_comparison_dataset_sha256": "411fbc2b6afaf61e67b3d2baa7aea2b2f6c799a922f55347f38896dc4f30dc7c",
+  "source_metadata_dataset_sha256": "5a1d9750b99f1963ff85f021be22755b952698ec994d66f70aa4d9a08410e2eb",
   "total_rounds": {
     "betting_status": "disabled_paper_only_no_execution",
-    "decision_dataset_sha256": "6cfc46bedf88702159a210218e2137fb51a89310513d73f4dc085b0eb32832ec",
-    "decisions": 52,
+    "decision_dataset_sha256": "ec8d8aea45d616810f8b96365a3b73604c66caf02bb6d28a85f9afc347cd7148",
+    "decisions": 64,
     "execution_enabled": false,
     "forecast_comparators": {
       "count": 51,
@@ -1086,7 +1087,7 @@
       "settled_events": 5,
       "status": "collecting_prospective_evidence"
     },
-    "quote_dataset_sha256": "681546ef85629b8f676a5d5139936ab9a03afa1ea5bb1fcf55fdb97fcf259236",
+    "quote_dataset_sha256": "9affd178a789b553965ed3a9ff4768f9b967e7d70eab85432b6f83e2074bcfac",
     "residual_selection_protocol": "select weight on earliest 70% of settled events; require at least 0.002 lower log loss and an event-block 95% upper confidence bound below zero on the latest 30%",
     "scored_forecasts": 51,
     "settlement_dataset_sha256": "363802c073bd5201f51cdb3150b275beafe4050a292970ccdcd48bebeb9f1740",
@@ -1197,8 +1198,8 @@
         }
       }
     },
-    "unsettled_decisions": 0,
+    "unsettled_decisions": 12,
     "voids": 1
   },
-  "unsettled_decisions": 0
+  "unsettled_decisions": 12
 }
