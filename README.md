@@ -1627,9 +1627,21 @@ camel-case spacing may be normalized; name alone never approves a link. The
 separate `series_identity_map.csv` and `series_identity_evidence.json` retain
 accepted links and their supporting observations without modifying source results.
 
-The first pass adds 141 identity links: 148 more Contender Series appearances and
-5 more Road to UFC appearances now connect to UFCStats IDs, bringing those totals
-to 233 and 8. These are secondary-source matches; remaining identities stay
+The October 17 audit found that the career importer discarded a whole bout when
+either participant lacked an exact directory match. Identity evidence now uses a
+separate adapter: exact directory IDs are preserved, unique name-format matches
+are allowed, and unknown opponents retain bout-local IDs that cannot link careers.
+Duplicate dated opponent pairs and mismatching results still cannot grant links.
+The adapter does not import these extra archive bouts as career results.
+
+There are now 172 additional identity links, bringing connected Contender Series
+appearances from 233 to 258 and Road to UFC from 8 to 15. The downloadable
+`external_mma/event_results/series_identity_gaps.json` lists every remaining
+unlinked appearance and its reason. Of 290 Road appearances, 212 have no dated
+opponent-pair match in the usable secondary archive, 26 lack a unique directory
+identity, and 37 lack a verified UFC bout anchoring that identity. Absence of a UFC
+witness does not imply a bad record: some competitors have never fought in the
+main UFC roster. These are secondary-source matches; remaining identities stay
 unresolved. The earlier historical career comparison remains the original test,
 not a claim about the newly connected dataset. New model versions are tracked
 prospectively before any production decision.
