@@ -1532,14 +1532,18 @@ class DataHandler:
                 print('no prediction made for fight from '+str(card_date)+' between '+row1['fighter name']+' and '+row1['opponent name'])
                 continue
             
-            fighter_odds = self.odds_getter.parse_american_odds(prediction_value)
+            # Probability-derived forecast odds can exceed the sportsbook
+            # sanity cap. Keep that cap for actual quotes and payouts below.
+            fighter_odds = self.odds_getter.parse_american_odds(
+                prediction_value, max_absolute=None
+            )
             if fighter_odds is None:
                 raise ValueError(
                     f'Invalid forecast fighter odds {prediction_value!r} for '
                     f'{row1["fighter name"]} vs {row1["opponent name"]}'
                 )
             model_fighter_odds = self.odds_getter.parse_american_odds(
-                model_prediction_value
+                model_prediction_value, max_absolute=None
             )
             best_fighter_bookie = row1['best fighter bookie']
             best_opponent_bookie = row1['best opponent bookie']

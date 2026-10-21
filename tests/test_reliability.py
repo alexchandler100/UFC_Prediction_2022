@@ -1076,6 +1076,30 @@ class PointInTimeFeatureTests(unittest.TestCase):
 
 
 class PredictionHistoryTests(unittest.TestCase):
+    def test_extreme_forecast_odds_settle_without_relaxing_book_price_checks(self):
+        handler = DataHandler.__new__(DataHandler)
+        handler.odds_getter = OddsGetter()
+        for odds in (148557, -148557):
+            with self.subTest(odds=odds):
+                history = pd.DataFrame([{
+                    'date': '2026-10-17', 'fighter name': 'Cody Chovancek',
+                    'opponent name': 'SuYoung You', 'forecast fighter odds': odds,
+                    'predicted fighter odds': odds, 'best fighter bookie': 'test',
+                    'best opponent bookie': '', 'fighter test': odds,
+                    'fighter bet bankroll percentage': 1.0,
+                    'opponent bet bankroll percentage': 0.0,
+                }])
+                completed = pd.DataFrame([{'date': '2026-10-17',
+                    'fighter': 'Cody Chovancek', 'opponent': 'SuYoung You', 'result': 'L'}])
+                result = handler.update_prediction_correctness(history, completed, 300.0)
+                self.assertEqual(result.loc[0, 'forecast status'], 'completed')
+                self.assertEqual(result.loc[0, 'correct?'], int(odds > 0))
+                self.assertEqual(result.loc[0, 'model correct?'], int(odds > 0))
+                self.assertEqual(result.loc[0, 'fighter bet'], 0.0)
+                self.assertIsNone(handler.odds_getter.parse_american_odds(odds))
+        for invalid in ('garbage', float('inf'), float('nan'), 1, 150.5):
+            self.assertIsNone(handler.odds_getter.parse_american_odds(invalid, max_absolute=None))
+
     def test_draws_and_missing_predictions_are_retained_as_not_scored(self):
         history = pd.DataFrame(
             [

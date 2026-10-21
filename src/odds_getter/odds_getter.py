@@ -196,7 +196,7 @@ class OddsGetter:
         return df
 
     @staticmethod
-    def parse_american_odds(value):
+    def parse_american_odds(value, *, max_absolute=100_000):
         if value is None or (isinstance(value, float) and np.isnan(value)):
             return None
         normalized = str(value).strip().replace('−', '-').replace('–', '-')
@@ -211,7 +211,7 @@ class OddsGetter:
         if not np.isfinite(numeric) or not numeric.is_integer():
             return None
         odds = int(numeric)
-        return odds if 100 <= abs(odds) <= 100_000 else None
+        return odds if abs(odds) >= 100 and (max_absolute is None or abs(odds) <= max_absolute) else None
 
     @staticmethod
     def odds_to_probability(odds):
