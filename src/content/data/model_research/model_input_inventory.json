@@ -41,58 +41,58 @@
         "unresolved_participant_occurrences": 524
       },
       {
-        "bouts": 98,
-        "events": 43,
-        "first_event_date": "2026-01-16",
-        "last_event_date": "2026-10-09",
+        "bouts": 173,
+        "events": 84,
+        "first_event_date": "2025-01-10",
+        "last_event_date": "2026-10-17",
         "promotion": "ONE",
         "status": "collected_research_only",
-        "unresolved_participant_occurrences": 176
+        "unresolved_participant_occurrences": 323
       },
       {
-        "bouts": 99,
-        "events": 8,
-        "first_event_date": "2026-03-07",
+        "bouts": 216,
+        "events": 16,
+        "first_event_date": "2025-03-30",
         "last_event_date": "2026-10-03",
         "promotion": "Rizin",
         "status": "collected_research_only",
-        "unresolved_participant_occurrences": 151
+        "unresolved_participant_occurrences": 320
       },
       {
-        "bouts": 78,
-        "events": 9,
-        "first_event_date": "2026-01-17",
+        "bouts": 187,
+        "events": 21,
+        "first_event_date": "2025-01-25",
         "last_event_date": "2026-10-10",
         "promotion": "KSW",
         "status": "collected_research_only",
-        "unresolved_participant_occurrences": 112
+        "unresolved_participant_occurrences": 268
       },
       {
-        "bouts": 165,
-        "events": 11,
-        "first_event_date": "2026-01-09",
+        "bouts": 383,
+        "events": 26,
+        "first_event_date": "2025-02-08",
         "last_event_date": "2026-10-04",
         "promotion": "ACA",
         "status": "collected_research_only",
-        "unresolved_participant_occurrences": 293
+        "unresolved_participant_occurrences": 688
       },
       {
-        "bouts": 139,
-        "events": 13,
+        "bouts": 149,
+        "events": 14,
         "first_event_date": "2026-01-17",
-        "last_event_date": "2026-09-26",
+        "last_event_date": "2026-10-17",
         "promotion": "OKTAGON",
         "status": "collected_research_only",
-        "unresolved_participant_occurrences": 247
+        "unresolved_participant_occurrences": 263
       },
       {
-        "bouts": 123,
-        "events": 11,
+        "bouts": 133,
+        "events": 12,
         "first_event_date": "2026-02-21",
-        "last_event_date": "2026-09-26",
+        "last_event_date": "2026-10-17",
         "promotion": "Cage Warriors",
         "status": "collected_research_only",
-        "unresolved_participant_occurrences": 246
+        "unresolved_participant_occurrences": 266
       },
       {
         "bouts": 240,
@@ -131,10 +131,10 @@
         "unresolved_participant_occurrences": 192
       }
     ],
-    "records": 2535
+    "records": 3074
   },
   "coverage_note": "A dataset being stored does not mean production uses it. Winner, outcome and simulation models have different contracts. Historical results, post-fight stats, and later market prices must not enter earlier forecasts.",
-  "data_through": "2026-10-10",
+  "data_through": "2026-10-17",
   "evaluation_rule": "Use all valid chronological coverage; select settings on earlier fights, test on later untouched cards, and compare probability quality and price-matched returns with the market. No automatic promotion.",
   "external_history_enabled": false,
   "external_history_records_available": 10448,
@@ -225,8 +225,8 @@
   "feature_count": 82,
   "layoff_contract": "For this point-in-time feature contract: log(1+days) per fighter, capped at five years, then fighter minus opponent. No recorded history uses two years plus has_history. This is time since the latest replayed source fight, not necessarily the latest MMA fight anywhere.",
   "layoff_feature_present": true,
-  "model_id": "863e02377681e2d5a1cf",
-  "model_sha256": "83fb89d77c64bdc5571928aa96860394e122676f1cc3ff626db6208bbc1ee1b0",
+  "model_id": "40041f7262d3dd40f545",
+  "model_sha256": "8df9870f9ed516365f807ce5afcf550e6a7361804556039249a368112d0413cc",
   "model_version": "point-in-time-elo-logistic-v2",
   "next_feature_candidates": [
     {
@@ -397,7 +397,7 @@
       "sha256": "bd993561ef4af4ada404e09e1bf3058cfca99a6426eb98431852d35502fe52b8"
     }
   ],
-  "training_fights": 4952,
+  "training_fights": 4965,
   "training_window_start": "2016-11-05",
   "uncertainty_scope": {
     "production_winner": "zero-intercept L2 logistic with symmetric logit calibration",

@@ -1,7 +1,7 @@
 {
   "ambiguous_historical_matchup_keys": 1,
   "ambiguous_result_decisions": 0,
-  "as_of_utc": "2026-10-17T20:30:30.314992Z",
+  "as_of_utc": "2026-10-21T22:39:52.000000Z",
   "bayesian_filtered_moneyline_policy": {
     "base_policy_on_same_cohort": {
       "hypothetical_profit_units": 11.71,
@@ -45,16 +45,16 @@
     "paired_roi_difference": {
       "base_roi": 1.9516666666666669,
       "base_selection_count": 6,
-      "bootstrap_samples": 9232,
+      "bootstrap_samples": 9189,
       "ci_95_lower": -6.166666666666666,
-      "ci_95_upper": 2.5380000000000003,
+      "ci_95_upper": 2.115,
       "definition": "paired whole-card bootstrap of filtered ROI minus the existing moneyline policy ROI on the post-deployment cohort",
-      "event_count": 5,
+      "event_count": 6,
       "filtered_roi": 0.41,
       "filtered_selection_count": 3,
       "point_difference": -1.541666666666667
     },
-    "paired_settled_decisions": 53,
+    "paired_settled_decisions": 65,
     "paper_only": true,
     "policy_version": "bayesian-filtered-existing-moneyline-v1",
     "promotion_gate": {
@@ -65,13 +65,13 @@
       "minimum_filtered_selections": 100,
       "minimum_paired_settled_decisions": 500,
       "minimum_settled_events": 40,
-      "paired_settled_decisions": 53,
+      "paired_settled_decisions": 65,
       "positive_clv_requirement_met": true,
       "positive_filtered_return_requirement_met": false,
-      "settled_events": 5,
+      "settled_events": 6,
       "status": "collecting_prospective_evidence"
     },
-    "settled_events": 5,
+    "settled_events": 6,
     "source": "immutable_t24_decision_ledger",
     "veto_counts": {
       "base_policy_pass": 59,
@@ -82,21 +82,21 @@
     }
   },
   "bayesian_moneyline_challenger": {
-    "dataset_sha256": "6818c7d9f037022943f9cf04cdca2a83ed0deb2a3670d50a437fbb45a5b513f4",
+    "dataset_sha256": "e68f2f54844e0e27b89caee9f04b48401eaa9a2b7b29bc65efd43028e23ab8ea",
     "execution_enabled": false,
     "forecast_metrics": {
-      "accuracy": 0.6089108910891089,
-      "brier_score": 0.2704157643016374,
-      "count": 101,
-      "expected_calibration_error": 0.17327782334950498,
-      "log_loss": 0.7756699022435126,
-      "positive_rate": 0.5643564356435643,
-      "roc_auc": 0.5677830940988836
+      "accuracy": 0.5877192982456141,
+      "brier_score": 0.27836489228431116,
+      "count": 114,
+      "expected_calibration_error": 0.1825068997763158,
+      "log_loss": 0.7904908093586132,
+      "positive_rate": 0.5350877192982456,
+      "roc_auc": 0.5524280853696257
     },
-    "hypothetical_profit_units": 0.3040492198713225,
-    "hypothetical_risk_units": 39.0,
-    "hypothetical_roi": 0.007796133842854423,
-    "losses": 23,
+    "hypothetical_profit_units": -1.6959507801286775,
+    "hypothetical_risk_units": 44.0,
+    "hypothetical_roi": -0.0385443359120154,
+    "losses": 27,
     "paper_only": true,
     "policy_version": "bayesian-moneyline-shadow-v1",
     "promotion_gate": {
@@ -108,24 +108,24 @@
       "minimum_shadow_selections": 100,
       "positive_clv_requirement_met": false,
       "positive_return_requirement_met": false,
-      "scored_fights": 101,
-      "settled_events": 8,
-      "shadow_selections": 39,
+      "scored_fights": 114,
+      "settled_events": 9,
+      "shadow_selections": 44,
       "status": "collecting_prospective_evidence"
     },
     "return_interval": {
       "bootstrap_samples": 10000,
-      "ci_95_lower": -0.3751572354223034,
-      "ci_95_upper": 0.5144550164168374,
+      "ci_95_lower": -0.3873446140408473,
+      "ci_95_upper": 0.4199181731149752,
       "definition": "whole-card bootstrap of one-unit Bayesian shadow selections",
-      "event_count": 8
+      "event_count": 9
     },
-    "scored_forecasts": 101,
-    "settled_events": 8,
-    "settled_shadow_selections": 39,
+    "scored_forecasts": 114,
+    "settled_events": 9,
+    "settled_shadow_selections": 44,
     "source": "weekly_prediction_history",
     "source_limit": "timestamped weekly publication; not yet an immutable T-24 decision/CLV ledger",
-    "wins": 16
+    "wins": 17
   },
   "betting_status": "disabled_paper_only_no_execution",
   "decision_dataset_sha256": "d90bb26592d96c951f4d61783202bfd9fd80520b4de494464b4bbd1f260aedc5",
@@ -311,23 +311,23 @@
           "late": 11,
           "other": 0
         },
-        "hypothetical_profit_units": 9.48,
-        "hypothetical_roi": 0.9480000000000001,
-        "losses": 8,
+        "hypothetical_profit_units": 8.48,
+        "hypothetical_roi": 0.770909090909091,
+        "losses": 9,
         "mean_locked_expected_return": 0.07220791642537665,
         "paper_only": true,
         "return_event_block_interval": {
           "bootstrap_samples": 10000,
           "ci_95_lower": -1.0,
-          "ci_95_upper": 3.2218181818181817,
+          "ci_95_upper": 2.8699999999999997,
           "definition": "whole-card bootstrap of flat one-unit hypothetical return per selection",
-          "event_count": 6,
-          "observation_count": 10,
-          "point_estimate": 0.9480000000000001
+          "event_count": 7,
+          "observation_count": 11,
+          "point_estimate": 0.770909090909091
         },
-        "scored_selection_count": 10,
+        "scored_selection_count": 11,
         "selection_count": 11,
-        "unscored_selection_count": 1,
+        "unscored_selection_count": 0,
         "wins": 2
       },
       "fixed_t24": {
@@ -382,34 +382,34 @@
   "forecast_comparators": {
     "blend_minus_market_log_loss": 0.0,
     "independent_model": {
-      "accuracy": 0.6076923076923076,
-      "brier_score": 0.28684498341495523,
-      "count": 65,
-      "expected_calibration_error": 0.20084977168461543,
-      "log_loss": 0.8397404517577194,
-      "positive_rate": 0.47692307692307695,
-      "roc_auc": 0.5635673624288425
+      "accuracy": 0.5714285714285714,
+      "brier_score": 0.30713251021846116,
+      "count": 77,
+      "expected_calibration_error": 0.23602765679220783,
+      "log_loss": 0.9712490422131888,
+      "positive_rate": 0.4805194805194805,
+      "roc_auc": 0.5310810810810811
     },
     "locked_blend": {
-      "accuracy": 0.6615384615384615,
-      "brier_score": 0.22661157178630348,
-      "count": 65,
-      "expected_calibration_error": 0.18786700197530373,
-      "log_loss": 0.6467238150049381,
-      "positive_rate": 0.47692307692307695,
-      "roc_auc": 0.6802656546489564
+      "accuracy": 0.6493506493506493,
+      "brier_score": 0.23209451779762813,
+      "count": 77,
+      "expected_calibration_error": 0.19312643324776269,
+      "log_loss": 0.6576231878523917,
+      "positive_rate": 0.4805194805194805,
+      "roc_auc": 0.6702702702702703
     },
     "market": {
-      "accuracy": 0.6615384615384615,
-      "brier_score": 0.22661157178630348,
-      "count": 65,
-      "expected_calibration_error": 0.18786700197530368,
-      "log_loss": 0.6467238150049381,
-      "positive_rate": 0.47692307692307695,
-      "roc_auc": 0.6802656546489564
+      "accuracy": 0.6493506493506493,
+      "brier_score": 0.23209451779762813,
+      "count": 77,
+      "expected_calibration_error": 0.19312643324776269,
+      "log_loss": 0.6576231878523917,
+      "positive_rate": 0.4805194805194805,
+      "roc_auc": 0.6702702702702703
     },
-    "model_minus_market_log_loss": 0.19301663675278125,
-    "paired_fights": 65
+    "model_minus_market_log_loss": 0.31362585436079704,
+    "paired_fights": 77
   },
   "latest_available_price_clv": {
     "bootstrap_samples": 10000,
@@ -425,34 +425,34 @@
   "market_relative_log_loss_intervals": {
     "independent_model_vs_market": {
       "bootstrap_samples": 10000,
-      "ci_95_lower": 0.026075516287616982,
-      "ci_95_upper": 0.35038080990531917,
+      "ci_95_lower": 0.0766187619712116,
+      "ci_95_upper": 0.5662306119508016,
       "definition": "candidate minus market paired log loss; negative favors candidate",
-      "event_count": 6,
-      "fight_count": 65,
-      "point_difference": 0.19301663675278102
+      "event_count": 7,
+      "fight_count": 77,
+      "point_difference": 0.31362585436079704
     },
     "locked_blend_vs_market": {
       "bootstrap_samples": 10000,
-      "ci_95_lower": -1.9390881594480474e-17,
-      "ci_95_upper": -2.3521674250532977e-18,
+      "ci_95_lower": -1.769417945496343e-17,
+      "ci_95_upper": -1.8503717077085942e-18,
       "definition": "candidate minus market paired log loss; negative favors candidate",
-      "event_count": 6,
-      "fight_count": 65,
-      "point_difference": -1.1529239101876626e-17
+      "event_count": 7,
+      "fight_count": 77,
+      "point_difference": -9.73247456651923e-18
     }
   },
   "paper_metrics": {
     "betting_status": "disabled_paper_only_no_execution",
     "decisions": 78,
     "forecast_metrics": {
-      "accuracy": 0.6615384615384615,
-      "brier_score": 0.22661157178630348,
-      "count": 65,
-      "expected_calibration_error": 0.18786700197530373,
-      "log_loss": 0.6467238150049381,
-      "positive_rate": 0.47692307692307695,
-      "roc_auc": 0.6802656546489564
+      "accuracy": 0.6493506493506493,
+      "brier_score": 0.23209451779762813,
+      "count": 77,
+      "expected_calibration_error": 0.19312643324776269,
+      "log_loss": 0.6576231878523917,
+      "positive_rate": 0.4805194805194805,
+      "roc_auc": 0.6702702702702703
     },
     "hypothetical_max_drawdown_units": 4.0,
     "hypothetical_profit_units": 9.71,
@@ -461,9 +461,9 @@
     "losses": 6,
     "paper_only": true,
     "paper_selections": 8,
-    "passes": 58,
-    "scored_forecasts": 65,
-    "selection_coverage": 0.12307692307692308,
+    "passes": 70,
+    "scored_forecasts": 77,
+    "selection_coverage": 0.1038961038961039,
     "voids": 0,
     "wins": 2
   },
@@ -487,62 +487,62 @@
     "paper_return_requirement_met": false,
     "paper_selections": 8,
     "positive_clv_requirement_met": true,
-    "scored_fights": 65,
-    "settled_events": 6,
+    "scored_fights": 77,
+    "settled_events": 7,
     "status": "collecting_prospective_evidence"
   },
   "prospective_bayesian_logistic_blend": {
     "candidate_only": true,
     "execution_enabled": false,
-    "forecast_dataset_sha256": "365ecd3d8c81bc5ba5e48aa57a3863e23da8c71bbf2279be4ad8065b56dcc68b",
-    "locked_forecasts": 92,
+    "forecast_dataset_sha256": "be784cbcb3e63630a980cfdd289ebc1fbc495f583024bb4014ba87896a16d0c2",
+    "locked_forecasts": 106,
     "metrics": {
       "bayesian_logistic": {
-        "accuracy": 0.62,
-        "brier_score": 0.26711071839812633,
-        "count": 75,
-        "expected_calibration_error": 0.15260249543774596,
-        "log_loss": 0.7802718200887809,
-        "positive_rate": 0.6133333333333333,
-        "roc_auc": 0.5832083958020989
+        "accuracy": 0.5909090909090909,
+        "brier_score": 0.28463957256532507,
+        "count": 88,
+        "expected_calibration_error": 0.1769344696654555,
+        "log_loss": 0.854460586515562,
+        "positive_rate": 0.5681818181818182,
+        "roc_auc": 0.5568421052631579
       },
       "frozen_blend": {
-        "accuracy": 0.6066666666666667,
-        "brier_score": 0.26630910118803636,
-        "count": 75,
-        "expected_calibration_error": 0.15934546286296886,
-        "log_loss": 0.7774385560021218,
-        "positive_rate": 0.6133333333333333,
-        "roc_auc": 0.5802098950524738
+        "accuracy": 0.5795454545454546,
+        "brier_score": 0.28401207931917033,
+        "count": 88,
+        "expected_calibration_error": 0.18277491823518527,
+        "log_loss": 0.8701225064725366,
+        "positive_rate": 0.5681818181818182,
+        "roc_auc": 0.5552631578947368
       },
       "published_production": {
-        "accuracy": 0.6066666666666667,
-        "brier_score": 0.2651974208745859,
-        "count": 75,
-        "expected_calibration_error": 0.17417993768530562,
-        "log_loss": 0.7745730032307477,
-        "positive_rate": 0.6133333333333333,
-        "roc_auc": 0.5772113943028486
+        "accuracy": 0.5795454545454546,
+        "brier_score": 0.2828873452610312,
+        "count": 88,
+        "expected_calibration_error": 0.19524678466342857,
+        "log_loss": 0.8897351708296352,
+        "positive_rate": 0.5681818181818182,
+        "roc_auc": 0.5526315789473685
       }
     },
     "paired_log_loss_intervals": {
       "bayesian_minus_production": {
         "bootstrap_samples": 10000,
-        "ci_95_lower": -0.02311284043001951,
-        "ci_95_upper": 0.03632857189135772,
+        "ci_95_lower": -0.12280945493065078,
+        "ci_95_upper": 0.025620181160985654,
         "definition": "bayesian_probability minus published production log loss",
-        "event_count": 6,
-        "fight_count": 75,
-        "point_difference": 0.005698816858032932
+        "event_count": 7,
+        "fight_count": 88,
+        "point_difference": -0.035274584314073265
       },
       "blend_minus_production": {
         "bootstrap_samples": 10000,
-        "ci_95_lower": -0.013054205448191155,
-        "ci_95_upper": 0.019540212612168303,
+        "ci_95_lower": -0.06756189782295782,
+        "ci_95_upper": 0.013723357471903192,
         "definition": "frozen_blend_probability minus published production log loss",
-        "event_count": 6,
-        "fight_count": 75,
-        "point_difference": 0.0028655527713737717
+        "event_count": 7,
+        "fight_count": 88,
+        "point_difference": -0.019612664357098783
       }
     },
     "paper_only": true,
@@ -557,9 +557,9 @@
       "minimum_settled_events": 20,
       "status": "collecting_prospective_evidence"
     },
-    "scored_dataset_sha256": "e265494062289bcc50285f9c28e26a14e3d5ca43af0b706de35750e8008997ad",
-    "scored_fights": 75,
-    "settled_events": 6,
+    "scored_dataset_sha256": "82a86c8273323bfb1dbded2fb30efd31258144f0f5021ffe75ef4edd050ff3e8",
+    "scored_fights": 88,
+    "settled_events": 7,
     "unresolved_completed_forecasts": 3
   },
   "prospective_model_market_comparison": {
@@ -601,59 +601,59 @@
       "equal_blend_vs_market": {
         "accuracy": {
           "bootstrap_samples": 10000,
-          "ci_95_lower": -0.1864406779661017,
-          "ci_95_upper": -0.022222222222222223,
+          "ci_95_lower": -0.18571428571428572,
+          "ci_95_upper": -0.04918032786885246,
           "definition": "candidate minus reference accuracy; positive favors candidate",
-          "event_count": 5,
-          "fight_count": 52,
-          "point_difference": -0.11538461538461539
+          "event_count": 6,
+          "fight_count": 64,
+          "point_difference": -0.125
         },
         "brier_score": {
           "bootstrap_samples": 10000,
-          "ci_95_lower": -0.008140965711220393,
-          "ci_95_upper": 0.06578228731320837,
+          "ci_95_lower": 0.005441695491922377,
+          "ci_95_upper": 0.08102311339744671,
           "definition": "candidate minus reference brier_score; negative favors candidate",
-          "event_count": 5,
-          "fight_count": 52,
-          "point_difference": 0.03172015977800224
+          "event_count": 6,
+          "fight_count": 64,
+          "point_difference": 0.04642367483918046
         },
         "log_loss": {
           "bootstrap_samples": 10000,
-          "ci_95_lower": -0.017326775530211575,
-          "ci_95_upper": 0.14970908749214382,
+          "ci_95_lower": 0.011891881247992623,
+          "ci_95_upper": 0.21323376962109433,
           "definition": "candidate minus reference log_loss; negative favors candidate",
-          "event_count": 5,
-          "fight_count": 52,
-          "point_difference": 0.07248866383299704
+          "event_count": 6,
+          "fight_count": 64,
+          "point_difference": 0.11777795735623633
         }
       },
       "equal_blend_vs_model": {
         "accuracy": {
           "bootstrap_samples": 10000,
-          "ci_95_lower": -0.13953488372093023,
-          "ci_95_upper": 0.0,
+          "ci_95_lower": -0.10909090909090909,
+          "ci_95_upper": 0.02112676056338028,
           "definition": "candidate minus reference accuracy; positive favors candidate",
-          "event_count": 5,
-          "fight_count": 52,
-          "point_difference": -0.038461538461538464
+          "event_count": 6,
+          "fight_count": 64,
+          "point_difference": -0.0234375
         },
         "brier_score": {
           "bootstrap_samples": 10000,
-          "ci_95_lower": -0.06490946674785232,
-          "ci_95_upper": 0.005631673133291594,
+          "ci_95_lower": -0.060750931404828935,
+          "ci_95_upper": -0.004300001643744942,
           "definition": "candidate minus reference brier_score; negative favors candidate",
-          "event_count": 5,
-          "fight_count": 52,
-          "point_difference": -0.033276361152741116
+          "event_count": 6,
+          "fight_count": 64,
+          "point_difference": -0.0354915243630139
         },
         "log_loss": {
           "bootstrap_samples": 10000,
-          "ci_95_lower": -0.2344398742338743,
-          "ci_95_upper": -0.0050443492535172715,
+          "ci_95_lower": -0.4232271997225948,
+          "ci_95_upper": -0.051151969350023446,
           "definition": "candidate minus reference log_loss; negative favors candidate",
-          "event_count": 5,
-          "fight_count": 52,
-          "point_difference": -0.1310741633542825
+          "event_count": 6,
+          "fight_count": 64,
+          "point_difference": -0.2289154240592189
         }
       }
     },
@@ -667,48 +667,48 @@
       "lower_is_better_for_log_loss_brier_and_calibration_error": true,
       "primary_measure": "log_loss"
     },
-    "scored_fights": 52,
-    "scored_input_sha256": "b754461be5453808ff66da2034a30de33a6c1cee7211ee01063d6b90ab0196c0",
+    "scored_fights": 64,
+    "scored_input_sha256": "8511d2ba1b77fcb5bfc8085fecd5da22e1722d7924245e37738d69b8b15a7a28",
     "scores": {
       "fixed_equal_logit_blend": {
-        "accuracy": 0.5576923076923077,
-        "brier_score": 0.26090536858523683,
-        "count": 52,
-        "expected_calibration_error": 0.15514903134904603,
-        "log_loss": 0.7282840997145714,
-        "positive_rate": 0.46153846153846156,
-        "roc_auc": 0.6086309523809523
+        "accuracy": 0.53125,
+        "brier_score": 0.28172299612486557,
+        "count": 64,
+        "expected_calibration_error": 0.19778955065925224,
+        "log_loss": 0.784985772280534,
+        "positive_rate": 0.46875,
+        "roc_auc": 0.5666666666666667
       },
       "market": {
-        "accuracy": 0.6730769230769231,
-        "brier_score": 0.22918520880723467,
-        "count": 52,
-        "expected_calibration_error": 0.18937615103559713,
-        "log_loss": 0.6557954358815745,
-        "positive_rate": 0.46153846153846156,
-        "roc_auc": 0.6666666666666666
+        "accuracy": 0.65625,
+        "brier_score": 0.23529932128568493,
+        "count": 64,
+        "expected_calibration_error": 0.20304463063873385,
+        "log_loss": 0.6672078149242977,
+        "positive_rate": 0.46875,
+        "roc_auc": 0.657843137254902
       },
       "production_model": {
-        "accuracy": 0.5961538461538461,
-        "brier_score": 0.29418172973797807,
-        "count": 52,
-        "expected_calibration_error": 0.21379203825769233,
-        "log_loss": 0.8593582630688543,
-        "positive_rate": 0.46153846153846156,
-        "roc_auc": 0.5453869047619048
+        "accuracy": 0.5546875,
+        "brier_score": 0.31721452048787946,
+        "count": 64,
+        "expected_calibration_error": 0.25368875629531246,
+        "log_loss": 1.013901196339753,
+        "positive_rate": 0.46875,
+        "roc_auc": 0.5107843137254902
       }
     },
-    "settled_decisions_including_voids": 53,
-    "settled_events": 5,
-    "settlement_dataset_sha256": "03d5a4d48852f52c8c8eb42de615987b364be507abbb39547a194dd35adbd73c",
+    "settled_decisions_including_voids": 65,
+    "settled_events": 6,
+    "settlement_dataset_sha256": "5d497a669384a9507c7f1abd47c707803b9546c66d8b85e1e42c0dd2451dd4dc",
     "status": "collecting_results",
     "void_or_unscored_decisions": 1,
     "winner_disagreements": {
-      "equal_blend_correct_on_those_fights": 2,
+      "equal_blend_correct_on_those_fights": 4,
       "equal_blend_ties_on_those_fights": 0,
-      "fights_where_model_and_market_pick_different_winners": 12,
-      "market_correct_on_those_fights": 8,
-      "model_correct_on_those_fights": 4
+      "fights_where_model_and_market_pick_different_winners": 17,
+      "market_correct_on_those_fights": 12,
+      "model_correct_on_those_fights": 5
     }
   },
   "prospective_simulation_comparison": {
@@ -751,257 +751,257 @@
       "market_model_half": {
         "accuracy": {
           "bootstrap_samples": 10000,
-          "ci_95_lower": -0.14814814814814814,
-          "ci_95_upper": 0.0,
+          "ci_95_lower": -0.16129032258064516,
+          "ci_95_upper": -0.022727272727272728,
           "definition": "candidate minus market accuracy; positive favors candidate",
-          "event_count": 5,
-          "fight_count": 31,
-          "point_difference": -0.06451612903225806
+          "event_count": 6,
+          "fight_count": 36,
+          "point_difference": -0.08333333333333333
         },
         "brier_score": {
           "bootstrap_samples": 10000,
-          "ci_95_lower": -0.016750016576406238,
-          "ci_95_upper": 0.02311450665359826,
+          "ci_95_lower": -0.010278600206458861,
+          "ci_95_upper": 0.027513501084509683,
           "definition": "candidate minus market brier_score; negative favors candidate",
-          "event_count": 5,
-          "fight_count": 31,
-          "point_difference": 0.006314561744270107
+          "event_count": 6,
+          "fight_count": 36,
+          "point_difference": 0.010618201328147713
         },
         "log_loss": {
           "bootstrap_samples": 10000,
-          "ci_95_lower": -0.03990298756490309,
-          "ci_95_upper": 0.04879081859407791,
+          "ci_95_lower": -0.025117868105709627,
+          "ci_95_upper": 0.06258013061845535,
           "definition": "candidate minus market log_loss; negative favors candidate",
-          "event_count": 5,
-          "fight_count": 31,
-          "point_difference": 0.013662141577489606
+          "event_count": 6,
+          "fight_count": 36,
+          "point_difference": 0.024334925174658392
         }
       },
       "market_model_simulation_thirds": {
         "accuracy": {
           "bootstrap_samples": 10000,
-          "ci_95_lower": -0.14814814814814814,
+          "ci_95_lower": -0.125,
           "ci_95_upper": 0.0,
           "definition": "candidate minus market accuracy; positive favors candidate",
-          "event_count": 5,
-          "fight_count": 31,
-          "point_difference": -0.06451612903225806
+          "event_count": 6,
+          "fight_count": 36,
+          "point_difference": -0.05555555555555555
         },
         "brier_score": {
           "bootstrap_samples": 10000,
-          "ci_95_lower": 0.0040515441392984675,
-          "ci_95_upper": 0.04824315243801587,
+          "ci_95_lower": -0.004901037507892672,
+          "ci_95_upper": 0.04452073080758042,
           "definition": "candidate minus market brier_score; negative favors candidate",
-          "event_count": 5,
-          "fight_count": 31,
-          "point_difference": 0.029722215523669278
+          "event_count": 6,
+          "fight_count": 36,
+          "point_difference": 0.02190327672162861
         },
         "log_loss": {
           "bootstrap_samples": 10000,
-          "ci_95_lower": 0.006143130547925797,
-          "ci_95_upper": 0.11272222368239487,
+          "ci_95_lower": -0.010581146015718135,
+          "ci_95_upper": 0.10285304006834553,
           "definition": "candidate minus market log_loss; negative favors candidate",
-          "event_count": 5,
-          "fight_count": 31,
-          "point_difference": 0.06874505765255293
+          "event_count": 6,
+          "fight_count": 36,
+          "point_difference": 0.05136391169732327
         }
       },
       "market_simulation_half": {
         "accuracy": {
           "bootstrap_samples": 10000,
-          "ci_95_lower": -0.34615384615384615,
-          "ci_95_upper": -0.08333333333333333,
+          "ci_95_lower": -0.2903225806451613,
+          "ci_95_upper": -0.05555555555555555,
           "definition": "candidate minus market accuracy; positive favors candidate",
-          "event_count": 5,
-          "fight_count": 31,
-          "point_difference": -0.1935483870967742
+          "event_count": 6,
+          "fight_count": 36,
+          "point_difference": -0.16666666666666666
         },
         "brier_score": {
           "bootstrap_samples": 10000,
-          "ci_95_lower": 0.01915827250880244,
-          "ci_95_upper": 0.06184950766813731,
+          "ci_95_lower": -0.01792228504751009,
+          "ci_95_upper": 0.05600269366149403,
           "definition": "candidate minus market brier_score; negative favors candidate",
-          "event_count": 5,
-          "fight_count": 31,
-          "point_difference": 0.041881026706512926
+          "event_count": 6,
+          "fight_count": 36,
+          "point_difference": 0.025430991032068664
         },
         "log_loss": {
           "bootstrap_samples": 10000,
-          "ci_95_lower": 0.046565215681059396,
-          "ci_95_upper": 0.14116345274020395,
+          "ci_95_lower": -0.034659741510599286,
+          "ci_95_upper": 0.12712605677861832,
           "definition": "candidate minus market log_loss; negative favors candidate",
-          "event_count": 5,
-          "fight_count": 31,
-          "point_difference": 0.09691589024479762
+          "event_count": 6,
+          "fight_count": 36,
+          "point_difference": 0.06039391754602102
         }
       },
       "model_simulation_half": {
         "accuracy": {
           "bootstrap_samples": 10000,
-          "ci_95_lower": -0.21212121212121213,
-          "ci_95_upper": -0.07142857142857142,
+          "ci_95_lower": -0.20512820512820512,
+          "ci_95_upper": -0.058823529411764705,
           "definition": "candidate minus market accuracy; positive favors candidate",
-          "event_count": 5,
-          "fight_count": 31,
-          "point_difference": -0.16129032258064516
+          "event_count": 6,
+          "fight_count": 36,
+          "point_difference": -0.1388888888888889
         },
         "brier_score": {
           "bootstrap_samples": 10000,
-          "ci_95_lower": 0.006008377902608194,
-          "ci_95_upper": 0.08136458316314951,
+          "ci_95_lower": -0.005832185540132785,
+          "ci_95_upper": 0.0745343085993616,
           "definition": "candidate minus market brier_score; negative favors candidate",
-          "event_count": 5,
-          "fight_count": 31,
-          "point_difference": 0.050750659151839704
+          "event_count": 6,
+          "fight_count": 36,
+          "point_difference": 0.038289606782287586
         },
         "log_loss": {
           "bootstrap_samples": 10000,
-          "ci_95_lower": 0.02157557502110429,
-          "ci_95_upper": 0.1866230651448677,
+          "ci_95_lower": -0.009394754768362152,
+          "ci_95_upper": 0.1702284612271016,
           "definition": "candidate minus market log_loss; negative favors candidate",
-          "event_count": 5,
-          "fight_count": 31,
-          "point_difference": 0.11565519572178017
+          "event_count": 6,
+          "fight_count": 36,
+          "point_difference": 0.0883126121831742
         }
       },
       "production_model": {
         "accuracy": {
           "bootstrap_samples": 10000,
-          "ci_95_lower": -0.23333333333333334,
-          "ci_95_upper": 0.06896551724137931,
+          "ci_95_lower": -0.22857142857142856,
+          "ci_95_upper": 0.047619047619047616,
           "definition": "candidate minus market accuracy; positive favors candidate",
-          "event_count": 5,
-          "fight_count": 31,
-          "point_difference": -0.06451612903225806
+          "event_count": 6,
+          "fight_count": 36,
+          "point_difference": -0.08333333333333333
         },
         "brier_score": {
           "bootstrap_samples": 10000,
-          "ci_95_lower": -0.027752978952934926,
-          "ci_95_upper": 0.0513909144903634,
+          "ci_95_lower": -0.014881782374754376,
+          "ci_95_upper": 0.05834678351338507,
           "definition": "candidate minus market brier_score; negative favors candidate",
-          "event_count": 5,
-          "fight_count": 31,
-          "point_difference": 0.019584978110856334
+          "event_count": 6,
+          "fight_count": 36,
+          "point_difference": 0.0271358322601159
         },
         "log_loss": {
           "bootstrap_samples": 10000,
-          "ci_95_lower": -0.0610762771090206,
-          "ci_95_upper": 0.10997375407743135,
+          "ci_95_lower": -0.03463818721192457,
+          "ci_95_upper": 0.13624892464206853,
           "definition": "candidate minus market log_loss; negative favors candidate",
-          "event_count": 5,
-          "fight_count": 31,
-          "point_difference": 0.043323037725983664
+          "event_count": 6,
+          "fight_count": 36,
+          "point_difference": 0.06350780230690702
         }
       },
       "simulation": {
         "accuracy": {
           "bootstrap_samples": 10000,
-          "ci_95_lower": -0.48148148148148145,
-          "ci_95_upper": -0.15151515151515152,
+          "ci_95_lower": -0.42857142857142855,
+          "ci_95_upper": 0.03125,
           "definition": "candidate minus market accuracy; positive favors candidate",
-          "event_count": 5,
-          "fight_count": 31,
-          "point_difference": -0.3225806451612903
+          "event_count": 6,
+          "fight_count": 36,
+          "point_difference": -0.2222222222222222
         },
         "brier_score": {
           "bootstrap_samples": 10000,
-          "ci_95_lower": 0.0500999493863259,
-          "ci_95_upper": 0.15386701419831517,
+          "ci_95_lower": -0.02287986360582483,
+          "ci_95_upper": 0.14151225631858558,
           "definition": "candidate minus market brier_score; negative favors candidate",
-          "event_count": 5,
-          "fight_count": 31,
-          "point_difference": 0.10533080646367501
+          "event_count": 6,
+          "fight_count": 36,
+          "point_difference": 0.07049579208679464
         },
         "log_loss": {
           "bootstrap_samples": 10000,
-          "ci_95_lower": 0.12293091798889634,
-          "ci_95_upper": 0.3464524419757321,
+          "ci_95_lower": -0.04008784281390969,
+          "ci_95_upper": 0.3183379592609221,
           "definition": "candidate minus market log_loss; negative favors candidate",
-          "event_count": 5,
-          "fight_count": 31,
-          "point_difference": 0.24255054505770207
+          "event_count": 6,
+          "fight_count": 36,
+          "point_difference": 0.16612659893552528
         }
       }
     },
     "paper_only": true,
     "policy_version": "model-market-simulation-fixed-blends-v1",
-    "scored_fights": 31,
-    "scored_input_sha256": "b6cb4379ee11c50153de0874d5aa5d5c1097f101e6048c792027da983d80d6ae",
+    "scored_fights": 36,
+    "scored_input_sha256": "09b02a97da8f1ab81949a5f19e837d0a9aac102eec59f53130a9d616a6120feb",
     "scores": {
       "market": {
-        "accuracy": 0.7096774193548387,
-        "brier_score": 0.22294008703578094,
-        "count": 31,
-        "expected_calibration_error": 0.1912079589631648,
-        "log_loss": 0.6349589803380725,
-        "positive_rate": 0.6129032258064516,
-        "roc_auc": 0.6798245614035088
+        "accuracy": 0.6388888888888888,
+        "brier_score": 0.250980958326993,
+        "count": 36,
+        "expected_calibration_error": 0.22184102505981002,
+        "log_loss": 0.6950155594251797,
+        "positive_rate": 0.5833333333333334,
+        "roc_auc": 0.5968253968253968
       },
       "market_model_half": {
-        "accuracy": 0.6451612903225806,
-        "brier_score": 0.2292546487800511,
-        "count": 31,
-        "expected_calibration_error": 0.18630063376536188,
-        "log_loss": 0.6486211219155621,
-        "positive_rate": 0.6129032258064516,
-        "roc_auc": 0.6666666666666666
+        "accuracy": 0.5555555555555556,
+        "brier_score": 0.26159915965514074,
+        "count": 36,
+        "expected_calibration_error": 0.22564670471252443,
+        "log_loss": 0.7193504845998382,
+        "positive_rate": 0.5833333333333334,
+        "roc_auc": 0.5682539682539682
       },
       "market_model_simulation_thirds": {
-        "accuracy": 0.6451612903225806,
-        "brier_score": 0.25266230255945027,
-        "count": 31,
-        "expected_calibration_error": 0.2002165118595323,
-        "log_loss": 0.7037040379906255,
-        "positive_rate": 0.6129032258064516,
-        "roc_auc": 0.5877192982456141
+        "accuracy": 0.5833333333333334,
+        "brier_score": 0.27288423504862175,
+        "count": 36,
+        "expected_calibration_error": 0.2277052279782249,
+        "log_loss": 0.7463794711225031,
+        "positive_rate": 0.5833333333333334,
+        "roc_auc": 0.5111111111111111
       },
       "market_simulation_half": {
-        "accuracy": 0.5161290322580645,
-        "brier_score": 0.26482111374229383,
-        "count": 31,
-        "expected_calibration_error": 0.19218993748017107,
-        "log_loss": 0.7318748705828699,
-        "positive_rate": 0.6129032258064516,
-        "roc_auc": 0.5570175438596491
+        "accuracy": 0.4722222222222222,
+        "brier_score": 0.27641194935906166,
+        "count": 36,
+        "expected_calibration_error": 0.1890412219568334,
+        "log_loss": 0.7554094769712005,
+        "positive_rate": 0.5833333333333334,
+        "roc_auc": 0.5079365079365079
       },
       "model_simulation_half": {
-        "accuracy": 0.5483870967741935,
-        "brier_score": 0.2736907461876207,
-        "count": 31,
-        "expected_calibration_error": 0.17760491628761918,
-        "log_loss": 0.7506141760598526,
-        "positive_rate": 0.6129032258064516,
-        "roc_auc": 0.5175438596491229
+        "accuracy": 0.5,
+        "brier_score": 0.2892705651092806,
+        "count": 36,
+        "expected_calibration_error": 0.211469099475638,
+        "log_loss": 0.7833281716083538,
+        "positive_rate": 0.5833333333333334,
+        "roc_auc": 0.45714285714285713
       },
       "production_model": {
-        "accuracy": 0.6451612903225806,
-        "brier_score": 0.24252506514663727,
-        "count": 31,
-        "expected_calibration_error": 0.21931835732903227,
-        "log_loss": 0.6782820180640562,
-        "positive_rate": 0.6129032258064516,
-        "roc_auc": 0.6403508771929824
+        "accuracy": 0.5555555555555556,
+        "brier_score": 0.2781167905871089,
+        "count": 36,
+        "expected_calibration_error": 0.24626223836388886,
+        "log_loss": 0.7585233617320868,
+        "positive_rate": 0.5833333333333334,
+        "roc_auc": 0.5301587301587302
       },
       "simulation": {
-        "accuracy": 0.3870967741935484,
-        "brier_score": 0.32827089349945604,
-        "count": 31,
-        "expected_calibration_error": 0.29120242527305706,
-        "log_loss": 0.8775095253957744,
-        "positive_rate": 0.6129032258064516,
-        "roc_auc": 0.37719298245614036
+        "accuracy": 0.4166666666666667,
+        "brier_score": 0.32147675041378776,
+        "count": 36,
+        "expected_calibration_error": 0.2608186552808113,
+        "log_loss": 0.8611421583607047,
+        "positive_rate": 0.5833333333333334,
+        "roc_auc": 0.37142857142857144
       }
     },
-    "settled_events": 5,
+    "settled_events": 6,
     "simulation_coverage": 0.5692307692307692,
     "status": "collecting_results"
   },
   "quote_dataset_sha256": "a3076d92719d83eeff40754c1771940c7efdb64810e397af1a2946750b3a041b",
-  "report_sha256": "e5ef6ff31c4845f45364e1b4241d7e0a0a8ecabb89ecaa0c8752efd6dd45db13",
-  "result_source_sha256": "07a0bb9d46ef213a8af2488b72bb905e4ebb9f4e6efbd94c54cc5ef54c85b962",
+  "report_sha256": "6ced64d9d1d3eb11b08987ef34f456794084d49df44e3c63dabcae043a6bcfbd",
+  "result_source_sha256": "e4bff5463fee41a0dd37712dc5d07f36cc2d8862b1dbb638a1eb9b419605a6f6",
   "schema_version": 6,
-  "settlement_dataset_sha256": "d2c7b599a544d0d845ffaed223462b198731fafbe1cadc6f8e1fe308b0ab664b",
-  "settlements_total": 66,
+  "settlement_dataset_sha256": "8204bbe1909215374c736e67ce873d46d2de2dc26d5dd20ef4dc7af8a8a3ef35",
+  "settlements_total": 78,
   "simulation_comparison_dataset_sha256": "411fbc2b6afaf61e67b3d2baa7aea2b2f6c799a922f55347f38896dc4f30dc7c",
   "source_metadata_dataset_sha256": "7758ba55e111540f908569d5c76537f23064fdd899140936015003c441cacf4c",
   "total_rounds": {
@@ -1010,24 +1010,24 @@
     "decisions": 64,
     "execution_enabled": false,
     "forecast_comparators": {
-      "count": 51,
+      "count": 63,
       "market": {
-        "brier_score": 0.2412881054493934,
-        "ece_5_bin": 0.10008845056427684,
-        "log_loss": 0.6740689091522721
+        "brier_score": 0.24052952134283442,
+        "ece_5_bin": 0.13441308195769902,
+        "log_loss": 0.6729101104949902
       },
       "model": {
-        "brier_score": 0.2666839320012737,
-        "ece_5_bin": 0.14136965894092593,
-        "log_loss": 0.7333797562394416
+        "brier_score": 0.2652595083777019,
+        "ece_5_bin": 0.1669956967737214,
+        "log_loss": 0.7274362615026787
       },
-      "model_minus_market_log_loss": 0.059310847087169494,
+      "model_minus_market_log_loss": 0.05452615100768854,
       "residual": {
-        "brier_score": 0.2412881054493934,
-        "ece_5_bin": 0.10008845056427684,
-        "log_loss": 0.6740689091522722
+        "brier_score": 0.24052952134283442,
+        "ece_5_bin": 0.13441308195769902,
+        "log_loss": 0.6729101104949902
       },
-      "residual_minus_market_log_loss": 1.1102230246251565e-16
+      "residual_minus_market_log_loss": 0.0
     },
     "latest_available_price_clv": {
       "bootstrap_samples": 0,
@@ -1042,14 +1042,14 @@
     },
     "next_residual_weight_selection": {
       "ci_95_upper": null,
-      "market_log_loss": 0.6740689091522722,
-      "scored_lines": 51,
-      "selected_log_loss": 0.6740689091522722,
+      "market_log_loss": 0.6729101104949902,
+      "scored_lines": 63,
+      "selected_log_loss": 0.6729101104949902,
       "selected_minus_market_log_loss": 0.0,
       "selected_weight": 0.0,
       "selection_status": "market_only_insufficient_history",
-      "settled_events": 5,
-      "training_dataset_sha256": "4f2fc635c69a0016b253ceb5f132cab43dda08dbc094d0da536b592166f78dc4"
+      "settled_events": 6,
+      "training_dataset_sha256": "34a0affb7e491d7d0ca2f072e3c89ca8a3a2222428b1a3b0b7fed35450988e33"
     },
     "official_strategy": {
       "hypothetical_max_drawdown_units": 1.0,
@@ -1083,66 +1083,66 @@
       "paper_selections": 1,
       "positive_clv_requirement_met": false,
       "residual_market_log_loss_requirement_met": false,
-      "scored_lines": 51,
-      "settled_events": 5,
+      "scored_lines": 63,
+      "settled_events": 6,
       "status": "collecting_prospective_evidence"
     },
     "quote_dataset_sha256": "a667f35952e7580afdd002a029c84180bd1814cec81c1ebca1976057ab03aa29",
     "residual_selection_protocol": "select weight on earliest 70% of settled events; require at least 0.002 lower log loss and an event-block 95% upper confidence bound below zero on the latest 30%",
-    "scored_forecasts": 51,
-    "settlement_dataset_sha256": "363802c073bd5201f51cdb3150b275beafe4050a292970ccdcd48bebeb9f1740",
-    "settlements": 52,
+    "scored_forecasts": 63,
+    "settlement_dataset_sha256": "540b9b5951054b3a230b85a157adf801b6ee5baf2c03a82ca53802441851dda7",
+    "settlements": 64,
     "shadow_threshold_strategies": {
       "independent_model": {
         "0.000": {
-          "hypothetical_max_drawdown_units": 5.490810081008101,
-          "hypothetical_profit_units": 7.99213320765338,
-          "hypothetical_risk_units": 47.0,
-          "hypothetical_roi": 0.1700453873968804,
-          "losses": 23,
-          "selections": 47,
+          "hypothetical_max_drawdown_units": 6.2870727072707275,
+          "hypothetical_profit_units": 7.954953720473894,
+          "hypothetical_risk_units": 59.0,
+          "hypothetical_roi": 0.13482972407582872,
+          "losses": 30,
+          "selections": 59,
           "threshold": 0.0,
-          "wins": 24
+          "wins": 29
         },
         "0.025": {
-          "hypothetical_max_drawdown_units": 6.980810081008103,
-          "hypothetical_profit_units": 5.609708965229137,
-          "hypothetical_risk_units": 41.0,
-          "hypothetical_roi": 0.1368221698836375,
-          "losses": 21,
-          "selections": 41,
+          "hypothetical_max_drawdown_units": 8.686163616361638,
+          "hypothetical_profit_units": 5.572529478049651,
+          "hypothetical_risk_units": 53.0,
+          "hypothetical_roi": 0.10514206562357832,
+          "losses": 28,
+          "selections": 53,
           "threshold": 0.025,
-          "wins": 20
+          "wins": 25
         },
         "0.050": {
-          "hypothetical_max_drawdown_units": 6.9808100810081015,
-          "hypothetical_profit_units": 3.521216062782748,
-          "hypothetical_risk_units": 38.0,
-          "hypothetical_roi": 0.09266358059954599,
-          "losses": 21,
-          "selections": 38,
+          "hypothetical_max_drawdown_units": 9.595254525452546,
+          "hypothetical_profit_units": 3.484036575603261,
+          "hypothetical_risk_units": 50.0,
+          "hypothetical_roi": 0.06968073151206522,
+          "losses": 28,
+          "selections": 50,
           "threshold": 0.05,
-          "wins": 17
+          "wins": 22
         },
         "0.075": {
-          "hypothetical_max_drawdown_units": 5.9808100810081015,
-          "hypothetical_profit_units": 2.2656605072271914,
-          "hypothetical_risk_units": 35.0,
-          "hypothetical_roi": 0.06473315734934833,
-          "losses": 20,
-          "selections": 35,
+          "hypothetical_max_drawdown_units": 9.150810081008101,
+          "hypothetical_profit_units": 1.7156605072271918,
+          "hypothetical_risk_units": 46.0,
+          "hypothetical_roi": 0.037296967548417215,
+          "losses": 27,
+          "selections": 46,
           "threshold": 0.075,
-          "wins": 15
+          "wins": 19
         },
         "0.100": {
-          "hypothetical_max_drawdown_units": 6.330810081008101,
-          "hypothetical_profit_units": 1.9156605072271917,
-          "hypothetical_risk_units": 33.0,
-          "hypothetical_roi": 0.05805031840082399,
-          "losses": 19,
-          "selections": 33,
+          "hypothetical_max_drawdown_units": 9.500810081008101,
+          "hypothetical_profit_units": 1.3656605072271921,
+          "hypothetical_risk_units": 44.0,
+          "hypothetical_roi": 0.031037738800618,
+          "losses": 26,
+          "selections": 44,
           "threshold": 0.1,
-          "wins": 14
+          "wins": 18
         }
       },
       "market_residual": {
@@ -1198,8 +1198,8 @@
         }
       }
     },
-    "unsettled_decisions": 12,
+    "unsettled_decisions": 0,
     "voids": 1
   },
-  "unsettled_decisions": 12
+  "unsettled_decisions": 0
 }
