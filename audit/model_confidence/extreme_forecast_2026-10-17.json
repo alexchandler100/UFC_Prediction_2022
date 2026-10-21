@@ -1,0 +1,907 @@
+{
+  "revision": "e452b32e",
+  "model_id": "863e02377681e2d5a1cf",
+  "calibration_slope": 1.1057341709948534,
+  "logit": -7.303553678716126,
+  "probability": 0.0006726895720787335,
+  "contributions": [
+    {
+      "feature": "age_known_diff",
+      "value": -1.0,
+      "scale": 0.014209075672255475,
+      "coefficient": 0.03688449859971073,
+      "logit_contribution": -2.870309893651095,
+      "training_min": -1.0,
+      "training_max": 0.0
+    },
+    {
+      "feature": "reach_known_diff",
+      "value": -1.0,
+      "scale": 0.08159094598446172,
+      "coefficient": 0.14585361816134362,
+      "logit_contribution": -1.9766326719014466,
+      "training_min": -1.0,
+      "training_max": 1.0
+    },
+    {
+      "feature": "height_known_diff",
+      "value": -1.0,
+      "scale": 0.014209075672255475,
+      "coefficient": 0.023971711246313268,
+      "logit_contribution": -1.865451411032054,
+      "training_min": -1.0,
+      "training_max": 0.0
+    },
+    {
+      "feature": "career_td_landed_per15_diff",
+      "value": -2.4974772956609486,
+      "scale": 1.4159828288529281,
+      "coefficient": 0.10784070651407454,
+      "logit_contribution": -0.21031827805482917,
+      "training_min": -6.7160849226340416,
+      "training_max": 6.005797808684266
+    },
+    {
+      "feature": "career_sig_defence_diff",
+      "value": -0.13641975308641974,
+      "scale": 0.08464779373604983,
+      "coefficient": 0.09364534156288791,
+      "logit_contribution": -0.1668777843879909,
+      "training_min": -0.3480209111277073,
+      "training_max": 0.4059900319677191
+    },
+    {
+      "feature": "has_history_diff",
+      "value": -1.0,
+      "scale": 0.4144803143039211,
+      "coefficient": 0.06110736165944264,
+      "logit_contribution": -0.16301979986591433,
+      "training_min": -1.0,
+      "training_max": 1.0
+    },
+    {
+      "feature": "recent_3y_td_landed_per15_diff",
+      "value": -2.4974772956609486,
+      "scale": 1.3931817087814227,
+      "coefficient": 0.0745148914354267,
+      "logit_contribution": -0.14770241248888702,
+      "training_min": -6.7248966826761984,
+      "training_max": 6.396841066140177
+    },
+    {
+      "feature": "recent_3y_sig_defence_diff",
+      "value": -0.13641975308641974,
+      "scale": 0.09007392024757874,
+      "coefficient": 0.08096435551079063,
+      "logit_contribution": -0.13558847887617978,
+      "training_min": -0.3695114409400123,
+      "training_max": 0.4059900319677191
+    },
+    {
+      "feature": "reach_diff",
+      "value": 5.0,
+      "scale": 3.2417395496807786,
+      "coefficient": 0.07092744595578042,
+      "logit_contribution": 0.12096422222201658,
+      "training_min": -11.0,
+      "training_max": 10.0
+    },
+    {
+      "feature": "elo_fast_diff",
+      "value": -68.32156140712277,
+      "scale": 86.29785388165179,
+      "coefficient": 0.13509659014153122,
+      "logit_contribution": -0.11826409317981217,
+      "training_min": -350.4990806471235,
+      "training_max": 467.0148517976154
+    },
+    {
+      "feature": "career_wins_log_diff",
+      "value": -1.3862943611198906,
+      "scale": 0.8648161508418563,
+      "coefficient": -0.06488994080850526,
+      "logit_contribution": 0.11501640104044408,
+      "training_min": -3.218875824868201,
+      "training_max": 3.218875824868201
+    },
+    {
+      "feature": "recent_1y_fights_log_diff",
+      "value": -0.6931471805599453,
+      "scale": 0.5723465616742579,
+      "coefficient": 0.06753343366434224,
+      "logit_contribution": -0.09043487557176386,
+      "training_min": -1.6094379124341005,
+      "training_max": 1.6094379124341005
+    },
+    {
+      "feature": "recent_3y_sig_absorbed_per15_diff",
+      "value": -24.747729566094854,
+      "scale": 27.20417904776061,
+      "coefficient": -0.08175788062202466,
+      "logit_contribution": 0.08223943025152299,
+      "training_min": -96.38009049773756,
+      "training_max": 105.23040594896338
+    },
+    {
+      "feature": "elo_medium_diff",
+      "value": -43.01627151427897,
+      "scale": 48.67102983490291,
+      "coefficient": 0.08318460468712927,
+      "logit_contribution": -0.08129351780965989,
+      "training_min": -202.95143169030237,
+      "training_max": 271.2025830936334
+    },
+    {
+      "feature": "career_control_per15_diff",
+      "value": -210.24217961654892,
+      "scale": 138.5014697913883,
+      "coefficient": 0.04663221571986017,
+      "logit_contribution": -0.07827124654941409,
+      "training_min": -532.4366290087055,
+      "training_max": 602.7808518383691
+    },
+    {
+      "feature": "recent_3y_fights_log_diff",
+      "value": -1.6094379124341003,
+      "scale": 0.7639561090794769,
+      "coefficient": 0.03262959570997211,
+      "logit_contribution": -0.07600956430799118,
+      "training_min": -2.4849066497880004,
+      "training_max": 2.3978952727983707
+    },
+    {
+      "feature": "career_total_absorbed_per15_diff",
+      "value": -37.68920282542886,
+      "scale": 34.68023750938867,
+      "coefficient": -0.05938761699145935,
+      "logit_contribution": 0.0713643835253441,
+      "training_min": -129.38689217758986,
+      "training_max": 131.2781954887218
+    },
+    {
+      "feature": "age_squared_diff",
+      "value": -110.72883471279977,
+      "scale": 342.02671078048456,
+      "coefficient": -0.1979234880535263,
+      "logit_contribution": 0.07085145489536655,
+      "training_min": -1212.029760306879,
+      "training_max": 1238.7412520186026
+    },
+    {
+      "feature": "career_win_rate_diff",
+      "value": -0.1428571428571429,
+      "scale": 0.12685505366069966,
+      "coefficient": -0.05547571472085953,
+      "logit_contribution": 0.0690792834105507,
+      "training_min": -0.4732142857142857,
+      "training_max": 0.5347222222222222
+    },
+    {
+      "feature": "recent_3y_win_rate_diff",
+      "value": -0.1428571428571429,
+      "scale": 0.15338925147947569,
+      "coefficient": -0.06474710419909345,
+      "logit_contribution": 0.06667731641220874,
+      "training_min": -0.5714285714285714,
+      "training_max": 0.5333333333333334
+    },
+    {
+      "feature": "career_sig_absorbed_per15_diff",
+      "value": -24.747729566094854,
+      "scale": 26.80348683336006,
+      "coefficient": -0.06083683397987791,
+      "logit_contribution": 0.062109981914698575,
+      "training_min": -114.2615567377718,
+      "training_max": 105.23040594896338
+    },
+    {
+      "feature": "age_diff",
+      "value": -1.8501026694045173,
+      "scale": 5.383328994693909,
+      "coefficient": -0.15991350975564236,
+      "logit_contribution": 0.06076881869464818,
+      "training_min": -17.763175906913077,
+      "training_max": 17.59616700889801
+    },
+    {
+      "feature": "career_sig_landed_per15_diff",
+      "value": -27.472250252270435,
+      "scale": 27.03100493670396,
+      "coefficient": 0.05367732290654752,
+      "logit_contribution": -0.06032170672881596,
+      "training_min": -92.7176722952533,
+      "training_max": 103.6244069583553
+    },
+    {
+      "feature": "days_since_fight_log_diff",
+      "value": 1.2099183969606893,
+      "scale": 0.9391961736633904,
+      "coefficient": -0.04039866573082891,
+      "logit_contribution": -0.05754631496350009,
+      "training_min": -4.196518186951407,
+      "training_max": 3.503371006391462
+    },
+    {
+      "feature": "career_sig_accuracy_diff",
+      "value": -0.06102941176470583,
+      "scale": 0.0859995821317868,
+      "coefficient": 0.07070454273531782,
+      "logit_contribution": -0.05548056713620539,
+      "training_min": -0.3524654522613065,
+      "training_max": 0.2893955425099833
+    },
+    {
+      "feature": "recent_1y_finish_loss_rate_diff",
+      "value": -0.15000000000000002,
+      "scale": 0.10603519118177529,
+      "coefficient": -0.03530935649635781,
+      "logit_contribution": 0.05523085533971159,
+      "training_min": -0.3714285714285714,
+      "training_max": 0.3714285714285714
+    },
+    {
+      "feature": "rating_uncertainty_diff",
+      "value": 0.5527864045000421,
+      "scale": 0.2683899003806671,
+      "coefficient": 0.024220558855379243,
+      "logit_contribution": 0.05516023081254282,
+      "training_min": -0.8356010126946427,
+      "training_max": 0.8456966500379081
+    },
+    {
+      "feature": "recent_1y_win_rate_diff",
+      "value": 0.125,
+      "scale": 0.14755294907817967,
+      "coefficient": -0.05721403359857208,
+      "logit_contribution": -0.053593906802287254,
+      "training_min": -0.45,
+      "training_max": 0.45
+    },
+    {
+      "feature": "career_total_landed_per15_diff",
+      "value": -56.53380423814329,
+      "scale": 36.747722234746696,
+      "coefficient": 0.031292785407817526,
+      "logit_contribution": -0.053231994498202644,
+      "training_min": -123.91222937390287,
+      "training_max": 142.74455865009887
+    },
+    {
+      "feature": "career_knockdowns_absorbed_per15_diff",
+      "value": -0.22704339051463168,
+      "scale": 0.34866983409488156,
+      "coefficient": -0.07273709845034079,
+      "logit_contribution": 0.05237224515903641,
+      "training_min": -3.287671232876712,
+      "training_max": 3.0716723549488054
+    },
+    {
+      "feature": "recent_3y_sub_win_rate_diff",
+      "value": 0.09375,
+      "scale": 0.11217513001924508,
+      "coefficient": 0.05198405231293187,
+      "logit_contribution": 0.048039176814970566,
+      "training_min": -0.4527777777777778,
+      "training_max": 0.4523809523809524
+    },
+    {
+      "feature": "recent_3y_sig_landed_per15_diff",
+      "value": -27.472250252270435,
+      "scale": 27.408996606471753,
+      "coefficient": 0.04273656362018999,
+      "logit_contribution": -0.0473643330357166,
+      "training_min": -104.41361916771754,
+      "training_max": 103.6244069583553
+    },
+    {
+      "feature": "career_fights_log_diff",
+      "value": -1.6094379124341003,
+      "scale": 1.0256274847529459,
+      "coefficient": -0.02690132761534027,
+      "logit_contribution": 0.046677654108216324,
+      "training_min": -3.737669618283368,
+      "training_max": 3.610917912644224
+    },
+    {
+      "feature": "elo_slow_diff",
+      "value": -24.122271220303446,
+      "scale": 26.810177037031256,
+      "coefficient": 0.046366725361502395,
+      "logit_contribution": -0.04612917318392058,
+      "training_min": -109.98120714353126,
+      "training_max": 147.6858808298175
+    },
+    {
+      "feature": "height_diff",
+      "value": 3.0,
+      "scale": 2.464583995339761,
+      "coefficient": 0.0327556707049854,
+      "logit_contribution": 0.044087437629445905,
+      "training_min": -10.0,
+      "training_max": 8.0
+    },
+    {
+      "feature": "average_opponent_elo_diff",
+      "value": -5.786271191371043,
+      "scale": 26.66461113529202,
+      "coefficient": 0.16763268039947896,
+      "logit_contribution": -0.04022286025648643,
+      "training_min": -113.27155949995496,
+      "training_max": 107.60149823697292
+    },
+    {
+      "feature": "career_td_defence_diff",
+      "value": 0.0722222222222223,
+      "scale": 0.13446818712951625,
+      "coefficient": 0.06661039268126498,
+      "logit_contribution": 0.03955888318862901,
+      "training_min": -0.4373514431239389,
+      "training_max": 0.4249999999999999
+    },
+    {
+      "feature": "division_losses_log_diff",
+      "value": -0.6931471805599453,
+      "scale": 0.9221086727541786,
+      "coefficient": -0.04716232377172628,
+      "logit_contribution": 0.03920029007396868,
+      "training_min": -2.8903717578961645,
+      "training_max": 2.639057329615259
+    },
+    {
+      "feature": "recent_3y_total_landed_per15_diff",
+      "value": -56.53380423814329,
+      "scale": 36.18073994601459,
+      "coefficient": 0.020020375346399086,
+      "logit_contribution": -0.034590250937740784,
+      "training_min": -124.86263736263736,
+      "training_max": 114.0
+    },
+    {
+      "feature": "recent_3y_knockdowns_absorbed_per15_diff",
+      "value": -0.22704339051463168,
+      "scale": 0.3947353543781023,
+      "coefficient": 0.052314598266495906,
+      "logit_contribution": -0.033271812783620576,
+      "training_min": -3.287671232876712,
+      "training_max": 3.0716723549488054
+    },
+    {
+      "feature": "division_fights_log_diff",
+      "value": -1.6094379124341003,
+      "scale": 1.0548214702892202,
+      "coefficient": 0.01943598853148082,
+      "logit_contribution": -0.03279084675704116,
+      "training_min": -3.6635616461296463,
+      "training_max": 3.610917912644224
+    },
+    {
+      "feature": "division_sub_win_rate_diff",
+      "value": 0.09375,
+      "scale": 0.11789070997371108,
+      "coefficient": -0.03564997247239047,
+      "logit_contribution": -0.031347407033709154,
+      "training_min": -0.4883040935672514,
+      "training_max": 0.5125
+    },
+    {
+      "feature": "recent_3y_control_per15_diff",
+      "value": -210.24217961654892,
+      "scale": 137.85143784828344,
+      "coefficient": -0.01689913605236324,
+      "logit_contribution": 0.028498616907227846,
+      "training_min": -519.1814954757627,
+      "training_max": 535.4996510816468
+    },
+    {
+      "feature": "career_finish_win_rate_diff",
+      "value": 0.125,
+      "scale": 0.1416593562993922,
+      "coefficient": 0.02854335291972574,
+      "logit_contribution": 0.027849696538401084,
+      "training_min": -0.4714285714285714,
+      "training_max": 0.5
+    },
+    {
+      "feature": "recent_3y_td_defence_diff",
+      "value": 0.0722222222222223,
+      "scale": 0.1306718860971403,
+      "coefficient": 0.04064654580496953,
+      "logit_contribution": 0.024840656141540546,
+      "training_min": -0.5270175438596493,
+      "training_max": 0.453968253968254
+    },
+    {
+      "feature": "division_ko_win_rate_diff",
+      "value": 0.09375,
+      "scale": 0.12309531113626287,
+      "coefficient": 0.0292672785896257,
+      "logit_contribution": 0.024646930392177673,
+      "training_min": -0.4397058823529411,
+      "training_max": 0.4289772727272727
+    },
+    {
+      "feature": "division_win_rate_diff",
+      "value": -0.1428571428571429,
+      "scale": 0.12882613214895003,
+      "coefficient": 0.019513209228707095,
+      "logit_contribution": -0.023926403606425686,
+      "training_min": -0.4732142857142857,
+      "training_max": 0.4682539682539682
+    },
+    {
+      "feature": "recent_3y_finish_win_rate_diff",
+      "value": 0.125,
+      "scale": 0.14890006139704573,
+      "coefficient": 0.02568284402807194,
+      "logit_contribution": 0.023840149882850964,
+      "training_min": -0.5238095238095237,
+      "training_max": 0.5
+    },
+    {
+      "feature": "recent_3y_wins_log_diff",
+      "value": -1.3862943611198906,
+      "scale": 0.6724646316472751,
+      "coefficient": 0.010291852711328622,
+      "logit_contribution": -0.02346012395844957,
+      "training_min": -2.19722457733622,
+      "training_max": 2.079441541679836
+    },
+    {
+      "feature": "division_elo_slow_diff",
+      "value": -24.628839089271423,
+      "scale": 26.600882859384537,
+      "coefficient": -0.022500699703437592,
+      "logit_contribution": 0.02303534097414412,
+      "training_min": -110.09907860366708,
+      "training_max": 138.80508399565747
+    },
+    {
+      "feature": "career_ko_win_rate_diff",
+      "value": 0.09375,
+      "scale": 0.12471973897870214,
+      "coefficient": 0.026504525378540804,
+      "logit_contribution": 0.02202961187998389,
+      "training_min": -0.4397058823529411,
+      "training_max": 0.46875
+    },
+    {
+      "feature": "division_elo_fast_diff",
+      "value": -72.45282719467173,
+      "scale": 86.92212360107885,
+      "coefficient": 0.023230178548646018,
+      "logit_contribution": -0.0214105728687323,
+      "training_min": -376.30020480198255,
+      "training_max": 443.68007127088754
+    },
+    {
+      "feature": "recent_1y_losses_log_diff",
+      "value": -0.6931471805599453,
+      "scale": 0.5137058740757016,
+      "coefficient": -0.013820862117991167,
+      "logit_contribution": 0.02062038618237706,
+      "training_min": -1.3862943611198906,
+      "training_max": 1.3862943611198906
+    },
+    {
+      "feature": "recent_3y_losses_log_diff",
+      "value": -0.6931471805599453,
+      "scale": 0.7154865281313575,
+      "coefficient": 0.018829046431857763,
+      "logit_contribution": -0.020169868072456677,
+      "training_min": -1.9459101490553128,
+      "training_max": 1.9459101490553128
+    },
+    {
+      "feature": "recent_3y_control_absorbed_per15_diff",
+      "value": -29.96972754793138,
+      "scale": 125.9361109360657,
+      "coefficient": -0.07208466624278546,
+      "logit_contribution": 0.018968200874011843,
+      "training_min": -463.27513546056593,
+      "training_max": 447.3333333333333
+    },
+    {
+      "feature": "career_losses_log_diff",
+      "value": -0.6931471805599453,
+      "scale": 0.9440043815426356,
+      "coefficient": -0.02220172774823774,
+      "logit_contribution": 0.018025567840887703,
+      "training_min": -2.833213344056216,
+      "training_max": 2.70805020110221
+    },
+    {
+      "feature": "recent_3y_td_absorbed_per15_diff",
+      "value": -0.22704339051463168,
+      "scale": 1.2227215806895002,
+      "coefficient": 0.08734319821273612,
+      "logit_contribution": -0.017933336905134916,
+      "training_min": -7.6992345790184595,
+      "training_max": 6.5
+    },
+    {
+      "feature": "recent_3y_td_accuracy_diff",
+      "value": -0.022972972972973016,
+      "scale": 0.11921217189103514,
+      "coefficient": -0.08139546872275648,
+      "logit_contribution": 0.017343931944635366,
+      "training_min": -0.4598484848484849,
+      "training_max": 0.405668016194332
+    },
+    {
+      "feature": "recent_3y_ko_win_rate_diff",
+      "value": 0.09375,
+      "scale": 0.12877601848724576,
+      "coefficient": -0.020205882309815452,
+      "logit_contribution": -0.016265403188654593,
+      "training_min": -0.5317460317460317,
+      "training_max": 0.4812499999999999
+    },
+    {
+      "feature": "career_td_absorbed_per15_diff",
+      "value": -0.22704339051463168,
+      "scale": 1.199401777347796,
+      "coefficient": 0.06526838669028433,
+      "logit_contribution": -0.013661481062922151,
+      "training_min": -7.039514174808815,
+      "training_max": 5.691011235955056
+    },
+    {
+      "feature": "recent_3y_sig_accuracy_diff",
+      "value": -0.06102941176470583,
+      "scale": 0.08845615405867574,
+      "coefficient": 0.017206052842271426,
+      "logit_contribution": -0.013126323834927617,
+      "training_min": -0.3524654522613065,
+      "training_max": 0.3166357738646895
+    },
+    {
+      "feature": "recent_1y_sub_win_rate_diff",
+      "value": 0.037500000000000006,
+      "scale": 0.08681281640611345,
+      "coefficient": 0.02716731909178584,
+      "logit_contribution": 0.012976122491629462,
+      "training_min": -0.3857142857142857,
+      "training_max": 0.4866071428571428
+    },
+    {
+      "feature": "recent_3y_sub_attempts_per15_diff",
+      "value": -0.22704339051463168,
+      "scale": 0.6419232466881714,
+      "coefficient": 0.027477432582323786,
+      "logit_contribution": -0.010746143657134864,
+      "training_min": -3.689784762555518,
+      "training_max": 4.21875
+    },
+    {
+      "feature": "career_sub_win_rate_diff",
+      "value": 0.09375,
+      "scale": 0.12030258479727304,
+      "coefficient": 0.010209229939899023,
+      "logit_contribution": 0.008797110238045646,
+      "training_min": -0.5043402777777778,
+      "training_max": 0.5125
+    },
+    {
+      "feature": "division_wins_log_diff",
+      "value": -1.3862943611198906,
+      "scale": 0.8788072881089058,
+      "coefficient": -0.00490509095341677,
+      "logit_contribution": 0.008555779877037071,
+      "training_min": -3.1780538303479458,
+      "training_max": 3.218875824868201
+    },
+    {
+      "feature": "recent_1y_finish_win_rate_diff",
+      "value": 0.04999999999999999,
+      "scale": 0.12404851470820517,
+      "coefficient": 0.018113693148458974,
+      "logit_contribution": 0.008073022689662895,
+      "training_min": -0.4047619047619047,
+      "training_max": 0.4047619047619047
+    },
+    {
+      "feature": "elo_medium_reliable_diff",
+      "value": -19.118342895235173,
+      "scale": 32.44483424636834,
+      "coefficient": 0.011180221063719631,
+      "logit_contribution": -0.007284601662860973,
+      "training_min": -144.76649438717504,
+      "training_max": 191.72440641157775
+    },
+    {
+      "feature": "career_control_absorbed_per15_diff",
+      "value": -29.96972754793138,
+      "scale": 125.8771143252699,
+      "coefficient": -0.025571244309811076,
+      "logit_contribution": 0.00673191477138626,
+      "training_min": -426.5413533834586,
+      "training_max": 488.4407748491585
+    },
+    {
+      "feature": "division_finish_win_rate_diff",
+      "value": 0.125,
+      "scale": 0.14139680315139513,
+      "coefficient": -0.005774648516872704,
+      "logit_contribution": -0.0056447759499150115,
+      "training_min": -0.4880952380952381,
+      "training_max": 0.5
+    },
+    {
+      "feature": "division_elo_medium_diff",
+      "value": -44.68210320871185,
+      "scale": 48.72362102045409,
+      "coefficient": -0.0039016278419453476,
+      "logit_contribution": 0.0039563128221214465,
+      "training_min": -203.6819902030336,
+      "training_max": 255.45531054949905
+    },
+    {
+      "feature": "recent_3y_total_absorbed_per15_diff",
+      "value": -37.68920282542886,
+      "scale": 34.8179794020226,
+      "coefficient": -0.0020063044433914637,
+      "logit_contribution": 0.002401380355858616,
+      "training_min": -129.38689217758986,
+      "training_max": 131.2781954887218
+    },
+    {
+      "feature": "career_sub_attempts_per15_diff",
+      "value": -0.22704339051463168,
+      "scale": 0.6638602775561746,
+      "coefficient": 0.005496479055638736,
+      "logit_contribution": -0.0020785835640450387,
+      "training_min": -3.5071942446043165,
+      "training_max": 3.3728919425359147
+    },
+    {
+      "feature": "recent_1y_ko_win_rate_diff",
+      "value": 0.037500000000000006,
+      "scale": 0.10711214291828558,
+      "coefficient": -0.004877890909876827,
+      "logit_contribution": -0.001888319048552248,
+      "training_min": -0.4107142857142857,
+      "training_max": 0.4107142857142857
+    },
+    {
+      "feature": "career_td_accuracy_diff",
+      "value": -0.022972972972973016,
+      "scale": 0.12017146967780927,
+      "coefficient": 0.0022771070279913276,
+      "logit_contribution": -0.00048133783893002113,
+      "training_min": -0.4535714285714287,
+      "training_max": 0.4438746438746439
+    },
+    {
+      "feature": "career_finish_loss_rate_diff",
+      "value": 0.0,
+      "scale": 0.11246205794986702,
+      "coefficient": 0.05402682759211929,
+      "logit_contribution": 0.0,
+      "training_min": -0.4166666666666667,
+      "training_max": 0.425
+    },
+    {
+      "feature": "recent_1y_wins_log_diff",
+      "value": 0.0,
+      "scale": 0.5457968389453562,
+      "coefficient": -0.07529545906210049,
+      "logit_contribution": -0.0,
+      "training_min": -1.3862943611198906,
+      "training_max": 1.6094379124341005
+    },
+    {
+      "feature": "recent_3y_finish_loss_rate_diff",
+      "value": 0.0,
+      "scale": 0.12244900048248558,
+      "coefficient": -0.1144912087783414,
+      "logit_contribution": -0.0,
+      "training_min": -0.4555555555555556,
+      "training_max": 0.4464285714285714
+    },
+    {
+      "feature": "division_finish_loss_rate_diff",
+      "value": 0.0,
+      "scale": 0.1051362656574907,
+      "coefficient": -0.0690288674326506,
+      "logit_contribution": -0.0,
+      "training_min": -0.4166666666666667,
+      "training_max": 0.3757575757575757
+    },
+    {
+      "feature": "career_knockdowns_per15_diff",
+      "value": 0.0,
+      "scale": 0.45837350482801326,
+      "coefficient": -0.06549395681238786,
+      "logit_contribution": -0.0,
+      "training_min": -2.90453739603693,
+      "training_max": 2.980152068727165
+    },
+    {
+      "feature": "career_reversals_per15_diff",
+      "value": 0.0,
+      "scale": 0.3226480129954142,
+      "coefficient": 0.0031720899487712485,
+      "logit_contribution": 0.0,
+      "training_min": -2.0729366602687143,
+      "training_max": 2.830433542498574
+    },
+    {
+      "feature": "recent_3y_knockdowns_per15_diff",
+      "value": 0.0,
+      "scale": 0.48732854973056394,
+      "coefficient": 0.06663089309553613,
+      "logit_contribution": 0.0,
+      "training_min": -3.409090909090909,
+      "training_max": 2.8698979591836733
+    },
+    {
+      "feature": "recent_3y_reversals_per15_diff",
+      "value": 0.0,
+      "scale": 0.3252524183315715,
+      "coefficient": -0.01383313570858618,
+      "logit_contribution": -0.0,
+      "training_min": -2.0729366602687143,
+      "training_max": 2.830433542498574
+    }
+  ],
+  "training_fights": 4952,
+  "missingness_support": {
+    "age_known_diff": 1,
+    "height_known_diff": 1,
+    "reach_known_diff": 33
+  },
+  "without_missingness_flag_effects_probability": 0.35636880904858853,
+  "later_profile_only_diagnostic": {
+    "profile_revision": "c6cc0e21",
+    "probability": 0.34861494745629656,
+    "note": "Frozen pre-event model and opponent history; only debutant profile changes. Later-collected profile is not proven available at issuance. No post-fight result used.",
+    "profile": [
+      {
+        "name": "Cody Chovancek",
+        "height": "5' 8\"",
+        "reach": "67\"",
+        "stance": "Switch",
+        "dob": "Jul 24, 1998",
+        "url": "http://ufcstats.com/fighter-details/3c4320a1b6106611"
+      }
+    ]
+  },
+  "missing_profile_matchups": [
+    {
+      "event_date": "2026-10-17",
+      "fighter_name": "Kyle Nelson",
+      "opponent_name": "Cristian Perez",
+      "model_probability_for_fighter": 0.9980933474952072,
+      "model_status": "low_history",
+      "missing_profiles": [
+        "Cristian Perez"
+      ]
+    },
+    {
+      "event_date": "2026-10-17",
+      "fighter_name": "Louis Jourdain",
+      "opponent_name": "Timmy Cuamba",
+      "model_probability_for_fighter": 0.001099138422052134,
+      "model_status": "low_history",
+      "missing_profiles": [
+        "Louis Jourdain"
+      ]
+    },
+    {
+      "event_date": "2026-10-17",
+      "fighter_name": "Julien Leblanc",
+      "opponent_name": "Nick Galanti",
+      "model_probability_for_fighter": 0.9977086460791319,
+      "model_status": "low_history",
+      "missing_profiles": [
+        "Nick Galanti"
+      ]
+    },
+    {
+      "event_date": "2026-10-17",
+      "fighter_name": "Javad Mahjoub",
+      "opponent_name": "Joel Faglier",
+      "model_probability_for_fighter": 0.5,
+      "model_status": "low_history",
+      "missing_profiles": [
+        "Javad Mahjoub",
+        "Joel Faglier"
+      ]
+    },
+    {
+      "event_date": "2026-10-17",
+      "fighter_name": "Katlyn Cerminara",
+      "opponent_name": "Mackenzie Stiller",
+      "model_probability_for_fighter": 0.9981151096095066,
+      "model_status": "low_history",
+      "missing_profiles": [
+        "Mackenzie Stiller"
+      ]
+    },
+    {
+      "event_date": "2026-10-17",
+      "fighter_name": "Cody Chovancek",
+      "opponent_name": "SuYoung You",
+      "model_probability_for_fighter": 0.0006726895720787335,
+      "model_status": "low_history",
+      "missing_profiles": [
+        "Cody Chovancek"
+      ]
+    },
+    {
+      "event_date": "2026-10-31",
+      "fighter_name": "Nick Klein",
+      "opponent_name": "Joe Kropschot",
+      "model_probability_for_fighter": 0.9986155156171321,
+      "model_status": "low_history",
+      "missing_profiles": [
+        "Joe Kropschot"
+      ]
+    },
+    {
+      "event_date": "2026-10-31",
+      "fighter_name": "Lucia Szabova",
+      "opponent_name": "Tainara Lisboa",
+      "model_probability_for_fighter": 0.003784281820763975,
+      "model_status": "low_history",
+      "missing_profiles": [
+        "Lucia Szabova"
+      ]
+    },
+    {
+      "event_date": "2026-11-07",
+      "fighter_name": "Gabriel Lorenco",
+      "opponent_name": "Alvin Hines",
+      "model_probability_for_fighter": 0.002844007808201388,
+      "model_status": "low_history",
+      "missing_profiles": [
+        "Gabriel Lorenco"
+      ]
+    }
+  ],
+  "publication_matchups": 71,
+  "publication_low_history_matchups": 24,
+  "saved_prediction": {
+    "bayesian calibrated logit location": -7.3035536787,
+    "bayesian calibrated logit scale": 6.3613309096,
+    "bayesian candidate book": "",
+    "bayesian candidate odds": null,
+    "bayesian candidate selection": "",
+    "bayesian credible level": 0.9,
+    "bayesian decision policy": "bayesian-moneyline-shadow-v1",
+    "bayesian decision status": "pass_low_history_uncertainty",
+    "bayesian ev lower": null,
+    "bayesian ev upper": null,
+    "bayesian model id": "d24e4fa315240cef5ecf",
+    "bayesian model version": "point-in-time-bayesian-logistic-laplace-v1",
+    "bayesian paper action": "pass",
+    "bayesian paper threshold met": false,
+    "bayesian posterior mean": 0.131161225,
+    "bayesian posterior mean ev": null,
+    "bayesian posterior median": 0.0006726896,
+    "bayesian probability lower": 1.92e-08,
+    "bayesian probability positive ev": null,
+    "bayesian probability upper": 0.9592972193,
+    "bayesian status": "abstain_low_history_uncertainty",
+    "betting status": "disabled_pending_market_relative_validation",
+    "fighter prior fights": 0,
+    "forecast issued at": "2026-10-12T02:17:33+00:00",
+    "forecast probability": 0.0006726896,
+    "forecast source": "stats_model_low_history",
+    "model probability": 0.0006726896,
+    "opponent prior fights": 4
+  },
+  "diagnosis": [
+    "Profile refresh only collects fighters appearing in completed bouts; upcoming debutants can have no profile.",
+    "Missing age and height indicators each differ between fighters in only one training bout; scaling by their tiny standard deviations amplifies their coefficients.",
+    "Three missing-profile flags supply most of the extreme logit. Removing their effects is a sensitivity diagnostic, not a validated replacement model.",
+    "Low-history tagging does not shrink or suppress the primary forecast; the separate Bayesian policy did abstain.",
+    "Historical features use the assembled profile table rather than snapshots of profiles available at each historic forecast date. This understates deployment missingness."
+  ],
+  "recommended_next_steps": [
+    "Fetch announced fighter profiles before freezing model inputs; retain retrieval times and source evidence.",
+    "Withhold the primary stats forecast when a fighter profile is absent; preserve the raw diagnostic and use market-only context if available.",
+    "Evaluate unscaled binary indicators or explicit minimum evidence requirements for missingness effects using earlier-only validation.",
+    "Evaluate newcomer calibration separately and simulate missing profiles in validation. Do not deploy a fitted probability correction based on this one fight."
+  ]
+}
