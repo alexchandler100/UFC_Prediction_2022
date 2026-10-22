@@ -1,7 +1,7 @@
 {
   "availability_status": "available",
   "bayesian_total_calibration": {
-    "artifact_sha256": "b13ad3497ab257542dd04a80cf73062f6293a7b1ac4e655d74fe6e18ed3933fd",
+    "artifact_sha256": "a301d78fbe0c795e136ac5c8fcca7df608b8f130e85998a9e9709ab85b4db09b",
     "policy_version": "bayesian-logistic-total-calibration-v1",
     "status": "available",
     "trained_through": "2026-10-17"
@@ -12,7 +12,7 @@
   "event_title": "UFC Fight Night: Moicano vs. Nolan",
   "event_url": "http://ufcstats.com/event-details/0a66de3a797cf73a",
   "execution_enabled": false,
-  "forecast_issued_at_utc": "2026-10-21T22:34:54+00:00",
+  "forecast_issued_at_utc": "2026-10-22T02:52:34+00:00",
   "forecast_matchup_count": 11,
   "interval_seconds": 150,
   "matchup_count": 11,
@@ -22,10 +22,10 @@
       "division": "Lightweight",
       "fighter_id": "b6452706b373eea1",
       "fighter_name": "Renato Moicano",
-      "fighter_win_probability": 0.49196224453064563,
+      "fighter_win_probability": 0.4919534696846388,
       "forecast_status": "candidate_model",
       "joint_outcome_grid": {
-        "decision_mass_before_scheduled_end": 0.09259887141215146,
+        "decision_mass_before_scheduled_end": 0.09259633664292913,
         "execution_enabled": false,
         "limitations": [
           "interval_times_not_exact_finish_times",
@@ -37,433 +37,433 @@
           {
             "end_seconds": 150,
             "outcome": "fighter_ko_tko",
-            "probability": 0.018255455558974756,
+            "probability": 0.01816108278280996,
             "start_seconds": 0
           },
           {
             "end_seconds": 150,
             "outcome": "fighter_submission",
-            "probability": 0.008303504117883631,
+            "probability": 0.008279586786034207,
             "start_seconds": 0
           },
           {
             "end_seconds": 150,
             "outcome": "fighter_decision",
-            "probability": 0.0008429229390572873,
+            "probability": 0.0008408092240380086,
             "start_seconds": 0
           },
           {
             "end_seconds": 150,
             "outcome": "fighter_other",
-            "probability": 0.00012516125323731988,
+            "probability": 0.0001240019299706085,
             "start_seconds": 0
           },
           {
             "end_seconds": 150,
             "outcome": "opponent_ko_tko",
-            "probability": 0.044935336649312846,
+            "probability": 0.044800185458714975,
             "start_seconds": 0
           },
           {
             "end_seconds": 150,
             "outcome": "opponent_submission",
-            "probability": 0.00942319982309231,
+            "probability": 0.009373628991465897,
             "start_seconds": 0
           },
           {
             "end_seconds": 150,
             "outcome": "opponent_decision",
-            "probability": 0.0005636330265100809,
+            "probability": 0.0005623766922777545,
             "start_seconds": 0
           },
           {
             "end_seconds": 300,
             "outcome": "fighter_ko_tko",
-            "probability": 0.015698425068382895,
+            "probability": 0.01562784441688943,
             "start_seconds": 150
           },
           {
             "end_seconds": 300,
             "outcome": "fighter_submission",
-            "probability": 0.007739732105753946,
+            "probability": 0.007722491371995207,
             "start_seconds": 150
           },
           {
             "end_seconds": 300,
             "outcome": "fighter_decision",
-            "probability": 0.0012526972397492598,
+            "probability": 0.0012500944065196077,
             "start_seconds": 150
           },
           {
             "end_seconds": 300,
             "outcome": "fighter_other",
-            "probability": 0.0001263232553303462,
+            "probability": 0.00012523086979242755,
             "start_seconds": 150
           },
           {
             "end_seconds": 300,
             "outcome": "opponent_ko_tko",
-            "probability": 0.03935135261251914,
+            "probability": 0.03925971086811356,
             "start_seconds": 150
           },
           {
             "end_seconds": 300,
             "outcome": "opponent_submission",
-            "probability": 0.008684498809937524,
+            "probability": 0.008645762783536933,
             "start_seconds": 150
           },
           {
             "end_seconds": 300,
             "outcome": "opponent_decision",
-            "probability": 0.0008222637884686615,
+            "probability": 0.0008208834407820782,
             "start_seconds": 150
           },
           {
             "end_seconds": 450,
             "outcome": "fighter_ko_tko",
-            "probability": 0.013521860586926083,
+            "probability": 0.013469670558291487,
             "start_seconds": 300
           },
           {
             "end_seconds": 450,
             "outcome": "fighter_submission",
-            "probability": 0.007226157323137821,
+            "probability": 0.00721450858874279,
             "start_seconds": 300
           },
           {
             "end_seconds": 450,
             "outcome": "fighter_decision",
-            "probability": 0.0018647530602469654,
+            "probability": 0.0018616100312445565,
             "start_seconds": 300
           },
           {
             "end_seconds": 450,
             "outcome": "fighter_other",
-            "probability": 0.00012770669773111488,
+            "probability": 0.00012667616393453144,
             "start_seconds": 300
           },
           {
             "end_seconds": 450,
             "outcome": "opponent_ko_tko",
-            "probability": 0.034518211886547405,
+            "probability": 0.034459973243774845,
             "start_seconds": 300
           },
           {
             "end_seconds": 450,
             "outcome": "opponent_submission",
-            "probability": 0.00801692978110631,
+            "probability": 0.007987289483288319,
             "start_seconds": 300
           },
           {
             "end_seconds": 450,
             "outcome": "opponent_decision",
-            "probability": 0.0012015527923789795,
+            "probability": 0.001200151938452561,
             "start_seconds": 300
           },
           {
             "end_seconds": 600,
             "outcome": "fighter_ko_tko",
-            "probability": 0.011654667350721208,
+            "probability": 0.011616711003902068,
             "start_seconds": 450
           },
           {
             "end_seconds": 600,
             "outcome": "fighter_submission",
-            "probability": 0.006751059801366876,
+            "probability": 0.006744106102922569,
             "start_seconds": 450
           },
           {
             "end_seconds": 600,
             "outcome": "fighter_decision",
-            "probability": 0.0027776632658564923,
+            "probability": 0.002773977444744881,
             "start_seconds": 450
           },
           {
             "end_seconds": 600,
             "outcome": "fighter_other",
-            "probability": 0.00012918946503059046,
+            "probability": 0.00012821732923913552,
             "start_seconds": 450
           },
           {
             "end_seconds": 600,
             "outcome": "opponent_ko_tko",
-            "probability": 0.030298419510870925,
+            "probability": 0.030265725681085466,
             "start_seconds": 450
           },
           {
             "end_seconds": 600,
             "outcome": "opponent_submission",
-            "probability": 0.0074055012262587505,
+            "probability": 0.0073835267173840815,
             "start_seconds": 450
           },
           {
             "end_seconds": 600,
             "outcome": "opponent_decision",
-            "probability": 0.001756942741130431,
+            "probability": 0.0017557362801060572,
             "start_seconds": 450
           },
           {
             "end_seconds": 750,
             "outcome": "fighter_ko_tko",
-            "probability": 0.010036870979818797,
+            "probability": 0.010009940622814588,
             "start_seconds": 600
           },
           {
             "end_seconds": 750,
             "outcome": "fighter_submission",
-            "probability": 0.006301900303328302,
+            "probability": 0.006298891657548538,
             "start_seconds": 600
           },
           {
             "end_seconds": 750,
             "outcome": "fighter_decision",
-            "probability": 0.004134023042542964,
+            "probability": 0.004129897234938084,
             "start_seconds": 600
           },
           {
             "end_seconds": 750,
             "outcome": "fighter_other",
-            "probability": 0.00013057966662712955,
+            "probability": 0.00012966436987356213,
             "start_seconds": 600
           },
           {
             "end_seconds": 750,
             "outcome": "opponent_ko_tko",
-            "probability": 0.026572149643103154,
+            "probability": 0.026558855228748346,
             "start_seconds": 600
           },
           {
             "end_seconds": 750,
             "outcome": "opponent_submission",
-            "probability": 0.006834958271245437,
+            "probability": 0.00681946620053573,
             "start_seconds": 600
           },
           {
             "end_seconds": 750,
             "outcome": "opponent_decision",
-            "probability": 0.002566890778618207,
+            "probability": 0.0025662823703141015,
             "start_seconds": 600
           },
           {
             "end_seconds": 900,
             "outcome": "fighter_ko_tko",
-            "probability": 0.00861670936083915,
+            "probability": 0.008598319621549791,
             "start_seconds": 750
           },
           {
             "end_seconds": 900,
             "outcome": "fighter_submission",
-            "probability": 0.005864294141172811,
+            "probability": 0.005864589927547672,
             "start_seconds": 750
           },
           {
             "end_seconds": 900,
             "outcome": "fighter_decision",
-            "probability": 0.006133534811977799,
+            "probability": 0.00612927817865344,
             "start_seconds": 750
           },
           {
             "end_seconds": 900,
             "outcome": "fighter_other",
-            "probability": 0.00013157356893153178,
+            "probability": 0.0001307158793834695,
             "start_seconds": 750
           },
           {
             "end_seconds": 900,
             "outcome": "opponent_ko_tko",
-            "probability": 0.023231542604077296,
+            "probability": 0.02323279066671597,
             "start_seconds": 750
           },
           {
             "end_seconds": 900,
             "outcome": "opponent_submission",
-            "probability": 0.006288715106791726,
+            "probability": 0.006278713684575163,
             "start_seconds": 750
           },
           {
             "end_seconds": 900,
             "outcome": "opponent_decision",
-            "probability": 0.0037385381388177923,
+            "probability": 0.003739240208569524,
             "start_seconds": 750
           },
           {
             "end_seconds": 1050,
             "outcome": "fighter_ko_tko",
-            "probability": 0.0073484691053580815,
+            "probability": 0.007336678443036907,
             "start_seconds": 900
           },
           {
             "end_seconds": 1050,
             "outcome": "fighter_submission",
-            "probability": 0.005420911132259261,
+            "probability": 0.005423941268511963,
             "start_seconds": 900
           },
           {
             "end_seconds": 1050,
             "outcome": "fighter_decision",
-            "probability": 0.009039847437108672,
+            "probability": 0.009036145929919037,
             "start_seconds": 900
           },
           {
             "end_seconds": 1050,
             "outcome": "fighter_other",
-            "probability": 0.00013169645344535615,
+            "probability": 0.00013090006447226011,
             "start_seconds": 900
           },
           {
             "end_seconds": 1050,
             "outcome": "opponent_ko_tko",
-            "probability": 0.020176309553159112,
+            "probability": 0.02018818256526903,
             "start_seconds": 900
           },
           {
             "end_seconds": 1050,
             "outcome": "opponent_submission",
-            "probability": 0.005747782143384878,
+            "probability": 0.0057424178864583335,
             "start_seconds": 900
           },
           {
             "end_seconds": 1050,
             "outcome": "opponent_decision",
-            "probability": 0.005408895191296411,
+            "probability": 0.005412103659417446,
             "start_seconds": 900
           },
           {
             "end_seconds": 1200,
             "outcome": "fighter_ko_tko",
-            "probability": 0.00619135657092039,
+            "probability": 0.006184621641170503,
             "start_seconds": 1050
           },
           {
             "end_seconds": 1200,
             "outcome": "fighter_submission",
-            "probability": 0.004950651390331351,
+            "probability": 0.004955871729565553,
             "start_seconds": 1050
           },
           {
             "end_seconds": 1200,
             "outcome": "fighter_decision",
-            "probability": 0.01316269697786575,
+            "probability": 0.013160878822997782,
             "start_seconds": 1050
           },
           {
             "end_seconds": 1200,
             "outcome": "fighter_other",
-            "probability": 0.00013023059357948337,
+            "probability": 0.00012950278936500967,
             "start_seconds": 1050
           },
           {
             "end_seconds": 1200,
             "outcome": "opponent_ko_tko",
-            "probability": 0.017311668694960508,
+            "probability": 0.017330888111458425,
             "start_seconds": 1050
           },
           {
             "end_seconds": 1200,
             "outcome": "opponent_submission",
-            "probability": 0.00519005778000421,
+            "probability": 0.005188557799281443,
             "start_seconds": 1050
           },
           {
             "end_seconds": 1200,
             "outcome": "opponent_decision",
-            "probability": 0.0077312342568412705,
+            "probability": 0.007738853013608413,
             "start_seconds": 1050
           },
           {
             "end_seconds": 1350,
             "outcome": "fighter_ko_tko",
-            "probability": 0.0051101417918493095,
+            "probability": 0.005107193331653111,
             "start_seconds": 1200
           },
           {
             "end_seconds": 1350,
             "outcome": "fighter_submission",
-            "probability": 0.004429050112011094,
+            "probability": 0.0044358887715055155,
             "start_seconds": 1200
           },
           {
             "end_seconds": 1350,
             "outcome": "fighter_decision",
-            "probability": 0.018775298746718835,
+            "probability": 0.01877768530904966,
             "start_seconds": 1200
           },
           {
             "end_seconds": 1350,
             "outcome": "fighter_other",
-            "probability": 0.00012615665077993546,
+            "probability": 0.0001255087189445128,
             "start_seconds": 1200
           },
           {
             "end_seconds": 1350,
             "outcome": "opponent_ko_tko",
-            "probability": 0.014551049637471692,
+            "probability": 0.01457471009830265,
             "start_seconds": 1200
           },
           {
             "end_seconds": 1350,
             "outcome": "opponent_submission",
-            "probability": 0.004590946979301968,
+            "probability": 0.004592551509327066,
             "start_seconds": 1200
           },
           {
             "end_seconds": 1350,
             "outcome": "opponent_decision",
-            "probability": 0.010825483176965602,
+            "probability": 0.010840332457296126,
             "start_seconds": 1200
           },
           {
             "end_seconds": 1500,
             "outcome": "fighter_ko_tko",
-            "probability": 0.002703668071334947,
+            "probability": 0.002703489115746876,
             "start_seconds": 1350
           },
           {
             "end_seconds": 1500,
             "outcome": "fighter_submission",
-            "probability": 0.003324809374308096,
+            "probability": 0.0033334561889651585,
             "start_seconds": 1350
           },
           {
             "end_seconds": 1500,
             "outcome": "fighter_decision",
-            "probability": 0.2630929350400074,
+            "probability": 0.2634526569935868,
             "start_seconds": 1350
           },
           {
             "end_seconds": 1500,
             "outcome": "fighter_other",
-            "probability": 0.00011467699274780522,
+            "probability": 0.00011424102601359234,
             "start_seconds": 1350
           },
           {
             "end_seconds": 1500,
             "outcome": "opponent_ko_tko",
-            "probability": 0.006025521394147005,
+            "probability": 0.0060515170541509695,
             "start_seconds": 1350
           },
           {
             "end_seconds": 1500,
             "outcome": "opponent_submission",
-            "probability": 0.0031874506200548903,
+            "probability": 0.0031925731096770276,
             "start_seconds": 1350
           },
           {
             "end_seconds": 1500,
             "outcome": "opponent_decision",
-            "probability": 0.14546175088721724,
+            "probability": 0.14584420241668716,
             "start_seconds": 1350
           },
           {
             "end_seconds": 1500,
             "outcome": "fighter_decision",
-            "probability": 0.010162883125394737,
+            "probability": 0.010186893036753953,
             "start_seconds": 1500
           },
           {
             "end_seconds": 1500,
             "outcome": "opponent_decision",
-            "probability": 0.00561896796376259,
+            "probability": 0.005639340695985658,
             "start_seconds": 1500
           }
         ],
@@ -472,72 +472,72 @@
       },
       "matchup_id": "matchup_35b501fddfd1cc05cc8d6ceeceb496a6757382ddf02c23216532ac98a2c7620c",
       "method_probabilities": {
-        "decision": 0.5169354084285335,
-        "ko_tko": 0.35610918663129465,
-        "other": 0.0012732945974406127,
-        "submission": 0.1256821103427312
+        "decision": 0.5177194297859427,
+        "ko_tko": 0.355538090514199,
+        "other": 0.0012646591409891093,
+        "submission": 0.12547782055886916
       },
       "opponent_id": "6c3b2525436cf5d4",
       "opponent_name": "Tom Nolan",
       "schedule_basis": "ufcstats_first_listed_main_event",
       "scheduled_rounds": 5,
       "terminal_probabilities": {
-        "fighter_decision": 0.3312392556865262,
-        "fighter_ko_tko": 0.09913762444512561,
-        "fighter_other": 0.0012732945974406127,
-        "fighter_submission": 0.06031206980155318,
-        "opponent_decision": 0.1856961527420073,
-        "opponent_ko_tko": 0.25697156218616907,
+        "fighter_decision": 0.3315999266124458,
+        "fighter_ko_tko": 0.09881555153786474,
+        "fighter_other": 0.0012646591409891093,
+        "fighter_submission": 0.06027333239333917,
+        "opponent_decision": 0.18611950317349688,
+        "opponent_ko_tko": 0.25672253897633424,
         "opponent_other": 0.0,
-        "opponent_submission": 0.06537004054117801
+        "opponent_submission": 0.06520448816553
       },
       "total_round_over_probabilities": {
-        "0.5": 0.9175507866319319,
-        "1.5": 0.7773983216237152,
-        "2.5": 0.660047505577196,
-        "3.5": 0.5527686868285762,
-        "4.5": 0.43969266346897473
+        "0.5": 0.9178583281346886,
+        "1.5": 0.7780864299693302,
+        "2.5": 0.6609054317251729,
+        "3.5": 0.5536614137410928,
+        "4.5": 0.4405183696375671
       },
       "total_round_over_probability_posteriors": {
         "0.5": {
-          "calibration_artifact_sha256": "b13ad3497ab257542dd04a80cf73062f6293a7b1ac4e655d74fe6e18ed3933fd",
+          "calibration_artifact_sha256": "a301d78fbe0c795e136ac5c8fcca7df608b8f130e85998a9e9709ab85b4db09b",
           "calibration_trained_through": "2026-10-17",
           "calibration_training_events": 18,
           "calibration_training_fights": 222,
-          "nominal_over_probability": 0.9175507866319319,
+          "nominal_over_probability": 0.9178583281346886,
           "policy_version": "bayesian-logistic-total-calibration-v1",
           "posterior_interval_mass": 0.8,
-          "posterior_lower_over_probability": 0.8550089475809968,
-          "posterior_mean_over_probability": 0.8846085307126604,
-          "posterior_upper_over_probability": 0.9124290208327908,
+          "posterior_lower_over_probability": 0.8553803386671117,
+          "posterior_mean_over_probability": 0.8849544980524096,
+          "posterior_upper_over_probability": 0.9127450060150198,
           "schedule_contract_version": "verified-pre-fight-schedule-v1",
           "status": "available"
         },
         "1.5": {
-          "calibration_artifact_sha256": "b13ad3497ab257542dd04a80cf73062f6293a7b1ac4e655d74fe6e18ed3933fd",
+          "calibration_artifact_sha256": "a301d78fbe0c795e136ac5c8fcca7df608b8f130e85998a9e9709ab85b4db09b",
           "calibration_trained_through": "2026-10-17",
           "calibration_training_events": 18,
           "calibration_training_fights": 222,
-          "nominal_over_probability": 0.7773983216237152,
+          "nominal_over_probability": 0.7780864299693302,
           "policy_version": "bayesian-logistic-total-calibration-v1",
           "posterior_interval_mass": 0.8,
-          "posterior_lower_over_probability": 0.5993875082140535,
-          "posterior_mean_over_probability": 0.6430584337233474,
-          "posterior_upper_over_probability": 0.6883401440100461,
+          "posterior_lower_over_probability": 0.5996954378015671,
+          "posterior_mean_over_probability": 0.6434836937087572,
+          "posterior_upper_over_probability": 0.6888809980345103,
           "schedule_contract_version": "verified-pre-fight-schedule-v1",
           "status": "available"
         },
         "2.5": {
-          "calibration_artifact_sha256": "b13ad3497ab257542dd04a80cf73062f6293a7b1ac4e655d74fe6e18ed3933fd",
+          "calibration_artifact_sha256": "a301d78fbe0c795e136ac5c8fcca7df608b8f130e85998a9e9709ab85b4db09b",
           "calibration_trained_through": "2026-10-17",
           "calibration_training_events": 18,
           "calibration_training_fights": 222,
-          "nominal_over_probability": 0.660047505577196,
+          "nominal_over_probability": 0.6609054317251729,
           "policy_version": "bayesian-logistic-total-calibration-v1",
           "posterior_interval_mass": 0.8,
-          "posterior_lower_over_probability": 0.5816517992582723,
-          "posterior_mean_over_probability": 0.6285373569200888,
-          "posterior_upper_over_probability": 0.6783727137400681,
+          "posterior_lower_over_probability": 0.58211413437654,
+          "posterior_mean_over_probability": 0.6292359577569399,
+          "posterior_upper_over_probability": 0.6793109237816051,
           "schedule_contract_version": "verified-pre-fight-schedule-v1",
           "status": "available"
         },
@@ -558,10 +558,10 @@
       "division": "Welterweight",
       "fighter_id": "c6aee362c7a7d482",
       "fighter_name": "Randy Brown",
-      "fighter_win_probability": 0.47507183586728896,
+      "fighter_win_probability": 0.47484529343569304,
       "forecast_status": "candidate_model",
       "joint_outcome_grid": {
-        "decision_mass_before_scheduled_end": 0.042536057589469475,
+        "decision_mass_before_scheduled_end": 0.042659693541823765,
         "execution_enabled": false,
         "limitations": [
           "interval_times_not_exact_finish_times",
@@ -573,265 +573,265 @@
           {
             "end_seconds": 150,
             "outcome": "fighter_ko_tko",
-            "probability": 0.025505659464594203,
+            "probability": 0.02556176864150993,
             "start_seconds": 0
           },
           {
             "end_seconds": 150,
             "outcome": "fighter_submission",
-            "probability": 0.024695430541187564,
+            "probability": 0.0247442781931229,
             "start_seconds": 0
           },
           {
             "end_seconds": 150,
             "outcome": "fighter_decision",
-            "probability": 0.0012243922254922945,
+            "probability": 0.0012286900957028087,
             "start_seconds": 0
           },
           {
             "end_seconds": 150,
             "outcome": "fighter_other",
-            "probability": 0.00018998203335121185,
+            "probability": 0.0001891365022730612,
             "start_seconds": 0
           },
           {
             "end_seconds": 150,
             "outcome": "opponent_ko_tko",
-            "probability": 0.03706428579514784,
+            "probability": 0.03711416252145521,
             "start_seconds": 0
           },
           {
             "end_seconds": 150,
             "outcome": "opponent_submission",
-            "probability": 0.015513931248313613,
+            "probability": 0.01557342394726475,
             "start_seconds": 0
           },
           {
             "end_seconds": 150,
             "outcome": "opponent_decision",
-            "probability": 0.0016589134314566453,
+            "probability": 0.0016664845794494999,
             "start_seconds": 0
           },
           {
             "end_seconds": 300,
             "outcome": "fighter_ko_tko",
-            "probability": 0.020892603309471732,
+            "probability": 0.02093366255918637,
             "start_seconds": 150
           },
           {
             "end_seconds": 300,
             "outcome": "fighter_submission",
-            "probability": 0.022397444545286454,
+            "probability": 0.022437480162765516,
             "start_seconds": 150
           },
           {
             "end_seconds": 300,
             "outcome": "fighter_decision",
-            "probability": 0.0019367336809673426,
+            "probability": 0.0019426270390166223,
             "start_seconds": 150
           },
           {
             "end_seconds": 300,
             "outcome": "fighter_other",
-            "probability": 0.0001893697936836766,
+            "probability": 0.0001884875746359165,
             "start_seconds": 150
           },
           {
             "end_seconds": 300,
             "outcome": "opponent_ko_tko",
-            "probability": 0.031176931254386385,
+            "probability": 0.03121003528699995,
             "start_seconds": 150
           },
           {
             "end_seconds": 300,
             "outcome": "opponent_submission",
-            "probability": 0.013842975185855767,
+            "probability": 0.013895243253070493,
             "start_seconds": 150
           },
           {
             "end_seconds": 300,
             "outcome": "opponent_decision",
-            "probability": 0.002575156585456156,
+            "probability": 0.002585996545469498,
             "start_seconds": 150
           },
           {
             "end_seconds": 450,
             "outcome": "fighter_ko_tko",
-            "probability": 0.017115642447099625,
+            "probability": 0.017145075595338958,
             "start_seconds": 300
           },
           {
             "end_seconds": 450,
             "outcome": "fighter_submission",
-            "probability": 0.020315381555408355,
+            "probability": 0.02034760226058821,
             "start_seconds": 300
           },
           {
             "end_seconds": 450,
             "outcome": "fighter_decision",
-            "probability": 0.0030638245573508137,
+            "probability": 0.0030716828053578577,
             "start_seconds": 300
           },
           {
             "end_seconds": 450,
             "outcome": "fighter_other",
-            "probability": 0.00018877893256432244,
+            "probability": 0.0001878581168915052,
             "start_seconds": 300
           },
           {
             "end_seconds": 450,
             "outcome": "opponent_ko_tko",
-            "probability": 0.02622743022614456,
+            "probability": 0.02624754686069886,
             "start_seconds": 300
           },
           {
             "end_seconds": 450,
             "outcome": "opponent_submission",
-            "probability": 0.012353262326163305,
+            "probability": 0.012399040177355419,
             "start_seconds": 300
           },
           {
             "end_seconds": 450,
             "outcome": "opponent_decision",
-            "probability": 0.003997865748767178,
+            "probability": 0.004013233667896905,
             "start_seconds": 300
           },
           {
             "end_seconds": 600,
             "outcome": "fighter_ko_tko",
-            "probability": 0.013979247119865382,
+            "probability": 0.013999565289117848,
             "start_seconds": 450
           },
           {
             "end_seconds": 600,
             "outcome": "fighter_submission",
-            "probability": 0.018371365050176742,
+            "probability": 0.018396421792682423,
             "start_seconds": 450
           },
           {
             "end_seconds": 600,
             "outcome": "fighter_decision",
-            "probability": 0.004832232371091646,
+            "probability": 0.004842217187046955,
             "start_seconds": 450
           },
           {
             "end_seconds": 600,
             "outcome": "fighter_other",
-            "probability": 0.00018762308651453633,
+            "probability": 0.00018666296669593634,
             "start_seconds": 450
           },
           {
             "end_seconds": 600,
             "outcome": "opponent_ko_tko",
-            "probability": 0.021997232508119836,
+            "probability": 0.02200716708290091,
             "start_seconds": 450
           },
           {
             "end_seconds": 600,
             "outcome": "opponent_submission",
-            "probability": 0.01099066112312988,
+            "probability": 0.011030391864531365,
             "start_seconds": 450
           },
           {
             "end_seconds": 600,
             "outcome": "opponent_decision",
-            "probability": 0.00618789164422976,
+            "probability": 0.006209289582083566,
             "start_seconds": 450
           },
           {
             "end_seconds": 750,
             "outcome": "fighter_ko_tko",
-            "probability": 0.011324707690072286,
+            "probability": 0.011337747131195513,
             "start_seconds": 600
           },
           {
             "end_seconds": 750,
             "outcome": "fighter_submission",
-            "probability": 0.0164782281720364,
+            "probability": 0.0164964519948505,
             "start_seconds": 600
           },
           {
             "end_seconds": 750,
             "outcome": "fighter_decision",
-            "probability": 0.007559348535875995,
+            "probability": 0.007570930046599394,
             "start_seconds": 600
           },
           {
             "end_seconds": 750,
             "outcome": "fighter_other",
-            "probability": 0.00018495738130644594,
+            "probability": 0.00018396001384318272,
             "start_seconds": 600
           },
           {
             "end_seconds": 750,
             "outcome": "opponent_ko_tko",
-            "probability": 0.01829923742576299,
+            "probability": 0.01830107631434536,
             "start_seconds": 600
           },
           {
             "end_seconds": 750,
             "outcome": "opponent_submission",
-            "probability": 0.009698813597201528,
+            "probability": 0.009732645071479624,
             "start_seconds": 600
           },
           {
             "end_seconds": 750,
             "outcome": "opponent_decision",
-            "probability": 0.009499698808781641,
+            "probability": 0.009528541993200659,
             "start_seconds": 600
           },
           {
             "end_seconds": 900,
             "outcome": "fighter_ko_tko",
-            "probability": 0.010806107724827985,
+            "probability": 0.01077373701593358,
             "start_seconds": 750
           },
           {
             "end_seconds": 900,
             "outcome": "fighter_submission",
-            "probability": 0.02278837151061125,
+            "probability": 0.022732933035645657,
             "start_seconds": 750
           },
           {
             "end_seconds": 900,
             "outcome": "fighter_decision",
-            "probability": 0.213465193671441,
+            "probability": 0.21306483842783602,
             "start_seconds": 750
           },
           {
             "end_seconds": 900,
             "outcome": "fighter_other",
-            "probability": 0.0003143777920236251,
+            "probability": 0.0003116709682207874,
             "start_seconds": 750
           },
           {
             "end_seconds": 900,
             "outcome": "opponent_ko_tko",
-            "probability": 0.01378061643379701,
+            "probability": 0.013753985936211792,
             "start_seconds": 750
           },
           {
             "end_seconds": 900,
             "outcome": "opponent_submission",
-            "probability": 0.012343840388635811,
+            "probability": 0.012345380829986059,
             "start_seconds": 750
           },
           {
             "end_seconds": 900,
             "outcome": "opponent_decision",
-            "probability": 0.25716142405331915,
+            "probability": 0.25706667340300815,
             "start_seconds": 750
           },
           {
             "end_seconds": 900,
             "outcome": "fighter_decision",
-            "probability": 0.017064832674988054,
+            "probability": 0.016969808019635598,
             "start_seconds": 900
           },
           {
             "end_seconds": 900,
             "outcome": "opponent_decision",
-            "probability": 0.02055799634804189,
+            "probability": 0.02047438764689898,
             "start_seconds": 900
           }
         ],
@@ -840,70 +840,70 @@
       },
       "matchup_id": "matchup_dc68f0c8b059ee3cc1c146a5bf0f7ff918ef60cc6533cb1c83d17880ce3bb502",
       "method_probabilities": {
-        "decision": 0.5507855043372596,
-        "ko_tko": 0.24816970139928984,
-        "other": 0.0012550890194438183,
-        "submission": 0.19978970524400666
+        "decision": 0.5502354010392025,
+        "ko_tko": 0.24838553023489426,
+        "other": 0.0012477761425603892,
+        "submission": 0.20013129258334292
       },
       "opponent_id": "28d421729451c8ca",
       "opponent_name": "Carlos Leal",
       "schedule_basis": "ufc_standard_non_main_non_title",
       "scheduled_rounds": 3,
       "terminal_probabilities": {
-        "fighter_decision": 0.24914655771720717,
-        "fighter_ko_tko": 0.0996239677559312,
-        "fighter_other": 0.0012550890194438183,
-        "fighter_submission": 0.12504622137470675,
-        "opponent_decision": 0.3016389466200524,
-        "opponent_ko_tko": 0.14854573364335866,
+        "fighter_decision": 0.24869079362119526,
+        "fighter_ko_tko": 0.09975155623228218,
+        "fighter_other": 0.0012477761425603892,
+        "fighter_submission": 0.1251551674396552,
+        "opponent_decision": 0.30154460741800726,
+        "opponent_ko_tko": 0.14863397400261208,
         "opponent_other": 0.0,
-        "opponent_submission": 0.07474348386929991
+        "opponent_submission": 0.0749761251436877
       },
       "total_round_over_probabilities": {
-        "0.5": 0.8941474052604567,
-        "1.5": 0.717874005111851,
-        "2.5": 0.5682827605976859
+        "0.5": 0.8939220555192219,
+        "1.5": 0.7173164836139498,
+        "2.5": 0.5674934152833766
       },
       "total_round_over_probability_posteriors": {
         "0.5": {
-          "calibration_artifact_sha256": "b13ad3497ab257542dd04a80cf73062f6293a7b1ac4e655d74fe6e18ed3933fd",
+          "calibration_artifact_sha256": "a301d78fbe0c795e136ac5c8fcca7df608b8f130e85998a9e9709ab85b4db09b",
           "calibration_trained_through": "2026-10-17",
           "calibration_training_events": 18,
           "calibration_training_fights": 222,
-          "nominal_over_probability": 0.8941474052604567,
+          "nominal_over_probability": 0.8939220555192219,
           "policy_version": "bayesian-logistic-total-calibration-v1",
           "posterior_interval_mass": 0.8,
-          "posterior_lower_over_probability": 0.8279838880825913,
-          "posterior_mean_over_probability": 0.8589564888580907,
-          "posterior_upper_over_probability": 0.8884985198918901,
+          "posterior_lower_over_probability": 0.8277342749645801,
+          "posterior_mean_over_probability": 0.8587153279494878,
+          "posterior_upper_over_probability": 0.8882691238633244,
           "schedule_contract_version": "verified-pre-fight-schedule-v1",
           "status": "available"
         },
         "1.5": {
-          "calibration_artifact_sha256": "b13ad3497ab257542dd04a80cf73062f6293a7b1ac4e655d74fe6e18ed3933fd",
+          "calibration_artifact_sha256": "a301d78fbe0c795e136ac5c8fcca7df608b8f130e85998a9e9709ab85b4db09b",
           "calibration_trained_through": "2026-10-17",
           "calibration_training_events": 18,
           "calibration_training_fights": 222,
-          "nominal_over_probability": 0.717874005111851,
+          "nominal_over_probability": 0.7173164836139498,
           "policy_version": "bayesian-logistic-total-calibration-v1",
           "posterior_interval_mass": 0.8,
-          "posterior_lower_over_probability": 0.5746627600251248,
-          "posterior_mean_over_probability": 0.6084279551154931,
-          "posterior_upper_over_probability": 0.6437671429024624,
+          "posterior_lower_over_probability": 0.5744460977866275,
+          "posterior_mean_over_probability": 0.6081205883945795,
+          "posterior_upper_over_probability": 0.643367305784317,
           "schedule_contract_version": "verified-pre-fight-schedule-v1",
           "status": "available"
         },
         "2.5": {
-          "calibration_artifact_sha256": "b13ad3497ab257542dd04a80cf73062f6293a7b1ac4e655d74fe6e18ed3933fd",
+          "calibration_artifact_sha256": "a301d78fbe0c795e136ac5c8fcca7df608b8f130e85998a9e9709ab85b4db09b",
           "calibration_trained_through": "2026-10-17",
           "calibration_training_events": 18,
           "calibration_training_fights": 222,
-          "nominal_over_probability": 0.5682827605976859,
+          "nominal_over_probability": 0.5674934152833766,
           "policy_version": "bayesian-logistic-total-calibration-v1",
           "posterior_interval_mass": 0.8,
-          "posterior_lower_over_probability": 0.5340758231389151,
-          "posterior_mean_over_probability": 0.5545502755196222,
-          "posterior_upper_over_probability": 0.5766768702123947,
+          "posterior_lower_over_probability": 0.5336782380925414,
+          "posterior_mean_over_probability": 0.5539183226795334,
+          "posterior_upper_over_probability": 0.5757933960777948,
           "schedule_contract_version": "verified-pre-fight-schedule-v1",
           "status": "available"
         }
@@ -914,10 +914,10 @@
       "division": "Women's Bantamweight",
       "fighter_id": "3143bf892608139a",
       "fighter_name": "Yana Santos",
-      "fighter_win_probability": 0.2013081465148065,
+      "fighter_win_probability": 0.20127826944643576,
       "forecast_status": "candidate_model",
       "joint_outcome_grid": {
-        "decision_mass_before_scheduled_end": 0.030413334812601073,
+        "decision_mass_before_scheduled_end": 0.030409006161133185,
         "execution_enabled": false,
         "limitations": [
           "interval_times_not_exact_finish_times",
@@ -929,265 +929,265 @@
           {
             "end_seconds": 150,
             "outcome": "fighter_ko_tko",
-            "probability": 0.011054888815980693,
+            "probability": 0.011054907660670089,
             "start_seconds": 0
           },
           {
             "end_seconds": 150,
             "outcome": "fighter_submission",
-            "probability": 0.009762512492052292,
+            "probability": 0.00977219421599034,
             "start_seconds": 0
           },
           {
             "end_seconds": 150,
             "outcome": "fighter_decision",
-            "probability": 0.0010541625189544653,
+            "probability": 0.0010547640840574341,
             "start_seconds": 0
           },
           {
             "end_seconds": 150,
             "outcome": "fighter_other",
-            "probability": 0.00020218857431530127,
+            "probability": 0.0002008063200188524,
             "start_seconds": 0
           },
           {
             "end_seconds": 150,
             "outcome": "opponent_ko_tko",
-            "probability": 0.11026669781419857,
+            "probability": 0.11041769245225137,
             "start_seconds": 0
           },
           {
             "end_seconds": 150,
             "outcome": "opponent_submission",
-            "probability": 0.06626846007276221,
+            "probability": 0.06614827297245056,
             "start_seconds": 0
           },
           {
             "end_seconds": 150,
             "outcome": "opponent_decision",
-            "probability": 0.0016887447832878216,
+            "probability": 0.001689172325884704,
             "start_seconds": 0
           },
           {
             "end_seconds": 300,
             "outcome": "fighter_ko_tko",
-            "probability": 0.008129417657448448,
+            "probability": 0.00812918806176781,
             "start_seconds": 150
           },
           {
             "end_seconds": 300,
             "outcome": "fighter_submission",
-            "probability": 0.007948634484825355,
+            "probability": 0.007956629100171966,
             "start_seconds": 150
           },
           {
             "end_seconds": 300,
             "outcome": "fighter_decision",
-            "probability": 0.00149694542981657,
+            "probability": 0.0014974079576326046,
             "start_seconds": 150
           },
           {
             "end_seconds": 300,
             "outcome": "fighter_other",
-            "probability": 0.00018092719095482752,
+            "probability": 0.00017968940971953377,
             "start_seconds": 150
           },
           {
             "end_seconds": 300,
             "outcome": "opponent_ko_tko",
-            "probability": 0.08326666186458007,
+            "probability": 0.08337406819671139,
             "start_seconds": 150
           },
           {
             "end_seconds": 300,
             "outcome": "opponent_submission",
-            "probability": 0.05308398437477958,
+            "probability": 0.052995414028435696,
             "start_seconds": 150
           },
           {
             "end_seconds": 300,
             "outcome": "opponent_decision",
-            "probability": 0.0023533850759135263,
+            "probability": 0.002353630755888032,
             "start_seconds": 150
           },
           {
             "end_seconds": 450,
             "outcome": "fighter_ko_tko",
-            "probability": 0.006000799563944814,
+            "probability": 0.006000433031197226,
             "start_seconds": 300
           },
           {
             "end_seconds": 450,
             "outcome": "fighter_submission",
-            "probability": 0.006496329992207959,
+            "probability": 0.006502936436372806,
             "start_seconds": 300
           },
           {
             "end_seconds": 450,
             "outcome": "fighter_decision",
-            "probability": 0.0021337768239668804,
+            "probability": 0.002133871737879403,
             "start_seconds": 300
           },
           {
             "end_seconds": 450,
             "outcome": "fighter_other",
-            "probability": 0.00016251584038702281,
+            "probability": 0.00016140276032267534,
             "start_seconds": 300
           },
           {
             "end_seconds": 450,
             "outcome": "opponent_ko_tko",
-            "probability": 0.06311645041008944,
+            "probability": 0.06319266783934219,
             "start_seconds": 300
           },
           {
             "end_seconds": 450,
             "outcome": "opponent_submission",
-            "probability": 0.042683966820185604,
+            "probability": 0.042618821856490255,
             "start_seconds": 300
           },
           {
             "end_seconds": 450,
             "outcome": "opponent_decision",
-            "probability": 0.003292051318320208,
+            "probability": 0.003291895759353224,
             "start_seconds": 300
           },
           {
             "end_seconds": 600,
             "outcome": "fighter_ko_tko",
-            "probability": 0.004432361843720222,
+            "probability": 0.004431934668111808,
             "start_seconds": 450
           },
           {
             "end_seconds": 600,
             "outcome": "fighter_submission",
-            "probability": 0.005312757960844661,
+            "probability": 0.00531820701320811,
             "start_seconds": 450
           },
           {
             "end_seconds": 600,
             "outcome": "fighter_decision",
-            "probability": 0.0030434657658016894,
+            "probability": 0.0030427888795305216,
             "start_seconds": 450
           },
           {
             "end_seconds": 600,
             "outcome": "fighter_other",
-            "probability": 0.0001460709849600752,
+            "probability": 0.00014506905026011254,
             "start_seconds": 450
           },
           {
             "end_seconds": 600,
             "outcome": "opponent_ko_tko",
-            "probability": 0.0478729710802613,
+            "probability": 0.04792672159128143,
             "start_seconds": 450
           },
           {
             "end_seconds": 600,
             "outcome": "opponent_submission",
-            "probability": 0.0343433326808743,
+            "probability": 0.03429572000414418,
             "start_seconds": 450
           },
           {
             "end_seconds": 600,
             "outcome": "opponent_decision",
-            "probability": 0.00460804382109412,
+            "probability": 0.004607116057329506,
             "start_seconds": 450
           },
           {
             "end_seconds": 750,
             "outcome": "fighter_ko_tko",
-            "probability": 0.003259208221580016,
+            "probability": 0.0032587777407656034,
             "start_seconds": 600
           },
           {
             "end_seconds": 750,
             "outcome": "fighter_submission",
-            "probability": 0.004325365350501188,
+            "probability": 0.004329837551019803,
             "start_seconds": 600
           },
           {
             "end_seconds": 750,
             "outcome": "fighter_decision",
-            "probability": 0.004321541234265032,
+            "probability": 0.004319425263561012,
             "start_seconds": 600
           },
           {
             "end_seconds": 750,
             "outcome": "fighter_other",
-            "probability": 0.00013070223993386963,
+            "probability": 0.00012980433978442666,
             "start_seconds": 600
           },
           {
             "end_seconds": 750,
             "outcome": "opponent_ko_tko",
-            "probability": 0.0361483941494709,
+            "probability": 0.0361859008334573,
             "start_seconds": 600
           },
           {
             "end_seconds": 750,
             "outcome": "opponent_submission",
-            "probability": 0.02750875358302481,
+            "probability": 0.027474452356546112,
             "start_seconds": 600
           },
           {
             "end_seconds": 750,
             "outcome": "opponent_decision",
-            "probability": 0.0064212180411807596,
+            "probability": 0.006418933340016747,
             "start_seconds": 600
           },
           {
             "end_seconds": 900,
             "outcome": "fighter_ko_tko",
-            "probability": 0.0026928983660535985,
+            "probability": 0.0026904970598960734,
             "start_seconds": 750
           },
           {
             "end_seconds": 900,
             "outcome": "fighter_submission",
-            "probability": 0.005179539382910695,
+            "probability": 0.005184115925571416,
             "start_seconds": 750
           },
           {
             "end_seconds": 900,
             "outcome": "fighter_decision",
-            "probability": 0.10566883691020737,
+            "probability": 0.10561526487795775,
             "start_seconds": 750
           },
           {
             "end_seconds": 900,
             "outcome": "fighter_other",
-            "probability": 0.0001923662088059384,
+            "probability": 0.00019107343274495564,
             "start_seconds": 750
           },
           {
             "end_seconds": 900,
             "outcome": "opponent_ko_tko",
-            "probability": 0.02357166312807275,
+            "probability": 0.02362813858692878,
             "start_seconds": 750
           },
           {
             "end_seconds": 900,
             "outcome": "opponent_submission",
-            "probability": 0.03031573916454012,
+            "probability": 0.03027895113033091,
             "start_seconds": 750
           },
           {
             "end_seconds": 900,
             "outcome": "opponent_decision",
-            "probability": 0.15051471726026877,
+            "probability": 0.15045976103930647,
             "start_seconds": 750
           },
           {
             "end_seconds": 900,
             "outcome": "fighter_decision",
-            "probability": 0.007979932660367506,
+            "probability": 0.007977242868223412,
             "start_seconds": 900
           },
           {
             "end_seconds": 900,
             "outcome": "opponent_decision",
-            "probability": 0.01136661804228846,
+            "probability": 0.011364399427415565,
             "start_seconds": 900
           }
         ],
@@ -1196,70 +1196,70 @@
       },
       "matchup_id": "matchup_c987a2acbbfb85648c43237233f3e549437cb6bfbfa376d724724f51aa56f056",
       "method_probabilities": {
-        "decision": 0.30594343968573323,
-        "ko_tko": 0.3998124129154008,
-        "other": 0.0010147710393570348,
-        "submission": 0.2932293763595088
+        "decision": 0.3058256743740364,
+        "ko_tko": 0.400290927722381,
+        "other": 0.0010078453128505565,
+        "submission": 0.29287555259073217
       },
       "opponent_id": "5078e1dacf9d25f4",
       "opponent_name": "Luana Santos",
       "schedule_basis": "ufc_standard_non_main_non_title",
       "scheduled_rounds": 3,
       "terminal_probabilities": {
-        "fighter_decision": 0.1256986613433795,
-        "fighter_ko_tko": 0.03556957446872779,
-        "fighter_other": 0.0010147710393570348,
-        "fighter_submission": 0.03902513966334215,
-        "opponent_decision": 0.1802447783423537,
-        "opponent_ko_tko": 0.36424283844667305,
+        "fighter_decision": 0.12564076566884214,
+        "fighter_ko_tko": 0.03556573822240861,
+        "fighter_other": 0.0010078453128505565,
+        "fighter_submission": 0.03906392024233444,
+        "opponent_decision": 0.18018490870519424,
+        "opponent_ko_tko": 0.3647251894999724,
         "opponent_other": 0.0,
-        "opponent_submission": 0.25420423669616665
+        "opponent_submission": 0.2538116323483977
       },
       "total_round_over_probabilities": {
-        "0.5": 0.7997023449284486,
-        "1.5": 0.5193564980810282,
-        "2.5": 0.3374823111235153
+        "0.5": 0.7996621899686767,
+        "1.5": 0.5192741330373919,
+        "2.5": 0.3373894443483752
       },
       "total_round_over_probability_posteriors": {
         "0.5": {
-          "calibration_artifact_sha256": "b13ad3497ab257542dd04a80cf73062f6293a7b1ac4e655d74fe6e18ed3933fd",
+          "calibration_artifact_sha256": "a301d78fbe0c795e136ac5c8fcca7df608b8f130e85998a9e9709ab85b4db09b",
           "calibration_trained_through": "2026-10-17",
           "calibration_training_events": 18,
           "calibration_training_fights": 222,
-          "nominal_over_probability": 0.7997023449284486,
+          "nominal_over_probability": 0.7996621899686767,
           "policy_version": "bayesian-logistic-total-calibration-v1",
           "posterior_interval_mass": 0.8,
-          "posterior_lower_over_probability": 0.7348822452413679,
-          "posterior_mean_over_probability": 0.7643824777573047,
-          "posterior_upper_over_probability": 0.7935719369843572,
+          "posterior_lower_over_probability": 0.7348462991939754,
+          "posterior_mean_over_probability": 0.764344374628872,
+          "posterior_upper_over_probability": 0.7935320177432929,
           "schedule_contract_version": "verified-pre-fight-schedule-v1",
           "status": "available"
         },
         "1.5": {
-          "calibration_artifact_sha256": "b13ad3497ab257542dd04a80cf73062f6293a7b1ac4e655d74fe6e18ed3933fd",
+          "calibration_artifact_sha256": "a301d78fbe0c795e136ac5c8fcca7df608b8f130e85998a9e9709ab85b4db09b",
           "calibration_trained_through": "2026-10-17",
           "calibration_training_events": 18,
           "calibration_training_fights": 222,
-          "nominal_over_probability": 0.5193564980810282,
+          "nominal_over_probability": 0.5192741330373919,
           "policy_version": "bayesian-logistic-total-calibration-v1",
           "posterior_interval_mass": 0.8,
-          "posterior_lower_over_probability": 0.5062391578764827,
-          "posterior_mean_over_probability": 0.5091670522357434,
-          "posterior_upper_over_probability": 0.5122681161088484,
+          "posterior_lower_over_probability": 0.5062125858676825,
+          "posterior_mean_over_probability": 0.5091280175187166,
+          "posterior_upper_over_probability": 0.5122158838210048,
           "schedule_contract_version": "verified-pre-fight-schedule-v1",
           "status": "available"
         },
         "2.5": {
-          "calibration_artifact_sha256": "b13ad3497ab257542dd04a80cf73062f6293a7b1ac4e655d74fe6e18ed3933fd",
+          "calibration_artifact_sha256": "a301d78fbe0c795e136ac5c8fcca7df608b8f130e85998a9e9709ab85b4db09b",
           "calibration_trained_through": "2026-10-17",
           "calibration_training_events": 18,
           "calibration_training_fights": 222,
-          "nominal_over_probability": 0.3374823111235153,
+          "nominal_over_probability": 0.3373894443483752,
           "policy_version": "bayesian-logistic-total-calibration-v1",
           "posterior_interval_mass": 0.8,
-          "posterior_lower_over_probability": 0.3189268643452928,
-          "posterior_mean_over_probability": 0.3694508195129116,
-          "posterior_upper_over_probability": 0.41701591245414943,
+          "posterior_lower_over_probability": 0.31882534559224274,
+          "posterior_mean_over_probability": 0.3693751280170637,
+          "posterior_upper_over_probability": 0.41696574054994584,
           "schedule_contract_version": "verified-pre-fight-schedule-v1",
           "status": "available"
         }
@@ -1270,10 +1270,10 @@
       "division": "Welterweight",
       "fighter_id": "a3dda21be645be93",
       "fighter_name": "Jean-Paul Lebosnoyani",
-      "fighter_win_probability": 0.4404906975116118,
+      "fighter_win_probability": 0.440514740351849,
       "forecast_status": "candidate_model",
       "joint_outcome_grid": {
-        "decision_mass_before_scheduled_end": 0.03452038253642405,
+        "decision_mass_before_scheduled_end": 0.03455437060745332,
         "execution_enabled": false,
         "limitations": [
           "interval_times_not_exact_finish_times",
@@ -1285,265 +1285,265 @@
           {
             "end_seconds": 150,
             "outcome": "fighter_ko_tko",
-            "probability": 0.03860157624049864,
+            "probability": 0.038607225738968305,
             "start_seconds": 0
           },
           {
             "end_seconds": 150,
             "outcome": "fighter_submission",
-            "probability": 0.031222964811645434,
+            "probability": 0.031214579596088435,
             "start_seconds": 0
           },
           {
             "end_seconds": 150,
             "outcome": "fighter_decision",
-            "probability": 0.0006659197203831177,
+            "probability": 0.0006687708454192856,
             "start_seconds": 0
           },
           {
             "end_seconds": 150,
             "outcome": "fighter_other",
-            "probability": 0.00019002780855095804,
+            "probability": 0.00018900518845417982,
             "start_seconds": 0
           },
           {
             "end_seconds": 150,
             "outcome": "opponent_ko_tko",
-            "probability": 0.03596809616103572,
+            "probability": 0.03601477323075221,
             "start_seconds": 0
           },
           {
             "end_seconds": 150,
             "outcome": "opponent_submission",
-            "probability": 0.017234798051321505,
+            "probability": 0.017315660132563252,
             "start_seconds": 0
           },
           {
             "end_seconds": 150,
             "outcome": "opponent_decision",
-            "probability": 0.0018241413214772357,
+            "probability": 0.001825651984133252,
             "start_seconds": 0
           },
           {
             "end_seconds": 300,
             "outcome": "fighter_ko_tko",
-            "probability": 0.030957812676713246,
+            "probability": 0.03095837799081191,
             "start_seconds": 150
           },
           {
             "end_seconds": 300,
             "outcome": "fighter_submission",
-            "probability": 0.02772459657223878,
+            "probability": 0.027714820265428423,
             "start_seconds": 150
           },
           {
             "end_seconds": 300,
             "outcome": "fighter_decision",
-            "probability": 0.0010312891436363922,
+            "probability": 0.0010353321205254476,
             "start_seconds": 150
           },
           {
             "end_seconds": 300,
             "outcome": "fighter_other",
-            "probability": 0.00018544902837743004,
+            "probability": 0.000184432045623756,
             "start_seconds": 150
           },
           {
             "end_seconds": 300,
             "outcome": "opponent_ko_tko",
-            "probability": 0.029621319999378493,
+            "probability": 0.029654497082141792,
             "start_seconds": 150
           },
           {
             "end_seconds": 300,
             "outcome": "opponent_submission",
-            "probability": 0.015056464505736993,
+            "probability": 0.015127821267213421,
             "start_seconds": 150
           },
           {
             "end_seconds": 300,
             "outcome": "opponent_decision",
-            "probability": 0.0027723472554110787,
+            "probability": 0.002773958238619522,
             "start_seconds": 150
           },
           {
             "end_seconds": 450,
             "outcome": "fighter_ko_tko",
-            "probability": 0.024866004399952575,
+            "probability": 0.024863119821454276,
             "start_seconds": 300
           },
           {
             "end_seconds": 450,
             "outcome": "fighter_submission",
-            "probability": 0.024656239503036415,
+            "probability": 0.02464532012313411,
             "start_seconds": 300
           },
           {
             "end_seconds": 450,
             "outcome": "fighter_decision",
-            "probability": 0.0015995931095281587,
+            "probability": 0.001605276561467288,
             "start_seconds": 300
           },
           {
             "end_seconds": 450,
             "outcome": "fighter_other",
-            "probability": 0.00018126020777760226,
+            "probability": 0.00018024650856267465,
             "start_seconds": 300
           },
           {
             "end_seconds": 450,
             "outcome": "opponent_ko_tko",
-            "probability": 0.024432160573030492,
+            "probability": 0.02445503352663985,
             "start_seconds": 300
           },
           {
             "end_seconds": 450,
             "outcome": "opponent_submission",
-            "probability": 0.013173777355681005,
+            "probability": 0.013236755207495557,
             "start_seconds": 300
           },
           {
             "end_seconds": 450,
             "outcome": "opponent_decision",
-            "probability": 0.004219949783468526,
+            "probability": 0.004221333502405983,
             "start_seconds": 300
           },
           {
             "end_seconds": 600,
             "outcome": "fighter_ko_tko",
-            "probability": 0.01994805533868381,
+            "probability": 0.01994288424971969,
             "start_seconds": 450
           },
           {
             "end_seconds": 600,
             "outcome": "fighter_submission",
-            "probability": 0.021900158837815025,
+            "probability": 0.021888287377982058,
             "start_seconds": 450
           },
           {
             "end_seconds": 600,
             "outcome": "fighter_decision",
-            "probability": 0.0024779778696288487,
+            "probability": 0.00248585024865138,
             "start_seconds": 450
           },
           {
             "end_seconds": 600,
             "outcome": "fighter_other",
-            "probability": 0.00017694537060997337,
+            "probability": 0.00017593500595066813,
             "start_seconds": 450
           },
           {
             "end_seconds": 600,
             "outcome": "opponent_ko_tko",
-            "probability": 0.020126958919983232,
+            "probability": 0.02014192076464226,
             "start_seconds": 450
           },
           {
             "end_seconds": 600,
             "outcome": "opponent_submission",
-            "probability": 0.011512150380937154,
+            "probability": 0.011567556013687943,
             "start_seconds": 450
           },
           {
             "end_seconds": 600,
             "outcome": "opponent_decision",
-            "probability": 0.0064154298175209635,
+            "probability": 0.006415851919390424,
             "start_seconds": 450
           },
           {
             "end_seconds": 750,
             "outcome": "fighter_ko_tko",
-            "probability": 0.015910802624540813,
+            "probability": 0.015904191910137807,
             "start_seconds": 600
           },
           {
             "end_seconds": 750,
             "outcome": "fighter_submission",
-            "probability": 0.019340364517821663,
+            "probability": 0.019327709694302746,
             "start_seconds": 600
           },
           {
             "end_seconds": 750,
             "outcome": "fighter_decision",
-            "probability": 0.00381664958280049,
+            "probability": 0.0038272898513232313,
             "start_seconds": 600
           },
           {
             "end_seconds": 750,
             "outcome": "fighter_other",
-            "probability": 0.00017174057072091522,
+            "probability": 0.00017073751349935316,
             "start_seconds": 600
           },
           {
             "end_seconds": 750,
             "outcome": "opponent_ko_tko",
-            "probability": 0.01648509340254942,
+            "probability": 0.01649395468903225,
             "start_seconds": 600
           },
           {
             "end_seconds": 750,
             "outcome": "opponent_submission",
-            "probability": 0.010002292591357256,
+            "probability": 0.0100506228951466,
             "start_seconds": 600
           },
           {
             "end_seconds": 750,
             "outcome": "opponent_decision",
-            "probability": 0.009697084932569242,
+            "probability": 0.009695055335517505,
             "start_seconds": 600
           },
           {
             "end_seconds": 900,
             "outcome": "fighter_ko_tko",
-            "probability": 0.016599227762492553,
+            "probability": 0.016557379249211402,
             "start_seconds": 750
           },
           {
             "end_seconds": 900,
             "outcome": "fighter_submission",
-            "probability": 0.029242933593938928,
+            "probability": 0.029180027984099716,
             "start_seconds": 750
           },
           {
             "end_seconds": 900,
             "outcome": "fighter_decision",
-            "probability": 0.11783613630977252,
+            "probability": 0.11800333747994148,
             "start_seconds": 750
           },
           {
             "end_seconds": 900,
             "outcome": "fighter_other",
-            "probability": 0.0003191586338277903,
+            "probability": 0.0003169146050055907,
             "start_seconds": 750
           },
           {
             "end_seconds": 900,
             "outcome": "opponent_ko_tko",
-            "probability": 0.013573147513502375,
+            "probability": 0.01358054272732435,
             "start_seconds": 750
           },
           {
             "end_seconds": 900,
             "outcome": "opponent_submission",
-            "probability": 0.01391825353796952,
+            "probability": 0.013967123368603476,
             "start_seconds": 750
           },
           {
             "end_seconds": 900,
             "outcome": "opponent_decision",
-            "probability": 0.28700581065961545,
+            "probability": 0.28655632750297166,
             "start_seconds": 750
           },
           {
             "end_seconds": 900,
             "outcome": "fighter_decision",
-            "probability": 0.010867813276619688,
+            "probability": 0.010867688376085836,
             "start_seconds": 900
           },
           {
             "end_seconds": 900,
             "outcome": "opponent_decision",
-            "probability": 0.02647002572584252,
+            "probability": 0.026390820259869788,
             "start_seconds": 900
           }
         ],
@@ -1552,70 +1552,70 @@
       },
       "matchup_id": "matchup_d2e5e78f1298642503596eb3d86e999f3d2a96811e6193de8a1d94b618206aeb",
       "method_probabilities": {
-        "decision": 0.47670016850827424,
-        "ko_tko": 0.2870902556123614,
-        "other": 0.0012245816198646691,
-        "submission": 0.23498499425949967
+        "decision": 0.476372544226322,
+        "ko_tko": 0.28717390098083606,
+        "other": 0.0012172708670962224,
+        "submission": 0.23523628392574575
       },
       "opponent_id": "c88f8a9c1ea7165d",
       "opponent_name": "Farman Hasanov",
       "schedule_basis": "ufc_standard_non_main_non_title",
       "scheduled_rounds": 3,
       "terminal_probabilities": {
-        "fighter_decision": 0.1382953790123692,
-        "fighter_ko_tko": 0.14688347904288165,
-        "fighter_other": 0.0012245816198646691,
-        "fighter_submission": 0.15408725783649624,
-        "opponent_decision": 0.338404789495905,
-        "opponent_ko_tko": 0.14020677656947975,
+        "fighter_decision": 0.13849354548341394,
+        "fighter_ko_tko": 0.1468331789603034,
+        "fighter_other": 0.0012172708670962224,
+        "fighter_submission": 0.15397074504103547,
+        "opponent_decision": 0.3378789987429081,
+        "opponent_ko_tko": 0.1403407220205327,
         "opponent_other": 0.0,
-        "opponent_submission": 0.08089773642300344
+        "opponent_submission": 0.08126553888471026
       },
       "total_round_over_probabilities": {
-        "0.5": 0.8742924758850874,
-        "1.5": 0.6738142117711203,
-        "2.5": 0.5158325070135814
+        "0.5": 0.874164333283621,
+        "1.5": 0.6735080090220971,
+        "2.5": 0.5154201615531132
       },
       "total_round_over_probability_posteriors": {
         "0.5": {
-          "calibration_artifact_sha256": "b13ad3497ab257542dd04a80cf73062f6293a7b1ac4e655d74fe6e18ed3933fd",
+          "calibration_artifact_sha256": "a301d78fbe0c795e136ac5c8fcca7df608b8f130e85998a9e9709ab85b4db09b",
           "calibration_trained_through": "2026-10-17",
           "calibration_training_events": 18,
           "calibration_training_fights": 222,
-          "nominal_over_probability": 0.8742924758850874,
+          "nominal_over_probability": 0.874164333283621,
           "policy_version": "bayesian-logistic-total-calibration-v1",
           "posterior_interval_mass": 0.8,
-          "posterior_lower_over_probability": 0.8066314938798449,
-          "posterior_mean_over_probability": 0.8380639442844262,
-          "posterior_upper_over_probability": 0.8683493419162375,
+          "posterior_lower_over_probability": 0.8064976145723687,
+          "posterior_mean_over_probability": 0.8379313135041565,
+          "posterior_upper_over_probability": 0.8682197235373975,
           "schedule_contract_version": "verified-pre-fight-schedule-v1",
           "status": "available"
         },
         "1.5": {
-          "calibration_artifact_sha256": "b13ad3497ab257542dd04a80cf73062f6293a7b1ac4e655d74fe6e18ed3933fd",
+          "calibration_artifact_sha256": "a301d78fbe0c795e136ac5c8fcca7df608b8f130e85998a9e9709ab85b4db09b",
           "calibration_trained_through": "2026-10-17",
           "calibration_training_events": 18,
           "calibration_training_fights": 222,
-          "nominal_over_probability": 0.6738142117711203,
+          "nominal_over_probability": 0.6735080090220971,
           "policy_version": "bayesian-logistic-total-calibration-v1",
           "posterior_interval_mass": 0.8,
-          "posterior_lower_over_probability": 0.5581705762186757,
-          "posterior_mean_over_probability": 0.5848654408569397,
-          "posterior_upper_over_probability": 0.6129370667124425,
+          "posterior_lower_over_probability": 0.5580599071424276,
+          "posterior_mean_over_probability": 0.5847062796519116,
+          "posterior_upper_over_probability": 0.6127276887694266,
           "schedule_contract_version": "verified-pre-fight-schedule-v1",
           "status": "available"
         },
         "2.5": {
-          "calibration_artifact_sha256": "b13ad3497ab257542dd04a80cf73062f6293a7b1ac4e655d74fe6e18ed3933fd",
+          "calibration_artifact_sha256": "a301d78fbe0c795e136ac5c8fcca7df608b8f130e85998a9e9709ab85b4db09b",
           "calibration_trained_through": "2026-10-17",
           "calibration_training_events": 18,
           "calibration_training_fights": 222,
-          "nominal_over_probability": 0.5158325070135814,
+          "nominal_over_probability": 0.5154201615531132,
           "policy_version": "bayesian-logistic-total-calibration-v1",
           "posterior_interval_mass": 0.8,
-          "posterior_lower_over_probability": 0.5078658592672923,
-          "posterior_mean_over_probability": 0.5126353748786042,
-          "posterior_upper_over_probability": 0.5178066537958722,
+          "posterior_lower_over_probability": 0.5076609012075138,
+          "posterior_mean_over_probability": 0.5123062626525726,
+          "posterior_upper_over_probability": 0.5173429768448591,
           "schedule_contract_version": "verified-pre-fight-schedule-v1",
           "status": "available"
         }
@@ -1626,10 +1626,10 @@
       "division": "Featherweight",
       "fighter_id": "5d495dec23d7c68e",
       "fighter_name": "Francis Marshall",
-      "fighter_win_probability": 0.661682964563708,
+      "fighter_win_probability": 0.6619333481713205,
       "forecast_status": "candidate_model",
       "joint_outcome_grid": {
-        "decision_mass_before_scheduled_end": 0.05252766848708838,
+        "decision_mass_before_scheduled_end": 0.05257101468450393,
         "execution_enabled": false,
         "limitations": [
           "interval_times_not_exact_finish_times",
@@ -1641,265 +1641,265 @@
           {
             "end_seconds": 150,
             "outcome": "fighter_ko_tko",
-            "probability": 0.06180749572686713,
+            "probability": 0.0619500163176398,
             "start_seconds": 0
           },
           {
             "end_seconds": 150,
             "outcome": "fighter_submission",
-            "probability": 0.02878419573033917,
+            "probability": 0.02880481541025977,
             "start_seconds": 0
           },
           {
             "end_seconds": 150,
             "outcome": "fighter_decision",
-            "probability": 0.002270111565224525,
+            "probability": 0.0022741092974126174,
             "start_seconds": 0
           },
           {
             "end_seconds": 150,
             "outcome": "fighter_other",
-            "probability": 0.000194435777687358,
+            "probability": 0.0001932728873036236,
             "start_seconds": 0
           },
           {
             "end_seconds": 150,
             "outcome": "opponent_ko_tko",
-            "probability": 0.03532057042109043,
+            "probability": 0.03527604173408767,
             "start_seconds": 0
           },
           {
             "end_seconds": 150,
             "outcome": "opponent_submission",
-            "probability": 0.004189500408216911,
+            "probability": 0.004196762071615329,
             "start_seconds": 0
           },
           {
             "end_seconds": 150,
             "outcome": "opponent_decision",
-            "probability": 0.001560190072103088,
+            "probability": 0.001562721507852362,
             "start_seconds": 0
           },
           {
             "end_seconds": 300,
             "outcome": "fighter_ko_tko",
-            "probability": 0.049135212299420424,
+            "probability": 0.0492422887399576,
             "start_seconds": 150
           },
           {
             "end_seconds": 300,
             "outcome": "fighter_submission",
-            "probability": 0.02533562691176996,
+            "probability": 0.025351687597452016,
             "start_seconds": 150
           },
           {
             "end_seconds": 300,
             "outcome": "fighter_decision",
-            "probability": 0.0034849153323363666,
+            "probability": 0.00348980283644324,
             "start_seconds": 150
           },
           {
             "end_seconds": 300,
             "outcome": "fighter_other",
-            "probability": 0.00018809187854091047,
+            "probability": 0.00018694798703863003,
             "start_seconds": 150
           },
           {
             "end_seconds": 300,
             "outcome": "opponent_ko_tko",
-            "probability": 0.028833749832040675,
+            "probability": 0.028792337737296596,
             "start_seconds": 150
           },
           {
             "end_seconds": 300,
             "outcome": "opponent_submission",
-            "probability": 0.00362798516854934,
+            "probability": 0.0036344515332592006,
             "start_seconds": 150
           },
           {
             "end_seconds": 300,
             "outcome": "opponent_decision",
-            "probability": 0.0023504613625729446,
+            "probability": 0.002353697880258376,
             "start_seconds": 150
           },
           {
             "end_seconds": 450,
             "outcome": "fighter_ko_tko",
-            "probability": 0.03911859204880802,
+            "probability": 0.039198868659479705,
             "start_seconds": 300
           },
           {
             "end_seconds": 450,
             "outcome": "fighter_submission",
-            "probability": 0.02233304289454277,
+            "probability": 0.022345349392625752,
             "start_seconds": 300
           },
           {
             "end_seconds": 450,
             "outcome": "fighter_decision",
-            "probability": 0.0053576698771945685,
+            "probability": 0.005363261170680795,
             "start_seconds": 300
           },
           {
             "end_seconds": 450,
             "outcome": "fighter_other",
-            "probability": 0.0001822227495839436,
+            "probability": 0.00018109612142300184,
             "start_seconds": 300
           },
           {
             "end_seconds": 450,
             "outcome": "opponent_ko_tko",
-            "probability": 0.023572911872064565,
+            "probability": 0.023534908025057037,
             "start_seconds": 300
           },
           {
             "end_seconds": 450,
             "outcome": "opponent_submission",
-            "probability": 0.003146353086867757,
+            "probability": 0.0031521139743610495,
             "start_seconds": 300
           },
           {
             "end_seconds": 450,
             "outcome": "opponent_decision",
-            "probability": 0.0035462341864182356,
+            "probability": 0.003550245128376382,
             "start_seconds": 300
           },
           {
             "end_seconds": 600,
             "outcome": "fighter_ko_tko",
-            "probability": 0.031053927319348754,
+            "probability": 0.03111357956565415,
             "start_seconds": 450
           },
           {
             "end_seconds": 600,
             "outcome": "fighter_submission",
-            "probability": 0.019629402644209874,
+            "probability": 0.01963851155172817,
             "start_seconds": 450
           },
           {
             "end_seconds": 600,
             "outcome": "fighter_decision",
-            "probability": 0.008213014843113924,
+            "probability": 0.008218605686889823,
             "start_seconds": 450
           },
           {
             "end_seconds": 600,
             "outcome": "fighter_other",
-            "probability": 0.0001760265128219584,
+            "probability": 0.00017491966963987168,
             "start_seconds": 450
           },
           {
             "end_seconds": 600,
             "outcome": "opponent_ko_tko",
-            "probability": 0.019216233951277483,
+            "probability": 0.019181794169213656,
             "start_seconds": 450
           },
           {
             "end_seconds": 600,
             "outcome": "opponent_submission",
-            "probability": 0.0027207732647177153,
+            "probability": 0.002725875941512155,
             "start_seconds": 450
           },
           {
             "end_seconds": 600,
             "outcome": "opponent_decision",
-            "probability": 0.005334879891222746,
+            "probability": 0.005339580123639165,
             "start_seconds": 450
           },
           {
             "end_seconds": 750,
             "outcome": "fighter_ko_tko",
-            "probability": 0.02440602694772762,
+            "probability": 0.02444949366974671,
             "start_seconds": 600
           },
           {
             "end_seconds": 750,
             "outcome": "fighter_submission",
-            "probability": 0.017081008321326065,
+            "probability": 0.017087299516862026,
             "start_seconds": 600
           },
           {
             "end_seconds": 750,
             "outcome": "fighter_decision",
-            "probability": 0.01246454708655819,
+            "probability": 0.012468401749275014,
             "start_seconds": 600
           },
           {
             "end_seconds": 750,
             "outcome": "fighter_other",
-            "probability": 0.00016834522901471656,
+            "probability": 0.0001672675102750106,
             "start_seconds": 600
           },
           {
             "end_seconds": 750,
             "outcome": "opponent_ko_tko",
-            "probability": 0.015508527330399358,
+            "probability": 0.015477805764757022,
             "start_seconds": 600
           },
           {
             "end_seconds": 750,
             "outcome": "opponent_submission",
-            "probability": 0.002329294934325536,
+            "probability": 0.002333746639411723,
             "start_seconds": 600
           },
           {
             "end_seconds": 750,
             "outcome": "opponent_decision",
-            "probability": 0.007945644270343796,
+            "probability": 0.007950589303676163,
             "start_seconds": 600
           },
           {
             "end_seconds": 900,
             "outcome": "fighter_ko_tko",
-            "probability": 0.017234809016705516,
+            "probability": 0.017233015442945098,
             "start_seconds": 750
           },
           {
             "end_seconds": 900,
             "outcome": "fighter_submission",
-            "probability": 0.017481688609226977,
+            "probability": 0.01746586749107332,
             "start_seconds": 750
           },
           {
             "end_seconds": 900,
             "outcome": "fighter_decision",
-            "probability": 0.26048714854581867,
+            "probability": 0.26027061772593535,
             "start_seconds": 750
           },
           {
             "end_seconds": 900,
             "outcome": "fighter_other",
-            "probability": 0.00021176203480317073,
+            "probability": 0.0002102017430419073,
             "start_seconds": 750
           },
           {
             "end_seconds": 900,
             "outcome": "opponent_ko_tko",
-            "probability": 0.008643175066396206,
+            "probability": 0.008628059671232794,
             "start_seconds": 750
           },
           {
             "end_seconds": 900,
             "outcome": "opponent_submission",
-            "probability": 0.0021939325123846868,
+            "probability": 0.002195730907209094,
             "start_seconds": 750
           },
           {
             "end_seconds": 900,
             "outcome": "opponent_decision",
-            "probability": 0.1591813562673677,
+            "probability": 0.1591000987294893,
             "start_seconds": 750
           },
           {
             "end_seconds": 900,
             "outcome": "fighter_decision",
-            "probability": 0.014883644660717418,
+            "probability": 0.014854050430537592,
             "start_seconds": 900
           },
           {
             "end_seconds": 900,
             "outcome": "opponent_decision",
-            "probability": 0.009095261537932766,
+            "probability": 0.009080090986374327,
             "start_seconds": 900
           }
         ],
@@ -1908,70 +1908,70 @@
       },
       "matchup_id": "matchup_4920d3cb2a2fbf14d1612e812a4a3b58dc7e01f1e0025f5165cafda4b537a64c",
       "method_probabilities": {
-        "decision": 0.4961750794989249,
-        "ko_tko": 0.3538512318321462,
-        "other": 0.0011208841824520577,
-        "submission": 0.14885280448647675
+        "decision": 0.4958758725568405,
+        "ko_tko": 0.3540782094970678,
+        "other": 0.001113705918722045,
+        "submission": 0.14893221202736961
       },
       "opponent_id": "96924b0019b3aff1",
       "opponent_name": "Gaston Bolanos",
       "schedule_basis": "ufc_standard_non_main_non_title",
       "scheduled_rounds": 3,
       "terminal_probabilities": {
-        "fighter_decision": 0.30716105191096366,
-        "fighter_ko_tko": 0.22275606335887746,
-        "fighter_other": 0.0011208841824520577,
-        "fighter_submission": 0.1306449651114148,
-        "opponent_decision": 0.1890140275879613,
-        "opponent_ko_tko": 0.13109516847326871,
+        "fighter_decision": 0.30693884889717443,
+        "fighter_ko_tko": 0.22318726239542303,
+        "fighter_other": 0.001113705918722045,
+        "fighter_submission": 0.13069353096000105,
+        "opponent_decision": 0.1889370236596661,
+        "opponent_ko_tko": 0.13089094710164476,
         "opponent_other": 0.0,
-        "opponent_submission": 0.018207839375061947
+        "opponent_submission": 0.018238681067368548
       },
       "total_round_over_probabilities": {
-        "0.5": 0.8658735002984713,
-        "1.5": 0.6556604307977609,
-        "2.5": 0.48941277825135315
+        "0.5": 0.8657422607738289,
+        "1.5": 0.6553652039901193,
+        "2.5": 0.4890377331278387
       },
       "total_round_over_probability_posteriors": {
         "0.5": {
-          "calibration_artifact_sha256": "b13ad3497ab257542dd04a80cf73062f6293a7b1ac4e655d74fe6e18ed3933fd",
+          "calibration_artifact_sha256": "a301d78fbe0c795e136ac5c8fcca7df608b8f130e85998a9e9709ab85b4db09b",
           "calibration_trained_through": "2026-10-17",
           "calibration_training_events": 18,
           "calibration_training_fights": 222,
-          "nominal_over_probability": 0.8658735002984713,
+          "nominal_over_probability": 0.8657422607738289,
           "policy_version": "bayesian-logistic-total-calibration-v1",
           "posterior_interval_mass": 0.8,
-          "posterior_lower_over_probability": 0.797929610631191,
-          "posterior_mean_over_probability": 0.829402360147037,
-          "posterior_upper_over_probability": 0.8598418741827685,
+          "posterior_lower_over_probability": 0.797795475095323,
+          "posterior_mean_over_probability": 0.8292682047268473,
+          "posterior_upper_over_probability": 0.8597094378816954,
           "schedule_contract_version": "verified-pre-fight-schedule-v1",
           "status": "available"
         },
         "1.5": {
-          "calibration_artifact_sha256": "b13ad3497ab257542dd04a80cf73062f6293a7b1ac4e655d74fe6e18ed3933fd",
+          "calibration_artifact_sha256": "a301d78fbe0c795e136ac5c8fcca7df608b8f130e85998a9e9709ab85b4db09b",
           "calibration_trained_through": "2026-10-17",
           "calibration_training_events": 18,
           "calibration_training_fights": 222,
-          "nominal_over_probability": 0.6556604307977609,
+          "nominal_over_probability": 0.6553652039901193,
           "policy_version": "bayesian-logistic-total-calibration-v1",
           "posterior_interval_mass": 0.8,
-          "posterior_lower_over_probability": 0.5516875747635336,
-          "posterior_mean_over_probability": 0.575520496088097,
-          "posterior_upper_over_probability": 0.6006209985370999,
+          "posterior_lower_over_probability": 0.5515833957737412,
+          "posterior_mean_over_probability": 0.5753699943272192,
+          "posterior_upper_over_probability": 0.60042228999153,
           "schedule_contract_version": "verified-pre-fight-schedule-v1",
           "status": "available"
         },
         "2.5": {
-          "calibration_artifact_sha256": "b13ad3497ab257542dd04a80cf73062f6293a7b1ac4e655d74fe6e18ed3933fd",
+          "calibration_artifact_sha256": "a301d78fbe0c795e136ac5c8fcca7df608b8f130e85998a9e9709ab85b4db09b",
           "calibration_trained_through": "2026-10-17",
           "calibration_training_events": 18,
           "calibration_training_fights": 222,
-          "nominal_over_probability": 0.48941277825135315,
+          "nominal_over_probability": 0.4890377331278387,
           "policy_version": "bayesian-logistic-total-calibration-v1",
           "posterior_interval_mass": 0.8,
-          "posterior_lower_over_probability": 0.4880920797001091,
-          "posterior_mean_over_probability": 0.4915509750945576,
-          "posterior_upper_over_probability": 0.4947408202849313,
+          "posterior_lower_over_probability": 0.48767028169644927,
+          "posterior_mean_over_probability": 0.49125165577796615,
+          "posterior_upper_over_probability": 0.49455447219354914,
           "schedule_contract_version": "verified-pre-fight-schedule-v1",
           "status": "available"
         }
@@ -1982,10 +1982,10 @@
       "division": "Middleweight",
       "fighter_id": "3bc3f60b21cddc6a",
       "fighter_name": "Azamat Bekoev",
-      "fighter_win_probability": 0.5468674906351483,
+      "fighter_win_probability": 0.546613830953383,
       "forecast_status": "candidate_model",
       "joint_outcome_grid": {
-        "decision_mass_before_scheduled_end": 0.053417992407718225,
+        "decision_mass_before_scheduled_end": 0.053413481430358734,
         "execution_enabled": false,
         "limitations": [
           "interval_times_not_exact_finish_times",
@@ -1997,265 +1997,265 @@
           {
             "end_seconds": 150,
             "outcome": "fighter_ko_tko",
-            "probability": 0.06959015904090832,
+            "probability": 0.06961111623030374,
             "start_seconds": 0
           },
           {
             "end_seconds": 150,
             "outcome": "fighter_submission",
-            "probability": 0.015610343706584597,
+            "probability": 0.015618921361907153,
             "start_seconds": 0
           },
           {
             "end_seconds": 150,
             "outcome": "fighter_decision",
-            "probability": 0.0019372225573445858,
+            "probability": 0.0019371148402920072,
             "start_seconds": 0
           },
           {
             "end_seconds": 150,
             "outcome": "fighter_other",
-            "probability": 0.00022955539834797122,
+            "probability": 0.00022807162112706332,
             "start_seconds": 0
           },
           {
             "end_seconds": 150,
             "outcome": "opponent_ko_tko",
-            "probability": 0.03550292857740338,
+            "probability": 0.035574080376816156,
             "start_seconds": 0
           },
           {
             "end_seconds": 150,
             "outcome": "opponent_submission",
-            "probability": 0.022385419705672142,
+            "probability": 0.02236277490388097,
             "start_seconds": 0
           },
           {
             "end_seconds": 150,
             "outcome": "opponent_decision",
-            "probability": 0.002138771786688332,
+            "probability": 0.002141345130337133,
             "start_seconds": 0
           },
           {
             "end_seconds": 300,
             "outcome": "fighter_ko_tko",
-            "probability": 0.05451510808650499,
+            "probability": 0.054527678407412086,
             "start_seconds": 150
           },
           {
             "end_seconds": 300,
             "outcome": "fighter_submission",
-            "probability": 0.01353964820500162,
+            "probability": 0.013546728305691244,
             "start_seconds": 150
           },
           {
             "end_seconds": 300,
             "outcome": "fighter_decision",
-            "probability": 0.002930501219567171,
+            "probability": 0.0029294529697145347,
             "start_seconds": 150
           },
           {
             "end_seconds": 300,
             "outcome": "fighter_other",
-            "probability": 0.00021882590430221053,
+            "probability": 0.00021740158819765707,
             "start_seconds": 150
           },
           {
             "end_seconds": 300,
             "outcome": "opponent_ko_tko",
-            "probability": 0.028559786414878923,
+            "probability": 0.028613591094906524,
             "start_seconds": 150
           },
           {
             "end_seconds": 300,
             "outcome": "opponent_submission",
-            "probability": 0.019102309020244842,
+            "probability": 0.01908498531387952,
             "start_seconds": 150
           },
           {
             "end_seconds": 300,
             "outcome": "opponent_decision",
-            "probability": 0.003175100030489472,
+            "probability": 0.0031783183934370996,
             "start_seconds": 150
           },
           {
             "end_seconds": 450,
             "outcome": "fighter_ko_tko",
-            "probability": 0.042793138973310496,
+            "probability": 0.042799960183100595,
             "start_seconds": 300
           },
           {
             "end_seconds": 450,
             "outcome": "fighter_submission",
-            "probability": 0.011767670882703689,
+            "probability": 0.011773504415514712,
             "start_seconds": 300
           },
           {
             "end_seconds": 450,
             "outcome": "fighter_decision",
-            "probability": 0.004442142780927178,
+            "probability": 0.004439209487594129,
             "start_seconds": 300
           },
           {
             "end_seconds": 450,
             "outcome": "fighter_other",
-            "probability": 0.00020902497087813576,
+            "probability": 0.0002076548712459637,
             "start_seconds": 300
           },
           {
             "end_seconds": 450,
             "outcome": "opponent_ko_tko",
-            "probability": 0.02302151762890698,
+            "probability": 0.023062107868996193,
             "start_seconds": 300
           },
           {
             "end_seconds": 450,
             "outcome": "opponent_submission",
-            "probability": 0.016334081176545757,
+            "probability": 0.016320968097676112,
             "start_seconds": 300
           },
           {
             "end_seconds": 450,
             "outcome": "opponent_decision",
-            "probability": 0.004723224580337581,
+            "probability": 0.004727114048047134,
             "start_seconds": 300
           },
           {
             "end_seconds": 600,
             "outcome": "fighter_ko_tko",
-            "probability": 0.03350534692855794,
+            "probability": 0.03350831290193791,
             "start_seconds": 450
           },
           {
             "end_seconds": 600,
             "outcome": "fighter_submission",
-            "probability": 0.010201319628818891,
+            "probability": 0.010206102391846243,
             "start_seconds": 450
           },
           {
             "end_seconds": 600,
             "outcome": "fighter_decision",
-            "probability": 0.006716234159930202,
+            "probability": 0.006709769320408433,
             "start_seconds": 450
           },
           {
             "end_seconds": 600,
             "outcome": "fighter_other",
-            "probability": 0.00019915000411324416,
+            "probability": 0.00019783556792024094,
             "start_seconds": 450
           },
           {
             "end_seconds": 600,
             "outcome": "opponent_ko_tko",
-            "probability": 0.018509541156847945,
+            "probability": 0.018539946278908592,
             "start_seconds": 450
           },
           {
             "end_seconds": 600,
             "outcome": "opponent_submission",
-            "probability": 0.013931127313831735,
+            "probability": 0.013921397730359416,
             "start_seconds": 450
           },
           {
             "end_seconds": 600,
             "outcome": "opponent_decision",
-            "probability": 0.007008135466884653,
+            "probability": 0.007012576292793048,
             "start_seconds": 450
           },
           {
             "end_seconds": 750,
             "outcome": "fighter_ko_tko",
-            "probability": 0.02597011559795529,
+            "probability": 0.02597065741080936,
             "start_seconds": 600
           },
           {
             "end_seconds": 750,
             "outcome": "fighter_submission",
-            "probability": 0.008754714447488892,
+            "probability": 0.008758611738530908,
             "start_seconds": 600
           },
           {
             "end_seconds": 750,
             "outcome": "fighter_decision",
-            "probability": 0.010052612302049978,
+            "probability": 0.010039930879235244,
             "start_seconds": 600
           },
           {
             "end_seconds": 750,
             "outcome": "fighter_other",
-            "probability": 0.00018783748139367877,
+            "probability": 0.00018658976102146113,
             "start_seconds": 600
           },
           {
             "end_seconds": 750,
             "outcome": "opponent_ko_tko",
-            "probability": 0.014732523568309215,
+            "probability": 0.014754997066148657,
             "start_seconds": 600
           },
           {
             "end_seconds": 750,
             "outcome": "opponent_submission",
-            "probability": 0.011762444880584488,
+            "probability": 0.011755495797686775,
             "start_seconds": 600
           },
           {
             "end_seconds": 750,
             "outcome": "opponent_decision",
-            "probability": 0.010294047523499073,
+            "probability": 0.01029865006849998,
             "start_seconds": 600
           },
           {
             "end_seconds": 900,
             "outcome": "fighter_ko_tko",
-            "probability": 0.017205892410826505,
+            "probability": 0.017191688385112334,
             "start_seconds": 750
           },
           {
             "end_seconds": 900,
             "outcome": "fighter_submission",
-            "probability": 0.008406317569215534,
+            "probability": 0.00840806738199699,
             "start_seconds": 750
           },
           {
             "end_seconds": 900,
             "outcome": "fighter_decision",
-            "probability": 0.1970982026879609,
+            "probability": 0.1968290779462207,
             "start_seconds": 750
           },
           {
             "end_seconds": 900,
             "outcome": "fighter_other",
-            "probability": 0.00022167845012365883,
+            "probability": 0.00022021997476372597,
             "start_seconds": 750
           },
           {
             "end_seconds": 900,
             "outcome": "opponent_ko_tko",
-            "probability": 0.007703247041746532,
+            "probability": 0.007724796635150396,
             "start_seconds": 750
           },
           {
             "end_seconds": 900,
             "outcome": "opponent_submission",
-            "probability": 0.010394181943072215,
+            "probability": 0.010387488112190589,
             "start_seconds": 750
           },
           {
             "end_seconds": 900,
             "outcome": "opponent_decision",
-            "probability": 0.19348316515469077,
+            "probability": 0.1935510851453294,
             "start_seconds": 750
           },
           {
             "end_seconds": 900,
             "outcome": "fighter_decision",
-            "probability": 0.010564727240332573,
+            "probability": 0.010550153011478495,
             "start_seconds": 900
           },
           {
             "end_seconds": 900,
             "outcome": "opponent_decision",
-            "probability": 0.010370956394217715,
+            "probability": 0.010374450691573417,
             "start_seconds": 900
           }
         ],
@@ -2264,70 +2264,70 @@
       },
       "matchup_id": "matchup_a03a2c5f52a4694a2158a4ee64136c441ef99c397b83adcd2ff6c72d5133c2b9",
       "method_probabilities": {
-        "decision": 0.4649350438849202,
-        "ko_tko": 0.37160930542615656,
-        "other": 0.001266072209158899,
-        "submission": 0.1621895784797644
+        "decision": 0.4647182482249608,
+        "ko_tko": 0.37187893283960255,
+        "other": 0.001257773384276112,
+        "submission": 0.1621450455511606
       },
       "opponent_id": "5f61780fe5e9b6d0",
       "opponent_name": "Andre Petroski",
       "schedule_basis": "ufc_standard_non_main_non_title",
       "scheduled_rounds": 3,
       "terminal_probabilities": {
-        "fighter_decision": 0.23374164294811262,
-        "fighter_ko_tko": 0.24357976103806356,
-        "fighter_other": 0.001266072209158899,
-        "fighter_submission": 0.06828001443981321,
-        "opponent_decision": 0.23119340093680757,
-        "opponent_ko_tko": 0.12802954438809297,
+        "fighter_decision": 0.23343470845494355,
+        "fighter_ko_tko": 0.24360941351867604,
+        "fighter_other": 0.001257773384276112,
+        "fighter_submission": 0.06831193559548725,
+        "opponent_decision": 0.2312835397700172,
+        "opponent_ko_tko": 0.1282695193209265,
         "opponent_other": 0.0,
-        "opponent_submission": 0.09390956403995118
+        "opponent_submission": 0.09383310995567337
       },
       "total_round_over_probabilities": {
-        "0.5": 0.8526055992270505,
-        "1.5": 0.6272735193524516,
-        "2.5": 0.4554483688921864
+        "0.5": 0.8525265755353357,
+        "1.5": 0.6270979004899221,
+        "2.5": 0.455237027283816
       },
       "total_round_over_probability_posteriors": {
         "0.5": {
-          "calibration_artifact_sha256": "b13ad3497ab257542dd04a80cf73062f6293a7b1ac4e655d74fe6e18ed3933fd",
+          "calibration_artifact_sha256": "a301d78fbe0c795e136ac5c8fcca7df608b8f130e85998a9e9709ab85b4db09b",
           "calibration_trained_through": "2026-10-17",
           "calibration_training_events": 18,
           "calibration_training_fights": 222,
-          "nominal_over_probability": 0.8526055992270505,
+          "nominal_over_probability": 0.8525265755353357,
           "policy_version": "bayesian-logistic-total-calibration-v1",
           "posterior_interval_mass": 0.8,
-          "posterior_lower_over_probability": 0.7845812743912247,
-          "posterior_mean_over_probability": 0.8159590864992422,
-          "posterior_upper_over_probability": 0.8464737413902316,
+          "posterior_lower_over_probability": 0.784503037705424,
+          "posterior_mean_over_probability": 0.8158797500010936,
+          "posterior_upper_over_probability": 0.8463942817070906,
           "schedule_contract_version": "verified-pre-fight-schedule-v1",
           "status": "available"
         },
         "1.5": {
-          "calibration_artifact_sha256": "b13ad3497ab257542dd04a80cf73062f6293a7b1ac4e655d74fe6e18ed3933fd",
+          "calibration_artifact_sha256": "a301d78fbe0c795e136ac5c8fcca7df608b8f130e85998a9e9709ab85b4db09b",
           "calibration_trained_through": "2026-10-17",
           "calibration_training_events": 18,
           "calibration_training_fights": 222,
-          "nominal_over_probability": 0.6272735193524516,
+          "nominal_over_probability": 0.6270979004899221,
           "policy_version": "bayesian-logistic-total-calibration-v1",
           "posterior_interval_mass": 0.8,
-          "posterior_lower_over_probability": 0.5418293037997378,
-          "posterior_mean_over_probability": 0.5612357831718702,
-          "posterior_upper_over_probability": 0.5817149154150876,
+          "posterior_lower_over_probability": 0.5417692323555019,
+          "posterior_mean_over_probability": 0.5611484952630869,
+          "posterior_upper_over_probability": 0.5815991273587329,
           "schedule_contract_version": "verified-pre-fight-schedule-v1",
           "status": "available"
         },
         "2.5": {
-          "calibration_artifact_sha256": "b13ad3497ab257542dd04a80cf73062f6293a7b1ac4e655d74fe6e18ed3933fd",
+          "calibration_artifact_sha256": "a301d78fbe0c795e136ac5c8fcca7df608b8f130e85998a9e9709ab85b4db09b",
           "calibration_trained_through": "2026-10-17",
           "calibration_training_events": 18,
           "calibration_training_fights": 222,
-          "nominal_over_probability": 0.4554483688921864,
+          "nominal_over_probability": 0.455237027283816,
           "policy_version": "bayesian-logistic-total-calibration-v1",
           "posterior_interval_mass": 0.8,
-          "posterior_lower_over_probability": 0.4499240021289453,
-          "posterior_mean_over_probability": 0.4644306029941559,
-          "posterior_upper_over_probability": 0.477827274128246,
+          "posterior_lower_over_probability": 0.4496867776034092,
+          "posterior_mean_over_probability": 0.4642617052644771,
+          "posterior_upper_over_probability": 0.4777216633139122,
           "schedule_contract_version": "verified-pre-fight-schedule-v1",
           "status": "available"
         }
@@ -2338,10 +2338,10 @@
       "division": "Welterweight",
       "fighter_id": "c06d6b18862f9a53",
       "fighter_name": "Rodrigo Sezinando",
-      "fighter_win_probability": 0.42111162548462805,
+      "fighter_win_probability": 0.4212385357326382,
       "forecast_status": "candidate_model",
       "joint_outcome_grid": {
-        "decision_mass_before_scheduled_end": 0.05128570606073967,
+        "decision_mass_before_scheduled_end": 0.05123450435317029,
         "execution_enabled": false,
         "limitations": [
           "interval_times_not_exact_finish_times",
@@ -2353,265 +2353,265 @@
           {
             "end_seconds": 150,
             "outcome": "fighter_ko_tko",
-            "probability": 0.031490459365543975,
+            "probability": 0.03146511269279465,
             "start_seconds": 0
           },
           {
             "end_seconds": 150,
             "outcome": "fighter_submission",
-            "probability": 0.014578946752118965,
+            "probability": 0.014582483881451188,
             "start_seconds": 0
           },
           {
             "end_seconds": 150,
             "outcome": "fighter_decision",
-            "probability": 0.0017816621200258868,
+            "probability": 0.0017816235754531502,
             "start_seconds": 0
           },
           {
             "end_seconds": 150,
             "outcome": "fighter_other",
-            "probability": 0.00022389652903701337,
+            "probability": 0.0002222352905632725,
             "start_seconds": 0
           },
           {
             "end_seconds": 150,
             "outcome": "opponent_ko_tko",
-            "probability": 0.06161999617072454,
+            "probability": 0.06165575227825121,
             "start_seconds": 0
           },
           {
             "end_seconds": 150,
             "outcome": "opponent_submission",
-            "probability": 0.024626856333270084,
+            "probability": 0.024557916783487538,
             "start_seconds": 0
           },
           {
             "end_seconds": 150,
             "outcome": "opponent_decision",
-            "probability": 0.0020218531672736764,
+            "probability": 0.002018833577228514,
             "start_seconds": 0
           },
           {
             "end_seconds": 300,
             "outcome": "fighter_ko_tko",
-            "probability": 0.02495236571972175,
+            "probability": 0.024934527519269917,
             "start_seconds": 150
           },
           {
             "end_seconds": 300,
             "outcome": "fighter_submission",
-            "probability": 0.012790418286079314,
+            "probability": 0.01279523685360004,
             "start_seconds": 150
           },
           {
             "end_seconds": 300,
             "outcome": "fighter_decision",
-            "probability": 0.0027261604838113066,
+            "probability": 0.002725715695019765,
             "start_seconds": 150
           },
           {
             "end_seconds": 300,
             "outcome": "fighter_other",
-            "probability": 0.00021588489922374425,
+            "probability": 0.00021430777647871976,
             "start_seconds": 150
           },
           {
             "end_seconds": 300,
             "outcome": "opponent_ko_tko",
-            "probability": 0.05013905291007914,
+            "probability": 0.050170187925676034,
             "start_seconds": 150
           },
           {
             "end_seconds": 300,
             "outcome": "opponent_submission",
-            "probability": 0.02125657476231806,
+            "probability": 0.021202696817026804,
             "start_seconds": 150
           },
           {
             "end_seconds": 300,
             "outcome": "opponent_decision",
-            "probability": 0.003036031414917071,
+            "probability": 0.003031410095206085,
             "start_seconds": 150
           },
           {
             "end_seconds": 450,
             "outcome": "fighter_ko_tko",
-            "probability": 0.019790132568339638,
+            "probability": 0.019777792005609647,
             "start_seconds": 300
           },
           {
             "end_seconds": 450,
             "outcome": "fighter_submission",
-            "probability": 0.01123175419195629,
+            "probability": 0.011237506717835768,
             "start_seconds": 300
           },
           {
             "end_seconds": 450,
             "outcome": "fighter_decision",
-            "probability": 0.004175242794635421,
+            "probability": 0.004173976207997821,
             "start_seconds": 300
           },
           {
             "end_seconds": 450,
             "outcome": "fighter_other",
-            "probability": 0.00020835379473033166,
+            "probability": 0.00020685577296368471,
             "start_seconds": 300
           },
           {
             "end_seconds": 450,
             "outcome": "opponent_ko_tko",
-            "probability": 0.04083521349448361,
+            "probability": 0.040862286535483835,
             "start_seconds": 300
           },
           {
             "end_seconds": 450,
             "outcome": "opponent_submission",
-            "probability": 0.018364615392637933,
+            "probability": 0.018322954093807704,
             "start_seconds": 300
           },
           {
             "end_seconds": 450,
             "outcome": "opponent_decision",
-            "probability": 0.0045631753152957045,
+            "probability": 0.00455610449505389,
             "start_seconds": 300
           },
           {
             "end_seconds": 600,
             "outcome": "fighter_ko_tko",
-            "probability": 0.015645127134067478,
+            "probability": 0.01563691508020855,
             "start_seconds": 450
           },
           {
             "end_seconds": 600,
             "outcome": "fighter_submission",
-            "probability": 0.009831139305879616,
+            "probability": 0.009837578468111674,
             "start_seconds": 450
           },
           {
             "end_seconds": 600,
             "outcome": "fighter_decision",
-            "probability": 0.006373903279491323,
+            "probability": 0.006371123062367582,
             "start_seconds": 450
           },
           {
             "end_seconds": 600,
             "outcome": "fighter_other",
-            "probability": 0.00020043519407196832,
+            "probability": 0.00019901873958662341,
             "start_seconds": 450
           },
           {
             "end_seconds": 600,
             "outcome": "opponent_ko_tko",
-            "probability": 0.03315026097333811,
+            "probability": 0.033173875633352924,
             "start_seconds": 450
           },
           {
             "end_seconds": 600,
             "outcome": "opponent_submission",
-            "probability": 0.01581480375500526,
+            "probability": 0.01578325212369323,
             "start_seconds": 450
           },
           {
             "end_seconds": 600,
             "outcome": "opponent_decision",
-            "probability": 0.006836305542083007,
+            "probability": 0.00682557542325608,
             "start_seconds": 450
           },
           {
             "end_seconds": 750,
             "outcome": "fighter_ko_tko",
-            "probability": 0.012243945291331684,
+            "probability": 0.012238954889974988,
             "start_seconds": 600
           },
           {
             "end_seconds": 750,
             "outcome": "fighter_submission",
-            "probability": 0.00851867403429177,
+            "probability": 0.008525629169741566,
             "start_seconds": 600
           },
           {
             "end_seconds": 750,
             "outcome": "fighter_decision",
-            "probability": 0.00963254603826137,
+            "probability": 0.009627244521418806,
             "start_seconds": 600
           },
           {
             "end_seconds": 750,
             "outcome": "fighter_other",
-            "probability": 0.00019087912600237572,
+            "probability": 0.00018955719837180518,
             "start_seconds": 600
           },
           {
             "end_seconds": 750,
             "outcome": "opponent_ko_tko",
-            "probability": 0.026641027050177353,
+            "probability": 0.026661817025443645,
             "start_seconds": 600
           },
           {
             "end_seconds": 750,
             "outcome": "opponent_submission",
-            "probability": 0.013482103830591114,
+            "probability": 0.013459145208003636,
             "start_seconds": 600
           },
           {
             "end_seconds": 750,
             "outcome": "opponent_decision",
-            "probability": 0.0101388259049449,
+            "probability": 0.010122897700168602,
             "start_seconds": 600
           },
           {
             "end_seconds": 900,
             "outcome": "fighter_ko_tko",
-            "probability": 0.008784236017494127,
+            "probability": 0.00878510248926569,
             "start_seconds": 750
           },
           {
             "end_seconds": 900,
             "outcome": "fighter_submission",
-            "probability": 0.008857580399220424,
+            "probability": 0.008874711796470983,
             "start_seconds": 750
           },
           {
             "end_seconds": 900,
             "outcome": "fighter_decision",
-            "probability": 0.20451450688692369,
+            "probability": 0.20465739827186102,
             "start_seconds": 750
           },
           {
             "end_seconds": 900,
             "outcome": "fighter_other",
-            "probability": 0.00024393771603266912,
+            "probability": 0.00024259178633784944,
             "start_seconds": 750
           },
           {
             "end_seconds": 900,
             "outcome": "opponent_ko_tko",
-            "probability": 0.015084361793353833,
+            "probability": 0.015135772178726768,
             "start_seconds": 750
           },
           {
             "end_seconds": 900,
             "outcome": "opponent_submission",
-            "probability": 0.01290118717585098,
+            "probability": 0.012895968955665964,
             "start_seconds": 750
           },
           {
             "end_seconds": 900,
             "outcome": "opponent_decision",
-            "probability": 0.20635926658389203,
+            "probability": 0.20629422375098203,
             "start_seconds": 750
           },
           {
             "end_seconds": 900,
             "outcome": "fighter_decision",
-            "probability": 0.011909437556335885,
+            "probability": 0.011935336269883447,
             "start_seconds": 900
           },
           {
             "end_seconds": 900,
             "outcome": "opponent_decision",
-            "probability": 0.0120168629451355,
+            "probability": 0.012030793666847278,
             "start_seconds": 900
           }
         ],
@@ -2620,70 +2620,70 @@
       },
       "matchup_id": "matchup_3ea49474afc6b7b845d9b665babc7b160d29796e47742829092da97dd747d4c0",
       "method_probabilities": {
-        "decision": 0.4860857800330268,
-        "ko_tko": 0.34037617848865526,
-        "other": 0.0012833872590981025,
-        "submission": 0.1722546542192198
+        "decision": 0.48615225631274406,
+        "ko_tko": 0.34049809625405786,
+        "other": 0.001274566564301955,
+        "submission": 0.1720750808688961
       },
       "opponent_id": "feef5f8f5629e5e7",
       "opponent_name": "Theodor Berggren",
       "schedule_basis": "ufc_standard_non_main_non_title",
       "scheduled_rounds": 3,
       "terminal_probabilities": {
-        "fighter_decision": 0.2411134591594849,
-        "fighter_ko_tko": 0.11290626609649866,
-        "fighter_other": 0.0012833872590981025,
-        "fighter_submission": 0.06580851296954637,
-        "opponent_decision": 0.2449723208735419,
-        "opponent_ko_tko": 0.2274699123921566,
+        "fighter_decision": 0.2412724176040016,
+        "fighter_ko_tko": 0.11283840467712344,
+        "fighter_other": 0.001274566564301955,
+        "fighter_submission": 0.06585314688721122,
+        "opponent_decision": 0.24487983870874247,
+        "opponent_ko_tko": 0.22765969157693441,
         "opponent_other": 0.0,
-        "opponent_submission": 0.10644614124967341
+        "opponent_submission": 0.10622193398168488
       },
       "total_round_over_probabilities": {
-        "0.5": 0.8636563295620059,
-        "1.5": 0.6493713535337767,
-        "2.5": 0.4806713770742393
+        "0.5": 0.8637160419207706,
+        "1.5": 0.6495044834097408,
+        "2.5": 0.480851899166041
       },
       "total_round_over_probability_posteriors": {
         "0.5": {
-          "calibration_artifact_sha256": "b13ad3497ab257542dd04a80cf73062f6293a7b1ac4e655d74fe6e18ed3933fd",
+          "calibration_artifact_sha256": "a301d78fbe0c795e136ac5c8fcca7df608b8f130e85998a9e9709ab85b4db09b",
           "calibration_trained_through": "2026-10-17",
           "calibration_training_events": 18,
           "calibration_training_fights": 222,
-          "nominal_over_probability": 0.8636563295620059,
+          "nominal_over_probability": 0.8637160419207706,
           "policy_version": "bayesian-logistic-total-calibration-v1",
           "posterior_interval_mass": 0.8,
-          "posterior_lower_over_probability": 0.7956690296794158,
-          "posterior_mean_over_probability": 0.8271388662077225,
-          "posterior_upper_over_probability": 0.8576047042626074,
+          "posterior_lower_over_probability": 0.7957297711661091,
+          "posterior_mean_over_probability": 0.8271997577822364,
+          "posterior_upper_over_probability": 0.8576649622821182,
           "schedule_contract_version": "verified-pre-fight-schedule-v1",
           "status": "available"
         },
         "1.5": {
-          "calibration_artifact_sha256": "b13ad3497ab257542dd04a80cf73062f6293a7b1ac4e655d74fe6e18ed3933fd",
+          "calibration_artifact_sha256": "a301d78fbe0c795e136ac5c8fcca7df608b8f130e85998a9e9709ab85b4db09b",
           "calibration_trained_through": "2026-10-17",
           "calibration_training_events": 18,
           "calibration_training_fights": 222,
-          "nominal_over_probability": 0.6493713535337767,
+          "nominal_over_probability": 0.6495044834097408,
           "policy_version": "bayesian-logistic-total-calibration-v1",
           "posterior_interval_mass": 0.8,
-          "posterior_lower_over_probability": 0.5494762832074223,
-          "posterior_mean_over_probability": 0.5723237107167087,
-          "posterior_upper_over_probability": 0.5963978738895379,
+          "posterior_lower_over_probability": 0.5495229233601437,
+          "posterior_mean_over_probability": 0.5723911868789058,
+          "posterior_upper_over_probability": 0.5964870662153737,
           "schedule_contract_version": "verified-pre-fight-schedule-v1",
           "status": "available"
         },
         "2.5": {
-          "calibration_artifact_sha256": "b13ad3497ab257542dd04a80cf73062f6293a7b1ac4e655d74fe6e18ed3933fd",
+          "calibration_artifact_sha256": "a301d78fbe0c795e136ac5c8fcca7df608b8f130e85998a9e9709ab85b4db09b",
           "calibration_trained_through": "2026-10-17",
           "calibration_training_events": 18,
           "calibration_training_fights": 222,
-          "nominal_over_probability": 0.4806713770742393,
+          "nominal_over_probability": 0.480851899166041,
           "policy_version": "bayesian-logistic-total-calibration-v1",
           "posterior_interval_mass": 0.8,
-          "posterior_lower_over_probability": 0.47826224663546146,
-          "posterior_mean_over_probability": 0.48457405914614343,
-          "posterior_upper_over_probability": 0.49039602397221194,
+          "posterior_lower_over_probability": 0.47846521048548063,
+          "posterior_mean_over_probability": 0.4847181524902918,
+          "posterior_upper_over_probability": 0.4904857861898281,
           "schedule_contract_version": "verified-pre-fight-schedule-v1",
           "status": "available"
         }
@@ -2694,10 +2694,10 @@
       "division": "Featherweight",
       "fighter_id": "902ec2cc48c8ae8a",
       "fighter_name": "Julian Erosa",
-      "fighter_win_probability": 0.42644546069563244,
+      "fighter_win_probability": 0.42610636191975926,
       "forecast_status": "candidate_model",
       "joint_outcome_grid": {
-        "decision_mass_before_scheduled_end": 0.03810978162107223,
+        "decision_mass_before_scheduled_end": 0.03820741890936459,
         "execution_enabled": false,
         "limitations": [
           "interval_times_not_exact_finish_times",
@@ -2709,265 +2709,265 @@
           {
             "end_seconds": 150,
             "outcome": "fighter_ko_tko",
-            "probability": 0.019513619461774004,
+            "probability": 0.019586136228597863,
             "start_seconds": 0
           },
           {
             "end_seconds": 150,
             "outcome": "fighter_submission",
-            "probability": 0.030388652826598018,
+            "probability": 0.030415123153665312,
             "start_seconds": 0
           },
           {
             "end_seconds": 150,
             "outcome": "fighter_decision",
-            "probability": 0.0012839822113626814,
+            "probability": 0.0012870659861776413,
             "start_seconds": 0
           },
           {
             "end_seconds": 150,
             "outcome": "fighter_other",
-            "probability": 0.00020478211263456298,
+            "probability": 0.00020383866681383708,
             "start_seconds": 0
           },
           {
             "end_seconds": 150,
             "outcome": "opponent_ko_tko",
-            "probability": 0.07258761771103354,
+            "probability": 0.07262057039167694,
             "start_seconds": 0
           },
           {
             "end_seconds": 150,
             "outcome": "opponent_submission",
-            "probability": 0.015530850292928477,
+            "probability": 0.015606010466015863,
             "start_seconds": 0
           },
           {
             "end_seconds": 150,
             "outcome": "opponent_decision",
-            "probability": 0.0015753812005446387,
+            "probability": 0.0015830391906239596,
             "start_seconds": 0
           },
           {
             "end_seconds": 300,
             "outcome": "fighter_ko_tko",
-            "probability": 0.015379190825006122,
+            "probability": 0.015432755962000246,
             "start_seconds": 150
           },
           {
             "end_seconds": 300,
             "outcome": "fighter_submission",
-            "probability": 0.02651752386238874,
+            "probability": 0.026535621873436242,
             "start_seconds": 150
           },
           {
             "end_seconds": 300,
             "outcome": "fighter_decision",
-            "probability": 0.0019541054758802708,
+            "probability": 0.001957889978066406,
             "start_seconds": 150
           },
           {
             "end_seconds": 300,
             "outcome": "fighter_other",
-            "probability": 0.00019639473746181827,
+            "probability": 0.0001954493999583207,
             "start_seconds": 150
           },
           {
             "end_seconds": 300,
             "outcome": "opponent_ko_tko",
-            "probability": 0.05874621975272205,
+            "probability": 0.058756328277277926,
             "start_seconds": 150
           },
           {
             "end_seconds": 300,
             "outcome": "opponent_submission",
-            "probability": 0.013333447773852184,
+            "probability": 0.013397209227500746,
             "start_seconds": 150
           },
           {
             "end_seconds": 300,
             "outcome": "opponent_decision",
-            "probability": 0.002352909536557543,
+            "probability": 0.0023635168676113152,
             "start_seconds": 150
           },
           {
             "end_seconds": 450,
             "outcome": "fighter_ko_tko",
-            "probability": 0.012140557710376929,
+            "probability": 0.012179910202025048,
             "start_seconds": 300
           },
           {
             "end_seconds": 450,
             "outcome": "fighter_submission",
-            "probability": 0.023177361090996124,
+            "probability": 0.023188616619953622,
             "start_seconds": 300
           },
           {
             "end_seconds": 450,
             "outcome": "fighter_decision",
-            "probability": 0.002978835318162266,
+            "probability": 0.002983194937100353,
             "start_seconds": 300
           },
           {
             "end_seconds": 450,
             "outcome": "fighter_other",
-            "probability": 0.0001886588450874238,
+            "probability": 0.00018771025189382785,
             "start_seconds": 300
           },
           {
             "end_seconds": 450,
             "outcome": "opponent_ko_tko",
-            "probability": 0.04762190952221624,
+            "probability": 0.047616286352823854,
             "start_seconds": 300
           },
           {
             "end_seconds": 450,
             "outcome": "opponent_submission",
-            "probability": 0.0114656635263481,
+            "probability": 0.011519739696694222,
             "start_seconds": 300
           },
           {
             "end_seconds": 450,
             "outcome": "opponent_decision",
-            "probability": 0.0035199322069823804,
+            "probability": 0.003534529618219804,
             "start_seconds": 300
           },
           {
             "end_seconds": 600,
             "outcome": "fighter_ko_tko",
-            "probability": 0.009568922827117488,
+            "probability": 0.009597465251583854,
             "start_seconds": 450
           },
           {
             "end_seconds": 600,
             "outcome": "fighter_submission",
-            "probability": 0.020226198623065638,
+            "probability": 0.02023169527442384,
             "start_seconds": 450
           },
           {
             "end_seconds": 600,
             "outcome": "fighter_decision",
-            "probability": 0.0045338197423021856,
+            "probability": 0.004538233606787237,
             "start_seconds": 450
           },
           {
             "end_seconds": 600,
             "outcome": "fighter_other",
-            "probability": 0.00018094382174466063,
+            "probability": 0.00017999212646071218,
             "start_seconds": 450
           },
           {
             "end_seconds": 600,
             "outcome": "opponent_ko_tko",
-            "probability": 0.038543659662252774,
+            "probability": 0.03852727193247544,
             "start_seconds": 450
           },
           {
             "end_seconds": 600,
             "outcome": "opponent_submission",
-            "probability": 0.009844081114122258,
+            "probability": 0.009889694039745298,
             "start_seconds": 450
           },
           {
             "end_seconds": 600,
             "outcome": "opponent_decision",
-            "probability": 0.005257540545756011,
+            "probability": 0.0052773562060387065,
             "start_seconds": 450
           },
           {
             "end_seconds": 750,
             "outcome": "fighter_ko_tko",
-            "probability": 0.007490812194011417,
+            "probability": 0.007510990519113648,
             "start_seconds": 600
           },
           {
             "end_seconds": 750,
             "outcome": "fighter_submission",
-            "probability": 0.01753097179499836,
+            "probability": 0.017531453062363183,
             "start_seconds": 600
           },
           {
             "end_seconds": 750,
             "outcome": "fighter_decision",
-            "probability": 0.006853674055970829,
+            "probability": 0.006856780787509124,
             "start_seconds": 600
           },
           {
             "end_seconds": 750,
             "outcome": "fighter_other",
-            "probability": 0.00017236607358550298,
+            "probability": 0.00017141436988819288,
             "start_seconds": 600
           },
           {
             "end_seconds": 750,
             "outcome": "opponent_ko_tko",
-            "probability": 0.030984217502820478,
+            "probability": 0.030960587892200072,
             "start_seconds": 600
           },
           {
             "end_seconds": 750,
             "outcome": "opponent_submission",
-            "probability": 0.008394457156034518,
+            "probability": 0.00843240096888351,
             "start_seconds": 600
           },
           {
             "end_seconds": 750,
             "outcome": "opponent_decision",
-            "probability": 0.007799601327553423,
+            "probability": 0.00782581173123004,
             "start_seconds": 600
           },
           {
             "end_seconds": 900,
             "outcome": "fighter_ko_tko",
-            "probability": 0.006725093830303166,
+            "probability": 0.006717903305665311,
             "start_seconds": 750
           },
           {
             "end_seconds": 900,
             "outcome": "fighter_submission",
-            "probability": 0.02281055842907359,
+            "probability": 0.022739440217652326,
             "start_seconds": 750
           },
           {
             "end_seconds": 900,
             "outcome": "fighter_decision",
-            "probability": 0.18209301898880967,
+            "probability": 0.1816267232411669,
             "start_seconds": 750
           },
           {
             "end_seconds": 900,
             "outcome": "fighter_other",
-            "probability": 0.00027565071790267357,
+            "probability": 0.0002733487386022264,
             "start_seconds": 750
           },
           {
             "end_seconds": 900,
             "outcome": "opponent_ko_tko",
-            "probability": 0.021953477979088063,
+            "probability": 0.02190070390228296,
             "start_seconds": 750
           },
           {
             "end_seconds": 900,
             "outcome": "opponent_submission",
-            "probability": 0.010051976146192198,
+            "probability": 0.01006750342825539,
             "start_seconds": 750
           },
           {
             "end_seconds": 900,
             "outcome": "opponent_decision",
-            "probability": 0.19865318758721073,
+            "probability": 0.19872186389367474,
             "start_seconds": 750
           },
           {
             "end_seconds": 900,
             "outcome": "fighter_decision",
-            "probability": 0.014059765119018302,
+            "probability": 0.013977608158853946,
             "start_seconds": 900
           },
           {
             "end_seconds": 900,
             "outcome": "opponent_decision",
-            "probability": 0.015338408760151906,
+            "probability": 0.015293213997010089,
             "start_seconds": 900
           }
         ],
@@ -2976,70 +2976,70 @@
       },
       "matchup_id": "matchup_01f1382dde69b78aff7043a773b0e41abf2fa6c04195f37706504f022c0301a3",
       "method_probabilities": {
-        "decision": 0.44825416207626284,
-        "ko_tko": 0.3412552989787223,
-        "other": 0.0012187963084166421,
-        "submission": 0.2092717426365982
+        "decision": 0.44782682820007025,
+        "ko_tko": 0.3414069102177231,
+        "other": 0.001211753553617117,
+        "submission": 0.20955450802858955
       },
       "opponent_id": "d008d785f6347dc2",
       "opponent_name": "JeongYeong Lee",
       "schedule_basis": "ufc_standard_non_main_non_title",
       "scheduled_rounds": 3,
       "terminal_probabilities": {
-        "fighter_decision": 0.21375720091150618,
-        "fighter_ko_tko": 0.07081819684858913,
-        "fighter_other": 0.0012187963084166421,
-        "fighter_submission": 0.14065126662712046,
-        "opponent_decision": 0.23449696116475666,
-        "opponent_ko_tko": 0.27043710213013317,
+        "fighter_decision": 0.2132274966956616,
+        "fighter_ko_tko": 0.07102516146898596,
+        "fighter_other": 0.001211753553617117,
+        "fighter_submission": 0.14064195020149453,
+        "opponent_decision": 0.23459933150440865,
+        "opponent_ko_tko": 0.27038174874873716,
         "opponent_other": 0.0,
-        "opponent_submission": 0.06862047600947772
+        "opponent_submission": 0.06891255782709503
       },
       "total_round_over_probabilities": {
-        "0.5": 0.858915114183124,
-        "1.5": 0.639342403999086,
-        "2.5": 0.47196113755775043
+        "0.5": 0.8586982159164285,
+        "1.5": 0.6388494566518668,
+        "2.5": 0.4713183088831639
       },
       "total_round_over_probability_posteriors": {
         "0.5": {
-          "calibration_artifact_sha256": "b13ad3497ab257542dd04a80cf73062f6293a7b1ac4e655d74fe6e18ed3933fd",
+          "calibration_artifact_sha256": "a301d78fbe0c795e136ac5c8fcca7df608b8f130e85998a9e9709ab85b4db09b",
           "calibration_trained_through": "2026-10-17",
           "calibration_training_events": 18,
           "calibration_training_fights": 222,
-          "nominal_over_probability": 0.858915114183124,
+          "nominal_over_probability": 0.8586982159164285,
           "policy_version": "bayesian-logistic-total-calibration-v1",
           "posterior_interval_mass": 0.8,
-          "posterior_lower_over_probability": 0.7908761991954896,
-          "posterior_mean_over_probability": 0.8223219629436722,
-          "posterior_upper_over_probability": 0.8528251670638343,
+          "posterior_lower_over_probability": 0.7906582739553981,
+          "posterior_mean_over_probability": 0.822102370970563,
+          "posterior_upper_over_probability": 0.8526066827141694,
           "schedule_contract_version": "verified-pre-fight-schedule-v1",
           "status": "available"
         },
         "1.5": {
-          "calibration_artifact_sha256": "b13ad3497ab257542dd04a80cf73062f6293a7b1ac4e655d74fe6e18ed3933fd",
+          "calibration_artifact_sha256": "a301d78fbe0c795e136ac5c8fcca7df608b8f130e85998a9e9709ab85b4db09b",
           "calibration_trained_through": "2026-10-17",
           "calibration_training_events": 18,
           "calibration_training_fights": 222,
-          "nominal_over_probability": 0.639342403999086,
+          "nominal_over_probability": 0.6388494566518668,
           "policy_version": "bayesian-logistic-total-calibration-v1",
           "posterior_interval_mass": 0.8,
-          "posterior_lower_over_probability": 0.5459832459353898,
-          "posterior_mean_over_probability": 0.5672649980946219,
-          "posterior_upper_over_probability": 0.589705483598211,
+          "posterior_lower_over_probability": 0.5458125563075802,
+          "posterior_mean_over_probability": 0.5670175338378205,
+          "posterior_upper_over_probability": 0.5893778170044714,
           "schedule_contract_version": "verified-pre-fight-schedule-v1",
           "status": "available"
         },
         "2.5": {
-          "calibration_artifact_sha256": "b13ad3497ab257542dd04a80cf73062f6293a7b1ac4e655d74fe6e18ed3933fd",
+          "calibration_artifact_sha256": "a301d78fbe0c795e136ac5c8fcca7df608b8f130e85998a9e9709ab85b4db09b",
           "calibration_trained_through": "2026-10-17",
           "calibration_training_events": 18,
           "calibration_training_fights": 222,
-          "nominal_over_probability": 0.47196113755775043,
+          "nominal_over_probability": 0.4713183088831639,
           "policy_version": "bayesian-logistic-total-calibration-v1",
           "posterior_interval_mass": 0.8,
-          "posterior_lower_over_probability": 0.46847096065907184,
-          "posterior_mean_over_probability": 0.4776203903527894,
-          "posterior_upper_over_probability": 0.48606230922722043,
+          "posterior_lower_over_probability": 0.46774852259921323,
+          "posterior_mean_over_probability": 0.4771071092511622,
+          "posterior_upper_over_probability": 0.4857422428601839,
           "schedule_contract_version": "verified-pre-fight-schedule-v1",
           "status": "available"
         }
@@ -3050,10 +3050,10 @@
       "division": "Middleweight",
       "fighter_id": "7eaa5e31c2dd86aa",
       "fighter_name": "Nick Klein",
-      "fighter_win_probability": 0.6316789351123678,
+      "fighter_win_probability": 0.6319534887400842,
       "forecast_status": "candidate_model",
       "joint_outcome_grid": {
-        "decision_mass_before_scheduled_end": 0.03905132611000777,
+        "decision_mass_before_scheduled_end": 0.03910172395319551,
         "execution_enabled": false,
         "limitations": [
           "interval_times_not_exact_finish_times",
@@ -3065,265 +3065,265 @@
           {
             "end_seconds": 150,
             "outcome": "fighter_ko_tko",
-            "probability": 0.08125504245910015,
+            "probability": 0.08185105074886045,
             "start_seconds": 0
           },
           {
             "end_seconds": 150,
             "outcome": "fighter_submission",
-            "probability": 0.020852870523767997,
+            "probability": 0.02091623496597209,
             "start_seconds": 0
           },
           {
             "end_seconds": 150,
             "outcome": "fighter_decision",
-            "probability": 0.0014576564353639089,
+            "probability": 0.0014621224422182873,
             "start_seconds": 0
           },
           {
             "end_seconds": 150,
             "outcome": "fighter_other",
-            "probability": 0.00014545993942917209,
+            "probability": 0.0001450256379401919,
             "start_seconds": 0
           },
           {
             "end_seconds": 150,
             "outcome": "opponent_ko_tko",
-            "probability": 0.0008885058692833474,
+            "probability": 0.0008886084964342624,
             "start_seconds": 0
           },
           {
             "end_seconds": 150,
             "outcome": "opponent_submission",
-            "probability": 0.03465195363674497,
+            "probability": 0.03479525063609998,
             "start_seconds": 0
           },
           {
             "end_seconds": 150,
             "outcome": "opponent_decision",
-            "probability": 0.0014449650580558992,
+            "probability": 0.0014528135774395645,
             "start_seconds": 0
           },
           {
             "end_seconds": 300,
             "outcome": "fighter_ko_tko",
-            "probability": 0.06413723986663686,
+            "probability": 0.06455002559889518,
             "start_seconds": 150
           },
           {
             "end_seconds": 300,
             "outcome": "fighter_submission",
-            "probability": 0.01822433365052707,
+            "probability": 0.018264199593584964,
             "start_seconds": 150
           },
           {
             "end_seconds": 300,
             "outcome": "fighter_decision",
-            "probability": 0.0022218178909009763,
+            "probability": 0.002226120429815873,
             "start_seconds": 150
           },
           {
             "end_seconds": 300,
             "outcome": "fighter_other",
-            "probability": 0.00013971579944990607,
+            "probability": 0.00013917780976883392,
             "start_seconds": 150
           },
           {
             "end_seconds": 300,
             "outcome": "opponent_ko_tko",
-            "probability": 0.0007201815209292809,
+            "probability": 0.0007195863165015407,
             "start_seconds": 150
           },
           {
             "end_seconds": 300,
             "outcome": "opponent_submission",
-            "probability": 0.029794715705211628,
+            "probability": 0.029896466198922042,
             "start_seconds": 150
           },
           {
             "end_seconds": 300,
             "outcome": "opponent_decision",
-            "probability": 0.002161430158828881,
+            "probability": 0.0021709727455497636,
             "start_seconds": 150
           },
           {
             "end_seconds": 450,
             "outcome": "fighter_ko_tko",
-            "probability": 0.050752254310196206,
+            "probability": 0.051034487241394415,
             "start_seconds": 300
           },
           {
             "end_seconds": 450,
             "outcome": "fighter_submission",
-            "probability": 0.015966973174428627,
+            "probability": 0.01598869264777019,
             "start_seconds": 300
           },
           {
             "end_seconds": 450,
             "outcome": "fighter_decision",
-            "probability": 0.003395055446667981,
+            "probability": 0.00339788553314587,
             "start_seconds": 300
           },
           {
             "end_seconds": 450,
             "outcome": "fighter_other",
-            "probability": 0.00013453421979119903,
+            "probability": 0.00013390302489679106,
             "start_seconds": 300
           },
           {
             "end_seconds": 450,
             "outcome": "opponent_ko_tko",
-            "probability": 0.0005852060036569026,
+            "probability": 0.0005841851434238037,
             "start_seconds": 300
           },
           {
             "end_seconds": 450,
             "outcome": "opponent_submission",
-            "probability": 0.025682417023325587,
+            "probability": 0.025752234725002,
             "start_seconds": 300
           },
           {
             "end_seconds": 450,
             "outcome": "opponent_decision",
-            "probability": 0.00324123257783113,
+            "probability": 0.003252325690412427,
             "start_seconds": 300
           },
           {
             "end_seconds": 600,
             "outcome": "fighter_ko_tko",
-            "probability": 0.04012332806246725,
+            "probability": 0.04031177022458563,
             "start_seconds": 450
           },
           {
             "end_seconds": 600,
             "outcome": "fighter_submission",
-            "probability": 0.013976231108742992,
+            "probability": 0.013983826956459234,
             "start_seconds": 450
           },
           {
             "end_seconds": 600,
             "outcome": "fighter_decision",
-            "probability": 0.005183007332736532,
+            "probability": 0.005181668328408558,
             "start_seconds": 450
           },
           {
             "end_seconds": 600,
             "outcome": "fighter_other",
-            "probability": 0.00012942451578197922,
+            "probability": 0.0001287097822388993,
             "start_seconds": 450
           },
           {
             "end_seconds": 600,
             "outcome": "opponent_ko_tko",
-            "probability": 0.00047508586823250096,
+            "probability": 0.00047382601038174966,
             "start_seconds": 450
           },
           {
             "end_seconds": 600,
             "outcome": "opponent_submission",
-            "probability": 0.022117145828859167,
+            "probability": 0.022162092571904615,
             "start_seconds": 450
           },
           {
             "end_seconds": 600,
             "outcome": "opponent_decision",
-            "probability": 0.004855966967543766,
+            "probability": 0.004867819492837475,
             "start_seconds": 450
           },
           {
             "end_seconds": 750,
             "outcome": "fighter_ko_tko",
-            "probability": 0.031516759305396304,
+            "probability": 0.031637252620631634,
             "start_seconds": 600
           },
           {
             "end_seconds": 750,
             "outcome": "fighter_submission",
-            "probability": 0.012155156259301515,
+            "probability": 0.012151724263279954,
             "start_seconds": 600
           },
           {
             "end_seconds": 750,
             "outcome": "fighter_decision",
-            "probability": 0.007861759789101518,
+            "probability": 0.007851077341470801,
             "start_seconds": 600
           },
           {
             "end_seconds": 750,
             "outcome": "fighter_other",
-            "probability": 0.00012370957877773538,
+            "probability": 0.00012292253310595288,
             "start_seconds": 600
           },
           {
             "end_seconds": 750,
             "outcome": "opponent_ko_tko",
-            "probability": 0.00038321142313919496,
+            "probability": 0.0003818440826211051,
             "start_seconds": 600
           },
           {
             "end_seconds": 750,
             "outcome": "opponent_submission",
-            "probability": 0.0189245370532509,
+            "probability": 0.018949832922541203,
             "start_seconds": 600
           },
           {
             "end_seconds": 750,
             "outcome": "opponent_decision",
-            "probability": 0.007228434452977176,
+            "probability": 0.007238918371896888,
             "start_seconds": 600
           },
           {
             "end_seconds": 900,
             "outcome": "fighter_ko_tko",
-            "probability": 0.02755303571509399,
+            "probability": 0.02751502442308101,
             "start_seconds": 750
           },
           {
             "end_seconds": 900,
             "outcome": "fighter_submission",
-            "probability": 0.01540100044776874,
+            "probability": 0.015326195742471136,
             "start_seconds": 750
           },
           {
             "end_seconds": 900,
             "outcome": "fighter_decision",
-            "probability": 0.20339865681145047,
+            "probability": 0.20221964509080576,
             "start_seconds": 750
           },
           {
             "end_seconds": 900,
             "outcome": "fighter_other",
-            "probability": 0.00019265005092622913,
+            "probability": 0.00019060573095431633,
             "start_seconds": 750
           },
           {
             "end_seconds": 900,
             "outcome": "opponent_ko_tko",
-            "probability": 0.0002643989388324456,
+            "probability": 0.00026264524660743975,
             "start_seconds": 750
           },
           {
             "end_seconds": 900,
             "outcome": "opponent_submission",
-            "probability": 0.02206696252728849,
+            "probability": 0.021999384358346006,
             "start_seconds": 750
           },
           {
             "end_seconds": 900,
             "outcome": "opponent_decision",
-            "probability": 0.1792775223974839,
+            "probability": 0.17874114730364085,
             "start_seconds": 750
           },
           {
             "end_seconds": 900,
             "outcome": "fighter_decision",
-            "probability": 0.01538126241856252,
+            "probability": 0.015224140028328155,
             "start_seconds": 900
           },
           {
             "end_seconds": 900,
             "outcome": "opponent_decision",
-            "probability": 0.013557191876156885,
+            "probability": 0.01345655736935313,
             "start_seconds": 900
           }
         ],
@@ -3332,70 +3332,70 @@
       },
       "matchup_id": "matchup_caf33259708f2842940992788e786d52fc32d5ebf6fc2a1dfc88fb3bab187886",
       "method_probabilities": {
-        "decision": 0.4506659596136615,
-        "ko_tko": 0.2986542493429644,
-        "other": 0.0008654941041562209,
-        "submission": 0.24981429693921764
+        "decision": 0.4487432137453234,
+        "ko_tko": 0.30021030615341826,
+        "other": 0.0008603445189049854,
+        "submission": 0.2501861355823534
       },
       "opponent_id": "8a81a0707350c4a8",
       "opponent_name": "Joe Kropschot",
       "schedule_basis": "ufc_standard_non_main_non_title",
       "scheduled_rounds": 3,
       "terminal_probabilities": {
-        "fighter_decision": 0.23889921612478393,
-        "fighter_ko_tko": 0.29533765971889075,
-        "fighter_other": 0.0008654941041562209,
-        "fighter_submission": 0.09657656516453691,
-        "opponent_decision": 0.2117667434888776,
-        "opponent_ko_tko": 0.0033165896240736725,
+        "fighter_decision": 0.23756265919419328,
+        "fighter_ko_tko": 0.29689961085744837,
+        "fighter_other": 0.0008603445189049854,
+        "fighter_submission": 0.09663087416953757,
+        "opponent_decision": 0.2111805545511301,
+        "opponent_ko_tko": 0.0033106952959699007,
         "opponent_other": 0.0,
-        "opponent_submission": 0.15323773177468072
+        "opponent_submission": 0.15355526141281586
       },
       "total_round_over_probabilities": {
-        "0.5": 0.8593035460782547,
-        "1.5": 0.6421464387298724,
-        "2.5": 0.4770926811835638
+        "0.5": 0.8584888934950352,
+        "1.5": 0.6403786307959515,
+        "2.5": 0.4749353452935877
       },
       "total_round_over_probability_posteriors": {
         "0.5": {
-          "calibration_artifact_sha256": "b13ad3497ab257542dd04a80cf73062f6293a7b1ac4e655d74fe6e18ed3933fd",
+          "calibration_artifact_sha256": "a301d78fbe0c795e136ac5c8fcca7df608b8f130e85998a9e9709ab85b4db09b",
           "calibration_trained_through": "2026-10-17",
           "calibration_training_events": 18,
           "calibration_training_fights": 222,
-          "nominal_over_probability": 0.8593035460782547,
+          "nominal_over_probability": 0.8584888934950352,
           "policy_version": "bayesian-logistic-total-calibration-v1",
           "posterior_interval_mass": 0.8,
-          "posterior_lower_over_probability": 0.7912667947074161,
-          "posterior_mean_over_probability": 0.8227154229716888,
-          "posterior_upper_over_probability": 0.85321651450941,
+          "posterior_lower_over_probability": 0.7904480445937766,
+          "posterior_mean_over_probability": 0.8218904862045832,
+          "posterior_upper_over_probability": 0.8523958173680838,
           "schedule_contract_version": "verified-pre-fight-schedule-v1",
           "status": "available"
         },
         "1.5": {
-          "calibration_artifact_sha256": "b13ad3497ab257542dd04a80cf73062f6293a7b1ac4e655d74fe6e18ed3933fd",
+          "calibration_artifact_sha256": "a301d78fbe0c795e136ac5c8fcca7df608b8f130e85998a9e9709ab85b4db09b",
           "calibration_trained_through": "2026-10-17",
           "calibration_training_events": 18,
           "calibration_training_fights": 222,
-          "nominal_over_probability": 0.6421464387298724,
+          "nominal_over_probability": 0.6403786307959515,
           "policy_version": "bayesian-logistic-total-calibration-v1",
           "posterior_interval_mass": 0.8,
-          "posterior_lower_over_probability": 0.5469559337226784,
-          "posterior_mean_over_probability": 0.5686747392154016,
-          "posterior_upper_over_probability": 0.5915716301999273,
+          "posterior_lower_over_probability": 0.5463423564431931,
+          "posterior_mean_over_probability": 0.5677855635804182,
+          "posterior_upper_over_probability": 0.5903946859892478,
           "schedule_contract_version": "verified-pre-fight-schedule-v1",
           "status": "available"
         },
         "2.5": {
-          "calibration_artifact_sha256": "b13ad3497ab257542dd04a80cf73062f6293a7b1ac4e655d74fe6e18ed3933fd",
+          "calibration_artifact_sha256": "a301d78fbe0c795e136ac5c8fcca7df608b8f130e85998a9e9709ab85b4db09b",
           "calibration_trained_through": "2026-10-17",
           "calibration_training_events": 18,
           "calibration_training_fights": 222,
-          "nominal_over_probability": 0.4770926811835638,
+          "nominal_over_probability": 0.4749353452935877,
           "policy_version": "bayesian-logistic-total-calibration-v1",
           "posterior_interval_mass": 0.8,
-          "posterior_lower_over_probability": 0.47423887753783106,
-          "posterior_mean_over_probability": 0.48171730762189974,
-          "posterior_upper_over_probability": 0.48861611672690924,
+          "posterior_lower_over_probability": 0.47181380441441234,
+          "posterior_mean_over_probability": 0.4799950210928621,
+          "posterior_upper_over_probability": 0.48754272070555454,
           "schedule_contract_version": "verified-pre-fight-schedule-v1",
           "status": "available"
         }
@@ -3406,10 +3406,10 @@
       "division": "Women's Strawweight",
       "fighter_id": "d35298b6df168456",
       "fighter_name": "Talita Alencar",
-      "fighter_win_probability": 0.40494122722684106,
+      "fighter_win_probability": 0.404938725321358,
       "forecast_status": "candidate_model",
       "joint_outcome_grid": {
-        "decision_mass_before_scheduled_end": 0.0465950403895312,
+        "decision_mass_before_scheduled_end": 0.046575199990943644,
         "execution_enabled": false,
         "limitations": [
           "interval_times_not_exact_finish_times",
@@ -3421,265 +3421,265 @@
           {
             "end_seconds": 150,
             "outcome": "fighter_ko_tko",
-            "probability": 0.019715696076322644,
+            "probability": 0.0197294748199813,
             "start_seconds": 0
           },
           {
             "end_seconds": 150,
             "outcome": "fighter_submission",
-            "probability": 0.017780484185411144,
+            "probability": 0.017774710732427593,
             "start_seconds": 0
           },
           {
             "end_seconds": 150,
             "outcome": "fighter_decision",
-            "probability": 0.0012603477302649331,
+            "probability": 0.0012603856668891766,
             "start_seconds": 0
           },
           {
             "end_seconds": 150,
             "outcome": "fighter_other",
-            "probability": 0.00018010839619235996,
+            "probability": 0.00017882720662625398,
             "start_seconds": 0
           },
           {
             "end_seconds": 150,
             "outcome": "opponent_ko_tko",
-            "probability": 0.05455220933977312,
+            "probability": 0.054540091228895624,
             "start_seconds": 0
           },
           {
             "end_seconds": 150,
             "outcome": "opponent_submission",
-            "probability": 0.011555839693325923,
+            "probability": 0.011547757645431742,
             "start_seconds": 0
           },
           {
             "end_seconds": 150,
             "outcome": "opponent_decision",
-            "probability": 0.001909039068378214,
+            "probability": 0.0019087685498294276,
             "start_seconds": 0
           },
           {
             "end_seconds": 300,
             "outcome": "fighter_ko_tko",
-            "probability": 0.0161369356856433,
+            "probability": 0.016148813773550274,
             "start_seconds": 150
           },
           {
             "end_seconds": 300,
             "outcome": "fighter_submission",
-            "probability": 0.016113074054447785,
+            "probability": 0.016109149645400327,
             "start_seconds": 150
           },
           {
             "end_seconds": 300,
             "outcome": "fighter_decision",
-            "probability": 0.00199201533572966,
+            "probability": 0.0019916880123992636,
             "start_seconds": 150
           },
           {
             "end_seconds": 300,
             "outcome": "fighter_other",
-            "probability": 0.0001793845706325774,
+            "probability": 0.00017811961489377464,
             "start_seconds": 150
           },
           {
             "end_seconds": 300,
             "outcome": "opponent_ko_tko",
-            "probability": 0.0458503890795737,
+            "probability": 0.04583964403422642,
             "start_seconds": 150
           },
           {
             "end_seconds": 300,
             "outcome": "opponent_submission",
-            "probability": 0.010302960585928497,
+            "probability": 0.01029794315809866,
             "start_seconds": 150
           },
           {
             "end_seconds": 300,
             "outcome": "opponent_decision",
-            "probability": 0.002961063267360861,
+            "probability": 0.002960402031852935,
             "start_seconds": 150
           },
           {
             "end_seconds": 450,
             "outcome": "fighter_ko_tko",
-            "probability": 0.013212525196184245,
+            "probability": 0.013222744760033128,
             "start_seconds": 300
           },
           {
             "end_seconds": 450,
             "outcome": "fighter_submission",
-            "probability": 0.014607269098735843,
+            "probability": 0.01460489964436637,
             "start_seconds": 300
           },
           {
             "end_seconds": 450,
             "outcome": "fighter_decision",
-            "probability": 0.0031495664715031047,
+            "probability": 0.0031484373092024068,
             "start_seconds": 300
           },
           {
             "end_seconds": 450,
             "outcome": "fighter_other",
-            "probability": 0.00017872776269562112,
+            "probability": 0.00017747851626027589,
             "start_seconds": 300
           },
           {
             "end_seconds": 450,
             "outcome": "opponent_ko_tko",
-            "probability": 0.03855045549022681,
+            "probability": 0.03854095750039074,
             "start_seconds": 300
           },
           {
             "end_seconds": 450,
             "outcome": "opponent_submission",
-            "probability": 0.009189214207566338,
+            "probability": 0.009186693074934239,
             "start_seconds": 300
           },
           {
             "end_seconds": 450,
             "outcome": "opponent_decision",
-            "probability": 0.004594479989538661,
+            "probability": 0.004593079934368282,
             "start_seconds": 300
           },
           {
             "end_seconds": 600,
             "outcome": "fighter_ko_tko",
-            "probability": 0.010785097622889811,
+            "probability": 0.010793872807576602,
             "start_seconds": 450
           },
           {
             "end_seconds": 600,
             "outcome": "fighter_submission",
-            "probability": 0.013201799982750926,
+            "probability": 0.013200768994651156,
             "start_seconds": 450
           },
           {
             "end_seconds": 600,
             "outcome": "fighter_decision",
-            "probability": 0.004964578374371173,
+            "probability": 0.004961848316796861,
             "start_seconds": 450
           },
           {
             "end_seconds": 600,
             "outcome": "fighter_other",
-            "probability": 0.00017753028244969142,
+            "probability": 0.00017630089784153536,
             "start_seconds": 450
           },
           {
             "end_seconds": 600,
             "outcome": "opponent_ko_tko",
-            "probability": 0.03231390871800672,
+            "probability": 0.0323056479679212,
             "start_seconds": 450
           },
           {
             "end_seconds": 600,
             "outcome": "opponent_submission",
-            "probability": 0.008170868176806168,
+            "probability": 0.008170386785357272,
             "start_seconds": 450
           },
           {
             "end_seconds": 600,
             "outcome": "opponent_decision",
-            "probability": 0.0071071999457125706,
+            "probability": 0.007104475263903701,
             "start_seconds": 450
           },
           {
             "end_seconds": 750,
             "outcome": "fighter_ko_tko",
-            "probability": 0.008727433903138142,
+            "probability": 0.008734956017536941,
             "start_seconds": 600
           },
           {
             "end_seconds": 750,
             "outcome": "fighter_submission",
-            "probability": 0.011828277448801027,
+            "probability": 0.01182844433512015,
             "start_seconds": 600
           },
           {
             "end_seconds": 750,
             "outcome": "fighter_decision",
-            "probability": 0.007757793221552078,
+            "probability": 0.007752105285952043,
             "start_seconds": 600
           },
           {
             "end_seconds": 750,
             "outcome": "fighter_other",
-            "probability": 0.0001748143601603143,
+            "probability": 0.00017361650277129142,
             "start_seconds": 600
           },
           {
             "end_seconds": 750,
             "outcome": "opponent_ko_tko",
-            "probability": 0.026851818914175075,
+            "probability": 0.0268449226974492,
             "start_seconds": 600
           },
           {
             "end_seconds": 750,
             "outcome": "opponent_submission",
-            "probability": 0.007202483438648284,
+            "probability": 0.007203669361350843,
             "start_seconds": 600
           },
           {
             "end_seconds": 750,
             "outcome": "opponent_decision",
-            "probability": 0.010898956985119942,
+            "probability": 0.010894009619749543,
             "start_seconds": 600
           },
           {
             "end_seconds": 900,
             "outcome": "fighter_ko_tko",
-            "probability": 0.007776975979993362,
+            "probability": 0.007781991428549771,
             "start_seconds": 750
           },
           {
             "end_seconds": 900,
             "outcome": "fighter_submission",
-            "probability": 0.01527587793026836,
+            "probability": 0.015282097892160337,
             "start_seconds": 750
           },
           {
             "end_seconds": 900,
             "outcome": "fighter_decision",
-            "probability": 0.20457982331572386,
+            "probability": 0.20453735519757626,
             "start_seconds": 750
           },
           {
             "end_seconds": 900,
             "outcome": "fighter_other",
-            "probability": 0.0002774847971860012,
+            "probability": 0.0002757746500648838,
             "start_seconds": 750
           },
           {
             "end_seconds": 900,
             "outcome": "opponent_ko_tko",
-            "probability": 0.018883881219888852,
+            "probability": 0.01891492063784503,
             "start_seconds": 750
           },
           {
             "end_seconds": 900,
             "outcome": "opponent_submission",
-            "probability": 0.008560435328694218,
+            "probability": 0.008566783639046498,
             "start_seconds": 750
           },
           {
             "end_seconds": 900,
             "outcome": "opponent_decision",
-            "probability": 0.2755261489265045,
+            "probability": 0.27554815123339604,
             "start_seconds": 750
           },
           {
             "end_seconds": 900,
             "outcome": "fighter_decision",
-            "probability": 0.014907605443793116,
+            "probability": 0.014914863292730072,
             "start_seconds": 900
           },
           {
             "end_seconds": 900,
             "outcome": "opponent_decision",
-            "probability": 0.0200774203979304,
+            "probability": 0.020092970314594703,
             "start_seconds": 900
           }
         ],
@@ -3688,70 +3688,70 @@
       },
       "matchup_id": "matchup_78f1b6fc26aa11f499fc8af8df4fe2c384386c431c731eff74f3cf6410f1b5e4",
       "method_probabilities": {
-        "decision": 0.5616860384734831,
-        "ko_tko": 0.2933573272258158,
-        "other": 0.0011680501693165654,
-        "submission": 0.1437885841313845
+        "decision": 0.5616685400292407,
+        "ko_tko": 0.2933980376739562,
+        "other": 0.0011601173884580151,
+        "submission": 0.1437733049083452
       },
       "opponent_id": "e375cb5caf4717b6",
       "opponent_name": "Piera Rodriguez",
       "schedule_basis": "ufc_standard_non_main_non_title",
       "scheduled_rounds": 3,
       "terminal_probabilities": {
-        "fighter_decision": 0.2386117298929379,
-        "fighter_ko_tko": 0.07635466446417151,
-        "fighter_other": 0.0011680501693165654,
-        "fighter_submission": 0.08880678270041509,
-        "opponent_decision": 0.32307430858054514,
-        "opponent_ko_tko": 0.2170026627616443,
+        "fighter_decision": 0.23856668308154608,
+        "fighter_ko_tko": 0.07641185360722802,
+        "fighter_other": 0.0011601173884580151,
+        "fighter_submission": 0.08880007124412594,
+        "opponent_decision": 0.32310185694769467,
+        "opponent_ko_tko": 0.21698618406672823,
         "opponent_other": 0.0,
-        "opponent_submission": 0.054981801430969424
+        "opponent_submission": 0.05497323366421925
       },
       "total_round_over_probabilities": {
-        "0.5": 0.8930462755103317,
-        "1.5": 0.7160282147145648,
-        "2.5": 0.565865653339983
+        "0.5": 0.8930599841499188,
+        "1.5": 0.7160599331399419,
+        "2.5": 0.5659149082859636
       },
       "total_round_over_probability_posteriors": {
         "0.5": {
-          "calibration_artifact_sha256": "b13ad3497ab257542dd04a80cf73062f6293a7b1ac4e655d74fe6e18ed3933fd",
+          "calibration_artifact_sha256": "a301d78fbe0c795e136ac5c8fcca7df608b8f130e85998a9e9709ab85b4db09b",
           "calibration_trained_through": "2026-10-17",
           "calibration_training_events": 18,
           "calibration_training_fights": 222,
-          "nominal_over_probability": 0.8930462755103317,
+          "nominal_over_probability": 0.8930599841499188,
           "policy_version": "bayesian-logistic-total-calibration-v1",
           "posterior_interval_mass": 0.8,
-          "posterior_lower_over_probability": 0.8267657964437709,
-          "posterior_mean_over_probability": 0.8577789337859191,
-          "posterior_upper_over_probability": 0.8873776739025466,
+          "posterior_lower_over_probability": 0.8267809587410501,
+          "posterior_mean_over_probability": 0.8577936030285436,
+          "posterior_upper_over_probability": 0.8873916485697124,
           "schedule_contract_version": "verified-pre-fight-schedule-v1",
           "status": "available"
         },
         "1.5": {
-          "calibration_artifact_sha256": "b13ad3497ab257542dd04a80cf73062f6293a7b1ac4e655d74fe6e18ed3933fd",
+          "calibration_artifact_sha256": "a301d78fbe0c795e136ac5c8fcca7df608b8f130e85998a9e9709ab85b4db09b",
           "calibration_trained_through": "2026-10-17",
           "calibration_training_events": 18,
           "calibration_training_fights": 222,
-          "nominal_over_probability": 0.7160282147145648,
+          "nominal_over_probability": 0.7160599331399419,
           "policy_version": "bayesian-logistic-total-calibration-v1",
           "posterior_interval_mass": 0.8,
-          "posterior_lower_over_probability": 0.5739463229814862,
-          "posterior_mean_over_probability": 0.6074113316923572,
-          "posterior_upper_over_probability": 0.6424444023269926,
+          "posterior_lower_over_probability": 0.573958616365691,
+          "posterior_mean_over_probability": 0.6074287870974291,
+          "posterior_upper_over_probability": 0.6424671244853973,
           "schedule_contract_version": "verified-pre-fight-schedule-v1",
           "status": "available"
         },
         "2.5": {
-          "calibration_artifact_sha256": "b13ad3497ab257542dd04a80cf73062f6293a7b1ac4e655d74fe6e18ed3933fd",
+          "calibration_artifact_sha256": "a301d78fbe0c795e136ac5c8fcca7df608b8f130e85998a9e9709ab85b4db09b",
           "calibration_trained_through": "2026-10-17",
           "calibration_training_events": 18,
           "calibration_training_fights": 222,
-          "nominal_over_probability": 0.565865653339983,
+          "nominal_over_probability": 0.5659149082859636,
           "policy_version": "bayesian-logistic-total-calibration-v1",
           "posterior_interval_mass": 0.8,
-          "posterior_lower_over_probability": 0.5328587402181573,
-          "posterior_mean_over_probability": 0.552615244114659,
-          "posterior_upper_over_probability": 0.5739711467940916,
+          "posterior_lower_over_probability": 0.532883535592045,
+          "posterior_mean_over_probability": 0.5526546834118778,
+          "posterior_upper_over_probability": 0.5740263117470218,
           "schedule_contract_version": "verified-pre-fight-schedule-v1",
           "status": "available"
         }
@@ -3762,10 +3762,10 @@
       "division": "Women's Flyweight",
       "fighter_id": "184f6ec4ee712e9f",
       "fighter_name": "Lucia Szabova",
-      "fighter_win_probability": 0.015159626217375585,
+      "fighter_win_probability": 0.015115013204797597,
       "forecast_status": "candidate_model",
       "joint_outcome_grid": {
-        "decision_mass_before_scheduled_end": 0.00220768995567845,
+        "decision_mass_before_scheduled_end": 0.00220225501250865,
         "execution_enabled": false,
         "limitations": [
           "interval_times_not_exact_finish_times",
@@ -3777,265 +3777,265 @@
           {
             "end_seconds": 150,
             "outcome": "fighter_ko_tko",
-            "probability": 0.00631992420308889,
+            "probability": 0.0062998943753798525,
             "start_seconds": 0
           },
           {
             "end_seconds": 150,
             "outcome": "fighter_submission",
-            "probability": 0.0033124494722859684,
+            "probability": 0.0033022294730726625,
             "start_seconds": 0
           },
           {
             "end_seconds": 150,
             "outcome": "fighter_decision",
-            "probability": 0.0008033599616141154,
+            "probability": 0.0008014501815275511,
             "start_seconds": 0
           },
           {
             "end_seconds": 150,
             "outcome": "fighter_other",
-            "probability": 7.732554137048e-05,
+            "probability": 7.657457550106881e-05,
             "start_seconds": 0
           },
           {
             "end_seconds": 150,
             "outcome": "opponent_ko_tko",
-            "probability": 0.7307696860552206,
+            "probability": 0.7307497065799994,
             "start_seconds": 0
           },
           {
             "end_seconds": 150,
             "outcome": "opponent_submission",
-            "probability": 0.0013787744308316676,
+            "probability": 0.0013740349299918315,
             "start_seconds": 0
           },
           {
             "end_seconds": 150,
             "outcome": "opponent_decision",
-            "probability": 0.0003659195510330468,
+            "probability": 0.0003648664641610289,
             "start_seconds": 0
           },
           {
             "end_seconds": 300,
             "outcome": "fighter_ko_tko",
-            "probability": 0.0015536314642979527,
+            "probability": 0.0015491247979042872,
             "start_seconds": 150
           },
           {
             "end_seconds": 300,
             "outcome": "fighter_submission",
-            "probability": 0.0009015945279881636,
+            "probability": 0.0008990945393134294,
             "start_seconds": 150
           },
           {
             "end_seconds": 300,
             "outcome": "fighter_decision",
-            "probability": 0.00038136397199232264,
+            "probability": 0.0003804717551397818,
             "start_seconds": 150
           },
           {
             "end_seconds": 300,
             "outcome": "fighter_other",
-            "probability": 2.3131366017953735e-05,
+            "probability": 2.2913466086285854e-05,
             "start_seconds": 150
           },
           {
             "end_seconds": 300,
             "outcome": "opponent_ko_tko",
-            "probability": 0.18447536993160807,
+            "probability": 0.1845109150218711,
             "start_seconds": 150
           },
           {
             "end_seconds": 300,
             "outcome": "opponent_submission",
-            "probability": 0.0003692163594728841,
+            "probability": 0.0003681108678151385,
             "start_seconds": 150
           },
           {
             "end_seconds": 300,
             "outcome": "opponent_decision",
-            "probability": 0.00017046910063865574,
+            "probability": 0.00017000410474422818,
             "start_seconds": 150
           },
           {
             "end_seconds": 450,
             "outcome": "fighter_ko_tko",
-            "probability": 0.000398996260995348,
+            "probability": 0.0003979540973272139,
             "start_seconds": 300
           },
           {
             "end_seconds": 450,
             "outcome": "fighter_submission",
-            "probability": 0.000256364538615751,
+            "probability": 0.0002557389673674956,
             "start_seconds": 300
           },
           {
             "end_seconds": 450,
             "outcome": "fighter_decision",
-            "probability": 0.00018912712499286326,
+            "probability": 0.00018869558922485227,
             "start_seconds": 300
           },
           {
             "end_seconds": 450,
             "outcome": "fighter_other",
-            "probability": 7.228767749449212e-06,
+            "probability": 7.162925218403899e-06,
             "start_seconds": 300
           },
           {
             "end_seconds": 450,
             "outcome": "opponent_ko_tko",
-            "probability": 0.048649786176766484,
+            "probability": 0.04867084788912437,
             "start_seconds": 300
           },
           {
             "end_seconds": 450,
             "outcome": "opponent_submission",
-            "probability": 0.0001032888233912357,
+            "probability": 0.00010302744791530089,
             "start_seconds": 300
           },
           {
             "end_seconds": 450,
             "outcome": "opponent_decision",
-            "probability": 8.296413795045286e-05,
+            "probability": 8.27519627868008e-05,
             "start_seconds": 300
           },
           {
             "end_seconds": 600,
             "outcome": "fighter_ko_tko",
-            "probability": 0.00010679874451285095,
+            "probability": 0.00010655324193608574,
             "start_seconds": 450
           },
           {
             "end_seconds": 600,
             "outcome": "fighter_submission",
-            "probability": 7.59768247743628e-05,
+            "probability": 7.581856621329726e-05,
             "start_seconds": 450
           },
           {
             "end_seconds": 600,
             "outcome": "fighter_decision",
-            "probability": 9.775623859122111e-05,
+            "probability": 9.754122111843418e-05,
             "start_seconds": 450
           },
           {
             "end_seconds": 600,
             "outcome": "fighter_other",
-            "probability": 2.354527494307234e-06,
+            "probability": 2.333872666875581e-06,
             "start_seconds": 450
           },
           {
             "end_seconds": 600,
             "outcome": "opponent_ko_tko",
-            "probability": 0.013372111377766217,
+            "probability": 0.013381440718059225,
             "start_seconds": 450
           },
           {
             "end_seconds": 600,
             "outcome": "opponent_submission",
-            "probability": 3.011634254234538e-05,
+            "probability": 3.0054835660702987e-05,
             "start_seconds": 450
           },
           {
             "end_seconds": 600,
             "outcome": "opponent_decision",
-            "probability": 4.208347979222213e-05,
+            "probability": 4.198404824564085e-05,
             "start_seconds": 450
           },
           {
             "end_seconds": 750,
             "outcome": "fighter_ko_tko",
-            "probability": 2.968885571448507e-05,
+            "probability": 2.963089340973095e-05,
             "start_seconds": 600
           },
           {
             "end_seconds": 750,
             "outcome": "fighter_submission",
-            "probability": 2.3384835426121025e-05,
+            "probability": 2.3345254803470936e-05,
             "start_seconds": 600
           },
           {
             "end_seconds": 750,
             "outcome": "fighter_decision",
-            "probability": 5.2476533064365595e-05,
+            "probability": 5.23671596568699e-05,
             "start_seconds": 600
           },
           {
             "end_seconds": 750,
             "outcome": "fighter_other",
-            "probability": 7.964770217969964e-07,
+            "probability": 7.897839240825447e-07,
             "start_seconds": 600
           },
           {
             "end_seconds": 750,
             "outcome": "opponent_ko_tko",
-            "probability": 0.003817236123344503,
+            "probability": 0.0038210368652854144,
             "start_seconds": 600
           },
           {
             "end_seconds": 750,
             "outcome": "opponent_submission",
-            "probability": 9.119711851122297e-06,
+            "probability": 9.105843126699259e-06,
             "start_seconds": 600
           },
           {
             "end_seconds": 750,
             "outcome": "opponent_decision",
-            "probability": 2.2169856009184746e-05,
+            "probability": 2.2122525903461973e-05,
             "start_seconds": 600
           },
           {
             "end_seconds": 900,
             "outcome": "fighter_ko_tko",
-            "probability": 9.515027349785881e-06,
+            "probability": 9.49776949964007e-06,
             "start_seconds": 750
           },
           {
             "end_seconds": 900,
             "outcome": "fighter_submission",
-            "probability": 1.0862039726050856e-05,
+            "probability": 1.0851775962448728e-05,
             "start_seconds": 750
           },
           {
             "end_seconds": 900,
             "outcome": "fighter_decision",
-            "probability": 0.0004977166018130668,
+            "probability": 0.0004971172643986055,
             "start_seconds": 750
           },
           {
             "end_seconds": 900,
             "outcome": "fighter_other",
-            "probability": 4.5470290907606836e-07,
+            "probability": 4.5135523258667826e-07,
             "start_seconds": 750
           },
           {
             "end_seconds": 900,
             "outcome": "opponent_ko_tko",
-            "probability": 0.0009655148727457715,
+            "probability": 0.0009686579501904522,
             "start_seconds": 750
           },
           {
             "end_seconds": 900,
             "outcome": "opponent_submission",
-            "probability": 3.898406221306781e-06,
+            "probability": 3.896108523622036e-06,
             "start_seconds": 750
           },
           {
             "end_seconds": 900,
             "outcome": "opponent_decision",
-            "probability": 0.00020157336627174395,
+            "probability": 0.00020132203566935254,
             "start_seconds": 750
           },
           {
             "end_seconds": 900,
             "outcome": "fighter_decision",
-            "probability": 2.7347607968835185e-05,
+            "probability": 2.7410302912584796e-05,
             "start_seconds": 900
           },
           {
             "end_seconds": 900,
             "outcome": "opponent_decision",
-            "probability": 1.1075679166974003e-05,
+            "probability": 1.1100596128663914e-05,
             "start_seconds": 900
           }
         ],
@@ -4044,70 +4044,70 @@
       },
       "matchup_id": "matchup_d291e8f7d9ee060d39ed57513e2872e092a2be799c235f991041a688dd6059a0",
       "method_probabilities": {
-        "decision": 0.00294540321089907,
-        "ko_tko": 0.990468259093411,
-        "other": 0.00011129138256306325,
-        "submission": 0.00647504631312698
+        "decision": 0.0029392052116178568,
+        "ko_tko": 0.9904952601999868,
+        "other": 0.00011022597862930335,
+        "submission": 0.0064553086097660995
       },
       "opponent_id": "2c5f5749569eef66",
       "opponent_name": "Tainara Lisboa",
       "schedule_basis": "ufc_standard_non_main_non_title",
       "scheduled_rounds": 3,
       "terminal_probabilities": {
-        "fighter_decision": 0.0020491480400367896,
-        "fighter_ko_tko": 0.008418554555959312,
-        "fighter_other": 0.00011129138256306325,
-        "fighter_submission": 0.004580632238816418,
-        "opponent_decision": 0.0008962551708622802,
-        "opponent_ko_tko": 0.9820497045374517,
+        "fighter_decision": 0.0020450534739786795,
+        "fighter_ko_tko": 0.008392655175456811,
+        "fighter_other": 0.00011022597862930335,
+        "fighter_submission": 0.004567078576732804,
+        "opponent_decision": 0.0008941517376391773,
+        "opponent_ko_tko": 0.98210260502453,
         "opponent_other": 0.0,
-        "opponent_submission": 0.0018944140743105617
+        "opponent_submission": 0.0018882300330332951
       },
       "total_round_over_probabilities": {
-        "0.5": 0.25697256078455527,
-        "1.5": 0.019410028232077714,
-        "2.5": 0.0017279583041726109
+        "0.5": 0.25703124342036665,
+        "1.5": 0.019424429988527947,
+        "2.5": 0.0017303051585179567
       },
       "total_round_over_probability_posteriors": {
         "0.5": {
-          "calibration_artifact_sha256": "b13ad3497ab257542dd04a80cf73062f6293a7b1ac4e655d74fe6e18ed3933fd",
+          "calibration_artifact_sha256": "a301d78fbe0c795e136ac5c8fcca7df608b8f130e85998a9e9709ab85b4db09b",
           "calibration_trained_through": "2026-10-17",
           "calibration_training_events": 18,
           "calibration_training_fights": 222,
-          "nominal_over_probability": 0.25697256078455527,
+          "nominal_over_probability": 0.25703124342036665,
           "policy_version": "bayesian-logistic-total-calibration-v1",
           "posterior_interval_mass": 0.8,
-          "posterior_lower_over_probability": 0.2625530374705077,
-          "posterior_mean_over_probability": 0.28826038251269676,
-          "posterior_upper_over_probability": 0.31390791145446684,
+          "posterior_lower_over_probability": 0.26261089490077644,
+          "posterior_mean_over_probability": 0.2883138114400304,
+          "posterior_upper_over_probability": 0.31395663716117145,
           "schedule_contract_version": "verified-pre-fight-schedule-v1",
           "status": "available"
         },
         "1.5": {
-          "calibration_artifact_sha256": "b13ad3497ab257542dd04a80cf73062f6293a7b1ac4e655d74fe6e18ed3933fd",
+          "calibration_artifact_sha256": "a301d78fbe0c795e136ac5c8fcca7df608b8f130e85998a9e9709ab85b4db09b",
           "calibration_trained_through": "2026-10-17",
           "calibration_training_events": 18,
           "calibration_training_fights": 222,
-          "nominal_over_probability": 0.019410028232077714,
+          "nominal_over_probability": 0.019424429988527947,
           "policy_version": "bayesian-logistic-total-calibration-v1",
           "posterior_interval_mass": 0.8,
-          "posterior_lower_over_probability": 0.07690012805090592,
-          "posterior_mean_over_probability": 0.14440828363636177,
-          "posterior_upper_over_probability": 0.22033421538888798,
+          "posterior_lower_over_probability": 0.07693413201376205,
+          "posterior_mean_over_probability": 0.14444790220687143,
+          "posterior_upper_over_probability": 0.22037607213318794,
           "schedule_contract_version": "verified-pre-fight-schedule-v1",
           "status": "available"
         },
         "2.5": {
-          "calibration_artifact_sha256": "b13ad3497ab257542dd04a80cf73062f6293a7b1ac4e655d74fe6e18ed3933fd",
+          "calibration_artifact_sha256": "a301d78fbe0c795e136ac5c8fcca7df608b8f130e85998a9e9709ab85b4db09b",
           "calibration_trained_through": "2026-10-17",
           "calibration_training_events": 18,
           "calibration_training_fights": 222,
-          "nominal_over_probability": 0.0017279583041726109,
+          "nominal_over_probability": 0.0017303051585179567,
           "policy_version": "bayesian-logistic-total-calibration-v1",
           "posterior_interval_mass": 0.8,
-          "posterior_lower_over_probability": 0.0007823483690494262,
-          "posterior_mean_over_probability": 0.015691849165082216,
-          "posterior_upper_over_probability": 0.04076049879567179,
+          "posterior_lower_over_probability": 0.0007835432050608119,
+          "posterior_mean_over_probability": 0.015702778661107347,
+          "posterior_upper_over_probability": 0.04078688615987406,
           "schedule_contract_version": "verified-pre-fight-schedule-v1",
           "status": "available"
         }
@@ -4120,12 +4120,12 @@
   "model_version": "candidate-discrete-time-competing-risks-v2-verified-schedules",
   "omitted_training_unknown_schedule": 0,
   "paper_only": true,
-  "publication_sha256": "452dd045a26f5918f69d758f29f6af5dba056af2536fa3a816f79a4f517b1b8d",
+  "publication_sha256": "06264e544832b43978a9b06cbd72c13df5a7786cee8f2dabf7ee81c861973954",
   "schedule_contract": "five rounds for UFCStats title labels and the first-listed main event; otherwise three rounds",
   "schedule_contract_version": "verified-pre-fight-schedule-v1",
   "schema_version": 1,
   "selected_c": 0.01,
-  "source_commit_sha": "e452b32e298855462d8c5c7d7c3b77d2da0064b7",
+  "source_commit_sha": "550b613392ef6767684515e68d84e448850c99f3",
   "training_fights": 1090,
   "training_input_sha256": "de0b085c28895be5833619d260a26310fcedca776cc94463eaa77c8a821050d5",
   "training_risk_rows": 4929,
