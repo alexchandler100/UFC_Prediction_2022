@@ -3656,5 +3656,949 @@
     "raw_data_sha256": "07a0bb9d46ef213a8af2488b72bb905e4ebb9f4e6efbd94c54cc5ef54c85b962",
     "record_sha256": "833aa5dcd80d5c4d9851bcea745e85fef61d0d5269eaf5f3805520f5f7f87170",
     "recorded_at_utc": "2026-10-16T17:23:21.338772+00:00"
+  },
+  {
+    "comparison": {
+      "base_decision_id": "fc538516c70e0dee223de2ecc634fa872f2c748170f0558fedc62b6e931efe17",
+      "base_decision_issued_at_utc": "2026-10-23T10:25:21.302862Z",
+      "candidate_only": true,
+      "comparison_id": "0001ebd25650e3b822d4ae83cc47a7cdc2380f6cb6ab751cdfdc4bca66c1eabc",
+      "comparison_issued_at_utc": "2026-10-23T10:27:02.743673Z",
+      "equal_three_probability": 0.45784325735644515,
+      "event_date": "2026-10-24",
+      "event_id": "cc18abc046b382c9",
+      "event_start_utc": "2026-10-24T14:00:00.000000Z",
+      "execution_enabled": false,
+      "fighter_id": "2e19380f34871c6a",
+      "market_model_probability": 0.4604253219681224,
+      "market_probability": 0.3492293071859463,
+      "market_simulation_probability": 0.39984135643540264,
+      "matchup_id": "matchup_9c40f2cf11b46aed4b6b73c74f1826ffd2f31dce0d7d3e233b296fddf62ceb9c",
+      "mechanics_profile_id": "mechanics-8ba01f34444f",
+      "model_probability": 0.5757052796,
+      "model_simulation_probability": 0.5144139819200118,
+      "opponent_id": "e90a2f22417af68e",
+      "paper_only": true,
+      "policy_version": "model-market-simulation-fixed-blends-v1",
+      "schema_version": 1,
+      "simulation_forecast_issued_at_utc": "2026-09-24T02:57:02.422023Z",
+      "simulation_parameter_artifact_sha256": "356f7b94eae897d03f80f094dd64239cf123e62aaea4443210fe8c8d4e0ed4fb",
+      "simulation_probability": 0.4526860522424839,
+      "simulation_publication_sha256": "9b9e46db0b82ae1c0dc7a4cdfb05c88b710345914740d2a5de49670ef0200fee",
+      "timing_precision": "timestamp"
+    },
+    "comparison_sha256": "f2ab2acf193616bac47ea44f0589c707d331b8c60c83360bb952b1b0de3bdab3",
+    "indicators": {
+      "bootstrap_members": 64,
+      "fighter": {
+        "complete_fights": 15,
+        "complete_fraction": 1.0,
+        "distance_attempts": 908.0,
+        "ground_attempts": 114.0,
+        "prior_fights": 15,
+        "recent_fights": 4,
+        "takedown_attempts": 7.0
+      },
+      "groups": {
+        "narrow_simulation_range": false,
+        "recent_history": true,
+        "substantial_relevant_history": false
+      },
+      "opponent": {
+        "complete_fights": 7,
+        "complete_fraction": 1.0,
+        "distance_attempts": 395.0,
+        "ground_attempts": 84.0,
+        "prior_fights": 7,
+        "recent_fights": 3,
+        "takedown_attempts": 14.0
+      },
+      "winner_ranges": [
+        {
+          "metric": "red_win",
+          "process_mcse": 0.007579119017386394,
+          "width": 0.426171875
+        },
+        {
+          "metric": "blue_win",
+          "process_mcse": 0.007553516723266591,
+          "width": 0.44843749999999993
+        }
+      ]
+    },
+    "policy_sha256": "3cffd273e701a3b6987e9582d9deeb50ccb861a5916a4aa77173a7ac4559c606",
+    "price": {
+      "quote": {
+        "book": "BetMGM",
+        "capture_id": "capture_20261023T102521013515Z_39938442520_1_006a60eac46a",
+        "event_date": "2026-10-24",
+        "event_id": "cc18abc046b382c9",
+        "event_start_utc": "2026-10-24T14:00:00.000000Z",
+        "fight_id": null,
+        "fighter_id": "2e19380f34871c6a",
+        "fighter_implied_probability": 0.3508771929824561,
+        "fighter_moneyline": 185,
+        "fighter_name": "Dominick Reyes",
+        "matchup_id": "matchup_9c40f2cf11b46aed4b6b73c74f1826ffd2f31dce0d7d3e233b296fddf62ceb9c",
+        "no_vig_fighter_probability": 0.33635187580853815,
+        "observed_at_utc": "2026-10-23T10:25:21.302862Z",
+        "opponent_id": "e90a2f22417af68e",
+        "opponent_implied_probability": 0.6923076923076923,
+        "opponent_moneyline": -225,
+        "opponent_name": "Azamat Murzakanov",
+        "overround": 1.0431848852901484,
+        "quote_first_seen_at_utc": "2026-10-21T23:28:41.053541Z",
+        "quote_id": "d3ed92f86ecca89dd22a559f01190ac1b8ab5e98dff29d3d8d62fa2f097db39f",
+        "schema_version": 1,
+        "source": "the-odds-api.com",
+        "source_payload_sha256": "cc8ad6ddc9ddb4ffe14920fc0b520b15567a798992f3930332e7eaf07a14bbd2",
+        "timing_precision": "timestamp"
+      },
+      "source_metadata": {
+        "book": "BetMGM",
+        "capture_id": "capture_20261023T102521013515Z_39938442520_1_006a60eac46a",
+        "event_id": "cc18abc046b382c9",
+        "matchup_id": "matchup_9c40f2cf11b46aed4b6b73c74f1826ffd2f31dce0d7d3e233b296fddf62ceb9c",
+        "metadata_id": "6a77da45678c3fc7c806f4d828a28ca8084b87e0869322bf80364b562a68762d",
+        "observed_at_utc": "2026-10-23T10:25:21.302862Z",
+        "quote_id": "d3ed92f86ecca89dd22a559f01190ac1b8ab5e98dff29d3d8d62fa2f097db39f",
+        "schema_version": 1,
+        "source": "the-odds-api.com",
+        "source_book_key": "betmgm",
+        "source_commence_time_utc": "2026-10-24T14:00:00.000000Z",
+        "source_event_id": "d170133c67f017be45b7b81eba2a4dae",
+        "source_quote_age_seconds": 41.302862,
+        "source_quote_updated_at_utc": "2026-10-23T10:24:40.000000Z"
+      }
+    },
+    "raw_data_sha256": "e4bff5463fee41a0dd37712dc5d07f36cc2d8862b1dbb638a1eb9b419605a6f6",
+    "record_sha256": "bc74217ab524fdaa6f281cab71055949e98f9b47193ca3e9947c7a0ca8086a7e",
+    "recorded_at_utc": "2026-10-23T10:27:16.908766+00:00"
+  },
+  {
+    "comparison": {
+      "base_decision_id": "2f7d1f340a5f6ecbbea8c26a8ed6ce12e9df33f1bbbd809e834203a75fe2eea2",
+      "base_decision_issued_at_utc": "2026-10-23T10:25:21.302862Z",
+      "candidate_only": true,
+      "comparison_id": "58a1ec0b55cf0f028882452ad005646a36229d79a52c7b56e0dc76a34b7eac91",
+      "comparison_issued_at_utc": "2026-10-23T10:27:02.743673Z",
+      "equal_three_probability": 0.4769785616770401,
+      "event_date": "2026-10-24",
+      "event_id": "cc18abc046b382c9",
+      "event_start_utc": "2026-10-24T14:00:00.000000Z",
+      "execution_enabled": false,
+      "fighter_id": "c03520b5c88ed6b4",
+      "market_model_probability": 0.5062530099430349,
+      "market_probability": 0.4244509331303657,
+      "market_simulation_probability": 0.421771909298652,
+      "matchup_id": "matchup_a91c6bb8eb567c5fce4b3b9bdd41e64bd4b0f549dfaf323850e05e8a59f7ed74",
+      "mechanics_profile_id": "mechanics-8ba01f34444f",
+      "model_probability": 0.5877216589,
+      "model_simulation_probability": 0.5035093607487852,
+      "opponent_id": "d661ce4da776fc20",
+      "paper_only": true,
+      "policy_version": "model-market-simulation-fixed-blends-v1",
+      "schema_version": 1,
+      "simulation_forecast_issued_at_utc": "2026-09-04T01:45:24.823318Z",
+      "simulation_parameter_artifact_sha256": "d8a2d882d118950687c367fd7471290a155c04072e346e5d4d6cca48e71df980",
+      "simulation_probability": 0.4190974819247071,
+      "simulation_publication_sha256": "9b9e46db0b82ae1c0dc7a4cdfb05c88b710345914740d2a5de49670ef0200fee",
+      "timing_precision": "timestamp"
+    },
+    "comparison_sha256": "cab759eb0c1bb42ae388ebc3a403c238bdaaf0f688f8944abe6e613ecdd41454",
+    "indicators": {
+      "bootstrap_members": 64,
+      "fighter": {
+        "complete_fights": 17,
+        "complete_fraction": 1.0,
+        "distance_attempts": 2463.0,
+        "ground_attempts": 431.0,
+        "prior_fights": 17,
+        "recent_fights": 5,
+        "takedown_attempts": 338.0
+      },
+      "groups": {
+        "narrow_simulation_range": false,
+        "recent_history": true,
+        "substantial_relevant_history": true
+      },
+      "opponent": {
+        "complete_fights": 16,
+        "complete_fraction": 1.0,
+        "distance_attempts": 2190.0,
+        "ground_attempts": 237.0,
+        "prior_fights": 16,
+        "recent_fights": 3,
+        "takedown_attempts": 65.0
+      },
+      "winner_ranges": [
+        {
+          "metric": "red_win",
+          "process_mcse": 0.007589617990384453,
+          "width": 0.334765625
+        },
+        {
+          "metric": "blue_win",
+          "process_mcse": 0.007531661615955285,
+          "width": 0.334765625
+        }
+      ]
+    },
+    "policy_sha256": "3cffd273e701a3b6987e9582d9deeb50ccb861a5916a4aa77173a7ac4559c606",
+    "price": {
+      "quote": {
+        "book": "BetOnline.ag",
+        "capture_id": "capture_20261023T102521013515Z_39938442520_1_006a60eac46a",
+        "event_date": "2026-10-24",
+        "event_id": "cc18abc046b382c9",
+        "event_start_utc": "2026-10-24T14:00:00.000000Z",
+        "fight_id": null,
+        "fighter_id": "c03520b5c88ed6b4",
+        "fighter_implied_probability": 0.4219409282700422,
+        "fighter_moneyline": 137,
+        "fighter_name": "Merab Dvalishvili",
+        "matchup_id": "matchup_a91c6bb8eb567c5fce4b3b9bdd41e64bd4b0f549dfaf323850e05e8a59f7ed74",
+        "no_vig_fighter_probability": 0.4061814277043746,
+        "observed_at_utc": "2026-10-23T10:25:21.302862Z",
+        "opponent_id": "d661ce4da776fc20",
+        "opponent_implied_probability": 0.6168582375478927,
+        "opponent_moneyline": -161,
+        "opponent_name": "Petr Yan",
+        "overround": 1.038799165817935,
+        "quote_first_seen_at_utc": "2026-10-23T10:25:21.302862Z",
+        "quote_id": "7b369282bbacaf8ea60228fda59c59590c429ca3b93fc9070b54c591c39e2517",
+        "schema_version": 1,
+        "source": "the-odds-api.com",
+        "source_payload_sha256": "cc8ad6ddc9ddb4ffe14920fc0b520b15567a798992f3930332e7eaf07a14bbd2",
+        "timing_precision": "timestamp"
+      },
+      "source_metadata": {
+        "book": "BetOnline.ag",
+        "capture_id": "capture_20261023T102521013515Z_39938442520_1_006a60eac46a",
+        "event_id": "cc18abc046b382c9",
+        "matchup_id": "matchup_a91c6bb8eb567c5fce4b3b9bdd41e64bd4b0f549dfaf323850e05e8a59f7ed74",
+        "metadata_id": "2bac677399c10dc10da4e56149f386ed67b96ef3313a544f09bf9434c4e87a71",
+        "observed_at_utc": "2026-10-23T10:25:21.302862Z",
+        "quote_id": "7b369282bbacaf8ea60228fda59c59590c429ca3b93fc9070b54c591c39e2517",
+        "schema_version": 1,
+        "source": "the-odds-api.com",
+        "source_book_key": "betonlineag",
+        "source_commence_time_utc": "2026-10-24T19:45:00.000000Z",
+        "source_event_id": "434aefea124f696fec6cba7d9ec6f582",
+        "source_quote_age_seconds": 10.302862,
+        "source_quote_updated_at_utc": "2026-10-23T10:25:11.000000Z"
+      }
+    },
+    "raw_data_sha256": "e4bff5463fee41a0dd37712dc5d07f36cc2d8862b1dbb638a1eb9b419605a6f6",
+    "record_sha256": "82cd7db8dd38d2985e5b4c8895c4e92f3f9bfe9e0443fafdddfdccba87bf3fda",
+    "recorded_at_utc": "2026-10-23T10:27:16.908766+00:00"
+  },
+  {
+    "comparison": {
+      "base_decision_id": "5f293341ca55cf4537a4af705ff1c6ec0115c2a5c44356dab0c3e54301e12ceb",
+      "base_decision_issued_at_utc": "2026-10-23T10:25:21.302862Z",
+      "candidate_only": true,
+      "comparison_id": "ad50ead5293bbfde86d0c016c42a273ac8824236b87196520917acf17332ce80",
+      "comparison_issued_at_utc": "2026-10-23T10:27:02.743673Z",
+      "equal_three_probability": 0.6333342759518705,
+      "event_date": "2026-10-24",
+      "event_id": "cc18abc046b382c9",
+      "event_start_utc": "2026-10-24T14:00:00.000000Z",
+      "execution_enabled": false,
+      "fighter_id": "279566840aa55bf2",
+      "market_model_probability": 0.596261765322351,
+      "market_probability": 0.5242580775497655,
+      "market_simulation_probability": 0.6173848413468674,
+      "matchup_id": "matchup_7b14ac5e9744ac989eaef0609ca0d51006e54022d070aeffdf541ae829259ce4",
+      "mechanics_profile_id": "mechanics-8ba01f34444f",
+      "model_probability": 0.6643449519,
+      "model_simulation_probability": 0.6837949882295191,
+      "opponent_id": "739fd4fbb5d862f4",
+      "paper_only": true,
+      "policy_version": "model-market-simulation-fixed-blends-v1",
+      "schema_version": 1,
+      "simulation_forecast_issued_at_utc": "2026-09-10T02:54:53.214832Z",
+      "simulation_parameter_artifact_sha256": "4cab429115ae503b045cf04e69f1742723d66cb29387386eaa7b3af613bd887d",
+      "simulation_probability": 0.70262246412667,
+      "simulation_publication_sha256": "9b9e46db0b82ae1c0dc7a4cdfb05c88b710345914740d2a5de49670ef0200fee",
+      "timing_precision": "timestamp"
+    },
+    "comparison_sha256": "6c71651110c2a162a98602bd5569c533802a60bbb47549cf72160e7ee22d7d13",
+    "indicators": {
+      "bootstrap_members": 64,
+      "fighter": {
+        "complete_fights": 19,
+        "complete_fraction": 1.0,
+        "distance_attempts": 1909.0,
+        "ground_attempts": 111.0,
+        "prior_fights": 19,
+        "recent_fights": 3,
+        "takedown_attempts": 16.0
+      },
+      "groups": {
+        "narrow_simulation_range": false,
+        "recent_history": true,
+        "substantial_relevant_history": false
+      },
+      "opponent": {
+        "complete_fights": 3,
+        "complete_fraction": 1.0,
+        "distance_attempts": 233.0,
+        "ground_attempts": 1.0,
+        "prior_fights": 3,
+        "recent_fights": 3,
+        "takedown_attempts": 0.0
+      },
+      "winner_ranges": [
+        {
+          "metric": "red_win",
+          "process_mcse": 0.0065920794391116245,
+          "width": 0.616015625
+        },
+        {
+          "metric": "blue_win",
+          "process_mcse": 0.0064780703309066864,
+          "width": 0.631640625
+        }
+      ]
+    },
+    "policy_sha256": "3cffd273e701a3b6987e9582d9deeb50ccb861a5916a4aa77173a7ac4559c606",
+    "price": {
+      "quote": {
+        "book": "BetAnything",
+        "capture_id": "capture_20261023T102521013515Z_39938442520_1_006a60eac46a",
+        "event_date": "2026-10-24",
+        "event_id": "cc18abc046b382c9",
+        "event_start_utc": "2026-10-24T14:00:00.000000Z",
+        "fight_id": null,
+        "fighter_id": "279566840aa55bf2",
+        "fighter_implied_probability": 0.5305164319248826,
+        "fighter_moneyline": -113,
+        "fighter_name": "Alexander Volkov",
+        "matchup_id": "matchup_7b14ac5e9744ac989eaef0609ca0d51006e54022d070aeffdf541ae829259ce4",
+        "no_vig_fighter_probability": 0.4959548561951377,
+        "observed_at_utc": "2026-10-23T10:25:21.302862Z",
+        "opponent_id": "739fd4fbb5d862f4",
+        "opponent_implied_probability": 0.5391705069124424,
+        "opponent_moneyline": -117,
+        "opponent_name": "Rizvan Kuniev",
+        "overround": 1.0696869388373251,
+        "quote_first_seen_at_utc": "2026-10-22T17:30:50.853922Z",
+        "quote_id": "79ba011948a1539917e6f6ed9d3ade50722e794037000c266c7db546d5e38e49",
+        "schema_version": 1,
+        "source": "the-odds-api.com",
+        "source_payload_sha256": "cc8ad6ddc9ddb4ffe14920fc0b520b15567a798992f3930332e7eaf07a14bbd2",
+        "timing_precision": "timestamp"
+      },
+      "source_metadata": {
+        "book": "BetAnything",
+        "capture_id": "capture_20261023T102521013515Z_39938442520_1_006a60eac46a",
+        "event_id": "cc18abc046b382c9",
+        "matchup_id": "matchup_7b14ac5e9744ac989eaef0609ca0d51006e54022d070aeffdf541ae829259ce4",
+        "metadata_id": "793a366abd8301b7cf17e7aa5aaa4a85bb82533a3658b0466c9480906f7e0976",
+        "observed_at_utc": "2026-10-23T10:25:21.302862Z",
+        "quote_id": "79ba011948a1539917e6f6ed9d3ade50722e794037000c266c7db546d5e38e49",
+        "schema_version": 1,
+        "source": "the-odds-api.com",
+        "source_book_key": "betanysports",
+        "source_commence_time_utc": "2026-10-24T14:00:00.000000Z",
+        "source_event_id": "48146e11c4874fe557649e1533c489a3",
+        "source_quote_age_seconds": 59.302862,
+        "source_quote_updated_at_utc": "2026-10-23T10:24:22.000000Z"
+      }
+    },
+    "raw_data_sha256": "e4bff5463fee41a0dd37712dc5d07f36cc2d8862b1dbb638a1eb9b419605a6f6",
+    "record_sha256": "8af2c288671fe5c6b17bb1a9edef314ce1cb368807f28884438ab22071551a6b",
+    "recorded_at_utc": "2026-10-23T10:27:16.908766+00:00"
+  },
+  {
+    "comparison": {
+      "base_decision_id": "8f6da84df8d4f1118108c6199a0f9d6c5144533ca9cf307cfcc2e99577e5edff",
+      "base_decision_issued_at_utc": "2026-10-23T10:25:21.302862Z",
+      "candidate_only": true,
+      "comparison_id": "b4293acb243be92fe4881c19eb5ba55b78dcd6867f1d5529691388d7ed6e10cf",
+      "comparison_issued_at_utc": "2026-10-23T10:27:02.743673Z",
+      "equal_three_probability": 0.4811833286160641,
+      "event_date": "2026-10-24",
+      "event_id": "cc18abc046b382c9",
+      "event_start_utc": "2026-10-24T14:00:00.000000Z",
+      "execution_enabled": false,
+      "fighter_id": "4bdedbdeedff7d1d",
+      "market_model_probability": 0.4462068563990732,
+      "market_probability": 0.4745260626339113,
+      "market_simulation_probability": 0.5130128568485937,
+      "matchup_id": "matchup_bd6ef2fcb29099c435e3c9c3ae68403eb8e7c6b9417aec61af5aabe39a7bcc41",
+      "mechanics_profile_id": "mechanics-8ba01f34444f",
+      "model_probability": 0.41823256610000004,
+      "model_simulation_probability": 0.48451461711307603,
+      "opponent_id": "b67d6bacc68d4c92",
+      "paper_only": true,
+      "policy_version": "model-market-simulation-fixed-blends-v1",
+      "schema_version": 1,
+      "simulation_forecast_issued_at_utc": "2026-10-21T22:44:27.382584Z",
+      "simulation_parameter_artifact_sha256": "717ac17cc81cb6fc4d1d2e842252d8b1f7fb8bb063c9b667d8a7045e860ed721",
+      "simulation_probability": 0.551345962113659,
+      "simulation_publication_sha256": "9b9e46db0b82ae1c0dc7a4cdfb05c88b710345914740d2a5de49670ef0200fee",
+      "timing_precision": "timestamp"
+    },
+    "comparison_sha256": "d0ec64d574e3d25da0116ed050c02abe69b7dd8240d2f9e129447534ffa01a34",
+    "indicators": {
+      "bootstrap_members": 64,
+      "fighter": {
+        "complete_fights": 5,
+        "complete_fraction": 1.0,
+        "distance_attempts": 712.0,
+        "ground_attempts": 28.0,
+        "prior_fights": 5,
+        "recent_fights": 3,
+        "takedown_attempts": 7.0
+      },
+      "groups": {
+        "narrow_simulation_range": false,
+        "recent_history": true,
+        "substantial_relevant_history": false
+      },
+      "opponent": {
+        "complete_fights": 6,
+        "complete_fraction": 1.0,
+        "distance_attempts": 773.0,
+        "ground_attempts": 67.0,
+        "prior_fights": 6,
+        "recent_fights": 3,
+        "takedown_attempts": 36.0
+      },
+      "winner_ranges": [
+        {
+          "metric": "red_win",
+          "process_mcse": 0.0072373644541036996,
+          "width": 0.6714843749999999
+        },
+        {
+          "metric": "blue_win",
+          "process_mcse": 0.007212227702826895,
+          "width": 0.6828124999999999
+        }
+      ]
+    },
+    "policy_sha256": "3cffd273e701a3b6987e9582d9deeb50ccb861a5916a4aa77173a7ac4559c606",
+    "price": {
+      "quote": {
+        "book": "BetMGM",
+        "capture_id": "capture_20261023T102521013515Z_39938442520_1_006a60eac46a",
+        "event_date": "2026-10-24",
+        "event_id": "cc18abc046b382c9",
+        "event_start_utc": "2026-10-24T14:00:00.000000Z",
+        "fight_id": null,
+        "fighter_id": "4bdedbdeedff7d1d",
+        "fighter_implied_probability": 0.4878048780487805,
+        "fighter_moneyline": 105,
+        "fighter_name": "Bolaji Oki",
+        "matchup_id": "matchup_bd6ef2fcb29099c435e3c9c3ae68403eb8e7c6b9417aec61af5aabe39a7bcc41",
+        "no_vig_fighter_probability": 0.4675324675324675,
+        "observed_at_utc": "2026-10-23T10:25:21.302862Z",
+        "opponent_id": "b67d6bacc68d4c92",
+        "opponent_implied_probability": 0.5555555555555556,
+        "opponent_moneyline": -125,
+        "opponent_name": "Daniel Santos",
+        "overround": 1.043360433604336,
+        "quote_first_seen_at_utc": "2026-10-22T17:30:50.853922Z",
+        "quote_id": "5521c009c149f8ce865541e3f96f61c3ab0b20d72299d198d03c3013a59909b9",
+        "schema_version": 1,
+        "source": "the-odds-api.com",
+        "source_payload_sha256": "cc8ad6ddc9ddb4ffe14920fc0b520b15567a798992f3930332e7eaf07a14bbd2",
+        "timing_precision": "timestamp"
+      },
+      "source_metadata": {
+        "book": "BetMGM",
+        "capture_id": "capture_20261023T102521013515Z_39938442520_1_006a60eac46a",
+        "event_id": "cc18abc046b382c9",
+        "matchup_id": "matchup_bd6ef2fcb29099c435e3c9c3ae68403eb8e7c6b9417aec61af5aabe39a7bcc41",
+        "metadata_id": "d7206feb42c610a393d1c3b8f4377b1fba4df5d25ac999f9c7fb7446e4971536",
+        "observed_at_utc": "2026-10-23T10:25:21.302862Z",
+        "quote_id": "5521c009c149f8ce865541e3f96f61c3ab0b20d72299d198d03c3013a59909b9",
+        "schema_version": 1,
+        "source": "the-odds-api.com",
+        "source_book_key": "betmgm",
+        "source_commence_time_utc": "2026-10-24T14:00:00.000000Z",
+        "source_event_id": "6bbd43bf7a7860e8dd2bd8e7b8a84686",
+        "source_quote_age_seconds": 41.302862,
+        "source_quote_updated_at_utc": "2026-10-23T10:24:40.000000Z"
+      }
+    },
+    "raw_data_sha256": "e4bff5463fee41a0dd37712dc5d07f36cc2d8862b1dbb638a1eb9b419605a6f6",
+    "record_sha256": "41fe93582c0602f49d0a4bc173af542cb4ae367dd26937a864fdde563fb3ff8c",
+    "recorded_at_utc": "2026-10-23T10:27:16.908766+00:00"
+  },
+  {
+    "comparison": {
+      "base_decision_id": "8897b612a52529289bfbfacd2ab680eb75b6b7b6cba40e9ff2f3d4ce7d8e5657",
+      "base_decision_issued_at_utc": "2026-10-23T10:25:21.302862Z",
+      "candidate_only": true,
+      "comparison_id": "b59e378cc7bea1a7ec6a654d4bc3a03cad8328cc8299ee5cc7eb129d2b7634ed",
+      "comparison_issued_at_utc": "2026-10-23T10:27:02.743673Z",
+      "equal_three_probability": 0.5609575212141875,
+      "event_date": "2026-10-24",
+      "event_id": "cc18abc046b382c9",
+      "event_start_utc": "2026-10-24T14:00:00.000000Z",
+      "execution_enabled": false,
+      "fighter_id": "99bd51917728c25d",
+      "market_model_probability": 0.5023439470752671,
+      "market_probability": 0.5211050872955093,
+      "market_simulation_probability": 0.5987916719637256,
+      "matchup_id": "matchup_6efbbffe88d1c25c60ca37b826bfcc2eca9c89654658302c09f8c74e98e6c38b",
+      "mechanics_profile_id": "mechanics-8ba01f34444f",
+      "model_probability": 0.4835762042,
+      "model_simulation_probability": 0.5806246702927185,
+      "opponent_id": "ca28cdf526d6b6e9",
+      "paper_only": true,
+      "policy_version": "model-market-simulation-fixed-blends-v1",
+      "schema_version": 1,
+      "simulation_forecast_issued_at_utc": "2026-09-04T01:45:24.823318Z",
+      "simulation_parameter_artifact_sha256": "d8a2d882d118950687c367fd7471290a155c04072e346e5d4d6cca48e71df980",
+      "simulation_probability": 0.671812749003984,
+      "simulation_publication_sha256": "9b9e46db0b82ae1c0dc7a4cdfb05c88b710345914740d2a5de49670ef0200fee",
+      "timing_precision": "timestamp"
+    },
+    "comparison_sha256": "ed03904875873620d020863f9c941e178005301b51a64f95094b5cbd352387dc",
+    "indicators": {
+      "bootstrap_members": 64,
+      "fighter": {
+        "complete_fights": 15,
+        "complete_fraction": 1.0,
+        "distance_attempts": 662.0,
+        "ground_attempts": 305.0,
+        "prior_fights": 15,
+        "recent_fights": 4,
+        "takedown_attempts": 105.0
+      },
+      "groups": {
+        "narrow_simulation_range": false,
+        "recent_history": true,
+        "substantial_relevant_history": false
+      },
+      "opponent": {
+        "complete_fights": 4,
+        "complete_fraction": 1.0,
+        "distance_attempts": 197.0,
+        "ground_attempts": 70.0,
+        "prior_fights": 4,
+        "recent_fights": 3,
+        "takedown_attempts": 24.0
+      },
+      "winner_ranges": [
+        {
+          "metric": "red_win",
+          "process_mcse": 0.00714619773421259,
+          "width": 0.46640625
+        },
+        {
+          "metric": "blue_win",
+          "process_mcse": 0.007055437024961482,
+          "width": 0.4417968749999999
+        }
+      ]
+    },
+    "policy_sha256": "3cffd273e701a3b6987e9582d9deeb50ccb861a5916a4aa77173a7ac4559c606",
+    "price": {
+      "quote": {
+        "book": "BetOnline.ag",
+        "capture_id": "capture_20261023T102521013515Z_39938442520_1_006a60eac46a",
+        "event_date": "2026-10-24",
+        "event_id": "cc18abc046b382c9",
+        "event_start_utc": "2026-10-24T14:00:00.000000Z",
+        "fight_id": null,
+        "fighter_id": "99bd51917728c25d",
+        "fighter_implied_probability": 0.5238095238095238,
+        "fighter_moneyline": -110,
+        "fighter_name": "Grant Dawson",
+        "matchup_id": "matchup_6efbbffe88d1c25c60ca37b826bfcc2eca9c89654658302c09f8c74e98e6c38b",
+        "no_vig_fighter_probability": 0.5044523597506678,
+        "observed_at_utc": "2026-10-23T10:25:21.302862Z",
+        "opponent_id": "ca28cdf526d6b6e9",
+        "opponent_implied_probability": 0.5145631067961165,
+        "opponent_moneyline": -106,
+        "opponent_name": "Nurullo Aliev",
+        "overround": 1.0383726306056404,
+        "quote_first_seen_at_utc": "2026-10-22T17:30:50.853922Z",
+        "quote_id": "432dd73fd4fc1d7d454cd02ad3747de5de9f7f60973782568139c61f67354b7f",
+        "schema_version": 1,
+        "source": "the-odds-api.com",
+        "source_payload_sha256": "cc8ad6ddc9ddb4ffe14920fc0b520b15567a798992f3930332e7eaf07a14bbd2",
+        "timing_precision": "timestamp"
+      },
+      "source_metadata": {
+        "book": "BetOnline.ag",
+        "capture_id": "capture_20261023T102521013515Z_39938442520_1_006a60eac46a",
+        "event_id": "cc18abc046b382c9",
+        "matchup_id": "matchup_6efbbffe88d1c25c60ca37b826bfcc2eca9c89654658302c09f8c74e98e6c38b",
+        "metadata_id": "1d2934f8141cb50bf1a5e95993712a3973d19933a1bc584c8d07b32c73742e97",
+        "observed_at_utc": "2026-10-23T10:25:21.302862Z",
+        "quote_id": "432dd73fd4fc1d7d454cd02ad3747de5de9f7f60973782568139c61f67354b7f",
+        "schema_version": 1,
+        "source": "the-odds-api.com",
+        "source_book_key": "betonlineag",
+        "source_commence_time_utc": "2026-10-24T14:00:00.000000Z",
+        "source_event_id": "b29313ed77b206f9319c46ed143d46d1",
+        "source_quote_age_seconds": 10.302862,
+        "source_quote_updated_at_utc": "2026-10-23T10:25:11.000000Z"
+      }
+    },
+    "raw_data_sha256": "e4bff5463fee41a0dd37712dc5d07f36cc2d8862b1dbb638a1eb9b419605a6f6",
+    "record_sha256": "45eef127b5a58e7bef88932cbb0185144b2cf7bb912651f0103a69a0c37d9f22",
+    "recorded_at_utc": "2026-10-23T10:27:16.908766+00:00"
+  },
+  {
+    "comparison": {
+      "base_decision_id": "d7d5bb3e649bb86316f874a6f08810b38855969724c2597e06b5d7abfce99a68",
+      "base_decision_issued_at_utc": "2026-10-23T10:25:21.302862Z",
+      "candidate_only": true,
+      "comparison_id": "c7c04dfd8714c5b4f03261cf55c897ff8525d38533af6c082573b3692d6043f1",
+      "comparison_issued_at_utc": "2026-10-23T10:27:02.743673Z",
+      "equal_three_probability": 0.430407894460293,
+      "event_date": "2026-10-24",
+      "event_id": "cc18abc046b382c9",
+      "event_start_utc": "2026-10-24T14:00:00.000000Z",
+      "execution_enabled": false,
+      "fighter_id": "76e2870ffafbe38f",
+      "market_model_probability": 0.5198343087000014,
+      "market_probability": 0.49733932176922724,
+      "market_simulation_probability": 0.37637082657268345,
+      "matchup_id": "matchup_0fbe22896d029194c007de355cef76e34140ee0a7abb7c5becbc70b65bb01694",
+      "mechanics_profile_id": "mechanics-8ba01f34444f",
+      "model_probability": 0.5422491624,
+      "model_simulation_probability": 0.3977235681169101,
+      "opponent_id": "e1248941344b3288",
+      "paper_only": true,
+      "policy_version": "model-market-simulation-fixed-blends-v1",
+      "schema_version": 1,
+      "simulation_forecast_issued_at_utc": "2026-09-04T01:45:24.823318Z",
+      "simulation_parameter_artifact_sha256": "d8a2d882d118950687c367fd7471290a155c04072e346e5d4d6cca48e71df980",
+      "simulation_probability": 0.2690752905507833,
+      "simulation_publication_sha256": "9b9e46db0b82ae1c0dc7a4cdfb05c88b710345914740d2a5de49670ef0200fee",
+      "timing_precision": "timestamp"
+    },
+    "comparison_sha256": "27e024e8c91aad93bdc44409847f8cfa2c67e561fe01c5e10c080e3d9ad978f9",
+    "indicators": {
+      "bootstrap_members": 64,
+      "fighter": {
+        "complete_fights": 10,
+        "complete_fraction": 1.0,
+        "distance_attempts": 1121.0,
+        "ground_attempts": 125.0,
+        "prior_fights": 10,
+        "recent_fights": 2,
+        "takedown_attempts": 97.0
+      },
+      "groups": {
+        "narrow_simulation_range": false,
+        "recent_history": true,
+        "substantial_relevant_history": true
+      },
+      "opponent": {
+        "complete_fights": 18,
+        "complete_fraction": 1.0,
+        "distance_attempts": 2567.0,
+        "ground_attempts": 399.0,
+        "prior_fights": 18,
+        "recent_fights": 2,
+        "takedown_attempts": 97.0
+      },
+      "winner_ranges": [
+        {
+          "metric": "red_win",
+          "process_mcse": 0.006920226738287014,
+          "width": 0.38125
+        },
+        {
+          "metric": "blue_win",
+          "process_mcse": 0.006663392810332657,
+          "width": 0.37460937499999974
+        }
+      ]
+    },
+    "policy_sha256": "3cffd273e701a3b6987e9582d9deeb50ccb861a5916a4aa77173a7ac4559c606",
+    "price": {
+      "quote": {
+        "book": "BetMGM",
+        "capture_id": "capture_20261023T102521013515Z_39938442520_1_006a60eac46a",
+        "event_date": "2026-10-24",
+        "event_id": "cc18abc046b382c9",
+        "event_start_utc": "2026-10-24T14:00:00.000000Z",
+        "fight_id": null,
+        "fighter_id": "76e2870ffafbe38f",
+        "fighter_implied_probability": 0.5121951219512195,
+        "fighter_moneyline": -105,
+        "fighter_name": "Movsar Evloev",
+        "matchup_id": "matchup_0fbe22896d029194c007de355cef76e34140ee0a7abb7c5becbc70b65bb01694",
+        "no_vig_fighter_probability": 0.4891657638136511,
+        "observed_at_utc": "2026-10-23T10:25:21.302862Z",
+        "opponent_id": "e1248941344b3288",
+        "opponent_implied_probability": 0.5348837209302325,
+        "opponent_moneyline": -115,
+        "opponent_name": "Alexander Volkanovski",
+        "overround": 1.0470788428814521,
+        "quote_first_seen_at_utc": "2026-10-21T23:28:41.053541Z",
+        "quote_id": "6ab2044a9c0f12d7480a11faa243727db715b89e190d11933d867c8e2922b852",
+        "schema_version": 1,
+        "source": "the-odds-api.com",
+        "source_payload_sha256": "cc8ad6ddc9ddb4ffe14920fc0b520b15567a798992f3930332e7eaf07a14bbd2",
+        "timing_precision": "timestamp"
+      },
+      "source_metadata": {
+        "book": "BetMGM",
+        "capture_id": "capture_20261023T102521013515Z_39938442520_1_006a60eac46a",
+        "event_id": "cc18abc046b382c9",
+        "matchup_id": "matchup_0fbe22896d029194c007de355cef76e34140ee0a7abb7c5becbc70b65bb01694",
+        "metadata_id": "9034b32c5e8add47985d18e17f36dda71050221f2a748b946cb8639d8f410d5f",
+        "observed_at_utc": "2026-10-23T10:25:21.302862Z",
+        "quote_id": "6ab2044a9c0f12d7480a11faa243727db715b89e190d11933d867c8e2922b852",
+        "schema_version": 1,
+        "source": "the-odds-api.com",
+        "source_book_key": "betmgm",
+        "source_commence_time_utc": "2026-10-24T20:30:00.000000Z",
+        "source_event_id": "73e2bada18e572af297a62064bd02d95",
+        "source_quote_age_seconds": 41.302862,
+        "source_quote_updated_at_utc": "2026-10-23T10:24:40.000000Z"
+      }
+    },
+    "raw_data_sha256": "e4bff5463fee41a0dd37712dc5d07f36cc2d8862b1dbb638a1eb9b419605a6f6",
+    "record_sha256": "50bafed43b9d65f82ef1762c7822933cbfa8c228808026459e197ffa2d62fa4c",
+    "recorded_at_utc": "2026-10-23T10:27:16.908766+00:00"
+  },
+  {
+    "comparison": {
+      "base_decision_id": "394a258f52586d7700da08ac90aca661877c287fa0eba388168f03a438ede8ab",
+      "base_decision_issued_at_utc": "2026-10-23T10:25:21.302862Z",
+      "candidate_only": true,
+      "comparison_id": "d85c5eb525f5ec339bd6c1a420b16cd58b57ec6fd5b303de8fe3bf4c3dd881fb",
+      "comparison_issued_at_utc": "2026-10-23T10:27:02.743673Z",
+      "equal_three_probability": 0.7248518410732133,
+      "event_date": "2026-10-24",
+      "event_id": "cc18abc046b382c9",
+      "event_start_utc": "2026-10-24T14:00:00.000000Z",
+      "execution_enabled": false,
+      "fighter_id": "abcf2cc6efc42031",
+      "market_model_probability": 0.7619094424574602,
+      "market_probability": 0.7478761510142198,
+      "market_simulation_probability": 0.6970877658743022,
+      "matchup_id": "matchup_c2f74699def909fe11860824dae8bd53f136c78a39a16cf53163ae7d042e4457",
+      "mechanics_profile_id": "mechanics-8ba01f34444f",
+      "model_probability": 0.7753962174,
+      "model_simulation_probability": 0.7128626038404624,
+      "opponent_id": "fc0a4053eb8a3a59",
+      "paper_only": true,
+      "policy_version": "model-market-simulation-fixed-blends-v1",
+      "schema_version": 1,
+      "simulation_forecast_issued_at_utc": "2026-10-21T22:44:27.382584Z",
+      "simulation_parameter_artifact_sha256": "717ac17cc81cb6fc4d1d2e842252d8b1f7fb8bb063c9b667d8a7045e860ed721",
+      "simulation_probability": 0.6409798417963767,
+      "simulation_publication_sha256": "9b9e46db0b82ae1c0dc7a4cdfb05c88b710345914740d2a5de49670ef0200fee",
+      "timing_precision": "timestamp"
+    },
+    "comparison_sha256": "c1cb082326d931d14e6611052fbd2eeffeac6be5be0640629adad837f210a395",
+    "indicators": {
+      "bootstrap_members": 64,
+      "fighter": {
+        "complete_fights": 7,
+        "complete_fraction": 1.0,
+        "distance_attempts": 631.0,
+        "ground_attempts": 24.0,
+        "prior_fights": 7,
+        "recent_fights": 2,
+        "takedown_attempts": 27.0
+      },
+      "groups": {
+        "narrow_simulation_range": false,
+        "recent_history": true,
+        "substantial_relevant_history": false
+      },
+      "opponent": {
+        "complete_fights": 3,
+        "complete_fraction": 1.0,
+        "distance_attempts": 280.0,
+        "ground_attempts": 15.0,
+        "prior_fights": 3,
+        "recent_fights": 3,
+        "takedown_attempts": 31.0
+      },
+      "winner_ranges": [
+        {
+          "metric": "red_win",
+          "process_mcse": 0.007215197105821574,
+          "width": 0.5265624999999999
+        },
+        {
+          "metric": "blue_win",
+          "process_mcse": 0.0070244146607174795,
+          "width": 0.49101562499999996
+        }
+      ]
+    },
+    "policy_sha256": "3cffd273e701a3b6987e9582d9deeb50ccb861a5916a4aa77173a7ac4559c606",
+    "price": {
+      "quote": {
+        "book": "BetMGM",
+        "capture_id": "capture_20261023T102521013515Z_39938442520_1_006a60eac46a",
+        "event_date": "2026-10-24",
+        "event_id": "cc18abc046b382c9",
+        "event_start_utc": "2026-10-24T14:00:00.000000Z",
+        "fight_id": null,
+        "fighter_id": "abcf2cc6efc42031",
+        "fighter_implied_probability": 0.8,
+        "fighter_moneyline": -400,
+        "fighter_name": "Iasmin Lucindo",
+        "matchup_id": "matchup_c2f74699def909fe11860824dae8bd53f136c78a39a16cf53163ae7d042e4457",
+        "no_vig_fighter_probability": 0.7663551401869159,
+        "observed_at_utc": "2026-10-23T10:25:21.302862Z",
+        "opponent_id": "fc0a4053eb8a3a59",
+        "opponent_implied_probability": 0.24390243902439024,
+        "opponent_moneyline": 310,
+        "opponent_name": "Nicolle Caliari",
+        "overround": 1.0439024390243903,
+        "quote_first_seen_at_utc": "2026-10-21T23:28:41.053541Z",
+        "quote_id": "7a79c84865f04823aa4fa4e25d6d471a20096a973e01c20f0955d1306e8ca628",
+        "schema_version": 1,
+        "source": "the-odds-api.com",
+        "source_payload_sha256": "cc8ad6ddc9ddb4ffe14920fc0b520b15567a798992f3930332e7eaf07a14bbd2",
+        "timing_precision": "timestamp"
+      },
+      "source_metadata": {
+        "book": "BetMGM",
+        "capture_id": "capture_20261023T102521013515Z_39938442520_1_006a60eac46a",
+        "event_id": "cc18abc046b382c9",
+        "matchup_id": "matchup_c2f74699def909fe11860824dae8bd53f136c78a39a16cf53163ae7d042e4457",
+        "metadata_id": "89bad9a0cb04890d81544906e57388350ec8e0c18662215065998358f72cdd20",
+        "observed_at_utc": "2026-10-23T10:25:21.302862Z",
+        "quote_id": "7a79c84865f04823aa4fa4e25d6d471a20096a973e01c20f0955d1306e8ca628",
+        "schema_version": 1,
+        "source": "the-odds-api.com",
+        "source_book_key": "betmgm",
+        "source_commence_time_utc": "2026-10-24T14:00:00.000000Z",
+        "source_event_id": "81c8300f2d7c8a9c4192c6f72e1cf87a",
+        "source_quote_age_seconds": 41.302862,
+        "source_quote_updated_at_utc": "2026-10-23T10:24:40.000000Z"
+      }
+    },
+    "raw_data_sha256": "e4bff5463fee41a0dd37712dc5d07f36cc2d8862b1dbb638a1eb9b419605a6f6",
+    "record_sha256": "b8ce29490c0a1d6dfd10477d28e1d4fa5cd1b005ccb2a376602fc54d0d7d1631",
+    "recorded_at_utc": "2026-10-23T10:27:16.908766+00:00"
+  },
+  {
+    "comparison": {
+      "base_decision_id": "591bde30cde6de8cebb31126d5aea888dbf73d54d25aae1612e8abbc1d4fc850",
+      "base_decision_issued_at_utc": "2026-10-23T10:25:21.302862Z",
+      "candidate_only": true,
+      "comparison_id": "e29d20d6ecb9dca0ff9de671e1e4dffaff891afd6d13f3140fc117ae5eac05ac",
+      "comparison_issued_at_utc": "2026-10-23T10:27:02.743673Z",
+      "equal_three_probability": 0.24904286434320708,
+      "event_date": "2026-10-24",
+      "event_id": "cc18abc046b382c9",
+      "event_start_utc": "2026-10-24T14:00:00.000000Z",
+      "execution_enabled": false,
+      "fighter_id": "1091d4d957141094",
+      "market_model_probability": 0.22078342933165854,
+      "market_probability": 0.20431041735447608,
+      "market_simulation_probability": 0.25459324642502396,
+      "matchup_id": "matchup_ee02d945f342c2d953f468c19cb7723f766228cb9d9acaaf98f9c182d08ebce9",
+      "mechanics_profile_id": "mechanics-8ba01f34444f",
+      "model_probability": 0.23818703200000002,
+      "model_simulation_probability": 0.2737257519759157,
+      "opponent_id": "95aff2fd8d09a5f0",
+      "paper_only": true,
+      "policy_version": "model-market-simulation-fixed-blends-v1",
+      "schema_version": 1,
+      "simulation_forecast_issued_at_utc": "2026-09-04T01:45:24.823318Z",
+      "simulation_parameter_artifact_sha256": "d8a2d882d118950687c367fd7471290a155c04072e346e5d4d6cca48e71df980",
+      "simulation_probability": 0.31239263803680983,
+      "simulation_publication_sha256": "9b9e46db0b82ae1c0dc7a4cdfb05c88b710345914740d2a5de49670ef0200fee",
+      "timing_precision": "timestamp"
+    },
+    "comparison_sha256": "f5012e2d4513f58a696af82cef58c3185d3f0c5348e2277aa4e1c2349b5968ff",
+    "indicators": {
+      "bootstrap_members": 64,
+      "fighter": {
+        "complete_fights": 22,
+        "complete_fraction": 1.0,
+        "distance_attempts": 916.0,
+        "ground_attempts": 156.0,
+        "prior_fights": 22,
+        "recent_fights": 4,
+        "takedown_attempts": 60.0
+      },
+      "groups": {
+        "narrow_simulation_range": false,
+        "recent_history": true,
+        "substantial_relevant_history": false
+      },
+      "opponent": {
+        "complete_fights": 3,
+        "complete_fraction": 1.0,
+        "distance_attempts": 16.0,
+        "ground_attempts": 17.0,
+        "prior_fights": 3,
+        "recent_fights": 3,
+        "takedown_attempts": 4.0
+      },
+      "winner_ranges": [
+        {
+          "metric": "red_win",
+          "process_mcse": 0.006503252219917623,
+          "width": 0.6917968749999999
+        },
+        {
+          "metric": "blue_win",
+          "process_mcse": 0.006500315777737591,
+          "width": 0.6828124999999999
+        }
+      ]
+    },
+    "policy_sha256": "3cffd273e701a3b6987e9582d9deeb50ccb861a5916a4aa77173a7ac4559c606",
+    "price": {
+      "quote": {
+        "book": "BetOnline.ag",
+        "capture_id": "capture_20261023T102521013515Z_39938442520_1_006a60eac46a",
+        "event_date": "2026-10-24",
+        "event_id": "cc18abc046b382c9",
+        "event_start_utc": "2026-10-24T14:00:00.000000Z",
+        "fight_id": null,
+        "fighter_id": "1091d4d957141094",
+        "fighter_implied_probability": 0.18761726078799248,
+        "fighter_moneyline": 433,
+        "fighter_name": "Nikita Krylov",
+        "matchup_id": "matchup_ee02d945f342c2d953f468c19cb7723f766228cb9d9acaaf98f9c182d08ebce9",
+        "no_vig_fighter_probability": 0.18068552628030526,
+        "observed_at_utc": "2026-10-23T10:25:21.302862Z",
+        "opponent_id": "95aff2fd8d09a5f0",
+        "opponent_implied_probability": 0.8507462686567164,
+        "opponent_moneyline": -570,
+        "opponent_name": "Abdul Rakhman Yakhyaev",
+        "overround": 1.0383635294447089,
+        "quote_first_seen_at_utc": "2026-10-22T17:30:50.853922Z",
+        "quote_id": "560b187ebb0821713332e90118346c7f6d28955c8fe72b7b50c87e02f27af1f5",
+        "schema_version": 1,
+        "source": "the-odds-api.com",
+        "source_payload_sha256": "cc8ad6ddc9ddb4ffe14920fc0b520b15567a798992f3930332e7eaf07a14bbd2",
+        "timing_precision": "timestamp"
+      },
+      "source_metadata": {
+        "book": "BetOnline.ag",
+        "capture_id": "capture_20261023T102521013515Z_39938442520_1_006a60eac46a",
+        "event_id": "cc18abc046b382c9",
+        "matchup_id": "matchup_ee02d945f342c2d953f468c19cb7723f766228cb9d9acaaf98f9c182d08ebce9",
+        "metadata_id": "8aa9a4857ac265362ad8d8d664e21d2c5ffbcbfed613bb494eb0e1707069a0c6",
+        "observed_at_utc": "2026-10-23T10:25:21.302862Z",
+        "quote_id": "560b187ebb0821713332e90118346c7f6d28955c8fe72b7b50c87e02f27af1f5",
+        "schema_version": 1,
+        "source": "the-odds-api.com",
+        "source_book_key": "betonlineag",
+        "source_commence_time_utc": "2026-10-24T14:00:00.000000Z",
+        "source_event_id": "78d6472a61824019c0d8f1a535e3d475",
+        "source_quote_age_seconds": 10.302862,
+        "source_quote_updated_at_utc": "2026-10-23T10:25:11.000000Z"
+      }
+    },
+    "raw_data_sha256": "e4bff5463fee41a0dd37712dc5d07f36cc2d8862b1dbb638a1eb9b419605a6f6",
+    "record_sha256": "bee606c1211634377cdd86feea40822d0ee8caa9b3708fc98ec66aa32f4bf941",
+    "recorded_at_utc": "2026-10-23T10:27:16.908766+00:00"
   }
 ]
