@@ -3,12 +3,13 @@
     "638cfec7ec559d6e": -12.0,
     "7e654edcddd71550": 1.5,
     "8a0a35e7c74bebcc": 4.0,
-    "ad3fdba28a7540cf": -7.12
+    "ad3fdba28a7540cf": -7.12,
+    "cc18abc046b382c9": -1.0
   },
   "decisions_sha256": "d7a1db41de646f6e37c83f1d1b72f478685acff24960dcbf80bb81f0de69751a",
   "execution_enabled": false,
   "frozen_fights": 46,
-  "generated_at_utc": "2026-10-24T23:28:12.848496+00:00",
+  "generated_at_utc": "2026-10-25T14:48:49.920912+00:00",
   "no_bet_baseline_profit_units": 0,
   "paper_only": true,
   "paper_recommendations": 40,
@@ -27,7 +28,7 @@
     "special_results": "unknown_or_ambiguous_results_remain_pending_review",
     "version": "prospective-method-flat-stake-v1"
   },
-  "profit_units": -13.620000000000001,
+  "profit_units": -14.620000000000001,
   "recommendations": [
     {
       "book": "FanDuel",
@@ -613,15 +614,15 @@
       "observed_at_utc": "2026-10-06T17:32:46.386347Z",
       "opponent_name": "Petr Yan",
       "probability": 0.1287821597723009,
-      "profit_units": null,
+      "profit_units": 0,
       "quote_id": "195e514d17e71831d2dc7b02aeeb8dd53dd2116f861dc44b1ad7597ad38c5ef2",
       "risk_units": 1,
       "selection": "Merab Dvalishvili by SUBMISSION",
-      "settlement_status": null,
+      "settlement_status": "void",
       "side": "fighter",
       "source_payload_sha256": "76fe0f3cbf187bea8c694d39ca45f215787cf8bf370e85c800e1c805f4788fad",
       "source_quote_updated_at_utc": null,
-      "status": "price_expired"
+      "status": "awaiting_result"
     },
     {
       "book": "BetRivers",
@@ -991,15 +992,15 @@
       "observed_at_utc": "2026-10-06T17:32:46.386347Z",
       "opponent_name": "Alexander Volkanovski",
       "probability": 0.06294267612584618,
-      "profit_units": null,
+      "profit_units": -1,
       "quote_id": "8ccbfe3d3fa86b6da41b5e84eee041984b96ab382398a25d0e0b4daf0788bc37",
       "risk_units": 1,
       "selection": "Alexander Volkanovski by SUBMISSION",
-      "settlement_status": null,
+      "settlement_status": "loss",
       "side": "opponent",
       "source_payload_sha256": "76fe0f3cbf187bea8c694d39ca45f215787cf8bf370e85c800e1c805f4788fad",
       "source_quote_updated_at_utc": null,
-      "status": "price_expired"
+      "status": "awaiting_result"
     },
     {
       "book": "Unibet",
@@ -1110,9 +1111,9 @@
       "status": "awaiting_result"
     }
   ],
-  "return_per_unit": -0.3681081081081081,
-  "settled_fights": 44,
-  "settled_risk_units": 37,
+  "return_per_unit": -0.3847368421052632,
+  "settled_fights": 46,
+  "settled_risk_units": 38,
   "settlements": [
     {
       "decision_sha256": "c352716e001c280255e3c322b9d012b75a3af372c9e95d6a5d55b966d72fb665",
@@ -1641,6 +1642,30 @@
       "risk_units": 1,
       "settled_at_utc": "2026-10-04T16:05:30.223321+00:00",
       "status": "loss"
+    },
+    {
+      "decision_sha256": "acddf2f1813093fc04cd5e1780f2471123cbb61f8f2f5b8d25510cbfb0653fc9",
+      "event_id": "cc18abc046b382c9",
+      "fight_id": "ce1388d6c7651d2e",
+      "matchup_id": "matchup_0fbe22896d029194c007de355cef76e34140ee0a7abb7c5becbc70b65bb01694",
+      "profit_units": -1,
+      "record_sha256": "f39b3f2b984c1d9f5703a1e66e692e28c106608248b5cb57050d6f056e4454ad",
+      "result_source_sha256": "4e8273846ea225293eacdaf2db341d63e0830c3d4e25a64d8473218fb5f1b532",
+      "risk_units": 1,
+      "settled_at_utc": "2026-10-25T14:48:49.920912+00:00",
+      "status": "loss"
+    },
+    {
+      "decision_sha256": "4aad324014fb90520b638cd21c4fb12ed14855da7bc21823c07bf90765679860",
+      "event_id": "cc18abc046b382c9",
+      "fight_id": "e262f5e588b149a6",
+      "matchup_id": "matchup_a91c6bb8eb567c5fce4b3b9bdd41e64bd4b0f549dfaf323850e05e8a59f7ed74",
+      "profit_units": 0,
+      "record_sha256": "929fc2fd0f6a5dc1ab1da9cb58a04d3a354f835f75a0ba4f3b076d49497c4615",
+      "result_source_sha256": "4e8273846ea225293eacdaf2db341d63e0830c3d4e25a64d8473218fb5f1b532",
+      "risk_units": 0,
+      "settled_at_utc": "2026-10-25T14:48:49.920912+00:00",
+      "status": "void"
     }
   ]
 }

@@ -23,7 +23,7 @@
     "matchups_without_forecast": 0,
     "matchups_without_fresh_quotes": 0
   },
-  "last_update_utc": "2026-10-24T23:28:50Z",
+  "last_update_utc": "2026-10-25T14:49:13Z",
   "latest_available_same_book_price_movement": {
     "count": 36,
     "definition": "later implied probability minus locked break-even probability; positive means the recorded paper price was better",
@@ -40,10 +40,10 @@
   "paper_only": true,
   "paper_return_interval": {
     "bootstrap_samples": 10000,
-    "ci_95_lower": -0.4862193353168963,
-    "ci_95_upper": 0.01380471971826167,
-    "event_count": 6,
-    "point": -0.21089317174417563
+    "ci_95_lower": -0.37250432279540746,
+    "ci_95_upper": 0.3366537300168311,
+    "event_count": 7,
+    "point": -0.04385045529671107
   },
   "policy": {
     "candidate_only": true,
@@ -110,55 +110,55 @@
   "probability_quality_on_all_scored_fights": {
     "candidate_minus_market_log_loss": {
       "bootstrap_samples": 10000,
-      "ci_95_lower": 0.011493482123260452,
-      "ci_95_upper": 0.08225311232041163,
-      "event_count": 6,
-      "point": 0.046851211771013784
+      "ci_95_lower": -0.02011239882463432,
+      "ci_95_upper": 0.07195012807049123,
+      "event_count": 7,
+      "point": 0.02731936026072952
     },
     "current_model": {
-      "accuracy": 0.5546875,
-      "brier_score": 0.31721452048787935,
-      "count": 64,
-      "expected_calibration_error": 0.2536887562953125,
-      "log_loss": 1.0139011963397528,
-      "positive_rate": 0.46875,
-      "roc_auc": 0.5107843137254902
+      "accuracy": 0.5460526315789473,
+      "brier_score": 0.3049942869155564,
+      "count": 76,
+      "expected_calibration_error": 0.20142843292368423,
+      "log_loss": 0.957873255034784,
+      "positive_rate": 0.4605263157894737,
+      "roc_auc": 0.5289198606271777
     },
     "leave_one_out_market": {
-      "accuracy": 0.65625,
-      "brier_score": 0.2356161471559761,
-      "count": 64,
-      "expected_calibration_error": 0.20337448063967267,
-      "log_loss": 0.6679544083594209,
-      "positive_rate": 0.46875,
-      "roc_auc": 0.657843137254902
+      "accuracy": 0.6842105263157895,
+      "brier_score": 0.2358644322693674,
+      "count": 76,
+      "expected_calibration_error": 0.21876074233888507,
+      "log_loss": 0.6691005334882176,
+      "positive_rate": 0.4605263157894737,
+      "roc_auc": 0.6571428571428571
     },
     "market_first_candidate": {
-      "accuracy": 0.625,
-      "brier_score": 0.25113580047924006,
-      "count": 64,
-      "expected_calibration_error": 0.17513157259395926,
-      "log_loss": 0.7148056201304344,
-      "positive_rate": 0.46875,
-      "roc_auc": 0.638235294117647
+      "accuracy": 0.6447368421052632,
+      "brier_score": 0.24440563833688053,
+      "count": 76,
+      "expected_calibration_error": 0.17883100671733568,
+      "log_loss": 0.6964198937489469,
+      "positive_rate": 0.4605263157894737,
+      "roc_auc": 0.6522648083623693
     }
   },
   "prospective_first_capture_utc": "2026-08-30T00:20:36.000000Z",
-  "report_sha256": "b74409d819bbc1f7a893435acb5a1c87dd340be3e796f38ebe9938fdb5bc113d",
+  "report_sha256": "5ef52ab91cfb8c0d43355cf07b3dcdd885f74c5d0ae1050aee74324334ec238b",
   "results": {
-    "losses": 17,
+    "losses": 19,
     "maximum_drawdown_units": 10.752347119685266,
-    "profit_units": -8.013940526278674,
-    "recommended_bets": 38,
-    "risk_units": 38.0,
-    "roi": -0.21089317174417563,
-    "scored_fights": 64,
+    "profit_units": -1.9732704883519983,
+    "recommended_bets": 45,
+    "risk_units": 45.0,
+    "roi": -0.04385045529671107,
+    "scored_fights": 76,
     "voids": 0,
-    "wins": 21
+    "wins": 26
   },
   "schema_version": 1,
-  "settled_events": 6,
-  "settlement_dataset_sha256": "37435bc40016e2ba3c81875d85c5c76b627eb59046f016493b0fc01bc2d66176",
-  "settlements_total": 65,
-  "unsettled_decisions": 12
+  "settled_events": 7,
+  "settlement_dataset_sha256": "6844165836c6fbe6552a1044b2779c46008e102fe0ae7387424364f7e5020cb0",
+  "settlements_total": 77,
+  "unsettled_decisions": 0
 }
