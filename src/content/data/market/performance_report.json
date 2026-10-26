@@ -1,7 +1,7 @@
 {
   "ambiguous_historical_matchup_keys": 1,
   "ambiguous_result_decisions": 0,
-  "as_of_utc": "2026-10-26T17:32:56.847601Z",
+  "as_of_utc": "2026-10-26T23:28:35.544972Z",
   "bayesian_filtered_moneyline_policy": {
     "base_policy_on_same_cohort": {
       "hypothetical_profit_units": 15.530000000000001,
@@ -141,10 +141,10 @@
     "execution_enabled": false,
     "favorite_definition": "side above 50% in the full no-vig consensus at the first eligible capture; classification never changes after a line flip",
     "ledger_counts": {
-      "eligible_captures": 1242,
+      "eligible_captures": 1252,
       "frozen_classifications": 127,
-      "quotes": 13804,
-      "source_metadata": 13406
+      "quotes": 13902,
+      "source_metadata": 13504
     },
     "paper_only": true,
     "policy_version": "favorite-early-dog-late-v1",
@@ -251,13 +251,13 @@
           "event_block_interval": {
             "bootstrap_samples": 10000,
             "ci_95_lower": -0.006524305562449714,
-            "ci_95_upper": 0.006906173077168698,
+            "ci_95_upper": 0.007171708908392128,
             "definition": "whole-card bootstrap of latest same-book CLV probability edge",
             "event_count": 5,
             "observation_count": 9,
-            "point_estimate": 0.0016462768793166155
+            "point_estimate": 0.0018454810586203006
           },
-          "mean_probability_edge": 0.0016462768793166155,
+          "mean_probability_edge": 0.0018454810586203006,
           "positive_rate": 0.4444444444444444
         },
         "entry_window_counts": {
@@ -997,14 +997,14 @@
     "simulation_coverage": 0.5844155844155844,
     "status": "collecting_results"
   },
-  "quote_dataset_sha256": "146b7cc4f0b308a9391b35ac389b45b35f578577b1bff136825d68ccd616f649",
-  "report_sha256": "64670a31b931a85cbb8f5d38377abd80c68b4fd44332b3130e234e53367a036e",
+  "quote_dataset_sha256": "f14f006f776d19d0f13601d3c5c26471bf17fc4fcaa39d8d29e653cf3d351eed",
+  "report_sha256": "e1ac7e218ffd7a81cdae72420e0c57fc3bc7d6a95fe3221ee7c06db7e3112d5b",
   "result_source_sha256": "4e8273846ea225293eacdaf2db341d63e0830c3d4e25a64d8473218fb5f1b532",
   "schema_version": 6,
   "settlement_dataset_sha256": "7d05841629549d506d39844b88f1bf14d4bdd5f73708ec23c12f7499992cbe66",
   "settlements_total": 90,
   "simulation_comparison_dataset_sha256": "23118a5bad055aab4e952f3d47dc14be138c539f7eb09300f9ca87efebe80daa",
-  "source_metadata_dataset_sha256": "17bfdbc09fc9e35a6bbae356fa1d601adfbd6480514d25a67ce7694084880508",
+  "source_metadata_dataset_sha256": "949c549f53eef0fca5b94d8d9c91346ec0eed9f61b25a4b02ab6c569d2900e48",
   "total_rounds": {
     "betting_status": "disabled_paper_only_no_execution",
     "decision_dataset_sha256": "0ab63e5f38c708514d87d48d0baac758f88e26601ff995c8a4440eef1b6dce54",
@@ -1088,7 +1088,7 @@
       "settled_events": 7,
       "status": "collecting_prospective_evidence"
     },
-    "quote_dataset_sha256": "f621a7ca34c14dd2e18d3e06825c7693d4ef2cea777dc0ee6ed3db1e25f8ff96",
+    "quote_dataset_sha256": "c9f8bd807c169a81b1c4b896708c8e1b71d3c9446a85c045f88d2ab7ada01b07",
     "residual_selection_protocol": "select weight on earliest 70% of settled events; require at least 0.002 lower log loss and an event-block 95% upper confidence bound below zero on the latest 30%",
     "scored_forecasts": 74,
     "settlement_dataset_sha256": "69524379a2f59596d314a44d1baa50063e6dfd7aa6dc7c10b077f7fea1805312",
