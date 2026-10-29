@@ -1,5 +1,5 @@
 {
-  "book_market_count": 34,
+  "book_market_count": 43,
   "candidate_only": true,
   "contract_version": "fighter-method-book-board-v1",
   "event_date": "2026-10-31",
@@ -7,7 +7,7 @@
   "event_start_utc": "2026-10-31T13:45:00Z",
   "execution_enabled": false,
   "expected_value_status": "candidate_comparison_only",
-  "latest_observed_at_utc": "2026-10-28T23:26:49.714392Z",
+  "latest_observed_at_utc": "2026-10-29T17:26:57.354282Z",
   "market": "fighter_method_of_victory",
   "method_market_count": 11,
   "method_markets": [
@@ -1007,7 +1007,7 @@
       "opponent_name": "Farman Hasanov"
     },
     {
-      "book_count": 3,
+      "book_count": 4,
       "book_quotes": [
         {
           "book": "BetRivers",
@@ -1055,6 +1055,53 @@
           ],
           "six_way_overround": null,
           "source_book_key": "book_25"
+        },
+        {
+          "book": "BetWay",
+          "horizon": "opening",
+          "is_complete_six_way": false,
+          "observed_at_utc": "2026-10-29T17:26:57.354282Z",
+          "selection_count": 3,
+          "selections": [
+            {
+              "book_no_vig_probability": null,
+              "break_even_probability": 0.16666666666666666,
+              "candidate_model_estimated_return": -0.08532221032516085,
+              "candidate_model_probability": 0.15244629827913986,
+              "method": "ko_tko",
+              "moneyline": 500,
+              "selected_fighter_id": "6142edbd477d20c9",
+              "selected_fighter_name": "Dakota Hope",
+              "selection": "Dakota Hope by KO/TKO",
+              "side": "opponent"
+            },
+            {
+              "book_no_vig_probability": null,
+              "break_even_probability": 0.047619047619047616,
+              "candidate_model_estimated_return": -0.10225075364643965,
+              "candidate_model_probability": 0.0427499641120743,
+              "method": "submission",
+              "moneyline": 2000,
+              "selected_fighter_id": "6142edbd477d20c9",
+              "selected_fighter_name": "Dakota Hope",
+              "selection": "Dakota Hope by SUBMISSION",
+              "side": "opponent"
+            },
+            {
+              "book_no_vig_probability": null,
+              "break_even_probability": 0.2,
+              "candidate_model_estimated_return": 0.22492050375427408,
+              "candidate_model_probability": 0.24498410075085483,
+              "method": "decision",
+              "moneyline": 400,
+              "selected_fighter_id": "6142edbd477d20c9",
+              "selected_fighter_name": "Dakota Hope",
+              "selection": "Dakota Hope by DECISION",
+              "side": "opponent"
+            }
+          ],
+          "six_way_overround": null,
+          "source_book_key": "book_20"
         },
         {
           "book": "FanDuel",
@@ -1159,7 +1206,7 @@
       "opponent_name": "Dakota Hope"
     },
     {
-      "book_count": 3,
+      "book_count": 4,
       "book_quotes": [
         {
           "book": "BetRivers",
@@ -1207,6 +1254,53 @@
           ],
           "six_way_overround": null,
           "source_book_key": "book_25"
+        },
+        {
+          "book": "BetWay",
+          "horizon": "opening",
+          "is_complete_six_way": false,
+          "observed_at_utc": "2026-10-29T17:26:57.354282Z",
+          "selection_count": 3,
+          "selections": [
+            {
+              "book_no_vig_probability": null,
+              "break_even_probability": 0.36363636363636365,
+              "candidate_model_estimated_return": -0.6855051351113813,
+              "candidate_model_probability": 0.11436176905040679,
+              "method": "ko_tko",
+              "moneyline": 175,
+              "selected_fighter_id": "c06d6b18862f9a53",
+              "selected_fighter_name": "Rodrigo Sezinando",
+              "selection": "Rodrigo Sezinando by KO/TKO",
+              "side": "fighter"
+            },
+            {
+              "book_no_vig_probability": null,
+              "break_even_probability": 0.2222222222222222,
+              "candidate_model_estimated_return": -0.7071056987250793,
+              "candidate_model_probability": 0.06508762250553793,
+              "method": "submission",
+              "moneyline": 350,
+              "selected_fighter_id": "c06d6b18862f9a53",
+              "selected_fighter_name": "Rodrigo Sezinando",
+              "selection": "Rodrigo Sezinando by SUBMISSION",
+              "side": "fighter"
+            },
+            {
+              "book_no_vig_probability": null,
+              "break_even_probability": 0.16666666666666666,
+              "candidate_model_estimated_return": 0.41831353120783454,
+              "candidate_model_probability": 0.2363855885346391,
+              "method": "decision",
+              "moneyline": 500,
+              "selected_fighter_id": "c06d6b18862f9a53",
+              "selected_fighter_name": "Rodrigo Sezinando",
+              "selection": "Rodrigo Sezinando by DECISION",
+              "side": "fighter"
+            }
+          ],
+          "six_way_overround": null,
+          "source_book_key": "book_20"
         },
         {
           "book": "FanDuel",
@@ -1303,7 +1397,7 @@
           "source_book_key": "book_26"
         }
       ],
-      "bout_order": 7,
+      "bout_order": 6,
       "fighter_id": "c06d6b18862f9a53",
       "fighter_name": "Rodrigo Sezinando",
       "matchup_id": "matchup_3ea49474afc6b7b845d9b665babc7b160d29796e47742829092da97dd747d4c0",
@@ -1311,7 +1405,7 @@
       "opponent_name": "Theodor Berggren"
     },
     {
-      "book_count": 2,
+      "book_count": 3,
       "book_quotes": [
         {
           "book": "BetRivers",
@@ -1361,6 +1455,53 @@
           "source_book_key": "book_25"
         },
         {
+          "book": "BetWay",
+          "horizon": "opening",
+          "is_complete_six_way": false,
+          "observed_at_utc": "2026-10-29T17:26:57.354282Z",
+          "selection_count": 3,
+          "selections": [
+            {
+              "book_no_vig_probability": null,
+              "break_even_probability": 0.5,
+              "candidate_model_estimated_return": -0.46880391376400277,
+              "candidate_model_probability": 0.2655980431179986,
+              "method": "ko_tko",
+              "moneyline": 100,
+              "selected_fighter_id": "d008d785f6347dc2",
+              "selected_fighter_name": "JeongYeong Lee",
+              "selection": "JeongYeong Lee by KO/TKO",
+              "side": "opponent"
+            },
+            {
+              "book_no_vig_probability": null,
+              "break_even_probability": 0.1,
+              "candidate_model_estimated_return": -0.3227951631374423,
+              "candidate_model_probability": 0.06772048368625577,
+              "method": "submission",
+              "moneyline": 900,
+              "selected_fighter_id": "d008d785f6347dc2",
+              "selected_fighter_name": "JeongYeong Lee",
+              "selection": "JeongYeong Lee by SUBMISSION",
+              "side": "opponent"
+            },
+            {
+              "book_no_vig_probability": null,
+              "break_even_probability": 0.16666666666666666,
+              "candidate_model_estimated_return": 0.4204848214632575,
+              "candidate_model_probability": 0.23674747024387627,
+              "method": "decision",
+              "moneyline": 500,
+              "selected_fighter_id": "d008d785f6347dc2",
+              "selected_fighter_name": "JeongYeong Lee",
+              "selection": "JeongYeong Lee by DECISION",
+              "side": "opponent"
+            }
+          ],
+          "six_way_overround": null,
+          "source_book_key": "book_20"
+        },
+        {
           "book": "Unibet",
           "horizon": "opening",
           "is_complete_six_way": false,
@@ -1408,7 +1549,7 @@
           "source_book_key": "book_26"
         }
       ],
-      "bout_order": 8,
+      "bout_order": 7,
       "fighter_id": "902ec2cc48c8ae8a",
       "fighter_name": "Julian Erosa",
       "matchup_id": "matchup_01f1382dde69b78aff7043a773b0e41abf2fa6c04195f37706504f022c0301a3",
@@ -1416,7 +1557,206 @@
       "opponent_name": "JeongYeong Lee"
     },
     {
-      "book_count": 2,
+      "book_count": 4,
+      "book_quotes": [
+        {
+          "book": "BetRivers",
+          "horizon": "t72",
+          "is_complete_six_way": false,
+          "observed_at_utc": "2026-10-28T17:27:37.273705Z",
+          "selection_count": 3,
+          "selections": [
+            {
+              "book_no_vig_probability": null,
+              "break_even_probability": 0.038461538461538464,
+              "candidate_model_estimated_return": 1.6479743011441772,
+              "candidate_model_probability": 0.1018451654286222,
+              "method": "ko_tko",
+              "moneyline": 2500,
+              "selected_fighter_id": "9e50097a89442158",
+              "selected_fighter_name": "Mickey Gall",
+              "selection": "Mickey Gall by KO/TKO",
+              "side": "opponent"
+            },
+            {
+              "book_no_vig_probability": null,
+              "break_even_probability": 0.17391304347826086,
+              "candidate_model_estimated_return": -0.6648183664915925,
+              "candidate_model_probability": 0.058292458001462155,
+              "method": "submission",
+              "moneyline": 475,
+              "selected_fighter_id": "9e50097a89442158",
+              "selected_fighter_name": "Mickey Gall",
+              "selection": "Mickey Gall by SUBMISSION",
+              "side": "opponent"
+            },
+            {
+              "book_no_vig_probability": null,
+              "break_even_probability": 0.1,
+              "candidate_model_estimated_return": 0.6920440372188637,
+              "candidate_model_probability": 0.16920440372188636,
+              "method": "decision",
+              "moneyline": 900,
+              "selected_fighter_id": "9e50097a89442158",
+              "selected_fighter_name": "Mickey Gall",
+              "selection": "Mickey Gall by DECISION",
+              "side": "opponent"
+            }
+          ],
+          "six_way_overround": null,
+          "source_book_key": "book_25"
+        },
+        {
+          "book": "BetWay",
+          "horizon": "opening",
+          "is_complete_six_way": false,
+          "observed_at_utc": "2026-10-29T17:26:57.354282Z",
+          "selection_count": 3,
+          "selections": [
+            {
+              "book_no_vig_probability": null,
+              "break_even_probability": 0.1,
+              "candidate_model_estimated_return": 0.018451654286221864,
+              "candidate_model_probability": 0.1018451654286222,
+              "method": "ko_tko",
+              "moneyline": 900,
+              "selected_fighter_id": "9e50097a89442158",
+              "selected_fighter_name": "Mickey Gall",
+              "selection": "Mickey Gall by KO/TKO",
+              "side": "opponent"
+            },
+            {
+              "book_no_vig_probability": null,
+              "break_even_probability": 0.2,
+              "candidate_model_estimated_return": -0.7085377099926893,
+              "candidate_model_probability": 0.058292458001462155,
+              "method": "submission",
+              "moneyline": 400,
+              "selected_fighter_id": "9e50097a89442158",
+              "selected_fighter_name": "Mickey Gall",
+              "selection": "Mickey Gall by SUBMISSION",
+              "side": "opponent"
+            },
+            {
+              "book_no_vig_probability": null,
+              "break_even_probability": 0.1,
+              "candidate_model_estimated_return": 0.6920440372188637,
+              "candidate_model_probability": 0.16920440372188636,
+              "method": "decision",
+              "moneyline": 900,
+              "selected_fighter_id": "9e50097a89442158",
+              "selected_fighter_name": "Mickey Gall",
+              "selection": "Mickey Gall by DECISION",
+              "side": "opponent"
+            }
+          ],
+          "six_way_overround": null,
+          "source_book_key": "book_20"
+        },
+        {
+          "book": "FanDuel",
+          "horizon": "opening",
+          "is_complete_six_way": false,
+          "observed_at_utc": "2026-10-29T17:26:57.354282Z",
+          "selection_count": 3,
+          "selections": [
+            {
+              "book_no_vig_probability": null,
+              "break_even_probability": 0.058823529411764705,
+              "candidate_model_estimated_return": 0.7313678122865772,
+              "candidate_model_probability": 0.1018451654286222,
+              "method": "ko_tko",
+              "moneyline": 1600,
+              "selected_fighter_id": "9e50097a89442158",
+              "selected_fighter_name": "Mickey Gall",
+              "selection": "Mickey Gall by KO/TKO",
+              "side": "opponent"
+            },
+            {
+              "book_no_vig_probability": null,
+              "break_even_probability": 0.1724137931034483,
+              "candidate_model_estimated_return": -0.6619037435915195,
+              "candidate_model_probability": 0.058292458001462155,
+              "method": "submission",
+              "moneyline": 480,
+              "selected_fighter_id": "9e50097a89442158",
+              "selected_fighter_name": "Mickey Gall",
+              "selection": "Mickey Gall by SUBMISSION",
+              "side": "opponent"
+            },
+            {
+              "book_no_vig_probability": null,
+              "break_even_probability": 0.09090909090909091,
+              "candidate_model_estimated_return": 0.8612484409407499,
+              "candidate_model_probability": 0.16920440372188636,
+              "method": "decision",
+              "moneyline": 1000,
+              "selected_fighter_id": "9e50097a89442158",
+              "selected_fighter_name": "Mickey Gall",
+              "selection": "Mickey Gall by DECISION",
+              "side": "opponent"
+            }
+          ],
+          "six_way_overround": null,
+          "source_book_key": "book_21"
+        },
+        {
+          "book": "Unibet",
+          "horizon": "t72",
+          "is_complete_six_way": false,
+          "observed_at_utc": "2026-10-28T17:27:37.273705Z",
+          "selection_count": 3,
+          "selections": [
+            {
+              "book_no_vig_probability": null,
+              "break_even_probability": 0.038461538461538464,
+              "candidate_model_estimated_return": 1.6479743011441772,
+              "candidate_model_probability": 0.1018451654286222,
+              "method": "ko_tko",
+              "moneyline": 2500,
+              "selected_fighter_id": "9e50097a89442158",
+              "selected_fighter_name": "Mickey Gall",
+              "selection": "Mickey Gall by KO/TKO",
+              "side": "opponent"
+            },
+            {
+              "book_no_vig_probability": null,
+              "break_even_probability": 0.1724137931034483,
+              "candidate_model_estimated_return": -0.6619037435915195,
+              "candidate_model_probability": 0.058292458001462155,
+              "method": "submission",
+              "moneyline": 480,
+              "selected_fighter_id": "9e50097a89442158",
+              "selected_fighter_name": "Mickey Gall",
+              "selection": "Mickey Gall by SUBMISSION",
+              "side": "opponent"
+            },
+            {
+              "book_no_vig_probability": null,
+              "break_even_probability": 0.1,
+              "candidate_model_estimated_return": 0.6920440372188637,
+              "candidate_model_probability": 0.16920440372188636,
+              "method": "decision",
+              "moneyline": 900,
+              "selected_fighter_id": "9e50097a89442158",
+              "selected_fighter_name": "Mickey Gall",
+              "selection": "Mickey Gall by DECISION",
+              "side": "opponent"
+            }
+          ],
+          "six_way_overround": null,
+          "source_book_key": "book_26"
+        }
+      ],
+      "bout_order": 8,
+      "fighter_id": "23dec7c47cb418f8",
+      "fighter_name": "Zach Reese",
+      "matchup_id": "matchup_9fab8c9f5ef1bcffedc3bf34dcb78c6aa4f8d0ebda99a71e04ce742f7fa2a232",
+      "opponent_id": "9e50097a89442158",
+      "opponent_name": "Mickey Gall"
+    },
+    {
+      "book_count": 4,
       "book_quotes": [
         {
           "book": "BetRivers",
@@ -1464,6 +1804,100 @@
           ],
           "six_way_overround": null,
           "source_book_key": "book_25"
+        },
+        {
+          "book": "BetWay",
+          "horizon": "opening",
+          "is_complete_six_way": false,
+          "observed_at_utc": "2026-10-29T17:26:57.354282Z",
+          "selection_count": 3,
+          "selections": [
+            {
+              "book_no_vig_probability": null,
+              "break_even_probability": 0.2222222222222222,
+              "candidate_model_estimated_return": -0.013738117602726807,
+              "candidate_model_probability": 0.21916930719939404,
+              "method": "ko_tko",
+              "moneyline": 350,
+              "selected_fighter_id": "e375cb5caf4717b6",
+              "selected_fighter_name": "Piera Rodriguez",
+              "selection": "Piera Rodriguez by KO/TKO",
+              "side": "opponent"
+            },
+            {
+              "book_no_vig_probability": null,
+              "break_even_probability": 0.047619047619047616,
+              "candidate_model_estimated_return": 0.1562771868415873,
+              "candidate_model_probability": 0.05506081842102797,
+              "method": "submission",
+              "moneyline": 2000,
+              "selected_fighter_id": "e375cb5caf4717b6",
+              "selected_fighter_name": "Piera Rodriguez",
+              "selection": "Piera Rodriguez by SUBMISSION",
+              "side": "opponent"
+            },
+            {
+              "book_no_vig_probability": null,
+              "break_even_probability": 0.5798319327731093,
+              "candidate_model_estimated_return": -0.4467380727330188,
+              "candidate_model_probability": 0.32079893261698905,
+              "method": "decision",
+              "moneyline": -138,
+              "selected_fighter_id": "e375cb5caf4717b6",
+              "selected_fighter_name": "Piera Rodriguez",
+              "selection": "Piera Rodriguez by DECISION",
+              "side": "opponent"
+            }
+          ],
+          "six_way_overround": null,
+          "source_book_key": "book_20"
+        },
+        {
+          "book": "FanDuel",
+          "horizon": "opening",
+          "is_complete_six_way": false,
+          "observed_at_utc": "2026-10-29T17:26:57.354282Z",
+          "selection_count": 3,
+          "selections": [
+            {
+              "book_no_vig_probability": null,
+              "break_even_probability": 0.19230769230769232,
+              "candidate_model_estimated_return": 0.139680397436849,
+              "candidate_model_probability": 0.21916930719939404,
+              "method": "ko_tko",
+              "moneyline": 420,
+              "selected_fighter_id": "e375cb5caf4717b6",
+              "selected_fighter_name": "Piera Rodriguez",
+              "selection": "Piera Rodriguez by KO/TKO",
+              "side": "opponent"
+            },
+            {
+              "book_no_vig_probability": null,
+              "break_even_probability": 0.05263157894736842,
+              "candidate_model_estimated_return": 0.04615554999953142,
+              "candidate_model_probability": 0.05506081842102797,
+              "method": "submission",
+              "moneyline": 1800,
+              "selected_fighter_id": "e375cb5caf4717b6",
+              "selected_fighter_name": "Piera Rodriguez",
+              "selection": "Piera Rodriguez by SUBMISSION",
+              "side": "opponent"
+            },
+            {
+              "book_no_vig_probability": null,
+              "break_even_probability": 0.5454545454545454,
+              "candidate_model_estimated_return": -0.41186862353552,
+              "candidate_model_probability": 0.32079893261698905,
+              "method": "decision",
+              "moneyline": -120,
+              "selected_fighter_id": "e375cb5caf4717b6",
+              "selected_fighter_name": "Piera Rodriguez",
+              "selection": "Piera Rodriguez by DECISION",
+              "side": "opponent"
+            }
+          ],
+          "six_way_overround": null,
+          "source_book_key": "book_21"
         },
         {
           "book": "Unibet",
@@ -1521,7 +1955,7 @@
       "opponent_name": "Piera Rodriguez"
     },
     {
-      "book_count": 2,
+      "book_count": 4,
       "book_quotes": [
         {
           "book": "BetRivers",
@@ -1569,6 +2003,100 @@
           ],
           "six_way_overround": null,
           "source_book_key": "book_25"
+        },
+        {
+          "book": "BetWay",
+          "horizon": "opening",
+          "is_complete_six_way": false,
+          "observed_at_utc": "2026-10-29T17:26:57.354282Z",
+          "selection_count": 3,
+          "selections": [
+            {
+              "book_no_vig_probability": null,
+              "break_even_probability": 0.25,
+              "candidate_model_estimated_return": -0.9670393834070486,
+              "candidate_model_probability": 0.00824015414823783,
+              "method": "ko_tko",
+              "moneyline": 300,
+              "selected_fighter_id": "184f6ec4ee712e9f",
+              "selected_fighter_name": "Lucia Szabova",
+              "selection": "Lucia Szabova by KO/TKO",
+              "side": "fighter"
+            },
+            {
+              "book_no_vig_probability": null,
+              "break_even_probability": 0.36363636363636365,
+              "candidate_model_estimated_return": -0.9877374365222641,
+              "candidate_model_probability": 0.004459113991903961,
+              "method": "submission",
+              "moneyline": 175,
+              "selected_fighter_id": "184f6ec4ee712e9f",
+              "selected_fighter_name": "Lucia Szabova",
+              "selection": "Lucia Szabova by SUBMISSION",
+              "side": "fighter"
+            },
+            {
+              "book_no_vig_probability": null,
+              "break_even_probability": 0.38022813688212925,
+              "candidate_model_estimated_return": -0.9946469008076735,
+              "candidate_model_probability": 0.0020353989324435294,
+              "method": "decision",
+              "moneyline": 163,
+              "selected_fighter_id": "184f6ec4ee712e9f",
+              "selected_fighter_name": "Lucia Szabova",
+              "selection": "Lucia Szabova by DECISION",
+              "side": "fighter"
+            }
+          ],
+          "six_way_overround": null,
+          "source_book_key": "book_20"
+        },
+        {
+          "book": "FanDuel",
+          "horizon": "opening",
+          "is_complete_six_way": false,
+          "observed_at_utc": "2026-10-29T17:26:57.354282Z",
+          "selection_count": 3,
+          "selections": [
+            {
+              "book_no_vig_probability": null,
+              "break_even_probability": 0.22727272727272727,
+              "candidate_model_estimated_return": -0.9637433217477536,
+              "candidate_model_probability": 0.00824015414823783,
+              "method": "ko_tko",
+              "moneyline": 340,
+              "selected_fighter_id": "184f6ec4ee712e9f",
+              "selected_fighter_name": "Lucia Szabova",
+              "selection": "Lucia Szabova by KO/TKO",
+              "side": "fighter"
+            },
+            {
+              "book_no_vig_probability": null,
+              "break_even_probability": 0.37037037037037035,
+              "candidate_model_estimated_return": -0.9879603922218593,
+              "candidate_model_probability": 0.004459113991903961,
+              "method": "submission",
+              "moneyline": 170,
+              "selected_fighter_id": "184f6ec4ee712e9f",
+              "selected_fighter_name": "Lucia Szabova",
+              "selection": "Lucia Szabova by SUBMISSION",
+              "side": "fighter"
+            },
+            {
+              "book_no_vig_probability": null,
+              "break_even_probability": 0.3333333333333333,
+              "candidate_model_estimated_return": -0.9938938032026694,
+              "candidate_model_probability": 0.0020353989324435294,
+              "method": "decision",
+              "moneyline": 200,
+              "selected_fighter_id": "184f6ec4ee712e9f",
+              "selected_fighter_name": "Lucia Szabova",
+              "selection": "Lucia Szabova by DECISION",
+              "side": "fighter"
+            }
+          ],
+          "six_way_overround": null,
+          "source_book_key": "book_21"
         },
         {
           "book": "Unibet",
@@ -1624,116 +2152,11 @@
       "matchup_id": "matchup_d291e8f7d9ee060d39ed57513e2872e092a2be799c235f991041a688dd6059a0",
       "opponent_id": "2c5f5749569eef66",
       "opponent_name": "Tainara Lisboa"
-    },
-    {
-      "book_count": 2,
-      "book_quotes": [
-        {
-          "book": "BetRivers",
-          "horizon": "t72",
-          "is_complete_six_way": false,
-          "observed_at_utc": "2026-10-28T17:27:37.273705Z",
-          "selection_count": 3,
-          "selections": [
-            {
-              "book_no_vig_probability": null,
-              "break_even_probability": 0.038461538461538464,
-              "candidate_model_estimated_return": 1.6479743011441772,
-              "candidate_model_probability": 0.1018451654286222,
-              "method": "ko_tko",
-              "moneyline": 2500,
-              "selected_fighter_id": "9e50097a89442158",
-              "selected_fighter_name": "Mickey Gall",
-              "selection": "Mickey Gall by KO/TKO",
-              "side": "opponent"
-            },
-            {
-              "book_no_vig_probability": null,
-              "break_even_probability": 0.17391304347826086,
-              "candidate_model_estimated_return": -0.6648183664915925,
-              "candidate_model_probability": 0.058292458001462155,
-              "method": "submission",
-              "moneyline": 475,
-              "selected_fighter_id": "9e50097a89442158",
-              "selected_fighter_name": "Mickey Gall",
-              "selection": "Mickey Gall by SUBMISSION",
-              "side": "opponent"
-            },
-            {
-              "book_no_vig_probability": null,
-              "break_even_probability": 0.1,
-              "candidate_model_estimated_return": 0.6920440372188637,
-              "candidate_model_probability": 0.16920440372188636,
-              "method": "decision",
-              "moneyline": 900,
-              "selected_fighter_id": "9e50097a89442158",
-              "selected_fighter_name": "Mickey Gall",
-              "selection": "Mickey Gall by DECISION",
-              "side": "opponent"
-            }
-          ],
-          "six_way_overround": null,
-          "source_book_key": "book_25"
-        },
-        {
-          "book": "Unibet",
-          "horizon": "t72",
-          "is_complete_six_way": false,
-          "observed_at_utc": "2026-10-28T17:27:37.273705Z",
-          "selection_count": 3,
-          "selections": [
-            {
-              "book_no_vig_probability": null,
-              "break_even_probability": 0.038461538461538464,
-              "candidate_model_estimated_return": 1.6479743011441772,
-              "candidate_model_probability": 0.1018451654286222,
-              "method": "ko_tko",
-              "moneyline": 2500,
-              "selected_fighter_id": "9e50097a89442158",
-              "selected_fighter_name": "Mickey Gall",
-              "selection": "Mickey Gall by KO/TKO",
-              "side": "opponent"
-            },
-            {
-              "book_no_vig_probability": null,
-              "break_even_probability": 0.1724137931034483,
-              "candidate_model_estimated_return": -0.6619037435915195,
-              "candidate_model_probability": 0.058292458001462155,
-              "method": "submission",
-              "moneyline": 480,
-              "selected_fighter_id": "9e50097a89442158",
-              "selected_fighter_name": "Mickey Gall",
-              "selection": "Mickey Gall by SUBMISSION",
-              "side": "opponent"
-            },
-            {
-              "book_no_vig_probability": null,
-              "break_even_probability": 0.1,
-              "candidate_model_estimated_return": 0.6920440372188637,
-              "candidate_model_probability": 0.16920440372188636,
-              "method": "decision",
-              "moneyline": 900,
-              "selected_fighter_id": "9e50097a89442158",
-              "selected_fighter_name": "Mickey Gall",
-              "selection": "Mickey Gall by DECISION",
-              "side": "opponent"
-            }
-          ],
-          "six_way_overround": null,
-          "source_book_key": "book_26"
-        }
-      ],
-      "bout_order": 12,
-      "fighter_id": "23dec7c47cb418f8",
-      "fighter_name": "Zach Reese",
-      "matchup_id": "matchup_9fab8c9f5ef1bcffedc3bf34dcb78c6aa4f8d0ebda99a71e04ce742f7fa2a232",
-      "opponent_id": "9e50097a89442158",
-      "opponent_name": "Mickey Gall"
     }
   ],
   "model_probability_status": "available_in_candidate_outcome_forecast",
   "paper_only": true,
-  "positive_candidate_comparison_count": 44,
+  "positive_candidate_comparison_count": 54,
   "positive_candidate_comparisons": [
     {
       "book": "BetRivers",
@@ -2366,9 +2789,45 @@
       "side": "opponent"
     },
     {
+      "book": "BetWay",
+      "book_no_vig_probability": null,
+      "bout_order": 5,
+      "break_even_probability": 0.2,
+      "candidate_model_estimated_return": 0.22492050375427408,
+      "candidate_model_probability": 0.24498410075085483,
+      "fighter_name": "Francis Marshall",
+      "horizon": "opening",
+      "matchup_id": "matchup_1d2f703dc40cd71b02db7890bfc0432c576bb6ae411289c65c387156e057f623",
+      "method": "decision",
+      "moneyline": 400,
+      "opponent_name": "Dakota Hope",
+      "selected_fighter_id": "6142edbd477d20c9",
+      "selected_fighter_name": "Dakota Hope",
+      "selection": "Dakota Hope by DECISION",
+      "side": "opponent"
+    },
+    {
+      "book": "BetWay",
+      "book_no_vig_probability": null,
+      "bout_order": 6,
+      "break_even_probability": 0.16666666666666666,
+      "candidate_model_estimated_return": 0.41831353120783454,
+      "candidate_model_probability": 0.2363855885346391,
+      "fighter_name": "Rodrigo Sezinando",
+      "horizon": "opening",
+      "matchup_id": "matchup_3ea49474afc6b7b845d9b665babc7b160d29796e47742829092da97dd747d4c0",
+      "method": "decision",
+      "moneyline": 500,
+      "opponent_name": "Theodor Berggren",
+      "selected_fighter_id": "c06d6b18862f9a53",
+      "selected_fighter_name": "Rodrigo Sezinando",
+      "selection": "Rodrigo Sezinando by DECISION",
+      "side": "fighter"
+    },
+    {
       "book": "BetRivers",
       "book_no_vig_probability": null,
-      "bout_order": 7,
+      "bout_order": 6,
       "break_even_probability": 0.18181818181818182,
       "candidate_model_estimated_return": 0.300120736940515,
       "candidate_model_probability": 0.2363855885346391,
@@ -2386,7 +2845,7 @@
     {
       "book": "Unibet",
       "book_no_vig_probability": null,
-      "bout_order": 7,
+      "bout_order": 6,
       "break_even_probability": 0.18181818181818182,
       "candidate_model_estimated_return": 0.300120736940515,
       "candidate_model_probability": 0.2363855885346391,
@@ -2404,7 +2863,7 @@
     {
       "book": "FanDuel",
       "book_no_vig_probability": null,
-      "bout_order": 7,
+      "bout_order": 6,
       "break_even_probability": 0.18518518518518517,
       "candidate_model_estimated_return": 0.2764821780870512,
       "candidate_model_probability": 0.2363855885346391,
@@ -2422,7 +2881,7 @@
     {
       "book": "BetRivers",
       "book_no_vig_probability": null,
-      "bout_order": 8,
+      "bout_order": 7,
       "break_even_probability": 0.125,
       "candidate_model_estimated_return": 0.8939797619510101,
       "candidate_model_probability": 0.23674747024387627,
@@ -2440,7 +2899,7 @@
     {
       "book": "Unibet",
       "book_no_vig_probability": null,
-      "bout_order": 8,
+      "bout_order": 7,
       "break_even_probability": 0.125,
       "candidate_model_estimated_return": 0.8939797619510101,
       "candidate_model_probability": 0.23674747024387627,
@@ -2456,9 +2915,27 @@
       "side": "opponent"
     },
     {
+      "book": "BetWay",
+      "book_no_vig_probability": null,
+      "bout_order": 7,
+      "break_even_probability": 0.16666666666666666,
+      "candidate_model_estimated_return": 0.4204848214632575,
+      "candidate_model_probability": 0.23674747024387627,
+      "fighter_name": "Julian Erosa",
+      "horizon": "opening",
+      "matchup_id": "matchup_01f1382dde69b78aff7043a773b0e41abf2fa6c04195f37706504f022c0301a3",
+      "method": "decision",
+      "moneyline": 500,
+      "opponent_name": "JeongYeong Lee",
+      "selected_fighter_id": "d008d785f6347dc2",
+      "selected_fighter_name": "JeongYeong Lee",
+      "selection": "JeongYeong Lee by DECISION",
+      "side": "opponent"
+    },
+    {
       "book": "BetRivers",
       "book_no_vig_probability": null,
-      "bout_order": 12,
+      "bout_order": 8,
       "break_even_probability": 0.038461538461538464,
       "candidate_model_estimated_return": 1.6479743011441772,
       "candidate_model_probability": 0.1018451654286222,
@@ -2476,7 +2953,7 @@
     {
       "book": "Unibet",
       "book_no_vig_probability": null,
-      "bout_order": 12,
+      "bout_order": 8,
       "break_even_probability": 0.038461538461538464,
       "candidate_model_estimated_return": 1.6479743011441772,
       "candidate_model_probability": 0.1018451654286222,
@@ -2492,9 +2969,45 @@
       "side": "opponent"
     },
     {
+      "book": "FanDuel",
+      "book_no_vig_probability": null,
+      "bout_order": 8,
+      "break_even_probability": 0.09090909090909091,
+      "candidate_model_estimated_return": 0.8612484409407499,
+      "candidate_model_probability": 0.16920440372188636,
+      "fighter_name": "Zach Reese",
+      "horizon": "opening",
+      "matchup_id": "matchup_9fab8c9f5ef1bcffedc3bf34dcb78c6aa4f8d0ebda99a71e04ce742f7fa2a232",
+      "method": "decision",
+      "moneyline": 1000,
+      "opponent_name": "Mickey Gall",
+      "selected_fighter_id": "9e50097a89442158",
+      "selected_fighter_name": "Mickey Gall",
+      "selection": "Mickey Gall by DECISION",
+      "side": "opponent"
+    },
+    {
+      "book": "FanDuel",
+      "book_no_vig_probability": null,
+      "bout_order": 8,
+      "break_even_probability": 0.058823529411764705,
+      "candidate_model_estimated_return": 0.7313678122865772,
+      "candidate_model_probability": 0.1018451654286222,
+      "fighter_name": "Zach Reese",
+      "horizon": "opening",
+      "matchup_id": "matchup_9fab8c9f5ef1bcffedc3bf34dcb78c6aa4f8d0ebda99a71e04ce742f7fa2a232",
+      "method": "ko_tko",
+      "moneyline": 1600,
+      "opponent_name": "Mickey Gall",
+      "selected_fighter_id": "9e50097a89442158",
+      "selected_fighter_name": "Mickey Gall",
+      "selection": "Mickey Gall by KO/TKO",
+      "side": "opponent"
+    },
+    {
       "book": "BetRivers",
       "book_no_vig_probability": null,
-      "bout_order": 12,
+      "bout_order": 8,
       "break_even_probability": 0.1,
       "candidate_model_estimated_return": 0.6920440372188637,
       "candidate_model_probability": 0.16920440372188636,
@@ -2510,9 +3023,27 @@
       "side": "opponent"
     },
     {
+      "book": "BetWay",
+      "book_no_vig_probability": null,
+      "bout_order": 8,
+      "break_even_probability": 0.1,
+      "candidate_model_estimated_return": 0.6920440372188637,
+      "candidate_model_probability": 0.16920440372188636,
+      "fighter_name": "Zach Reese",
+      "horizon": "opening",
+      "matchup_id": "matchup_9fab8c9f5ef1bcffedc3bf34dcb78c6aa4f8d0ebda99a71e04ce742f7fa2a232",
+      "method": "decision",
+      "moneyline": 900,
+      "opponent_name": "Mickey Gall",
+      "selected_fighter_id": "9e50097a89442158",
+      "selected_fighter_name": "Mickey Gall",
+      "selection": "Mickey Gall by DECISION",
+      "side": "opponent"
+    },
+    {
       "book": "Unibet",
       "book_no_vig_probability": null,
-      "bout_order": 12,
+      "bout_order": 8,
       "break_even_probability": 0.1,
       "candidate_model_estimated_return": 0.6920440372188637,
       "candidate_model_probability": 0.16920440372188636,
@@ -2525,11 +3056,83 @@
       "selected_fighter_id": "9e50097a89442158",
       "selected_fighter_name": "Mickey Gall",
       "selection": "Mickey Gall by DECISION",
+      "side": "opponent"
+    },
+    {
+      "book": "BetWay",
+      "book_no_vig_probability": null,
+      "bout_order": 8,
+      "break_even_probability": 0.1,
+      "candidate_model_estimated_return": 0.018451654286221864,
+      "candidate_model_probability": 0.1018451654286222,
+      "fighter_name": "Zach Reese",
+      "horizon": "opening",
+      "matchup_id": "matchup_9fab8c9f5ef1bcffedc3bf34dcb78c6aa4f8d0ebda99a71e04ce742f7fa2a232",
+      "method": "ko_tko",
+      "moneyline": 900,
+      "opponent_name": "Mickey Gall",
+      "selected_fighter_id": "9e50097a89442158",
+      "selected_fighter_name": "Mickey Gall",
+      "selection": "Mickey Gall by KO/TKO",
+      "side": "opponent"
+    },
+    {
+      "book": "BetWay",
+      "book_no_vig_probability": null,
+      "bout_order": 10,
+      "break_even_probability": 0.047619047619047616,
+      "candidate_model_estimated_return": 0.1562771868415873,
+      "candidate_model_probability": 0.05506081842102797,
+      "fighter_name": "Talita Alencar",
+      "horizon": "opening",
+      "matchup_id": "matchup_78f1b6fc26aa11f499fc8af8df4fe2c384386c431c731eff74f3cf6410f1b5e4",
+      "method": "submission",
+      "moneyline": 2000,
+      "opponent_name": "Piera Rodriguez",
+      "selected_fighter_id": "e375cb5caf4717b6",
+      "selected_fighter_name": "Piera Rodriguez",
+      "selection": "Piera Rodriguez by SUBMISSION",
+      "side": "opponent"
+    },
+    {
+      "book": "FanDuel",
+      "book_no_vig_probability": null,
+      "bout_order": 10,
+      "break_even_probability": 0.19230769230769232,
+      "candidate_model_estimated_return": 0.139680397436849,
+      "candidate_model_probability": 0.21916930719939404,
+      "fighter_name": "Talita Alencar",
+      "horizon": "opening",
+      "matchup_id": "matchup_78f1b6fc26aa11f499fc8af8df4fe2c384386c431c731eff74f3cf6410f1b5e4",
+      "method": "ko_tko",
+      "moneyline": 420,
+      "opponent_name": "Piera Rodriguez",
+      "selected_fighter_id": "e375cb5caf4717b6",
+      "selected_fighter_name": "Piera Rodriguez",
+      "selection": "Piera Rodriguez by KO/TKO",
+      "side": "opponent"
+    },
+    {
+      "book": "FanDuel",
+      "book_no_vig_probability": null,
+      "bout_order": 10,
+      "break_even_probability": 0.05263157894736842,
+      "candidate_model_estimated_return": 0.04615554999953142,
+      "candidate_model_probability": 0.05506081842102797,
+      "fighter_name": "Talita Alencar",
+      "horizon": "opening",
+      "matchup_id": "matchup_78f1b6fc26aa11f499fc8af8df4fe2c384386c431c731eff74f3cf6410f1b5e4",
+      "method": "submission",
+      "moneyline": 1800,
+      "opponent_name": "Piera Rodriguez",
+      "selected_fighter_id": "e375cb5caf4717b6",
+      "selected_fighter_name": "Piera Rodriguez",
+      "selection": "Piera Rodriguez by SUBMISSION",
       "side": "opponent"
     }
   ],
   "price_status": "available",
-  "publication_sha256": "48e8e2638ad0c0775fa1b932419d1a22b112caaa285c6934dfc28b8f0a0f89a1",
+  "publication_sha256": "c537ab8feedb7cf96aac24f1a24d9d3114c1dc52bdda7eddbcda182ba977f881",
   "schema_version": 1,
   "settlement_status": "not_enabled_until_book_contracts_are_verified",
   "source": "bestfightodds.com"
