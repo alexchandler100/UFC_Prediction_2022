@@ -1,7 +1,7 @@
 {
   "ambiguous_historical_matchup_keys": 1,
   "ambiguous_result_decisions": 0,
-  "as_of_utc": "2026-10-31T17:24:38.758831Z",
+  "as_of_utc": "2026-10-31T19:41:42.035615Z",
   "bayesian_filtered_moneyline_policy": {
     "base_policy_on_same_cohort": {
       "hypothetical_profit_units": 15.530000000000001,
@@ -141,10 +141,10 @@
     "execution_enabled": false,
     "favorite_definition": "side above 50% in the full no-vig consensus at the first eligible capture; classification never changes after a line flip",
     "ledger_counts": {
-      "eligible_captures": 1372,
+      "eligible_captures": 1382,
       "frozen_classifications": 127,
-      "quotes": 15195,
-      "source_metadata": 14797
+      "quotes": 15306,
+      "source_metadata": 14908
     },
     "paper_only": true,
     "policy_version": "favorite-early-dog-late-v1",
@@ -291,19 +291,19 @@
           "opponent": 7
         },
         "clv": {
-          "count": 5,
+          "count": 6,
           "definition": "latest fresh same-book implied probability minus locked break-even; positive favors the selected price",
           "event_block_interval": {
             "bootstrap_samples": 10000,
             "ci_95_lower": 0.0,
-            "ci_95_upper": 0.0082815734989648,
+            "ci_95_upper": 0.007098491570541258,
             "definition": "whole-card bootstrap of latest same-book CLV probability edge",
-            "event_count": 3,
-            "observation_count": 5,
-            "point_estimate": 0.0038604495319757874
+            "event_count": 4,
+            "observation_count": 6,
+            "point_estimate": 0.0032170412766464895
           },
-          "mean_probability_edge": 0.0038604495319757874,
-          "positive_rate": 0.4
+          "mean_probability_edge": 0.0032170412766464895,
+          "positive_rate": 0.3333333333333333
         },
         "entry_window_counts": {
           "early": 0,
@@ -340,14 +340,14 @@
           "definition": "latest fresh same-book implied probability minus locked break-even; positive favors the selected price",
           "event_block_interval": {
             "bootstrap_samples": 10000,
-            "ci_95_lower": -0.000564164383624341,
-            "ci_95_upper": 0.010330059108914855,
+            "ci_95_lower": -0.001110481204224714,
+            "ci_95_upper": 0.009148048448704668,
             "definition": "whole-card bootstrap of latest same-book CLV probability edge",
             "event_count": 7,
             "observation_count": 11,
-            "point_estimate": 0.005069010789485128
+            "point_estimate": 0.004033487406380925
           },
-          "mean_probability_edge": 0.005069010789485128,
+          "mean_probability_edge": 0.004033487406380925,
           "positive_rate": 0.6363636363636364
         },
         "entry_window_counts": {
@@ -413,13 +413,13 @@
   },
   "latest_available_price_clv": {
     "bootstrap_samples": 10000,
-    "ci_95_lower": 0.0012161249296553437,
-    "ci_95_upper": 0.01258440884294895,
+    "ci_95_lower": 0.00031162259109860697,
+    "ci_95_upper": 0.01144595847746526,
     "count": 11,
     "definition": "latest available same-book implied probability minus the locked decision break-even probability; positive favors the paper price",
     "event_count": 7,
-    "mean_probability_edge": 0.007356410817280876,
-    "median_probability_edge": 0.008658008658008642,
+    "mean_probability_edge": 0.006320887434176673,
+    "median_probability_edge": 0.004690431519699834,
     "positive_rate": 0.7272727272727273
   },
   "market_relative_log_loss_intervals": {
@@ -998,14 +998,14 @@
     "simulation_coverage": 0.5862068965517241,
     "status": "collecting_results"
   },
-  "quote_dataset_sha256": "bbbc4a653d6480c36f1e8251a37a7490f5317e054ac9587326f820e58897bbbf",
-  "report_sha256": "0ac5df9663b2279cb2091772985e41da46b6803085979f5262092f991d7b43e2",
+  "quote_dataset_sha256": "e24d68e32fd7a8536c114a14f34493e8397e5b383e43cbb2bc55c71bab65e68b",
+  "report_sha256": "16f5df56b0c1c105941a19472671de057cdf50c39a9358b6e650f940e184f580",
   "result_source_sha256": "dd00aac27cbe87fa4fb1ffdcc37eb1009fcde28c8df49e11a71ebe443ec25e5b",
   "schema_version": 6,
   "settlement_dataset_sha256": "7d05841629549d506d39844b88f1bf14d4bdd5f73708ec23c12f7499992cbe66",
   "settlements_total": 90,
   "simulation_comparison_dataset_sha256": "0b655b040fc9f1ae0a24ff7e929912dfb7e1d9609fa21afb51ef16225b1cef30",
-  "source_metadata_dataset_sha256": "a4a6a1333fbace933c55b1d3362ecd05d33d435bc3a381c5815a013e428379bf",
+  "source_metadata_dataset_sha256": "3a85178da78346b10e86cd61a890deef493c6f3f6b7eab527629b5c010abf56b",
   "total_rounds": {
     "betting_status": "disabled_paper_only_no_execution",
     "decision_dataset_sha256": "a5394d39ff939ba77bdef673773e5a1174298f42fe0ac732edcfc80ecfdc5c25",
@@ -1089,7 +1089,7 @@
       "settled_events": 7,
       "status": "collecting_prospective_evidence"
     },
-    "quote_dataset_sha256": "844792c31e1b3c0ab2881abe4360b1c3aa970dac324c769f3d668646e8a70c52",
+    "quote_dataset_sha256": "09a3dd0fadb1a4f385a3820a7756988385cfc8c4e0ff008a0a840bde085c1a90",
     "residual_selection_protocol": "select weight on earliest 70% of settled events; require at least 0.002 lower log loss and an event-block 95% upper confidence bound below zero on the latest 30%",
     "scored_forecasts": 74,
     "settlement_dataset_sha256": "69524379a2f59596d314a44d1baa50063e6dfd7aa6dc7c10b077f7fea1805312",
