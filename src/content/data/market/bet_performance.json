@@ -1,15 +1,15 @@
 {
   "archive_started_at_utc": "2026-08-29T04:31:48.487351Z",
-  "as_of_utc": "2026-10-30T17:16:47.597990Z",
+  "as_of_utc": "2026-11-01T15:47:36.000000Z",
   "execution_enabled": false,
   "limitations": "Only timestamped paper bets are included. The exact official history starts with the locked ledger; alternative timing replays start when the publication archive begins.",
   "official_bet_count": 12,
-  "official_losses": 8,
-  "official_settled_count": 11,
+  "official_losses": 9,
+  "official_settled_count": 12,
   "official_wins": 3,
   "paper_only": true,
   "policy_version": "published-paper-bankroll-replay-v1",
-  "publication_sha256": "fcb86bd926ef22b448f2cd76b2ae60cb99fd0b785a9bc322f61b09fb34e4eccb",
+  "publication_sha256": "3b6e9b44003ae446376e6ce9ed8be2057a60e13bfed018f2c93d7eca868f6887",
   "record_count": 91,
   "records": [
     {
@@ -4614,14 +4614,14 @@
       "record_type": "official_locked_t24",
       "selection": "Mickey Gall",
       "selection_role": "underdog",
-      "settled_at_utc": null,
+      "settled_at_utc": "2026-11-01T15:47:36.000000Z",
       "side": "opponent",
       "simulation_support_issued_at_utc": "2026-10-25T14:52:25.564871+00:00",
       "simulation_support_probability": 0.43339960238568587,
       "simulation_support_source": "frozen_pre_event_monte_carlo",
-      "status": "pending",
+      "status": "lost",
       "target_book": "BetOnline.ag",
-      "unit_profit": null
+      "unit_profit": -1.0
     }
   ],
   "research_support": {
@@ -4635,9 +4635,9 @@
   "schema_version": 1,
   "source_hashes": {
     "official_decisions": "331e174c826fdc971bd5516ffb0a986d1e50630a8e999193e414909172d19e25",
-    "official_settlements": "7d05841629549d506d39844b88f1bf14d4bdd5f73708ec23c12f7499992cbe66",
+    "official_settlements": "66b7f620582b69cb83baf76bb14eca3e0b5b0af7c0d22fc25b3225da08863cde",
     "official_total_decisions": "a5394d39ff939ba77bdef673773e5a1174298f42fe0ac732edcfc80ecfdc5c25",
-    "official_total_settlements": "69524379a2f59596d314a44d1baa50063e6dfd7aa6dc7c10b077f7fea1805312",
+    "official_total_settlements": "0bdbd15f6947b8ef053fd1cfe82ae74659be1af2ff791f8bfb61c5a87ebfb34a",
     "published_archive": "68cdf193b0b547fdfe367df44ff23e1f49bfe5925f304039fd1b6fadf258b6af"
   },
   "staking_strategies": [
