@@ -1,7 +1,7 @@
 {
   "ambiguous_book_markets_discarded": 0,
   "candidate_only": true,
-  "capture_id": "method_capture_20261102T033140520375Z_b69098105492",
+  "capture_id": "method_capture_20261102T183009196735Z_c4e63666e2f3",
   "collection_scope": "announced_upcoming_cards_with_source_start_times",
   "current_publication_sha256": "b400525103edc2a70b3d560903079745cfedb869188a2e64c792d92ad3c8820b",
   "dataset_sha256": "d140e733400c633c210c7037d15adf48739758b1807bffdd48c5182448dd17d1",
@@ -22,8 +22,8 @@
       "records_built": 0,
       "source_complete_six_way_markets": 0,
       "source_duplicate_matchups_merged": 0,
-      "source_matchups_mapped_to_card": 0,
-      "source_method_selections": 0,
+      "source_matchups_mapped_to_card": 3,
+      "source_method_selections": 9,
       "source_nonempty_book_markets": 0,
       "timing_basis": "current_card_capture"
     },
@@ -43,6 +43,24 @@
       "source_matchups_mapped_to_card": 2,
       "source_method_selections": 6,
       "source_nonempty_book_markets": 6,
+      "timing_basis": "earliest_quoted_bout_opening_only"
+    },
+    {
+      "ambiguous_book_markets_discarded": 0,
+      "event_date": "2026-11-21",
+      "event_id": "cbf69fa846c7e3ee",
+      "event_start_utc": "2026-11-21T17:00:00Z",
+      "matched_fights_with_prices": 0,
+      "matchup_count": 9,
+      "matchups_without_opening_prices": 9,
+      "merged_complete_six_way_markets": 0,
+      "opening_priced_matchups": 0,
+      "records_built": 0,
+      "source_complete_six_way_markets": 0,
+      "source_duplicate_matchups_merged": 0,
+      "source_matchups_mapped_to_card": 0,
+      "source_method_selections": 0,
+      "source_nonempty_book_markets": 0,
       "timing_basis": "earliest_quoted_bout_opening_only"
     },
     {
@@ -82,17 +100,10 @@
       "timing_basis": "earliest_quoted_bout_opening_only"
     }
   ],
-  "events_awaiting_timing": [
-    {
-      "event_date": "2026-11-21",
-      "event_id": "cbf69fa846c7e3ee",
-      "matchup_count": 9,
-      "status": "awaiting_source_start_time"
-    }
-  ],
+  "events_awaiting_timing": [],
   "execution_enabled": false,
   "future_records_built": 0,
-  "lead_time_seconds": 498500.777071,
+  "lead_time_seconds": 444592.332545,
   "matched_fights_with_prices": 0,
   "merged_complete_six_way_markets": 0,
   "method_forecast_dataset_sha256": "f4cef924ef87695f12ae3db83b332913a016f97add3ea989f3d27b94bdca1fb9",
@@ -101,7 +112,7 @@
   "method_forecasts_duplicate": 0,
   "method_forecasts_total": 211,
   "method_forecasts_unmatched": 0,
-  "observed_at_utc": "2026-11-02T03:31:40.520375Z",
+  "observed_at_utc": "2026-11-02T18:30:09.196735Z",
   "paper_only": true,
   "records_added": 0,
   "records_built": 0,
@@ -111,11 +122,11 @@
   "source": "bestfightodds.com",
   "source_complete_six_way_markets": 0,
   "source_duplicate_matchups_merged": 0,
-  "source_matchups_mapped_to_card": 0,
-  "source_method_selections": 0,
+  "source_matchups_mapped_to_card": 3,
+  "source_method_selections": 9,
   "source_nonempty_book_markets": 0,
-  "source_page_method_selections": 57,
-  "source_payload_sha256": "b690981054925988017fd321a9e09c2ffc1fdf7e13351e5f7383fb5bf0725514",
+  "source_page_method_selections": 30,
+  "source_payload_sha256": "c4e63666e2f376d6cff96751a901afd6219ebfcc1b94687840f58ecdc93ef7ad",
   "stored_horizons": [],
   "timed_horizon": null
 }
