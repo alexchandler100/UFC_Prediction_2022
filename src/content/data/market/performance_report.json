@@ -1,7 +1,7 @@
 {
   "ambiguous_historical_matchup_keys": 1,
   "ambiguous_result_decisions": 0,
-  "as_of_utc": "2026-11-01T16:24:32.279007Z",
+  "as_of_utc": "2026-11-02T03:30:02.918976Z",
   "bayesian_filtered_moneyline_policy": {
     "base_policy_on_same_cohort": {
       "hypothetical_profit_units": 14.530000000000001,
@@ -133,18 +133,18 @@
   "entry_timing_experiment": {
     "coverage": {
       "matchups_classified_pickem": 0,
-      "matchups_with_early_capture": 127,
-      "matchups_with_eligible_capture": 127,
+      "matchups_with_early_capture": 138,
+      "matchups_with_eligible_capture": 138,
       "matchups_with_late_capture": 111,
       "matchups_with_t24_capture": 100
     },
     "execution_enabled": false,
     "favorite_definition": "side above 50% in the full no-vig consensus at the first eligible capture; classification never changes after a line flip",
     "ledger_counts": {
-      "eligible_captures": 1382,
-      "frozen_classifications": 127,
-      "quotes": 15530,
-      "source_metadata": 15132
+      "eligible_captures": 1393,
+      "frozen_classifications": 138,
+      "quotes": 15643,
+      "source_metadata": 15245
     },
     "paper_only": true,
     "policy_version": "favorite-early-dog-late-v1",
@@ -242,8 +242,8 @@
     "shadow_policies": {
       "earliest_available_both": {
         "action_counts": {
-          "fighter": 7,
-          "opponent": 2
+          "fighter": 8,
+          "opponent": 3
         },
         "clv": {
           "count": 9,
@@ -261,7 +261,7 @@
           "positive_rate": 0.3333333333333333
         },
         "entry_window_counts": {
-          "early": 9,
+          "early": 11,
           "fixed_t24": 0,
           "late": 0,
           "other": 0
@@ -269,7 +269,7 @@
         "hypothetical_profit_units": -9.0,
         "hypothetical_roi": -1.0,
         "losses": 9,
-        "mean_locked_expected_return": 0.0799485009453959,
+        "mean_locked_expected_return": 0.08312533507215251,
         "paper_only": true,
         "return_event_block_interval": {
           "bootstrap_samples": 10000,
@@ -281,8 +281,8 @@
           "point_estimate": -1.0
         },
         "scored_selection_count": 9,
-        "selection_count": 9,
-        "unscored_selection_count": 0,
+        "selection_count": 11,
+        "unscored_selection_count": 2,
         "wins": 0
       },
       "favorite_early_underdog_late": {
@@ -998,14 +998,14 @@
     "simulation_coverage": 0.5862068965517241,
     "status": "collecting_results"
   },
-  "quote_dataset_sha256": "67c2af95c7b4941d99a1103ecd78b3d9aed6dbf4e8ee8ac034b4938e21867312",
-  "report_sha256": "a6dc090ed2bdedd54b1b781b4ebd9b8f4ef1741b42ca5560b409157184c07f8d",
+  "quote_dataset_sha256": "e984b1e89aa367b1e74907cb9b6380b13dc65d074798eaf2c980305d1f5d8d0e",
+  "report_sha256": "41550b5a0485802e1002aaa5208be8f38cdc5ed1412db295bfdb1b4136f9a5f8",
   "result_source_sha256": "5326e4c0d2386b7475b1e99a51f66b1194e4390181346d5328ab01ffc29b21ab",
   "schema_version": 6,
   "settlement_dataset_sha256": "66b7f620582b69cb83baf76bb14eca3e0b5b0af7c0d22fc25b3225da08863cde",
   "settlements_total": 100,
   "simulation_comparison_dataset_sha256": "0b655b040fc9f1ae0a24ff7e929912dfb7e1d9609fa21afb51ef16225b1cef30",
-  "source_metadata_dataset_sha256": "d46e495474152128e728db3f95e6e88dc87d1550c628581f950216b2da1b816f",
+  "source_metadata_dataset_sha256": "347519d102f05cc70afe15399a52dd23ec8ee49b18f3ae8e29a514a6c0ba07bd",
   "total_rounds": {
     "betting_status": "disabled_paper_only_no_execution",
     "decision_dataset_sha256": "a5394d39ff939ba77bdef673773e5a1174298f42fe0ac732edcfc80ecfdc5c25",
@@ -1089,7 +1089,7 @@
       "settled_events": 8,
       "status": "collecting_prospective_evidence"
     },
-    "quote_dataset_sha256": "8aa3644b08b3822998b9f3e3b43f4d136062a518697446fde9c6ff3c9c18ace3",
+    "quote_dataset_sha256": "e1dbf4995241c212458275c2b4a55bfe10e36aa9f5c08745caae95caf295390a",
     "residual_selection_protocol": "select weight on earliest 70% of settled events; require at least 0.002 lower log loss and an event-block 95% upper confidence bound below zero on the latest 30%",
     "scored_forecasts": 84,
     "settlement_dataset_sha256": "0bdbd15f6947b8ef053fd1cfe82ae74659be1af2ff791f8bfb61c5a87ebfb34a",
