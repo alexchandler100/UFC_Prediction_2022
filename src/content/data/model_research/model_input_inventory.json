@@ -1,6 +1,6 @@
 {
   "additional_event_results": {
-    "approved_ufcstats_identity_links": 379,
+    "approved_ufcstats_identity_links": 496,
     "note": "Separate revision-pinned secondary-source research ledger. Unlinked identities do not merge into production history.",
     "production_enabled": false,
     "promotions": [
@@ -23,13 +23,13 @@
         "unresolved_participant_occurrences": 268
       },
       {
-        "bouts": 198,
-        "events": 19,
+        "bouts": 210,
+        "events": 20,
         "first_event_date": "2026-02-07",
-        "last_event_date": "2026-10-10",
+        "last_event_date": "2026-10-16",
         "promotion": "PFL",
         "status": "collected_research_only",
-        "unresolved_participant_occurrences": 307
+        "unresolved_participant_occurrences": 327
       },
       {
         "bouts": 467,
@@ -122,16 +122,16 @@
         "unresolved_participant_occurrences": 830
       },
       {
-        "bouts": 265,
-        "events": 21,
+        "bouts": 354,
+        "events": 28,
         "first_event_date": "2026-01-24",
-        "last_event_date": "2026-10-03",
+        "last_event_date": "2026-10-24",
         "promotion": "UFC",
         "status": "collected_research_only",
-        "unresolved_participant_occurrences": 192
+        "unresolved_participant_occurrences": 266
       }
     ],
-    "records": 6826
+    "records": 6927
   },
   "coverage_note": "A dataset being stored does not mean production uses it. Winner, outcome and simulation models have different contracts. Historical results, post-fight stats, and later market prices must not enter earlier forecasts.",
   "data_through": "2026-10-31",
@@ -225,8 +225,8 @@
   "feature_count": 82,
   "layoff_contract": "For this point-in-time feature contract: log(1+days) per fighter, capped at five years, then fighter minus opponent. No recorded history uses two years plus has_history. This is time since the latest replayed source fight, not necessarily the latest MMA fight anywhere.",
   "layoff_feature_present": true,
-  "model_id": "b83ae4e62da794b852d4",
-  "model_sha256": "fa74b1baae9d3f490493248d0ad389ac0a216616d5630117cecab69ecc373743",
+  "model_id": "912ec251fb08e3ba3043",
+  "model_sha256": "19260bcfee255758c6cb8e5a4311b428f9e101b475c6db48dffd90c4db3eb51c",
   "model_version": "point-in-time-elo-logistic-v2",
   "next_feature_candidates": [
     {
