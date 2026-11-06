@@ -1,8 +1,8 @@
 {
   "betting_status": "disabled_paper_only_no_execution",
   "candidate_only": true,
-  "decision_dataset_sha256": "4ee6a2561d9542c5c4f42ce8c0cbfe208ba402b5823b184e87d6093b151418a5",
-  "decisions_total": 87,
+  "decision_dataset_sha256": "ba4ddcbeeb43d936a5e3aa863d9f921db88f2e5e2169ac54776adc6a4596fb4f",
+  "decisions_total": 100,
   "evidence_gate": {
     "automatic_promotion": false,
     "candidate_beats_market_interval_met": false,
@@ -16,14 +16,14 @@
   },
   "execution_enabled": false,
   "last_build": {
-    "captures_at_locked_horizon": 15,
-    "captures_considered": 151,
+    "captures_at_locked_horizon": 16,
+    "captures_considered": 152,
     "matchups_already_frozen": 160,
-    "matchups_considered": 1648,
+    "matchups_considered": 1661,
     "matchups_without_forecast": 0,
     "matchups_without_fresh_quotes": 0
   },
-  "last_update_utc": "2026-11-06T00:46:21Z",
+  "last_update_utc": "2026-11-06T18:22:34Z",
   "latest_available_same_book_price_movement": {
     "count": 39,
     "definition": "later implied probability minus locked break-even probability; positive means the recorded paper price was better",
@@ -144,7 +144,7 @@
     }
   },
   "prospective_first_capture_utc": "2026-08-30T00:20:36.000000Z",
-  "report_sha256": "8fa7598f2aad571522f9c2d5b381646f12d92d6ff3c56773aa87179f198a6203",
+  "report_sha256": "7744262b0bb5d3c0246b1cd9c63425b01b38782cd6825f673e3acb47c5ed2981",
   "results": {
     "losses": 20,
     "maximum_drawdown_units": 10.752347119685266,
@@ -160,5 +160,5 @@
   "settled_events": 8,
   "settlement_dataset_sha256": "54861adb6d55fa3f18b3cdb19096440811741fe27644518f9ed3abc8944c7e42",
   "settlements_total": 87,
-  "unsettled_decisions": 0
+  "unsettled_decisions": 13
 }

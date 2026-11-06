@@ -1,7 +1,7 @@
 {
   "ambiguous_historical_matchup_keys": 1,
   "ambiguous_result_decisions": 0,
-  "as_of_utc": "2026-11-06T00:43:30.992810Z",
+  "as_of_utc": "2026-11-06T18:20:35.680694Z",
   "bayesian_filtered_moneyline_policy": {
     "base_policy_on_same_cohort": {
       "hypothetical_profit_units": 14.530000000000001,
@@ -19,8 +19,8 @@
       "selections": 4,
       "wins": 1
     },
-    "decision_count": 87,
-    "decision_dataset_sha256": "e3f9f07a04e73b5f8f3f69c58f42f20d747d042c175afb759d3ceaa31cf4167f",
+    "decision_count": 100,
+    "decision_dataset_sha256": "29a707c725e85b1c4ca84240a5090f128fb8b52739dca1fd9735ae99d526767f",
     "execution_enabled": false,
     "filtered_return_interval": {
       "bootstrap_samples": 10000,
@@ -74,10 +74,10 @@
     "settled_events": 8,
     "source": "immutable_t24_decision_ledger",
     "veto_counts": {
-      "base_policy_pass": 78,
-      "bayesian_mean_ev_veto": 0,
+      "base_policy_pass": 89,
+      "bayesian_mean_ev_veto": 1,
       "bayesian_probability_veto": 2,
-      "bayesian_status_veto": 3,
+      "bayesian_status_veto": 4,
       "qualified": 4
     }
   },
@@ -128,23 +128,23 @@
     "wins": 21
   },
   "betting_status": "disabled_paper_only_no_execution",
-  "decision_dataset_sha256": "331e174c826fdc971bd5516ffb0a986d1e50630a8e999193e414909172d19e25",
-  "decisions_total": 100,
+  "decision_dataset_sha256": "5e7aee99b5241e220218735e67a0471a2c3f71b69b660550d41e99e2c4faeb75",
+  "decisions_total": 113,
   "entry_timing_experiment": {
     "coverage": {
       "matchups_classified_pickem": 0,
       "matchups_with_early_capture": 140,
       "matchups_with_eligible_capture": 140,
       "matchups_with_late_capture": 111,
-      "matchups_with_t24_capture": 100
+      "matchups_with_t24_capture": 113
     },
     "execution_enabled": false,
     "favorite_definition": "side above 50% in the full no-vig consensus at the first eligible capture; classification never changes after a line flip",
     "ledger_counts": {
-      "eligible_captures": 1498,
+      "eligible_captures": 1511,
       "frozen_classifications": 140,
-      "quotes": 16814,
-      "source_metadata": 16416
+      "quotes": 16960,
+      "source_metadata": 16562
     },
     "paper_only": true,
     "policy_version": "favorite-early-dog-late-v1",
@@ -332,8 +332,8 @@
       },
       "fixed_t24": {
         "action_counts": {
-          "fighter": 8,
-          "opponent": 3
+          "fighter": 9,
+          "opponent": 4
         },
         "clv": {
           "count": 11,
@@ -352,14 +352,14 @@
         },
         "entry_window_counts": {
           "early": 0,
-          "fixed_t24": 11,
+          "fixed_t24": 13,
           "late": 0,
           "other": 0
         },
         "hypothetical_profit_units": 12.530000000000001,
         "hypothetical_roi": 1.1390909090909092,
         "losses": 8,
-        "mean_locked_expected_return": 0.08277760823906309,
+        "mean_locked_expected_return": 0.08186116688009606,
         "paper_only": true,
         "return_event_block_interval": {
           "bootstrap_samples": 10000,
@@ -371,8 +371,8 @@
           "point_estimate": 1.1390909090909092
         },
         "scored_selection_count": 11,
-        "selection_count": 11,
-        "unscored_selection_count": 0,
+        "selection_count": 13,
+        "unscored_selection_count": 2,
         "wins": 3
       }
     },
@@ -444,7 +444,7 @@
   },
   "paper_metrics": {
     "betting_status": "disabled_paper_only_no_execution",
-    "decisions": 100,
+    "decisions": 113,
     "forecast_metrics": {
       "accuracy": 0.6868686868686869,
       "brier_score": 0.22456385549959035,
@@ -586,8 +586,8 @@
       "one_frozen_decision_per_matchup": true,
       "source": "immutable_t24_paper_decisions"
     },
-    "decision_dataset_sha256": "98d4034a9a33554f8bf19c45c630084ebb3a912f32965ca87541fb8e3dd151c2",
-    "eligible_frozen_decisions": 87,
+    "decision_dataset_sha256": "d34f501dd689da5c7c0b2f48927ae02020a1e31abc8ec253ed15ded98b4cbc5a",
+    "eligible_frozen_decisions": 100,
     "execution_enabled": false,
     "model_ids": [
       "126157181837b9bbeb06",
@@ -596,6 +596,7 @@
       "863e02377681e2d5a1cf",
       "943fc1ab01ef1bf51da0",
       "a045d30a0223107ddda6",
+      "b83ae4e62da794b852d4",
       "dde52d64b4df453243e2",
       "e4113b1ea477d7f2641c"
     ],
@@ -730,8 +731,8 @@
       "source": "immutable_t24_market_decision_plus_preexisting_simulation",
       "withheld_simulations_are_not_imputed": true
     },
-    "comparison_dataset_sha256": "27bcf5ad761652f30daa084aa627d2a39c5b6524a7fb4e8c489789bbc8ed6af1",
-    "eligible_base_decisions": 87,
+    "comparison_dataset_sha256": "757f8309d95f87ef9837c969428f5cd47b0a242e4266da4089f8d81b52f69a17",
+    "eligible_base_decisions": 100,
     "execution_enabled": false,
     "fixed_forecasts": {
       "equal_three_way_logit": "market_model_simulation_thirds",
@@ -747,8 +748,8 @@
       ],
       "weight_search_allowed": false
     },
-    "frozen_simulation_comparisons": 51,
-    "missing_simulation_comparisons": 36,
+    "frozen_simulation_comparisons": 56,
+    "missing_simulation_comparisons": 44,
     "paired_event_intervals_vs_market": {
       "market_model_half": {
         "accuracy": {
@@ -995,21 +996,21 @@
       }
     },
     "settled_events": 8,
-    "simulation_coverage": 0.5862068965517241,
+    "simulation_coverage": 0.56,
     "status": "collecting_results"
   },
-  "quote_dataset_sha256": "1ed825969142fb7a9d6815ed4a3da1c2ae71bf47be5c5639148ed8a37d9d76ac",
-  "report_sha256": "5e39f45f3c8b83b1e880f42d507cad158763a746e69b2e0a39883842b36b292c",
+  "quote_dataset_sha256": "199d3014b499e00a2a3193151a7e1fc871ab0a962ea057a77eb824f172ada087",
+  "report_sha256": "77d6afd41643b909f5dae6924a72f6b9aab04df602878883a8d01ff76d6cc48e",
   "result_source_sha256": "5326e4c0d2386b7475b1e99a51f66b1194e4390181346d5328ab01ffc29b21ab",
   "schema_version": 6,
   "settlement_dataset_sha256": "66b7f620582b69cb83baf76bb14eca3e0b5b0af7c0d22fc25b3225da08863cde",
   "settlements_total": 100,
-  "simulation_comparison_dataset_sha256": "0b655b040fc9f1ae0a24ff7e929912dfb7e1d9609fa21afb51ef16225b1cef30",
-  "source_metadata_dataset_sha256": "68458ea2c4c055272c2b17fd2c0f69b699fc5f9029df87df09d3d9249c517002",
+  "simulation_comparison_dataset_sha256": "f5b934a6b79bd096326210c80086fa06916904bebbae3c8112686d368ff71d2f",
+  "source_metadata_dataset_sha256": "682307c437d58b67c882e478100cadb7e7efce9d99036ff69170a37db57a8874",
   "total_rounds": {
     "betting_status": "disabled_paper_only_no_execution",
-    "decision_dataset_sha256": "a5394d39ff939ba77bdef673773e5a1174298f42fe0ac732edcfc80ecfdc5c25",
-    "decisions": 85,
+    "decision_dataset_sha256": "c71dda6c2500c6592f3aedc1eb58c0a1959e5e015059ec59f81a3832a979568f",
+    "decisions": 98,
     "execution_enabled": false,
     "forecast_comparators": {
       "count": 84,
@@ -1089,7 +1090,7 @@
       "settled_events": 8,
       "status": "collecting_prospective_evidence"
     },
-    "quote_dataset_sha256": "64627fc50f28e0a88b2378de28a2287ba3cca655288bf11bb0d4c3140095c150",
+    "quote_dataset_sha256": "491661a15ee9fa94e3f959147a5830551e15c4dd5fa87a0a07d79bf467197713",
     "residual_selection_protocol": "select weight on earliest 70% of settled events; require at least 0.002 lower log loss and an event-block 95% upper confidence bound below zero on the latest 30%",
     "scored_forecasts": 84,
     "settlement_dataset_sha256": "0bdbd15f6947b8ef053fd1cfe82ae74659be1af2ff791f8bfb61c5a87ebfb34a",
@@ -1200,8 +1201,8 @@
         }
       }
     },
-    "unsettled_decisions": 0,
+    "unsettled_decisions": 13,
     "voids": 1
   },
-  "unsettled_decisions": 0
+  "unsettled_decisions": 13
 }
