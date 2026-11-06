@@ -1,7 +1,7 @@
 {
   "ambiguous_historical_matchup_keys": 1,
   "ambiguous_result_decisions": 0,
-  "as_of_utc": "2026-11-05T18:28:13.859004Z",
+  "as_of_utc": "2026-11-06T00:43:30.992810Z",
   "bayesian_filtered_moneyline_policy": {
     "base_policy_on_same_cohort": {
       "hypothetical_profit_units": 14.530000000000001,
@@ -141,10 +141,10 @@
     "execution_enabled": false,
     "favorite_definition": "side above 50% in the full no-vig consensus at the first eligible capture; classification never changes after a line flip",
     "ledger_counts": {
-      "eligible_captures": 1485,
+      "eligible_captures": 1498,
       "frozen_classifications": 140,
-      "quotes": 16683,
-      "source_metadata": 16285
+      "quotes": 16814,
+      "source_metadata": 16416
     },
     "paper_only": true,
     "policy_version": "favorite-early-dog-late-v1",
@@ -998,14 +998,14 @@
     "simulation_coverage": 0.5862068965517241,
     "status": "collecting_results"
   },
-  "quote_dataset_sha256": "f4c395ad85148360c35f3594c7de24facd8f86406d11a6cd9012938f5e243194",
-  "report_sha256": "b0cdd702482d74b6535acf51495cf39c27d3586e1d8b3cfe38e4d816c84b345d",
+  "quote_dataset_sha256": "1ed825969142fb7a9d6815ed4a3da1c2ae71bf47be5c5639148ed8a37d9d76ac",
+  "report_sha256": "5e39f45f3c8b83b1e880f42d507cad158763a746e69b2e0a39883842b36b292c",
   "result_source_sha256": "5326e4c0d2386b7475b1e99a51f66b1194e4390181346d5328ab01ffc29b21ab",
   "schema_version": 6,
   "settlement_dataset_sha256": "66b7f620582b69cb83baf76bb14eca3e0b5b0af7c0d22fc25b3225da08863cde",
   "settlements_total": 100,
   "simulation_comparison_dataset_sha256": "0b655b040fc9f1ae0a24ff7e929912dfb7e1d9609fa21afb51ef16225b1cef30",
-  "source_metadata_dataset_sha256": "41f77b8df9aa412d9d469bb219541fc5308c2ed9a1502cfaca8ae7f685529210",
+  "source_metadata_dataset_sha256": "68458ea2c4c055272c2b17fd2c0f69b699fc5f9029df87df09d3d9249c517002",
   "total_rounds": {
     "betting_status": "disabled_paper_only_no_execution",
     "decision_dataset_sha256": "a5394d39ff939ba77bdef673773e5a1174298f42fe0ac732edcfc80ecfdc5c25",
@@ -1089,7 +1089,7 @@
       "settled_events": 8,
       "status": "collecting_prospective_evidence"
     },
-    "quote_dataset_sha256": "8deae9799db6a79c2d3bea38176146fe129ad9e0e914dff7bda0830ef9427d35",
+    "quote_dataset_sha256": "64627fc50f28e0a88b2378de28a2287ba3cca655288bf11bb0d4c3140095c150",
     "residual_selection_protocol": "select weight on earliest 70% of settled events; require at least 0.002 lower log loss and an event-block 95% upper confidence bound below zero on the latest 30%",
     "scored_forecasts": 84,
     "settlement_dataset_sha256": "0bdbd15f6947b8ef053fd1cfe82ae74659be1af2ff791f8bfb61c5a87ebfb34a",
