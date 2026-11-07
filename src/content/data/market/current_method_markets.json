@@ -1,5 +1,5 @@
 {
-  "book_market_count": 52,
+  "book_market_count": 53,
   "candidate_only": true,
   "contract_version": "fighter-method-book-board-v1",
   "event_date": "2026-11-07",
@@ -7,7 +7,7 @@
   "event_start_utc": "2026-11-07T22:05:00Z",
   "execution_enabled": false,
   "expected_value_status": "candidate_comparison_only",
-  "latest_observed_at_utc": "2026-11-07T00:43:35.778545Z",
+  "latest_observed_at_utc": "2026-11-07T15:27:04.514022Z",
   "market": "fighter_method_of_victory",
   "method_market_count": 14,
   "method_markets": [
@@ -1955,7 +1955,7 @@
       "opponent_name": "Murtazali Magomedov"
     },
     {
-      "book_count": 2,
+      "book_count": 3,
       "book_quotes": [
         {
           "book": "BetRivers",
@@ -2003,6 +2003,53 @@
           ],
           "six_way_overround": null,
           "source_book_key": "book_25"
+        },
+        {
+          "book": "BetWay",
+          "horizon": "opening",
+          "is_complete_six_way": false,
+          "observed_at_utc": "2026-11-07T15:27:04.514022Z",
+          "selection_count": 3,
+          "selections": [
+            {
+              "book_no_vig_probability": null,
+              "break_even_probability": 0.18181818181818182,
+              "candidate_model_estimated_return": 0.948917983666411,
+              "candidate_model_probability": 0.3543487243029838,
+              "method": "ko_tko",
+              "moneyline": 450,
+              "selected_fighter_id": "d3f89fa685bd8420",
+              "selected_fighter_name": "Austin Bashi",
+              "selection": "Austin Bashi by KO/TKO",
+              "side": "fighter"
+            },
+            {
+              "book_no_vig_probability": null,
+              "break_even_probability": 0.5454545454545454,
+              "candidate_model_estimated_return": -0.5409382894338921,
+              "candidate_model_probability": 0.25039729667242244,
+              "method": "submission",
+              "moneyline": -120,
+              "selected_fighter_id": "d3f89fa685bd8420",
+              "selected_fighter_name": "Austin Bashi",
+              "selection": "Austin Bashi by SUBMISSION",
+              "side": "fighter"
+            },
+            {
+              "book_no_vig_probability": null,
+              "break_even_probability": 0.25,
+              "candidate_model_estimated_return": -0.2878740441960913,
+              "candidate_model_probability": 0.17803148895097717,
+              "method": "decision",
+              "moneyline": 300,
+              "selected_fighter_id": "d3f89fa685bd8420",
+              "selected_fighter_name": "Austin Bashi",
+              "selection": "Austin Bashi by DECISION",
+              "side": "fighter"
+            }
+          ],
+          "six_way_overround": null,
+          "source_book_key": "book_20"
         },
         {
           "book": "Unibet",
@@ -2612,7 +2659,7 @@
   ],
   "model_probability_status": "available_in_candidate_outcome_forecast",
   "paper_only": true,
-  "positive_candidate_comparison_count": 50,
+  "positive_candidate_comparison_count": 51,
   "positive_candidate_comparisons": [
     {
       "book": "FanDuel",
@@ -3319,6 +3366,24 @@
     {
       "book": "BetWay",
       "book_no_vig_probability": null,
+      "bout_order": 10,
+      "break_even_probability": 0.18181818181818182,
+      "candidate_model_estimated_return": 0.948917983666411,
+      "candidate_model_probability": 0.3543487243029838,
+      "fighter_name": "Austin Bashi",
+      "horizon": "opening",
+      "matchup_id": "matchup_34563a2a76c7874e506ea0e1abaa962c4bff6861d1508882547354de7b1df3e8",
+      "method": "ko_tko",
+      "moneyline": 450,
+      "opponent_name": "Carlos Calderon",
+      "selected_fighter_id": "d3f89fa685bd8420",
+      "selected_fighter_name": "Austin Bashi",
+      "selection": "Austin Bashi by KO/TKO",
+      "side": "fighter"
+    },
+    {
+      "book": "BetWay",
+      "book_no_vig_probability": null,
       "bout_order": 11,
       "break_even_probability": 0.058823529411764705,
       "candidate_model_estimated_return": 0.24168632819833835,
@@ -3516,7 +3581,7 @@
     }
   ],
   "price_status": "available",
-  "publication_sha256": "65ea9e46b2903402f1c2506cc1d3b5e692587452ab6542cb7dc0cf77ff58e8f9",
+  "publication_sha256": "1b160d79fb5ba4aeb23bdf93c50be0ac542484f6c8cecfd44416d3f50c2feda6",
   "schema_version": 1,
   "settlement_status": "not_enabled_until_book_contracts_are_verified",
   "source": "bestfightodds.com"
