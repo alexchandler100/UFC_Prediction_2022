@@ -572,16 +572,24 @@ def validate_fighters(fighters: pd.DataFrame) -> ValidationReport:
         valid = bool(match) and 48 <= float(match.group()) <= 100
         report.require(valid, f"fighter reach is implausible at row {index}: {value!r}")
     known_dob = ~fighters["dob"].map(placeholder)
-    parsed_dob = pd.to_datetime(fighters.loc[known_dob, "dob"], errors="coerce")
-    report.require(parsed_dob.notna().all(), "fighter stats contains an invalid known DOB")
-    if not parsed_dob.empty:
-        report.require(
-            (
-                (parsed_dob >= pd.Timestamp("1930-01-01"))
-                & (parsed_dob <= pd.Timestamp.today().normalize() - pd.DateOffset(years=18))
-            ).all(),
-            "fighter stats contains an implausible known DOB",
-        )
+    # Parse independently, as the model's profile loader does. Pandas can infer
+    # a full-month format from a leading "May" and then reject valid "Oct" or
+    # "Sep" dates elsewhere in the same column. Row ordering must not change
+    # whether a fighter's birth date is accepted.
+    parsed_dob = fighters.loc[known_dob, "dob"].map(
+        lambda value: pd.to_datetime(value, errors="coerce")
+    )
+    latest_dob = pd.Timestamp.today().normalize() - pd.DateOffset(years=18)
+    for index, parsed in parsed_dob.items():
+        identity = f'{fighters.at[index, "name"]} ({fighters.at[index, "url"]})'
+        value = fighters.at[index, "dob"]
+        if pd.isna(parsed):
+            report.require(False, f"fighter stats contains an invalid known DOB for {identity}: {value!r}")
+        else:
+            report.require(
+                pd.Timestamp("1930-01-01") <= parsed <= latest_dob,
+                f"fighter stats contains an implausible known DOB for {identity}: {value!r}",
+            )
     duplicate_names = sorted(fighters.loc[fighters["name"].duplicated(False), "name"].unique())
     if duplicate_names:
         report.warnings.append(
