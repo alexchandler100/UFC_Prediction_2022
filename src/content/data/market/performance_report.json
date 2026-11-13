@@ -1,7 +1,7 @@
 {
   "ambiguous_historical_matchup_keys": 1,
   "ambiguous_result_decisions": 0,
-  "as_of_utc": "2026-11-13T17:26:45.000000Z",
+  "as_of_utc": "2026-11-13T17:47:35.680534Z",
   "bayesian_filtered_moneyline_policy": {
     "base_policy_on_same_cohort": {
       "hypothetical_profit_units": 12.530000000000001,
@@ -134,17 +134,17 @@
     "coverage": {
       "matchups_classified_pickem": 0,
       "matchups_with_early_capture": 140,
-      "matchups_with_eligible_capture": 140,
+      "matchups_with_eligible_capture": 152,
       "matchups_with_late_capture": 124,
       "matchups_with_t24_capture": 113
     },
     "execution_enabled": false,
     "favorite_definition": "side above 50% in the full no-vig consensus at the first eligible capture; classification never changes after a line flip",
     "ledger_counts": {
-      "eligible_captures": 1576,
-      "frozen_classifications": 140,
-      "quotes": 17792,
-      "source_metadata": 17394
+      "eligible_captures": 1588,
+      "frozen_classifications": 152,
+      "quotes": 17905,
+      "source_metadata": 17507
     },
     "paper_only": true,
     "policy_version": "favorite-early-dog-late-v1",
@@ -242,8 +242,8 @@
     "shadow_policies": {
       "earliest_available_both": {
         "action_counts": {
-          "fighter": 8,
-          "opponent": 3
+          "fighter": 9,
+          "opponent": 4
         },
         "clv": {
           "count": 11,
@@ -264,12 +264,12 @@
           "early": 11,
           "fixed_t24": 0,
           "late": 0,
-          "other": 0
+          "other": 2
         },
         "hypothetical_profit_units": -11.0,
         "hypothetical_roi": -1.0,
         "losses": 11,
-        "mean_locked_expected_return": 0.08312533507215251,
+        "mean_locked_expected_return": 0.08066606248280014,
         "paper_only": true,
         "return_event_block_interval": {
           "bootstrap_samples": 10000,
@@ -281,8 +281,8 @@
           "point_estimate": -1.0
         },
         "scored_selection_count": 11,
-        "selection_count": 11,
-        "unscored_selection_count": 0,
+        "selection_count": 13,
+        "unscored_selection_count": 2,
         "wins": 0
       },
       "favorite_early_underdog_late": {
@@ -999,14 +999,14 @@
     "simulation_coverage": 0.56,
     "status": "collecting_results"
   },
-  "quote_dataset_sha256": "65e34a0274af24ba18e2e9c12292f7336bc1d313e2ab6973dbe53cfef0230c6c",
-  "report_sha256": "bcacc3bee0ac0a83411dc0d2080dd9aa6f4563cdefebaad56fb8488119f4a456",
+  "quote_dataset_sha256": "e36bdf2579aef5852d570f436c53146a6e7d9ceb4c3675db89d1cd8baa17015f",
+  "report_sha256": "4fdcb3d22d3875fe4da13aeb85b22eeccb71f3343d2b85e8cb2f3614e253f469",
   "result_source_sha256": "03dbb2e652078243af95e1b9f8f737180efe15c93d1a069b1ba09d30e2cf2d3e",
   "schema_version": 6,
   "settlement_dataset_sha256": "1f2dbd304189ced1e1169d12f92d53831e637b2cb7bfa6b50ed4785feefd12aa",
   "settlements_total": 113,
   "simulation_comparison_dataset_sha256": "f5b934a6b79bd096326210c80086fa06916904bebbae3c8112686d368ff71d2f",
-  "source_metadata_dataset_sha256": "9adf7832cbdba1e6ad357f8b843ead964d2b660d929aa13608871e8db4f91cba",
+  "source_metadata_dataset_sha256": "ff3b5d48d57876b43dce19953e058532bf4ea20b3fca382fa78a63e4cc1edb7b",
   "total_rounds": {
     "betting_status": "disabled_paper_only_no_execution",
     "decision_dataset_sha256": "c71dda6c2500c6592f3aedc1eb58c0a1959e5e015059ec59f81a3832a979568f",
@@ -1090,7 +1090,7 @@
       "settled_events": 9,
       "status": "collecting_prospective_evidence"
     },
-    "quote_dataset_sha256": "ca5a79cac8d2ba7e2e30fc6ac140bc1c8754d00cbfda1870e46a68f7146eb685",
+    "quote_dataset_sha256": "5139b0a57595d04a69d1635ab903d15f3459b2eee935629901e796a3c166fb54",
     "residual_selection_protocol": "select weight on earliest 70% of settled events; require at least 0.002 lower log loss and an event-block 95% upper confidence bound below zero on the latest 30%",
     "scored_forecasts": 97,
     "settlement_dataset_sha256": "0a0a7cf0e4416eba479e04f3b15dc7c4c00fcad88ba6f3ba28a786d531a9832f",
