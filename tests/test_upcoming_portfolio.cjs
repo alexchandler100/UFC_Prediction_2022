@@ -13,7 +13,7 @@ function extract(name) {
 }
 const sandbox = {};
 vm.createContext(sandbox);
-vm.runInContext(['finite', 'decimalOdds', 'evaluateUpcomingPaperOffers', 'recordedPaperStatus', 'recordedPaperGroups', 'marketRecommendationGroups', 'partitionMarketRecommendations', 'fundedPerformanceCounts'].map(extract).join('\n'), sandbox);
+vm.runInContext(['finite', 'decimalOdds', 'evaluateUpcomingPaperOffers', 'recordedPaperStatus', 'recordedPaperGroups', 'marketRecommendationGroups', 'publicMarketRecommendationGroups', 'partitionMarketRecommendations', 'fundedPerformanceCounts'].map(extract).join('\n'), sandbox);
 const now = Date.parse('2026-09-05T12:00:00Z');
 function offer(id = 'fight', overrides = {}) {
   const row = { event_id: 'card', event_date: '2026-09-05', matchup_id: id,
@@ -224,6 +224,11 @@ test('same total from locked and model sources is one pick with separate estimat
   assert.deepEqual(Array.from(groups[0].versions, r=>r.estimated_win_probability), [.2473,.687]);
   assert.equal(groups[0].versions[1].recommendation_source, 'Duration model');
   assert.equal(JSON.stringify({performance, totals}), original);
+  const publicPicks = sandbox.publicMarketRecommendationGroups(null,null,performance);
+  assert.equal(publicPicks.length,1);
+  assert.equal(publicPicks[0].versions.length,1);
+  assert.equal(publicPicks[0].latest.recommendation_source,'Locked pick');
+  assert.equal(sandbox.publicMarketRecommendationGroups(null,null,null).length,0);
   const filtered = sandbox.marketRecommendationGroups(null,null,performance,null,new Set(['B']),totals);
   assert.equal(filtered.length, 1);
   assert.equal(filtered[0].latest.recommendation_source, 'Duration model');

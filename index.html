@@ -280,7 +280,7 @@
           <div class="section-heading"><div><h2 id="recorded-upcoming-title">Upcoming picks</h2><p class="section-note" id="recorded-upcoming-status"></p></div></div>
           <div class="market-pick-filters">
             <section id="market-book-filter" class="market-book-filter" aria-label="Sportsbook filter"></section>
-            <div class="filter-control"><label for="market-pick-type">Pick type</label><select id="market-pick-type"><option value="all">All picks</option><option value="Moneyline">Fight winners</option><option value="Total rounds">Round totals</option><option value="Method">Method of victory</option></select></div>
+            <div class="filter-control"><label for="market-pick-type">Pick type</label><select id="market-pick-type"><option value="all">All picks</option><option value="Moneyline">Fight winners</option><option value="Total rounds">Round totals</option></select></div>
           </div>
           <section id="current-prices-panel" hidden aria-labelledby="qualified-upcoming-title">
             <h3 id="qualified-upcoming-title">Fresh qualifying prices</h3>
@@ -298,31 +298,9 @@
           <div class="qualified-bet-list" id="recorded-results"></div>
         </section>
         <details class="panel market-audit-panel" id="market-analysis">
-          <summary class="market-audit-summary"><strong>Price comparison &amp; analysis</strong><small>Sportsbook lines, model explanations and collection details.</small></summary>
+          <summary class="market-audit-summary"><strong>Price comparison &amp; analysis</strong><small>Sportsbook prices and price history.</small></summary>
           <div class="market-audit-body page-stack">
           <section id="market-notice" class="section-note"></section>
-        <details class="panel market-audit-panel">
-          <summary class="market-audit-summary"><span><span class="eyebrow">Weekly experiment check</span><strong>Are we collecting useful evidence?</strong><small>Collection coverage, pending results, and strategy comparisons.</small></span></summary>
-          <div class="market-audit-body" id="research-monitor"></div>
-        </details>
-        <details class="panel market-audit-panel">
-          <summary class="market-audit-summary"><span><span class="eyebrow">Candidate explanations</span><strong>Why prices qualify or get skipped</strong><small>Compare market, adjusted, and independent model estimates at each saved price.</small></span></summary>
-          <div class="market-audit-body" id="candidate-diagnostics" aria-live="polite"></div>
-        </details>
-        <section class="panel" id="market-research-results" tabindex="-1" aria-labelledby="profitability-title">
-          <div class="section-heading">
-            <div><p class="eyebrow">Prospective evidence</p><h2 id="profitability-title">Profitability and closing-line value</h2><p class="section-note">Frozen T-24 moneyline and totals decisions only. Repeated snapshots are not counted as independent bets.</p></div>
-            <span class="research-badge">Audited paper ledger</span>
-          </div>
-          <section id="profitability-evidence" aria-live="polite"></section>
-        </section>
-        <details class="panel market-audit-panel">
-          <summary class="market-audit-summary"><span><span class="eyebrow">Optional price audit</span><strong>All current total and method prices</strong><small>Raw sportsbook lines and experimental estimates; any qualifying recommendation already appears above.</small></span></summary>
-          <div class="market-audit-body">
-            <p class="section-note" id="prop-coverage-status">Checking prop-market coverage...</p>
-            <section class="market-grid" id="prop-market-details" aria-live="polite"></section>
-          </div>
-        </details>
         <div class="section-heading"><div><p class="eyebrow">Moneyline audit</p><h2>Every matchup and book</h2><p class="section-note">Open a fight's odds-movement chart to switch between the consensus and any individual oddsmaker.</p></div></div>
         <section class="market-grid" id="market-matchups" aria-live="polite"></section>
           </div>
@@ -332,34 +310,24 @@
 
     <section class="view" id="view-performance" data-view="performance" aria-labelledby="performance-title">
       <div class="compact-hero page-shell">
-        <p class="eyebrow">Published paper bets</p><h1 id="performance-title">What would the bankroll have done?</h1>
-        <p>Replay only timestamped, above-threshold bets that were actually published. Change the starting bankroll, stake size, and price timing without using a fight result to choose a bet. Earlier fight-total estimates came from an experimental model, so this history is evidence—not proof of an edge.</p>
+        <p class="eyebrow">Published paper bets</p><h1 id="performance-title">Strategy performance</h1>
+        <p>Select a betting strategy to see its results.</p>
       </div>
       <div class="page-shell page-stack">
         <section class="panel performance-controls" id="performance-controls" tabindex="-1" aria-labelledby="performance-controls-title">
           <div class="section-heading">
-            <div><p class="eyebrow">Paper strategy</p><h2 id="performance-controls-title">Bankroll assumptions</h2><p class="section-note">Choose a probability and stake rule. Ordinary Kelly fractions change stake size; robust Kelly and combined estimates can also change which selections receive a stake.</p></div>
+            <div><h2 id="performance-controls-title">Betting strategy</h2></div>
             <span class="research-badge">Historical simulation only</span>
           </div>
           <div class="performance-filter-grid">
             <div class="filter-control"><label for="performance-bankroll">Initial bankroll</label><input id="performance-bankroll" type="number" min="1" step="100" value="1000" inputmode="decimal"></div>
-            <div class="filter-control"><label for="performance-staking">Probability &amp; stake rule</label><select id="performance-staking"><optgroup label="Uncertainty-aware research"><option value="robust_bayesian_kelly">Robust Bayesian Kelly</option></optgroup><optgroup label="Shared fight and card budgets (v1)"><option value="portfolio_tiered_v1">Shared tiers: 1% / 2% / 3% per fight</option><option value="portfolio_flat_v1">Shared flat 1% per fight</option><option value="portfolio_half_kelly_v1">Half Kelly: 1% fight cap</option></optgroup><optgroup label="Same published chance: change stake only"><option value="half_kelly">Half Kelly</option><option value="third_kelly">One-third Kelly</option><option value="full_kelly">Full Kelly</option><option value="flat_one_percent">Flat 1% of bankroll</option><option value="tiered_expected_return">Tiered 1% / 2% / 3% by expected return</option></optgroup><optgroup label="Research: combine probability estimates"><option value="half_kelly_model_blend">½ Kelly · published + winner model</option><option value="half_kelly_sim_blend">½ Kelly · published + simulation</option><option value="half_kelly_model_sim_blend">½ Kelly · published + model + simulation</option></optgroup></select></div>
+            <div class="filter-control"><label for="performance-staking">Strategy</label><select id="performance-staking"><optgroup label="Uncertainty-aware research"><option value="robust_bayesian_kelly">Robust Bayesian Kelly</option></optgroup><optgroup label="Shared fight and card budgets (v1)"><option value="portfolio_tiered_v1">Shared tiers: 1% / 2% / 3% per fight</option><option value="portfolio_flat_v1">Shared flat 1% per fight</option><option value="portfolio_half_kelly_v1">Half Kelly: 1% fight cap</option></optgroup><optgroup label="Same published chance: change stake only"><option value="half_kelly" selected>Half Kelly</option><option value="third_kelly">One-third Kelly</option><option value="full_kelly">Full Kelly</option><option value="flat_one_percent">Flat 1% of bankroll</option><option value="tiered_expected_return">Tiered 1% / 2% / 3% by expected return</option></optgroup><optgroup label="Research: combine probability estimates"><option value="half_kelly_model_blend">½ Kelly · published + winner model</option><option value="half_kelly_sim_blend">½ Kelly · published + simulation</option><option value="half_kelly_model_sim_blend">½ Kelly · published + model + simulation</option></optgroup></select></div>
             <div class="filter-control"><label for="performance-timing">Bet timing</label><select id="performance-timing"><option value="first_qualifying">First published qualifying price</option><option value="official_t24">Official locked T-24 only</option><option value="nearest_t48">Published price nearest T-48</option><option value="nearest_t24">Published price nearest T-24</option><option value="favorite_early_underdog_late">Favorite early / underdog late</option><option value="latest_qualifying">Latest published qualifying price</option></select></div>
             <div class="filter-control"><label for="performance-market">Market</label><select id="performance-market"><option value="all">All tracked markets</option><option value="Moneyline">Moneyline</option><option value="Total rounds">Fight totals</option></select></div>
           </div>
-          <p class="performance-data-note" id="performance-rule-note" role="status" aria-live="polite"></p>
-          <p class="performance-data-note" id="performance-data-note" role="status" aria-live="polite"></p>
-        </section>
-        <section class="panel" aria-labelledby="performance-coverage-title">
-          <div class="section-heading"><div><p class="eyebrow">Selection coverage</p><h2 id="performance-coverage-title">Why these counts?</h2><p class="section-note">Counts start from published selections at the chosen timing and market. Missing estimates are different from choosing a zero stake. Planned stakes are counted before bankroll limits.</p></div></div>
-          <div id="performance-coverage"></div>
-        </section>
-        <section class="panel" aria-labelledby="performance-comparison-title">
-          <div class="section-heading"><div><p class="eyebrow">Same selections, same prices</p><h2 id="performance-comparison-title">Compare strategies</h2></div></div>
-          <div id="performance-comparison"></div>
         </section>
         <section class="panel performance-results" id="performance-results" tabindex="-1" aria-labelledby="performance-results-title">
-          <div class="section-heading"><div><p class="eyebrow">Settled results</p><h2 id="performance-results-title">Paper bankroll history</h2><p class="section-note" id="performance-summary-note">Loading published bets...</p></div></div>
+          <div class="section-heading"><div><p class="eyebrow">Settled results</p><h2 id="performance-results-title">Results</h2><p class="section-note" id="performance-summary-note">Loading published bets...</p></div></div>
           <div class="stats-grid" id="performance-summary"></div>
           <div class="performance-chart" id="performance-chart" aria-label="Bankroll over time"></div>
           <div class="performance-table-wrap">
@@ -369,6 +337,14 @@
             </table>
           </div>
         </section>
+        <details class="panel market-audit-panel" id="performance-provenance">
+          <summary class="market-audit-summary"><strong>How these results are calculated</strong></summary>
+          <div class="market-audit-body">
+            <p class="performance-data-note" id="performance-rule-note"></p>
+            <p class="performance-data-note" id="performance-data-note"></p>
+            <p class="performance-data-note" id="performance-selection-note"></p>
+          </div>
+        </details>
       </div>
     </section>
 
