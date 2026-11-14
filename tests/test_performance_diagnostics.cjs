@@ -28,17 +28,22 @@ const plain = value => JSON.parse(JSON.stringify(value));
 
 test('display shows only the selected strategy stakes, newest first without changing bankroll replay', () => {
   const records = [record('old', {event_id:'old-card', event_date:'2026-08-01'}),
-    record('new'), record('pass', {bayesian_kelly:{status:'available', recommended_fraction:0}}),
+    record('new'), record('pass', {bayesian_kelly:{status:'available', recommended_fraction:0, posterior_lower_probability:.4}}),
     record('unsupported', {bayesian_kelly:null}), record('pending', {status:'pending'})];
   const robust = s.simulatePaperBankroll(records, 1000, 'robust_bayesian_kelly');
   const before = JSON.stringify(robust);
   const shown = s.performanceDisplayRows(robust.rows);
   assert.deepEqual(Array.from(shown, row=>row.record_id), ['new','old']);
   assert.equal(s.fundedPerformanceCounts(robust.rows).wins, shown.length);
+  const withPasses = s.performanceDisplayRows(robust.rows, true);
+  assert.equal(withPasses.length,3);
+  assert.equal(withPasses.filter(row=>row.stake===0).length,1);
+  assert.equal(withPasses.at(-1).record_id,'old');
   assert.equal(JSON.stringify(robust), before);
   const half = s.simulatePaperBankroll(records, 1000, 'half_kelly');
   assert.equal(s.performanceDisplayRows(half.rows).length,4);
   assert.equal(s.performanceDisplayRows([{stake:0},{stake:null}]).length,0);
+  assert.equal(s.performanceDisplayRows([{stake:0},{stake:null}],true).length,1);
 });
 
 test('coverage separates settled and pending missing estimates from zero-stake passes', () => {

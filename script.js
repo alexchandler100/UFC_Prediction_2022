@@ -4022,8 +4022,11 @@ function renderSharedPerformanceComparison(selected, initialBankroll) {
   container.append(table.wrap);
 }
 
-function performanceDisplayRows(rows) {
-  return rows.filter(row => finite(row.stake) > 0).sort((a, b) =>
+function performanceDisplayRows(rows, showZeroStake = false) {
+  return rows.filter(row => {
+    const stake = finite(row.stake);
+    return stake !== null && (stake > 0 || (showZeroStake && stake === 0));
+  }).sort((a, b) =>
     String(b.event_date || '').localeCompare(String(a.event_date || ''))
     || String(b.settled_at_utc || '').localeCompare(String(a.settled_at_utc || '')));
 }
@@ -4075,8 +4078,9 @@ function renderBetPerformance() {
       : baseDataNote;
   const fundedCounts = fundedPerformanceCounts(result.rows);
   $("#performance-selection-note").textContent = `${fundedCounts.funded} settled paper bet${fundedCounts.funded === 1 ? "" : "s"} · ${fundedCounts.wins}-${fundedCounts.losses}${fundedCounts.voids ? ` · ${fundedCounts.voids} void` : ""} · ${fundedCounts.zeroStake} zero-stake record${fundedCounts.zeroStake === 1 ? "" : "s"}${result.pending.length ? ` · ${result.pending.length} pending record${result.pending.length === 1 ? "" : "s"}` : ""}${result.unsupported.length ? ` · ${result.unsupported.length} excluded because this strategy lacks required saved inputs` : ""}. ${portfolioStrategy ? `${formatCurrency(result.reservedStake)} reserved for pending picks; maximum fight/card stakes ${formatPercent(result.maximumFightFraction)} / ${formatPercent(result.maximumCardFraction)}.` : 'This paper replay groups settlements by card and does not track account exposure between cards.'}`;
-  $("#performance-summary-note").textContent = `${fundedCounts.funded} settled bets · newest first`;
-  const displayedRows = performanceDisplayRows(result.rows);
+  const showZeroStake = $("#performance-show-zero").checked;
+  $("#performance-summary-note").textContent = `${fundedCounts.funded} settled bets${showZeroStake ? ` · ${fundedCounts.zeroStake} zero-stake records` : ''} · newest first`;
+  const displayedRows = performanceDisplayRows(result.rows, showZeroStake);
   [
     [formatCurrency(result.endingBankroll), "Ending bankroll", `${formatCurrency(result.profit)} total profit`],
     [formatCurrency(result.totalStaked), "Total amount risked", `${formatPercent(result.roi)} return on amount risked`],
@@ -4569,6 +4573,7 @@ function bindEvents() {
   $("#graph-fighter-search").addEventListener("keydown", (event) => { if (event.key === "Enter") drawFightGraph(); });
   ["#fighter-directory-search", "#division-filter", "#stance-filter", "#recorded-only"].forEach((selector) => { const input = $(selector); input.addEventListener(input.tagName === "INPUT" && input.type === "search" ? "input" : "change", () => { state.directoryLimit = 48; renderFighterDirectory(); }); });
   ["#performance-bankroll", "#performance-staking", "#performance-timing", "#performance-market"].forEach((selector) => { const input = $(selector); input.addEventListener(input.tagName === "INPUT" ? "input" : "change", renderBetPerformance); });
+  $("#performance-show-zero").addEventListener("change", renderBetPerformance);
   document.addEventListener("click", (event) => { ["a", "b"].forEach((side) => { const picker = $(`[data-picker="${side}"]`); if (!picker.contains(event.target)) closeAutocomplete($(`#matchup-fighter-${side}`), $(`#matchup-results-${side}`)); }); });
   window.addEventListener("hashchange", applyRoute);
 }
