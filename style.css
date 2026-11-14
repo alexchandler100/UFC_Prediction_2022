@@ -816,3 +816,5 @@ input[type="search"]:focus, select:focus { border-color: var(--teal); box-shadow
   .site-footer { display: grid; }
 }
 @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; } }
+
+.upcoming-start-times { margin: 8px 0 0; color: var(--ink-soft); font-size: 13px; line-height: 1.7; }

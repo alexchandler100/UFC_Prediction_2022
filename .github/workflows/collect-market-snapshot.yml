@@ -140,6 +140,9 @@ jobs:
       - name: Update frozen market-first prospective paper test
         run: python src/update_market_first_paper.py
 
+      - name: Refresh official UFC card start times
+        run: python src/update_event_start_times.py
+
       - name: Publish compact current-card odds history
         run: python src/update_odds_history.py
 
@@ -175,6 +178,7 @@ jobs:
           git config --local user.name "github-actions[bot]"
 
           git add -- \
+            src/content/data/external/event_start_times.json \
             src/content/data/market/quote_snapshots.csv \
             src/content/data/market/quote_snapshots.jsonl \
             src/content/data/market/forecast_captures.csv \

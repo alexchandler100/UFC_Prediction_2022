@@ -124,6 +124,9 @@ jobs:
         working-directory: src
         run: python update_market_first_paper.py
 
+      - name: Refresh official UFC card start times
+        run: python src/update_event_start_times.py
+
       - name: Publish compact current-card odds history
         run: python src/update_odds_history.py
 
@@ -156,6 +159,7 @@ jobs:
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
           git add -- \
+            src/content/data/external/event_start_times.json \
             src/content/data/processed/fighter_stats.csv \
             src/content/data/processed/ufc_fights_reported_doubled.csv \
             src/content/data/processed/external_mma_auxiliary_doubled.csv \

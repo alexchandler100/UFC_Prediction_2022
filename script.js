@@ -15,6 +15,7 @@ const DATA_PATHS = {
   researchMonitor: "src/content/data/market/research_monitor.json",
   publishedBets: "src/content/data/market/published_bet_snapshots.json",
   allUpcoming: "src/content/data/external/all_upcoming_forecasts.json",
+  eventStartTimes: "src/content/data/external/event_start_times.json",
   methodMarkets: "src/content/data/market/current_method_markets.json",
   performance: "src/content/data/market/performance_report.json",
   betPerformance: "src/content/data/market/bet_performance.json",
@@ -39,6 +40,7 @@ const state = {
   totalModelPaper: null,
   candidateSort: "supported",
   allUpcoming: null,
+  eventStartTimes: null,
   methodMarkets: null,
   performance: null,
   betPerformance: null,
@@ -1239,7 +1241,7 @@ async function fetchJson(path, required = true) {
 }
 
 async function loadData() {
-  const [explorer, vegas, card, model, bayesian, market, oddsHistory, upcomingBetBoard, allUpcoming, methodMarkets, performance, betPerformance, outcomes, outcomeEvaluation, candidateReport, methodPaper, researchMonitor, publishedBets, totalModelPaper] = await Promise.all([
+  const [explorer, vegas, card, model, bayesian, market, oddsHistory, upcomingBetBoard, allUpcoming, methodMarkets, performance, betPerformance, outcomes, outcomeEvaluation, candidateReport, methodPaper, researchMonitor, publishedBets, totalModelPaper, eventStartTimes] = await Promise.all([
     fetchJson(DATA_PATHS.explorer),
     fetchJson(DATA_PATHS.vegas, false),
     fetchJson(DATA_PATHS.card, false),
@@ -1259,6 +1261,7 @@ async function loadData() {
     fetchJson(DATA_PATHS.researchMonitor, false),
     fetchJson(DATA_PATHS.publishedBets, false),
     fetchJson(DATA_PATHS.totalModelPaper, false),
+    fetchJson(DATA_PATHS.eventStartTimes, false),
   ]);
   state.explorer = explorer;
   state.vegas = vegas;
@@ -1274,6 +1277,7 @@ async function loadData() {
   state.researchMonitor = researchMonitor;
   state.publishedBets = publishedBets;
   state.allUpcoming = allUpcoming;
+  state.eventStartTimes = eventStartTimes;
   state.methodMarkets = methodMarkets;
   state.performance = performance;
   state.betPerformance = betPerformance;
@@ -2114,6 +2118,27 @@ function bayesianFilteredCandidate(matchup) {
   };
 }
 
+function eventStartTimeText(schedule, timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone) {
+  const labels = { early_prelims: "Early prelims", prelims: "Prelims", main_card: "Main card" };
+  const parts = [];
+  const dateFormat = new Intl.DateTimeFormat("en-CA", { timeZone, year: "numeric", month: "2-digit", day: "2-digit" });
+  for (const [key, label] of Object.entries(labels)) {
+    const value = schedule?.starts?.[key];
+    if (!value) continue;
+    const date = new Date(value);
+    if (!Number.isFinite(date.getTime())) continue;
+    const localDate = dateFormat.formatToParts(date);
+    const getPart = type => localDate.find(part => part.type === type).value;
+    const day = `${getPart('year')}-${getPart('month')}-${getPart('day')}`;
+    const options = { timeZone, hour: "numeric", minute: "2-digit", timeZoneName: "short" };
+    if (day !== schedule.event_date) { options.month = "short"; options.day = "numeric"; }
+    parts.push(`${label} ${new Intl.DateTimeFormat("en-US", options).format(date)}`);
+  }
+  if (!schedule?.starts?.main_card) parts.push("Main card time TBA");
+  if (!schedule?.starts?.prelims) parts.push("Prelims time TBA");
+  return parts.join(" · ");
+}
+
 function allUpcomingEventGroups() {
   const publishedRows = Array.isArray(state.allUpcoming?.matchups) ? state.allUpcoming.matchups : [];
   if (!publishedRows.length) {
@@ -2424,7 +2449,7 @@ function renderCurrentCard() {
   const matchupCount = events.reduce((total, event) => total + event.matchups.length, 0);
   $("#current-card-title").textContent = "All upcoming UFC fights";
   $("#current-card-meta").textContent = events.length
-    ? `${events.length} events · ${matchupCount} scheduled matchups · expand a card to see its fights, main event first`
+    ? `${events.length} events · ${matchupCount} scheduled matchups · expand a card to see its fights, main event first · start times in your local timezone`
     : "No announced event schedule is currently published.";
   if (!events.length) {
     container.append(element("div", "empty-state", "No upcoming matchups are published yet. Use the matchup builder below to research any two fighters."));
@@ -2437,12 +2462,26 @@ function renderCurrentCard() {
     const heading = element("div");
     appendText(heading, "p", "eyebrow", formatDate(event.event_date));
     appendText(heading, "h3", "", event.event_title);
+    const schedule = (state.eventStartTimes?.events || []).find(row =>
+      row.event_id === event.event_id && row.event_date === event.event_date);
+    const times = appendText(heading, "p", "upcoming-start-times", eventStartTimeText(schedule));
+    if (schedule?.observed_at_utc) times.title = `Official UFC schedule · checked ${formatTimestamp(schedule.observed_at_utc)}`;
+    if (schedule?.starts && Object.keys(schedule.starts).length && state.eventStartTimes?.refresh_failed) {
+      appendText(heading, "p", "muted", "Last confirmed times · schedule refresh pending");
+    }
     appendText(header, "span", "upcoming-event-count", `${event.matchups.length} bouts`);
     header.prepend(heading);
     const expand = element("span", "upcoming-event-expand");
     expand.setAttribute("aria-hidden", "true");
     header.append(expand);
     const bouts = element("div", "upcoming-event-bouts");
+    if (schedule?.source_url?.startsWith("https://www.ufc.com/")) {
+      const source = element("a", "source-link", "Official UFC start times");
+      source.href = schedule.source_url;
+      source.target = "_blank";
+      source.rel = "noopener noreferrer";
+      bouts.append(source);
+    }
     event.matchups.forEach((matchup, index) => bouts.append(renderUpcomingBout(matchup, index, event.matchups.length)));
     group.append(header, bouts);
     container.append(group);
