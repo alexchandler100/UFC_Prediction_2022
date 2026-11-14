@@ -4526,16 +4526,29 @@ function renderMarket() {
   renderQualifiedUpcomingBets();
   const container = $("#market-matchups"); container.replaceChildren();
   const market = currentMarket();
-  $("#market-notice").textContent = market ? `Prices captured ${formatTimestamp(market.observed_at_utc)}.` : 'No current prices available.';
-  for (const matchup of orderedCardMatchups(market?.matchups || [])) {
+  $("#market-notice").textContent = market ? `Prices captured ${formatTimestamp(market.observed_at_utc)}.`
+    : state.market ? `Latest stored prices are for ${formatDate(state.market.event_date)}, not the current ${state.card?.date || 'fight card'}. No current prices available.`
+    : 'No current prices available.';
+  const capturedMatchups = market?.matchups || [];
+  const capturedIdentities = new Set(capturedMatchups.flatMap(matchupIdentityKeys));
+  const uncapturedMatchups = legacyRows()
+    .filter(matchup => !matchupIdentityKeys(matchup).some(key => capturedIdentities.has(key)))
+    .map(matchup => ({ ...matchup, book_quotes: [] }));
+  for (const matchup of orderedCardMatchups([...capturedMatchups, ...uncapturedMatchups])) {
     const quotes = (matchup.book_quotes || []).filter(quote => marketBookAllowed(quote.book));
-    if (!quotes.length) continue;
     const card = element('article', 'market-card');
     card.dataset.marketFighterId = matchup.fighter_id;
     card.dataset.marketOpponentId = matchup.opponent_id;
     card.tabIndex = -1;
     appendText(card, 'h3', '', `${matchup.fighter_name} vs ${matchup.opponent_name}`);
     card.append(renderOddsHistory(matchup));
+    if (!quotes.length) {
+      appendText(card, 'p', 'muted', matchup.book_quotes?.length
+        ? 'No prices from the selected sportsbooks.'
+        : 'No timestamped book capture is available for this fight yet.');
+      container.append(card);
+      continue;
+    }
     const table = performanceTable(['Book', matchup.fighter_name, matchup.opponent_name]);
     for (const quote of quotes) {
       const row = element('tr');

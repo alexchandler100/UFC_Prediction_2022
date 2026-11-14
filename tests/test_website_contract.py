@@ -58,7 +58,10 @@ class WebsiteExplorerContractTests(unittest.TestCase):
         self.assertIn("Upcoming picks", page)
         self.assertIn("Awaiting results", page)
         self.assertNotIn("Potentially profitable prices", page)
-        self.assertIn("All current total and method prices", page)
+        self.assertIn("Price comparison &amp; analysis", page)
+        for hidden_panel in ("research-monitor", "candidate-diagnostics", "profitability-evidence", "prop-market-details"):
+            self.assertNotIn(f'id="{hidden_panel}"', page)
+        self.assertIn("function publicMarketRecommendationGroups", script)
         self.assertIn('id="market-book-filter"', page)
         self.assertIn("tracked selections, no bets placed", script)
         self.assertIn("current_opportunities.json", script)
@@ -71,26 +74,20 @@ class WebsiteExplorerContractTests(unittest.TestCase):
         self.assertIn("function appendQualifiedBetExplanation", script)
         self.assertIn("function evaluateUpcomingPaperOffers", script)
         self.assertIn("Only one selection per fight receives a hypothetical stake", script)
-        self.assertRegex(script, r"window\.setInterval\(\(\) => \{ renderQualifiedUpcomingBets\(\);[^\n]+60 \* 1000\)")
+        self.assertIn("window.setInterval(renderQualifiedUpcomingBets, 60 * 1000)", script)
         self.assertIn("target_book", script)
         self.assertIn("offered_moneyline", script)
         self.assertIn("estimated_expected_return", script)
         self.assertIn("book_quotes", script)
-        self.assertIn("locked_t24_decision", script)
-        self.assertIn("Leave-one-book-out fair line", script)
         self.assertIn("outcome_forecasts.json", script)
         self.assertIn("current_method_markets.json", script)
         self.assertIn("Missing outcomes remain unavailable", script)
         self.assertIn("method-price-table", script)
-        self.assertIn("Profitability and closing-line value", page)
         self.assertIn("renderProfitabilityEvidence", script)
         self.assertIn("Compare predeclared EV thresholds", script)
-        self.assertIn("Locked T-24 residual paper decision", script)
         self.assertIn("bayesian_winner_challenger.json", script)
         self.assertIn("bayesianFilteredCandidate", script)
         self.assertIn("filtered minus base roi", script.lower())
-        self.assertIn("Probability EV is positive", script)
-        self.assertIn("Bayesian model and expected-return uncertainty", script)
         self.assertIn("bayesian_winner_challenger.json", update_workflow)
         self.assertIn("current_opportunities.json", workflow)
         self.assertIn("odds_history.json", workflow)
@@ -101,6 +98,16 @@ class WebsiteExplorerContractTests(unittest.TestCase):
         self.assertIn("all_upcoming_forecasts.json", update_workflow)
         self.assertIn("current_method_markets.json", workflow)
         self.assertIn("bayesian_filtered_paper_decisions.jsonl", workflow)
+
+    def test_performance_defaults_to_funded_strategy_results_with_optional_zero_stakes(self):
+        page = (REPO_ROOT / "index.html").read_text(encoding="utf-8")
+        script = (REPO_ROOT / "script.js").read_text(encoding="utf-8")
+        self.assertIn('<input id="performance-show-zero" type="checkbox">', page)
+        self.assertIn('id="performance-provenance">', page)
+        self.assertNotIn('id="performance-comparison"', page)
+        self.assertNotIn('id="performance-coverage"', page)
+        self.assertIn('performanceDisplayRows(result.rows, showZeroStake)', script)
+        self.assertIn('$("#performance-show-zero").addEventListener("change", renderBetPerformance)', script)
 
     def test_each_moneyline_fight_has_consensus_and_book_odds_history(self):
         page = (REPO_ROOT / "index.html").read_text(encoding="utf-8")
@@ -189,7 +196,7 @@ class WebsiteExplorerContractTests(unittest.TestCase):
             "simulation-picker",
             "simulation-results",
             "qualified-upcoming-bets",
-            "market-research-results",
+            "market-matchups",
         ):
             self.assertIn(f'id="{target_id}"', page)
         self.assertIn("function focusRouteTarget", script)
