@@ -2464,8 +2464,7 @@ function renderCurrentCard() {
     appendText(heading, "h3", "", event.event_title);
     const schedule = (state.eventStartTimes?.events || []).find(row =>
       row.event_id === event.event_id && row.event_date === event.event_date);
-    const times = appendText(heading, "p", "upcoming-start-times", eventStartTimeText(schedule));
-    if (schedule?.observed_at_utc) times.title = `Official UFC schedule · checked ${formatTimestamp(schedule.observed_at_utc)}`;
+    appendText(heading, "p", "upcoming-start-times", eventStartTimeText(schedule));
     if (schedule?.starts && Object.keys(schedule.starts).length && state.eventStartTimes?.refresh_failed) {
       appendText(heading, "p", "muted", "Last confirmed times · schedule refresh pending");
     }
@@ -2475,13 +2474,6 @@ function renderCurrentCard() {
     expand.setAttribute("aria-hidden", "true");
     header.append(expand);
     const bouts = element("div", "upcoming-event-bouts");
-    if (schedule?.source_url?.startsWith("https://www.ufc.com/")) {
-      const source = element("a", "source-link", "Official UFC start times");
-      source.href = schedule.source_url;
-      source.target = "_blank";
-      source.rel = "noopener noreferrer";
-      bouts.append(source);
-    }
     event.matchups.forEach((matchup, index) => bouts.append(renderUpcomingBout(matchup, index, event.matchups.length)));
     group.append(header, bouts);
     container.append(group);
