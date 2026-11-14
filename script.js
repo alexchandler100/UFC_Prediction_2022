@@ -3337,7 +3337,34 @@ function marketRecommendationGroups(archive, board, performance, methods, select
       groups.push({key: `total-model:${row.decision_sha256}`, versions: [bet], latest: bet});
     }
   }
-  return groups;
+  // A selection is one bet even when several tracking systems recommend it.
+  // Keep each source's estimate/price intact rather than averaging probabilities.
+  const selections = new Map();
+  for (const group of groups) {
+    const row = group.latest;
+    const pair = [row.fighter_id, row.opponent_id];
+    const total = String(row.selection || '').match(/\b(over|under)\s+([\d.]+)/i);
+    const selection = row.category === 'Total rounds' && total
+      ? [total[1].toLowerCase(), Number(total[2])]
+      : row.category === 'Moneyline'
+        ? (row.side === 'fighter' ? row.fighter_id : row.opponent_id)
+        : [row.selected_fighter_id, row.method || row.selection];
+    const key = row.event_id && pair.every(Boolean)
+      ? JSON.stringify([row.event_id, row.event_date, pair.sort(), row.category, row.period || 'full_fight', selection])
+      : group.key;
+    if (!selections.has(key)) selections.set(key, []);
+    selections.get(key).push(...group.versions.map(version => ({...version,
+      recommendation_source: version.category === 'Method' ? 'Method model'
+        : version.experimental ? 'Duration model' : version.official ? 'Locked pick' : 'Recorded pick',
+    })));
+  }
+  return [...selections].map(([key, versions]) => {
+    versions.sort((a, b) => String(a.observed_at_utc || '').localeCompare(String(b.observed_at_utc || '')));
+    // Prefer the frozen performance-tracking pick for the summary, with the
+    // other sources available below. Neither source is a profitability rating.
+    const latest = versions.filter(row => row.official).at(-1) || versions.at(-1);
+    return {key, versions, latest};
+  });
 }
 
 function partitionMarketRecommendations(groups, nowMs = Date.now()) {
@@ -3356,13 +3383,14 @@ function partitionMarketRecommendations(groups, nowMs = Date.now()) {
 }
 
 function renderMarketRecommendation({ key, versions, latest: bet }) {
+  const sources = [...new Set(versions.map(version => version.recommendation_source))];
   const details = element('details', 'market-pick');
   details.dataset.category = bet.category;
   details.open = Boolean(state.openPaperDetails?.[key]);
   const summary = element('summary', 'market-pick-summary');
   const fight = element('div', 'market-pick-fight');
   appendText(fight, 'strong', '', `${bet.fighter_name || 'Fighter unavailable'} vs ${bet.opponent_name || 'Opponent unavailable'}`);
-  appendText(fight, 'span', '', `${bet.selection} · ${bet.category === 'Method' ? 'Method · experimental' : bet.category === 'Moneyline' ? 'Fight winner' : bet.experimental ? 'Round total · experimental' : 'Round total'}`);
+  appendText(fight, 'span', '', `${bet.selection} · ${bet.category === 'Method' ? 'Method' : bet.category === 'Moneyline' ? 'Fight winner' : 'Round total'} · ${sources.length > 1 ? `${sources.length} sources` : bet.recommendation_source}`);
   const price = element('div', 'market-pick-price');
   appendText(price, 'small', '', 'Recorded price');
   appendText(price, 'strong', '', `${formatOdds(bet.offered_moneyline)} · ${bet.target_book}`);
@@ -3373,17 +3401,21 @@ function renderMarketRecommendation({ key, versions, latest: bet }) {
   const body = element('div', 'details-body');
   appendText(body, 'p', 'section-note', `Pick recorded ${formatTimestamp(bet.observed_at_utc)} · estimated chance ${formatPercent(bet.estimated_win_probability)}. The displayed price is the recorded quote, not a live offer.`);
   if (status === 'Void') appendText(body, 'p', 'section-note', 'Void: this pick is not counted as correct or incorrect.');
+  if (sources.includes('Locked pick')) appendText(body, 'p', 'section-note', 'Locked pick means the selection was frozen for performance tracking. It does not mean the strategy has demonstrated a profit.');
+  if (sources.includes('Duration model') || sources.includes('Method model')) appendText(body, 'p', 'section-note', 'Model picks are tracked to measure whether their estimated edge produces a profit. Profitability has not been established.');
+  if (sources.length > 1) appendText(body, 'p', 'section-note', 'Multiple sources selected this same bet. Their estimates are shown separately below; this counts as one pick, not additional stake.');
   if (bet.experimental) {
     const profit = finite(bet.unit_profit);
-    appendText(body, 'p', 'section-note', `Independent totals experiment · 1 unit per pick${profit !== null ? ` · result ${profit > 0 ? '+' : ''}${profit.toFixed(2)} units` : ''}.`);
+    appendText(body, 'p', 'section-note', `Duration-model tracking · 1 unit per pick${profit !== null ? ` · result ${profit > 0 ? '+' : ''}${profit.toFixed(2)} units` : ''}.`);
   }
   if (versions.length > 1) {
-    const history = element('details', 'market-pick-history'); history.append(element('summary', '', 'Price history'));
-    const table = performanceTable(['Recorded', 'Sportsbook', 'Price']);
+    const history = element('details', 'market-pick-history'); history.append(element('summary', '', 'Sources and price history'));
+    const columns = ['Source', 'Recorded', 'Estimated chance', 'Sportsbook', 'Price', 'Result'];
+    const table = performanceTable(columns);
     versions.forEach(version => {
       const row = element('tr');
-      [formatTimestamp(version.observed_at_utc), version.target_book, formatOdds(version.offered_moneyline)]
-        .forEach((value, index) => appendPerformanceCell(row, ['Recorded', 'Sportsbook', 'Price'][index], value));
+      [version.recommendation_source, formatTimestamp(version.observed_at_utc), formatPercent(version.estimated_win_probability), version.target_book, formatOdds(version.offered_moneyline), recordedPaperStatus(version)]
+        .forEach((value, index) => appendPerformanceCell(row, columns[index], value));
       table.body.append(row);
     });
     history.append(table.wrap); body.append(history);

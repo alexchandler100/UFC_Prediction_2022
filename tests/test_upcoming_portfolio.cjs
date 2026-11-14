@@ -204,3 +204,38 @@ test('total model experiment preserves names, book filtering and resolved result
   assert.equal(sandbox.marketRecommendationGroups(null,null,null,null,new Set(['Other']),report).length,0);
   assert.equal(sandbox.marketRecommendationGroups(null,null,null,null,null,{...report,execution_enabled:true}).length,0);
 });
+
+test('same total from locked and model sources is one pick with separate estimates', () => {
+  const official = {official: true, record_id: 'locked', event_id: 'card', event_date: '2026-11-14',
+    fighter_id: 'mckinney', opponent_id: 'miller', category: 'Total rounds', selection: 'Over 1.5 rounds',
+    fighter_name: 'Terrance McKinney', opponent_name: 'Jim Miller', target_book: 'A', offered_moneyline: 330,
+    estimated_win_probability: .2473, published_at_utc: '2026-11-13T18:18:00Z', status: 'pending'};
+  const model = {decision_sha256: 'model', event_id: 'card', event_date: '2026-11-14',
+    matchup_fighter_id: 'miller', matchup_opponent_id: 'mckinney', selection: 'Over 1.50 rounds',
+    book: 'B', moneyline: 300, probability: .687, expected_return: 1.748,
+    observed_at_utc: '2026-11-13T19:00:00Z', period: 'full_fight'};
+  const performance = {records: [official]};
+  const totals = {paper_only: true, execution_enabled: false, recommendations: [model]};
+  const original = JSON.stringify({performance, totals});
+  const groups = sandbox.marketRecommendationGroups(null,null,performance,null,null,totals);
+  assert.equal(groups.length, 1);
+  assert.equal(groups[0].latest.recommendation_source, 'Locked pick');
+  assert.equal(groups[0].latest.estimated_win_probability, .2473);
+  assert.deepEqual(Array.from(groups[0].versions, r=>r.estimated_win_probability), [.2473,.687]);
+  assert.equal(groups[0].versions[1].recommendation_source, 'Duration model');
+  assert.equal(JSON.stringify({performance, totals}), original);
+  const filtered = sandbox.marketRecommendationGroups(null,null,performance,null,new Set(['B']),totals);
+  assert.equal(filtered.length, 1);
+  assert.equal(filtered[0].latest.recommendation_source, 'Duration model');
+  assert.equal(filtered[0].versions.length, 1);
+  for (const change of [{selection:'Under 1.5 rounds'}, {selection:'Over 2.5 rounds'},
+    {event_id:'another-card'}, {event_date:'2026-12-12'}, {period:'round_1'}]) {
+    const different = {...totals,recommendations:[{...model,...change}]};
+    assert.equal(sandbox.marketRecommendationGroups(null,null,performance,null,null,different).length,2);
+  }
+  official.status = 'won';
+  model.settlement_status = 'win';
+  const settled = sandbox.marketRecommendationGroups(null,null,performance,null,null,totals);
+  assert.equal(settled.length,1);
+  assert.equal(sandbox.partitionMarketRecommendations(settled,Date.parse('2026-11-15')).resolved.length,1);
+});
