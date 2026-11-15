@@ -86,22 +86,22 @@
         "unresolved_participant_occurrences": 1103
       },
       {
-        "bouts": 561,
-        "events": 47,
+        "bouts": 569,
+        "events": 48,
         "first_event_date": "2024-02-23",
-        "last_event_date": "2026-11-07",
+        "last_event_date": "2026-11-14",
         "promotion": "Cage Warriors",
         "status": "collected_research_only",
-        "unresolved_participant_occurrences": 1112
+        "unresolved_participant_occurrences": 1128
       },
       {
-        "bouts": 1401,
-        "events": 125,
+        "bouts": 1413,
+        "events": 126,
         "first_event_date": "2022-01-14",
-        "last_event_date": "2026-10-30",
+        "last_event_date": "2026-11-13",
         "promotion": "LFA",
         "status": "collected_research_only",
-        "unresolved_participant_occurrences": 2723
+        "unresolved_participant_occurrences": 2747
       },
       {
         "bouts": 0,
@@ -131,10 +131,10 @@
         "unresolved_participant_occurrences": 266
       }
     ],
-    "records": 6971
+    "records": 6991
   },
   "coverage_note": "A dataset being stored does not mean production uses it. Winner, outcome and simulation models have different contracts. Historical results, post-fight stats, and later market prices must not enter earlier forecasts.",
-  "data_through": "2026-11-07",
+  "data_through": "2026-11-14",
   "evaluation_rule": "Use all valid chronological coverage; select settings on earlier fights, test on later untouched cards, and compare probability quality and price-matched returns with the market. No automatic promotion.",
   "external_history_enabled": false,
   "external_history_records_available": 10448,
@@ -225,8 +225,8 @@
   "feature_count": 82,
   "layoff_contract": "For this point-in-time feature contract: log(1+days) per fighter, capped at five years, then fighter minus opponent. No recorded history uses two years plus has_history. This is time since the latest replayed source fight, not necessarily the latest MMA fight anywhere.",
   "layoff_feature_present": true,
-  "model_id": "bb969e509c76ca69c4b2",
-  "model_sha256": "980194b7f18bb25e95998fc4dda6e66e9139190c584c74e9f79a6e1cf0e25b8c",
+  "model_id": "3e505c53e23d6aa2a6a2",
+  "model_sha256": "eb472549ef12842a2281cb707de79639ce138435a2a0b65529847dc4f6e3b8eb",
   "model_version": "point-in-time-elo-logistic-v2",
   "next_feature_candidates": [
     {
@@ -397,8 +397,8 @@
       "sha256": "bd993561ef4af4ada404e09e1bf3058cfca99a6426eb98431852d35502fe52b8"
     }
   ],
-  "training_fights": 4992,
-  "training_window_start": "2016-11-12",
+  "training_fights": 4994,
+  "training_window_start": "2016-11-19",
   "uncertainty_scope": {
     "production_winner": "zero-intercept L2 logistic with symmetric logit calibration",
     "published_bayesian_winner": {

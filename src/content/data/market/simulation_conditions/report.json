@@ -61,17 +61,17 @@
       "brier_difference_vs_market": {
         "model": {
           "card_bootstrap_95": [
-            -0.02616477335474508,
-            0.03723970218261151
+            -0.018480283494408212,
+            0.038776574047251794
           ],
-          "difference": 0.00686713444595638
+          "difference": 0.01189551929536431
         },
         "simulation": {
           "card_bootstrap_95": [
-            -0.021899855982825026,
-            0.11575806274390942
+            -0.00540828073126609,
+            0.13330393859491688
           ],
-          "difference": 0.05072156725335358
+          "difference": 0.07283549903982126
         }
       },
       "condition": "all",
@@ -81,125 +81,125 @@
       "paper_returns": {
         "market": [
           {
-            "bets": 5,
-            "fights_with_prices": 49,
-            "profit_units": -5,
+            "bets": 6,
+            "fights_with_prices": 57,
+            "profit_units": -6,
             "return_per_unit": -1.0,
-            "risk_units": 5,
+            "risk_units": 6,
             "winning_payout_reduction": 0
           },
           {
-            "bets": 5,
-            "fights_with_prices": 49,
-            "profit_units": -5,
+            "bets": 6,
+            "fights_with_prices": 57,
+            "profit_units": -6,
             "return_per_unit": -1.0,
-            "risk_units": 5,
+            "risk_units": 6,
             "winning_payout_reduction": 0.02
           },
           {
-            "bets": 5,
-            "fights_with_prices": 49,
-            "profit_units": -5,
+            "bets": 6,
+            "fights_with_prices": 57,
+            "profit_units": -6,
             "return_per_unit": -1.0,
-            "risk_units": 5,
+            "risk_units": 6,
             "winning_payout_reduction": 0.05
           }
         ],
         "model": [
           {
-            "bets": 33,
-            "fights_with_prices": 49,
-            "profit_units": -2.634033498101724,
-            "return_per_unit": -0.07981919691217346,
-            "risk_units": 33,
+            "bets": 37,
+            "fights_with_prices": 57,
+            "profit_units": -5.10771770862804,
+            "return_per_unit": -0.1380464245575146,
+            "risk_units": 37,
             "winning_payout_reduction": 0
           },
           {
-            "bets": 33,
-            "fights_with_prices": 49,
-            "profit_units": -2.981352828139691,
-            "return_per_unit": -0.09034402509514215,
-            "risk_units": 33,
+            "bets": 37,
+            "fights_with_prices": 57,
+            "profit_units": -5.4655633544554805,
+            "return_per_unit": -0.14771792849879678,
+            "risk_units": 37,
             "winning_payout_reduction": 0.02
           },
           {
-            "bets": 33,
-            "fights_with_prices": 49,
-            "profit_units": -3.5023318231966387,
-            "return_per_unit": -0.1061312673695951,
-            "risk_units": 33,
+            "bets": 37,
+            "fights_with_prices": 57,
+            "profit_units": -6.002331823196639,
+            "return_per_unit": -0.16222518441071995,
+            "risk_units": 37,
             "winning_payout_reduction": 0.05
           }
         ],
         "simulation": [
           {
-            "bets": 39,
-            "fights_with_prices": 49,
-            "profit_units": -9.323715046078306,
-            "return_per_unit": -0.2390696165661104,
-            "risk_units": 39,
+            "bets": 45,
+            "fights_with_prices": 57,
+            "profit_units": -15.323715046078306,
+            "return_per_unit": -0.34052700102396233,
+            "risk_units": 45,
             "winning_payout_reduction": 0
           },
           {
-            "bets": 39,
-            "fights_with_prices": 49,
-            "profit_units": -9.677240745156737,
-            "return_per_unit": -0.248134378080942,
-            "risk_units": 39,
+            "bets": 45,
+            "fights_with_prices": 57,
+            "profit_units": -15.677240745156737,
+            "return_per_unit": -0.34838312767014973,
+            "risk_units": 45,
             "winning_payout_reduction": 0.02
           },
           {
-            "bets": 39,
-            "fights_with_prices": 49,
-            "profit_units": -10.207529293774389,
-            "return_per_unit": -0.2617315203531895,
-            "risk_units": 39,
+            "bets": 45,
+            "fights_with_prices": 57,
+            "profit_units": -16.20752929377439,
+            "return_per_unit": -0.3601673176394309,
+            "risk_units": 45,
             "winning_payout_reduction": 0.05
           }
         ]
       },
-      "pending_results": 9,
+      "pending_results": 0,
       "recorded_fights": 59,
       "review_sample_reached": false,
-      "scored_cards": 8,
-      "scored_fights": 49,
+      "scored_cards": 9,
+      "scored_fights": 57,
       "scores": {
         "market": {
-          "accuracy": 0.7142857142857143,
-          "brier": 0.22351689655705043,
-          "fights": 49,
-          "log_loss": 0.6355569709800875
+          "accuracy": 0.7368421052631579,
+          "brier": 0.214338718297686,
+          "fights": 57,
+          "log_loss": 0.6167613571317917
         },
         "model": {
-          "accuracy": 0.6326530612244898,
-          "brier": 0.2303840310030068,
-          "fights": 49,
-          "log_loss": 0.6536851400808121
+          "accuracy": 0.6491228070175439,
+          "brier": 0.2262342375930503,
+          "fights": 57,
+          "log_loss": 0.6453917916609121
         },
         "simulation": {
-          "accuracy": 0.5306122448979592,
-          "brier": 0.274238463810404,
-          "fights": 49,
-          "log_loss": 0.7575029837143405
+          "accuracy": 0.49122807017543857,
+          "brier": 0.28717421733750725,
+          "fights": 57,
+          "log_loss": 0.783868186388861
         }
       },
-      "void_results": 1
+      "void_results": 2
     },
     {
       "brier_difference_vs_market": {
         "model": {
           "card_bootstrap_95": [
-            0.01883236304222569,
-            0.09864653689483292
+            0.013668381546532219,
+            0.0940854333336593
           ],
-          "difference": 0.06569467220152703
+          "difference": 0.058138704981070655
         },
         "simulation": {
           "card_bootstrap_95": [
-            -0.07201933196211173,
-            -0.0013408973792419629
+            -0.05785048382280332,
+            0.0748457306059776
           ],
-          "difference": -0.03479690609752467
+          "difference": -0.0025102328723739242
         }
       },
       "condition": "substantial_relevant_history",
@@ -210,7 +210,7 @@
         "market": [
           {
             "bets": 0,
-            "fights_with_prices": 8,
+            "fights_with_prices": 9,
             "profit_units": 0,
             "return_per_unit": null,
             "risk_units": 0,
@@ -218,7 +218,7 @@
           },
           {
             "bets": 0,
-            "fights_with_prices": 8,
+            "fights_with_prices": 9,
             "profit_units": 0,
             "return_per_unit": null,
             "risk_units": 0,
@@ -226,7 +226,7 @@
           },
           {
             "bets": 0,
-            "fights_with_prices": 8,
+            "fights_with_prices": 9,
             "profit_units": 0,
             "return_per_unit": null,
             "risk_units": 0,
@@ -236,7 +236,7 @@
         "model": [
           {
             "bets": 5,
-            "fights_with_prices": 8,
+            "fights_with_prices": 9,
             "profit_units": -5,
             "return_per_unit": -1.0,
             "risk_units": 5,
@@ -244,7 +244,7 @@
           },
           {
             "bets": 5,
-            "fights_with_prices": 8,
+            "fights_with_prices": 9,
             "profit_units": -5,
             "return_per_unit": -1.0,
             "risk_units": 5,
@@ -252,7 +252,7 @@
           },
           {
             "bets": 5,
-            "fights_with_prices": 8,
+            "fights_with_prices": 9,
             "profit_units": -5,
             "return_per_unit": -1.0,
             "risk_units": 5,
@@ -261,54 +261,54 @@
         ],
         "simulation": [
           {
-            "bets": 4,
-            "fights_with_prices": 8,
-            "profit_units": -0.6956521739130436,
-            "return_per_unit": -0.1739130434782609,
-            "risk_units": 4,
+            "bets": 5,
+            "fights_with_prices": 9,
+            "profit_units": -1.6956521739130435,
+            "return_per_unit": -0.3391304347826087,
+            "risk_units": 5,
             "winning_payout_reduction": 0
           },
           {
-            "bets": 4,
-            "fights_with_prices": 8,
-            "profit_units": -0.7217391304347827,
-            "return_per_unit": -0.18043478260869567,
-            "risk_units": 4,
+            "bets": 5,
+            "fights_with_prices": 9,
+            "profit_units": -1.7217391304347827,
+            "return_per_unit": -0.3443478260869565,
+            "risk_units": 5,
             "winning_payout_reduction": 0.02
           },
           {
-            "bets": 4,
-            "fights_with_prices": 8,
-            "profit_units": -0.7608695652173914,
-            "return_per_unit": -0.19021739130434784,
-            "risk_units": 4,
+            "bets": 5,
+            "fights_with_prices": 9,
+            "profit_units": -1.7608695652173914,
+            "return_per_unit": -0.3521739130434783,
+            "risk_units": 5,
             "winning_payout_reduction": 0.05
           }
         ]
       },
-      "pending_results": 1,
+      "pending_results": 0,
       "recorded_fights": 9,
       "review_sample_reached": false,
-      "scored_cards": 5,
-      "scored_fights": 8,
+      "scored_cards": 6,
+      "scored_fights": 9,
       "scores": {
         "market": {
-          "accuracy": 0.75,
-          "brier": 0.25562796909222735,
-          "fights": 8,
-          "log_loss": 0.7100890594782037
+          "accuracy": 0.7777777777777778,
+          "brier": 0.23371637342287105,
+          "fights": 9,
+          "log_loss": 0.6619335044498309
         },
         "model": {
-          "accuracy": 0.375,
-          "brier": 0.3213226412937544,
-          "fights": 8,
-          "log_loss": 0.85503130974937
+          "accuracy": 0.4444444444444444,
+          "brier": 0.2918550784039417,
+          "fights": 9,
+          "log_loss": 0.7900663572806401
         },
         "simulation": {
-          "accuracy": 0.75,
-          "brier": 0.22083106299470268,
-          "fights": 8,
-          "log_loss": 0.6290078251438128
+          "accuracy": 0.6666666666666666,
+          "brier": 0.23120614055049712,
+          "fights": 9,
+          "log_loss": 0.6504749520149639
         }
       },
       "void_results": 0
@@ -317,17 +317,17 @@
       "brier_difference_vs_market": {
         "model": {
           "card_bootstrap_95": [
-            -0.043901648946309435,
-            0.03198381002179417
+            -0.03265180605717779,
+            0.03667537996986563
           ],
-          "difference": -0.00461140950635025
+          "difference": 0.0032249219792942485
         },
         "simulation": {
           "card_bootstrap_95": [
-            -0.019081836808300126,
-            0.14153799707054363
+            -0.0001113934781512276,
+            0.1474537315434874
           ],
-          "difference": 0.06740809863889052
+          "difference": 0.08696282377335765
         }
       },
       "condition": "substantial_relevant_history",
@@ -337,109 +337,109 @@
       "paper_returns": {
         "market": [
           {
-            "bets": 5,
-            "fights_with_prices": 41,
-            "profit_units": -5,
+            "bets": 6,
+            "fights_with_prices": 48,
+            "profit_units": -6,
             "return_per_unit": -1.0,
-            "risk_units": 5,
+            "risk_units": 6,
             "winning_payout_reduction": 0
           },
           {
-            "bets": 5,
-            "fights_with_prices": 41,
-            "profit_units": -5,
+            "bets": 6,
+            "fights_with_prices": 48,
+            "profit_units": -6,
             "return_per_unit": -1.0,
-            "risk_units": 5,
+            "risk_units": 6,
             "winning_payout_reduction": 0.02
           },
           {
-            "bets": 5,
-            "fights_with_prices": 41,
-            "profit_units": -5,
+            "bets": 6,
+            "fights_with_prices": 48,
+            "profit_units": -6,
             "return_per_unit": -1.0,
-            "risk_units": 5,
+            "risk_units": 6,
             "winning_payout_reduction": 0.05
           }
         ],
         "model": [
           {
-            "bets": 28,
-            "fights_with_prices": 41,
-            "profit_units": 2.365966501898276,
-            "return_per_unit": 0.08449880363922414,
-            "risk_units": 28,
+            "bets": 32,
+            "fights_with_prices": 48,
+            "profit_units": -0.10771770862803987,
+            "return_per_unit": -0.003366178394626246,
+            "risk_units": 32,
             "winning_payout_reduction": 0
           },
           {
-            "bets": 28,
-            "fights_with_prices": 41,
-            "profit_units": 2.018647171860309,
-            "return_per_unit": 0.0720945418521539,
-            "risk_units": 28,
+            "bets": 32,
+            "fights_with_prices": 48,
+            "profit_units": -0.46556335445548047,
+            "return_per_unit": -0.014548854826733765,
+            "risk_units": 32,
             "winning_payout_reduction": 0.02
           },
           {
-            "bets": 28,
-            "fights_with_prices": 41,
-            "profit_units": 1.4976681768033615,
-            "return_per_unit": 0.05348814917154863,
-            "risk_units": 28,
+            "bets": 32,
+            "fights_with_prices": 48,
+            "profit_units": -1.0023318231966385,
+            "return_per_unit": -0.03132286947489495,
+            "risk_units": 32,
             "winning_payout_reduction": 0.05
           }
         ],
         "simulation": [
           {
-            "bets": 35,
-            "fights_with_prices": 41,
-            "profit_units": -8.628062872165263,
-            "return_per_unit": -0.24651608206186465,
-            "risk_units": 35,
+            "bets": 40,
+            "fights_with_prices": 48,
+            "profit_units": -13.628062872165263,
+            "return_per_unit": -0.3407015718041316,
+            "risk_units": 40,
             "winning_payout_reduction": 0
           },
           {
-            "bets": 35,
-            "fights_with_prices": 41,
-            "profit_units": -8.955501614721957,
-            "return_per_unit": -0.25587147470634164,
-            "risk_units": 35,
+            "bets": 40,
+            "fights_with_prices": 48,
+            "profit_units": -13.955501614721957,
+            "return_per_unit": -0.3488875403680489,
+            "risk_units": 40,
             "winning_payout_reduction": 0.02
           },
           {
-            "bets": 35,
-            "fights_with_prices": 41,
-            "profit_units": -9.446659728556998,
-            "return_per_unit": -0.2699045636730571,
-            "risk_units": 35,
+            "bets": 40,
+            "fights_with_prices": 48,
+            "profit_units": -14.446659728556998,
+            "return_per_unit": -0.36116649321392497,
+            "risk_units": 40,
             "winning_payout_reduction": 0.05
           }
         ]
       },
-      "pending_results": 8,
+      "pending_results": 0,
       "recorded_fights": 50,
       "review_sample_reached": false,
-      "scored_cards": 8,
-      "scored_fights": 41,
+      "scored_cards": 9,
+      "scored_fights": 48,
       "scores": {
         "market": {
-          "accuracy": 0.7073170731707317,
-          "brier": 0.21725132142823556,
-          "fights": 41,
-          "log_loss": 0.6210141244438696
+          "accuracy": 0.7291666666666666,
+          "brier": 0.21070540796171391,
+          "fights": 48,
+          "log_loss": 0.6082915795096594
         },
         "model": {
-          "accuracy": 0.6829268292682927,
-          "brier": 0.2126399119218853,
-          "fights": 41,
-          "log_loss": 0.6143980825845081
+          "accuracy": 0.6875,
+          "brier": 0.21393032994100816,
+          "fights": 48,
+          "log_loss": 0.6182653106072132
         },
         "simulation": {
-          "accuracy": 0.4878048780487805,
-          "brier": 0.2846594200671261,
-          "fights": 41,
-          "log_loss": 0.7825752097768821
+          "accuracy": 0.4583333333333333,
+          "brier": 0.29766823173507156,
+          "fights": 48,
+          "log_loss": 0.8088794178339663
         }
       },
-      "void_results": 1
+      "void_results": 2
     },
     {
       "brier_difference_vs_market": {
@@ -567,17 +567,17 @@
       "brier_difference_vs_market": {
         "model": {
           "card_bootstrap_95": [
-            -0.012633861427216652,
-            0.05026528898951053
+            -0.00509585075751958,
+            0.050918829006676394
           ],
-          "difference": 0.01547114466404853
+          "difference": 0.021299444464941752
         },
         "simulation": {
           "card_bootstrap_95": [
-            -0.02646303989741064,
-            0.09936150079944282
+            -0.008863359209680897,
+            0.11707569412128198
           ],
-          "difference": 0.037539988254427115
+          "difference": 0.05850691544446615
         }
       },
       "condition": "recent_history",
@@ -587,125 +587,125 @@
       "paper_returns": {
         "market": [
           {
-            "bets": 2,
-            "fights_with_prices": 40,
-            "profit_units": -2,
+            "bets": 3,
+            "fights_with_prices": 47,
+            "profit_units": -3,
             "return_per_unit": -1.0,
-            "risk_units": 2,
+            "risk_units": 3,
             "winning_payout_reduction": 0
           },
           {
-            "bets": 2,
-            "fights_with_prices": 40,
-            "profit_units": -2,
+            "bets": 3,
+            "fights_with_prices": 47,
+            "profit_units": -3,
             "return_per_unit": -1.0,
-            "risk_units": 2,
+            "risk_units": 3,
             "winning_payout_reduction": 0.02
           },
           {
-            "bets": 2,
-            "fights_with_prices": 40,
-            "profit_units": -2,
+            "bets": 3,
+            "fights_with_prices": 47,
+            "profit_units": -3,
             "return_per_unit": -1.0,
-            "risk_units": 2,
+            "risk_units": 3,
             "winning_payout_reduction": 0.05
           }
         ],
         "model": [
           {
-            "bets": 26,
-            "fights_with_prices": 40,
-            "profit_units": -6.914033498101724,
-            "return_per_unit": -0.2659243653116048,
-            "risk_units": 26,
+            "bets": 30,
+            "fights_with_prices": 47,
+            "profit_units": -9.38771770862804,
+            "return_per_unit": -0.3129239236209347,
+            "risk_units": 30,
             "winning_payout_reduction": 0
           },
           {
-            "bets": 26,
-            "fights_with_prices": 40,
-            "profit_units": -7.095752828139691,
-            "return_per_unit": -0.27291357031306507,
-            "risk_units": 26,
+            "bets": 30,
+            "fights_with_prices": 47,
+            "profit_units": -9.57996335445548,
+            "return_per_unit": -0.3193321118151827,
+            "risk_units": 30,
             "winning_payout_reduction": 0.02
           },
           {
-            "bets": 26,
-            "fights_with_prices": 40,
-            "profit_units": -7.36833182319664,
-            "return_per_unit": -0.28339737781525537,
-            "risk_units": 26,
+            "bets": 30,
+            "fights_with_prices": 47,
+            "profit_units": -9.868331823196641,
+            "return_per_unit": -0.3289443941065547,
+            "risk_units": 30,
             "winning_payout_reduction": 0.05
           }
         ],
         "simulation": [
           {
-            "bets": 30,
-            "fights_with_prices": 40,
-            "profit_units": -8.838497654773956,
-            "return_per_unit": -0.2946165884924652,
-            "risk_units": 30,
+            "bets": 35,
+            "fights_with_prices": 47,
+            "profit_units": -13.838497654773956,
+            "return_per_unit": -0.3953856472792559,
+            "risk_units": 35,
             "winning_payout_reduction": 0
           },
           {
-            "bets": 30,
-            "fights_with_prices": 40,
-            "profit_units": -9.081727701678478,
-            "return_per_unit": -0.30272425672261594,
-            "risk_units": 30,
+            "bets": 35,
+            "fights_with_prices": 47,
+            "profit_units": -14.081727701678478,
+            "return_per_unit": -0.40233507719081363,
+            "risk_units": 35,
             "winning_payout_reduction": 0.02
           },
           {
-            "bets": 30,
-            "fights_with_prices": 40,
-            "profit_units": -9.44657277203526,
-            "return_per_unit": -0.314885759067842,
-            "risk_units": 30,
+            "bets": 35,
+            "fights_with_prices": 47,
+            "profit_units": -14.44657277203526,
+            "return_per_unit": -0.4127592220581503,
+            "risk_units": 35,
             "winning_payout_reduction": 0.05
           }
         ]
       },
-      "pending_results": 8,
+      "pending_results": 0,
       "recorded_fights": 48,
       "review_sample_reached": false,
-      "scored_cards": 8,
-      "scored_fights": 40,
+      "scored_cards": 9,
+      "scored_fights": 47,
       "scores": {
         "market": {
-          "accuracy": 0.725,
-          "brier": 0.2262201238049535,
-          "fights": 40,
-          "log_loss": 0.6427223895752237
+          "accuracy": 0.7446808510638298,
+          "brier": 0.21611524996052198,
+          "fights": 47,
+          "log_loss": 0.6216757163654179
         },
         "model": {
-          "accuracy": 0.6,
-          "brier": 0.24169126846900202,
-          "fights": 40,
-          "log_loss": 0.6807766716072838
+          "accuracy": 0.6170212765957447,
+          "brier": 0.23741469442546373,
+          "fights": 47,
+          "log_loss": 0.6717468505762948
         },
         "simulation": {
-          "accuracy": 0.525,
-          "brier": 0.2637601120593806,
-          "fights": 40,
-          "log_loss": 0.7316800481768615
+          "accuracy": 0.48936170212765956,
+          "brier": 0.27462216540498813,
+          "fights": 47,
+          "log_loss": 0.7534393392219924
         }
       },
-      "void_results": 0
+      "void_results": 1
     },
     {
       "brier_difference_vs_market": {
         "model": {
           "card_bootstrap_95": [
-            -0.12898335706470554,
-            0.06303393605373074
+            -0.12515798308929482,
+            0.057167551234206145
           ],
-          "difference": -0.03137291096778749
+          "difference": -0.032302929001650604
         },
         "simulation": {
           "card_bootstrap_95": [
-            -0.07282804614967986,
-            0.23665635197016976
+            -0.016988046467917368,
+            0.272428209595687
           ],
-          "difference": 0.10930636280413619
+          "difference": 0.14017984193798885
         }
       },
       "condition": "recent_history",
@@ -716,7 +716,7 @@
         "market": [
           {
             "bets": 3,
-            "fights_with_prices": 9,
+            "fights_with_prices": 10,
             "profit_units": -3,
             "return_per_unit": -1.0,
             "risk_units": 3,
@@ -724,7 +724,7 @@
           },
           {
             "bets": 3,
-            "fights_with_prices": 9,
+            "fights_with_prices": 10,
             "profit_units": -3,
             "return_per_unit": -1.0,
             "risk_units": 3,
@@ -732,7 +732,7 @@
           },
           {
             "bets": 3,
-            "fights_with_prices": 9,
+            "fights_with_prices": 10,
             "profit_units": -3,
             "return_per_unit": -1.0,
             "risk_units": 3,
@@ -742,7 +742,7 @@
         "model": [
           {
             "bets": 7,
-            "fights_with_prices": 9,
+            "fights_with_prices": 10,
             "profit_units": 4.28,
             "return_per_unit": 0.6114285714285714,
             "risk_units": 7,
@@ -750,7 +750,7 @@
           },
           {
             "bets": 7,
-            "fights_with_prices": 9,
+            "fights_with_prices": 10,
             "profit_units": 4.1144,
             "return_per_unit": 0.5877714285714285,
             "risk_units": 7,
@@ -758,7 +758,7 @@
           },
           {
             "bets": 7,
-            "fights_with_prices": 9,
+            "fights_with_prices": 10,
             "profit_units": 3.8659999999999997,
             "return_per_unit": 0.5522857142857143,
             "risk_units": 7,
@@ -767,54 +767,54 @@
         ],
         "simulation": [
           {
-            "bets": 9,
-            "fights_with_prices": 9,
-            "profit_units": -0.4852173913043476,
-            "return_per_unit": -0.05391304347826084,
-            "risk_units": 9,
+            "bets": 10,
+            "fights_with_prices": 10,
+            "profit_units": -1.4852173913043476,
+            "return_per_unit": -0.14852173913043476,
+            "risk_units": 10,
             "winning_payout_reduction": 0
           },
           {
-            "bets": 9,
-            "fights_with_prices": 9,
-            "profit_units": -0.5955130434782614,
-            "return_per_unit": -0.06616811594202904,
-            "risk_units": 9,
+            "bets": 10,
+            "fights_with_prices": 10,
+            "profit_units": -1.5955130434782614,
+            "return_per_unit": -0.15955130434782613,
+            "risk_units": 10,
             "winning_payout_reduction": 0.02
           },
           {
-            "bets": 9,
-            "fights_with_prices": 9,
-            "profit_units": -0.7609565217391305,
-            "return_per_unit": -0.08455072463768117,
-            "risk_units": 9,
+            "bets": 10,
+            "fights_with_prices": 10,
+            "profit_units": -1.7609565217391305,
+            "return_per_unit": -0.17609565217391304,
+            "risk_units": 10,
             "winning_payout_reduction": 0.05
           }
         ]
       },
-      "pending_results": 1,
+      "pending_results": 0,
       "recorded_fights": 11,
       "review_sample_reached": false,
-      "scored_cards": 5,
-      "scored_fights": 9,
+      "scored_cards": 6,
+      "scored_fights": 10,
       "scores": {
         "market": {
-          "accuracy": 0.6666666666666666,
-          "brier": 0.2115025532330378,
-          "fights": 9,
-          "log_loss": 0.6037106661128157
+          "accuracy": 0.7,
+          "brier": 0.20598901948235784,
+          "fights": 10,
+          "log_loss": 0.5936638687337493
         },
         "model": {
-          "accuracy": 0.7777777777777778,
-          "brier": 0.1801296422652503,
-          "fights": 9,
-          "log_loss": 0.5332783332964932
+          "accuracy": 0.8,
+          "brier": 0.17368609048070724,
+          "fights": 10,
+          "log_loss": 0.5215230147586138
         },
         "simulation": {
-          "accuracy": 0.5555555555555556,
-          "brier": 0.320808916037174,
-          "fights": 9,
-          "log_loss": 0.8722715861031354
+          "accuracy": 0.5,
+          "brier": 0.3461688614203467,
+          "fights": 10,
+          "log_loss": 0.926883768073143
         }
       },
       "void_results": 1
@@ -1067,17 +1067,17 @@
       "brier_difference_vs_market": {
         "model": {
           "card_bootstrap_95": [
-            -0.02616477335474508,
-            0.03723970218261151
+            -0.018480283494408212,
+            0.038776574047251794
           ],
-          "difference": 0.00686713444595638
+          "difference": 0.01189551929536431
         },
         "simulation": {
           "card_bootstrap_95": [
-            -0.021899855982825026,
-            0.11575806274390942
+            -0.00540828073126609,
+            0.13330393859491688
           ],
-          "difference": 0.05072156725335358
+          "difference": 0.07283549903982126
         }
       },
       "condition": "narrow_simulation_range",
@@ -1087,109 +1087,109 @@
       "paper_returns": {
         "market": [
           {
-            "bets": 5,
-            "fights_with_prices": 49,
-            "profit_units": -5,
+            "bets": 6,
+            "fights_with_prices": 57,
+            "profit_units": -6,
             "return_per_unit": -1.0,
-            "risk_units": 5,
+            "risk_units": 6,
             "winning_payout_reduction": 0
           },
           {
-            "bets": 5,
-            "fights_with_prices": 49,
-            "profit_units": -5,
+            "bets": 6,
+            "fights_with_prices": 57,
+            "profit_units": -6,
             "return_per_unit": -1.0,
-            "risk_units": 5,
+            "risk_units": 6,
             "winning_payout_reduction": 0.02
           },
           {
-            "bets": 5,
-            "fights_with_prices": 49,
-            "profit_units": -5,
+            "bets": 6,
+            "fights_with_prices": 57,
+            "profit_units": -6,
             "return_per_unit": -1.0,
-            "risk_units": 5,
+            "risk_units": 6,
             "winning_payout_reduction": 0.05
           }
         ],
         "model": [
           {
-            "bets": 33,
-            "fights_with_prices": 49,
-            "profit_units": -2.634033498101724,
-            "return_per_unit": -0.07981919691217346,
-            "risk_units": 33,
+            "bets": 37,
+            "fights_with_prices": 57,
+            "profit_units": -5.10771770862804,
+            "return_per_unit": -0.1380464245575146,
+            "risk_units": 37,
             "winning_payout_reduction": 0
           },
           {
-            "bets": 33,
-            "fights_with_prices": 49,
-            "profit_units": -2.981352828139691,
-            "return_per_unit": -0.09034402509514215,
-            "risk_units": 33,
+            "bets": 37,
+            "fights_with_prices": 57,
+            "profit_units": -5.4655633544554805,
+            "return_per_unit": -0.14771792849879678,
+            "risk_units": 37,
             "winning_payout_reduction": 0.02
           },
           {
-            "bets": 33,
-            "fights_with_prices": 49,
-            "profit_units": -3.5023318231966387,
-            "return_per_unit": -0.1061312673695951,
-            "risk_units": 33,
+            "bets": 37,
+            "fights_with_prices": 57,
+            "profit_units": -6.002331823196639,
+            "return_per_unit": -0.16222518441071995,
+            "risk_units": 37,
             "winning_payout_reduction": 0.05
           }
         ],
         "simulation": [
           {
-            "bets": 39,
-            "fights_with_prices": 49,
-            "profit_units": -9.323715046078306,
-            "return_per_unit": -0.2390696165661104,
-            "risk_units": 39,
+            "bets": 45,
+            "fights_with_prices": 57,
+            "profit_units": -15.323715046078306,
+            "return_per_unit": -0.34052700102396233,
+            "risk_units": 45,
             "winning_payout_reduction": 0
           },
           {
-            "bets": 39,
-            "fights_with_prices": 49,
-            "profit_units": -9.677240745156737,
-            "return_per_unit": -0.248134378080942,
-            "risk_units": 39,
+            "bets": 45,
+            "fights_with_prices": 57,
+            "profit_units": -15.677240745156737,
+            "return_per_unit": -0.34838312767014973,
+            "risk_units": 45,
             "winning_payout_reduction": 0.02
           },
           {
-            "bets": 39,
-            "fights_with_prices": 49,
-            "profit_units": -10.207529293774389,
-            "return_per_unit": -0.2617315203531895,
-            "risk_units": 39,
+            "bets": 45,
+            "fights_with_prices": 57,
+            "profit_units": -16.20752929377439,
+            "return_per_unit": -0.3601673176394309,
+            "risk_units": 45,
             "winning_payout_reduction": 0.05
           }
         ]
       },
-      "pending_results": 9,
+      "pending_results": 0,
       "recorded_fights": 59,
       "review_sample_reached": false,
-      "scored_cards": 8,
-      "scored_fights": 49,
+      "scored_cards": 9,
+      "scored_fights": 57,
       "scores": {
         "market": {
-          "accuracy": 0.7142857142857143,
-          "brier": 0.22351689655705043,
-          "fights": 49,
-          "log_loss": 0.6355569709800875
+          "accuracy": 0.7368421052631579,
+          "brier": 0.214338718297686,
+          "fights": 57,
+          "log_loss": 0.6167613571317917
         },
         "model": {
-          "accuracy": 0.6326530612244898,
-          "brier": 0.2303840310030068,
-          "fights": 49,
-          "log_loss": 0.6536851400808121
+          "accuracy": 0.6491228070175439,
+          "brier": 0.2262342375930503,
+          "fights": 57,
+          "log_loss": 0.6453917916609121
         },
         "simulation": {
-          "accuracy": 0.5306122448979592,
-          "brier": 0.274238463810404,
-          "fights": 49,
-          "log_loss": 0.7575029837143405
+          "accuracy": 0.49122807017543857,
+          "brier": 0.28717421733750725,
+          "fights": 57,
+          "log_loss": 0.783868186388861
         }
       },
-      "void_results": 1
+      "void_results": 2
     },
     {
       "brier_difference_vs_market": {

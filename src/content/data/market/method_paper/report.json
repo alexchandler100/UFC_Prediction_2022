@@ -1,5 +1,6 @@
 {
   "card_profits": {
+    "402ea3b5ee233852": -1.0,
     "638cfec7ec559d6e": -12.0,
     "7e654edcddd71550": 1.5,
     "8a0a35e7c74bebcc": 4.0,
@@ -9,7 +10,7 @@
   "decisions_sha256": "287cff2518ef06126acc968a3f9e8a9084b42751abfe092a58933e790af9bfbb",
   "execution_enabled": false,
   "frozen_fights": 48,
-  "generated_at_utc": "2026-11-14T18:27:53.396169+00:00",
+  "generated_at_utc": "2026-11-15T15:54:20.004012+00:00",
   "no_bet_baseline_profit_units": 0,
   "paper_only": true,
   "paper_recommendations": 42,
@@ -28,7 +29,7 @@
     "special_results": "unknown_or_ambiguous_results_remain_pending_review",
     "version": "prospective-method-flat-stake-v1"
   },
-  "profit_units": -14.620000000000001,
+  "profit_units": -15.620000000000001,
   "recommendations": [
     {
       "book": "FanDuel",
@@ -722,15 +723,15 @@
       "observed_at_utc": "2026-10-28T17:27:37.273705Z",
       "opponent_name": "Amanda Nunes",
       "probability": 0.06077189614950638,
-      "profit_units": null,
+      "profit_units": 0,
       "quote_id": "78c5fb4ec8b2fc5fa3e805e4ba2decc7be504575d266a5205eb39f0c677b1c4e",
       "risk_units": 1,
       "selection": "Amanda Nunes by SUBMISSION",
-      "settlement_status": null,
+      "settlement_status": "void",
       "side": "opponent",
       "source_payload_sha256": "6e345ff4a15bcbacec23ff508c96dfa24cb94c02f04cb4925a591d7b6d5ebb00",
       "source_quote_updated_at_utc": null,
-      "status": "price_expired"
+      "status": "awaiting_result"
     },
     {
       "book": "FanDuel",
@@ -1154,20 +1155,20 @@
       "observed_at_utc": "2026-10-28T17:27:37.273705Z",
       "opponent_name": "Josh Hokit",
       "probability": 0.10832017608834645,
-      "profit_units": null,
+      "profit_units": -1,
       "quote_id": "2dcddac1efc851da988af0de48aa6818383763a2c5ca09be951d8b4049f2023a",
       "risk_units": 1,
       "selection": "Ciryl Gane by SUBMISSION",
-      "settlement_status": null,
+      "settlement_status": "loss",
       "side": "fighter",
       "source_payload_sha256": "6e345ff4a15bcbacec23ff508c96dfa24cb94c02f04cb4925a591d7b6d5ebb00",
       "source_quote_updated_at_utc": null,
-      "status": "price_expired"
+      "status": "awaiting_result"
     }
   ],
-  "return_per_unit": -0.3847368421052632,
-  "settled_fights": 46,
-  "settled_risk_units": 38,
+  "return_per_unit": -0.40051282051282056,
+  "settled_fights": 48,
+  "settled_risk_units": 39,
   "settlements": [
     {
       "decision_sha256": "c352716e001c280255e3c322b9d012b75a3af372c9e95d6a5d55b966d72fb665",
@@ -1719,6 +1720,30 @@
       "result_source_sha256": "4e8273846ea225293eacdaf2db341d63e0830c3d4e25a64d8473218fb5f1b532",
       "risk_units": 0,
       "settled_at_utc": "2026-10-25T14:48:49.920912+00:00",
+      "status": "void"
+    },
+    {
+      "decision_sha256": "b0c4acfe15dbe1c5da63b5652bfbc19cb073e4e4c6bc22137ec94d9f63c7be5a",
+      "event_id": "402ea3b5ee233852",
+      "fight_id": "30dbf1eceb2e1f8d",
+      "matchup_id": "matchup_a4a60769305e0c2af6babdc17fe00024b7cc83948a9480089765b3a90554ee8a",
+      "profit_units": -1,
+      "record_sha256": "98b1c78a3b5cad0a8b81720e154dea5d0a172ce5fee5c7503f34199df8a2f4a5",
+      "result_source_sha256": "94471aa8bd7247d9d7638e82ea312ddfb167749d10690553fdbbdd10316c1e00",
+      "risk_units": 1,
+      "settled_at_utc": "2026-11-15T15:54:20.004012+00:00",
+      "status": "loss"
+    },
+    {
+      "decision_sha256": "3a2c6f52fb0cdd39b70ebc5e06a3f0d9ace1bc773218d9c9ba1b7b00b3b175f1",
+      "event_id": "402ea3b5ee233852",
+      "fight_id": "32112fd0aaf7fba2",
+      "matchup_id": "matchup_dd0dd1aab601c942ec922449c900ddd8ca8194b84663a44a878b3b023da6caa6",
+      "profit_units": 0,
+      "record_sha256": "6e7a09ca03a007e762399c254717716147740ba9752e7a359d3f969e6e2eef1c",
+      "result_source_sha256": "94471aa8bd7247d9d7638e82ea312ddfb167749d10690553fdbbdd10316c1e00",
+      "risk_units": 0,
+      "settled_at_utc": "2026-11-15T15:54:20.004012+00:00",
       "status": "void"
     }
   ]
