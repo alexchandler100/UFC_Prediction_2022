@@ -1,7 +1,7 @@
 {
-  "approved_ufcstats_identity_links": 496,
+  "approved_ufcstats_identity_links": 596,
   "conflicting_identity_links": 0,
-  "generated_at_utc": "2026-11-15T15:53:00.821130+00:00",
+  "generated_at_utc": "2026-11-16T02:45:43.979212+00:00",
   "license": "CC BY-SA 4.0; source revision attribution retained on every bout",
   "limitations": [
     "This is a secondary-source research ledger; coverage is not claimed complete.",
@@ -34,13 +34,13 @@
       "unresolved_participant_occurrences": 268
     },
     {
-      "bouts": 210,
-      "events": 20,
+      "bouts": 223,
+      "events": 21,
       "first_event_date": "2026-02-07",
-      "last_event_date": "2026-10-16",
+      "last_event_date": "2026-11-14",
       "promotion": "PFL",
       "status": "collected_research_only",
-      "unresolved_participant_occurrences": 327
+      "unresolved_participant_occurrences": 344
     },
     {
       "bouts": 467,
@@ -133,13 +133,13 @@
       "unresolved_participant_occurrences": 830
     },
     {
-      "bouts": 354,
-      "events": 28,
+      "bouts": 454,
+      "events": 36,
       "first_event_date": "2026-01-24",
-      "last_event_date": "2026-10-24",
+      "last_event_date": "2026-11-14",
       "promotion": "UFC",
       "status": "collected_research_only",
-      "unresolved_participant_occurrences": 266
+      "unresolved_participant_occurrences": 358
     }
   ],
   "sources": {
@@ -217,8 +217,8 @@
     },
     "2022 in Invicta FC": {
       "promotion": "Invicta",
-      "reason": "HTTP 429; stopped all requests; retry_after=1",
-      "status": "deferred"
+      "reason": "missingtitle",
+      "status": "unavailable"
     },
     "2022 in Konfrontacja Sztuk Walki": {
       "added": 105,
@@ -1824,9 +1824,9 @@
       "page_id": 82454243,
       "promotion": "PFL",
       "rejected": 0,
-      "retrieved_at_utc": "2026-11-02T02:42:56.535795+00:00",
+      "retrieved_at_utc": "2026-11-16T02:44:30.467830+00:00",
       "revision": 1353630077,
-      "snapshot_sha256": "4992516b0bc1b4cbc5b7487de5ce483b6203dd4552f0fdef619dfbef63e7bb51",
+      "snapshot_sha256": "2dcf426e86170925fa688b10ffed24097767c24eab40307ead552d8b594a576a",
       "status": "imported"
     },
     "PFL Africa 2 (2026)": {
@@ -1835,9 +1835,9 @@
       "page_id": 82922332,
       "promotion": "PFL",
       "rejected": 0,
-      "retrieved_at_utc": "2026-11-02T02:43:02.913903+00:00",
+      "retrieved_at_utc": "2026-11-16T02:44:36.968514+00:00",
       "revision": 1379634904,
-      "snapshot_sha256": "b34dc52efa86dc40793bd85eb692fcebc7acc31507dfc48bd37ece73a71ca558",
+      "snapshot_sha256": "03dd94b2d8178d0a6251f906d05f31e8dadd8acfb0d922ff3d0c259564fba6f3",
       "status": "imported"
     },
     "PFL Africa 3 (2026)": {
@@ -1846,9 +1846,9 @@
       "page_id": 84339765,
       "promotion": "PFL",
       "rejected": 0,
-      "retrieved_at_utc": "2026-11-02T02:43:09.281783+00:00",
+      "retrieved_at_utc": "2026-11-16T02:44:43.653547+00:00",
       "revision": 1380043065,
-      "snapshot_sha256": "ae5fbf0f85bdc6fa23bba78d3966a9903bb483a6efe0e2276bd1c7dd4d5b279f",
+      "snapshot_sha256": "2ebadfee564b976d44eea289e48cf768509eb0d3aba4405170613f2a9cf390bc",
       "status": "imported"
     },
     "PFL Austin: Eblen vs. Kasanganay 2": {
@@ -1915,6 +1915,17 @@
       "retrieved_at_utc": "2026-10-15T01:46:18.916573+00:00",
       "revision": 1370348109,
       "snapshot_sha256": "9746325559214df202b9d94c2d92e6b5b4d38ca874d399aa2994d927936e3e77",
+      "status": "imported"
+    },
+    "PFL Dubai: Nemkov vs. Bilostenniy": {
+      "added": 13,
+      "event_pages": [],
+      "page_id": 84181132,
+      "promotion": "PFL",
+      "rejected": 0,
+      "retrieved_at_utc": "2026-11-16T02:44:50.187311+00:00",
+      "revision": 1385852954,
+      "snapshot_sha256": "cc41fa3fcb6fbdb401179935e4e2ef957ec7299fc4f9ce8d9a67bb3f594a6a85",
       "status": "imported"
     },
     "PFL Dubai: Nurmagomedov vs. Davis": {
@@ -2214,6 +2225,17 @@
       "snapshot_sha256": "7e436af81bd81e5338c29d0e4ab5a556adf664b533b7c4b03f559e4b5dfef235",
       "status": "imported"
     },
+    "UFC 334": {
+      "added": 12,
+      "event_pages": [],
+      "page_id": 84042054,
+      "promotion": "UFC",
+      "rejected": 0,
+      "retrieved_at_utc": "2026-11-16T02:44:56.836394+00:00",
+      "revision": 1385886050,
+      "snapshot_sha256": "7b544c6ce71d7a17934ddea164e73194e1ab63031031b09cb3c9719e74abd17a",
+      "status": "imported"
+    },
     "UFC Fight Night 266": {
       "added": 13,
       "event_pages": [],
@@ -2411,12 +2433,89 @@
       "revision": 1380845267,
       "snapshot_sha256": "d336a83e95afaf53419ba48d7d43b66c9084b29305b4289576e27958150617f3",
       "status": "imported"
+    },
+    "UFC Fight Night 284": {
+      "added": 12,
+      "event_pages": [],
+      "page_id": 83603223,
+      "promotion": "UFC",
+      "rejected": 0,
+      "retrieved_at_utc": "2026-11-16T02:45:03.448021+00:00",
+      "revision": 1370020912,
+      "snapshot_sha256": "2d659be8561c64947f4bce369b4cf475edbc4c6c9372ae3b8626549ef311462a",
+      "status": "imported"
+    },
+    "UFC Fight Night 285": {
+      "added": 13,
+      "event_pages": [],
+      "page_id": 83560050,
+      "promotion": "UFC",
+      "rejected": 0,
+      "retrieved_at_utc": "2026-11-16T02:45:10.057327+00:00",
+      "revision": 1376515868,
+      "snapshot_sha256": "528048660c5304d1ce4626c878316bc89cd0be1ca923648d10ebc26e501b2f52",
+      "status": "imported"
+    },
+    "UFC Fight Night 286": {
+      "added": 13,
+      "event_pages": [],
+      "page_id": 83393715,
+      "promotion": "UFC",
+      "rejected": 0,
+      "retrieved_at_utc": "2026-11-16T02:45:16.724931+00:00",
+      "revision": 1379369202,
+      "snapshot_sha256": "c4af009b3c2e4d149fafa6e3ef84f97058a65a693e2800ea371eb2fee27abafb",
+      "status": "imported"
+    },
+    "UFC Fight Night 287": {
+      "added": 14,
+      "event_pages": [],
+      "page_id": 83413060,
+      "promotion": "UFC",
+      "rejected": 0,
+      "retrieved_at_utc": "2026-11-16T02:45:23.362301+00:00",
+      "revision": 1378577279,
+      "snapshot_sha256": "9e7289764ed8fb35ba26853cb7f1d80a2d41959b618c2c1c7fb3abdf3c6d1d27",
+      "status": "imported"
+    },
+    "UFC Fight Night 288": {
+      "added": 13,
+      "event_pages": [],
+      "page_id": 83674360,
+      "promotion": "UFC",
+      "rejected": 0,
+      "retrieved_at_utc": "2026-11-16T02:45:30.015413+00:00",
+      "revision": 1383257098,
+      "snapshot_sha256": "fae9d4e303534e69b813f623e466bba1073847cf60452856791f0a924618f8ee",
+      "status": "imported"
+    },
+    "UFC Fight Night 289": {
+      "added": 12,
+      "event_pages": [],
+      "page_id": 83718324,
+      "promotion": "UFC",
+      "rejected": 0,
+      "retrieved_at_utc": "2026-11-16T02:45:36.664692+00:00",
+      "revision": 1383318022,
+      "snapshot_sha256": "3432b69a41bed329e3933068361fb257c5115d66aafb85dbd387acf2de11298d",
+      "status": "imported"
+    },
+    "UFC Fight Night 290": {
+      "added": 11,
+      "event_pages": [],
+      "page_id": 83736532,
+      "promotion": "UFC",
+      "rejected": 0,
+      "retrieved_at_utc": "2026-11-16T02:45:43.310258+00:00",
+      "revision": 1381316906,
+      "snapshot_sha256": "64d145ede748b50b4459ae1b244575f8a7f119c3dbe5b2c99bc2571845cba1ea",
+      "status": "imported"
     }
   },
   "validation": {
-    "observations": 6991,
+    "observations": 7104,
     "rejections": 6117,
-    "snapshots": 235,
+    "snapshots": 247,
     "sources": 1
   },
   "version": "revision-pinned-professional-mma-results-v1"
