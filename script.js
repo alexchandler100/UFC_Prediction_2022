@@ -4062,6 +4062,93 @@ function performanceDisplayRows(rows, showZeroStake = false) {
     || String(b.settled_at_utc || '').localeCompare(String(a.settled_at_utc || '')));
 }
 
+function performanceBetSetKey(rows, includeStakes = false) {
+  // Snapshot IDs and entry labels can differ even when the actual bets do not.
+  // This compares settled history only, not future or pending recommendations.
+  return JSON.stringify(rows.filter(row => Number(row.stake) > 0).map(row => {
+    const bet = [row.event_id, row.event_date, [row.fighter_id, row.opponent_id].sort(),
+      row.category, String(row.selection || "").trim().toLowerCase(), row.target_book,
+      Number(row.offered_moneyline), row.status];
+    if (includeStakes) bet.push(Number(Number(row.stake).toFixed(8)), Number(Number(row.profit).toFixed(8)));
+    return JSON.stringify(bet);
+  }).sort());
+}
+
+function groupPerformancePresets(presets) {
+  const groups = new Map();
+  for (const preset of presets) {
+    // Equal final profits alone do not mean equal bets or stakes.
+    const key = JSON.stringify([preset.outcomeKey, Number(preset.endingBankroll.toFixed(8))]);
+    if (!groups.has(key)) groups.set(key, {id: preset.id, betSetKey: preset.betSetKey,
+      profit: preset.profit, endingBankroll: preset.endingBankroll, funded: preset.funded, members: []});
+    groups.get(key).members.push(preset);
+  }
+  return Array.from(groups.values()).sort((a, b) => b.profit - a.profit || a.id.localeCompare(b.id));
+}
+
+function performanceProfitScale(groups) {
+  const min = Math.min(0, ...groups.map(group => group.profit));
+  const max = Math.max(0, ...groups.map(group => group.profit));
+  const span = max - min || 1;
+  return {min, max, zero: (0 - min) / span * 100,
+    position: value => (value - min) / span * 100};
+}
+
+function renderPerformancePresetChart() {
+  const container = $("#performance-preset-chart");
+  if (container.hidden) return;
+  const opened = new Set(Array.from(container.querySelectorAll("details[open]"), row => row.dataset.groupId));
+  container.replaceChildren();
+  const cache = state.performancePresetCache;
+  if (!cache) { appendText(container, "p", "section-note", "No performance history available."); return; }
+  const groups = groupPerformancePresets(cache.presets);
+  const selected = $("#performance-presets").value;
+  appendText(container, "h3", "", "Profit by unique betting outcome");
+  appendText(container, "p", "section-note", `${cache.presets.length} settings combinations → ${groups.length} distinct outcomes. Same settled bets, prices and stakes share one row; different stake sizes stay separate.`);
+  const scale = performanceProfitScale(groups);
+  const legend = element("div", "preset-chart-legend");
+  appendText(legend, "span", "", `${formatCurrency(scale.min)} loss`);
+  appendText(legend, "span", "", `Profit from ${formatCurrency(cache.initial)} · $0 = break-even`);
+  appendText(legend, "span", "", `${formatCurrency(scale.max)} profit`);
+  container.append(legend);
+  const list = element("div", "preset-outcome-list");
+  groups.forEach((group, index) => {
+    const details = element("details", "preset-outcome");
+    details.dataset.groupId = group.id;
+    details.open = opened.has(group.id);
+    const isSelected = group.members.some(member => member.id === selected);
+    details.classList.toggle("is-selected", isSelected);
+    const summary = element("summary", "preset-outcome-summary");
+    const label = element("span", "preset-outcome-label");
+    const strategies = [...new Set(group.members.map(member => member.stakingLabel))];
+    appendText(label, "strong", "", `${index + 1}. ${group.funded ? strategies.join(" / ") : "No settled stakes"}`);
+    appendText(label, "small", "", `${group.funded} settled bets · ${group.members.length} preset${group.members.length === 1 ? '' : 's'}${isSelected ? ' · selected' : ''} · expand settings`);
+    const plot = element("span", "preset-profit-track");
+    plot.setAttribute("aria-hidden", "true");
+    const zero = element("span", "preset-profit-zero"); zero.style.left = `${scale.zero}%`;
+    const bar = element("span", `preset-profit-bar ${group.profit < 0 ? 'is-loss' : 'is-profit'}`);
+    bar.style.left = `${Math.min(scale.zero, scale.position(group.profit))}%`;
+    bar.style.width = `${Math.abs(scale.position(group.profit) - scale.zero)}%`;
+    plot.append(zero, bar);
+    const numbers = element("span", "preset-outcome-numbers");
+    appendText(numbers, "strong", group.profit < 0 ? 'is-loss' : 'is-profit', `${group.profit > 0 ? '+' : ''}${formatCurrency(group.profit)}`);
+    appendText(numbers, "small", "", `${formatCurrency(group.endingBankroll)} final`);
+    summary.append(label, plot, numbers);
+    const members = element("div", "preset-outcome-members");
+    group.members.forEach(member => {
+      const row = element("div", "preset-member");
+      appendText(row, "span", "", member.summary);
+      const button = element("button", "secondary-button", member.id === selected ? "Selected" : "Use settings");
+      button.type = "button";
+      button.disabled = member.id === selected;
+      button.addEventListener("click", () => { $("#performance-presets").value = member.id; applyPerformancePreset(); });
+      row.append(button); members.append(row);
+    });
+    details.append(summary, members); list.append(details);
+  });
+  container.append(list);
+}
+
 function rankPerformancePresets(records, initial, choices) {
   const presets = [];
   for (const market of choices.markets) {
@@ -4074,6 +4161,8 @@ function rankPerformancePresets(records, initial, choices) {
           id: JSON.stringify([staking.value, timing.value, market.value]),
           staking: staking.value, timing: timing.value, market: market.value,
           summary: `${staking.label} · ${timing.label} · ${market.label}`,
+          stakingLabel: staking.label, profit: result.endingBankroll - initial,
+          betSetKey: performanceBetSetKey(result.rows), outcomeKey: performanceBetSetKey(result.rows, true),
           endingBankroll: result.endingBankroll,
           funded: fundedPerformanceCounts(result.rows).funded,
         });
@@ -4090,6 +4179,8 @@ function renderPerformancePresets(publication, initial) {
   if (!records) {
     control.replaceChildren(element("option", "", "No performance history available"));
     control.disabled = true;
+    state.performancePresetCache = null;
+    renderPerformancePresetChart();
     return;
   }
   control.disabled = false;
@@ -4108,6 +4199,7 @@ function renderPerformancePresets(publication, initial) {
     state.performancePresetCache = {records, initial, presets};
   }
   control.value = JSON.stringify([$("#performance-staking").value, $("#performance-timing").value, $("#performance-market").value]);
+  renderPerformancePresetChart();
 }
 
 function applyPerformancePreset() {
@@ -4677,6 +4769,12 @@ function bindEvents() {
   ["#performance-bankroll", "#performance-staking", "#performance-timing", "#performance-market"].forEach((selector) => { const input = $(selector); input.addEventListener(input.tagName === "INPUT" ? "input" : "change", renderBetPerformance); });
   $("#performance-show-zero").addEventListener("change", renderBetPerformance);
   $("#performance-presets").addEventListener("change", applyPerformancePreset);
+  $("#performance-preset-chart-toggle").addEventListener("click", () => {
+    const chart = $("#performance-preset-chart"); chart.hidden = !chart.hidden;
+    $("#performance-preset-chart-toggle").setAttribute("aria-expanded", String(!chart.hidden));
+    $("#performance-preset-chart-toggle").textContent = chart.hidden ? "Compare visually" : "Hide comparison";
+    renderPerformancePresetChart();
+  });
   document.addEventListener("click", (event) => { ["a", "b"].forEach((side) => { const picker = $(`[data-picker="${side}"]`); if (!picker.contains(event.target)) closeAutocomplete($(`#matchup-fighter-${side}`), $(`#matchup-results-${side}`)); }); });
   window.addEventListener("hashchange", applyRoute);
 }

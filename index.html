@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=20261121-presets">
+  <link rel="stylesheet" href="style.css?v=20261121-preset-chart">
 </head>
 <body>
   <a class="skip-link" href="#main-content">Skip to content</a>
@@ -320,13 +320,14 @@
             <span class="research-badge">Historical simulation only</span>
           </div>
           <div class="performance-filter-grid">
-            <div class="filter-control performance-presets"><label for="performance-presets">Setting presets</label><select id="performance-presets" aria-describedby="performance-presets-note"><option value="">Loading presets…</option></select><p class="section-note" id="performance-presets-note">Ranked by historical final bankroll using your initial bankroll.</p></div>
+            <div class="filter-control performance-presets"><label for="performance-presets">Setting presets</label><div class="performance-preset-picker"><select id="performance-presets" aria-describedby="performance-presets-note"><option value="">Loading presets…</option></select><button type="button" class="secondary-button" id="performance-preset-chart-toggle" aria-expanded="false" aria-controls="performance-preset-chart">Compare visually</button></div><p class="section-note" id="performance-presets-note">Ranked by historical final bankroll using your initial bankroll.</p></div>
             <div class="filter-control"><label for="performance-bankroll">Initial bankroll</label><input id="performance-bankroll" type="number" min="1" step="100" value="1000" inputmode="decimal"></div>
             <div class="filter-control"><label for="performance-staking">Strategy</label><select id="performance-staking"><optgroup label="Uncertainty-aware research"><option value="robust_bayesian_kelly">Robust Bayesian Kelly</option></optgroup><optgroup label="Shared fight and card budgets (v1)"><option value="portfolio_tiered_v1">Shared tiers: 1% / 2% / 3% per fight</option><option value="portfolio_flat_v1">Shared flat 1% per fight</option><option value="portfolio_half_kelly_v1">Half Kelly: 1% fight cap</option></optgroup><optgroup label="Same published chance: change stake only"><option value="half_kelly" selected>Half Kelly</option><option value="third_kelly">One-third Kelly</option><option value="full_kelly">Full Kelly</option><option value="flat_one_percent">Flat 1% of bankroll</option><option value="tiered_expected_return">Tiered 1% / 2% / 3% by expected return</option></optgroup><optgroup label="Research: combine probability estimates"><option value="half_kelly_model_blend">½ Kelly · published + winner model</option><option value="half_kelly_sim_blend">½ Kelly · published + simulation</option><option value="half_kelly_model_sim_blend">½ Kelly · published + model + simulation</option></optgroup></select></div>
             <div class="filter-control"><label for="performance-timing">Bet timing</label><select id="performance-timing"><option value="first_qualifying">First published qualifying price</option><option value="official_t24">Official locked T-24 only</option><option value="nearest_t48">Published price nearest T-48</option><option value="nearest_t24">Published price nearest T-24</option><option value="favorite_early_underdog_late">Favorite early / underdog late</option><option value="latest_qualifying">Latest published qualifying price</option></select></div>
             <div class="filter-control"><label for="performance-market">Market</label><select id="performance-market"><option value="all">All tracked markets</option><option value="Moneyline">Moneyline</option><option value="Total rounds">Fight totals</option></select></div>
           </div>
           <label><input id="performance-show-zero" type="checkbox"> Show zero-stake records</label>
+          <section id="performance-preset-chart" class="preset-comparison" aria-label="Preset profit comparison" hidden></section>
         </section>
         <section class="panel performance-results" id="performance-results" tabindex="-1" aria-labelledby="performance-results-title">
           <div class="section-heading"><div><p class="eyebrow">Settled results</p><h2 id="performance-results-title">Results</h2><p class="section-note" id="performance-summary-note">Loading published bets...</p></div></div>
@@ -358,6 +359,6 @@
     <p id="publication-stamp"></p>
   </footer>
   <noscript>This explorer requires JavaScript to search and compare the published dataset.</noscript>
-  <script src="script.js?v=20261121-presets" defer></script>
+  <script src="script.js?v=20261121-preset-chart" defer></script>
 </body>
 </html>
