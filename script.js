@@ -4062,91 +4062,82 @@ function performanceDisplayRows(rows, showZeroStake = false) {
     || String(b.settled_at_utc || '').localeCompare(String(a.settled_at_utc || '')));
 }
 
-function performanceBetSetKey(rows, includeStakes = false) {
-  // Snapshot IDs and entry labels can differ even when the actual bets do not.
-  // This compares settled history only, not future or pending recommendations.
-  return JSON.stringify(rows.filter(row => Number(row.stake) > 0).map(row => {
-    const bet = [row.event_id, row.event_date, [row.fighter_id, row.opponent_id].sort(),
-      row.category, String(row.selection || "").trim().toLowerCase(), row.target_book,
-      Number(row.offered_moneyline), row.status];
-    if (includeStakes) bet.push(Number(Number(row.stake).toFixed(8)), Number(Number(row.profit).toFixed(8)));
-    return JSON.stringify(bet);
-  }).sort());
+function performanceFundedFightCount(rows) {
+  return new Set(rows.filter(row => Number(row.stake) > 0).map(row =>
+    JSON.stringify([row.event_id || row.event_date, [row.fighter_id, row.opponent_id].sort()]))).size;
 }
 
-function groupPerformancePresets(presets) {
-  const groups = new Map();
-  for (const preset of presets) {
-    // Equal final profits alone do not mean equal bets or stakes.
-    const key = JSON.stringify([preset.outcomeKey, Number(preset.endingBankroll.toFixed(8))]);
-    if (!groups.has(key)) groups.set(key, {id: preset.id, betSetKey: preset.betSetKey,
-      profit: preset.profit, endingBankroll: preset.endingBankroll, funded: preset.funded, members: []});
-    groups.get(key).members.push(preset);
-  }
-  return Array.from(groups.values()).sort((a, b) => b.profit - a.profit || a.id.localeCompare(b.id));
+function performanceHeatmapCells(presets, choices) {
+  const byId = new Map(presets.map(preset => [preset.id, preset]));
+  return choices.strategies.map(strategy => ({strategy, cells: choices.markets.flatMap(market =>
+    choices.timings.map(timing => byId.get(JSON.stringify([strategy.value, timing.value, market.value]))))}));
 }
 
-function performanceProfitScale(groups) {
-  const min = Math.min(0, ...groups.map(group => group.profit));
-  const max = Math.max(0, ...groups.map(group => group.profit));
-  const span = max - min || 1;
-  return {min, max, zero: (0 - min) / span * 100,
-    position: value => (value - min) / span * 100};
+function performanceHeatmapColor(profit, min, max, funded) {
+  if (!funded) return '#192530';
+  const amount = profit < 0 ? Math.abs(profit / (min || -1)) : profit / (max || 1);
+  const base = [25, 37, 48], target = profit < 0 ? [149, 48, 62] : [23, 113, 91];
+  return `rgb(${base.map((v, i) => Math.round(v + (target[i] - v) * Math.max(0, Math.min(1, amount)))).join(',')})`;
 }
 
 function renderPerformancePresetChart() {
   const container = $("#performance-preset-chart");
   if (container.hidden) return;
-  const opened = new Set(Array.from(container.querySelectorAll("details[open]"), row => row.dataset.groupId));
+  const scrollLeft = container.querySelector(".preset-heatmap-scroll")?.scrollLeft || 0;
   container.replaceChildren();
   const cache = state.performancePresetCache;
   if (!cache) { appendText(container, "p", "section-note", "No performance history available."); return; }
-  const groups = groupPerformancePresets(cache.presets);
   const selected = $("#performance-presets").value;
-  appendText(container, "h3", "", "Profit by unique betting outcome");
-  appendText(container, "p", "section-note", `${cache.presets.length} settings combinations → ${groups.length} distinct outcomes. Same settled bets, prices and stakes share one row; different stake sizes stay separate.`);
-  const scale = performanceProfitScale(groups);
-  const legend = element("div", "preset-chart-legend");
-  appendText(legend, "span", "", `${formatCurrency(scale.min)} loss`);
-  appendText(legend, "span", "", `Profit from ${formatCurrency(cache.initial)} · $0 = break-even`);
-  appendText(legend, "span", "", `${formatCurrency(scale.max)} profit`);
-  container.append(legend);
-  const list = element("div", "preset-outcome-list");
-  groups.forEach((group, index) => {
-    const details = element("details", "preset-outcome");
-    details.dataset.groupId = group.id;
-    details.open = opened.has(group.id);
-    const isSelected = group.members.some(member => member.id === selected);
-    details.classList.toggle("is-selected", isSelected);
-    const summary = element("summary", "preset-outcome-summary");
-    const label = element("span", "preset-outcome-label");
-    const strategies = [...new Set(group.members.map(member => member.stakingLabel))];
-    appendText(label, "strong", "", `${index + 1}. ${group.funded ? strategies.join(" / ") : "No settled stakes"}`);
-    appendText(label, "small", "", `${group.funded} settled bets · ${group.members.length} preset${group.members.length === 1 ? '' : 's'}${isSelected ? ' · selected' : ''} · expand settings`);
-    const plot = element("span", "preset-profit-track");
-    plot.setAttribute("aria-hidden", "true");
-    const zero = element("span", "preset-profit-zero"); zero.style.left = `${scale.zero}%`;
-    const bar = element("span", `preset-profit-bar ${group.profit < 0 ? 'is-loss' : 'is-profit'}`);
-    bar.style.left = `${Math.min(scale.zero, scale.position(group.profit))}%`;
-    bar.style.width = `${Math.abs(scale.position(group.profit) - scale.zero)}%`;
-    plot.append(zero, bar);
-    const numbers = element("span", "preset-outcome-numbers");
-    appendText(numbers, "strong", group.profit < 0 ? 'is-loss' : 'is-profit', `${group.profit > 0 ? '+' : ''}${formatCurrency(group.profit)}`);
-    appendText(numbers, "small", "", `${formatCurrency(group.endingBankroll)} final`);
-    summary.append(label, plot, numbers);
-    const members = element("div", "preset-outcome-members");
-    group.members.forEach(member => {
-      const row = element("div", "preset-member");
-      appendText(row, "span", "", member.summary);
-      const button = element("button", "secondary-button", member.id === selected ? "Selected" : "Use settings");
-      button.type = "button";
-      button.disabled = member.id === selected;
-      button.addEventListener("click", () => { $("#performance-presets").value = member.id; applyPerformancePreset(); });
-      row.append(button); members.append(row);
-    });
-    details.append(summary, members); list.append(details);
+  const min = Math.min(0, ...cache.presets.map(preset => preset.profit));
+  const max = Math.max(0, ...cache.presets.map(preset => preset.profit));
+  appendText(container, "h3", "", "Settings → profit");
+  appendText(container, "p", "section-note", `Rows: stake strategy · Columns: entry timing · Panels: market. Each cell: profit / distinct fights staked. Starting bankroll ${formatCurrency(cache.initial)}.`);
+  const legend = element("div", "heatmap-legend");
+  [[min, `${formatCurrency(min)} loss`], [0, "$0"], [max, `+${formatCurrency(max)} profit`]].forEach(([value, label]) => {
+    const item = element("span", "heatmap-legend-item");
+    const swatch = element("span", "heatmap-swatch"); swatch.style.background = performanceHeatmapColor(value, min, max, 1);
+    item.append(swatch, document.createTextNode(label)); legend.append(item);
   });
-  container.append(list);
+  appendText(legend, "span", "", "One color scale across all panels · Click a cell to apply");
+  container.append(legend);
+  const wrap = element("div", "preset-heatmap-scroll");
+  const table = element("table", "preset-heatmap");
+  const caption = element("caption", "visually-hidden", "Profit and distinct fights staked for all strategy, timing and market combinations");
+  const head = element("thead"), panels = element("tr"), columns = element("tr");
+  const corner = element("th", "heatmap-strategy-heading", "Stake strategy ↓ / Timing →"); corner.rowSpan = 2; corner.scope = "col"; panels.append(corner);
+  const shortTiming = {first_qualifying: "First", official_t24: "Locked 24h", nearest_t48: "Near 48h", nearest_t24: "Near 24h", favorite_early_underdog_late: "Fav early / dog late", latest_qualifying: "Latest"};
+  cache.choices.markets.forEach(market => {
+    const panel = element("th", "heatmap-panel-heading", market.label); panel.colSpan = cache.choices.timings.length; panel.scope = "colgroup"; panels.append(panel);
+    cache.choices.timings.forEach((timing, index) => {
+      const th = element("th", index === 0 ? "heatmap-panel-start" : "", shortTiming[timing.value] || timing.label);
+      th.scope = "col"; th.title = timing.label; columns.append(th);
+    });
+  });
+  head.append(panels, columns);
+  const body = element("tbody");
+  performanceHeatmapCells(cache.presets, cache.choices).forEach(({strategy, cells}) => {
+    const row = element("tr");
+    const name = element("th", "heatmap-strategy-heading", strategy.label); name.scope = "row"; row.append(name);
+    cells.forEach((preset, index) => {
+      const td = element("td", index % cache.choices.timings.length === 0 ? "heatmap-panel-start" : "");
+      const button = element("button", "heatmap-cell"); button.type = "button";
+      const current = preset.id === selected;
+      button.classList.toggle("is-selected", current); button.setAttribute("aria-pressed", String(current));
+      button.style.background = performanceHeatmapColor(preset.profit, min, max, preset.funded);
+      button.title = `${preset.summary}: ${formatCurrency(preset.profit)} profit; ${preset.fights} fights, ${preset.funded} bets; ${formatCurrency(preset.endingBankroll)} final bankroll`;
+      button.setAttribute("aria-label", button.title);
+      const profit = Math.round(preset.profit);
+      appendText(button, "strong", "", `${profit > 0 ? '+' : profit < 0 ? '−' : ''}$${Math.abs(profit).toLocaleString('en-US')}`);
+      appendText(button, "small", "", `${preset.fights} fights`);
+      button.addEventListener("click", () => { $("#performance-presets").value = preset.id; applyPerformancePreset(); });
+      td.append(button); row.append(td);
+    });
+    body.append(row);
+  });
+  table.append(caption, head, body); wrap.append(table); container.append(wrap);
+  wrap.scrollLeft = scrollLeft;
+  const active = cache.presets.find(preset => preset.id === selected);
+  if (active) appendText(container, "p", "heatmap-selection", `${active.summary} · ${formatCurrency(active.profit)} profit · ${active.fights} fights / ${active.funded} bets · ${formatCurrency(active.endingBankroll)} final`);
 }
 
 function rankPerformancePresets(records, initial, choices) {
@@ -4162,9 +4153,9 @@ function rankPerformancePresets(records, initial, choices) {
           staking: staking.value, timing: timing.value, market: market.value,
           summary: `${staking.label} · ${timing.label} · ${market.label}`,
           stakingLabel: staking.label, profit: result.endingBankroll - initial,
-          betSetKey: performanceBetSetKey(result.rows), outcomeKey: performanceBetSetKey(result.rows, true),
           endingBankroll: result.endingBankroll,
           funded: fundedPerformanceCounts(result.rows).funded,
+          fights: performanceFundedFightCount(result.rows),
         });
       }
     }
@@ -4187,16 +4178,15 @@ function renderPerformancePresets(publication, initial) {
   const cached = state.performancePresetCache;
   if (!cached || cached.records !== records || cached.initial !== initial) {
     const choices = selector => Array.from($(selector).options, option => ({value: option.value, label: option.textContent}));
-    const presets = rankPerformancePresets(records, initial, {
-      strategies: choices("#performance-staking"), timings: choices("#performance-timing"), markets: choices("#performance-market"),
-    });
+    const dimensions = {strategies: choices("#performance-staking"), timings: choices("#performance-timing"), markets: choices("#performance-market")};
+    const presets = rankPerformancePresets(records, initial, dimensions);
     control.replaceChildren();
     for (const preset of presets) {
       const option = element("option", "", `${formatCurrency(preset.endingBankroll)} — ${preset.summary} · ${preset.funded} settled bets`);
       option.value = preset.id;
       control.append(option);
     }
-    state.performancePresetCache = {records, initial, presets};
+    state.performancePresetCache = {records, initial, presets, choices: dimensions};
   }
   control.value = JSON.stringify([$("#performance-staking").value, $("#performance-timing").value, $("#performance-market").value]);
   renderPerformancePresetChart();
@@ -4772,7 +4762,7 @@ function bindEvents() {
   $("#performance-preset-chart-toggle").addEventListener("click", () => {
     const chart = $("#performance-preset-chart"); chart.hidden = !chart.hidden;
     $("#performance-preset-chart-toggle").setAttribute("aria-expanded", String(!chart.hidden));
-    $("#performance-preset-chart-toggle").textContent = chart.hidden ? "Compare visually" : "Hide comparison";
+    $("#performance-preset-chart-toggle").textContent = chart.hidden ? "View heatmap" : "Hide heatmap";
     renderPerformancePresetChart();
   });
   document.addEventListener("click", (event) => { ["a", "b"].forEach((side) => { const picker = $(`[data-picker="${side}"]`); if (!picker.contains(event.target)) closeAutocomplete($(`#matchup-fighter-${side}`), $(`#matchup-results-${side}`)); }); });

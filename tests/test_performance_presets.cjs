@@ -16,7 +16,7 @@ vm.createContext(s);
 vm.runInContext(['finite', 'decimalOdds', 'kellyFraction', 'probabilityLogit', 'equalLogitPool',
   'performanceStakePlan', 'simulatePaperBankroll', 'portfolioRecordValid', 'portfolioFightKey',
   'portfolioContractKey', 'allocatePortfolioBatch', 'simulatePortfolioBankroll',
-  'selectPerformanceRecords', 'fundedPerformanceCounts', 'performanceBetSetKey', 'groupPerformancePresets', 'performanceProfitScale', 'rankPerformancePresets', 'applyPerformancePreset'].map(extract).join('\n'), s);
+  'selectPerformanceRecords', 'fundedPerformanceCounts', 'performanceFundedFightCount', 'performanceHeatmapCells', 'performanceHeatmapColor', 'rankPerformancePresets', 'applyPerformancePreset'].map(extract).join('\n'), s);
 const options = id => Array.from(html.match(new RegExp(`<select id="${id}"[^>]*>([\\s\\S]*?)</select>`))[1]
   .matchAll(/<option value="([^"]+)"[^>]*>([^<]+)<\/option>/g), m => ({value:m[1],label:m[2]}));
 const choices = {strategies:options('performance-staking'), timings:options('performance-timing'), markets:options('performance-market')};
@@ -57,37 +57,30 @@ test('selecting a preset overrides strategy, timing, market and refreshes Result
   assert.equal(renders,1);
 });
 
-test('grouping uses actual bets and stakes, never equal profit alone', () => {
-  const bet = {event_id:'event',event_date:'2026-11-14',fighter_id:'a',opponent_id:'b',category:'Moneyline',
-    selection:'Fighter A',target_book:'Book',offered_moneyline:100,status:'won',stake:10,profit:10};
-  const same = {...bet, record_id:'different-snapshot',published_at_utc:'another-entry'};
-  assert.equal(s.performanceBetSetKey([bet],true),s.performanceBetSetKey([same],true));
-  assert.equal(s.performanceBetSetKey([bet],true),s.performanceBetSetKey([{...bet,stake:0},bet],true));
-  assert.notEqual(s.performanceBetSetKey([bet],true),s.performanceBetSetKey([{...bet,stake:20,profit:20}],true));
-  assert.notEqual(s.performanceBetSetKey([bet],true),s.performanceBetSetKey([{...bet,target_book:'Other'}],true));
-  assert.notEqual(s.performanceBetSetKey([bet],true),s.performanceBetSetKey([{...bet,offered_moneyline:200}],true));
-  const preset = (id, rows) => ({id,profit:10,endingBankroll:1010,funded:1,
-    betSetKey:s.performanceBetSetKey(rows),outcomeKey:s.performanceBetSetKey(rows,true)});
-  const grouped = s.groupPerformancePresets([preset('a',[bet]),preset('b',[same]),preset('c',[{...bet,fighter_id:'c'}])]);
-  assert.equal(grouped.length,2);
-  assert.deepEqual(Array.from(grouped[0].members, member=>member.id),['a','b']);
-});
-test('real presets collapse without dropping any settings and retain descending profit order', t => {
+test('heatmap preserves all three input axes instead of sorting cells by profit', () => {
   const ranked = s.rankPerformancePresets(records,1000,choices);
-  const groups = s.groupPerformancePresets(ranked);
-  assert.ok(groups.length < ranked.length);
-  assert.equal(groups.reduce((total,group)=>total+group.members.length,0),ranked.length);
-  for (let i=0;i<groups.length;i++) {
-    if(i) assert.ok(groups[i-1].profit >= groups[i].profit);
-    assert.ok(groups[i].members.every(member=>member.outcomeKey===groups[i].members[0].outcomeKey));
-  }
-  t.diagnostic(`${ranked.length} presets become ${groups.length} distinct outcomes`);
+  const rows = s.performanceHeatmapCells(ranked,choices);
+  assert.equal(rows.length,choices.strategies.length);
+  rows.forEach((row,i)=>{
+    assert.equal(row.strategy.value,choices.strategies[i].value);
+    assert.equal(row.cells.length,choices.markets.length*choices.timings.length);
+    row.cells.forEach((cell,j)=>{
+      assert.equal(cell.staking,choices.strategies[i].value);
+      assert.equal(cell.market,choices.markets[Math.floor(j/choices.timings.length)].value);
+      assert.equal(cell.timing,choices.timings[j%choices.timings.length].value);
+    });
+  });
+  assert.equal(new Set(rows.flatMap(row=>Array.from(row.cells,cell=>cell.id))).size,ranked.length);
 });
-test('profit bars share a zero baseline and handle positive, negative and empty results', () => {
-  for(const profits of [[-400,0,2700],[10,20],[-20,-10],[0],[]]) {
-    const scale = s.performanceProfitScale(profits.map(profit=>({profit})));
-    assert.ok(scale.zero>=0 && scale.zero<=100);
-    for (const profit of profits) assert.ok(scale.position(profit)>=0 && scale.position(profit)<=100);
-    assert.equal(scale.position(0),scale.zero);
-  }
+test('fight counts do not count multiple bets on the same fight twice', () => {
+  const row = {event_id:'event',fighter_id:'a',opponent_id:'b',stake:10};
+  assert.equal(s.performanceFundedFightCount([row,{...row,category:'Total rounds'},
+    {...row,fighter_id:'b',opponent_id:'a'},{...row,fighter_id:'c',stake:0}]),1);
+  assert.equal(s.performanceFundedFightCount([row,{...row,event_id:'other'}]),2);
+});
+test('colors share a scale across panels and keep no-stake cells neutral', () => {
+  assert.equal(s.performanceHeatmapColor(0,-100,200,0),'#192530');
+  assert.equal(s.performanceHeatmapColor(-100,-100,200,1),'rgb(149,48,62)');
+  assert.equal(s.performanceHeatmapColor(200,-100,200,1),'rgb(23,113,91)');
+  assert.equal(s.performanceHeatmapColor(0,0,0,1),'rgb(25,37,48)');
 });
