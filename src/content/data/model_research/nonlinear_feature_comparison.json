@@ -1,0 +1,410 @@
+{
+  "artifact_directory": "artifacts\\nonlinear_research\\e1f853d75b1027ea24ad57f9a1902f1de663712d68e63ab235d871e85f313137",
+  "bootstrap_replicates": 4000,
+  "chosen": "age_experience",
+  "decision": "Keep production unchanged. No convincing evidence to add these features.",
+  "discovery_years": [
+    2021,
+    2022
+  ],
+  "groups": {
+    "age_curve": [
+      "age_after_30",
+      "age_after_35"
+    ],
+    "age_damage": [
+      "age_absorption",
+      "age_knockdowns_absorbed"
+    ],
+    "age_experience": [
+      "age_experience"
+    ],
+    "reach_activity": [
+      "reach_striking",
+      "reach_wrestling"
+    ]
+  },
+  "limitations": [
+    "These historical years have been examined in earlier project research; this is not a pristine project-wide holdout or a prospective betting record.",
+    "Historical features are replayed from current corrected sources and profiles, not archived as-of snapshots.",
+    "Residual bins are descriptive, with no p-values or claims of independent discoveries. Four prespecified families compete on selection years; only the chosen family reaches the final comparison.",
+    "Striking absorption rates proxy style and exposure, not cumulative medical damage. Reach/activity interactions are not direct opponent-style measurements.",
+    "Probability improvements alone do not establish an edge over bookmaker odds or profitability."
+  ],
+  "production_enabled": false,
+  "seed": 48,
+  "selection": {
+    "age_curve": {
+      "fights": 1017,
+      "overall": {
+        "accuracy": 0.6312684365781711,
+        "auc": 0.6863507806749061,
+        "brier": 0.22326071656880828,
+        "calibration_intercept": -0.0975819100931335,
+        "calibration_slope": 1.1704461105127675,
+        "ece_10_bin": 0.03432240750027588,
+        "fights": 1017,
+        "log_loss": 0.6364577041967591
+      },
+      "per_year": {
+        "2023": {
+          "accuracy": 0.6111111111111112,
+          "auc": 0.6650410353535353,
+          "brier": 0.2285559974412794,
+          "calibration_intercept": -0.12808906985898777,
+          "calibration_slope": 1.0129424776738798,
+          "ece_10_bin": 0.03222439494510922,
+          "fights": 504,
+          "log_loss": 0.6473160074124208
+        },
+        "2024": {
+          "accuracy": 0.6510721247563352,
+          "auc": 0.7071322029770784,
+          "brier": 0.21805833536076646,
+          "calibration_intercept": -0.060284241210277006,
+          "calibration_slope": 1.3514962971120907,
+          "ece_10_bin": 0.0479749251058592,
+          "fights": 513,
+          "log_loss": 0.6257898975287406
+        }
+      }
+    },
+    "age_damage": {
+      "fights": 1017,
+      "overall": {
+        "accuracy": 0.6332350049164208,
+        "auc": 0.6865289992638798,
+        "brier": 0.22329421196440877,
+        "calibration_intercept": -0.09950917215168628,
+        "calibration_slope": 1.1742935935486682,
+        "ece_10_bin": 0.03276475748745652,
+        "fights": 1017,
+        "log_loss": 0.6365907871394015
+      },
+      "per_year": {
+        "2023": {
+          "accuracy": 0.6111111111111112,
+          "auc": 0.6657670454545453,
+          "brier": 0.2285220039145371,
+          "calibration_intercept": -0.12614570186245946,
+          "calibration_slope": 1.020969557963357,
+          "ece_10_bin": 0.03125967774899877,
+          "fights": 504,
+          "log_loss": 0.6474731626428394
+        },
+        "2024": {
+          "accuracy": 0.6549707602339181,
+          "auc": 0.7056101792943898,
+          "brier": 0.2181581356625283,
+          "calibration_intercept": -0.06709564606891492,
+          "calibration_slope": 1.3480721820728063,
+          "ece_10_bin": 0.06167426305879178,
+          "fights": 513,
+          "log_loss": 0.6258993305044449
+        }
+      }
+    },
+    "age_experience": {
+      "fights": 1017,
+      "overall": {
+        "accuracy": 0.6312684365781711,
+        "auc": 0.6873193599628067,
+        "brier": 0.22309394224090087,
+        "calibration_intercept": -0.09725868460784166,
+        "calibration_slope": 1.1837458737294244,
+        "ece_10_bin": 0.02889414502516537,
+        "fights": 1017,
+        "log_loss": 0.6361302076940809
+      },
+      "per_year": {
+        "2023": {
+          "accuracy": 0.6111111111111112,
+          "auc": 0.6664772727272728,
+          "brier": 0.22835949640949074,
+          "calibration_intercept": -0.1270503062093394,
+          "calibration_slope": 1.0263941216915116,
+          "ece_10_bin": 0.03493774017929726,
+          "fights": 504,
+          "log_loss": 0.6469838361409953
+        },
+        "2024": {
+          "accuracy": 0.6510721247563352,
+          "auc": 0.7072387446348665,
+          "brier": 0.2179207662156196,
+          "calibration_intercept": -0.0611329266863533,
+          "calibration_slope": 1.3629947832430902,
+          "ece_10_bin": 0.05284158973772142,
+          "fights": 513,
+          "log_loss": 0.625466993781323
+        }
+      }
+    },
+    "baseline": {
+      "fights": 1017,
+      "overall": {
+        "accuracy": 0.6312684365781711,
+        "auc": 0.6855565456588275,
+        "brier": 0.22348151145084735,
+        "calibration_intercept": -0.09851814642252366,
+        "calibration_slope": 1.1652805013120533,
+        "ece_10_bin": 0.031985800542759624,
+        "fights": 1017,
+        "log_loss": 0.6369693103745275
+      },
+      "per_year": {
+        "2023": {
+          "accuracy": 0.6130952380952381,
+          "auc": 0.6634785353535353,
+          "brier": 0.2290620501246842,
+          "calibration_intercept": -0.12798491749871993,
+          "calibration_slope": 0.9981238591750027,
+          "ece_10_bin": 0.03643075908531677,
+          "fights": 504,
+          "log_loss": 0.6484747468889334
+        },
+        "2024": {
+          "accuracy": 0.6491228070175439,
+          "auc": 0.7066603756354448,
+          "brier": 0.2179988769642708,
+          "calibration_intercept": -0.061976247588341,
+          "calibration_slope": 1.3584317179547454,
+          "ece_10_bin": 0.05562952781329096,
+          "fights": 513,
+          "log_loss": 0.6256657236235323
+        }
+      }
+    },
+    "reach_activity": {
+      "fights": 1017,
+      "overall": {
+        "accuracy": 0.6302851524090463,
+        "auc": 0.6852969664096702,
+        "brier": 0.2235068343705731,
+        "calibration_intercept": -0.09786784135629495,
+        "calibration_slope": 1.1678447416845754,
+        "ece_10_bin": 0.03199047628726255,
+        "fights": 1017,
+        "log_loss": 0.6370332008051578
+      },
+      "per_year": {
+        "2023": {
+          "accuracy": 0.6111111111111112,
+          "auc": 0.6631786616161616,
+          "brier": 0.22911935404043537,
+          "calibration_intercept": -0.1276299875298256,
+          "calibration_slope": 0.9992209903375336,
+          "ece_10_bin": 0.03966745226735507,
+          "fights": 504,
+          "log_loss": 0.6485929143893575
+        },
+        "2024": {
+          "accuracy": 0.6491228070175439,
+          "auc": 0.7067669172932332,
+          "brier": 0.2179927799580768,
+          "calibration_intercept": -0.060945863753578564,
+          "calibration_slope": 1.3629103911742568,
+          "ece_10_bin": 0.05199716111744324,
+          "fights": 513,
+          "log_loss": 0.6256762892136633
+        }
+      }
+    }
+  },
+  "selection_rule": "Lowest selection log loss among families improving both log loss and Brier in EACH selection year; otherwise baseline. Ties within 1e-6 favor fewer terms, then name.",
+  "selection_years": [
+    2023,
+    2024
+  ],
+  "source_sha256": {
+    "src\\content\\data\\processed\\fighter_stats.csv": "2b180afee7cb005c0a209ff6b996eac6b40648fd8d6e973bf0748034c38a0b13",
+    "src\\content\\data\\processed\\ufc_fights_point_in_time.csv": "d4b97c5987ef9fb03fb8afe90f371084599a42019d54f78a4351d0ca22d14333",
+    "src\\content\\data\\processed\\ufc_fights_reported_doubled.csv": "8948f581f35b99f318819d0ab6a21e19b97adf55c4121e7413e996d7f110d502",
+    "src\\evaluate_nonlinear_features.py": "233e454c8c898b75d504fd3c65148d460271effae40f716cd2b39a93908fd3b1",
+    "src\\evaluate_style_matchup_challenger.py": "d3abd5d57ab4abc01db518d11b581741834cb39e7a9808378bf59a23b8f725c0",
+    "src\\fight_predictor\\nonlinear_research.py": "13c0d653ca2523b27df42ba7a56a25de67babda5cfb6defc549c8f15377ae708",
+    "src\\fight_predictor\\point_in_time.py": "0b73dbcce2abb2207288ff943bc162a8e8edc6bd0a2400583f5a8a23b6c550fa"
+  },
+  "test": {
+    "baseline": {
+      "accuracy": 0.645956607495069,
+      "auc": 0.7023701926073678,
+      "brier": 0.21956935980204006,
+      "calibration_intercept": -0.0817532642652049,
+      "calibration_slope": 0.9716708074532151,
+      "ece_10_bin": 0.020539845562675754,
+      "fights": 1014,
+      "log_loss": 0.6297417311626494
+    },
+    "candidate": {
+      "accuracy": 0.6449704142011834,
+      "auc": 0.7031883064264788,
+      "brier": 0.21937100786498287,
+      "calibration_intercept": -0.08298622486318574,
+      "calibration_slope": 0.9751136557865698,
+      "ece_10_bin": 0.025932190891001957,
+      "fights": 1014,
+      "log_loss": 0.6292064247126833
+    },
+    "descriptive_subgroups_not_selection_criteria": {
+      "age_gap_at_least_5_years": {
+        "baseline": {
+          "accuracy": 0.7034120734908137,
+          "auc": 0.7531687607239719,
+          "brier": 0.2018397183891249,
+          "calibration_intercept": -0.1263317012595362,
+          "calibration_slope": 1.0395486110919894,
+          "ece_10_bin": 0.04065331007620972,
+          "fights": 381,
+          "log_loss": 0.5907311748567581
+        },
+        "candidate": {
+          "accuracy": 0.6955380577427821,
+          "auc": 0.7528366635301932,
+          "brier": 0.2017249413195885,
+          "calibration_intercept": -0.12990353682962172,
+          "calibration_slope": 1.032872487426502,
+          "ece_10_bin": 0.03510309402143482,
+          "fights": 381,
+          "log_loss": 0.5903979729874774
+        },
+        "fights": 381
+      },
+      "age_gap_under_5_years": {
+        "baseline": {
+          "accuracy": 0.6113744075829384,
+          "auc": 0.6661739738340158,
+          "brier": 0.23024075534441077,
+          "calibration_intercept": -0.0566172606294951,
+          "calibration_slope": 0.8988754397941523,
+          "ece_10_bin": 0.04198493820990037,
+          "fights": 633,
+          "log_loss": 0.6532220186074275
+        },
+        "candidate": {
+          "accuracy": 0.6145339652448657,
+          "auc": 0.6669230000998702,
+          "brier": 0.22999210005107332,
+          "calibration_intercept": -0.056715019679992894,
+          "calibration_slope": 0.9112639249134006,
+          "ece_10_bin": 0.03489318829516122,
+          "fights": 633,
+          "log_loss": 0.6525650662724042
+        },
+        "fights": 633
+      },
+      "experience_log_gap_at_least_1": {
+        "baseline": {
+          "accuracy": 0.6460674157303371,
+          "auc": 0.7084256138661531,
+          "brier": 0.21856612812245596,
+          "calibration_intercept": -0.31451328808304446,
+          "calibration_slope": 0.9700410161885801,
+          "ece_10_bin": 0.06928891921920621,
+          "fights": 356,
+          "log_loss": 0.6267372535149387
+        },
+        "candidate": {
+          "accuracy": 0.6432584269662921,
+          "auc": 0.7097737120847377,
+          "brier": 0.21831881457460775,
+          "calibration_intercept": -0.3195782184764219,
+          "calibration_slope": 0.9757186474364087,
+          "ece_10_bin": 0.06911168166850178,
+          "fights": 356,
+          "log_loss": 0.6259387562493585
+        },
+        "fights": 356
+      },
+      "experience_log_gap_under_1": {
+        "baseline": {
+          "accuracy": 0.6458966565349544,
+          "auc": 0.7016770616770616,
+          "brier": 0.22011214168339557,
+          "calibration_intercept": 0.04152158079591766,
+          "calibration_slope": 0.9881780992688654,
+          "ece_10_bin": 0.02678123781659831,
+          "fights": 658,
+          "log_loss": 0.6313672540237207
+        },
+        "candidate": {
+          "accuracy": 0.6458966565349544,
+          "auc": 0.7027766227766228,
+          "brier": 0.21994027961479068,
+          "calibration_intercept": 0.041796857608276526,
+          "calibration_slope": 0.9917110651357476,
+          "ece_10_bin": 0.03288727764609749,
+          "fights": 658,
+          "log_loss": 0.6309743426046949
+        },
+        "fights": 658
+      }
+    },
+    "events": 82,
+    "fights": 1014,
+    "paired_log_loss": {
+      "bootstrap_samples": 4000,
+      "ci_95_lower": -0.0015567896541624933,
+      "ci_95_upper": 0.0004610837826924032,
+      "definition": "candidate_probability minus model_probability paired log loss; negative favors candidate",
+      "event_count": 82,
+      "fight_count": 1014,
+      "method": "nonparametric whole-event block bootstrap",
+      "point_difference": -0.0005353064499661252,
+      "seed": 48
+    },
+    "per_year": {
+      "2025": {
+        "baseline": {
+          "accuracy": 0.6517509727626459,
+          "auc": 0.7115101917102372,
+          "brier": 0.2168491005357607,
+          "calibration_intercept": -0.03689316013153803,
+          "calibration_slope": 1.0760942516366838,
+          "ece_10_bin": 0.041995349807826036,
+          "fights": 514,
+          "log_loss": 0.6236425369662216
+        },
+        "candidate": {
+          "accuracy": 0.6536964980544747,
+          "auc": 0.7127832083049177,
+          "brier": 0.21649209056087512,
+          "calibration_intercept": -0.039073235552787335,
+          "calibration_slope": 1.0859230002187379,
+          "ece_10_bin": 0.04245482650234253,
+          "fights": 514,
+          "log_loss": 0.622864553902082
+        },
+        "fights": 514
+      },
+      "2026": {
+        "baseline": {
+          "accuracy": 0.64,
+          "auc": 0.6923804485483898,
+          "brier": 0.22236578632777523,
+          "calibration_intercept": -0.1226180009674153,
+          "calibration_slope": 0.88725087233017,
+          "ece_10_bin": 0.05365049897202391,
+          "fights": 500,
+          "log_loss": 0.6360117027965768
+        },
+        "candidate": {
+          "accuracy": 0.636,
+          "auc": 0.692476634764905,
+          "brier": 0.22233053485360563,
+          "calibration_intercept": -0.12271458902498751,
+          "calibration_slope": 0.8862160778932786,
+          "ece_10_bin": 0.05000198410646308,
+          "fights": 500,
+          "log_loss": 0.6357258679059813
+        },
+        "fights": 500
+      }
+    }
+  },
+  "test_years": [
+    2025,
+    2026
+  ],
+  "training": "Same production ten-year window, five C values, four chronological internal splits, and symmetric calibration; all settings trained on earlier fights only.",
+  "version": 1
+}
