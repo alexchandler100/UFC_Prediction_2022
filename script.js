@@ -4062,8 +4062,67 @@ function performanceDisplayRows(rows, showZeroStake = false) {
     || String(b.settled_at_utc || '').localeCompare(String(a.settled_at_utc || '')));
 }
 
+function rankPerformancePresets(records, initial, choices) {
+  const presets = [];
+  for (const market of choices.markets) {
+    const candidates = records.filter(record => market.value === "all" || record.category === market.value);
+    for (const timing of choices.timings) {
+      const selected = selectPerformanceRecords(candidates, timing.value);
+      for (const staking of choices.strategies) {
+        const result = simulatePaperBankroll(selected, initial, staking.value);
+        presets.push({
+          id: JSON.stringify([staking.value, timing.value, market.value]),
+          staking: staking.value, timing: timing.value, market: market.value,
+          summary: `${staking.label} · ${timing.label} · ${market.label}`,
+          endingBankroll: result.endingBankroll,
+          funded: fundedPerformanceCounts(result.rows).funded,
+        });
+      }
+    }
+  }
+  return presets.sort((a, b) => b.endingBankroll - a.endingBankroll || a.summary.localeCompare(b.summary));
+}
+
+function renderPerformancePresets(publication, initial) {
+  const control = $("#performance-presets");
+  const records = publication?.paper_only === true && publication?.execution_enabled === false
+    && Array.isArray(publication.records) ? publication.records : null;
+  if (!records) {
+    control.replaceChildren(element("option", "", "No performance history available"));
+    control.disabled = true;
+    return;
+  }
+  control.disabled = false;
+  const cached = state.performancePresetCache;
+  if (!cached || cached.records !== records || cached.initial !== initial) {
+    const choices = selector => Array.from($(selector).options, option => ({value: option.value, label: option.textContent}));
+    const presets = rankPerformancePresets(records, initial, {
+      strategies: choices("#performance-staking"), timings: choices("#performance-timing"), markets: choices("#performance-market"),
+    });
+    control.replaceChildren();
+    for (const preset of presets) {
+      const option = element("option", "", `${formatCurrency(preset.endingBankroll)} — ${preset.summary} · ${preset.funded} settled bets`);
+      option.value = preset.id;
+      control.append(option);
+    }
+    state.performancePresetCache = {records, initial, presets};
+  }
+  control.value = JSON.stringify([$("#performance-staking").value, $("#performance-timing").value, $("#performance-market").value]);
+}
+
+function applyPerformancePreset() {
+  const preset = state.performancePresetCache?.presets.find(row => row.id === $("#performance-presets").value);
+  if (!preset) return;
+  $("#performance-staking").value = preset.staking;
+  $("#performance-timing").value = preset.timing;
+  $("#performance-market").value = preset.market;
+  renderBetPerformance();
+}
+
 function renderBetPerformance() {
   const publication = state.betPerformance;
+  const initial = Math.max(1, finite($("#performance-bankroll").value) || 1000);
+  renderPerformancePresets(publication, initial);
   const summary = $("#performance-summary"); const rows = $("#performance-rows");
   summary.replaceChildren(); rows.replaceChildren();
   $("#performance-selection-note").textContent = "";
@@ -4074,7 +4133,6 @@ function renderBetPerformance() {
     $("#performance-chart").replaceChildren(element("div", "empty-state", "No bankroll history is available."));
     return;
   }
-  const initial = Math.max(1, finite($("#performance-bankroll").value) || 1000);
   const staking = $("#performance-staking").value;
   const timing = $("#performance-timing").value;
   const market = $("#performance-market").value;
@@ -4618,6 +4676,7 @@ function bindEvents() {
   ["#fighter-directory-search", "#division-filter", "#stance-filter", "#recorded-only"].forEach((selector) => { const input = $(selector); input.addEventListener(input.tagName === "INPUT" && input.type === "search" ? "input" : "change", () => { state.directoryLimit = 48; renderFighterDirectory(); }); });
   ["#performance-bankroll", "#performance-staking", "#performance-timing", "#performance-market"].forEach((selector) => { const input = $(selector); input.addEventListener(input.tagName === "INPUT" ? "input" : "change", renderBetPerformance); });
   $("#performance-show-zero").addEventListener("change", renderBetPerformance);
+  $("#performance-presets").addEventListener("change", applyPerformancePreset);
   document.addEventListener("click", (event) => { ["a", "b"].forEach((side) => { const picker = $(`[data-picker="${side}"]`); if (!picker.contains(event.target)) closeAutocomplete($(`#matchup-fighter-${side}`), $(`#matchup-results-${side}`)); }); });
   window.addEventListener("hashchange", applyRoute);
 }

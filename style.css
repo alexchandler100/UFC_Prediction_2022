@@ -830,3 +830,7 @@ input[type="search"]:focus, select:focus { border-color: var(--teal); box-shadow
 @media (hover: hover) and (pointer: fine) {
   .upcoming-event-header:hover, .upcoming-bout-summary:hover { background: #17232d; }
 }
+
+.performance-presets { grid-column: 1 / -1; min-width: 0; }
+.performance-presets select { width: 100%; min-width: 0; max-width: 100%; text-overflow: ellipsis; }
+.performance-presets .section-note { margin: 5px 0 0; }
