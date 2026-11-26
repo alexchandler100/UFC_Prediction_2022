@@ -1,5 +1,5 @@
 {
-  "captures": 725,
+  "captures": 768,
   "coverage": {
     "approved_identity_links": 2794,
     "duplicate_bouts_excluded": 10,
@@ -45,10 +45,10 @@
   "execution_enabled": false,
   "first_capture_log_loss": 0.6788998040424147,
   "first_capture_settled_fights": 62,
-  "generated_at_utc": "2026-11-23T02:49:36.531436+00:00",
-  "latest_model_id": "0000b3ea98f0e69b94fa9dea96ed5135319bef7892c96cb05fdf5003da02e88d",
-  "models": 16,
-  "new_captures": 36,
+  "generated_at_utc": "2026-11-26T03:44:51.760881+00:00",
+  "latest_model_id": "8c4afba9140449e3fd5894c45b0b84f23e07c8d4b84725bab210598dcce563e4",
+  "models": 17,
+  "new_captures": 43,
   "skipped": [
     {
       "matchup_id": "matchup_3b0dd1e081acef5297137122c927aa208433f96695b1c09cb4e459d4819e02cf",
@@ -64,6 +64,10 @@
     },
     {
       "matchup_id": "matchup_9f9741ddda25a0ae28ab9aab4062cc4f607a1a84ec6022114c536b4dc91ce26c",
+      "reason": "unresolved_identity"
+    },
+    {
+      "matchup_id": "matchup_76cba6e0e35b08e8d5030c254d066c26be8c6694425de378cb6cc4cbc899ccc0",
       "reason": "unresolved_identity"
     },
     {
@@ -95,127 +99,157 @@
       "reason": "unresolved_identity"
     }
   ],
-  "unique_matchups": 110,
+  "unique_matchups": 117,
   "upcoming": [
     {
       "event_date": "2026-12-05",
       "fighter_name": "Serghei Spivac",
       "first_probability_for_fighter": 0.15179315363817789,
       "matchup_id": "matchup_2dced5193e9639892be0e9c7ec57a80d6be87c7b2c4a3f525a01cd2baaa30d67",
-      "model_id": "0000b3ea98f0e69b94fa9dea96ed5135319bef7892c96cb05fdf5003da02e88d",
+      "model_id": "8c4afba9140449e3fd5894c45b0b84f23e07c8d4b84725bab210598dcce563e4",
       "opponent_name": "Mario Pinto",
-      "probability_for_fighter": 0.15218625735637212,
-      "recorded_at_utc": "2026-11-23T02:49:36.531436+00:00"
+      "probability_for_fighter": 0.15218625735637248,
+      "recorded_at_utc": "2026-11-26T03:44:51.760881+00:00"
     },
     {
       "event_date": "2026-12-05",
       "fighter_name": "Ian Machado Garry",
       "first_probability_for_fighter": 0.5297968761120952,
       "matchup_id": "matchup_6fe25dca2c189cbe26e74bb1cb5aed4aaa1fcc3d874284ebd44cdadf441a4d32",
-      "model_id": "0000b3ea98f0e69b94fa9dea96ed5135319bef7892c96cb05fdf5003da02e88d",
+      "model_id": "8c4afba9140449e3fd5894c45b0b84f23e07c8d4b84725bab210598dcce563e4",
       "opponent_name": "Yaroslav Amosov",
-      "probability_for_fighter": 0.5244922728972881,
-      "recorded_at_utc": "2026-11-23T02:49:36.531436+00:00"
+      "probability_for_fighter": 0.524492272897289,
+      "recorded_at_utc": "2026-11-26T03:44:51.760881+00:00"
     },
     {
       "event_date": "2026-12-05",
       "fighter_name": "Pavel Andrusca",
       "first_probability_for_fighter": 0.987446415085903,
       "matchup_id": "matchup_703aba9814b27186b272846d745706dc68ba7df714081633f5b7a45cc7a03713",
-      "model_id": "0000b3ea98f0e69b94fa9dea96ed5135319bef7892c96cb05fdf5003da02e88d",
+      "model_id": "8c4afba9140449e3fd5894c45b0b84f23e07c8d4b84725bab210598dcce563e4",
       "opponent_name": "Mahammadali Osmanli",
       "probability_for_fighter": 0.9867404875594216,
-      "recorded_at_utc": "2026-11-23T02:49:36.531436+00:00"
+      "recorded_at_utc": "2026-11-26T03:44:51.760881+00:00"
+    },
+    {
+      "event_date": "2026-12-05",
+      "fighter_name": "Mateusz Rebecki",
+      "first_probability_for_fighter": 0.4534655860093988,
+      "matchup_id": "matchup_7852dd3c9d0c03f1d8f17311e46b793f2523fe2ab2962b56d9220286cb45220e",
+      "model_id": "8c4afba9140449e3fd5894c45b0b84f23e07c8d4b84725bab210598dcce563e4",
+      "opponent_name": "Elves Brener",
+      "probability_for_fighter": 0.4534655860093988,
+      "recorded_at_utc": "2026-11-26T03:44:51.760881+00:00"
     },
     {
       "event_date": "2026-12-05",
       "fighter_name": "Bruno Silva",
       "first_probability_for_fighter": 0.3476156440827412,
       "matchup_id": "matchup_851d2a29fdd7b51431f9a6b4dff3b19b39cee42f962fe39b83e9378cd8226a23",
-      "model_id": "0000b3ea98f0e69b94fa9dea96ed5135319bef7892c96cb05fdf5003da02e88d",
+      "model_id": "8c4afba9140449e3fd5894c45b0b84f23e07c8d4b84725bab210598dcce563e4",
       "opponent_name": "Jafel Filho",
       "probability_for_fighter": 0.3580941756373414,
-      "recorded_at_utc": "2026-11-23T02:49:36.531436+00:00"
+      "recorded_at_utc": "2026-11-26T03:44:51.760881+00:00"
+    },
+    {
+      "event_date": "2026-12-05",
+      "fighter_name": "Luke Riley",
+      "first_probability_for_fighter": 0.5827287622340933,
+      "matchup_id": "matchup_9fe513b9f6ee0e65d6acbf0e32e3da463b967bd75212e9fdc3fe128cb3cf59a7",
+      "model_id": "8c4afba9140449e3fd5894c45b0b84f23e07c8d4b84725bab210598dcce563e4",
+      "opponent_name": "Gabriel Santos",
+      "probability_for_fighter": 0.5827287622340933,
+      "recorded_at_utc": "2026-11-26T03:44:51.760881+00:00"
     },
     {
       "event_date": "2026-12-05",
       "fighter_name": "Israel Adesanya",
       "first_probability_for_fighter": 0.48690112053215423,
       "matchup_id": "matchup_a170aed50ede873a7b1147ecf51609e68a94549738347a6065f3ecf67a2ab4cf",
-      "model_id": "0000b3ea98f0e69b94fa9dea96ed5135319bef7892c96cb05fdf5003da02e88d",
+      "model_id": "8c4afba9140449e3fd5894c45b0b84f23e07c8d4b84725bab210598dcce563e4",
       "opponent_name": "Shara Magomedov",
-      "probability_for_fighter": 0.4953314468760082,
-      "recorded_at_utc": "2026-11-23T02:49:36.531436+00:00"
+      "probability_for_fighter": 0.4953314468760086,
+      "recorded_at_utc": "2026-11-26T03:44:51.760881+00:00"
     },
     {
       "event_date": "2026-12-05",
       "fighter_name": "Magomed Tuchalov",
       "first_probability_for_fighter": 0.6439304300313421,
       "matchup_id": "matchup_a5fb2555c6e68e20620e92db4c2c07d4a60f7130ecb931c0ef5222f49b46e3d9",
-      "model_id": "0000b3ea98f0e69b94fa9dea96ed5135319bef7892c96cb05fdf5003da02e88d",
+      "model_id": "8c4afba9140449e3fd5894c45b0b84f23e07c8d4b84725bab210598dcce563e4",
       "opponent_name": "Ion Cutelaba",
-      "probability_for_fighter": 0.6375420816293041,
-      "recorded_at_utc": "2026-11-23T02:49:36.531436+00:00"
+      "probability_for_fighter": 0.6375420816293035,
+      "recorded_at_utc": "2026-11-26T03:44:51.760881+00:00"
     },
     {
       "event_date": "2026-12-05",
       "fighter_name": "Abdul Hussein",
       "first_probability_for_fighter": 0.5134966148423561,
       "matchup_id": "matchup_af5929b2921e899143362c4e6a684b19088e25c208edbb6f43d01ad445457b0a",
-      "model_id": "0000b3ea98f0e69b94fa9dea96ed5135319bef7892c96cb05fdf5003da02e88d",
+      "model_id": "8c4afba9140449e3fd5894c45b0b84f23e07c8d4b84725bab210598dcce563e4",
       "opponent_name": "Hecher Sosa",
       "probability_for_fighter": 0.5169200005200805,
-      "recorded_at_utc": "2026-11-23T02:49:36.531436+00:00"
+      "recorded_at_utc": "2026-11-26T03:44:51.760881+00:00"
     },
     {
       "event_date": "2026-12-05",
       "fighter_name": "Marco Tulio",
       "first_probability_for_fighter": 0.5423628360857652,
       "matchup_id": "matchup_b7ad38c63595c05eae8e5344da4ab13aec747ad240b7c28b3506acdc112fc67b",
-      "model_id": "0000b3ea98f0e69b94fa9dea96ed5135319bef7892c96cb05fdf5003da02e88d",
+      "model_id": "8c4afba9140449e3fd5894c45b0b84f23e07c8d4b84725bab210598dcce563e4",
       "opponent_name": "JunYong Park",
-      "probability_for_fighter": 0.5480191775952622,
-      "recorded_at_utc": "2026-11-23T02:49:36.531436+00:00"
+      "probability_for_fighter": 0.548019177595262,
+      "recorded_at_utc": "2026-11-26T03:44:51.760881+00:00"
     },
     {
       "event_date": "2026-12-05",
       "fighter_name": "Levan Chokheli",
       "first_probability_for_fighter": 0.44803524665637445,
       "matchup_id": "matchup_e6822bed3961166c966491d65d5613cbdda98f39d4b2374b668be01582cb1958",
-      "model_id": "0000b3ea98f0e69b94fa9dea96ed5135319bef7892c96cb05fdf5003da02e88d",
+      "model_id": "8c4afba9140449e3fd5894c45b0b84f23e07c8d4b84725bab210598dcce563e4",
       "opponent_name": "Islam Dulatov",
-      "probability_for_fighter": 0.44506170042404075,
-      "recorded_at_utc": "2026-11-23T02:49:36.531436+00:00"
+      "probability_for_fighter": 0.44506170042404064,
+      "recorded_at_utc": "2026-11-26T03:44:51.760881+00:00"
+    },
+    {
+      "event_date": "2026-12-12",
+      "fighter_name": "Jacqueline Cavalcanti",
+      "first_probability_for_fighter": 0.7120681057308526,
+      "matchup_id": "matchup_0dde6f81040a85eb8ac7c3b7334217357be0be6eabe3336689e0c881b99ea4f5",
+      "model_id": "8c4afba9140449e3fd5894c45b0b84f23e07c8d4b84725bab210598dcce563e4",
+      "opponent_name": "Michelle Montague",
+      "probability_for_fighter": 0.7120681057308526,
+      "recorded_at_utc": "2026-11-26T03:44:51.760881+00:00"
     },
     {
       "event_date": "2026-12-12",
       "fighter_name": "Kyler Phillips",
       "first_probability_for_fighter": 0.42452290244360036,
       "matchup_id": "matchup_2f74cb92219d94c2920b63107ab316c053c68e944c5940bc3ea3043489d4efd7",
-      "model_id": "0000b3ea98f0e69b94fa9dea96ed5135319bef7892c96cb05fdf5003da02e88d",
+      "model_id": "8c4afba9140449e3fd5894c45b0b84f23e07c8d4b84725bab210598dcce563e4",
       "opponent_name": "Ethyn Ewing",
-      "probability_for_fighter": 0.4215686721608521,
-      "recorded_at_utc": "2026-11-23T02:49:36.531436+00:00"
+      "probability_for_fighter": 0.42156867216085225,
+      "recorded_at_utc": "2026-11-26T03:44:51.760881+00:00"
     },
     {
       "event_date": "2026-12-12",
       "fighter_name": "Alex Pereira",
       "first_probability_for_fighter": 0.49714955674309746,
       "matchup_id": "matchup_3c59b086efd6f80871152b4d7c633d5c1dbd191c5b8da2bc0dc2d94356a3082f",
-      "model_id": "0000b3ea98f0e69b94fa9dea96ed5135319bef7892c96cb05fdf5003da02e88d",
+      "model_id": "8c4afba9140449e3fd5894c45b0b84f23e07c8d4b84725bab210598dcce563e4",
       "opponent_name": "Sergei Pavlovich",
-      "probability_for_fighter": 0.5117965739696066,
-      "recorded_at_utc": "2026-11-23T02:49:36.531436+00:00"
+      "probability_for_fighter": 0.5117965739696071,
+      "recorded_at_utc": "2026-11-26T03:44:51.760881+00:00"
     },
     {
       "event_date": "2026-12-12",
       "fighter_name": "Brandon Moreno",
       "first_probability_for_fighter": 0.6583028650856266,
       "matchup_id": "matchup_5783bd43573352bd81117ee37250164b7162dda0ba25bb235b650111ad2e745d",
-      "model_id": "0000b3ea98f0e69b94fa9dea96ed5135319bef7892c96cb05fdf5003da02e88d",
+      "model_id": "8c4afba9140449e3fd5894c45b0b84f23e07c8d4b84725bab210598dcce563e4",
       "opponent_name": "Charles Johnson",
-      "probability_for_fighter": 0.613634236162768,
-      "recorded_at_utc": "2026-11-23T02:49:36.531436+00:00"
+      "probability_for_fighter": 0.6136342361627675,
+      "recorded_at_utc": "2026-11-26T03:44:51.760881+00:00"
     },
     {
       "event_date": "2026-12-12",
@@ -242,242 +276,282 @@
       "fighter_name": "Charles Oliveira",
       "first_probability_for_fighter": 0.4215424056550102,
       "matchup_id": "matchup_a39dc3880934774d6f938890ee338d85b496feb3d35db65688962bafa4f7691c",
-      "model_id": "0000b3ea98f0e69b94fa9dea96ed5135319bef7892c96cb05fdf5003da02e88d",
+      "model_id": "8c4afba9140449e3fd5894c45b0b84f23e07c8d4b84725bab210598dcce563e4",
       "opponent_name": "Diego Lopes",
-      "probability_for_fighter": 0.4230867061742422,
-      "recorded_at_utc": "2026-11-23T02:49:36.531436+00:00"
+      "probability_for_fighter": 0.4230867061742427,
+      "recorded_at_utc": "2026-11-26T03:44:51.760881+00:00"
     },
     {
       "event_date": "2026-12-12",
       "fighter_name": "Damian Pinas",
       "first_probability_for_fighter": 0.4203362901440264,
       "matchup_id": "matchup_dfb4c979564f2c45a63e357d76bdfbf8967c3943db52090598eb38837aeb6bd0",
-      "model_id": "0000b3ea98f0e69b94fa9dea96ed5135319bef7892c96cb05fdf5003da02e88d",
+      "model_id": "8c4afba9140449e3fd5894c45b0b84f23e07c8d4b84725bab210598dcce563e4",
       "opponent_name": "Baisangur Susurkaev",
-      "probability_for_fighter": 0.42768733352790317,
-      "recorded_at_utc": "2026-11-23T02:49:36.531436+00:00"
+      "probability_for_fighter": 0.4276873335279024,
+      "recorded_at_utc": "2026-11-26T03:44:51.760881+00:00"
     },
     {
       "event_date": "2027-01-16",
       "fighter_name": "Sam Hughes",
       "first_probability_for_fighter": 0.8561237907293902,
       "matchup_id": "matchup_052079450ed901b43000f577a3a365383ac47f01afacd7fed5746f5365b56a3d",
-      "model_id": "0000b3ea98f0e69b94fa9dea96ed5135319bef7892c96cb05fdf5003da02e88d",
+      "model_id": "8c4afba9140449e3fd5894c45b0b84f23e07c8d4b84725bab210598dcce563e4",
       "opponent_name": "Karolina Kowalkiewicz",
-      "probability_for_fighter": 0.8560248014532382,
-      "recorded_at_utc": "2026-11-23T02:49:36.531436+00:00"
+      "probability_for_fighter": 0.8560248014532379,
+      "recorded_at_utc": "2026-11-26T03:44:51.760881+00:00"
     },
     {
       "event_date": "2027-01-16",
       "fighter_name": "Alden Coria",
       "first_probability_for_fighter": 0.6121709523288785,
       "matchup_id": "matchup_20eef4ee8701dd8636d15b302c9fd971823775f1fb1cf7ebd6fd21ba46b9c616",
-      "model_id": "0000b3ea98f0e69b94fa9dea96ed5135319bef7892c96cb05fdf5003da02e88d",
+      "model_id": "8c4afba9140449e3fd5894c45b0b84f23e07c8d4b84725bab210598dcce563e4",
       "opponent_name": "Michael Aljarouj",
-      "probability_for_fighter": 0.6126010094642518,
-      "recorded_at_utc": "2026-11-23T02:49:36.531436+00:00"
+      "probability_for_fighter": 0.6126010094642513,
+      "recorded_at_utc": "2026-11-26T03:44:51.760881+00:00"
     },
     {
       "event_date": "2027-01-16",
       "fighter_name": "Chidi Njokuani",
       "first_probability_for_fighter": 0.37545807567433254,
       "matchup_id": "matchup_2cf21067db836dab2fcad48a3a72222de3d4229cbcd8f54ed78f4570a91515ae",
-      "model_id": "0000b3ea98f0e69b94fa9dea96ed5135319bef7892c96cb05fdf5003da02e88d",
+      "model_id": "8c4afba9140449e3fd5894c45b0b84f23e07c8d4b84725bab210598dcce563e4",
       "opponent_name": "Ignacio Bahamondes",
-      "probability_for_fighter": 0.3821557835649779,
-      "recorded_at_utc": "2026-11-23T02:49:36.531436+00:00"
+      "probability_for_fighter": 0.3821557835649782,
+      "recorded_at_utc": "2026-11-26T03:44:51.760881+00:00"
     },
     {
       "event_date": "2027-01-16",
       "fighter_name": "Yair Rodriguez",
       "first_probability_for_fighter": 0.3373002625591799,
       "matchup_id": "matchup_3659eaaad9e0158ebe78d37a7e95e50fd539c4bdc36bb4108da5c1ddb3fd1937",
-      "model_id": "0000b3ea98f0e69b94fa9dea96ed5135319bef7892c96cb05fdf5003da02e88d",
+      "model_id": "8c4afba9140449e3fd5894c45b0b84f23e07c8d4b84725bab210598dcce563e4",
       "opponent_name": "Steve Garcia",
-      "probability_for_fighter": 0.33506558944767423,
-      "recorded_at_utc": "2026-11-23T02:49:36.531436+00:00"
+      "probability_for_fighter": 0.33506558944767567,
+      "recorded_at_utc": "2026-11-26T03:44:51.760881+00:00"
     },
     {
       "event_date": "2027-01-16",
       "fighter_name": "Geoff Neal",
       "first_probability_for_fighter": 0.5435649065747972,
       "matchup_id": "matchup_36c148e40d4e477978bf905af4bf1c4c35966e609cec1cacb2d0ab195e379896",
-      "model_id": "0000b3ea98f0e69b94fa9dea96ed5135319bef7892c96cb05fdf5003da02e88d",
+      "model_id": "8c4afba9140449e3fd5894c45b0b84f23e07c8d4b84725bab210598dcce563e4",
       "opponent_name": "Chris Curtis",
-      "probability_for_fighter": 0.5433593233608233,
-      "recorded_at_utc": "2026-11-23T02:49:36.531436+00:00"
+      "probability_for_fighter": 0.5433593233608237,
+      "recorded_at_utc": "2026-11-26T03:44:51.760881+00:00"
     },
     {
       "event_date": "2027-01-16",
       "fighter_name": "Kennedy Nzechukwu",
       "first_probability_for_fighter": 0.7520889112994666,
       "matchup_id": "matchup_569439a276f22d92f5662edb14f249ff58f8f04e14463f2d6071b5450ab3e8dd",
-      "model_id": "0000b3ea98f0e69b94fa9dea96ed5135319bef7892c96cb05fdf5003da02e88d",
+      "model_id": "8c4afba9140449e3fd5894c45b0b84f23e07c8d4b84725bab210598dcce563e4",
       "opponent_name": "Elisha Ellison",
-      "probability_for_fighter": 0.7534006643265282,
-      "recorded_at_utc": "2026-11-23T02:49:36.531436+00:00"
+      "probability_for_fighter": 0.7534006643265274,
+      "recorded_at_utc": "2026-11-26T03:44:51.760881+00:00"
     },
     {
       "event_date": "2027-01-16",
       "fighter_name": "Daniel Rodriguez",
       "first_probability_for_fighter": 0.3570701130190647,
       "matchup_id": "matchup_77f00fb8b39fbc770314f7aee1a1a78f26cbd113f2b917fabf7b734b857c5c0b",
-      "model_id": "0000b3ea98f0e69b94fa9dea96ed5135319bef7892c96cb05fdf5003da02e88d",
+      "model_id": "8c4afba9140449e3fd5894c45b0b84f23e07c8d4b84725bab210598dcce563e4",
       "opponent_name": "Roberto Soldic",
-      "probability_for_fighter": 0.3556688806017716,
-      "recorded_at_utc": "2026-11-23T02:49:36.531436+00:00"
+      "probability_for_fighter": 0.3556688806017725,
+      "recorded_at_utc": "2026-11-26T03:44:51.760881+00:00"
     },
     {
       "event_date": "2027-01-16",
       "fighter_name": "Diego Ferreira",
       "first_probability_for_fighter": 0.25187292683786394,
       "matchup_id": "matchup_7d9d241c618c1f3295df1827ba041d34ae6f65294ddc92655d35df6b46c5214a",
-      "model_id": "0000b3ea98f0e69b94fa9dea96ed5135319bef7892c96cb05fdf5003da02e88d",
+      "model_id": "8c4afba9140449e3fd5894c45b0b84f23e07c8d4b84725bab210598dcce563e4",
       "opponent_name": "MarQuel Mederos",
-      "probability_for_fighter": 0.25205221197867483,
-      "recorded_at_utc": "2026-11-23T02:49:36.531436+00:00"
+      "probability_for_fighter": 0.2520522119786758,
+      "recorded_at_utc": "2026-11-26T03:44:51.760881+00:00"
     },
     {
       "event_date": "2027-01-16",
       "fighter_name": "John Garza",
       "first_probability_for_fighter": 0.8963765588900815,
       "matchup_id": "matchup_c787c2fe30404def9673b3a9c62757950c52321b7107eda6fc02d21d9c3edf56",
-      "model_id": "0000b3ea98f0e69b94fa9dea96ed5135319bef7892c96cb05fdf5003da02e88d",
+      "model_id": "8c4afba9140449e3fd5894c45b0b84f23e07c8d4b84725bab210598dcce563e4",
       "opponent_name": "Toshiomi Kazama",
-      "probability_for_fighter": 0.8965091079954118,
-      "recorded_at_utc": "2026-11-23T02:49:36.531436+00:00"
+      "probability_for_fighter": 0.8965091079954117,
+      "recorded_at_utc": "2026-11-26T03:44:51.760881+00:00"
     },
     {
       "event_date": "2027-01-16",
       "fighter_name": "Ryan Spann",
       "first_probability_for_fighter": 0.5053907805866267,
       "matchup_id": "matchup_dd716c0e34384b94ce2bebc11d16cac760b62b54f37e2d98e268b6c53750e1e2",
-      "model_id": "0000b3ea98f0e69b94fa9dea96ed5135319bef7892c96cb05fdf5003da02e88d",
+      "model_id": "8c4afba9140449e3fd5894c45b0b84f23e07c8d4b84725bab210598dcce563e4",
       "opponent_name": "Louie Sutherland",
-      "probability_for_fighter": 0.5065642547231246,
-      "recorded_at_utc": "2026-11-23T02:49:36.531436+00:00"
+      "probability_for_fighter": 0.5065642547231248,
+      "recorded_at_utc": "2026-11-26T03:44:51.760881+00:00"
     },
     {
       "event_date": "2027-01-16",
       "fighter_name": "Gilbert Urbina",
       "first_probability_for_fighter": 0.5734029102085486,
       "matchup_id": "matchup_e56cb781427c6bed5897a1c01cd724bc3ffcc9b70f1d7e7e40c2de96285665a9",
-      "model_id": "0000b3ea98f0e69b94fa9dea96ed5135319bef7892c96cb05fdf5003da02e88d",
+      "model_id": "8c4afba9140449e3fd5894c45b0b84f23e07c8d4b84725bab210598dcce563e4",
       "opponent_name": "Robert Valentin",
-      "probability_for_fighter": 0.5730287900479057,
-      "recorded_at_utc": "2026-11-23T02:49:36.531436+00:00"
+      "probability_for_fighter": 0.5730287900479064,
+      "recorded_at_utc": "2026-11-26T03:44:51.760881+00:00"
     },
     {
       "event_date": "2027-01-16",
       "fighter_name": "Steven Asplund",
       "first_probability_for_fighter": 0.7845425118678124,
       "matchup_id": "matchup_e585f86ca80b5dc74bf0d3d3739940c2743eb72c085db1179add95af6be6ae33",
-      "model_id": "0000b3ea98f0e69b94fa9dea96ed5135319bef7892c96cb05fdf5003da02e88d",
+      "model_id": "8c4afba9140449e3fd5894c45b0b84f23e07c8d4b84725bab210598dcce563e4",
       "opponent_name": "Gokhan Saricam",
-      "probability_for_fighter": 0.7846300544671,
-      "recorded_at_utc": "2026-11-23T02:49:36.531436+00:00"
+      "probability_for_fighter": 0.7846300544670998,
+      "recorded_at_utc": "2026-11-26T03:44:51.760881+00:00"
     },
     {
       "event_date": "2027-01-23",
       "fighter_name": "Gabriel Bonfim",
       "first_probability_for_fighter": 0.5855005911111735,
       "matchup_id": "matchup_76736c104df82752a699d14a0a75400961eb97f0543809185de87b7e8a8b7e61",
-      "model_id": "0000b3ea98f0e69b94fa9dea96ed5135319bef7892c96cb05fdf5003da02e88d",
+      "model_id": "8c4afba9140449e3fd5894c45b0b84f23e07c8d4b84725bab210598dcce563e4",
       "opponent_name": "Sean Brady",
-      "probability_for_fighter": 0.581954665560696,
-      "recorded_at_utc": "2026-11-23T02:49:36.531436+00:00"
+      "probability_for_fighter": 0.5819546655606952,
+      "recorded_at_utc": "2026-11-26T03:44:51.760881+00:00"
+    },
+    {
+      "event_date": "2027-01-30",
+      "fighter_name": "Gable Steveson",
+      "first_probability_for_fighter": 0.6461016912857377,
+      "matchup_id": "matchup_28531fc3282e7410d75274c6fb7a09da43f8d0c8b354649e721bebfa9af8d334",
+      "model_id": "8c4afba9140449e3fd5894c45b0b84f23e07c8d4b84725bab210598dcce563e4",
+      "opponent_name": "Terrance Chatman",
+      "probability_for_fighter": 0.6461016912857377,
+      "recorded_at_utc": "2026-11-26T03:44:51.760881+00:00"
     },
     {
       "event_date": "2027-01-30",
       "fighter_name": "Carlos Prates",
       "first_probability_for_fighter": 0.3283759461780928,
       "matchup_id": "matchup_5cd55b76e344e30db2189270012f440d2e3e0cc778dc77d9e79cbf8ac4258de9",
-      "model_id": "0000b3ea98f0e69b94fa9dea96ed5135319bef7892c96cb05fdf5003da02e88d",
+      "model_id": "8c4afba9140449e3fd5894c45b0b84f23e07c8d4b84725bab210598dcce563e4",
       "opponent_name": "Michael Morales",
-      "probability_for_fighter": 0.3307611557986981,
-      "recorded_at_utc": "2026-11-23T02:49:36.531436+00:00"
+      "probability_for_fighter": 0.33076115579869797,
+      "recorded_at_utc": "2026-11-26T03:44:51.760881+00:00"
+    },
+    {
+      "event_date": "2027-01-30",
+      "fighter_name": "Julien Leblanc",
+      "first_probability_for_fighter": 0.528540215322861,
+      "matchup_id": "matchup_6d4d431cf1b72b887e67c922f0ac874329923b59b8528f6ef5b9f7a3b353969a",
+      "model_id": "8c4afba9140449e3fd5894c45b0b84f23e07c8d4b84725bab210598dcce563e4",
+      "opponent_name": "Vlasto Cepo",
+      "probability_for_fighter": 0.528540215322861,
+      "recorded_at_utc": "2026-11-26T03:44:51.760881+00:00"
+    },
+    {
+      "event_date": "2027-01-30",
+      "fighter_name": "Tanner Boser",
+      "first_probability_for_fighter": 0.35310386339546257,
+      "matchup_id": "matchup_a474166f14dc2a42472b832b42a1211f99197f86c2170f727afb57233229573f",
+      "model_id": "8c4afba9140449e3fd5894c45b0b84f23e07c8d4b84725bab210598dcce563e4",
+      "opponent_name": "Jose Montanha",
+      "probability_for_fighter": 0.35310386339546257,
+      "recorded_at_utc": "2026-11-26T03:44:51.760881+00:00"
+    },
+    {
+      "event_date": "2027-01-30",
+      "fighter_name": "Marc-Andre Barriault",
+      "first_probability_for_fighter": 0.3337733640739243,
+      "matchup_id": "matchup_a997d2c0ad404bb071ab96899790f947e6bf7ac047d41daa44c7fbc015e4e95b",
+      "model_id": "8c4afba9140449e3fd5894c45b0b84f23e07c8d4b84725bab210598dcce563e4",
+      "opponent_name": "Tresean Gore",
+      "probability_for_fighter": 0.3337733640739243,
+      "recorded_at_utc": "2026-11-26T03:44:51.760881+00:00"
     },
     {
       "event_date": "2027-01-30",
       "fighter_name": "Lance Gibson Jr.",
       "first_probability_for_fighter": 0.6756513249818468,
       "matchup_id": "matchup_d23a08ec1d9d68bd78f76ed3fac46383fac96af862387f2cafa48ed4493f3aec",
-      "model_id": "0000b3ea98f0e69b94fa9dea96ed5135319bef7892c96cb05fdf5003da02e88d",
+      "model_id": "8c4afba9140449e3fd5894c45b0b84f23e07c8d4b84725bab210598dcce563e4",
       "opponent_name": "Michael Johnson",
-      "probability_for_fighter": 0.6767806435248164,
-      "recorded_at_utc": "2026-11-23T02:49:36.531436+00:00"
+      "probability_for_fighter": 0.6767806435248155,
+      "recorded_at_utc": "2026-11-26T03:44:51.760881+00:00"
     },
     {
       "event_date": "2027-01-30",
       "fighter_name": "Joshua Van",
       "first_probability_for_fighter": 0.6815074599809677,
       "matchup_id": "matchup_ebfcd1e62188fc8037b9556126bb907220227fee2f25496a0ecf5aa24bed9a71",
-      "model_id": "0000b3ea98f0e69b94fa9dea96ed5135319bef7892c96cb05fdf5003da02e88d",
+      "model_id": "8c4afba9140449e3fd5894c45b0b84f23e07c8d4b84725bab210598dcce563e4",
       "opponent_name": "Manel Kape",
-      "probability_for_fighter": 0.6770734955289232,
-      "recorded_at_utc": "2026-11-23T02:49:36.531436+00:00"
+      "probability_for_fighter": 0.677073495528923,
+      "recorded_at_utc": "2026-11-26T03:44:51.760881+00:00"
     },
     {
       "event_date": "2027-02-06",
       "fighter_name": "Bogdan Guskov",
       "first_probability_for_fighter": 0.3892430445504925,
       "matchup_id": "matchup_270f79458d5bb5bc568b796b5543d5bc280b051c9e9433d7dc980ba0d202e6bd",
-      "model_id": "0000b3ea98f0e69b94fa9dea96ed5135319bef7892c96cb05fdf5003da02e88d",
+      "model_id": "8c4afba9140449e3fd5894c45b0b84f23e07c8d4b84725bab210598dcce563e4",
       "opponent_name": "Robert Whittaker",
-      "probability_for_fighter": 0.38681890437109795,
-      "recorded_at_utc": "2026-11-23T02:49:36.531436+00:00"
+      "probability_for_fighter": 0.3868189043710977,
+      "recorded_at_utc": "2026-11-26T03:44:51.760881+00:00"
     },
     {
       "event_date": "2027-02-06",
       "fighter_name": "Marwan Rahiki",
       "first_probability_for_fighter": 0.7326291727653372,
       "matchup_id": "matchup_6d6526be50f8b65d170d0b0b547235be4fbf7255d973d43ae7fb636e9e170b22",
-      "model_id": "0000b3ea98f0e69b94fa9dea96ed5135319bef7892c96cb05fdf5003da02e88d",
+      "model_id": "8c4afba9140449e3fd5894c45b0b84f23e07c8d4b84725bab210598dcce563e4",
       "opponent_name": "JooSang Yoo",
       "probability_for_fighter": 0.733130653670893,
-      "recorded_at_utc": "2026-11-23T02:49:36.531436+00:00"
+      "recorded_at_utc": "2026-11-26T03:44:51.760881+00:00"
     },
     {
       "event_date": "2027-02-06",
       "fighter_name": "Quillan Salkilld",
       "first_probability_for_fighter": 0.7701981254237498,
       "matchup_id": "matchup_91e74c35b23efea324c7cbd364cbc0b7ad5266a38fb02ef535c76c9b545ede72",
-      "model_id": "0000b3ea98f0e69b94fa9dea96ed5135319bef7892c96cb05fdf5003da02e88d",
+      "model_id": "8c4afba9140449e3fd5894c45b0b84f23e07c8d4b84725bab210598dcce563e4",
       "opponent_name": "Benoit Saint Denis",
-      "probability_for_fighter": 0.7739468957491374,
-      "recorded_at_utc": "2026-11-23T02:49:36.531436+00:00"
+      "probability_for_fighter": 0.7739468957491364,
+      "recorded_at_utc": "2026-11-26T03:44:51.760881+00:00"
     },
     {
       "event_date": "2027-02-06",
       "fighter_name": "Jonathan Micallef",
       "first_probability_for_fighter": 0.404951147672086,
       "matchup_id": "matchup_d0ec2b4da44023ea7ff3a91a0c8d6a6028ce3b7f37276fbf707abac5215f4726",
-      "model_id": "0000b3ea98f0e69b94fa9dea96ed5135319bef7892c96cb05fdf5003da02e88d",
+      "model_id": "8c4afba9140449e3fd5894c45b0b84f23e07c8d4b84725bab210598dcce563e4",
       "opponent_name": "Sam Patterson",
-      "probability_for_fighter": 0.40471505163494376,
-      "recorded_at_utc": "2026-11-23T02:49:36.531436+00:00"
+      "probability_for_fighter": 0.4047150516349434,
+      "recorded_at_utc": "2026-11-26T03:44:51.760881+00:00"
     },
     {
       "event_date": "2027-02-06",
       "fighter_name": "Kaan Ofli",
       "first_probability_for_fighter": 0.2539639074806807,
       "matchup_id": "matchup_d9a425723b0767cb3fe2f7c631d0553ed62080831aec128df12002c351530f5e",
-      "model_id": "0000b3ea98f0e69b94fa9dea96ed5135319bef7892c96cb05fdf5003da02e88d",
+      "model_id": "8c4afba9140449e3fd5894c45b0b84f23e07c8d4b84725bab210598dcce563e4",
       "opponent_name": "Joanderson Brito",
-      "probability_for_fighter": 0.25629102799678233,
-      "recorded_at_utc": "2026-11-23T02:49:36.531436+00:00"
+      "probability_for_fighter": 0.25629102799678266,
+      "recorded_at_utc": "2026-11-26T03:44:51.760881+00:00"
     },
     {
       "event_date": "2027-02-13",
       "fighter_name": "Joe Pyfer",
       "first_probability_for_fighter": 0.5635628903797518,
       "matchup_id": "matchup_81b762912dbd18ced52e8ab61774c37a83edeb31bc1b5f7494d924217622fea6",
-      "model_id": "0000b3ea98f0e69b94fa9dea96ed5135319bef7892c96cb05fdf5003da02e88d",
+      "model_id": "8c4afba9140449e3fd5894c45b0b84f23e07c8d4b84725bab210598dcce563e4",
       "opponent_name": "Bo Nickal",
-      "probability_for_fighter": 0.5135902197935839,
-      "recorded_at_utc": "2026-11-23T02:49:36.531436+00:00"
+      "probability_for_fighter": 0.5135902197935838,
+      "recorded_at_utc": "2026-11-26T03:44:51.760881+00:00"
     }
   ],
-  "upcoming_matchups": 38,
+  "upcoming_matchups": 45,
   "version": "career-shadow-v1"
 }
